@@ -21,12 +21,18 @@ GOOGLE_NEWS_RSS = "https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&c
 YAHOO_FINANCE_RSS = "https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}&region=US&lang=en-US"
 
 HIGH_SIGNAL_KEYWORDS = {
-    "m_and_a": ["merger", "acquisition", "takeover", "buyout", "deal", "bid", "acquires", "acquired"],
-    "credit_risk": ["downgrade", "default", "bankruptcy", "debt", "junk", "restructur", "covenant"],
-    "distressed": ["distressed", "insolvency", "liquidation", "chapter 11", "chapter 7", "receivership"],
-    "leadership": ["ceo resign", "cfo resign", "ceo depart", "cfo depart", "executive exit", "board resign"],
-    "regulatory": ["sec probe", "doj invest", "ftc", "antitrust", "fine", "penalty", "subpoena", "fraud"],
-    "earnings": ["miss", "warning", "guidance cut", "revenue decline", "profit warning", "restatement"],
+    "m_and_a": ["merger", "acquisition", "takeover", "buyout", "deal", "bid", "acquires", "acquired",
+                "scheme of arrangement", "offer to acquire"],
+    "credit_risk": ["downgrade", "default", "bankruptcy", "debt", "junk", "restructur", "covenant",
+                    "GCR ratings", "moody's", "S&P", "fitch"],
+    "distressed": ["distressed", "insolvency", "liquidation", "chapter 11", "chapter 7", "receivership",
+                   "business rescue", "judicial management", "provisional liquidation"],
+    "leadership": ["ceo resign", "cfo resign", "ceo depart", "cfo depart", "executive exit", "board resign",
+                   "md resign", "managing director resign"],
+    "regulatory": ["sec probe", "doj invest", "ftc", "antitrust", "fine", "penalty", "subpoena", "fraud",
+                   "fsca action", "cma investigation", "cbn sanction", "licence revoked"],
+    "earnings": ["miss", "warning", "guidance cut", "revenue decline", "profit warning", "restatement",
+                 "trading statement", "headline earnings", "loss after tax"],
 }
 
 
@@ -194,6 +200,7 @@ def _extract_source(url: str) -> str:
             host = domain.group(1)
             # Map common financial news domains
             mapping = {
+                # US / Global
                 "reuters.com": "Reuters",
                 "bloomberg.com": "Bloomberg",
                 "wsj.com": "Wall Street Journal",
@@ -205,6 +212,27 @@ def _extract_source(url: str) -> str:
                 "businesswire.com": "Business Wire",
                 "prnewswire.com": "PR Newswire",
                 "sec.gov": "SEC EDGAR",
+                # Africa
+                "businessday.ng": "BusinessDay Nigeria",
+                "techcabal.com": "TechCabal",
+                "theafricareport.com": "The Africa Report",
+                "african.business": "African Business",
+                "moneyweb.co.za": "Moneyweb",
+                "businesslive.co.za": "BusinessLive SA",
+                "stears.co": "Stears",
+                "nation.africa": "Nation Africa",
+                "nairametrics.com": "Nairametrics",
+                "ngxgroup.com": "NGX Group",
+                "jse.co.za": "JSE SENS",
+                "nse.co.ke": "NSE Kenya",
+                "gse.com.gh": "Ghana Stock Exchange",
+                "vanguardngr.com": "Vanguard Nigeria",
+                "thisdaylive.com": "ThisDay Nigeria",
+                "premiumtimesng.com": "Premium Times Nigeria",
+                "theeastafrican.co.ke": "The East African",
+                "standardmedia.co.ke": "Standard Media Kenya",
+                "disrupt-africa.com": "Disrupt Africa",
+                "financialafrik.com": "Financial Afrik",
             }
             for key, name in mapping.items():
                 if key in host:

@@ -495,80 +495,195 @@ class TestFormatter:
 
 # ─── Data Collection Agent ────────────────────────────────────────────────────
 
+def _patch_collection(edgar_return=None, africa_return=None, news_return=None,
+                      edgar_exc=None, africa_exc=None, news_exc=None):
+    """Helper: patch all three collection sources cleanly."""
+    edgar_mock  = AsyncMock(side_effect=edgar_exc)  if edgar_exc  else AsyncMock(return_value=edgar_return  or ({"name": "Test"}, []))
+    africa_mock = AsyncMock(side_effect=africa_exc) if africa_exc else AsyncMock(return_value=africa_return or ([], []))
+    news_mock   = AsyncMock(side_effect=news_exc)   if news_exc   else AsyncMock(return_value=news_return   or [])
+    return edgar_mock, africa_mock, news_mock
+
+
 class TestDataCollectionAgent:
     @pytest.mark.asyncio
     async def test_populates_state_on_success(self):
         from src.agents.collection_agent import DataCollectionAgent
 
-        mock_profile = {"name": "Apple Inc", "cik": "0000320193", "ticker": "AAPL"}
-        mock_filings = [
+        mock_profile  = {"name": "Apple Inc", "cik": "0000320193", "ticker": "AAPL"}
+        mock_us_filings = [
             SECFiling(accession_number="acc1", form_type="8-K", filing_date="2024-01-15",
                       company_name="Apple Inc", cik="0000320193", document_url="https://sec.gov/x")
         ]
-        mock_news = [
-            NewsItem(title="Apple acquires startup", source="Reuters", published_date="2024-01-10",
-                     url="https://reuters.com/x", snippet="Deal announced", relevance_score=0.9)
+        mock_africa_filings = [
+            SECFiling(accession_number="NGX-001", form_type="NGX Announcement",
+                      filing_date="2024-01-10", company_name="Apple Inc",
+                      cik="NGX", document_url="https://ngxgroup.com/x")
+        ]
+        mock_africa_news = [
+            NewsItem(title="Apple expands to Nigeria", source="BusinessDay Nigeria",
+                     published_date="2024-01-08", url="https://businessday.ng/x",
+                     snippet="Expansion announced", relevance_score=0.75)
+        ]
+        mock_global_news = [
+            NewsItem(title="Apple acquires startup", source="Reuters",
+                     published_date="2024-01-10", url="https://reuters.com/x",
+                     snippet="Deal announced", relevance_score=0.9)
         ]
 
-        with patch("src.agents.collection_agent.search_company_filings",
-                   new=AsyncMock(return_value=(mock_profile, mock_filings))):
-            with patch("src.agents.collection_agent.fetch_market_news",
-                       new=AsyncMock(return_value=mock_news)):
-                state = AgentState(request=AnalysisRequest(company_name="Apple Inc", ticker="AAPL"))
-                agent = DataCollectionAgent()
-                result = await agent.run(state)
+        edgar_mock, africa_mock, news_mock = _patch_collection(
+            edgar_return=(mock_profile, mock_us_filings),
+            africa_return=(mock_africa_filings, mock_africa_news),
+            news_return=mock_global_news,
+        )
+        with patch("src.agents.collection_agent.search_company_filings", new=edgar_mock), \
+             patch("src.agents.collection_agent.fetch_african_intelligence", new=africa_mock), \
+             patch("src.agents.collection_agent.fetch_market_news", new=news_mock):
+            state = AgentState(request=AnalysisRequest(company_name="Apple Inc", ticker="AAPL"))
+            result = await DataCollectionAgent().run(state)
 
         assert result.company_profile is not None
         assert result.company_profile.name == "Apple Inc"
         assert result.company_profile.cik == "0000320193"
-        assert len(result.filings) == 1
-        assert len(result.news_items) == 1
+        # US + African filings merged
+        assert len(result.filings) == 2
+        form_types = {f.form_type for f in result.filings}
+        assert "8-K" in form_types
+        assert "NGX Announcement" in form_types
+        # Global + African news merged and sorted
+        assert len(result.news_items) == 2
+        assert result.news_items[0].relevance_score >= result.news_items[1].relevance_score
 
     @pytest.mark.asyncio
     async def test_handles_edgar_failure_gracefully(self):
         from src.agents.collection_agent import DataCollectionAgent
 
-        with patch("src.agents.collection_agent.search_company_filings",
-                   new=AsyncMock(side_effect=Exception("EDGAR down"))):
-            with patch("src.agents.collection_agent.fetch_market_news",
-                       new=AsyncMock(return_value=[])):
-                state = AgentState(request=AnalysisRequest(company_name="Test Corp"))
-                agent = DataCollectionAgent()
-                result = await agent.run(state)
+        edgar_mock, africa_mock, news_mock = _patch_collection(edgar_exc=Exception("EDGAR down"))
+        with patch("src.agents.collection_agent.search_company_filings", new=edgar_mock), \
+             patch("src.agents.collection_agent.fetch_african_intelligence", new=africa_mock), \
+             patch("src.agents.collection_agent.fetch_market_news", new=news_mock):
+            state = AgentState(request=AnalysisRequest(company_name="Test Corp"))
+            result = await DataCollectionAgent().run(state)
 
-        assert len(result.errors) >= 1
-        assert "EDGAR" in result.errors[0]
-        assert result.filings == []
+        assert any("EDGAR" in e for e in result.errors)
         assert result.company_profile is not None  # Falls back to request data
+
+    @pytest.mark.asyncio
+    async def test_handles_africa_failure_gracefully(self):
+        from src.agents.collection_agent import DataCollectionAgent
+
+        edgar_mock, africa_mock, news_mock = _patch_collection(
+            edgar_return=({"name": "GTBank"}, []),
+            africa_exc=Exception("Africa tool down"),
+        )
+        with patch("src.agents.collection_agent.search_company_filings", new=edgar_mock), \
+             patch("src.agents.collection_agent.fetch_african_intelligence", new=africa_mock), \
+             patch("src.agents.collection_agent.fetch_market_news", new=news_mock):
+            state = AgentState(request=AnalysisRequest(company_name="GTBank"))
+            result = await DataCollectionAgent().run(state)
+
+        assert any("Africa" in e for e in result.errors)
+        assert result.filings == []      # no US or African filings
+        assert result.news_items == []   # no news either (news_mock returns [])
 
     @pytest.mark.asyncio
     async def test_handles_news_failure_gracefully(self):
         from src.agents.collection_agent import DataCollectionAgent
 
-        with patch("src.agents.collection_agent.search_company_filings",
-                   new=AsyncMock(return_value=({"name": "Test"}, []))):
-            with patch("src.agents.collection_agent.fetch_market_news",
-                       new=AsyncMock(side_effect=Exception("RSS down"))):
-                state = AgentState(request=AnalysisRequest(company_name="Test Corp"))
-                agent = DataCollectionAgent()
-                result = await agent.run(state)
+        edgar_mock, africa_mock, news_mock = _patch_collection(
+            edgar_return=({"name": "Test"}, []),
+            news_exc=Exception("RSS down"),
+        )
+        with patch("src.agents.collection_agent.search_company_filings", new=edgar_mock), \
+             patch("src.agents.collection_agent.fetch_african_intelligence", new=africa_mock), \
+             patch("src.agents.collection_agent.fetch_market_news", new=news_mock):
+            state = AgentState(request=AnalysisRequest(company_name="Test Corp"))
+            result = await DataCollectionAgent().run(state)
 
-        assert result.news_items == []
         assert any("News" in e for e in result.errors)
+
+    @pytest.mark.asyncio
+    async def test_deduplicates_filings_across_sources(self):
+        """Same accession number from both US and Africa shouldn't appear twice."""
+        from src.agents.collection_agent import DataCollectionAgent
+
+        duplicate_filing = SECFiling(
+            accession_number="DUPE-001", form_type="8-K", filing_date="2024-01-15",
+            company_name="Test", cik="0000001", document_url="https://sec.gov/x"
+        )
+        edgar_mock, africa_mock, news_mock = _patch_collection(
+            edgar_return=({"name": "Test"}, [duplicate_filing]),
+            africa_return=([duplicate_filing], []),
+        )
+        with patch("src.agents.collection_agent.search_company_filings", new=edgar_mock), \
+             patch("src.agents.collection_agent.fetch_african_intelligence", new=africa_mock), \
+             patch("src.agents.collection_agent.fetch_market_news", new=news_mock):
+            state = AgentState(request=AnalysisRequest(company_name="Test"))
+            result = await DataCollectionAgent().run(state)
+
+        assert len(result.filings) == 1  # deduplicated
+
+    @pytest.mark.asyncio
+    async def test_deduplicates_news_across_sources(self):
+        """Same headline from global + African feeds should appear only once."""
+        from src.agents.collection_agent import DataCollectionAgent
+
+        shared_news = NewsItem(
+            title="Big merger announced", source="Reuters",
+            published_date="2024-01-10", url="https://reuters.com/x",
+            snippet="Deal confirmed", relevance_score=0.9
+        )
+        edgar_mock, africa_mock, news_mock = _patch_collection(
+            edgar_return=({"name": "Test"}, []),
+            africa_return=([], [shared_news]),
+            news_return=[shared_news],
+        )
+        with patch("src.agents.collection_agent.search_company_filings", new=edgar_mock), \
+             patch("src.agents.collection_agent.fetch_african_intelligence", new=africa_mock), \
+             patch("src.agents.collection_agent.fetch_market_news", new=news_mock):
+            state = AgentState(request=AnalysisRequest(company_name="Test"))
+            result = await DataCollectionAgent().run(state)
+
+        assert len(result.news_items) == 1  # deduplicated
+
+    @pytest.mark.asyncio
+    async def test_news_sorted_by_relevance_after_merge(self):
+        from src.agents.collection_agent import DataCollectionAgent
+
+        low  = NewsItem(title="Low item",  source="S", published_date="2024-01-01",
+                        url="http://a.com", snippet="x", relevance_score=0.2)
+        high = NewsItem(title="High item", source="S", published_date="2024-01-01",
+                        url="http://b.com", snippet="x", relevance_score=0.9)
+        edgar_mock, africa_mock, news_mock = _patch_collection(
+            edgar_return=({"name": "Test"}, []),
+            africa_return=([], [low]),
+            news_return=[high],
+        )
+        with patch("src.agents.collection_agent.search_company_filings", new=edgar_mock), \
+             patch("src.agents.collection_agent.fetch_african_intelligence", new=africa_mock), \
+             patch("src.agents.collection_agent.fetch_market_news", new=news_mock):
+            state = AgentState(request=AnalysisRequest(company_name="Test"))
+            result = await DataCollectionAgent().run(state)
+
+        assert result.news_items[0].relevance_score == 0.9
+        assert result.news_items[1].relevance_score == 0.2
 
     @pytest.mark.asyncio
     async def test_logs_trace_entry(self):
         from src.agents.collection_agent import DataCollectionAgent
 
-        with patch("src.agents.collection_agent.search_company_filings",
-                   new=AsyncMock(return_value=({"name": "Test"}, []))):
-            with patch("src.agents.collection_agent.fetch_market_news",
-                       new=AsyncMock(return_value=[])):
-                state = AgentState(request=AnalysisRequest(company_name="Test"))
-                agent = DataCollectionAgent()
-                result = await agent.run(state)
+        edgar_mock, africa_mock, news_mock = _patch_collection()
+        with patch("src.agents.collection_agent.search_company_filings", new=edgar_mock), \
+             patch("src.agents.collection_agent.fetch_african_intelligence", new=africa_mock), \
+             patch("src.agents.collection_agent.fetch_market_news", new=news_mock):
+            state = AgentState(request=AnalysisRequest(company_name="Test"))
+            result = await DataCollectionAgent().run(state)
 
-        assert any(t["step"] == "data_collection" for t in result.reasoning_trace)
+        dc_logs = [t for t in result.reasoning_trace if t["step"] == "data_collection"]
+        assert len(dc_logs) >= 1
+        # The final data_collection log contains the collection summary with counts
+        summary_log = dc_logs[-1]
+        assert "US:" in summary_log["detail"]
+        assert "Africa:" in summary_log["detail"]
 
 
 # ─── Signal Detection Agent ───────────────────────────────────────────────────
@@ -783,21 +898,23 @@ class TestGraphIntegration:
             return mr
 
         with patch("src.agents.collection_agent.search_company_filings",
-                   new=AsyncMock(return_value=(mock_profile, mock_filings))):
-            with patch("src.agents.collection_agent.fetch_market_news",
-                       new=AsyncMock(return_value=mock_news)):
-                with patch("anthropic.Anthropic") as MockAnthropic:
-                    instance = MockAnthropic.return_value
-                    instance.messages.create.side_effect = [
-                        make_mock_response(signal_json),
-                        make_mock_response(brief_json),
-                    ]
-                    from src.agents import signal_agent
-                    signal_agent.SignalDetectionAgent.__init__ = lambda self: setattr(self, "client", instance)
-                    signal_agent.BriefSynthesisAgent.__init__ = lambda self: setattr(self, "client", instance)
+                   new=AsyncMock(return_value=(mock_profile, mock_filings))), \
+             patch("src.agents.collection_agent.fetch_african_intelligence",
+                   new=AsyncMock(return_value=([], []))), \
+             patch("src.agents.collection_agent.fetch_market_news",
+                   new=AsyncMock(return_value=mock_news)):
+            with patch("anthropic.Anthropic") as MockAnthropic:
+                instance = MockAnthropic.return_value
+                instance.messages.create.side_effect = [
+                    make_mock_response(signal_json),
+                    make_mock_response(brief_json),
+                ]
+                from src.agents import signal_agent
+                signal_agent.SignalDetectionAgent.__init__ = lambda self: setattr(self, "client", instance)
+                signal_agent.BriefSynthesisAgent.__init__ = lambda self: setattr(self, "client", instance)
 
-                    req = AnalysisRequest(company_name="Acme Corp", ticker="ACME")
-                    brief = await run_analysis(req)
+                req = AnalysisRequest(company_name="Acme Corp", ticker="ACME")
+                brief = await run_analysis(req)
 
         assert brief is not None
         assert brief.company_name == "Acme Corp"
@@ -808,19 +925,308 @@ class TestGraphIntegration:
         from src.agents.graph import run_analysis
 
         with patch("src.agents.collection_agent.search_company_filings",
-                   new=AsyncMock(return_value=({"name": "Test"}, []))):
-            with patch("src.agents.collection_agent.fetch_market_news",
-                       new=AsyncMock(return_value=[])):
-                with patch("anthropic.Anthropic") as MockAnthropic:
-                    instance = MockAnthropic.return_value
-                    instance.messages.create.side_effect = Exception("Claude down")
-                    from src.agents import signal_agent
-                    signal_agent.SignalDetectionAgent.__init__ = lambda self: setattr(self, "client", instance)
-                    signal_agent.BriefSynthesisAgent.__init__ = lambda self: setattr(self, "client", instance)
+                   new=AsyncMock(return_value=({"name": "Test"}, []))), \
+             patch("src.agents.collection_agent.fetch_african_intelligence",
+                   new=AsyncMock(return_value=([], []))), \
+             patch("src.agents.collection_agent.fetch_market_news",
+                   new=AsyncMock(return_value=[])):
+            with patch("anthropic.Anthropic") as MockAnthropic:
+                instance = MockAnthropic.return_value
+                instance.messages.create.side_effect = Exception("Claude down")
+                from src.agents import signal_agent
+                signal_agent.SignalDetectionAgent.__init__ = lambda self: setattr(self, "client", instance)
+                signal_agent.BriefSynthesisAgent.__init__ = lambda self: setattr(self, "client", instance)
 
-                    req = AnalysisRequest(company_name="Fail Corp")
-                    with pytest.raises(RuntimeError, match="Analysis failed"):
-                        await run_analysis(req)
+                req = AnalysisRequest(company_name="Fail Corp")
+                with pytest.raises(RuntimeError, match="Analysis failed"):
+                    await run_analysis(req)
+
+
+# ─── Africa Tool ──────────────────────────────────────────────────────────────
+
+class TestAfricaTool:
+    """Tests for African markets data tool."""
+
+    def test_is_africa_focused_positive(self):
+        from src.tools.africa_tool import _is_africa_focused
+        assert _is_africa_focused("GTBank acquires fintech in Nigeria", "") is True
+        assert _is_africa_focused("JSE-listed company announces merger", "") is True
+        assert _is_africa_focused("Nairobi firm raises Series B", "") is True
+        assert _is_africa_focused("", "deal confirmed in Johannesburg") is True
+        assert _is_africa_focused("Expansion across Africa", "") is True
+
+    def test_is_africa_focused_negative(self):
+        from src.tools.africa_tool import _is_africa_focused
+        assert _is_africa_focused("Apple acquires US startup", "deal in California") is False
+        assert _is_africa_focused("Fed raises rates", "Wall Street reacts") is False
+
+    def test_score_african_relevance_with_company_and_keyword(self):
+        from src.tools.africa_tool import _score_african_relevance
+        score = _score_african_relevance(
+            "GTBank merger announced", "acquisition confirmed by board", "GTBank"
+        )
+        assert score > 0.3
+
+    def test_score_african_relevance_no_match(self):
+        from src.tools.africa_tool import _score_african_relevance
+        score = _score_african_relevance("Weather today", "sunny skies", "Acme Corp")
+        assert score < 0.2
+
+    def test_score_african_relevance_african_distress_keywords(self):
+        from src.tools.africa_tool import _score_african_relevance
+        score = _score_african_relevance(
+            "Firm placed under business rescue", "provisional liquidation filed", "Test Corp"
+        )
+        assert score > 0.1  # distressed keywords detected
+
+    def test_extract_african_source_known(self):
+        from src.tools.africa_tool import _extract_african_source
+        assert _extract_african_source("https://businessday.ng/article/test") == "BusinessDay Nigeria"
+        assert _extract_african_source("https://techcabal.com/post/test") == "TechCabal"
+        assert _extract_african_source("https://moneyweb.co.za/news/test") == "Moneyweb"
+        assert _extract_african_source("https://ngxgroup.com/data/test") == "NGX Group"
+        assert _extract_african_source("https://stears.co/article/test") == "Stears"
+
+    def test_extract_african_source_unknown(self):
+        from src.tools.africa_tool import _extract_african_source
+        result = _extract_african_source("https://somerandomblog.com/post")
+        assert isinstance(result, str)
+        assert len(result) > 0
+
+    def test_extract_african_source_invalid(self):
+        from src.tools.africa_tool import _extract_african_source
+        assert _extract_african_source("not-a-url") == "Unknown"
+
+    def test_parse_rss_date_standard(self):
+        from src.tools.africa_tool import _parse_rss_date
+        result = _parse_rss_date("Mon, 12 May 2025 14:30:00 GMT")
+        assert result == "2025-05-12"
+
+    def test_parse_rss_date_iso_format(self):
+        from src.tools.africa_tool import _parse_rss_date
+        result = _parse_rss_date("2025-03-15T10:00:00Z")
+        assert result == "2025-03-15"
+
+    def test_parse_rss_date_fallback(self):
+        from src.tools.africa_tool import _parse_rss_date
+        result = _parse_rss_date("garbage date string")
+        assert result == datetime.utcnow().strftime("%Y-%m-%d")
+
+    @pytest.mark.asyncio
+    async def test_context_manager(self):
+        from src.tools.africa_tool import AfricaTool
+        async with AfricaTool() as tool:
+            assert tool._client is not None
+        assert tool._client.is_closed
+
+    @pytest.mark.asyncio
+    async def test_no_client_raises(self):
+        from src.tools.africa_tool import AfricaTool
+        tool = AfricaTool()
+        with pytest.raises(RuntimeError, match="async context manager"):
+            _ = tool.client
+
+    @pytest.mark.asyncio
+    async def test_fetch_rss_network_error_returns_empty(self):
+        from src.tools.africa_tool import AfricaTool
+        async with AfricaTool() as tool:
+            with patch.object(tool.client, "get", side_effect=Exception("network error")):
+                result = await tool._fetch_rss("https://businessday.ng/feed/")
+                assert result == []
+
+    @pytest.mark.asyncio
+    async def test_fetch_rss_invalid_xml_returns_empty(self):
+        from src.tools.africa_tool import AfricaTool
+        import httpx
+        async with AfricaTool() as tool:
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status = MagicMock()
+            mock_resp.content = b"not xml at all <<<"
+            mock_resp.encoding = "utf-8"
+            with patch.object(tool.client, "get", return_value=mock_resp):
+                result = await tool._fetch_rss("https://businessday.ng/feed/")
+                assert result == []
+
+    @pytest.mark.asyncio
+    async def test_fetch_rss_parses_valid_feed(self):
+        from src.tools.africa_tool import AfricaTool
+        valid_rss = b"""<?xml version="1.0"?>
+        <rss version="2.0"><channel>
+          <item>
+            <title>GTBank acquires fintech</title>
+            <link>https://businessday.ng/article/1</link>
+            <pubDate>Mon, 12 May 2025 10:00:00 GMT</pubDate>
+            <description>Acquisition confirmed by board</description>
+          </item>
+        </channel></rss>"""
+        async with AfricaTool() as tool:
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status = MagicMock()
+            mock_resp.content = valid_rss
+            mock_resp.encoding = "utf-8"
+            with patch.object(tool.client, "get", return_value=mock_resp):
+                items = await tool._fetch_rss("https://businessday.ng/feed/")
+        assert len(items) == 1
+        assert items[0]["title"] == "GTBank acquires fintech"
+        assert items[0]["link"] == "https://businessday.ng/article/1"
+
+    @pytest.mark.asyncio
+    async def test_fetch_african_news_filters_by_lookback(self):
+        """News items older than lookback_days should be excluded."""
+        from src.tools.africa_tool import AfricaTool
+        old_date = "Mon, 01 Jan 2020 10:00:00 GMT"
+        old_rss = f"""<?xml version="1.0"?>
+        <rss version="2.0"><channel>
+          <item>
+            <title>Old GTBank news</title>
+            <link>https://businessday.ng/old</link>
+            <pubDate>{old_date}</pubDate>
+            <description>Very old story</description>
+          </item>
+        </channel></rss>""".encode()
+
+        async with AfricaTool() as tool:
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status = MagicMock()
+            mock_resp.content = old_rss
+            mock_resp.encoding = "utf-8"
+            with patch.object(tool.client, "get", return_value=mock_resp):
+                items = await tool.fetch_african_news("GTBank", lookback_days=90)
+        assert len(items) == 0  # all filtered out as too old
+
+    @pytest.mark.asyncio
+    async def test_fetch_african_news_deduplicates_titles(self):
+        """Same headline appearing in multiple feeds should only appear once."""
+        from src.tools.africa_tool import AfricaTool
+        today = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+        dup_rss = f"""<?xml version="1.0"?>
+        <rss version="2.0"><channel>
+          <item>
+            <title>GTBank merger confirmed</title>
+            <link>https://businessday.ng/1</link>
+            <pubDate>{today}</pubDate>
+            <description>GTBank acquisition deal confirmed merger</description>
+          </item>
+        </channel></rss>""".encode()
+
+        async with AfricaTool() as tool:
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status = MagicMock()
+            mock_resp.content = dup_rss
+            mock_resp.encoding = "utf-8"
+            # All requests return the same item — should deduplicate
+            with patch.object(tool.client, "get", return_value=mock_resp):
+                items = await tool.fetch_african_news("GTBank", lookback_days=90)
+        # All feeds return the same title — should appear only once
+        titles = [i.title for i in items]
+        assert titles.count("GTBank merger confirmed") == 1
+
+    @pytest.mark.asyncio
+    async def test_fetch_african_intelligence_wrapper(self):
+        """Convenience wrapper should return (filings, news) tuple."""
+        from src.tools.africa_tool import fetch_african_intelligence, AfricaTool
+
+        mock_filing = SECFiling(
+            accession_number="NGX-001", form_type="NGX Announcement",
+            filing_date="2024-01-10", company_name="GTBank",
+            cik="NGX", document_url="https://ngxgroup.com/x"
+        )
+        mock_news_item = NewsItem(
+            title="GTBank deal", source="BusinessDay Nigeria",
+            published_date="2024-01-10", url="https://businessday.ng/x",
+            snippet="Merger talks", relevance_score=0.8
+        )
+
+        with patch.object(AfricaTool, "fetch_ngx_announcements",
+                          new=AsyncMock(return_value=[mock_filing])), \
+             patch.object(AfricaTool, "fetch_jse_sens",
+                          new=AsyncMock(return_value=[])), \
+             patch.object(AfricaTool, "fetch_nse_kenya_disclosures",
+                          new=AsyncMock(return_value=[])), \
+             patch.object(AfricaTool, "fetch_african_news",
+                          new=AsyncMock(return_value=[mock_news_item])):
+            filings, news = await fetch_african_intelligence("GTBank", None, 90)
+
+        assert len(filings) == 1
+        assert filings[0].form_type == "NGX Announcement"
+        assert len(news) == 1
+        assert news[0].source == "BusinessDay Nigeria"
+
+    @pytest.mark.asyncio
+    async def test_fetch_african_intelligence_deduplicates_filings(self):
+        """Same accession from multiple exchanges shouldn't be duplicated."""
+        from src.tools.africa_tool import fetch_african_intelligence, AfricaTool
+
+        dup = SECFiling(
+            accession_number="DUPE-001", form_type="NGX Announcement",
+            filing_date="2024-01-10", company_name="Test",
+            cik="NGX", document_url="https://ngxgroup.com/x"
+        )
+        with patch.object(AfricaTool, "fetch_ngx_announcements", new=AsyncMock(return_value=[dup])), \
+             patch.object(AfricaTool, "fetch_jse_sens",            new=AsyncMock(return_value=[dup])), \
+             patch.object(AfricaTool, "fetch_nse_kenya_disclosures", new=AsyncMock(return_value=[])), \
+             patch.object(AfricaTool, "fetch_african_news",         new=AsyncMock(return_value=[])):
+            filings, _ = await fetch_african_intelligence("Test", None, 90)
+
+        assert len(filings) == 1  # deduplicated
+
+    @pytest.mark.asyncio
+    async def test_jse_sens_falls_back_to_google_news(self):
+        """When SENS RSS returns nothing, it should fall back to Google News SA."""
+        from src.tools.africa_tool import AfricaTool
+        today = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+        fallback_rss = f"""<?xml version="1.0"?>
+        <rss version="2.0"><channel>
+          <item>
+            <title>Shoprite JSE SENS announcement merger</title>
+            <link>https://businesslive.co.za/1</link>
+            <pubDate>{today}</pubDate>
+            <description>Shoprite files JSE SENS notice on merger agreement</description>
+          </item>
+        </channel></rss>""".encode()
+
+        async with AfricaTool() as tool:
+            empty_resp = MagicMock()
+            empty_resp.raise_for_status = MagicMock()
+            empty_resp.content = b"""<?xml version="1.0"?><rss version="2.0"><channel></channel></rss>"""
+            empty_resp.encoding = "utf-8"
+
+            fallback_resp = MagicMock()
+            fallback_resp.raise_for_status = MagicMock()
+            fallback_resp.content = fallback_rss
+            fallback_resp.encoding = "utf-8"
+
+            call_count = {"n": 0}
+            async def mock_get(url, **kwargs):
+                call_count["n"] += 1
+                # First call (SENS RSS) returns empty; subsequent (Google News) returns data
+                return empty_resp if call_count["n"] == 1 else fallback_resp
+
+            with patch.object(tool.client, "get", side_effect=mock_get):
+                filings = await tool.fetch_jse_sens("Shoprite")
+
+        assert len(filings) > 0
+        assert any("Shoprite" in f.description for f in filings)
+
+    def test_african_signal_keywords_coverage(self):
+        """All six signal categories should have at least 3 keywords."""
+        from src.tools.africa_tool import AFRICAN_SIGNAL_KEYWORDS
+        for category, keywords in AFRICAN_SIGNAL_KEYWORDS.items():
+            assert len(keywords) >= 3, f"Category {category} has too few keywords"
+
+    def test_african_source_map_completeness(self):
+        """Source map should cover major African financial media."""
+        from src.tools.africa_tool import AFRICAN_SOURCE_MAP
+        required = ["businessday.ng", "techcabal.com", "moneyweb.co.za",
+                    "ngxgroup.com", "stears.co", "theafricareport.com"]
+        for domain in required:
+            assert domain in AFRICAN_SOURCE_MAP, f"{domain} missing from AFRICAN_SOURCE_MAP"
+
+    def test_african_news_feeds_dict_has_urls(self):
+        """All African news feed URLs should be valid https URLs."""
+        from src.tools.africa_tool import AFRICAN_NEWS_FEEDS
+        for name, url in AFRICAN_NEWS_FEEDS.items():
+            assert url.startswith("https://"), f"{name} feed URL doesn't use HTTPS"
 
 
 # ─── Edge Cases ───────────────────────────────────────────────────────────────
@@ -885,3 +1291,40 @@ class TestEdgeCases:
         with pytest.raises(Exception):
             NewsItem(title="T", source="S", published_date="2024-01-01",
                      url="http://x.com", snippet="S", relevance_score=-0.1)
+
+    def test_african_filing_type_stored_correctly(self):
+        """African exchange filings should be stored as SECFiling with exchange CIK markers."""
+        for exchange_cik, form_type in [("NGX", "NGX Announcement"), ("JSE", "JSE SENS"), ("NSE-KE", "NSE Kenya Disclosure")]:
+            f = SECFiling(
+                accession_number=f"{exchange_cik}-001",
+                form_type=form_type,
+                filing_date="2024-01-01",
+                company_name="Test Corp",
+                cik=exchange_cik,
+                document_url="https://example.com/x"
+            )
+            assert f.cik == exchange_cik
+            assert f.form_type == form_type
+
+    def test_mixed_us_african_filings_in_brief(self):
+        """AnalystBrief should handle a mix of US SEC + African exchange filings."""
+        us_filing = SECFiling(accession_number="SEC-001", form_type="8-K",
+                              filing_date="2024-01-15", company_name="Test",
+                              cik="0000001", document_url="https://sec.gov/x")
+        ngx_filing = SECFiling(accession_number="NGX-001", form_type="NGX Announcement",
+                               filing_date="2024-01-10", company_name="Test",
+                               cik="NGX", document_url="https://ngxgroup.com/x")
+        brief = AnalystBrief(
+            company_name="Test Corp",
+            executive_summary="Mixed sources.",
+            overall_severity=Severity.MEDIUM,
+            recommendation="Monitor.",
+            confidence_score=0.7,
+            detected_signals=[],
+            filings_reviewed=[us_filing, ngx_filing],
+            total_sources=2
+        )
+        assert len(brief.filings_reviewed) == 2
+        form_types = {f.form_type for f in brief.filings_reviewed}
+        assert "8-K" in form_types
+        assert "NGX Announcement" in form_types
