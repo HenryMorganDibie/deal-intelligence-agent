@@ -103,20 +103,140 @@ class CompanyProfile(BaseModel):
 
 
 # ─────────────────────────────────────────────
+# Deterministic Engine Layer
+# ─────────────────────────────────────────────
+
+class SignalCandidate(BaseModel):
+    """
+    Output of the deterministic signal engine.
+    Produced WITHOUT any LLM — pure rule-based pattern matching + NER.
+    The LLM only sees confirmed candidates and explains them.
+    """
+    signal_type: SignalType
+    matched_patterns: list[str] = Field(..., description="Exact patterns/keywords that fired")
+    source_text: str = Field(..., description="Raw text excerpt that triggered the signal")
+    source_url: str = ""
+    source_type: str = Field(..., description="filing | news | pe_source")
+    source_name: str = ""
+    filing_reference: str = ""
+    entity_mentions: list[str] = Field(default_factory=list, description="Named entities found")
+    corroboration_count: int = Field(default=1, description="Number of independent sources confirming")
+    raw_score: float = Field(..., ge=0.0, le=1.0, description="Pre-calibration score")
+    detected_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ─────────────────────────────────────────────
+# Alpha Score Layer
+# ─────────────────────────────────────────────
+
+class LiquidityTier(str, Enum):
+    LARGE_CAP  = "large_cap"    # JSE Top 40 / S&P 500
+    MID_CAP    = "mid_cap"      # NGX 30 / S&P MidCap
+    SMALL_CAP  = "small_cap"    # Smaller listed
+    MICRO_CAP  = "micro_cap"    # Thin volume
+    PRIVATE    = "private"      # Unlisted
+
+
+class AlphaScore(BaseModel):
+    """
+    Composite investable ranking for a signal.
+    Combines calibrated severity, source credibility, corroboration,
+    recency, and market liquidity into a single 0–100 score.
+    """
+    score: float = Field(..., ge=0.0, le=100.0, description="Overall alpha score 0-100")
+
+    # Component breakdown
+    severity_component: float = Field(..., ge=0.0, le=1.0)
+    source_credibility: float = Field(..., ge=0.0, le=1.0)
+    corroboration_weight: float = Field(..., ge=0.0, le=1.0)
+    recency_weight: float = Field(..., ge=0.0, le=1.0)
+    liquidity_tier: LiquidityTier = LiquidityTier.PRIVATE
+
+    # Expected move (backtested estimate)
+    expected_direction: Optional[str] = None          # "positive" | "negative" | "neutral"
+    expected_magnitude_pct_low: Optional[float] = None
+    expected_magnitude_pct_high: Optional[float] = None
+    comparable_events_n: int = 0
+    move_confidence: str = "low"                       # "low" | "medium" | "high"
+
+    # Compliance flag
+    requires_human_review: bool = False
+    review_reason: Optional[str] = None
+
+
+# ─────────────────────────────────────────────
 # Signal Detection Layer
 # ─────────────────────────────────────────────
 
 class DetectedSignal(BaseModel):
-    """A single intelligence signal surfaced by the detection agent."""
+    """
+    A confirmed intelligence signal.
+    Always originates from the deterministic engine (SignalCandidate).
+    LLM provides explanation only — never originates the signal.
+    """
     signal_type: SignalType
     severity: Severity
     headline: str = Field(..., description="One-line signal description")
     evidence: list[str] = Field(..., description="Supporting evidence snippets")
     source_urls: list[str] = Field(default_factory=list)
     filing_references: list[str] = Field(default_factory=list)
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Agent confidence score")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Calibrated confidence score")
     detected_at: datetime = Field(default_factory=datetime.utcnow)
-    reasoning: str = Field(..., description="Chain-of-thought reasoning trace")
+    reasoning: str = Field(..., description="LLM explanation of the deterministic signal")
+
+    # Provenance — links back to the deterministic engine output
+    candidate_patterns: list[str] = Field(default_factory=list, description="Patterns that fired in deterministic engine")
+    corroboration_count: int = Field(default=1)
+    alpha_score: Optional[AlphaScore] = None
+
+
+# ─────────────────────────────────────────────
+# Feedback Loop Layer
+# ─────────────────────────────────────────────
+
+class FeedbackType(str, Enum):
+    FALSE_POSITIVE   = "false_positive"
+    CONFIRMED        = "confirmed"
+    MISSED_EVENT     = "missed_event"
+    SEVERITY_TOO_HIGH = "severity_too_high"
+    SEVERITY_TOO_LOW  = "severity_too_low"
+
+
+class FeedbackEntry(BaseModel):
+    """Analyst correction or system-generated feedback on a signal."""
+    feedback_id: str
+    company_name: str
+    signal_type: SignalType
+    feedback_type: FeedbackType
+    original_severity: Severity
+    corrected_severity: Optional[Severity] = None
+    analyst_note: str = ""
+    source_patterns: list[str] = Field(default_factory=list)
+    submitted_at: datetime = Field(default_factory=datetime.utcnow)
+    # Outcome tracking
+    event_materialised: Optional[bool] = None
+    days_to_event: Optional[int] = None
+
+
+# ─────────────────────────────────────────────
+# Audit Log Layer
+# ─────────────────────────────────────────────
+
+class AuditEntry(BaseModel):
+    """
+    Immutable audit record for every decision in the pipeline.
+    Stored with a hash chain for tamper-evidence.
+    """
+    entry_id: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    pipeline_step: str
+    company_name: str
+    action: str
+    detail: str
+    data_hash: str = Field(..., description="SHA256 of the input data at this step")
+    prev_hash: str = Field(default="GENESIS", description="Hash of previous entry — chain integrity")
+    model_version: str = ""
+    analyst_id: str = "system"
 
 
 # ─────────────────────────────────────────────
@@ -151,8 +271,15 @@ class AnalystBrief(BaseModel):
     recommendation: str = Field(..., description="Actionable recommendation for the analyst")
     confidence_score: float = Field(..., ge=0.0, le=1.0)
 
-    # Signals
+    # Signals — always from deterministic engine, explained by LLM
     detected_signals: list[DetectedSignal]
+    signal_candidates_count: int = Field(default=0, description="Total candidates from deterministic engine before LLM explanation")
+
+    # Alpha scoring
+    top_alpha_score: Optional[float] = None
+    liquidity_tier: Optional[LiquidityTier] = None
+    requires_human_review: bool = False
+    human_review_reasons: list[str] = Field(default_factory=list)
 
     # Deep analysis
     key_metrics: list[KeyMetric] = Field(default_factory=list)
@@ -165,8 +292,14 @@ class AnalystBrief(BaseModel):
     news_reviewed: list[NewsItem] = Field(default_factory=list)
     total_sources: int = 0
 
-    # Reasoning trace (for auditability)
+    # Compliance mode
+    compliance_mode: bool = False
+    compliance_flags: list[str] = Field(default_factory=list)
+    low_confidence_signals_suppressed: int = Field(default=0)
+
+    # Reasoning trace + audit
     reasoning_trace: list[dict[str, Any]] = Field(default_factory=list)
+    audit_entries: list[AuditEntry] = Field(default_factory=list)
     processing_time_seconds: Optional[float] = None
 
     def signal_count_by_severity(self) -> dict[str, int]:
@@ -192,14 +325,22 @@ class AgentState(BaseModel):
     company_profile: Optional[CompanyProfile] = None
     filings: list[SECFiling] = Field(default_factory=list)
     news_items: list[NewsItem] = Field(default_factory=list)
+
+    # Phase 2 — deterministic engine output (before LLM)
+    signal_candidates: list[SignalCandidate] = Field(default_factory=list)
+
+    # Phase 3 — LLM-explained + alpha-scored signals
     detected_signals: list[DetectedSignal] = Field(default_factory=list)
+
     brief: Optional[AnalystBrief] = None
 
     # Control flow
     errors: list[str] = Field(default_factory=list)
     reasoning_trace: list[dict[str, Any]] = Field(default_factory=list)
+    audit_entries: list[AuditEntry] = Field(default_factory=list)
     current_step: str = "init"
     retry_count: int = 0
+    compliance_mode: bool = False
 
     def log(self, step: str, detail: str, data: Any = None) -> None:
         self.reasoning_trace.append({

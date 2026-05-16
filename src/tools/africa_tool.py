@@ -46,16 +46,94 @@ GSE_ANNOUNCEMENTS  = "https://gse.com.gh/listed-companies/company-news/"
 
 # ─── African Financial News RSS Feeds ────────────────────────────────────────
 AFRICAN_NEWS_FEEDS = {
-    "BusinessDay Nigeria":    "https://businessday.ng/feed/",
-    "TechCabal":              "https://techcabal.com/feed/",
-    "The Africa Report":      "https://www.theafricareport.com/feed/",
-    "African Business":       "https://african.business/feed",
-    "Moneyweb":               "https://www.moneyweb.co.za/feed/",
-    "BusinessLive SA":        "https://www.businesslive.co.za/rss/",
-    "Stears":                 "https://stears.co/feed/",
-    "Nation Africa":          "https://nation.africa/rss/",
-    "Daily Monitor Uganda":   "https://www.monitor.co.ug/Uganda/Business/rss/",
+    # ── Nigeria ──────────────────────────────────────────────────────────
+    "BusinessDay Nigeria":      "https://businessday.ng/feed/",
+    "TechCabal":                "https://techcabal.com/feed/",
+    "Stears":                   "https://stears.co/feed/",
+    "Nairametrics":             "https://nairametrics.com/feed/",
+    "Vanguard Nigeria":         "https://www.vanguardngr.com/feed/",
+    "ThisDay Nigeria":          "https://www.thisdaylive.com/feed/",
+    "Premium Times Nigeria":    "https://www.premiumtimesng.com/feed",
+    "The Guardian Nigeria":     "https://guardian.ng/feed/",
+    "Punch Nigeria":            "https://punchng.com/feed/",
+    "Channels TV Business":     "https://www.channelstv.com/feed/",
+    # ── South Africa ─────────────────────────────────────────────────────
+    "Moneyweb":                 "https://www.moneyweb.co.za/feed/",
+    "BusinessLive SA":          "https://www.businesslive.co.za/rss/",
+    "Daily Maverick Business":  "https://www.dailymaverick.co.za/rss/",
+    "Fin24":                    "https://www.news24.com/fin24/rss",
+    "IOL Business Report":      "https://www.iol.co.za/business-report/rss",
+    "Mail & Guardian Business": "https://mg.co.za/feed/",
+    # ── East Africa ──────────────────────────────────────────────────────
+    "Nation Africa":            "https://nation.africa/rss/",
+    "Daily Monitor Uganda":     "https://www.monitor.co.ug/Uganda/Business/rss/",
+    "The East African":         "https://www.theeastafrican.co.ke/rss/",
+    "Standard Media Kenya":     "https://www.standardmedia.co.ke/rss/business.php",
+    "Business Daily Africa":    "https://www.businessdailyafrica.com/rss/",
+    "Rwanda New Times":         "https://www.newtimes.co.rw/rss.xml",
+    "The Citizen Tanzania":     "https://www.thecitizen.co.tz/tanzania/rss/",
+    # ── Pan-African / Tech ────────────────────────────────────────────────
+    "The Africa Report":        "https://www.theafricareport.com/feed/",
+    "African Business":         "https://african.business/feed",
+    "Financial Afrik":          "https://www.financialafrik.com/feed/",
+    "Disrupt Africa":           "https://disrupt-africa.com/feed/",
+    "Ventureburn":              "https://ventureburn.com/feed/",
+    "WeeTracker":               "https://weetracker.com/feed/",
+    "TechPoint Africa":         "https://techpoint.africa/feed/",
+    "Quartz Africa":            "https://qz.com/africa/rss",
+    # ── Ghana ─────────────────────────────────────────────────────────────
+    "Graphic Business Ghana":   "https://www.graphic.com.gh/business/feed",
+    "Citi Business Ghana":      "https://citinewsroom.com/category/business/feed/",
+    "GhanaWeb Business":        "https://www.ghanaweb.com/GhanaHomePage/business/rss.xml",
+    # ── Francophone Africa ────────────────────────────────────────────────
+    "Jeune Afrique Economie":   "https://www.jeuneafrique.com/sections/economie/feed/",
+    # ── Egypt / North Africa ──────────────────────────────────────────────
+    "Daily News Egypt":         "https://dailynewsegypt.com/feed/",
+    "Egypt Today Business":     "https://www.egypttoday.com/rss/Category/54",
+    # ── Ethiopia / Horn of Africa ─────────────────────────────────────────
+    "Addis Fortune":            "https://addisfortune.news/feed/",
+    "The Reporter Ethiopia":    "https://www.thereporterethiopia.com/rss.xml",
 }
+
+# ─── Private Capital & Institutional Sources (HTML scraping) ─────────────────
+# These sites don't provide RSS feeds. We scrape their public listing pages
+# for headlines, links, and dates. Each entry is:
+#   (source_name, url, article_link_pattern, title_tag_hint)
+PE_CAPITAL_SOURCES: list[tuple[str, str, str, str]] = [
+    # ── Original user-specified sources ──────────────────────────────────
+    ("Global Private Capital",        "https://www.globalprivatecapital.org/industry-news/",                    "globalprivatecapital.org",    "h2,h3,h4"),
+    ("PSG Capital",                   "https://psgcapital.com/news-insights/latest-transactions/",              "psgcapital.com",              "h2,h3,h4"),
+    ("IFC Press Room",                "https://www.ifc.org/en/pressroom",                                       "ifc.org",                     "h3,h4"),
+    ("Bayport Finance",               "https://www.bayportfinance.com/latest-investor-news/",                   "bayportfinance.com",           "h2,h3,h4"),
+    ("Zawya",                         "https://www.zawya.com/en/news/latest",                                   "zawya.com",                   "h3,h4"),
+    ("Africa PE News Deals",          "https://www.africaprivateequitynews.com/t/deals",                        "africaprivateequitynews.com",  "h2,h3"),
+    ("Africa PE News Exits",          "https://www.africaprivateequitynews.com/t/exits",                        "africaprivateequitynews.com",  "h2,h3"),
+    ("Africa PE News Debt Mezz",      "https://www.africaprivateequitynews.com/t/debt-and-mez",                 "africaprivateequitynews.com",  "h2,h3"),
+    ("Africa PE News VC",             "https://www.africaprivateequitynews.com/t/venture-capital",              "africaprivateequitynews.com",  "h2,h3"),
+    ("AVCA",                          "https://www.avca.africa/news-insights/industry-news/",                   "avca.africa",                 "h2,h3,h4"),
+    # ── Development Finance Institutions ──────────────────────────────────
+    ("African Development Bank",      "https://www.afdb.org/en/news-and-events/press-releases",                 "afdb.org",                    "h3,h4"),
+    ("Proparco",                      "https://www.proparco.fr/en/actualites",                                  "proparco.fr",                 "h3,h4"),
+    ("DBSA News",                     "https://www.dbsa.org/news",                                              "dbsa.org",                    "h3,h4"),
+    ("Afreximbank",                   "https://www.afreximbank.com/news/",                                      "afreximbank.com",             "h3,h4"),
+    ("CDC Group / BII",               "https://www.bii.co.uk/en/news-insight/news/",                            "bii.co.uk",                   "h3,h4"),
+    ("FMO Netherlands",               "https://www.fmo.nl/news",                                                "fmo.nl",                      "h3,h4"),
+    # ── VC / Startup Deal Flow ────────────────────────────────────────────
+    ("Partech Africa",                "https://partechpartners.com/news/",                                      "partechpartners.com",         "h3,h4"),
+    ("Novastar Ventures",             "https://novastarventures.com/news/",                                     "novastarventures.com",        "h3,h4"),
+    ("Kepple Africa",                 "https://kepple-africa.com/news/",                                        "kepple-africa.com",           "h3,h4"),
+    ("TLcom Capital",                 "https://www.tlcomcapital.com/blog",                                      "tlcomcapital.com",            "h3,h4"),
+    ("Catalyst Fund",                 "https://thecatalystfund.com/news/",                                      "thecatalystfund.com",         "h3,h4"),
+    # ── Credit / Debt Markets ─────────────────────────────────────────────
+    ("Rand Merchant Bank",            "https://www.rmb.co.za/page/news-and-insights",                           "rmb.co.za",                   "h3,h4"),
+    ("Standard Bank Research",        "https://www.standardbank.com/sbg/standard-bank-group/media/news-and-media-releases", "standardbank.com", "h3,h4"),
+    # ── Regulatory Bodies ─────────────────────────────────────────────────
+    ("SEC Nigeria",                   "https://sec.gov.ng/news/",                                               "sec.gov.ng",                  "h3,h4"),
+    ("FSCA South Africa",             "https://www.fsca.co.za/Regulatory%20Frameworks/Pages/Press-Releases-and-Notices.aspx", "fsca.co.za", "h3,h4"),
+    ("CMA Kenya",                     "https://www.cma.or.ke/media-centre/press-releases/",                     "cma.or.ke",                   "h3,h4"),
+    ("CBN Press Releases",            "https://www.cbn.gov.ng/Mediaroom/pressreleases.asp",                     "cbn.gov.ng",                  "h3,h4"),
+    ("SARB Press",                    "https://www.resbank.co.za/en/home/publications/publication-detail-pages/media-releases/media-releases-search", "resbank.co.za", "h3,h4"),
+]
 
 # Google News Africa-scoped queries
 GOOGLE_NEWS_RSS = "https://news.google.com/rss/search?q={query}&hl=en-NG&gl=NG&ceid=NG:en"
@@ -82,29 +160,79 @@ AFRICAN_SIGNAL_KEYWORDS = {
 }
 
 AFRICAN_SOURCE_MAP = {
-    "businessday.ng":        "BusinessDay Nigeria",
-    "techcabal.com":         "TechCabal",
-    "theafricareport.com":   "The Africa Report",
-    "african.business":      "African Business",
-    "moneyweb.co.za":        "Moneyweb",
-    "businesslive.co.za":    "BusinessLive SA",
-    "stears.co":             "Stears",
-    "nation.africa":         "Nation Africa",
-    "monitor.co.ug":         "Daily Monitor Uganda",
-    "ngxgroup.com":          "NGX Group",
-    "jse.co.za":             "JSE SENS",
-    "nse.co.ke":             "NSE Kenya",
-    "gse.com.gh":            "Ghana Stock Exchange",
-    "vanguardngr.com":       "Vanguard Nigeria",
-    "thisdaylive.com":       "ThisDay Nigeria",
-    "guardian.ng":           "The Guardian Nigeria",
-    "premiumtimesng.com":    "Premium Times Nigeria",
-    "nairametrics.com":      "Nairametrics",
-    "disrupt-africa.com":    "Disrupt Africa",
-    "ventureburn.com":       "Ventureburn",
-    "financialafrik.com":    "Financial Afrik",
-    "standardmedia.co.ke":   "Standard Media Kenya",
-    "theeastafrican.co.ke":  "The East African",
+    # Nigeria
+    "businessday.ng":              "BusinessDay Nigeria",
+    "techcabal.com":               "TechCabal",
+    "stears.co":                   "Stears",
+    "nairametrics.com":            "Nairametrics",
+    "vanguardngr.com":             "Vanguard Nigeria",
+    "thisdaylive.com":             "ThisDay Nigeria",
+    "premiumtimesng.com":          "Premium Times Nigeria",
+    "guardian.ng":                 "The Guardian Nigeria",
+    "punchng.com":                 "Punch Nigeria",
+    "channelstv.com":              "Channels TV Business",
+    # South Africa
+    "moneyweb.co.za":              "Moneyweb",
+    "businesslive.co.za":          "BusinessLive SA",
+    "dailymaverick.co.za":         "Daily Maverick Business",
+    "news24.com":                  "Fin24",
+    "iol.co.za":                   "IOL Business Report",
+    "mg.co.za":                    "Mail & Guardian Business",
+    # East Africa
+    "nation.africa":               "Nation Africa",
+    "monitor.co.ug":               "Daily Monitor Uganda",
+    "theeastafrican.co.ke":        "The East African",
+    "standardmedia.co.ke":         "Standard Media Kenya",
+    "businessdailyafrica.com":     "Business Daily Africa",
+    "newtimes.co.rw":              "Rwanda New Times",
+    "thecitizen.co.tz":            "The Citizen Tanzania",
+    # Pan-African
+    "theafricareport.com":         "The Africa Report",
+    "african.business":            "African Business",
+    "financialafrik.com":          "Financial Afrik",
+    "disrupt-africa.com":          "Disrupt Africa",
+    "ventureburn.com":             "Ventureburn",
+    "weetracker.com":              "WeeTracker",
+    "techpoint.africa":            "TechPoint Africa",
+    "qz.com":                      "Quartz Africa",
+    # Ghana
+    "graphic.com.gh":              "Graphic Business Ghana",
+    "citinewsroom.com":            "Citi Business Ghana",
+    "ghanaweb.com":                "GhanaWeb Business",
+    # Exchanges
+    "ngxgroup.com":                "NGX Group",
+    "jse.co.za":                   "JSE SENS",
+    "nse.co.ke":                   "NSE Kenya",
+    "gse.com.gh":                  "Ghana Stock Exchange",
+    "dse.co.tz":                   "Dar es Salaam Stock Exchange",
+    "use.or.ug":                   "Uganda Securities Exchange",
+    "rse.rw":                      "Rwanda Stock Exchange",
+    "casablanca-bourse.com":       "Casablanca Stock Exchange",
+    "egyptianexchange.com":        "Egyptian Exchange",
+    # Francophone / North Africa
+    "jeuneafrique.com":            "Jeune Afrique Economie",
+    "dailynewsegypt.com":          "Daily News Egypt",
+    "egypttoday.com":              "Egypt Today Business",
+    "addisfortune.news":           "Addis Fortune",
+    "thereporterethiopia.com":     "The Reporter Ethiopia",
+    # Private capital & institutional
+    "globalprivatecapital.org":    "Global Private Capital",
+    "psgcapital.com":              "PSG Capital",
+    "ifc.org":                     "IFC Press Room",
+    "bayportfinance.com":          "Bayport Finance",
+    "zawya.com":                   "Zawya",
+    "africaprivateequitynews.com": "Africa PE News",
+    "avca.africa":                 "AVCA",
+    "proparco.fr":                 "Proparco",
+    "dbsa.org":                    "DBSA",
+    "afreximbank.com":             "Afreximbank",
+    "afdb.org":                    "African Development Bank",
+    # Regulatory bodies
+    "cma.or.ke":                   "CMA Kenya",
+    "cbn.gov.ng":                  "CBN Nigeria",
+    "sec.gov.ng":                  "SEC Nigeria",
+    "fsca.co.za":                  "FSCA South Africa",
+    "resbank.co.za":               "SARB South Africa",
 }
 
 AFRICAN_COUNTRIES = [
@@ -334,17 +462,140 @@ class AfricaTool:
             ))
         return filings
 
-    # ── African News Fetching ───────────────────────────────────────────
+    # ── HTML Scraping for PE/Capital Sources ───────────────────────────
+
+    async def _scrape_pe_source(
+        self,
+        source_name: str,
+        url: str,
+        company_name: str,
+        cutoff_date: str,
+    ) -> list[dict[str, str]]:
+        """
+        Scrape a PE/capital site that doesn't have an RSS feed.
+        Extracts article links and titles from the listing page HTML.
+        Falls back gracefully on any error — these sites can be flaky.
+        """
+        try:
+            r = await self.client.get(url)
+            r.raise_for_status()
+            html = r.text
+        except Exception:
+            return []
+
+        items: list[dict[str, str]] = []
+        company_lower = company_name.lower()
+
+        # Extract <a> tags whose href looks like an article link
+        # and whose text/surrounding context contains the company name or signal keywords
+        link_pattern = re.compile(
+            r'<a[^>]+href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',
+            re.IGNORECASE | re.DOTALL
+        )
+        for match in link_pattern.finditer(html):
+            href = match.group(1).strip()
+            link_text = re.sub(r"<[^>]+>", " ", match.group(2)).strip()
+
+            if len(link_text) < 15 or len(link_text) > 300:
+                continue
+            if not any(c.isalpha() for c in link_text):
+                continue
+
+            # Make relative URLs absolute
+            if href.startswith("/"):
+                base = re.match(r"(https?://[^/]+)", url)
+                href = base.group(1) + href if base else href
+            elif not href.startswith("http"):
+                continue
+
+            # Score relevance: company name mention OR strong signal keyword
+            text_lower = link_text.lower()
+            has_company = company_lower in text_lower or any(
+                part in text_lower for part in company_lower.split() if len(part) > 3
+            )
+            has_signal = any(
+                kw in text_lower
+                for kws in AFRICAN_SIGNAL_KEYWORDS.values()
+                for kw in kws
+            )
+
+            if not (has_company or has_signal):
+                continue
+
+            items.append({
+                "title": link_text,
+                "link": href,
+                "pubDate": datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT"),
+                "description": f"[{source_name}] {link_text}",
+                "source_override": source_name,
+            })
+
+            if len(items) >= 8:
+                break
+
+        return items
+
+    async def fetch_pe_capital_news(
+        self,
+        company_name: str,
+        lookback_days: int = 90,
+    ) -> list[NewsItem]:
+        """
+        Scrape private capital and institutional sources for deal intelligence.
+        Covers: GPCA, PSG Capital, IFC, Bayport, Zawya, Africa PE News, AVCA.
+        """
+        cutoff_date = (datetime.utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
+
+        tasks = [
+            self._scrape_pe_source(name, url, company_name, cutoff_date)
+            for name, url, _, _ in PE_CAPITAL_SOURCES
+        ]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        seen_titles: set[str] = set()
+        news_items: list[NewsItem] = []
+
+        for batch in results:
+            if not isinstance(batch, list):
+                continue
+            for raw in batch:
+                title = raw.get("title", "").strip()
+                if not title or title in seen_titles:
+                    continue
+                seen_titles.add(title)
+
+                snippet   = raw.get("description", "")[:400]
+                url       = raw.get("link", "")
+                source    = raw.get("source_override") or _extract_african_source(url)
+                relevance = _score_african_relevance(title, snippet, company_name)
+                # PE sources are high-signal by nature — lower threshold
+                if relevance < 0.05:
+                    relevance = max(relevance, 0.25)  # floor for PE sources
+
+                news_items.append(NewsItem(
+                    title=title,
+                    source=source,
+                    published_date=datetime.utcnow().strftime("%Y-%m-%d"),
+                    url=url,
+                    snippet=snippet,
+                    relevance_score=min(relevance, 1.0),
+                ))
+
+        news_items.sort(key=lambda n: n.relevance_score, reverse=True)
+        return news_items
 
     async def fetch_african_news(
         self,
         company_name: str,
         lookback_days: int = 90,
-        max_items: int = 30,
+        max_items: int = 40,
     ) -> list[NewsItem]:
         """
-        Fetch company-relevant news from African financial media sources.
-        Combines direct RSS feeds + geo-scoped Google News queries.
+        Fetch company-relevant news from:
+          - African financial media RSS feeds (BusinessDay, TechCabal, Moneyweb, etc.)
+          - Geo-scoped Google News (NG / ZA / KE)
+          - Private capital & institutional sources: GPCA, PSG Capital, IFC,
+            Bayport Finance, Zawya, Africa PE News (deals/exits/debt/VC), AVCA
         """
         cutoff_date = (datetime.utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
 
@@ -361,6 +612,7 @@ class AfricaTool:
             f"{company_name} earnings revenue Africa",
             f"{company_name} CEO resignation Africa",
             f"{company_name} regulatory investigation Africa",
+            f"{company_name} private equity venture capital Africa",
             f"{company_name} NGX JSE NSE",
         ]
         google_tasks = [
@@ -408,6 +660,13 @@ class AfricaTool:
                 snippet=snippet,
                 relevance_score=relevance,
             ))
+
+        # Merge PE/capital results — run concurrently, deduplicate by title
+        pe_items = await self.fetch_pe_capital_news(company_name, lookback_days)
+        for pe_item in pe_items:
+            if pe_item.title not in seen_titles:
+                seen_titles.add(pe_item.title)
+                news_items.append(pe_item)
 
         news_items.sort(key=lambda n: n.relevance_score, reverse=True)
         return news_items[:max_items]
