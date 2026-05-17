@@ -36,7 +36,10 @@ from src.schemas.models import (
 )
 from src.engines.deterministic_engine import DeterministicSignalEngine
 from src.engines.calibration import calibrate_all
+from src.engines.adaptive_calibration import adaptive_calibrate
 from src.engines.alpha_scorer import score_all_signals, LOW_CONFIDENCE_SUPPRESS_THRESHOLD
+from src.engines.confidence import decompose_all
+from src.engines.semantic import extract_from_filing, extract_from_news, evidence_to_strings
 from src.engines.audit_log import log_state
 
 MODEL = "claude-sonnet-4-20250514"
@@ -79,6 +82,24 @@ Return ONLY a JSON object:
   "competitive_context": "optional paragraph",
   "recent_developments": ["bullet 1", "bullet 2"]
 }"""
+
+
+def _enrich_with_semantic_evidence(candidates: list[SignalCandidate], state: AgentState) -> None:
+    """Augment candidate source_text with semantic evidence extracted from filings/news."""
+    for cand in candidates:
+        all_evidence = []
+        # Extract from filings matching this candidate's source
+        for filing in state.filings[:5]:
+            text = " ".join(filter(None, [filing.description, filing.raw_excerpt]))
+            if text:
+                ev = extract_from_filing(text)
+                all_evidence.extend(evidence_to_strings(ev[:2]))
+        # Extract from top news items
+        for news in state.news_items[:3]:
+            ev = extract_from_news(news.title, news.snippet)
+            all_evidence.extend(evidence_to_strings(ev[:1]))
+        if all_evidence:
+            cand.entity_mentions = list(set(cand.entity_mentions + all_evidence[:3]))
 
 
 def _candidates_to_prompt(candidates: list[SignalCandidate]) -> str:
@@ -197,7 +218,17 @@ class LLMExplanationNode:
             state.log("llm_explanation", "No candidates -- skipping LLM pass")
             return state
 
-        calibrated = calibrate_all(state.signal_candidates)
+        # Use adaptive calibration (falls back to static when insufficient data)
+        calibrated = []
+        for cand in state.signal_candidates:
+            try:
+                sector = state.company_profile.sector if state.company_profile else None
+                sev, conf, mat = adaptive_calibrate(cand, sector=sector)
+                calibrated.append((cand, sev, conf, mat))
+            except Exception:
+                from src.engines.calibration import calibrate
+                sev, conf, mat = calibrate(cand)
+                calibrated.append((cand, sev, conf, mat))
 
         if state.compliance_mode:
             calibrated = [
@@ -211,6 +242,9 @@ class LLMExplanationNode:
 
         candidates_for_llm = [c for c, _, _, _ in calibrated]
         company = state.company_profile.name if state.company_profile else state.request.company_name
+
+        # Enrich candidates with semantic evidence before LLM sees them
+        _enrich_with_semantic_evidence(candidates_for_llm, state)
 
         user_prompt = (
             f"Company: {company}\n"

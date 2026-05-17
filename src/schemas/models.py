@@ -297,6 +297,10 @@ class AnalystBrief(BaseModel):
     compliance_flags: list[str] = Field(default_factory=list)
     low_confidence_signals_suppressed: int = Field(default=0)
 
+    # Compound events (from SignalInteractionEngine)
+    compound_signals: list["CompoundSignal"] = Field(default_factory=list)
+    systemic_risk_level: "SystemicRiskLevel" = Field(default="isolated")
+
     # Reasoning trace + audit
     reasoning_trace: list[dict[str, Any]] = Field(default_factory=list)
     audit_entries: list[AuditEntry] = Field(default_factory=list)
@@ -332,6 +336,9 @@ class AgentState(BaseModel):
     # Phase 3 — LLM-explained + alpha-scored signals
     detected_signals: list[DetectedSignal] = Field(default_factory=list)
 
+    # Phase 4 — compound event engine output
+    compound_signals: list["CompoundSignal"] = Field(default_factory=list)
+
     brief: Optional[AnalystBrief] = None
 
     # Control flow
@@ -350,3 +357,153 @@ class AgentState(BaseModel):
             "timestamp": datetime.utcnow().isoformat()
         })
         self.current_step = step
+
+
+# ─────────────────────────────────────────────
+# Signal Interaction & Compound Event Layer (#1)
+# ─────────────────────────────────────────────
+
+class InteractionType(str, Enum):
+    REINFORCING    = "reinforcing"     # signals confirm each other → raise severity
+    CASCADING      = "cascading"       # one signal leads to another predictably
+    CONTRADICTORY  = "contradictory"   # signals conflict — reduce confidence
+    ESCALATING     = "escalating"      # temporal sequence suggests worsening
+    CONVERGING     = "converging"      # multiple independent paths to same event
+
+
+class SystemicRiskLevel(str, Enum):
+    ISOLATED   = "isolated"    # single company, no contagion risk
+    CONTAINED  = "contained"   # limited to sector/geography
+    SYSTEMIC   = "systemic"    # potential broader market impact
+
+
+class CompoundSignal(BaseModel):
+    """
+    A compound event produced by the SignalInteractionEngine.
+    Represents interaction between 2+ individual signals.
+    """
+    compound_id: str
+    component_signal_types: list[SignalType]
+    interaction_type: InteractionType
+    escalation_score: float = Field(..., ge=0.0, le=1.0)
+    compounded_confidence: float = Field(..., ge=0.0, le=1.0)
+    systemic_risk_level: SystemicRiskLevel = SystemicRiskLevel.ISOLATED
+    reasoning_chain: str = ""
+    temporal_window_days: int = Field(default=30)
+    alpha_multiplier: float = Field(default=1.0, ge=0.5, le=3.0)
+    detected_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ─────────────────────────────────────────────
+# Confidence Decomposition Framework (#5)
+# ─────────────────────────────────────────────
+
+class ConfidenceDecomposition(BaseModel):
+    """
+    Transparent breakdown of every confidence score.
+    Replaces opaque single float with auditable components.
+    """
+    final_confidence: float = Field(..., ge=0.0, le=1.0)
+
+    # Components
+    source_reliability_score: float = Field(..., ge=0.0, le=1.0)
+    corroboration_score: float = Field(..., ge=0.0, le=1.0)
+    filing_strength_score: float = Field(..., ge=0.0, le=1.0)
+    historical_precision_score: float = Field(..., ge=0.0, le=1.0)
+    entity_match_confidence: float = Field(..., ge=0.0, le=1.0)
+    temporal_relevance_score: float = Field(..., ge=0.0, le=1.0)
+    extraction_confidence: float = Field(..., ge=0.0, le=1.0)
+    calibration_adjustment: float = Field(default=1.0, ge=0.0, le=2.0)
+
+    # Audit trail
+    component_weights: dict[str, float] = Field(default_factory=dict)
+    reasoning: str = ""
+    computed_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ─────────────────────────────────────────────
+# Company Memory Layer (#4)
+# ─────────────────────────────────────────────
+
+class CompanyRiskProfile(BaseModel):
+    """
+    Persistent longitudinal risk profile for a monitored company.
+    Updated on every analysis run. Enables trend detection.
+    """
+    company_id: str          # normalised company name or CIK
+    company_name: str
+    ticker: Optional[str] = None
+    last_updated: datetime = Field(default_factory=datetime.utcnow)
+
+    # Rolling risk scores (0-100, higher = more risk)
+    rolling_risk_score: float = Field(default=0.0, ge=0.0, le=100.0)
+    governance_score: float = Field(default=50.0, ge=0.0, le=100.0)
+    liquidity_score: float = Field(default=50.0, ge=0.0, le=100.0)
+    regulatory_risk_score: float = Field(default=0.0, ge=0.0, le=100.0)
+    credit_risk_score: float = Field(default=0.0, ge=0.0, le=100.0)
+
+    # Velocity & trends
+    event_velocity: float = Field(default=0.0, description="Signals per 30 days")
+    risk_trend: str = Field(default="stable", description="improving|stable|deteriorating")
+    risk_delta_30d: float = Field(default=0.0, description="Change in risk score over 30 days")
+
+    # Historical signal density
+    total_signals_detected: int = 0
+    total_analyses_run: int = 0
+    historical_signal_density: dict[str, int] = Field(
+        default_factory=dict, description="signal_type -> count"
+    )
+    repeated_patterns: list[str] = Field(default_factory=list)
+
+    # Historical alpha scores
+    alpha_score_history: list[dict[str, Any]] = Field(default_factory=list)
+    analyst_attention_score: float = Field(default=0.0, ge=0.0, le=100.0)
+
+    # Management turnover tracking
+    leadership_change_count: int = 0
+    last_leadership_change: Optional[str] = None
+
+    # Debt trajectory
+    debt_restructure_count: int = 0
+    regulatory_action_count: int = 0
+
+
+# ─────────────────────────────────────────────
+# Market Impact & Outcome Layer (#8)
+# ─────────────────────────────────────────────
+
+class MarketOutcome(BaseModel):
+    """Tracks actual market reaction after a signal was raised."""
+    outcome_id: str
+    company_name: str
+    signal_type: SignalType
+    severity_at_detection: Severity
+    alpha_score_at_detection: Optional[float] = None
+    detection_date: str
+
+    # Realised market reaction
+    price_change_5d_pct: Optional[float] = None
+    price_change_10d_pct: Optional[float] = None
+    price_change_30d_pct: Optional[float] = None
+    volume_spike_pct: Optional[float] = None
+
+    # Event confirmation
+    event_confirmed: Optional[bool] = None
+    confirmation_date: Optional[str] = None
+    confirmation_source: Optional[str] = None
+
+    # Accuracy metrics
+    direction_correct: Optional[bool] = None
+    magnitude_error_pct: Optional[float] = None
+
+    recorded_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ─────────────────────────────────────────────
+# Extend AgentState with new layers
+# ─────────────────────────────────────────────
+
+# NOTE: AgentState already defined above. We extend it by monkey-patching
+# the compound_signals field via the interaction engine at runtime.
+# The field is added to the existing AgentState dynamically in graph.py
+# to avoid redefining the class. Compound signals are stored on AnalystBrief.

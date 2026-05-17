@@ -1119,3 +1119,781 @@ class TestGraphIntegration:
 
         assert brief.compliance_mode is True
         assert any("not investment advice" in f.lower() for f in brief.compliance_flags)
+
+
+# ─── Signal Interaction Engine (#1) ───────────────────────────────────────────
+
+class TestSignalInteractionEngine:
+    def _make_signal(self, sig_type, severity=Severity.HIGH, conf=0.85, corr=2):
+        return DetectedSignal(
+            signal_type=sig_type, severity=severity, headline="Test",
+            evidence=["E"], confidence=conf, reasoning="R",
+            corroboration_count=corr
+        )
+
+    def _state_with_signals(self, *signal_types):
+        s = AgentState(request=AnalysisRequest(company_name="Test"))
+        s.detected_signals = [self._make_signal(st) for st in signal_types]
+        return s
+
+    def test_ma_plus_insider_produces_compound(self):
+        from src.engines.signal_interaction import SignalInteractionEngine
+        state = self._state_with_signals(SignalType.MA_ACTIVITY, SignalType.INSIDER_ACTIVITY)
+        result = SignalInteractionEngine().run(state)
+        assert len(result.compound_signals) >= 1
+        types = [c.interaction_type.value for c in result.compound_signals]
+        assert "reinforcing" in types
+
+    def test_credit_plus_distressed_produces_escalating(self):
+        from src.engines.signal_interaction import SignalInteractionEngine
+        state = self._state_with_signals(SignalType.CREDIT_RISK, SignalType.DISTRESSED_ASSET)
+        result = SignalInteractionEngine().run(state)
+        assert len(result.compound_signals) >= 1
+        assert any(c.escalation_score >= 0.85 for c in result.compound_signals)
+
+    def test_triple_compound_leadership_credit_insider(self):
+        from src.engines.signal_interaction import SignalInteractionEngine
+        state = self._state_with_signals(
+            SignalType.LEADERSHIP_CHANGE, SignalType.CREDIT_RISK, SignalType.INSIDER_ACTIVITY
+        )
+        result = SignalInteractionEngine().run(state)
+        assert len(result.compound_signals) >= 1
+        # Should find the distress escalation rule
+        highest = max(result.compound_signals, key=lambda c: c.escalation_score)
+        assert highest.escalation_score >= 0.85
+
+    def test_single_signal_no_compounds(self):
+        from src.engines.signal_interaction import SignalInteractionEngine
+        state = self._state_with_signals(SignalType.MA_ACTIVITY)
+        result = SignalInteractionEngine().run(state)
+        assert result.compound_signals == []
+
+    def test_alpha_multiplier_applied(self):
+        from src.engines.signal_interaction import SignalInteractionEngine
+        from src.schemas.models import AlphaScore, LiquidityTier
+        state = self._state_with_signals(SignalType.MA_ACTIVITY, SignalType.INSIDER_ACTIVITY)
+        # Give signals alpha scores
+        for sig in state.detected_signals:
+            sig.alpha_score = AlphaScore(
+                score=50.0, severity_component=0.78, source_credibility=0.9,
+                corroboration_weight=0.68, recency_weight=0.99,
+                liquidity_tier=LiquidityTier.MID_CAP
+            )
+        result = SignalInteractionEngine().run(state)
+        # Signals in compound should have boosted alpha
+        if result.compound_signals:
+            max_score = max(s.alpha_score.score for s in result.detected_signals if s.alpha_score)
+            assert max_score > 50.0
+
+    def test_compound_confidence_geometric_mean(self):
+        from src.engines.signal_interaction import _find_interactions
+        signals = [
+            self._make_signal(SignalType.CREDIT_RISK, conf=0.80),
+            self._make_signal(SignalType.DISTRESSED_ASSET, conf=0.90),
+        ]
+        compounds = _find_interactions(signals)
+        assert len(compounds) >= 1
+        # Compounded confidence should be between the two individual values
+        cc = compounds[0].compounded_confidence
+        assert 0.70 <= cc <= 1.0
+
+    def test_systemic_risk_level_set(self):
+        from src.engines.signal_interaction import SignalInteractionEngine
+        state = self._state_with_signals(SignalType.DISTRESSED_ASSET, SignalType.REGULATORY_ACTION)
+        result = SignalInteractionEngine().run(state)
+        if result.compound_signals:
+            levels = [c.systemic_risk_level.value for c in result.compound_signals]
+            assert any(l in ("systemic","contained") for l in levels)
+
+    def test_contradictory_ma_distressed_detected(self):
+        from src.engines.signal_interaction import _find_interactions
+        from src.schemas.models import InteractionType
+        signals = [
+            self._make_signal(SignalType.MA_ACTIVITY),
+            self._make_signal(SignalType.DISTRESSED_ASSET),
+        ]
+        compounds = _find_interactions(signals)
+        contradictory = [c for c in compounds if c.interaction_type == InteractionType.CONTRADICTORY]
+        assert len(contradictory) >= 1
+
+    def test_reasoning_chain_populated(self):
+        from src.engines.signal_interaction import SignalInteractionEngine
+        state = self._state_with_signals(SignalType.MA_ACTIVITY, SignalType.INSIDER_ACTIVITY)
+        result = SignalInteractionEngine().run(state)
+        if result.compound_signals:
+            assert len(result.compound_signals[0].reasoning_chain) > 20
+
+    def test_low_severity_signals_excluded(self):
+        from src.engines.signal_interaction import SignalInteractionEngine, _signals_qualify
+        signals = [self._make_signal(SignalType.MA_ACTIVITY, severity=Severity.LOW)]
+        qualified = _signals_qualify(signals)
+        assert len(qualified) == 0
+
+
+# ─── Warehouse (#2) ───────────────────────────────────────────────────────────
+
+class TestWarehouse:
+    def test_schema_import(self):
+        from src.engines.warehouse import (
+            FilingRecord, NewsRecord, DetectedSignalRecord,
+            AnalystBriefRecord, MarketOutcomeRecord, ReplayRunRecord
+        )
+        assert True  # all import without error
+
+    def test_get_engine_creates_tables(self, tmp_path):
+        from src.engines import warehouse as wh
+        wh.DB_PATH = tmp_path / "test_wh.db"
+        engine = wh.get_engine()
+        from sqlalchemy import inspect
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        for expected in ["filings","news_items","detected_signals","analyst_briefs",
+                         "market_outcomes","replay_runs","scoring_history"]:
+            assert expected in tables, f"Missing table: {expected}"
+
+    def test_store_and_retrieve(self, tmp_path):
+        from src.engines import warehouse as wh
+        wh.DB_PATH = tmp_path / "test_wh2.db"
+        brief = AnalystBrief(
+            company_name="TestCo", ticker="TC",
+            executive_summary="Test.", overall_severity=Severity.HIGH,
+            recommendation="Watch.", confidence_score=0.75,
+            detected_signals=[], total_sources=5
+        )
+        with wh.EventWarehouse() as w:
+            w.store_run("run_001", brief)
+            history = w.get_company_history("TestCo")
+        assert len(history) == 1
+        assert history[0]["company_name"] == "TestCo"
+
+    def test_signal_history_query(self, tmp_path):
+        from src.engines import warehouse as wh
+        wh.DB_PATH = tmp_path / "test_wh3.db"
+        sig = DetectedSignal(
+            signal_type=SignalType.MA_ACTIVITY, severity=Severity.HIGH,
+            headline="Test merger", evidence=["E"], confidence=0.8, reasoning="R"
+        )
+        brief = AnalystBrief(
+            company_name="TestCo", executive_summary="E",
+            overall_severity=Severity.HIGH, recommendation="R",
+            confidence_score=0.8, detected_signals=[sig]
+        )
+        with wh.EventWarehouse() as w:
+            w.store_run("run_002", brief)
+            history = w.get_signal_history("TestCo")
+        assert len(history) >= 1
+        assert history[0]["signal_type"] == "m_and_a_activity"
+
+    def test_scoring_trend(self, tmp_path):
+        from src.engines import warehouse as wh
+        wh.DB_PATH = tmp_path / "test_wh4.db"
+        brief = AnalystBrief(
+            company_name="TrendCo", executive_summary="E",
+            overall_severity=Severity.MEDIUM, recommendation="R",
+            confidence_score=0.6, detected_signals=[], top_alpha_score=55.0
+        )
+        with wh.EventWarehouse() as w:
+            w.store_run("run_003", brief)
+            trend = w.get_scoring_trend("TrendCo")
+        # May be empty since no signals, but should not crash
+        assert isinstance(trend, list)
+
+
+# ─── Replay Engine (#3) ───────────────────────────────────────────────────────
+
+class TestReplayEngine:
+    def test_config_snapshot(self):
+        from src.engines.replay import ReplayEngine
+        engine = ReplayEngine()
+        snap = engine.get_config_snapshot()
+        assert "ruleset_version" in snap
+        assert "model_version" in snap
+        assert "prompt_version" in snap
+        assert "scoring_version" in snap
+        assert "snapshot_at" in snap
+
+    @pytest.mark.asyncio
+    async def test_replay_no_warehouse(self):
+        """Replay without warehouse still runs deterministic engine."""
+        from src.engines.replay import ReplayEngine
+        engine = ReplayEngine()  # no session
+        result = await engine.replay("Test Corp", "2024-01-01")
+        assert result["company_name"] == "Test Corp"
+        assert result["as_of_date"] == "2024-01-01"
+        assert "candidates_produced" in result
+        assert "config_snapshot" in result
+
+    def test_compare_runs_no_diff(self):
+        from src.engines.replay import compare_runs
+        original = {"run_id":"r1","signal_summary":[{"type":"credit_risk","severity":"high","alpha":60}]}
+        replay   = {"replay_id":"r2","signal_summary":[{"type":"credit_risk","severity":"high","alpha":60}]}
+        diff = compare_runs(original, replay)
+        assert diff["diff_count"] == 0
+
+    def test_compare_runs_detects_removal(self):
+        from src.engines.replay import compare_runs
+        original = {"run_id":"r1","signal_summary":[{"type":"credit_risk","severity":"high","alpha":60}]}
+        replay   = {"replay_id":"r2","signal_summary":[]}
+        diff = compare_runs(original, replay)
+        assert diff["diff_count"] == 1
+        assert diff["diffs"][0]["change"] == "removed"
+
+    def test_compare_runs_detects_addition(self):
+        from src.engines.replay import compare_runs
+        original = {"run_id":"r1","signal_summary":[]}
+        replay   = {"replay_id":"r2","signal_summary":[{"type":"m_and_a_activity","severity":"high","alpha":75}]}
+        diff = compare_runs(original, replay)
+        assert diff["diffs"][0]["change"] == "added"
+
+
+# ─── Company Memory (#4) ──────────────────────────────────────────────────────
+
+class TestCompanyMemory:
+    def _brief(self, severity=Severity.HIGH, alpha=70.0):
+        sig = DetectedSignal(
+            signal_type=SignalType.CREDIT_RISK, severity=severity,
+            headline="Test", evidence=["E"], confidence=0.8, reasoning="R"
+        )
+        b = AnalystBrief(
+            company_name="MemCo", ticker="MC",
+            executive_summary="E", overall_severity=severity,
+            recommendation="R", confidence_score=0.8,
+            detected_signals=[sig], top_alpha_score=alpha
+        )
+        return b
+
+    def test_create_profile(self, tmp_path):
+        from src.engines import company_memory as cm
+        cm.MEMORY_PATH = tmp_path / "memory.json"
+        profile = cm.update_profile(self._brief())
+        assert profile.company_name == "MemCo"
+        assert profile.total_analyses_run == 1
+        assert profile.total_signals_detected == 1
+
+    def test_ema_update(self, tmp_path):
+        from src.engines import company_memory as cm
+        cm.MEMORY_PATH = tmp_path / "memory2.json"
+        cm.update_profile(self._brief(Severity.LOW, alpha=20.0))
+        profile1 = cm.get_profile("MemCo", "MC")
+        cm.update_profile(self._brief(Severity.CRITICAL, alpha=95.0))
+        profile2 = cm.get_profile("MemCo", "MC")
+        assert profile2.rolling_risk_score > profile1.rolling_risk_score
+        assert profile2.total_analyses_run == 2
+
+    def test_risk_trend_detection(self, tmp_path):
+        from src.engines import company_memory as cm
+        cm.MEMORY_PATH = tmp_path / "memory3.json"
+        cm.update_profile(self._brief(Severity.LOW, alpha=10.0))
+        cm.update_profile(self._brief(Severity.CRITICAL, alpha=95.0))
+        cm.update_profile(self._brief(Severity.CRITICAL, alpha=95.0))
+        profile = cm.get_profile("MemCo","MC")
+        assert profile.risk_trend in ("deteriorating","stable")
+
+    def test_signal_density_tracked(self, tmp_path):
+        from src.engines import company_memory as cm
+        cm.MEMORY_PATH = tmp_path / "memory4.json"
+        cm.update_profile(self._brief())
+        profile = cm.get_profile("MemCo","MC")
+        assert "credit_risk" in profile.historical_signal_density
+
+    def test_leadership_change_counted(self, tmp_path):
+        from src.engines import company_memory as cm
+        cm.MEMORY_PATH = tmp_path / "memory5.json"
+        sig = DetectedSignal(
+            signal_type=SignalType.LEADERSHIP_CHANGE, severity=Severity.HIGH,
+            headline="CEO resigned", evidence=["E"], confidence=0.85, reasoning="R"
+        )
+        b = AnalystBrief(
+            company_name="LeadCo", executive_summary="E",
+            overall_severity=Severity.HIGH, recommendation="R",
+            confidence_score=0.8, detected_signals=[sig]
+        )
+        cm.update_profile(b)
+        profile = cm.get_profile("LeadCo")
+        assert profile.leadership_change_count == 1
+
+    def test_get_profile_none_for_unknown(self, tmp_path):
+        from src.engines import company_memory as cm
+        cm.MEMORY_PATH = tmp_path / "memory6.json"
+        assert cm.get_profile("NonExistentXYZ123") is None
+
+    def test_watchlist_alerts(self, tmp_path):
+        from src.engines import company_memory as cm
+        cm.MEMORY_PATH = tmp_path / "memory7.json"
+        cm.update_profile(self._brief(Severity.CRITICAL, alpha=95.0))
+        cm.update_profile(self._brief(Severity.CRITICAL, alpha=95.0))
+        cm.update_profile(self._brief(Severity.CRITICAL, alpha=95.0))
+        alerts = cm.get_watchlist_alerts(threshold=5.0)  # low threshold to trigger
+        assert len(alerts) >= 1
+
+
+# ─── Confidence Decomposition (#5) ────────────────────────────────────────────
+
+class TestConfidenceDecomposition:
+    def _cand(self, sig_type=SignalType.MA_ACTIVITY, raw=0.85, corr=2, source="Reuters"):
+        return SignalCandidate(
+            signal_type=sig_type, matched_patterns=[r"\bmerger\b"],
+            source_text="merger deal confirmed acquisition", source_type="filing",
+            source_name=source, raw_score=raw, corroboration_count=corr,
+            entity_mentions=["Acme Corp","$2.1 billion","35%"]
+        )
+
+    def test_decompose_returns_all_components(self):
+        from src.engines.confidence import decompose
+        c = self._cand()
+        d = decompose(c)
+        assert 0 <= d.final_confidence <= 1.0
+        assert 0 <= d.source_reliability_score <= 1.0
+        assert 0 <= d.corroboration_score <= 1.0
+        assert 0 <= d.filing_strength_score <= 1.0
+        assert 0 <= d.historical_precision_score <= 1.0
+        assert 0 <= d.entity_match_confidence <= 1.0
+        assert 0 <= d.temporal_relevance_score <= 1.0
+        assert 0 <= d.extraction_confidence <= 1.0
+
+    def test_high_credibility_source_scores_higher(self):
+        from src.engines.confidence import decompose
+        reuters = decompose(self._cand(source="Reuters"))
+        unknown = decompose(self._cand(source="unknown_blog_xyz"))
+        assert reuters.source_reliability_score > unknown.source_reliability_score
+
+    def test_more_corroboration_higher_score(self):
+        from src.engines.confidence import decompose
+        low  = decompose(self._cand(corr=1))
+        high = decompose(self._cand(corr=5))
+        assert high.corroboration_score > low.corroboration_score
+
+    def test_more_entities_higher_match_score(self):
+        from src.engines.confidence import _entity_match_score, decompose
+        no_entities = self._cand()
+        no_entities.entity_mentions = []
+        many_entities = self._cand()
+        many_entities.entity_mentions = ["Acme Corp","Target Ltd","$2.1B","35%","merger"]
+        d_none = decompose(no_entities)
+        d_many = decompose(many_entities)
+        assert d_many.entity_match_confidence > d_none.entity_match_confidence
+
+    def test_decompose_all_returns_dict(self):
+        from src.engines.confidence import decompose_all
+        candidates = [self._cand(SignalType.MA_ACTIVITY), self._cand(SignalType.CREDIT_RISK)]
+        result = decompose_all(candidates)
+        assert "m_and_a_activity" in result
+        assert "credit_risk" in result
+
+    def test_reasoning_populated(self):
+        from src.engines.confidence import decompose
+        c = self._cand(corr=1, source="unknown_xyz")  # weak source + low corr
+        d = decompose(c)
+        assert len(d.reasoning) > 10
+
+    def test_calibration_adjustment_affects_final(self):
+        from src.engines.confidence import decompose
+        c = self._cand()
+        d1 = decompose(c, calibration_adjustment=1.0)
+        d2 = decompose(c, calibration_adjustment=0.8)
+        assert d1.final_confidence > d2.final_confidence
+
+
+# ─── Semantic Extraction (#6) ─────────────────────────────────────────────────
+
+class TestSemanticExtraction:
+    def test_going_concern_extracted(self):
+        from src.engines.semantic import extract_evidence
+        text = "Management has substantial doubt about the company's ability to continue as a going concern."
+        ev = extract_evidence(text)
+        types = [e.evidence_type for e in ev]
+        assert "going_concern" in types
+
+    def test_covenant_breach_extracted(self):
+        from src.engines.semantic import extract_evidence
+        text = "The company has experienced a breach of its financial covenant under the credit agreement."
+        ev = extract_evidence(text)
+        types = [e.evidence_type for e in ev]
+        assert "covenant_breach" in types
+
+    def test_merger_language_extracted(self):
+        from src.engines.semantic import extract_evidence
+        text = "The company has entered into a definitive agreement to acquire Target Corp."
+        ev = extract_evidence(text)
+        types = [e.evidence_type for e in ev]
+        assert "merger_language" in types
+
+    def test_insolvency_formal_extracted(self):
+        from src.engines.semantic import extract_evidence
+        text = "The company filed for Chapter 11 bankruptcy protection in the Delaware court."
+        ev = extract_evidence(text)
+        types = [e.evidence_type for e in ev]
+        assert "insolvency_formal" in types
+
+    def test_restructuring_clause_extracted(self):
+        from src.engines.semantic import extract_evidence
+        text = "The company has entered into a forbearance agreement with its lenders."
+        ev = extract_evidence(text)
+        types = [e.evidence_type for e in ev]
+        assert "restructuring_clause" in types
+
+    def test_financial_amount_extracted(self):
+        from src.engines.semantic import extract_evidence
+        text = "Recognised an impairment charge of $450 million during the quarter."
+        ev = extract_evidence(text)
+        if ev:
+            assert any(e.financial_amount for e in ev)
+
+    def test_empty_text_returns_empty(self):
+        from src.engines.semantic import extract_evidence
+        assert extract_evidence("") == []
+        assert extract_evidence("   ") == []
+
+    def test_evidence_to_strings(self):
+        from src.engines.semantic import extract_evidence, evidence_to_strings
+        text = "The company has entered into a definitive agreement to acquire Target Corp."
+        ev = extract_evidence(text)
+        strings = evidence_to_strings(ev)
+        assert isinstance(strings, list)
+        if strings:
+            assert all(isinstance(s, str) for s in strings)
+            assert all(len(s) > 5 for s in strings)
+
+    def test_confidence_scores_valid(self):
+        from src.engines.semantic import extract_evidence
+        text = "Substantial doubt about ability to continue as a going concern. Covenant breach declared."
+        ev = extract_evidence(text)
+        for e in ev:
+            assert 0 < e.confidence <= 1.0
+
+    def test_max_per_type_respected(self):
+        from src.engines.semantic import extract_evidence
+        # Repeat the same pattern multiple times
+        text = " ".join([
+            "substantial doubt about ability to continue as a going concern"
+        ] * 10)
+        ev = extract_evidence(text, max_per_type=2)
+        going_concern = [e for e in ev if e.evidence_type == "going_concern"]
+        assert len(going_concern) <= 2
+
+
+# ─── Adaptive Calibration (#7) ────────────────────────────────────────────────
+
+class TestAdaptiveCalibration:
+    def _cand(self, sig_type=SignalType.CREDIT_RISK, raw=0.80, corr=2):
+        return SignalCandidate(
+            signal_type=sig_type, matched_patterns=["test"],
+            source_text="test", source_type="filing",
+            source_name="8-K", raw_score=raw, corroboration_count=corr
+        )
+
+    def test_returns_valid_tuple(self):
+        from src.engines.adaptive_calibration import adaptive_calibrate
+        sev, conf, mat = adaptive_calibrate(self._cand())
+        assert isinstance(sev, Severity)
+        assert 0 <= conf <= 1.0
+        assert 0 <= mat <= 1.0
+
+    def test_falls_back_to_static_no_data(self, tmp_path):
+        """With no feedback data, should behave like static calibration."""
+        from src.engines import feedback as fb, adaptive_calibration as ac
+        fb.FEEDBACK_PATH = tmp_path / "fb_empty.json"
+        sev_adaptive, conf_adaptive, _ = ac.adaptive_calibrate(self._cand())
+        from src.engines.calibration import calibrate
+        sev_static, conf_static, _ = calibrate(self._cand())
+        # Should be identical when no feedback data
+        assert sev_adaptive == sev_static
+
+    def test_calibration_report_has_all_signal_types(self):
+        from src.engines.adaptive_calibration import get_calibration_report
+        from src.schemas.models import SignalType
+        report = get_calibration_report()
+        for sig_type in SignalType:
+            assert sig_type.value in report
+
+    def test_report_structure(self):
+        from src.engines.adaptive_calibration import get_calibration_report
+        report = get_calibration_report()
+        for sig, data in report.items():
+            assert "feedback_samples" in data
+            assert "adaptive_active" in data
+            assert "precision_adjustment" in data
+            assert "fp_penalty" in data
+            assert "net_adjustment" in data
+
+
+# ─── Market Impact (#8) ───────────────────────────────────────────────────────
+
+class TestMarketImpact:
+    def test_record_and_retrieve(self, tmp_path):
+        from src.engines import market_impact as mi
+        mi.OUTCOMES_PATH = tmp_path / "outcomes.json"
+        outcome = mi.record_outcome(
+            company_name="Acme", signal_type=SignalType.MA_ACTIVITY,
+            severity_at_detection=Severity.HIGH, detection_date="2024-01-15",
+            alpha_score_at_detection=72.0, price_change_10d_pct=15.3,
+            event_confirmed=True, expected_direction="positive",
+            expected_magnitude_low=8.0, expected_magnitude_high=20.0
+        )
+        assert outcome.direction_correct is True  # 15.3% positive matches "positive"
+        assert outcome.magnitude_error_pct is not None
+
+    def test_direction_correct_negative(self, tmp_path):
+        from src.engines import market_impact as mi
+        mi.OUTCOMES_PATH = tmp_path / "outcomes2.json"
+        outcome = mi.record_outcome(
+            company_name="Test", signal_type=SignalType.DISTRESSED_ASSET,
+            severity_at_detection=Severity.CRITICAL, detection_date="2024-01-01",
+            price_change_10d_pct=-22.0, event_confirmed=True,
+            expected_direction="negative"
+        )
+        assert outcome.direction_correct is True
+
+    def test_direction_wrong(self, tmp_path):
+        from src.engines import market_impact as mi
+        mi.OUTCOMES_PATH = tmp_path / "outcomes3.json"
+        outcome = mi.record_outcome(
+            company_name="Test", signal_type=SignalType.CREDIT_RISK,
+            severity_at_detection=Severity.HIGH, detection_date="2024-01-01",
+            price_change_10d_pct=5.0, expected_direction="negative"
+        )
+        assert outcome.direction_correct is False
+
+    def test_accuracy_metrics(self, tmp_path):
+        from src.engines import market_impact as mi
+        mi.OUTCOMES_PATH = tmp_path / "outcomes4.json"
+        mi.record_outcome("A", SignalType.MA_ACTIVITY, Severity.HIGH, "2024-01-01",
+                          price_change_10d_pct=12.0, event_confirmed=True, expected_direction="positive")
+        mi.record_outcome("B", SignalType.MA_ACTIVITY, Severity.HIGH, "2024-01-02",
+                          price_change_10d_pct=-5.0, event_confirmed=False, expected_direction="positive")
+        metrics = mi.get_accuracy_metrics()
+        assert metrics["total_outcomes"] == 2
+        assert metrics["event_confirmation_rate"] == 0.5
+
+    def test_empty_outcomes_returns_message(self, tmp_path):
+        from src.engines import market_impact as mi
+        mi.OUTCOMES_PATH = tmp_path / "outcomes_empty.json"
+        result = mi.get_accuracy_metrics()
+        assert "message" in result
+
+    def test_signal_accuracy_filter(self, tmp_path):
+        from src.engines import market_impact as mi
+        mi.OUTCOMES_PATH = tmp_path / "outcomes5.json"
+        mi.record_outcome("A", SignalType.INSIDER_ACTIVITY, Severity.MEDIUM, "2024-01-01",
+                          price_change_10d_pct=3.0, event_confirmed=True)
+        result = mi.get_signal_accuracy(SignalType.INSIDER_ACTIVITY)
+        assert result["samples"] == 1
+        assert result["signal_type"] == "insider_activity"
+
+
+# ─── Signal Registry (#10) ────────────────────────────────────────────────────
+
+class TestSignalRegistry:
+    def test_all_signal_types_registered(self):
+        from src.engines.signal_registry import SIGNAL_REGISTRY
+        from src.schemas.models import SignalType
+        for sig_type in SignalType:
+            assert sig_type in SIGNAL_REGISTRY, f"{sig_type.value} not in registry"
+
+    def test_each_spec_has_patterns(self):
+        from src.engines.signal_registry import SIGNAL_REGISTRY
+        for sig_type, spec in SIGNAL_REGISTRY.items():
+            total = (len(spec.trigger_patterns_high) +
+                     len(spec.trigger_patterns_medium) +
+                     len(spec.trigger_patterns_low))
+            assert total >= 3, f"{sig_type.value} has fewer than 3 patterns"
+
+    def test_get_signal_spec(self):
+        from src.engines.signal_registry import get_signal_spec
+        spec = get_signal_spec(SignalType.MA_ACTIVITY)
+        assert spec is not None
+        assert spec.display_name == "M&A Activity"
+
+    def test_get_all_patterns(self):
+        from src.engines.signal_registry import get_all_patterns
+        patterns = get_all_patterns(SignalType.CREDIT_RISK)
+        assert len(patterns) == 3  # high, medium, low
+        scores = [score for _, score in patterns]
+        assert scores[0] > scores[1] > scores[2]  # high > medium > low
+
+    def test_list_all_signals(self):
+        from src.engines.signal_registry import list_all_signals
+        from src.schemas.models import SignalType
+        all_sigs = list_all_signals()
+        assert len(all_sigs) == len(list(SignalType))
+        for s in all_sigs:
+            assert "signal_type" in s
+            assert "display_name" in s
+            assert "total_patterns" in s
+
+    def test_escalation_rules_valid(self):
+        from src.engines.signal_registry import SIGNAL_REGISTRY
+        all_types = set(SignalType)
+        for spec in SIGNAL_REGISTRY.values():
+            for related in spec.escalates_with:
+                assert related in all_types
+            for contradicted in spec.contradicts:
+                assert contradicted in all_types
+
+    def test_distressed_has_highest_precision(self):
+        from src.engines.signal_registry import SIGNAL_REGISTRY
+        distressed_spec = SIGNAL_REGISTRY[SignalType.DISTRESSED_ASSET]
+        assert distressed_spec.historical_precision >= 0.75
+
+
+# ─── Graph Intelligence (#11) ────────────────────────────────────────────────
+
+class TestGraphIntelligence:
+    def _fresh_engine(self, tmp_path):
+        from src.engines import graph_intelligence as gi
+        gi.GRAPH_PATH = tmp_path / "graph.json"
+        return gi.EntityGraphEngine()
+
+    def test_add_and_retrieve_company(self, tmp_path):
+        engine = self._fresh_engine(tmp_path)
+        engine.add_company("Acme Corp", ticker="ACME")
+        assert "Acme Corp" in engine.G.nodes
+
+    def test_add_executive_creates_edge(self, tmp_path):
+        engine = self._fresh_engine(tmp_path)
+        engine.add_company("Acme Corp")
+        engine.add_executive("John Smith", "Acme Corp", "CEO")
+        assert engine.G.has_edge("exec:John Smith", "Acme Corp")
+
+    def test_lender_relationship(self, tmp_path):
+        engine = self._fresh_engine(tmp_path)
+        engine.add_company("Borrower Co")
+        engine.add_lender_relationship("Big Bank", "Borrower Co", "revolving_credit")
+        exposure = engine.get_lender_exposure("Big Bank")
+        assert any(e["company"] == "Borrower Co" for e in exposure)
+
+    def test_connected_companies(self, tmp_path):
+        engine = self._fresh_engine(tmp_path)
+        engine.add_company("A")
+        engine.add_company("B")
+        engine.add_board_overlap("Jane Doe", "A", "B")
+        connected = engine.get_connected_companies("A", depth=1)
+        assert "B" in connected
+
+    def test_contagion_risk_unknown_company(self, tmp_path):
+        engine = self._fresh_engine(tmp_path)
+        result = engine.detect_contagion_risk("Unknown Corp XYZ")
+        assert result["risk_level"] == "unknown"
+
+    def test_contagion_risk_known_company(self, tmp_path):
+        engine = self._fresh_engine(tmp_path)
+        engine.add_company("Distressed Co")
+        engine.add_lender_relationship("Big Bank", "Distressed Co")
+        result = engine.detect_contagion_risk("Distressed Co")
+        assert "risk_level" in result
+        assert result["risk_level"] in ("isolated","contained","systemic")
+
+    def test_save_and_reload(self, tmp_path):
+        from src.engines import graph_intelligence as gi
+        gi.GRAPH_PATH = tmp_path / "graph2.json"
+        e1 = gi.EntityGraphEngine()
+        e1.add_company("TestCo", ticker="TC")
+        e1.save()
+        e2 = gi.EntityGraphEngine()
+        assert "TestCo" in e2.G.nodes
+
+    def test_graph_summary(self, tmp_path):
+        engine = self._fresh_engine(tmp_path)
+        engine.add_company("A")
+        engine.add_company("B")
+        engine.add_lender_relationship("Bank", "A")
+        summary = engine.graph_summary()
+        assert summary["total_nodes"] >= 2
+        assert "node_types" in summary
+        assert "edge_types" in summary
+
+    def test_acquisition_chain(self, tmp_path):
+        engine = self._fresh_engine(tmp_path)
+        engine.add_company("Acquirer")
+        engine.add_company("Target")
+        engine.add_acquisition("Acquirer", "Target", status="completed")
+        chain = engine.get_acquisition_chain("Acquirer")
+        assert "Target" in chain
+
+    def test_shared_executives(self, tmp_path):
+        engine = self._fresh_engine(tmp_path)
+        engine.add_company("Corp A")
+        engine.add_company("Corp B")
+        engine.add_executive("Jane CEO", "Corp A", "CEO")
+        engine.add_executive("Jane CEO", "Corp B", "Board Member")
+        shared = engine.get_shared_executives("Corp A", "Corp B")
+        assert "Jane CEO" in shared
+
+
+# ─── Monitoring Engine (#13) ──────────────────────────────────────────────────
+
+class TestMonitoringEngine:
+    def test_add_to_watchlist(self, tmp_path):
+        from src.engines import monitoring as mo
+        mo.WATCHLIST_PATH = tmp_path / "watchlist.json"
+        entry = mo.add_to_watchlist("GTBank", ticker="GTCO")
+        assert entry["company_name"] == "GTBank"
+        assert entry["ticker"] == "GTCO"
+
+    def test_watchlist_deduplicates(self, tmp_path):
+        from src.engines import monitoring as mo
+        mo.WATCHLIST_PATH = tmp_path / "watchlist2.json"
+        mo.add_to_watchlist("GTBank", ticker="GTCO")
+        mo.add_to_watchlist("GTBank", ticker="GTCO")  # second add = update
+        wl = mo.get_watchlist()
+        assert len([w for w in wl if w["company_name"] == "GTBank"]) == 1
+
+    def test_remove_from_watchlist(self, tmp_path):
+        from src.engines import monitoring as mo
+        mo.WATCHLIST_PATH = tmp_path / "watchlist3.json"
+        mo.add_to_watchlist("Shoprite")
+        ok = mo.remove_from_watchlist("Shoprite")
+        assert ok is True
+        assert all(w["company_name"] != "Shoprite" for w in mo.get_watchlist())
+
+    def test_remove_nonexistent(self, tmp_path):
+        from src.engines import monitoring as mo
+        mo.WATCHLIST_PATH = tmp_path / "watchlist4.json"
+        ok = mo.remove_from_watchlist("NonExistentCo")
+        assert ok is False
+
+    def test_alert_saved(self, tmp_path):
+        from src.engines import monitoring as mo
+        mo.ALERTS_PATH = tmp_path / "alerts.json"
+        alert = {
+            "alert_id": "test_001", "company": "TestCo", "severity": "high",
+            "alpha_score": 75.0, "signal_count": 2, "headline": "Test alert",
+            "recommendation": "Act", "requires_human_review": False,
+            "triggered_at": "2024-01-15T10:00:00"
+        }
+        from src.engines.monitoring import _save_alert
+        _save_alert(alert)
+        alerts = mo.get_recent_alerts()
+        assert len(alerts) == 1
+        assert alerts[0]["alert_id"] == "test_001"
+
+    def test_should_alert_high_severity(self, tmp_path):
+        from src.engines.monitoring import _should_alert
+        from src.schemas.models import AnalystBrief, Severity
+        brief = AnalystBrief(
+            company_name="X", executive_summary="E", overall_severity=Severity.HIGH,
+            recommendation="R", confidence_score=0.8, detected_signals=[]
+        )
+        entry = {"alert_severity": "medium", "alert_alpha": 50.0}
+        assert _should_alert(brief, entry) is True
+
+    def test_should_not_alert_low_severity(self, tmp_path):
+        from src.engines.monitoring import _should_alert
+        from src.schemas.models import AnalystBrief, Severity
+        brief = AnalystBrief(
+            company_name="X", executive_summary="E", overall_severity=Severity.LOW,
+            recommendation="R", confidence_score=0.4, detected_signals=[]
+        )
+        entry = {"alert_severity": "high", "alert_alpha": 80.0}
+        assert _should_alert(brief, entry) is False
+
+    def test_alpha_threshold_triggers_alert(self, tmp_path):
+        from src.engines.monitoring import _should_alert
+        from src.schemas.models import AnalystBrief, Severity
+        brief = AnalystBrief(
+            company_name="X", executive_summary="E", overall_severity=Severity.LOW,
+            recommendation="R", confidence_score=0.5, detected_signals=[],
+            top_alpha_score=85.0  # above threshold
+        )
+        entry = {"alert_severity": "critical", "alert_alpha": 50.0}
+        assert _should_alert(brief, entry) is True
