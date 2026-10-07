@@ -1,9 +1,9 @@
 """
 Audit Log Engine.
 
-Immutable, hash-chained audit trail for every pipeline decision.
-Every entry references the SHA-256 of the previous entry,
-creating a tamper-evident chain inspectable by compliance teams.
+Hash-chained, tamper-evident audit trail for every pipeline decision.
+Every entry references the SHA-256 of the previous entry, and its own hash
+covers all of its stored fields, so edits and deletions are detectable.
 
 Storage: data/audit_log.jsonl (newline-delimited JSON).
 Each line is one AuditEntry. Append-only. Never modified.
@@ -51,6 +51,11 @@ def _append(entry: AuditEntry) -> None:
         f.write(entry.model_dump_json() + "\n")
 
 
+def _entry_hash(raw: dict) -> str:
+    """Hash of every persisted field except data_hash itself."""
+    return _hash({k: v for k, v in raw.items() if k != "data_hash"})
+
+
 def log_entry(
     pipeline_step: str,
     company_name: str,
@@ -60,33 +65,25 @@ def log_entry(
     analyst_id: str = "system",
 ) -> AuditEntry:
     """
-    Write one immutable audit entry to the append-only log.
-    Each entry's data_hash is the SHA-256 of its own content.
-    prev_hash chains it to the entry before it.
+    Write one entry to the append-only log.
+
+    data_hash is the SHA-256 of ALL persisted fields of the entry (including
+    prev_hash and payload_hash), so verify_chain can recompute it from what is
+    on disk. payload_hash is the SHA-256 of the step's input payload.
     """
-    entry_id = str(uuid.uuid4())
-    prev_hash = _last_hash()
-    data_hash = _hash({
-        "entry_id": entry_id,
-        "pipeline_step": pipeline_step,
-        "company_name": company_name,
-        "action": action,
-        "detail": detail,
-        "data": data,
-        "prev_hash": prev_hash,
-        "model_version": MODEL_VERSION,
-    })
     entry = AuditEntry(
-        entry_id=entry_id,
+        entry_id=str(uuid.uuid4()),
         pipeline_step=pipeline_step,
         company_name=company_name,
         action=action,
         detail=detail,
-        data_hash=data_hash,
-        prev_hash=prev_hash,
+        data_hash="",
+        payload_hash=_hash(data) if data is not None else "",
+        prev_hash=_last_hash(),
         model_version=MODEL_VERSION,
         analyst_id=analyst_id,
     )
+    entry.data_hash = _entry_hash(json.loads(entry.model_dump_json()))
     _append(entry)
     return entry
 
@@ -109,8 +106,17 @@ def log_state(state: AgentState, action: str, detail: str) -> AuditEntry:
 
 def verify_chain(limit: int = 1000) -> tuple[bool, str]:
     """
-    Verify the hash chain integrity of the audit log.
-    Returns (is_valid, message).
+    Verify the audit log.
+
+    Checks (1) each entry's prev_hash matches the previous entry's data_hash,
+    which catches deleted or reordered entries, and (2) each entry's data_hash
+    matches a fresh hash of its stored content, which catches edited entries.
+    Entries written before payload_hash existed cannot be recomputed; they get
+    the linkage check only and are counted in the result message.
+
+    Limitation: this is tamper-EVIDENT, not tamper-PROOF. Someone who can
+    rewrite the whole file can rebuild a consistent chain. Anchor the latest
+    data_hash somewhere they cannot write (object-lock storage, a ledger).
     """
     if not AUDIT_PATH.exists():
         return True, "No audit log exists yet."
@@ -120,16 +126,23 @@ def verify_chain(limit: int = 1000) -> tuple[bool, str]:
         return True, "Audit log is empty."
 
     prev_hash = "GENESIS"
+    legacy = 0
     for i, line in enumerate(lines[:limit]):
         try:
             raw = json.loads(line)
-            if raw.get("prev_hash") != prev_hash:
-                return False, f"Chain broken at entry {i+1}: prev_hash mismatch"
-            prev_hash = raw.get("data_hash", "")
         except Exception as e:
             return False, f"Parse error at entry {i+1}: {e}"
+        if raw.get("prev_hash") != prev_hash:
+            return False, f"Chain broken at entry {i+1}: prev_hash mismatch"
+        if "payload_hash" in raw:
+            if _entry_hash(raw) != raw.get("data_hash"):
+                return False, f"Entry {i+1} content was modified: data_hash mismatch"
+        else:
+            legacy += 1
+        prev_hash = raw.get("data_hash", "")
 
-    return True, f"Chain valid — {len(lines)} entries verified."
+    note = f" ({legacy} legacy entries checked for linkage only)" if legacy else ""
+    return True, f"Chain valid — {min(len(lines), limit)} entries verified.{note}"
 
 
 def read_log(limit: int = 100) -> list[AuditEntry]:

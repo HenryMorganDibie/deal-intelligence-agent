@@ -535,6 +535,37 @@ class TestAuditLog:
         valid, msg = al.verify_chain()
         assert valid is False
 
+    def test_chain_detects_edited_content(self, tmp_path):
+        al = self._tmp(tmp_path)
+        al.log_entry("step1", "X", "act1", "detail1", data={"a": 1})
+        al.log_entry("step2", "X", "act2", "detail2", data={"a": 2})
+        lines = al.AUDIT_PATH.read_text().strip().split("\n")
+        data = json.loads(lines[0])
+        data["detail"] = "edited after the fact"   # hashes left untouched
+        lines[0] = json.dumps(data)
+        al.AUDIT_PATH.write_text("\n".join(lines) + "\n")
+        valid, msg = al.verify_chain()
+        assert valid is False
+        assert "modified" in msg
+
+    def test_chain_detects_deleted_entry(self, tmp_path):
+        al = self._tmp(tmp_path)
+        for i in range(3):
+            al.log_entry("step", "X", f"act{i}", f"d{i}")
+        lines = al.AUDIT_PATH.read_text().strip().split("\n")
+        al.AUDIT_PATH.write_text(lines[0] + "\n" + lines[2] + "\n")
+        valid, msg = al.verify_chain()
+        assert valid is False
+
+    def test_legacy_entries_checked_for_linkage_only(self, tmp_path):
+        al = self._tmp(tmp_path)
+        legacy = {"entry_id": "e1", "pipeline_step": "s", "company_name": "X",
+                  "action": "a", "detail": "d", "data_hash": "abc",
+                  "prev_hash": "GENESIS", "model_version": "", "analyst_id": "system"}
+        al.AUDIT_PATH.write_text(json.dumps(legacy) + "\n")
+        valid, msg = al.verify_chain()
+        assert valid is True and "legacy" in msg
+
     def test_genesis_hash_for_first_entry(self, tmp_path):
         al = self._tmp(tmp_path)
         e = al.log_entry("step", "X", "act", "detail")

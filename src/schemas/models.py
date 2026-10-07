@@ -233,7 +233,8 @@ class AuditEntry(BaseModel):
     company_name: str
     action: str
     detail: str
-    data_hash: str = Field(..., description="SHA256 of the input data at this step")
+    data_hash: str = Field(..., description="SHA256 of every other persisted field of this entry (recomputed by verify_chain)")
+    payload_hash: str = Field(default="", description="SHA256 of the step's input payload (payload itself is not stored)")
     prev_hash: str = Field(default="GENESIS", description="Hash of previous entry — chain integrity")
     model_version: str = ""
     analyst_id: str = "system"
