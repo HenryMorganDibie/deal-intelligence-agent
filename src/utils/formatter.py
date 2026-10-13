@@ -70,6 +70,16 @@ def _expected_move(a) -> Optional[str]:
     return f"{arrow} {a.expected_magnitude_pct_low:.0f}–{a.expected_magnitude_pct_high:.0f}%"
 
 
+def _evidence_quality(sig) -> Optional[str]:
+    d = sig.confidence_decomposition
+    if d is None:
+        return None
+    return (f"{d.final_confidence:.0%} (source {d.source_reliability_score:.2f}, "
+            f"corroboration {d.corroboration_score:.2f}, filing {d.filing_strength_score:.2f}, "
+            f"precision {d.historical_precision_score:.2f}, entities {d.entity_match_confidence:.2f}, "
+            f"recency {d.temporal_relevance_score:.2f}, extraction {d.extraction_confidence:.2f})")
+
+
 def _title(value: str) -> str:
     return value.replace("_", " ").title()
 
@@ -162,6 +172,10 @@ def print_brief(brief: AnalystBrief) -> None:
                     )
                 if a.requires_human_review:
                     alpha_line += f"\n[bold red]⚑ HUMAN REVIEW: {_e(a.review_reason)}[/bold red]"
+
+            quality = _evidence_quality(sig)
+            if quality:
+                alpha_line += f"\n[dim]Evidence quality: {_e(quality)}[/dim]"
 
             patterns_line = ""
             if sig.candidate_patterns:
@@ -305,6 +319,10 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
                              f"(n={a.comparable_events_n}, {a.move_confidence} confidence)  ")
             if a.requires_human_review:
                 lines.append(f"\n> ⚑ **Human Review Required:** {a.review_reason}")
+        quality = _evidence_quality(sig)
+        if quality:
+            lines.append(f"**Evidence Quality:** {quality}  ")
+            lines.append(f"*{sig.confidence_decomposition.reasoning}*  ")
         if sig.candidate_patterns:
             lines.append(f"**Patterns Fired:** `{'`, `'.join(sig.candidate_patterns[:3])}`  ")
         lines += ["", "**Evidence:**"]

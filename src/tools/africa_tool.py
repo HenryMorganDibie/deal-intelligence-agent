@@ -23,6 +23,7 @@ No API keys required — all public sources.
 from __future__ import annotations
 
 import asyncio
+import html
 import hashlib
 import re
 import xml.etree.ElementTree as ET
@@ -406,7 +407,8 @@ class AfricaTool:
             link  = item.findtext("link") or ""
             pub   = item.findtext("pubDate") or ""
             desc  = item.findtext("description") or ""
-            desc  = re.sub(r"<[^>]+>", " ", desc).strip()
+            desc  = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", desc)).split())
+            title = html.unescape(title)
             items.append({
                 "title": title,
                 "link": link,
@@ -419,36 +421,43 @@ class AfricaTool:
 
     # ── Exchange Disclosure Feeds ───────────────────────────────────────
 
-    async def fetch_ngx_announcements(self, company_name: str) -> list[SECFiling]:
+    def _search_news(self, items: list[dict], label: str, company_name: str, limit: int) -> list[NewsItem]:
         """
-        Fetch NGX (Nigerian Exchange) company announcements via Google News
-        scoped to NGX disclosure language.
+        Exchange-related results from Google News are news articles, not exchange
+        disclosures: they carry their real publisher and that publisher's credibility.
         """
-        filings: list[SECFiling] = []
+        news: list[NewsItem] = []
+        for item in items[:limit]:
+            title = item.get("title", "")
+            if not title:
+                continue
+            snippet = item.get("description", "")[:400]
+            news.append(NewsItem(
+                title=title,
+                source=item.get("publisher") or label,
+                published_date=_parse_rss_date(item.get("pubDate", "")),
+                url=item.get("link", ""),
+                snippet=snippet,
+                relevance_score=max(_score_african_relevance(title, snippet, company_name), 0.10),
+            ))
+        return news
+
+    async def fetch_ngx_announcements(self, company_name: str) -> list[NewsItem]:
+        """
+        NGX-related news via Google News (NGX's own announcement feed is not
+        machine-readable). Returned as news, not as exchange filings.
+        """
+        news: list[NewsItem] = []
         queries = [
             f'"{company_name}" NGX announcement',
             f'"{company_name}" Nigerian Exchange disclosure',
-            f'"{company_name}" site:ngxgroup.com',
         ]
-        for q in queries[:2]:
+        for q in queries:
             url = GOOGLE_NEWS_RSS.format(query=quote(q))
-            items = await self._fetch_rss(url, "NGX Group")
-            for item in items[:3]:
-                title = item.get("title", "")
-                if not title:
-                    continue
-                filings.append(SECFiling(
-                    accession_number=f"NGX-{_stable_id(title)}",
-                    form_type="NGX Announcement",
-                    filing_date=_parse_rss_date(item.get("pubDate", "")),
-                    company_name=company_name,
-                    cik="NGX",
-                    document_url=item.get("link", ""),
-                    description=title,
-                    raw_excerpt=item.get("description", "")[:300]
-                ))
+            items = await self._fetch_rss(url, "NGX-related news")
+            news.extend(self._search_news(items, "NGX-related news", company_name, limit=3))
             await asyncio.sleep(0.1)
-        return filings
+        return news
 
     async def fetch_jse_sens(self, company_name: str) -> list[SECFiling]:
         """
@@ -475,51 +484,19 @@ class AfricaTool:
                 raw_excerpt=item.get("description", "")[:300]
             ))
 
-        # Fallback: Google News scoped to JSE/SENS language
-        if not filings:
-            fallback_url = GOOGLE_NEWS_SA.format(
-                query=quote(f"{company_name} JSE SENS announcement")
-            )
-            items = await self._fetch_rss(fallback_url, "JSE SENS")
-            for item in items[:4]:
-                title = item.get("title", "")
-                if not title:
-                    continue
-                filings.append(SECFiling(
-                    accession_number=f"JSE-{_stable_id(title)}",
-                    form_type="JSE Announcement",
-                    filing_date=_parse_rss_date(item.get("pubDate", "")),
-                    company_name=company_name,
-                    cik="JSE",
-                    document_url=item.get("link", ""),
-                    description=title,
-                    raw_excerpt=item.get("description", "")[:300]
-                ))
-
         return filings
 
-    async def fetch_nse_kenya_disclosures(self, company_name: str) -> list[SECFiling]:
-        """Fetch NSE Kenya company disclosures via Google News Kenya."""
-        url = GOOGLE_NEWS_KE.format(
-            query=quote(f"{company_name} NSE Kenya disclosure announcement")
-        )
-        items = await self._fetch_rss(url, "NSE Kenya")
-        filings = []
-        for item in items[:4]:
-            title = item.get("title", "")
-            if not title:
-                continue
-            filings.append(SECFiling(
-                accession_number=f"NSE-{_stable_id(title)}",
-                form_type="NSE Kenya Disclosure",
-                filing_date=_parse_rss_date(item.get("pubDate", "")),
-                company_name=company_name,
-                cik="NSE-KE",
-                document_url=item.get("link", ""),
-                description=title,
-                raw_excerpt=item.get("description", "")[:300]
-            ))
-        return filings
+    async def fetch_jse_news(self, company_name: str) -> list[NewsItem]:
+        """JSE/SENS-related news via Google News SA (used when the SENS feed has nothing)."""
+        url = GOOGLE_NEWS_SA.format(query=quote(f"{company_name} JSE SENS announcement"))
+        items = await self._fetch_rss(url, "JSE-related news")
+        return self._search_news(items, "JSE-related news", company_name, limit=4)
+
+    async def fetch_nse_kenya_disclosures(self, company_name: str) -> list[NewsItem]:
+        """NSE Kenya-related news via Google News Kenya. Returned as news, not filings."""
+        url = GOOGLE_NEWS_KE.format(query=quote(f"{company_name} NSE Kenya disclosure announcement"))
+        items = await self._fetch_rss(url, "NSE Kenya-related news")
+        return self._search_news(items, "NSE Kenya-related news", company_name, limit=4)
 
     # ── HTML Scraping for PE/Capital Sources ───────────────────────────
 
@@ -741,25 +718,22 @@ async def fetch_african_intelligence(
     Returns (exchange_filings, african_news_items).
     """
     async with AfricaTool() as tool:
-        # Run exchange disclosure fetches + news concurrently
+        sens_task  = asyncio.create_task(tool.fetch_jse_sens(company_name))
         ngx_task   = asyncio.create_task(tool.fetch_ngx_announcements(company_name))
-        jse_task   = asyncio.create_task(tool.fetch_jse_sens(company_name))
         nse_task   = asyncio.create_task(tool.fetch_nse_kenya_disclosures(company_name))
         news_task  = asyncio.create_task(tool.fetch_african_news(company_name, lookback_days))
-
-        results = await asyncio.gather(
-            ngx_task, jse_task, nse_task, news_task,
-            return_exceptions=True
+        sens, ngx, nse, african_news = await asyncio.gather(
+            sens_task, ngx_task, nse_task, news_task, return_exceptions=True
         )
+        jse_news = [] if isinstance(sens, list) and sens else await tool.fetch_jse_news(company_name)
 
-    filings: list[SECFiling] = []
-    for r in results[:3]:  # first 3 are filing tasks
-        if isinstance(r, list):
-            filings.extend(r)
+    # Only the SENS feed is an exchange disclosure system; everything else is news.
+    filings: list[SECFiling] = sens if isinstance(sens, list) else []
+    news: list[NewsItem] = []
+    for batch in (ngx, nse, jse_news, african_news):
+        if isinstance(batch, list):
+            news.extend(batch)
 
-    news: list[NewsItem] = results[3] if isinstance(results[3], list) else []
-
-    # Deduplicate filings by accession number
     seen: set[str] = set()
     deduped_filings: list[SECFiling] = []
     for f in filings:

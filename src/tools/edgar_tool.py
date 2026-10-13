@@ -39,7 +39,13 @@ HEADERS = {
 }
 
 # EDGAR renamed "SC 13D" to "SCHEDULE 13D" in December 2024; both spellings are kept.
-SIGNAL_FORMS = ["8-K", "10-K", "10-Q", "SC 13D", "SCHEDULE 13D", "SC 13G", "Form 4", "DEF 14A"]
+SIGNAL_FORMS = ["8-K", "10-K", "10-Q", "SC 13D", "SCHEDULE 13D", "SC 13G", "4", "DEF 14A"]
+
+# Form 4 filings are only signals when they show discretionary open-market trades.
+# Grants (A), option exercises (M), tax withholding (F), gifts (G) and sales under a
+# pre-arranged Rule 10b5-1 plan are routine and are dropped.
+FORM4_MAX_FETCH = 10
+FORM4_MIN_SALE_USD = 1_000_000
 MA_KEYWORDS  = ["merger", "acquisition", "takeover", "tender offer", "going private", "buyout"]
 DISTRESS_KW  = ["bankruptcy", "default", "restructuring", "going concern", "liquidity", "covenant breach"]
 CREDIT_KW    = ["credit facility", "debt", "leverage", "impairment", "write-down", "goodwill"]
@@ -70,6 +76,53 @@ EIGHT_K_ITEMS = {
     "8.01": "Other Events",
     "9.01": "Financial Statements and Exhibits",
 }
+
+
+def _xml_value(block: str, tag: str) -> str:
+    """Text of <tag>...</tag>, or of its nested <value>, within an ownership XML block."""
+    m = re.search(rf"<{tag}>(.*?)</{tag}>", block, re.S)
+    if not m:
+        return ""
+    inner = m.group(1)
+    v = re.search(r"<value>(.*?)</value>", inner, re.S)
+    return (v.group(1) if v else inner).strip()
+
+
+def describe_form4(xml: str) -> Optional[str]:
+    """
+    Summarise the discretionary open-market trades in a Form 4 ownership document.
+    Returns None when the filing holds no such trade (grants, exercises, withholding,
+    small sales, or sales under a Rule 10b5-1 plan).
+    """
+    if _xml_value(xml, "aff10b5One").lower() in ("1", "true"):
+        planned_sale = True
+    else:
+        planned_sale = False
+    owner = _xml_value(xml, "rptOwnerName") or "an insider"
+    title = _xml_value(xml, "officerTitle") or ("Director" if _xml_value(xml, "isDirector") in ("1", "true") else "")
+    who = f"{owner} ({title})" if title else owner
+
+    totals = {"P": [0.0, 0.0], "S": [0.0, 0.0]}   # code -> [shares, value]
+    for tx in re.findall(r"<nonDerivativeTransaction>(.*?)</nonDerivativeTransaction>", xml, re.S):
+        code = _xml_value(tx, "transactionCode")
+        if code not in totals:
+            continue
+        try:
+            shares = float(_xml_value(tx, "transactionShares") or 0)
+            price = float(_xml_value(tx, "transactionPricePerShare") or 0)
+        except ValueError:
+            continue
+        totals[code][0] += shares
+        totals[code][1] += shares * price
+
+    parts = []
+    if totals["P"][0] > 0:
+        parts.append(f"open-market purchase of {totals['P'][0]:,.0f} shares (${totals['P'][1]:,.0f})")
+    if totals["S"][0] > 0 and not planned_sale and totals["S"][1] >= FORM4_MIN_SALE_USD:
+        parts.append(f"open-market sale of {totals['S'][0]:,.0f} shares (${totals['S'][1]:,.0f}), not under a 10b5-1 plan")
+    if not parts:
+        return None
+    return f"Form 4 filed: {' and '.join(parts)} by {who}"
 
 
 def _describe_8k_items(items: str) -> str:
@@ -230,10 +283,34 @@ class EdgarTool:
                 description=desc
             ))
 
-            if len(filings) >= 20:  # cap per company
+            if len(filings) >= 30:  # cap per company
                 break
 
-        return filings
+        return await self._enrich_form4(filings)
+
+    async def _enrich_form4(self, filings: list[SECFiling]) -> list[SECFiling]:
+        """Replace Form 4 entries with a description of their open-market trades, dropping routine ones."""
+        kept: list[SECFiling] = []
+        fetched = 0
+        for f in filings:
+            if f.form_type != "4":
+                kept.append(f)
+                continue
+            if fetched >= FORM4_MAX_FETCH:
+                continue
+            fetched += 1
+            # primaryDocument is the XSL-rendered view (xslF345X06/form4.xml); the raw XML drops that prefix.
+            xml_url = re.sub(r"/xslF345X\d+/", "/", f.document_url)
+            try:
+                r = await self.client.get(xml_url)
+                r.raise_for_status()
+                summary = describe_form4(r.text)
+            except Exception:
+                summary = None
+            await asyncio.sleep(0.12)   # SEC fair-access limit: 10 requests/second
+            if summary:
+                kept.append(f.model_copy(update={"description": summary, "document_url": xml_url}))
+        return kept
 
     # ── Full-Text Search ────────────────────────────────────────────────
 

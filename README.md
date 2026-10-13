@@ -14,7 +14,7 @@ Built for PE firms, credit analysts, hedge funds, and corporate finance teams.
 | Severity | LLM opinion | Calibrated against historical materialisation rates |
 | Compound events | None | 14 typed interaction rules (cascading/reinforcing/contradictory) |
 | LLM role | Primary decision maker | Explanation only — cannot invent signals |
-| Confidence | Opaque float | Calibrated against historical base-rate tables, adjusted by analyst feedback |
+| Confidence | Opaque float | Calibrated base-rate probability, plus a 7-component evidence-quality breakdown per signal |
 | Evidence | Keyword hits | 9 typed financial clause categories (going concern, covenant breach, etc.) |
 | Alpha score | None | 0–100 composite + SHAP-style breakdown + expected move estimates |
 | Backtesting | None | Precision/hit rate/10-day return/drawdown per signal type against recorded outcomes |
@@ -159,9 +159,9 @@ python main.py graph --summary
 
 ## Data Sources
 
-**US:** SEC EDGAR (8-K with item codes, 10-K, 10-Q, SC 13D/13G, DEF 14A), Yahoo Finance RSS, Google News US
+**US:** SEC EDGAR (8-K with item codes, 10-K, 10-Q, SC 13D/13G, Form 4 open-market trades, DEF 14A), Yahoo Finance RSS, Google News US
 
-**African Exchanges (7):** NGX Nigeria, JSE South Africa (SENS), NSE Kenya, GSE Ghana, Egyptian Exchange (EGX), Casablanca Stock Exchange, BRVM West Africa
+**African Exchanges:** JSE South Africa (SENS feed); NGX Nigeria, NSE Kenya, GSE Ghana, Egyptian Exchange (EGX), Casablanca and BRVM via news search and scraped sources (treated as news, credited to the publisher)
 
 **African News (49 RSS feeds):** Nigeria (10), South Africa (6), East Africa (7), Pan-African (8), Ghana (3), North Africa/Maghreb (3), West Africa/Francophone (4), Southern Africa (3), Horn of Africa (2), Ethiopia (2)
 
@@ -191,11 +191,11 @@ deal-intelligence-agent/
 │   │   ├── signal_interaction.py       # 14 compound event rules
 │   │   ├── calibration.py             # Historical base rate tables
 │   │   ├── adaptive_calibration.py    # Outcome-aware severity adjustment
-│   │   ├── confidence.py              # 7-component confidence decomposition (not yet used by the pipeline)
+│   │   ├── confidence.py              # 7-component evidence-quality breakdown per signal
 │   │   ├── semantic.py                # 9 typed financial clause categories
 │   │   ├── alpha_scorer.py            # 0–100 composite + expected moves
 │   │   ├── alpha_explainer.py         # SHAP-style attribution breakdown
-│   │   ├── signal_registry.py         # Modular signal specifications
+│   │   ├── signal_registry.py         # Signal metadata; patterns derived from the engine rules
 │   │   ├── feedback.py                # Analyst corrections + source EMA
 │   │   ├── audit_log.py               # SHA-256 hash-chained audit trail
 │   │   ├── warehouse.py               # SQLite event warehouse (8 tables)
@@ -232,7 +232,7 @@ deal-intelligence-agent/
 │   └── alerts.json                    # Alert history
 └── tests/
     ├── conftest.py                    # Redirects every data store to a per-test temp dir
-    └── test_all.py                    # 305 tests across all layers
+    └── test_all.py                    # 318 tests across all layers
 ```
 
 ---
@@ -243,7 +243,7 @@ deal-intelligence-agent/
 pytest tests/test_all.py -v
 ```
 
-**305 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration.
+**318 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration.
 
 ---
 

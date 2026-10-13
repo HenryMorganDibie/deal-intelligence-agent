@@ -13,7 +13,7 @@ from src.schemas.models import (
     SignalCandidate, DetectedSignal, ConfidenceDecomposition,
     SignalType, Severity
 )
-from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY
+from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY, candidate_credibility
 from src.engines.feedback import get_signal_stats, get_source_reliability
 from src.utils.clock import utcnow
 
@@ -34,9 +34,11 @@ FILING_STRENGTH: dict[str, float] = {
     "JSE SENS":           1.00,
     "NGX Announcement":   0.95,
     "NSE Kenya Disclosure": 0.93,
+    "JSE Announcement":   0.70,  # exchange-related news found by search, not the exchange feed
     "SC 13D":             0.95,
+    "SCHEDULE 13D":       0.95,
     "SC 13G":             0.90,
-    "Form 4":             0.88,
+    "4":                  0.88,  # Form 4 (EDGAR form type "4")
     "DEF 14A":            0.85,
     "10-K":               0.80,
     "10-Q":               0.75,
@@ -49,7 +51,7 @@ HALF_LIFE_DAYS = 21.0  # temporal relevance half-life
 
 def _source_reliability_score(candidate: SignalCandidate) -> float:
     """Combined static + learned source reliability."""
-    static_score = SOURCE_CREDIBILITY.get(candidate.source_name, DEFAULT_CREDIBILITY)
+    static_score = candidate_credibility(candidate.source_type, candidate.source_name)
     learned = get_source_reliability()
     learned_score = learned.get(candidate.source_name, static_score)
     # Blend: 70% static (stable), 30% learned (adaptive)
@@ -72,10 +74,10 @@ def _filing_strength_score(candidate: SignalCandidate) -> float:
 
 def _historical_precision_score(signal_type: SignalType) -> float:
     """Use accumulated feedback precision for this signal type."""
-    stats = get_signal_stats()
-    s = stats.get(signal_type.value)
-    if not s or s.get("total", 0) < 5:
-        # Not enough data — use conservative default
+    from src.engines.adaptive_calibration import MIN_SAMPLES_FOR_ADAPTATION, _labelled_samples
+    s = get_signal_stats().get(signal_type.value)
+    if not s or _labelled_samples(s) < MIN_SAMPLES_FOR_ADAPTATION:
+        # Not enough confirmed/false-positive labels — use conservative default
         return 0.60
     return round(s.get("precision", 0.60), 4)
 

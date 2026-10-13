@@ -6,6 +6,7 @@ with relevance scoring and deduplication.
 from __future__ import annotations
 
 import asyncio
+import html
 import re
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -118,7 +119,8 @@ class NewsTool:
             pub   = item.findtext("pubDate") or ""
             desc  = item.findtext("description") or ""
             # strip HTML from description
-            desc  = re.sub(r"<[^>]+>", " ", desc).strip()
+            desc  = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", desc)).split())
+            title = html.unescape(title)
             publisher = (item.findtext("source") or "").strip()
             items.append({"title": title, "link": link, "pubDate": pub, "description": desc,
                           "publisher": publisher})

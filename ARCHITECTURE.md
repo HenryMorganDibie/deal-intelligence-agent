@@ -37,8 +37,8 @@ Node 2 — DeterministicSignalEngine                     ← ZERO LLM
       ▼
 Node 3 — LLMExplanationNode                            ← LLM (explanation only)
   Adaptive calibration derives severity from outcome-adjusted base rates.
-  Confidence comes from calibrated base-rate tables; a 7-component decomposition
-  exists in engines/confidence.py but is not yet attached to briefs.
+  Confidence comes from calibrated base-rate tables. Each signal also carries a
+  7-component evidence-quality breakdown (engines/confidence.py), shown in briefs.
   LLM writes: headline, evidence list, 2-3 sentence reasoning. Cannot change signal_type or severity.
   Fallback: if LLM API fails, deterministic output used directly (no crash).
       │
@@ -81,11 +81,11 @@ AnalystBrief → Terminal | JSON | Markdown
 | Signal Interaction Engine | `engines/signal_interaction.py` | 14 compound event rules, alpha multipliers |
 | Calibration | `engines/calibration.py` | Historical base rate tables per signal type |
 | Adaptive Calibration | `engines/adaptive_calibration.py` | Outcome-aware severity adjustment from feedback |
-| Confidence Decomposition | `engines/confidence.py` | 7-component confidence breakdown (not yet wired into the pipeline) |
+| Confidence Decomposition | `engines/confidence.py` | 7-component evidence-quality breakdown attached to every signal |
 | Semantic Extraction | `engines/semantic.py` | 9 typed financial clause categories |
 | Alpha Scorer | `engines/alpha_scorer.py` | 0–100 composite + expected moves |
 | Alpha Explainer | `engines/alpha_explainer.py` | SHAP-style deterministic score attribution |
-| Signal Registry | `engines/signal_registry.py` | Modular, versioned signal specifications |
+| Signal Registry | `engines/signal_registry.py` | Signal metadata; patterns derived from the engine's `SIGNAL_RULES` |
 | Signal Interaction | `engines/signal_interaction.py` | Compound event detection, escalation |
 | Feedback Loop | `engines/feedback.py` | False positive logging, source EMA, precision/recall |
 | Audit Log | `engines/audit_log.py` | SHA-256 hash-chained immutable trail |
@@ -105,10 +105,10 @@ AnalystBrief → Terminal | JSON | Markdown
 ## Data Sources
 
 ### US Markets
-SEC EDGAR (8-K, 10-K, 10-Q, SC 13D/13G, Form 4, DEF 14A), Yahoo Finance RSS, Google News US
+SEC EDGAR (8-K with item codes, 10-K, 10-Q, SC 13D/13G, Form 4 open-market trades, DEF 14A), Yahoo Finance RSS, Google News US
 
-### African Exchanges (6)
-NGX (Nigeria), JSE SENS (South Africa), NSE Kenya, Ghana Stock Exchange (GSE), Egyptian Exchange (EGX), Casablanca Stock Exchange, BRVM (West Africa/Francophone)
+### African Exchanges
+JSE SENS (South Africa) is read as an exchange disclosure feed. NGX (Nigeria) and NSE Kenya have no machine-readable disclosure feed; exchange-related coverage for them (and for the JSE when SENS returns nothing) comes from news search and is treated as news, credited to its publisher. GSE, EGX, Casablanca and BRVM are covered through news and scraped sources.
 
 ### African Financial News (49 RSS feeds)
 Nigeria (10): BusinessDay, TechCabal, Stears, Nairametrics, Vanguard, ThisDay, Premium Times, The Guardian, Punch, Channels TV
@@ -154,13 +154,16 @@ The semantic extraction engine uses typed regex clause patterns — not embeddin
 
 ---
 
-### 7. Known Gaps Found in the October 2026 Audit
-- **Exchange "filings" are news search results.** NGX, JSE fallback and NSE Kenya items come from Google News queries, not the exchanges' own disclosure systems, yet carry exchange-level credibility (0.95). They now only count when they name the target company.
-- **Confidence decomposition and the signal registry are not wired in.** `confidence.py` is never called by the pipeline, and `signal_registry.py` is a second copy of the rules that the engine does not read; the two can drift.
-- **Earnings rules detect negative surprises only.** A beat ("crushes estimates") produces no signal.
-- **Form 4 is not collected.** EDGAR names it `4`, not `Form 4`; enabling it as-is would flag every routine insider grant.
-- **Replay uses static calibration.** Live runs use adaptive calibration from current feedback, so a replay can differ from the original run's severities.
-- **Liquidity tiers are a hard-coded ticker list.** Boeing, for example, is classed mid-cap.
+### 7. Signal Direction
+Earnings surprises and insider activity can go either way. The expected direction is read from the source text: a beat or raised guidance is positive, a miss or warning negative; an open-market insider purchase is positive, a discretionary sale negative. Positive-direction signals do not raise a company's risk score.
+
+Form 4 filings are reduced to discretionary open-market trades: purchases, and sales of at least $1M not made under a Rule 10b5-1 plan. Grants, option exercises and tax withholding are dropped. At most 10 Form 4s are read per run.
+
+### 8. Replay Depends on Feedback State
+Replay runs the same deterministic path as a live analysis (rule engine, adaptive calibration, alpha scoring, compound events). Adaptive calibration depends on accumulated analyst feedback, so the feedback statistics in use are recorded in each replay's config snapshot to explain any difference from the original run.
+
+### 9. Liquidity Tiers
+Tiers come from live market capitalisation in USD (large ≥ $10B, mid ≥ $2B, small ≥ $300M), converted from local currency where needed. Listings Yahoo does not cover (most NGX and NSE Kenya names) fall back to a static list and exchange heuristics.
 
 ---
 
@@ -232,7 +235,7 @@ python main.py registry --show credit_risk
 | Compound event engine | 14 interaction rules + escalation multipliers | ✅ Done |
 | Institutional audit | Hash-chained audit log + compliance mode | ✅ Done |
 | Feedback loop | False positive tracking + source EMA + precision/recall | ✅ Done |
-| Confidence decomposition | 7-component auditable breakdown | Built, not yet wired into briefs |
+| Confidence decomposition | 7-component auditable breakdown | ✅ Done |
 | Semantic extraction | 9 typed financial clause categories | ✅ Done |
 | Adaptive calibration | Outcome-aware severity adjustment | ✅ Done |
 | Market outcome modeling | Direction accuracy + magnitude error tracking | ✅ Done |

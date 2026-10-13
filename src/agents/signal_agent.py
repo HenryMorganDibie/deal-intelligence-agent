@@ -44,7 +44,7 @@ from src.engines.deterministic_engine import DeterministicSignalEngine
 from src.engines.signal_interaction import _get_systemic_risk
 from src.engines.adaptive_calibration import adaptive_calibrate
 from src.engines.alpha_scorer import score_all_signals, LOW_CONFIDENCE_SUPPRESS_THRESHOLD
-from src.engines.confidence import decompose_all
+from src.engines.confidence import decompose
 from src.engines.semantic import extract_from_filing, extract_from_news, evidence_to_strings
 from src.engines.audit_log import log_state
 
@@ -375,6 +375,13 @@ class AlphaScoringNode:
             ticker=ticker, exchange=exchange, sector=sector,
             compliance_mode=state.compliance_mode,
         )
+        # Attach the evidence-quality breakdown for each signal's originating candidate.
+        cand_map = {c.signal_type: c for c in state.signal_candidates}
+        state.detected_signals = [
+            s.model_copy(update={"confidence_decomposition": decompose(cand_map[s.signal_type])})
+            if s.signal_type in cand_map else s
+            for s in state.detected_signals
+        ]
         log_state(state, "alpha_scoring", "Alpha scores attached")
         return state
 

@@ -60,6 +60,10 @@ def _company_id(name: str, ticker: Optional[str] = None) -> str:
 MAX_SEEN_SIGNAL_KEYS = 500
 
 
+def _is_positive(sig) -> bool:
+    return bool(sig.alpha_score and sig.alpha_score.expected_direction == "positive")
+
+
 def _signal_key(sig) -> str:
     """Identity of a detected event: its type plus the source it came from."""
     source = (sig.filing_references or sig.source_urls or [sig.headline])[0]
@@ -99,10 +103,17 @@ def update_profile(brief: AnalystBrief) -> CompanyRiskProfile:
 
     old_risk = profile.rolling_risk_score
 
-    # Update rolling risk score from overall severity
-    new_risk_contribution = SEVERITY_RISK.get(brief.overall_severity, 0.0)
-    if brief.top_alpha_score:
-        new_risk_contribution = max(new_risk_contribution, brief.top_alpha_score * 0.9)
+    # Rolling risk comes from risk-bearing signals only: a positive-direction signal
+    # (an earnings beat, an insider purchase, a takeover premium) is not a risk.
+    risk_signals = [s for s in brief.detected_signals if not _is_positive(s)]
+    if brief.detected_signals:
+        new_risk_contribution = max(
+            [SEVERITY_RISK[Severity.LOW]] +
+            [max(SEVERITY_RISK.get(s.severity, 0.0), (s.alpha_score.score * 0.9) if s.alpha_score else 0.0)
+             for s in risk_signals]
+        )
+    else:
+        new_risk_contribution = SEVERITY_RISK.get(brief.overall_severity, 0.0)
 
     # Seed the average with the first observation; an EMA started from 0 reports a
     # first-time critical company at a quarter of its risk.
@@ -116,7 +127,7 @@ def update_profile(brief: AnalystBrief) -> CompanyRiskProfile:
     new_signals = 0
     for sig in brief.detected_signals:
         dimension = SIGNAL_DIMENSION_MAP.get(sig.signal_type)
-        if dimension:
+        if dimension and not _is_positive(sig):
             contribution = SEVERITY_RISK.get(sig.severity, 0.0)
             current_val  = getattr(profile, dimension, 0.0)
             setattr(profile, dimension, _ema(current_val, contribution))

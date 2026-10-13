@@ -163,7 +163,8 @@ class TestAgentState:
 
 class TestDeterministicEngine:
     def _state(self, filings=None, news=None):
-        s = AgentState(request=AnalysisRequest(company_name="Acme"))
+        # CIK matches self._filing(): these are the company's own SEC filings.
+        s = AgentState(request=AnalysisRequest(company_name="Acme", cik="0000001"))
         s.filings    = filings or []
         s.news_items = news   or []
         return s
@@ -275,6 +276,14 @@ class TestDeterministicEngine:
         )
         result = DeterministicSignalEngine().run(s)
         assert result.signal_candidates == []
+
+    def test_third_party_sec_filing_must_name_target(self):
+        """Full-text search returns other filers' 8-Ks; they only count if they name the target."""
+        from src.engines.deterministic_engine import DeterministicSignalEngine
+        other = SECFiling(accession_number="x", form_type="8-K", filing_date="2024-01-01",
+                          company_name="Beta Corp", cik="0000999", document_url="u",
+                          description="Definitive merger agreement signed")
+        assert DeterministicSignalEngine().run(self._state(filings=[other])).signal_candidates == []
 
     def test_sec_filing_needs_no_name_mention(self):
         """SEC filings are fetched by the company's CIK, so they are on-target by construction."""
@@ -1499,7 +1508,7 @@ class TestConfidenceDecomposition:
     def _cand(self, sig_type=SignalType.MA_ACTIVITY, raw=0.85, corr=2, source="Reuters"):
         return SignalCandidate(
             signal_type=sig_type, matched_patterns=[r"\bmerger\b"],
-            source_text="merger deal confirmed acquisition", source_type="filing",
+            source_text="merger deal confirmed acquisition", source_type="news",
             source_name=source, raw_score=raw, corroboration_count=corr,
             entity_mentions=["Acme Corp","$2.1 billion","35%"]
         )
@@ -3001,3 +3010,167 @@ def test_first_analysis_sets_full_risk_without_trend():
     p = update_profile(brief)
     assert p.rolling_risk_score == 90.0
     assert p.risk_trend == "stable" and p.risk_delta_30d == 0.0
+
+
+def test_registry_patterns_are_the_engine_rules():
+    """The registry must describe the rules the engine actually runs."""
+    from src.engines.signal_registry import SIGNAL_REGISTRY
+    from src.engines.deterministic_engine import SIGNAL_RULES
+    for sig_type, spec in SIGNAL_REGISTRY.items():
+        engine = {p for t, ps, _ in SIGNAL_RULES if t == sig_type for p in ps}
+        registry = set(spec.trigger_patterns_high + spec.trigger_patterns_medium + spec.trigger_patterns_low)
+        assert registry == engine, sig_type
+
+
+def test_signals_carry_evidence_quality_breakdown():
+    import src.agents.signal_agent as sa
+    from src.utils.formatter import brief_to_markdown
+    state = AgentState(request=AnalysisRequest(company_name="Acme", ticker="ACME"))
+    state.signal_candidates = [SignalCandidate(signal_type=SignalType.DISTRESSED_ASSET, matched_patterns=["p"],
+                                               source_text="t", source_type="filing", source_name="8-K",
+                                               raw_score=0.95)]
+    state.detected_signals = [DetectedSignal(signal_type=SignalType.DISTRESSED_ASSET, severity=Severity.HIGH,
+                                             headline="H", evidence=["E"], confidence=0.7, reasoning="R")]
+    out = sa.AlphaScoringNode().run(state)
+    d = out.detected_signals[0].confidence_decomposition
+    assert d is not None and d.source_reliability_score == 1.0 and d.filing_strength_score == 1.0
+    brief = AnalystBrief(company_name="Acme", executive_summary="x", overall_severity=Severity.HIGH,
+                         recommendation="y", confidence_score=0.7, detected_signals=out.detected_signals)
+    assert "**Evidence Quality:**" in brief_to_markdown(brief)
+
+
+async def test_exchange_search_results_are_news_not_filings(monkeypatch):
+    from src.tools import africa_tool as at
+    async def fake_rss(self, url, source_name=""):
+        if "senssearch" in url:
+            return []
+        return [{"title": "Acme posts results", "link": "https://news.google.com/x", "description": "Acme",
+                 "pubDate": "", "source_override": source_name, "publisher": "BusinessDay"}]
+    async def no_news(self, company_name, lookback_days=90):
+        return []
+    monkeypatch.setattr(at.AfricaTool, "_fetch_rss", fake_rss)
+    monkeypatch.setattr(at.AfricaTool, "fetch_african_news", no_news)
+    monkeypatch.setattr(at.asyncio, "sleep", AsyncMock())
+    filings, news = await at.fetch_african_intelligence("Acme", None)
+    assert filings == []
+    assert news and all(n.source == "BusinessDay" for n in news)
+
+
+def _form4(code, shares, price, plan="0", title="CEO"):
+    return (f"<ownershipDocument><aff10b5One>{plan}</aff10b5One><rptOwnerName>DOE JANE</rptOwnerName>"
+            f"<officerTitle>{title}</officerTitle><nonDerivativeTable><nonDerivativeTransaction>"
+            f"<transactionCoding><transactionCode>{code}</transactionCode></transactionCoding>"
+            f"<transactionAmounts><transactionShares><value>{shares}</value></transactionShares>"
+            f"<transactionPricePerShare><value>{price}</value></transactionPricePerShare></transactionAmounts>"
+            f"</nonDerivativeTransaction></nonDerivativeTable></ownershipDocument>")
+
+
+class TestDirectionalSignals:
+    def test_form4_keeps_only_discretionary_trades(self):
+        from src.tools.edgar_tool import describe_form4
+        assert "open-market purchase of 1,000 shares" in describe_form4(_form4("P", 1000, 50))
+        assert describe_form4(_form4("A", 50000, 0)) is None            # grant
+        assert describe_form4(_form4("F", 5000, 90)) is None            # tax withholding
+        assert describe_form4(_form4("S", 100000, 90, plan="1")) is None  # 10b5-1 plan sale
+        assert describe_form4(_form4("S", 100, 90)) is None             # below $1M
+        assert "not under a 10b5-1 plan" in describe_form4(_form4("S", 100000, 90))
+
+    def _alpha(self, sig_type, text, severity=Severity.HIGH):
+        from src.engines.alpha_scorer import compute_alpha_score
+        cand = SignalCandidate(signal_type=sig_type, matched_patterns=["p"], source_text=text,
+                               source_type="news", source_name="Reuters", raw_score=0.8)
+        sig = DetectedSignal(signal_type=sig_type, severity=severity, headline="H", evidence=["E"],
+                             confidence=0.7, reasoning="R")
+        return compute_alpha_score(sig, cand, ticker="ACME")
+
+    def test_earnings_beat_detected_and_positive(self):
+        from src.engines.deterministic_engine import _match_rules
+        text = "Acme crushes estimates and raises full-year guidance"
+        assert any(t == SignalType.EARNINGS_SURPRISE for t, _, _ in _match_rules(text))
+        assert self._alpha(SignalType.EARNINGS_SURPRISE, text).expected_direction == "positive"
+        assert self._alpha(SignalType.EARNINGS_SURPRISE, "Acme issues profit warning").expected_direction == "negative"
+
+    def test_insider_sale_is_negative(self):
+        sale = "Form 4 filed: open-market sale of 100,000 shares ($9,000,000), not under a 10b5-1 plan by X"
+        assert self._alpha(SignalType.INSIDER_ACTIVITY, sale).expected_direction == "negative"
+        buy = "Form 4 filed: open-market purchase of 1,000 shares ($50,000) by X"
+        assert self._alpha(SignalType.INSIDER_ACTIVITY, buy).expected_direction == "positive"
+
+    def test_positive_signals_do_not_raise_risk(self):
+        from src.engines.company_memory import update_profile
+        beat = DetectedSignal(signal_type=SignalType.EARNINGS_SURPRISE, severity=Severity.HIGH, headline="H",
+                              evidence=["E"], confidence=0.7, reasoning="R",
+                              alpha_score=self._alpha(SignalType.EARNINGS_SURPRISE, "Acme beats estimates"))
+        p = update_profile(AnalystBrief(company_name="Acme", executive_summary="x", overall_severity=Severity.HIGH,
+                                        recommendation="y", confidence_score=0.7, detected_signals=[beat]))
+        assert p.rolling_risk_score == 10.0   # LOW baseline, not the beat's alpha
+
+
+async def test_replay_uses_live_calibration_and_compounds():
+    """Replay must score a stored run the way a live run would (adaptive calibration + compounds)."""
+    from src.engines.replay import ReplayEngine
+    from src.engines.warehouse import get_session, store_analysis_run
+    from src.engines.adaptive_calibration import adaptive_calibrate
+    from src.engines.deterministic_engine import DeterministicSignalEngine
+    filings = [SECFiling(accession_number="a1", form_type="8-K", filing_date="2024-01-02", company_name="Acme",
+                         cik="0000001", document_url="u1",
+                         description="Item 1.03: Bankruptcy or Receivership; Item 2.04: Triggering Events")]
+    brief = AnalystBrief(company_name="Acme", ticker="ACME", executive_summary="x",
+                         overall_severity=Severity.HIGH, recommendation="y", confidence_score=0.7,
+                         detected_signals=[], filings_reviewed=filings)
+    store_analysis_run("run-1", brief)
+    session = get_session()
+    result = await ReplayEngine(session).replay("Acme", "2024-12-31", "run-1")
+    session.close()
+    types = {s["type"] for s in result["signal_summary"]}
+    assert types == {"distressed_asset", "credit_risk"}
+    assert result["compound_events"]                      # credit risk + distress interact
+    live = AgentState(request=AnalysisRequest(company_name="Acme", cik="0000001"))
+    live.filings = filings
+    cand = next(c for c in DeterministicSignalEngine().run(live).signal_candidates
+                if c.signal_type == SignalType.DISTRESSED_ASSET)
+    replayed = next(s for s in result["signal_summary"] if s["type"] == "distressed_asset")
+    assert replayed["severity"] == adaptive_calibrate(cand)[0].value
+    assert "calibration_feedback_stats" in result["config_snapshot"]
+
+
+class TestLiquidityTier:
+    def test_tier_from_market_cap(self, monkeypatch):
+        from src.engines import alpha_scorer as al
+        monkeypatch.setattr(al, "_market_cap_usd", lambda t: 147e9)
+        assert al._infer_liquidity_tier("BA", None, None) == LiquidityTier.LARGE_CAP
+        monkeypatch.setattr(al, "_market_cap_usd", lambda t: 5e9)
+        assert al._infer_liquidity_tier("XYZ", None, None) == LiquidityTier.MID_CAP
+        monkeypatch.setattr(al, "_market_cap_usd", lambda t: 100e6)
+        assert al._infer_liquidity_tier("XYZ", None, None) == LiquidityTier.MICRO_CAP
+
+    def test_minor_unit_currency_converted(self, monkeypatch):
+        """JSE quotes market cap in South African cents (ZAc)."""
+        import yfinance as yf
+        from src.engines import alpha_scorer as al
+        class FakeTicker:
+            def __init__(self, sym): self.sym = sym
+            @property
+            def fast_info(self):
+                if self.sym == "ZARUSD=X":
+                    return {"lastPrice": 0.06}
+                return {"marketCap": 53_000_000_000_000.0, "currency": "ZAc"}
+        monkeypatch.setattr(yf, "Ticker", FakeTicker)
+        assert al._lookup_market_cap_usd("NPN.JO") == pytest.approx(53e12 / 100 * 0.06)
+
+    def test_falls_back_without_market_data(self):
+        from src.engines import alpha_scorer as al
+        assert al._infer_liquidity_tier("GTCO", None, None) == LiquidityTier.LARGE_CAP
+        assert al._infer_liquidity_tier(None, None, None) == LiquidityTier.PRIVATE
+
+
+async def test_rss_text_is_unescaped():
+    from src.tools.news_tool import NewsTool
+    rss = ('<rss><channel><item><title>A &amp; B</title><link>l</link><pubDate></pubDate>'
+           '<description>&lt;a href="x"&gt;Acme&lt;/a&gt;&amp;nbsp;&amp;nbsp;Reuters</description>'
+           '</item></channel></rss>')
+    tool = NewsTool(); tool._client = MagicMock()
+    resp = MagicMock(); resp.text = rss; resp.raise_for_status = MagicMock()
+    tool._client.get = AsyncMock(return_value=resp)
+    item = (await tool._fetch_rss("u"))[0]
+    assert item["title"] == "A & B" and item["description"] == "Acme Reuters"

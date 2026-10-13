@@ -16,6 +16,8 @@ It is a ranked input to the portfolio manager's own decision process.
 """
 from __future__ import annotations
 
+import re
+
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -96,6 +98,37 @@ HUMAN_REVIEW_SEVERITY_SET    = {Severity.CRITICAL}
 LOW_CONFIDENCE_SUPPRESS_THRESHOLD = 0.40  # compliance mode: suppress signals below this
 
 
+_POSITIVE_EARNINGS = re.compile(
+    r"\b(beats?|topped|tops|crush(es|ed)?|exceed(s|ed)?|surpass(es|ed)?)\b.{0,30}\b(estimates?|expectations?|consensus|forecasts?)\b"
+    r"|\b(raises?|raised|lifts?|lifted|boosts?|boosted)\s+(its\s+)?(full[-\s]year\s+|annual\s+)?(guidance|outlook|forecast)\b"
+    r"|\bsignificantly\s+above\s+(expectations?|guidance|consensus)\b",
+    re.IGNORECASE,
+)
+_NEGATIVE_EARNINGS = re.compile(
+    r"\b(miss(es|ed)?|warning|below|cut|lowered|reduced|withdrawn|declin\w*|fell|dropped|disappointing|weaker|loss|restatement)\b",
+    re.IGNORECASE,
+)
+
+
+def signal_direction(signal_type: SignalType, source_text: str, default: str) -> str:
+    """
+    Direction implied by the source text, where the signal type can go either way.
+    Earnings: a beat or raised guidance is positive (unless the text also reports a
+    miss). Insider activity: an open-market sale is negative, a purchase positive.
+    """
+    text = source_text or ""
+    if signal_type == SignalType.EARNINGS_SURPRISE:
+        if _POSITIVE_EARNINGS.search(text) and not _NEGATIVE_EARNINGS.search(text):
+            return "positive"
+        return default
+    if signal_type == SignalType.INSIDER_ACTIVITY:
+        sale = re.search(r"\b(open-market\s+sale|insider\s+selling|director\s+sale|disposal)\b", text, re.I)
+        purchase = re.search(r"\b(open-market\s+purchase|insider\s+buying|director\s+purchase)\b", text, re.I)
+        if sale and not purchase:
+            return "negative"
+    return default
+
+
 def _recency_decay(detected_at: datetime, half_life_days: float = 14.0) -> float:
     """
     Exponential recency decay.
@@ -120,26 +153,80 @@ def _corroboration_weight(n: int) -> float:
     return 1.0 - (1.0 / (1.0 + 0.8 * n))
 
 
+# Market-cap tiers in USD.
+LARGE_CAP_MIN_USD = 10e9
+MID_CAP_MIN_USD   = 2e9
+SMALL_CAP_MIN_USD = 300e6
+
+# Currencies Yahoo quotes in minor units: code -> (major currency, divisor).
+_MINOR_UNIT_CURRENCIES = {"ZAc": ("ZAR", 100), "GBp": ("GBP", 100), "ILA": ("ILS", 100)}
+
+_MCAP_CACHE: dict[str, Optional[float]] = {}
+
+
+def _lookup_market_cap_usd(ticker: str) -> Optional[float]:
+    """Live market capitalisation in USD via yfinance, or None if unavailable."""
+    import logging
+    import yfinance as yf
+    from src.engines.market_data import _resolve_ticker
+    logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+    try:
+        info = yf.Ticker(_resolve_ticker(ticker)).fast_info
+        cap = float(info["marketCap"])
+        currency = info["currency"]
+        if not cap or cap <= 0 or not currency:
+            return None
+        currency, divisor = _MINOR_UNIT_CURRENCIES.get(currency, (currency, 1))
+        cap /= divisor
+        if currency != "USD":
+            cap *= float(yf.Ticker(f"{currency}USD=X").fast_info["lastPrice"])
+        return cap
+    except Exception:
+        return None
+
+
+def _market_cap_usd(ticker: str) -> Optional[float]:
+    key = ticker.upper()
+    if key not in _MCAP_CACHE:
+        _MCAP_CACHE[key] = _lookup_market_cap_usd(key)
+    return _MCAP_CACHE[key]
+
+
+def _tier_for_market_cap(cap_usd: float) -> LiquidityTier:
+    if cap_usd >= LARGE_CAP_MIN_USD:
+        return LiquidityTier.LARGE_CAP
+    if cap_usd >= MID_CAP_MIN_USD:
+        return LiquidityTier.MID_CAP
+    if cap_usd >= SMALL_CAP_MIN_USD:
+        return LiquidityTier.SMALL_CAP
+    return LiquidityTier.MICRO_CAP
+
+
 def _infer_liquidity_tier(
     ticker: Optional[str],
     exchange: Optional[str],
     sector: Optional[str],
 ) -> LiquidityTier:
     """
-    Infer liquidity tier from available company metadata.
-    In production this would be replaced by a market cap lookup.
+    Liquidity tier from live market capitalisation (USD), falling back to a
+    static list and exchange heuristics when no market data is available
+    (e.g. NGX and NSE Kenya listings, which Yahoo does not cover).
     """
     if not ticker:
         return LiquidityTier.PRIVATE
 
-    ticker_upper = ticker.upper()
+    cap = _market_cap_usd(ticker)
+    if cap:
+        return _tier_for_market_cap(cap)
 
-    # Known large-cap tickers (illustrative — extend as needed)
+    ticker_upper = ticker.upper()
+    # Fallback for listings without market data. Unsuffixed tickers are US listings,
+    # so JSE names that collide with US symbols appear only with their suffix.
     large_caps = {
         "AAPL","MSFT","GOOGL","AMZN","META","NVDA","BRK","JPM","V","JNJ",
-        "GTCO","ZENITHBANK","ACCESS","FBNH","UBA",          # NGX Tier 1
-        "NPN","SOL","BHP","MTN","ABG","SLM","FSR","REM",    # JSE Top 40
-        "SCOM","KCB","EQTY",                                 # NSE Kenya Tier 1
+        "GTCO","ZENITHBANK","ACCESS","FBNH","UBA.LG",                       # NGX Tier 1
+        "NPN","SOL.JO","BHP.JO","MTN.JO","ABG.JO","SLM.JO","FSR.JO","REM.JO",  # JSE Top 40
+        "SCOM","KCB","EQTY",                                                # NSE Kenya Tier 1
     }
     if ticker_upper in large_caps:
         return LiquidityTier.LARGE_CAP
@@ -196,6 +283,8 @@ def compute_alpha_score(
     direction, low_pct, high_pct, comparable_n, move_confidence = (
         move if move else ("neutral", 0.0, 0.0, 0, "low")
     )
+    if direction != "neutral":
+        direction = signal_direction(signal.signal_type, candidate.source_text, direction)
 
     # Compliance flags
     requires_review = False

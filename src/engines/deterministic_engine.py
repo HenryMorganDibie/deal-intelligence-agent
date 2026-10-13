@@ -176,6 +176,12 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bnegative\s+(surprise|result|performance)\b",
         r"\bbelow[-\s](plan|budget|forecast|expectations?)\b",
     ], 0.72),
+    # Positive surprises (direction is set from the text in alpha_scorer.signal_direction)
+    (SignalType.EARNINGS_SURPRISE, [
+        r"\b(beats?|beat|topped|tops|crush(es|ed)?|exceed(s|ed)?|surpass(es|ed)?)\b.{0,30}\b(estimates?|expectations?|consensus|forecasts?)\b",
+        r"\b(raises?|raised|lifts?|lifted|boosts?|boosted)\s+(its\s+)?(full[-\s]year\s+|annual\s+)?(guidance|outlook|forecast)\b",
+        r"\bsignificantly\s+above\s+(expectations?|guidance|consensus)\b",
+    ], 0.80),
     (SignalType.EARNINGS_SURPRISE, [
         r"\bweaker\s+(than\s+expected|results?|performance)\b",
         r"\bdisappointing\s+(results?|earnings?|revenue)\b",
@@ -313,8 +319,11 @@ _GENERIC_NAME_WORDS = {
     "plc", "llc", "lp", "holdings", "holding", "group", "the", "and", "of",
     "bank", "financial", "capital", "international", "global", "trust", "sa", "ag", "nv",
 }
-# SEC filings are fetched by the company's own CIK; exchange "filings" are news search results.
-_NON_SEC_FILING_SOURCES = {"NGX", "JSE", "NSE-KE"}
+def _cik_number(cik: Optional[str]) -> Optional[int]:
+    try:
+        return int(str(cik))
+    except (TypeError, ValueError):
+        return None
 
 
 def _company_matchers(*names: Optional[str], ticker: Optional[str] = None) -> list[re.Pattern]:
@@ -354,7 +363,9 @@ def _source_credibility(source_name: str) -> float:
 
 
 # Form types the exchange tools emit (see africa_tool); everything else in state.filings is from SEC EDGAR.
-_EXCHANGE_FORM_TYPES = {"NGX Announcement", "JSE SENS", "JSE Announcement", "NSE Kenya Disclosure"}
+# Only the JSE SENS feed is an exchange disclosure system; NGX/NSE/JSE-fallback
+# results from news search arrive as news items with their real publisher.
+_EXCHANGE_FORM_TYPES = {"JSE SENS"}
 
 
 def _source_date(value: Optional[str]) -> Optional[datetime]:
@@ -391,6 +402,7 @@ class DeterministicSignalEngine:
             ticker=state.request.ticker or (profile.ticker if profile else None),
         )
         off_target = 0
+        own_cik = _cik_number(state.request.cik or (profile.cik if profile else None))
 
         # Process filings
         for filing in state.filings:
@@ -402,7 +414,10 @@ class DeterministicSignalEngine:
             if not text.strip():
                 continue
             # A source that never names the target cannot evidence a signal about it.
-            if filing.cik in _NON_SEC_FILING_SOURCES and not _mentions_company(text, matchers):
+            # Only the company's own SEC filings (fetched by its CIK) are exempt; full-text
+            # search hits are other companies' filings that may merely mention it.
+            own_filing = own_cik is not None and _cik_number(filing.cik) == own_cik
+            if not own_filing and not _mentions_company(text, matchers):
                 off_target += 1
                 continue
             hits = _match_rules(text)

@@ -49,9 +49,12 @@ class ReplayEngine:
     def get_config_snapshot(self) -> dict:
         """Return current system configuration for version-locking a run."""
         from src.engines.audit_log import _model_version
+        from src.engines.feedback import get_signal_stats
         return {
             **CONFIG_SNAPSHOT,
             "model_version": _model_version(),
+            # Adaptive calibration depends on accumulated feedback; record what this run used.
+            "calibration_feedback_stats": get_signal_stats(),
             "snapshot_at": utcnow().isoformat(),
         }
 
@@ -141,7 +144,6 @@ class ReplayEngine:
         """
         from src.schemas.models import AnalysisRequest, AgentState, SECFiling, NewsItem
         from src.engines.deterministic_engine import DeterministicSignalEngine
-        from src.engines.calibration import calibrate_all
         from src.engines.alpha_scorer import score_all_signals
 
         replay_id = str(uuid.uuid4())
@@ -193,34 +195,48 @@ class ReplayEngine:
                 except Exception:
                     pass
 
-        # Build state with historical data
-        request = AnalysisRequest(company_name=company_name)
+        # Build state with historical data. Ticker/CIK come from the original run so
+        # the relevance gate and liquidity tier match what the live run saw.
+        ticker = cik = None
+        if self._session and original_run_id:
+            from src.engines.warehouse import AnalystBriefRecord
+            row = (self._session.query(AnalystBriefRecord)
+                   .filter(AnalystBriefRecord.run_id == original_run_id).first())
+            if row:
+                ticker = row.ticker
+                try:
+                    profile = json.loads(row.brief_json or "{}")
+                    cik = next((f.get("cik") for f in profile.get("filings_reviewed", [])
+                                if str(f.get("cik", "")).isdigit()), None)
+                except ValueError:
+                    pass
+        request = AnalysisRequest(company_name=company_name, ticker=ticker, cik=cik)
         state = AgentState(request=request)
         state.filings    = historical_filings
         state.news_items = historical_news
 
-        # Re-run deterministic engine
+        # Same deterministic path as a live run (no LLM): rule engine, adaptive
+        # calibration, alpha scoring, then compound-event multipliers.
         state = DeterministicSignalEngine().run(state)
-
-        # Re-run calibration
-        calibrated = calibrate_all(state.signal_candidates)
-
-        # Re-run alpha scoring (no LLM — pure deterministic replay)
-        from src.engines.alpha_scorer import compute_alpha_score
+        from src.engines.adaptive_calibration import adaptive_calibrate
+        from src.engines.signal_interaction import SignalInteractionEngine
         from src.schemas.models import DetectedSignal
-        replay_signals = []
-        for cand, sev, conf, _ in calibrated:
-            sig = DetectedSignal(
+        signals = []
+        for cand in state.signal_candidates:
+            sev, conf, _ = adaptive_calibrate(cand)
+            signals.append(DetectedSignal(
                 signal_type=cand.signal_type, severity=sev,
                 headline=f"[REPLAY] {cand.signal_type.value.replace('_',' ').title()}",
                 evidence=[cand.source_text[:200]],
                 source_urls=[cand.source_url] if cand.source_url else [],
+                filing_references=[cand.filing_reference] if cand.filing_reference else [],
                 confidence=conf, reasoning="[Deterministic replay — no LLM]",
                 candidate_patterns=cand.matched_patterns,
                 corroboration_count=cand.corroboration_count,
-            )
-            alpha = compute_alpha_score(sig, cand)
-            replay_signals.append(sig.model_copy(update={"alpha_score": alpha}))
+            ))
+        state.detected_signals = score_all_signals(signals, state.signal_candidates, ticker=ticker)
+        state = SignalInteractionEngine().run(state)
+        replay_signals = state.detected_signals
 
         result = {
             "replay_id": replay_id,
@@ -228,6 +244,10 @@ class ReplayEngine:
             "as_of_date": as_of_date,
             "original_run_id": original_run_id,
             "config_snapshot": self.get_config_snapshot(),
+            "compound_events": [
+                {"types": [t.value for t in c.component_signal_types], "interaction": c.interaction_type.value}
+                for c in state.compound_signals
+            ],
             "filings_used": len(historical_filings),
             "news_used": len(historical_news),
             "candidates_produced": len(state.signal_candidates),

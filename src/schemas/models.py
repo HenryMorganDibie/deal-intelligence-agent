@@ -191,6 +191,9 @@ class DetectedSignal(BaseModel):
     candidate_patterns: list[str] = Field(default_factory=list, description="Patterns that fired in deterministic engine")
     corroboration_count: int = Field(default=1)
     alpha_score: Optional[AlphaScore] = None
+    # Evidence-quality breakdown (source, corroboration, filing strength, ...). Separate
+    # from `confidence`, which is the calibrated probability the event materialises.
+    confidence_decomposition: Optional["ConfidenceDecomposition"] = None
 
 
 # ─────────────────────────────────────────────
