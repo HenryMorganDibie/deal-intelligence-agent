@@ -7,6 +7,7 @@ and inconsistent naming across sources.
 """
 from __future__ import annotations
 
+from src.utils.storage import load_json, save_json
 import json
 import re
 import unicodedata
@@ -38,17 +39,11 @@ def _normalise_name(name: str) -> str:
 
 
 def _load() -> dict:
-    ENTITY_REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if not ENTITY_REGISTRY_PATH.exists():
-        return {"entities": {}, "alias_map": {}, "cik_map": {}, "lei_map": {}, "ticker_map": {}}
-    try:
-        return json.loads(ENTITY_REGISTRY_PATH.read_text())
-    except Exception:
-        return {"entities": {}, "alias_map": {}, "cik_map": {}, "lei_map": {}, "ticker_map": {}}
+    return load_json(ENTITY_REGISTRY_PATH, lambda: {"entities": {}, "alias_map": {}, "cik_map": {}, "lei_map": {}, "ticker_map": {}})
 
 
 def _save(data: dict) -> None:
-    ENTITY_REGISTRY_PATH.write_text(json.dumps(data, indent=2))
+    save_json(ENTITY_REGISTRY_PATH, data)
 
 
 class EntityResolver:

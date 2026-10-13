@@ -264,7 +264,7 @@ class AnalystBrief(BaseModel):
     company_name: str
     ticker: Optional[str] = None
     brief_date: datetime = Field(default_factory=datetime.utcnow)
-    analyst_model: str = Field(default="claude-sonnet-4-20250514")
+    analyst_model: str = Field(default="unspecified")
 
     # Executive summary
     executive_summary: str
@@ -456,6 +456,8 @@ class CompanyRiskProfile(BaseModel):
         default_factory=dict, description="signal_type -> count"
     )
     repeated_patterns: list[str] = Field(default_factory=list)
+    # Keys of signals already counted, so re-running an analysis does not recount the same event.
+    seen_signal_keys: list[str] = Field(default_factory=list)
 
     # Historical alpha scores
     alpha_score_history: list[dict[str, Any]] = Field(default_factory=list)

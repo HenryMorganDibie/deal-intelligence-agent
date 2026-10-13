@@ -339,11 +339,12 @@ async def _run_monitor(args: argparse.Namespace) -> None:
     )
 
     if getattr(args, 'add', None):
+        ticker = getattr(args, 'ticker', None)
+        if ticker and len(args.add) > 1:
+            console.print("[red]--ticker applies to one company; add companies with tickers one at a time[/red]")
+            sys.exit(1)
         for company in args.add:
-            entry = add_to_watchlist(
-                company, ticker=getattr(args,'ticker',None),
-                webhook_url=getattr(args,'webhook',None)
-            )
+            add_to_watchlist(company, ticker=ticker, webhook_url=getattr(args, 'webhook', None))
             console.print(f"[green]✓[/green] Added {company} to watchlist")
         return
 
@@ -610,6 +611,15 @@ def _run_backtest(args: argparse.Namespace) -> None:
     _print_backtest_result(result)
 
 
+def _pct(v) -> str:
+    return "—" if v is None else f"{v:.1%}"
+
+
+def _num(v, unit: str = "") -> str:
+    # 0 is a real value (e.g. a 0-day time to event), so test for None explicitly.
+    return "—" if v is None else f"{v}{unit}"
+
+
 def _print_backtest_result(result: dict) -> None:
     if "error" in result:
         console.print(f"[red]Backtest error:[/red] {result['error']}"); return
@@ -618,7 +628,7 @@ def _print_backtest_result(result: dict) -> None:
     console.print(f"\n[bold cyan]Backtest Results[/bold cyan] — {result.get('run_at','')[:19]}")
     console.print(f"Mode: {result.get('mode','live')} | Signals evaluated: {result.get('total_signals_evaluated',0)} | Outcomes: {result.get('total_outcomes_available',0)}")
     if overall:
-        console.print(f"Macro Precision: [bold]{overall.get('macro_precision',0):.1%}[/bold]  F1: [bold]{overall.get('macro_f1',0):.1%}[/bold]  Hit Rate: [bold]{overall.get('avg_hit_rate',0):.1%}[/bold]  Avg Return: [bold]{overall.get('avg_excess_return_pct') or 'n/a'}%[/bold]")
+        console.print(f"Macro Precision: [bold]{_pct(overall.get('macro_precision'))}[/bold]  F1: [bold]{_pct(overall.get('macro_f1'))}[/bold]  Hit Rate: [bold]{_pct(overall.get('avg_hit_rate'))}[/bold]  Avg Return: [bold]{_num(overall.get('avg_excess_return_pct'), '%')}[/bold]")
 
     t = Table(box=box.SIMPLE_HEAD, header_style="bold cyan")
     for col in ["Signal Type","Flagged","TP","FP","Precision","F1","Hit Rate","Avg Return","Median TTE"]:
@@ -628,10 +638,10 @@ def _print_backtest_result(result: dict) -> None:
         t.add_row(
             sig, str(m.get("signals_flagged",0)), str(m.get("true_positives",0)), str(m.get("false_positives",0)),
             f"[{color}]{m.get('precision',0):.1%}[/{color}]",
-            f"{m.get('f1',0):.1%}",
-            f"{m.get('hit_rate',0):.1%}",
-            f"{m.get('avg_excess_return_10d_pct') or '—'}%",
-            f"{m.get('median_days_to_event') or '—'}d",
+            _pct(m.get('f1')),
+            _pct(m.get('hit_rate')),
+            _num(m.get('avg_excess_return_10d_pct'), '%'),
+            _num(m.get('median_days_to_event'), 'd'),
         )
     console.print(t)
     if result.get("data_quality_note"):
@@ -674,8 +684,10 @@ def _run_portfolio(args: argparse.Namespace) -> None:
     if "error" in result:
         console.print(f"[dim]{result['error']}[/dim]"); return
 
-    risk_color = "red" if result["portfolio_risk_level"] in ("critical","high") else "yellow" if result["portfolio_risk_level"] == "medium" else "green"
-    console.print(f"\n[bold]Portfolio:[/bold] {name}  |  Holdings: {result['total_holdings']}  |  Risk: [{risk_color}]{result['portfolio_risk_level'].upper()}[/{risk_color}] ({result['weighted_portfolio_risk']:.1f}/100)")
+    level = result["portfolio_risk_level"]
+    risk_color = ("red" if level in ("critical", "high") else "yellow" if level == "medium"
+                  else "dim" if level == "unknown" else "green")
+    console.print(f"\n[bold]Portfolio:[/bold] {name}  |  Holdings: {result['total_holdings']}  |  Risk: [{risk_color}]{level.upper()}[/{risk_color}] ({result['weighted_portfolio_risk']:.1f}/100, profiles cover {result.get('profile_coverage_weight', 0):.0%} of weight)")
 
     t = Table(title="Top Risk Positions", box=box.SIMPLE_HEAD, header_style="bold cyan")
     for col in ["Company","Weight","Risk","Trend","Top Signals"]:

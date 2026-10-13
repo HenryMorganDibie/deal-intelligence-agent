@@ -26,23 +26,19 @@ EXCHANGE_SUFFIXES = {
     "BRVM": ".BV",   # BRVM West Africa
 }
 
-# Known African ticker mappings (extend as coverage grows)
+# Known African ticker mappings (extend as coverage grows).
+# Only symbols that are NOT also US tickers belong here: an unsuffixed ticker is
+# assumed US-listed. JSE/NGX names that collide with US symbols (e.g. SLM is
+# Sallie Mae in the US and Sanlam on the JSE; MTN is Vail Resorts in the US)
+# must be given with their exchange suffix (SLM.JO, MTN.JO, UBA.LG, ...).
 AFRICAN_TICKER_MAP: dict[str, str] = {
     "GTCO":         "GTCO.LG",
     "ZENITHBANK":   "ZENITHBANK.LG",
     "ACCESS":       "ACCESS.LG",
     "FBNH":         "FBNH.LG",
-    "UBA":          "UBA.LG",
     "DANGCEM":      "DANGCEM.LG",
     "MTNN":         "MTNN.LG",
     "NPN":          "NPN.JO",
-    "MTN":          "MTN.JO",
-    "SOL":          "SOL.JO",
-    "BHP":          "BHP.JO",
-    "ABG":          "ABG.JO",
-    "FSR":          "FSR.JO",
-    "REM":          "REM.JO",
-    "SLM":          "SLM.JO",
     "SCOM":         "SCOM.NR",
     "KCB":          "KCB.NR",
     "EQTY":         "EQTY.NR",

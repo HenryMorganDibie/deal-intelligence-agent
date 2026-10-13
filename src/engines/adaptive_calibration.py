@@ -28,6 +28,12 @@ SECTOR_PRECISION_MAP: dict[str, dict[str, float]] = {
 }
 
 
+def _labelled_samples(s: dict) -> int:
+    """Feedback that says whether a flagged signal was right: confirmations and false positives.
+    Missed-event and severity reports do not, so they must not activate precision adjustments."""
+    return s.get("confirmed", 0) + s.get("false_positive", 0)
+
+
 def _get_precision_adjustment(signal_type: SignalType) -> float:
     """
     Derive a precision-based adjustment factor from accumulated feedback.
@@ -35,9 +41,7 @@ def _get_precision_adjustment(signal_type: SignalType) -> float:
     """
     stats = get_signal_stats()
     s = stats.get(signal_type.value, {})
-    total = s.get("total", 0)
-
-    if total < MIN_SAMPLES_FOR_ADAPTATION:
+    if _labelled_samples(s) < MIN_SAMPLES_FOR_ADAPTATION:
         return 1.0  # not enough data — use static calibration
 
     precision = s.get("precision", 0.60)
@@ -53,7 +57,11 @@ def _get_fp_penalty(signal_type: SignalType) -> float:
     Penalty factor based on false positive rate.
     High FP rate → reduce effective score.
     """
-    fp_rate = false_positive_rate(signal_type)
+    s = get_signal_stats().get(signal_type.value, {})
+    labelled = _labelled_samples(s)
+    if labelled < MIN_SAMPLES_FOR_ADAPTATION:
+        return 1.0  # one or two reports must not move every future score
+    fp_rate = s.get("false_positive", 0) / labelled
     # FP rate 0.5 → 0.75x penalty; FP rate 0 → 1.0x (no penalty)
     return max(0.60, 1.0 - fp_rate * 0.5)
 
@@ -142,7 +150,8 @@ def get_calibration_report() -> dict:
         fp_penalty = _get_fp_penalty(sig_type)
         report[sig_type.value] = {
             "feedback_samples": total,
-            "adaptive_active": total >= MIN_SAMPLES_FOR_ADAPTATION,
+            "labelled_samples": _labelled_samples(s),
+            "adaptive_active": _labelled_samples(s) >= MIN_SAMPLES_FOR_ADAPTATION,
             "precision_adjustment": round(precision_adj, 3),
             "fp_penalty": round(fp_penalty, 3),
             "net_adjustment": round(precision_adj * fp_penalty, 3),

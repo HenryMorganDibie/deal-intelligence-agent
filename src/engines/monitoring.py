@@ -7,6 +7,7 @@ Run: python main.py monitor --companies GTBank Shoprite --interval 60
 """
 from __future__ import annotations
 
+from src.utils.storage import load_json, save_json
 import asyncio
 import json
 import os
@@ -27,34 +28,22 @@ ALERT_ALPHA_THRESHOLD    = 50.0                 # alert when alpha score >= 50
 
 
 def _load_watchlist() -> list[dict]:
-    WATCHLIST_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if not WATCHLIST_PATH.exists():
-        return []
-    try:
-        return json.loads(WATCHLIST_PATH.read_text())
-    except Exception:
-        return []
+    return load_json(WATCHLIST_PATH, lambda: [])
 
 
 def _save_watchlist(data: list) -> None:
-    WATCHLIST_PATH.write_text(json.dumps(data, indent=2))
+    save_json(WATCHLIST_PATH, data)
 
 
 def _load_alerts() -> list[dict]:
-    ALERTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if not ALERTS_PATH.exists():
-        return []
-    try:
-        return json.loads(ALERTS_PATH.read_text())
-    except Exception:
-        return []
+    return load_json(ALERTS_PATH, lambda: [])
 
 
 def _save_alert(alert: dict) -> None:
     alerts = _load_alerts()
     alerts.append(alert)
     alerts = alerts[-500:]  # keep last 500
-    ALERTS_PATH.write_text(json.dumps(alerts, indent=2, default=str))
+    save_json(ALERTS_PATH, alerts)
 
 
 def add_to_watchlist(
@@ -105,6 +94,16 @@ def get_watchlist() -> list[dict]:
 
 def get_recent_alerts(limit: int = 50) -> list[dict]:
     return list(reversed(_load_alerts()[-limit:]))
+
+
+_SEVERITY_ORDER = {Severity.LOW: 0, Severity.MEDIUM: 1, Severity.HIGH: 2, Severity.CRITICAL: 3}
+
+
+def _parse_severity(value: Optional[str]) -> Optional[Severity]:
+    try:
+        return Severity(value) if value else None
+    except ValueError:
+        return None
 
 
 def _should_alert(brief: AnalystBrief, entry: dict) -> bool:
@@ -188,7 +187,17 @@ async def _check_company(entry: dict) -> Optional[dict]:
         return {"company": company, "error": str(e), "checked_at": datetime.utcnow().isoformat()}
 
     if not _should_alert(brief, entry):
-        return None
+        return {"company": company, "checked_at": datetime.utcnow().isoformat(), "alert_keys": []}
+
+    # Alert on change, not on every cycle: only new events or a severity escalation.
+    from src.engines.company_memory import _signal_key
+    keys = sorted({_signal_key(sig) for sig in brief.detected_signals})
+    previous = set(entry.get("alerted_signal_keys") or [])
+    escalated = _SEVERITY_ORDER[brief.overall_severity] > _SEVERITY_ORDER.get(
+        _parse_severity(entry.get("last_alert_severity")), -1)
+    if previous and set(keys) <= previous and not escalated:
+        return {"company": company, "checked_at": datetime.utcnow().isoformat(),
+                "alert_keys": sorted(previous), "suppressed_repeat": True}
 
     alert = {
         "alert_id": f"alert_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{company[:8]}",
@@ -207,17 +216,16 @@ async def _check_company(entry: dict) -> Optional[dict]:
         ]
     }
 
-    _save_alert(alert)
-
-    # Deliver to webhook if configured
+    # Deliver to webhook if configured, and record whether delivery worked.
     webhook = entry.get("webhook_url") or os.getenv("DEAL_INTEL_WEBHOOK_URL")
+    alert["delivered"] = None
     if webhook:
-        # Try Slack format first
         if "hooks.slack.com" in webhook:
-            await _deliver_slack(webhook, brief, company)
+            alert["delivered"] = await _deliver_slack(webhook, brief, company)
         else:
-            await _deliver_webhook(webhook, alert)
-
+            alert["delivered"] = await _deliver_webhook(webhook, dict(alert))
+    alert["alert_keys"] = keys
+    _save_alert(alert)
     return alert
 
 
@@ -241,16 +249,21 @@ class MonitoringEngine:
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         alerts  = []
+        # Match results back by company, not position: the watchlist may have
+        # changed while this cycle was running.
         updated = _load_watchlist()
-        for i, (entry, result) in enumerate(zip(watchlist, results)):
-            if i < len(updated):
-                updated[i]["last_checked"]        = datetime.utcnow().isoformat()
-                updated[i]["check_count"]         = entry.get("check_count", 0) + 1
-                if isinstance(result, dict) and "severity" in result:
-                    updated[i]["last_signal_severity"] = result.get("severity")
+        by_name = {w["company_name"]: w for w in updated}
+        for entry, result in zip(watchlist, results):
+            current = by_name.get(entry["company_name"])
+            if current is not None:
+                current["last_checked"] = datetime.utcnow().isoformat()
+                current["check_count"]  = current.get("check_count", 0) + 1
+                if isinstance(result, dict) and result.get("alert_id"):
+                    current["last_signal_severity"] = result.get("severity")
+                    current["last_alert_severity"]  = result.get("severity")
+                    current["alerted_signal_keys"]  = result.get("alert_keys", [])
             if isinstance(result, dict) and result.get("alert_id"):
                 alerts.append(result)
-
         _save_watchlist(updated)
         return alerts
 

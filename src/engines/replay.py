@@ -17,13 +17,11 @@ from pathlib import Path
 from typing import Any, Optional
 
 RULESET_VERSION  = "1.0.0"
-MODEL_VERSION    = "claude-sonnet-4-20250514"
 PROMPT_VERSION   = "1.0.0"
 SCORING_VERSION  = "1.0.0"
 
 CONFIG_SNAPSHOT = {
     "ruleset_version":  RULESET_VERSION,
-    "model_version":    MODEL_VERSION,
     "prompt_version":   PROMPT_VERSION,
     "scoring_version":  SCORING_VERSION,
     "critical_min_corroboration": 2,
@@ -49,8 +47,10 @@ class ReplayEngine:
 
     def get_config_snapshot(self) -> dict:
         """Return current system configuration for version-locking a run."""
+        from src.engines.audit_log import _model_version
         return {
             **CONFIG_SNAPSHOT,
+            "model_version": _model_version(),
             "snapshot_at": datetime.utcnow().isoformat(),
         }
 
@@ -247,13 +247,14 @@ class ReplayEngine:
         if self._session:
             try:
                 from src.engines.warehouse import ReplayRunRecord
+                from src.engines.audit_log import _model_version
                 self._session.add(ReplayRunRecord(
                     id=replay_id,
                     original_run_id=original_run_id or "",
                     company_name=company_name,
                     replay_date=as_of_date,
                     ruleset_version=RULESET_VERSION,
-                    model_version=MODEL_VERSION,
+                    model_version=_model_version(),
                     prompt_version=PROMPT_VERSION,
                     scoring_version=SCORING_VERSION,
                     config_snapshot=json.dumps(self.get_config_snapshot()),

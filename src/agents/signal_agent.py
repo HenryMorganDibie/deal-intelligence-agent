@@ -389,7 +389,10 @@ class BriefSynthesisAgent:
 
     async def run(self, state: AgentState) -> AgentState:
         state.log("brief_synthesis", "Synthesising analyst brief")
-        company = state.company_profile.name if state.company_profile else state.request.company_name
+        # The requested name is the brief's identity: outcomes, portfolios and the
+        # backtest are keyed on the name the analyst types, not on the SEC legal name.
+        company = state.request.company_name
+        legal   = state.company_profile.name if state.company_profile else None
         ticker  = state.request.ticker or (state.company_profile.ticker if state.company_profile else None)
 
         signals_json = json.dumps(
@@ -422,7 +425,8 @@ class BriefSynthesisAgent:
         )
 
         user_prompt = (
-            f"Company: {company} ({ticker or 'private'})\n"
+            f"Company: {company} ({ticker or 'private'})"
+            + (f", legal name {legal}" if legal and legal.lower() != company.lower() else "") + "\n"
             f"Signals confirmed: {len(state.detected_signals)}\n"
             f"Sources reviewed: {len(state.filings)} filings, {len(state.news_items)} news items\n"
             f"Compliance mode: {'ON' if state.compliance_mode else 'OFF'}\n\n"

@@ -22,9 +22,10 @@ Usage:
 """
 from __future__ import annotations
 
+from src.utils.storage import load_json, save_json
 import json
-import math
-from datetime import datetime, timedelta
+import statistics
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
@@ -34,17 +35,11 @@ BACKTEST_PATH = Path(__file__).resolve().parents[2] / "data" / "backtest_results
 
 
 def _load_backtest() -> dict:
-    BACKTEST_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if not BACKTEST_PATH.exists():
-        return {"runs": [], "summary": {}}
-    try:
-        return json.loads(BACKTEST_PATH.read_text())
-    except Exception:
-        return {"runs": [], "summary": {}}
+    return load_json(BACKTEST_PATH, lambda: {"runs": [], "summary": {}})
 
 
 def _save_backtest(data: dict) -> None:
-    BACKTEST_PATH.write_text(json.dumps(data, indent=2, default=str))
+    save_json(BACKTEST_PATH, data)
 
 
 def _safe_div(a: float, b: float, default: float = 0.0) -> float:
@@ -57,19 +52,44 @@ def _f1(precision: float, recall: float) -> float:
     return round(2 * precision * recall / (precision + recall), 4)
 
 
-def _max_drawdown(returns: list[float]) -> float:
-    """Maximum peak-to-trough drawdown in a returns series."""
-    if not returns:
+def _max_drawdown(prices: list[float]) -> float:
+    """Maximum peak-to-trough drawdown (%) of a price or value series."""
+    if not prices:
         return 0.0
-    peak = returns[0]
+    peak = prices[0]
     max_dd = 0.0
-    for r in returns:
+    for r in prices:
         if r > peak:
             peak = r
         dd = (peak - r) / peak if peak != 0 else 0
         if dd > max_dd:
             max_dd = dd
-    return round(max_dd * 100, 2)  # as %
+    return round(max_dd * 100, 2)
+
+
+# A confirmed outcome supports a signal flagged within this many days of its detection date.
+OUTCOME_MATCH_DAYS = 7
+
+
+def _parse_day(value) -> Optional[date]:
+    if value is None:
+        return None
+    if isinstance(value, date):
+        return value
+    try:
+        return datetime.strptime(str(value)[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _within_days(outcome_day, signal_day, days: int = OUTCOME_MATCH_DAYS) -> bool:
+    a, b = _parse_day(outcome_day), _parse_day(signal_day)
+    return a is not None and b is not None and abs((a - b).days) <= days
+
+
+def _days_between(start, end) -> Optional[int]:
+    a, b = _parse_day(start), _parse_day(end)
+    return (b - a).days if a and b else None
 
 
 class BacktestEngine:
@@ -79,102 +99,96 @@ class BacktestEngine:
 
     def run_from_warehouse(self) -> dict:
         """
-        Pull historical signals and outcomes from the warehouse,
-        compute full metrics suite, store results.
+        Score historical signals (warehouse) against recorded market outcomes.
+
+        Outcomes come from the market-impact store, which is where
+        `outcomes --record` and `marketdata --auto-outcome` write them.
+
+        Each prediction is counted once: repeated runs that flag the same
+        company and signal type on the same day are one prediction. A
+        prediction is a true positive if a confirmed outcome for that
+        company and type was detected within OUTCOME_MATCH_DAYS of it.
         """
         try:
-            from src.engines.warehouse import get_session, DetectedSignalRecord, MarketOutcomeRecord
+            from src.engines.warehouse import get_session, DetectedSignalRecord
+            from src.engines.market_impact import _load as load_outcomes
             session = get_session()
-            signals  = session.query(DetectedSignalRecord).all()
-            outcomes = session.query(MarketOutcomeRecord).all()
+            signals = session.query(DetectedSignalRecord).all()
             session.close()
+            outcomes = load_outcomes()
         except Exception as e:
-            return {"error": f"Warehouse query failed: {e}", "metrics": {}}
+            return {"error": f"Backtest data load failed: {e}", "metrics": {}}
 
-        # Build outcome lookup: company_name + signal_type → list of outcomes
-        outcome_map: dict[str, list] = {}
+        outcome_map: dict[str, list[dict]] = {}
         for o in outcomes:
-            key = f"{o.company_name}::{o.signal_type}"
-            outcome_map.setdefault(key, []).append(o)
+            outcome_map.setdefault(f"{o.get('company_name')}::{o.get('signal_type')}", []).append(o)
 
-        # Aggregate per signal type
+        # One prediction per (company, signal type, day).
+        predictions: dict[tuple, object] = {}
+        for sig in signals:
+            day = sig.detected_at.date() if sig.detected_at else None
+            predictions.setdefault((sig.company_name, sig.signal_type, day), sig)
+
         per_type: dict[str, dict] = {}
         for sig_type in SignalType:
-            type_signals = [s for s in signals if s.signal_type == sig_type.value]
-            if not type_signals:
+            preds = [(k, v) for k, v in predictions.items() if k[1] == sig_type.value]
+            if not preds:
                 continue
 
-            tp = 0   # true positives (confirmed events)
-            fp = 0   # false positives
-            fn = 0   # false negatives (known events not flagged — approx from outcome data)
-            excess_returns: list[float] = []
-            drawdowns: list[float] = []
-            tte_days: list[int] = []  # time to event
-
-            for sig in type_signals:
-                key = f"{sig.company_name}::{sig.signal_type}"
-                matched_outcomes = outcome_map.get(key, [])
-
-                if not matched_outcomes:
-                    fp += 1  # no outcome recorded → treat as false positive
+            tp = fp = 0
+            used: dict[str, dict] = {}
+            tte_days: list[int] = []
+            for (company, stype, day), _sig in preds:
+                matched = [
+                    o for o in outcome_map.get(f"{company}::{stype}", [])
+                    if o.get("event_confirmed") and _within_days(o.get("detection_date"), day)
+                ]
+                if not matched:
+                    fp += 1      # conservative: no confirmed outcome counts against the signal
                     continue
+                tp += 1
+                for o in matched:
+                    used[o.get("outcome_id") or id(o)] = o
+                    tte = _days_between(o.get("detection_date"), o.get("confirmation_date"))
+                    if tte is not None:
+                        tte_days.append(tte)
 
-                for o in matched_outcomes:
-                    if o.event_confirmed:
-                        tp += 1
-                        # Excess return: 10d price move
-                        if o.price_change_10d_pct is not None:
-                            excess_returns.append(o.price_change_10d_pct)
-                        if o.price_change_5d_pct is not None and o.price_change_10d_pct is not None:
-                            drawdowns.append(min(o.price_change_5d_pct, o.price_change_10d_pct, 0))
-                        # Time to materialization
-                        if o.confirmation_date and o.detection_date:
-                            try:
-                                det = datetime.strptime(o.detection_date, "%Y-%m-%d")
-                                con = datetime.strptime(o.confirmation_date, "%Y-%m-%d")
-                                tte_days.append((con - det).days)
-                            except Exception:
-                                pass
-                    else:
-                        fp += 1
-
+            outs = list(used.values())
+            returns = [o["price_change_10d_pct"] for o in outs if o.get("price_change_10d_pct") is not None]
+            directional = [o["direction_correct"] for o in outs if o.get("direction_correct") is not None]
+            drawdowns = [
+                abs(min([o.get(k) for k in ("price_change_5d_pct", "price_change_10d_pct", "price_change_30d_pct")
+                         if o.get(k) is not None] + [0.0]))
+                for o in outs
+            ]
             total_flagged = tp + fp
-            precision = _safe_div(tp, total_flagged)
-            # Recall approximation: tp / (tp + fn). fn is unknown without ground truth;
-            # we flag it clearly as approximate.
-            recall_approx = _safe_div(tp, max(tp + max(fn, 1), 1))
-            f1 = _f1(precision, recall_approx)
-
-            avg_excess = sum(excess_returns) / max(len(excess_returns), 1)
-            hit_rate   = sum(1 for r in excess_returns if r > 0) / max(len(excess_returns), 1)
-            max_dd     = _max_drawdown([abs(d) for d in drawdowns if d < 0])
-            median_tte = sorted(tte_days)[len(tte_days)//2] if tte_days else None
 
             per_type[sig_type.value] = {
-                "signals_flagged":          total_flagged,
-                "true_positives":           tp,
-                "false_positives":          fp,
-                "precision":                round(precision, 3),
-                "recall_approx":            round(recall_approx, 3),
-                "f1":                       round(f1, 3),
-                "hit_rate":                 round(hit_rate, 3),
-                "avg_excess_return_10d_pct": round(avg_excess, 2) if excess_returns else None,
-                "max_drawdown_pct":         max_dd if drawdowns else None,
-                "median_days_to_event":     median_tte,
-                "false_positive_rate":      round(_safe_div(fp, total_flagged), 3),
-                "note": "recall_approx requires ground-truth event database for accuracy",
+                "signals_flagged":           total_flagged,
+                "true_positives":            tp,
+                "false_positives":           fp,
+                "precision":                 round(_safe_div(tp, total_flagged), 3),
+                # Recall and F1 need a ground-truth list of events the engine missed; we do not have one.
+                "recall_approx":             None,
+                "f1":                        None,
+                # Hit = price moved the way the signal predicted (negative signals predict a fall).
+                "hit_rate":                  round(sum(directional) / len(directional), 3) if directional else None,
+                "avg_excess_return_10d_pct": round(sum(returns) / len(returns), 2) if returns else None,
+                "max_drawdown_pct":          round(max(drawdowns), 2) if drawdowns else None,
+                "median_days_to_event":      statistics.median(tte_days) if tte_days else None,
+                "false_positive_rate":       round(_safe_div(fp, total_flagged), 3),
+                "note": "Returns are raw 10-day price moves, not benchmark-adjusted.",
             }
 
         result = {
             "run_at":    datetime.utcnow().isoformat(),
-            "total_signals_evaluated": len(signals),
+            "total_signals_evaluated": len(predictions),
             "total_outcomes_available": len(outcomes),
             "metrics_by_signal_type": per_type,
             "overall": self._compute_overall(per_type),
             "data_quality_note": (
-                "Backtest accuracy improves with more analyst-confirmed outcomes. "
-                "False negatives (missed events) cannot be computed without a complete ground-truth event database. "
-                "Precision figures are conservative — unconfirmed signals treated as false positives."
+                "Precision is conservative: signals without a confirmed outcome count as false positives. "
+                "Recall and F1 are not computed: they need a ground-truth database of missed events."
             ),
         }
 
@@ -188,15 +202,15 @@ class BacktestEngine:
         if not per_type:
             return {}
         precisions = [v["precision"] for v in per_type.values() if v.get("signals_flagged", 0) > 0]
-        f1s        = [v["f1"]        for v in per_type.values() if v.get("signals_flagged", 0) > 0]
+        f1s        = [v["f1"]        for v in per_type.values() if v.get("f1") is not None]
         hit_rates  = [v["hit_rate"]  for v in per_type.values() if v.get("hit_rate") is not None]
         returns    = [v["avg_excess_return_10d_pct"] for v in per_type.values()
                       if v.get("avg_excess_return_10d_pct") is not None]
 
         return {
             "macro_precision": round(sum(precisions) / max(len(precisions), 1), 3),
-            "macro_f1":        round(sum(f1s)        / max(len(f1s),        1), 3),
-            "avg_hit_rate":    round(sum(hit_rates)  / max(len(hit_rates),  1), 3),
+            "macro_f1":        round(sum(f1s) / len(f1s), 3) if f1s else None,
+            "avg_hit_rate":    round(sum(hit_rates) / len(hit_rates), 3) if hit_rates else None,
             "avg_excess_return_pct": round(sum(returns) / max(len(returns), 1), 2) if returns else None,
         }
 

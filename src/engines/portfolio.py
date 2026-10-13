@@ -14,6 +14,7 @@ Features:
 """
 from __future__ import annotations
 
+from src.utils.storage import load_json, save_json
 import json
 from datetime import datetime
 from pathlib import Path
@@ -42,17 +43,11 @@ SECTOR_SIGNAL_AFFINITY: dict[str, list[SignalType]] = {
 
 
 def _load_portfolios() -> dict:
-    PORTFOLIO_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if not PORTFOLIO_PATH.exists():
-        return {}
-    try:
-        return json.loads(PORTFOLIO_PATH.read_text())
-    except Exception:
-        return {}
+    return load_json(PORTFOLIO_PATH, lambda: {})
 
 
 def _save_portfolios(data: dict) -> None:
-    PORTFOLIO_PATH.write_text(json.dumps(data, indent=2, default=str))
+    save_json(PORTFOLIO_PATH, data)
 
 
 class Portfolio:
@@ -115,19 +110,25 @@ class Portfolio:
             profile = get_profile(company, meta.get("ticker"))
             profiles.append((company, meta, profile))
 
-        # Weighted risk score
+        # Weighted risk score. Weights are fractions that need not sum to 1, so
+        # normalise by their actual total. Holdings without a risk profile are
+        # unknown, not riskless, so they are left out and reported as coverage.
         total_weight = sum(m["weight"] for _, m, _ in profiles)
-        weighted_risk = sum(
-            (p.rolling_risk_score if p else 0.0) * m["weight"]
-            for _, m, p in profiles
-        ) / max(total_weight, 1.0)
+        profiled_weight = sum(m["weight"] for _, m, p in profiles if p)
+        weighted_risk = (
+            sum(p.rolling_risk_score * m["weight"] for _, m, p in profiles if p) / profiled_weight
+            if profiled_weight > 0 else 0.0
+        )
 
-        # Sector concentration
+        # Sector concentration: weight-averaged risk per sector (profiled holdings only)
         sector_risk: dict[str, float] = {}
+        sector_weight: dict[str, float] = {}
         for company, meta, profile in profiles:
-            sector = meta.get("sector", "unknown")
-            risk   = profile.rolling_risk_score if profile else 0.0
-            sector_risk[sector] = sector_risk.get(sector, 0.0) + risk * meta["weight"]
+            if not profile:
+                continue
+            sector = meta.get("sector") or "unknown"
+            sector_risk[sector] = sector_risk.get(sector, 0.0) + profile.rolling_risk_score * meta["weight"]
+            sector_weight[sector] = sector_weight.get(sector, 0.0) + meta["weight"]
 
         # Top risk positions
         ranked = sorted(
@@ -180,7 +181,8 @@ class Portfolio:
             m = meta.get("market", "unknown")
             market_exposure[m] = market_exposure.get(m, 0.0) + meta["weight"]
         total_w = sum(market_exposure.values())
-        market_exposure = {k: round(v / max(total_w, 1), 3) for k, v in market_exposure.items()}
+        market_exposure = {k: round(v / total_w, 3) if total_w > 0 else 0.0
+                           for k, v in market_exposure.items()}
 
         return {
             "portfolio":               self.name,
@@ -188,9 +190,11 @@ class Portfolio:
             "total_holdings":          len(holdings),
             "holdings_with_profiles":  sum(1 for _, _, p in profiles if p),
             "weighted_portfolio_risk":  round(weighted_risk, 1),
-            "portfolio_risk_level":    _risk_level(weighted_risk),
+            "portfolio_risk_level":    _risk_level(weighted_risk) if profiled_weight > 0 else "unknown",
+            "profile_coverage_weight": round(profiled_weight / total_weight, 3) if total_weight > 0 else 0.0,
             "high_risk_positions":     high_risk_count,
-            "sector_risk_concentration": {k: round(v / max(total_weight, 1), 1) for k, v in sector_risk.items()},
+            "sector_risk_concentration": {k: round(v / sector_weight[k], 1) for k, v in sector_risk.items()
+                                          if sector_weight[k] > 0},
             "market_exposure":         market_exposure,
             "signal_concentration":    dict(sorted(signal_counts.items(), key=lambda x: x[1], reverse=True)[:5]),
             "contagion_pairs":         contagion_pairs[:5],

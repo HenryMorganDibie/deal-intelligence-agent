@@ -1970,8 +1970,14 @@ class TestMarketData:
     def test_resolve_african_ticker(self):
         from src.engines.market_data import _resolve_ticker
         assert _resolve_ticker("GTCO") == "GTCO.LG"
-        assert _resolve_ticker("MTN") == "MTN.JO"
+        assert _resolve_ticker("MTN.JO") == "MTN.JO"
         assert _resolve_ticker("SCOM") == "SCOM.NR"
+
+    def test_us_tickers_not_redirected_to_african_listings(self):
+        """SLM is Sallie Mae and MTN is Vail Resorts in the US; JSE listings need a suffix."""
+        from src.engines.market_data import _resolve_ticker
+        for us in ("SLM", "MTN", "UBA", "ABG", "BHP", "SOL", "REM", "FSR"):
+            assert _resolve_ticker(us) == us
 
     def test_resolve_us_ticker_unchanged(self):
         from src.engines.market_data import _resolve_ticker
@@ -2020,7 +2026,8 @@ class TestMarketData:
 
     def test_african_ticker_map_populated(self):
         from src.engines.market_data import AFRICAN_TICKER_MAP
-        assert len(AFRICAN_TICKER_MAP) >= 15
+        assert len(AFRICAN_TICKER_MAP) >= 10
+        assert all("." in v for v in AFRICAN_TICKER_MAP.values())
 
 
 # ─── Backtesting Engine ───────────────────────────────────────────────────────
@@ -2757,3 +2764,168 @@ def test_material_definitive_agreement_is_not_m_and_a():
     assert _match_rules(_describe_8k_items("1.01,2.03,9.01")) == []
     assert any(t == SignalType.MA_ACTIVITY
                for t, _, _ in _match_rules("Acme signs definitive agreement to be acquired"))
+
+
+def test_every_data_store_is_isolated_in_tests():
+    """A new *_PATH store must be added to tests/conftest.py, or tests write to the real data/ dir."""
+    import re
+    from tests.conftest import _STORES
+    declared = set()
+    for f in Path("src").rglob("*.py"):
+        for m in re.finditer(r"^(\w+_PATH)\s*=\s*Path\(__file__\)", f.read_text(), re.M):
+            declared.add((".".join(f.with_suffix("").parts), m.group(1)))
+    assert declared <= {(m, a) for m, a, _ in _STORES}
+
+
+class TestBacktestScoring:
+    def _signal(self, company, sig_type, when):
+        from src.engines.warehouse import DetectedSignalRecord
+        return DetectedSignalRecord(run_id=str(uuid.uuid4()), company_name=company,
+                                    signal_type=sig_type, severity="high", detected_at=when)
+
+    def test_scores_real_outcomes_once_per_prediction(self):
+        from src.engines import backtest as bt
+        from src.engines.warehouse import get_session
+        from src.engines.market_impact import record_outcome
+        day = datetime(2026, 3, 2, 9)
+        s = get_session()
+        s.add_all([
+            # the same prediction from two runs on one day counts once
+            self._signal("Acme", "credit_risk", day),
+            self._signal("Acme", "credit_risk", day.replace(hour=15)),
+            # no matching outcome: a false positive
+            self._signal("Beta", "credit_risk", day),
+            # outcome exists but is far outside the matching window: also a false positive
+            self._signal("Gamma", "credit_risk", day),
+        ])
+        s.commit(); s.close()
+        record_outcome("Acme", SignalType.CREDIT_RISK, Severity.HIGH, "2026-03-03",
+                       price_change_5d_pct=-4.0, price_change_10d_pct=-9.0, event_confirmed=True,
+                       confirmation_date="2026-03-13", expected_direction="negative")
+        record_outcome("Gamma", SignalType.CREDIT_RISK, Severity.HIGH, "2025-01-01",
+                       event_confirmed=True)
+
+        m = bt.BacktestEngine().run_from_warehouse()["metrics_by_signal_type"]["credit_risk"]
+        assert (m["signals_flagged"], m["true_positives"], m["false_positives"]) == (3, 1, 2)
+        assert m["precision"] == pytest.approx(1 / 3, abs=1e-3)
+        assert m["hit_rate"] == 1.0            # price fell, as a credit-risk signal predicts
+        assert m["max_drawdown_pct"] == 9.0
+        assert m["median_days_to_event"] == 10
+        assert m["recall_approx"] is None and m["f1"] is None
+
+
+def test_portfolio_risk_normalises_fractional_weights(monkeypatch):
+    """Two 80-risk holdings at 20% and 15% weight are an 80-risk portfolio, not 28."""
+    from src.engines import portfolio as po, company_memory as cm
+    from src.schemas.models import CompanyRiskProfile
+    profiles = {
+        "A": CompanyRiskProfile(company_id="a", company_name="A", rolling_risk_score=80.0),
+        "B": CompanyRiskProfile(company_id="b", company_name="B", rolling_risk_score=80.0),
+    }
+    monkeypatch.setattr(cm, "get_profile", lambda name, ticker=None: profiles.get(name))
+    p = po.Portfolio("weights")
+    p.add_holding("A", weight=0.20, market="US")
+    p.add_holding("B", weight=0.15, market="Africa")
+    p.add_holding("NoProfile", weight=0.10, market="US")
+    r = p.aggregate_risk()
+    assert r["weighted_portfolio_risk"] == 80.0
+    assert r["portfolio_risk_level"] == "critical"
+    assert r["profile_coverage_weight"] == round(0.35 / 0.45, 3)
+    assert sum(r["market_exposure"].values()) == pytest.approx(1.0, abs=1e-3)
+
+
+def test_company_memory_counts_each_event_once():
+    from src.engines.company_memory import update_profile, get_profile
+    sig = DetectedSignal(signal_type=SignalType.CREDIT_RISK, severity=Severity.HIGH, headline="H",
+                         evidence=["E"], confidence=0.8, reasoning="R",
+                         filing_references=["0000000000-26-000001"])
+    brief = AnalystBrief(company_name="Acme", ticker="ACME", executive_summary="x",
+                         overall_severity=Severity.HIGH, recommendation="y", confidence_score=0.8,
+                         detected_signals=[sig])
+    for _ in range(3):                   # e.g. three monitoring runs seeing the same 8-K
+        update_profile(brief)
+    p = get_profile("Acme", "ACME")
+    assert p.historical_signal_density == {"credit_risk": 1}
+    assert p.total_signals_detected == 1
+    assert p.repeated_patterns == []
+    assert get_profile("Acme") is not None   # holding added without a ticker still resolves
+
+
+class TestAdaptiveGating:
+    def test_single_false_positive_does_not_penalise(self):
+        from src.engines.feedback import submit_feedback
+        from src.engines.adaptive_calibration import _get_fp_penalty
+        from src.schemas.models import FeedbackType
+        submit_feedback("Acme", SignalType.CREDIT_RISK, FeedbackType.FALSE_POSITIVE, Severity.HIGH)
+        assert _get_fp_penalty(SignalType.CREDIT_RISK) == 1.0
+
+    def test_missed_event_reports_do_not_activate_precision(self):
+        from src.engines.feedback import submit_feedback
+        from src.engines.adaptive_calibration import _get_precision_adjustment
+        from src.schemas.models import FeedbackType
+        for _ in range(12):
+            submit_feedback("Acme", SignalType.CREDIT_RISK, FeedbackType.MISSED_EVENT, Severity.HIGH)
+        assert _get_precision_adjustment(SignalType.CREDIT_RISK) == 1.0
+
+
+class TestMonitoringAlerts:
+    def _brief(self, *sigs, severity=Severity.HIGH):
+        return AnalystBrief(company_name="Acme", executive_summary="x", overall_severity=severity,
+                            recommendation="y", confidence_score=0.7, detected_signals=list(sigs))
+
+    def _sig(self, ref, sig_type=SignalType.CREDIT_RISK):
+        return DetectedSignal(signal_type=sig_type, severity=Severity.HIGH, headline="H",
+                              evidence=["E"], confidence=0.8, reasoning="R", filing_references=[ref])
+
+    async def test_alerts_once_per_event_then_on_new_event(self, monkeypatch):
+        from src.engines import monitoring as mon
+        import src.agents.graph as graph
+        briefs = [self._brief(self._sig("A")), self._brief(self._sig("A")),
+                  self._brief(self._sig("A"), self._sig("B", SignalType.DISTRESSED_ASSET))]
+        async def fake_run(request, compliance_mode=False):
+            return briefs.pop(0)
+        monkeypatch.setattr(graph, "run_analysis", fake_run)
+        mon.add_to_watchlist("Acme", alert_severity="medium")
+        engine = mon.MonitoringEngine()
+        assert len(await engine.run_once()) == 1      # new event
+        assert len(await engine.run_once()) == 0      # same event, no repeat alert
+        assert len(await engine.run_once()) == 1      # a new event alerts again
+        assert len(mon.get_recent_alerts()) == 2
+        assert mon.get_watchlist()[0]["check_count"] == 3
+
+
+def test_audit_entries_record_the_configured_model():
+    import src.agents.signal_agent as sa
+    from src.engines.audit_log import log_entry
+    assert log_entry("step", "Acme", "act", "detail").model_version == sa.MODEL
+
+
+def test_entity_graph_loads_pre_3_4_networkx_files(isolated_data_dir):
+    import json as _json
+    from src.engines import graph_intelligence as gi
+    gi.GRAPH_PATH.write_text(_json.dumps({
+        "directed": False, "multigraph": False, "graph": {},
+        "nodes": [{"id": "Acme"}, {"id": "Bank"}],
+        "links": [{"source": "Bank", "target": "Acme", "edge_type": "lends_to"}],
+    }))
+    g = gi.EntityGraphEngine()
+    assert g.G.has_edge("Bank", "Acme")
+    gi.GRAPH_PATH.write_text("{not json")
+    assert gi.EntityGraphEngine().G.number_of_nodes() == 0
+    assert list(isolated_data_dir.glob("entity_graph.json.unreadable-*"))   # kept, not overwritten
+
+
+class TestStorage:
+    def test_save_is_atomic_and_roundtrips(self, tmp_path):
+        from src.utils.storage import load_json, save_json
+        path = tmp_path / "x.json"
+        save_json(path, {"a": 1})
+        assert load_json(path, dict) == {"a": 1}
+        assert not (tmp_path / "x.json.tmp").exists()
+
+    def test_unreadable_file_is_moved_aside_not_overwritten(self, isolated_data_dir):
+        from src.engines import feedback
+        feedback.FEEDBACK_PATH.write_text('{"entries": [ truncated')
+        assert feedback._load()["entries"] == []
+        backups = list(isolated_data_dir.glob("feedback.json.unreadable-*"))
+        assert backups and backups[0].read_text().startswith('{"entries": [ truncated')

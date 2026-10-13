@@ -7,6 +7,7 @@ Uses NetworkX for graph operations. No LLM required.
 """
 from __future__ import annotations
 
+from src.utils.storage import load_json, save_json
 import json
 from datetime import datetime
 from pathlib import Path
@@ -19,20 +20,15 @@ GRAPH_PATH = Path(__file__).resolve().parents[2] / "data" / "entity_graph.json"
 
 def _load_graph() -> nx.Graph:
     """Load persisted entity graph or create fresh."""
-    GRAPH_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if not GRAPH_PATH.exists():
+    data = load_json(GRAPH_PATH, lambda: None)
+    if not data:
         return nx.Graph()
-    try:
-        data = json.loads(GRAPH_PATH.read_text())
-        G = nx.node_link_graph(data)
-        return G
-    except Exception:
-        return nx.Graph()
+    # networkx < 3.4 wrote edges under "links"; 3.4+ writes "edges".
+    return nx.node_link_graph(data, edges="links" if "links" in data else "edges")
 
 
 def _save_graph(G: nx.Graph) -> None:
-    GRAPH_PATH.parent.mkdir(parents=True, exist_ok=True)
-    GRAPH_PATH.write_text(json.dumps(nx.node_link_data(G), default=str))
+    save_json(GRAPH_PATH, nx.node_link_data(G, edges="edges"), indent=None)
 
 
 class EntityGraphEngine:

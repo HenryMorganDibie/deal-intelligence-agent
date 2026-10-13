@@ -20,7 +20,13 @@ from typing import Any, Optional
 from src.schemas.models import AuditEntry, AgentState
 
 AUDIT_PATH = Path(__file__).resolve().parents[2] / "data" / "audit_log.jsonl"
-MODEL_VERSION = "claude-sonnet-4-20250514"
+def _model_version() -> str:
+    """The LLM actually configured for this process (imported lazily: signal_agent imports this module)."""
+    try:
+        from src.agents.signal_agent import MODEL
+        return MODEL
+    except Exception:
+        return "unknown"
 ENGINE_VERSION = "1.0.0"
 
 
@@ -80,7 +86,7 @@ def log_entry(
         data_hash="",
         payload_hash=_hash(data) if data is not None else "",
         prev_hash=_last_hash(),
-        model_version=MODEL_VERSION,
+        model_version=_model_version(),
         analyst_id=analyst_id,
     )
     entry.data_hash = _entry_hash(json.loads(entry.model_dump_json()))

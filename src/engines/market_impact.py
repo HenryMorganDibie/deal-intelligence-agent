@@ -6,6 +6,7 @@ event confirmation rate. Feeds back into adaptive calibration.
 """
 from __future__ import annotations
 
+from src.utils.storage import load_json, save_json
 import json
 import uuid
 from datetime import datetime
@@ -18,18 +19,11 @@ OUTCOMES_PATH = Path(__file__).resolve().parents[2] / "data" / "market_outcomes.
 
 
 def _load() -> list[dict]:
-    OUTCOMES_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if not OUTCOMES_PATH.exists():
-        return []
-    try:
-        return json.loads(OUTCOMES_PATH.read_text())
-    except Exception:
-        return []
+    return load_json(OUTCOMES_PATH, lambda: [])
 
 
 def _save(data: list) -> None:
-    OUTCOMES_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTCOMES_PATH.write_text(json.dumps(data, indent=2, default=str))
+    save_json(OUTCOMES_PATH, data)
 
 
 def record_outcome(

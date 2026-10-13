@@ -10,6 +10,7 @@ with Postgres/MongoDB in production without changing the interface.
 """
 from __future__ import annotations
 
+from src.utils.storage import load_json, save_json
 import hashlib
 import json
 import uuid
@@ -25,18 +26,11 @@ FEEDBACK_PATH = Path(__file__).resolve().parents[2] / "data" / "feedback.json"
 
 
 def _load() -> dict:
-    FEEDBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if not FEEDBACK_PATH.exists():
-        return {"entries": [], "source_reliability": {}, "signal_stats": {}}
-    try:
-        return json.loads(FEEDBACK_PATH.read_text())
-    except Exception:
-        return {"entries": [], "source_reliability": {}, "signal_stats": {}}
+    return load_json(FEEDBACK_PATH, lambda: {"entries": [], "source_reliability": {}, "signal_stats": {}})
 
 
 def _save(data: dict) -> None:
-    FEEDBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
-    FEEDBACK_PATH.write_text(json.dumps(data, indent=2, default=str))
+    save_json(FEEDBACK_PATH, data)
 
 
 def submit_feedback(

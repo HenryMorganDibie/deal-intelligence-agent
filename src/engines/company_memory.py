@@ -7,6 +7,7 @@ Stored in data/company_memory.json — drop-in replaceable with Postgres.
 """
 from __future__ import annotations
 
+from src.utils.storage import load_json, save_json
 import json
 import uuid
 from datetime import datetime
@@ -44,22 +45,24 @@ SIGNAL_DIMENSION_MAP: dict[SignalType, str] = {
 
 
 def _load() -> dict[str, dict]:
-    MEMORY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if not MEMORY_PATH.exists():
-        return {}
-    try:
-        return json.loads(MEMORY_PATH.read_text())
-    except Exception:
-        return {}
+    return load_json(MEMORY_PATH, lambda: {})
 
 
 def _save(data: dict) -> None:
-    MEMORY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    MEMORY_PATH.write_text(json.dumps(data, indent=2, default=str))
+    save_json(MEMORY_PATH, data)
 
 
 def _company_id(name: str, ticker: Optional[str] = None) -> str:
     return (ticker or name).upper().strip().replace(" ", "_")
+
+
+MAX_SEEN_SIGNAL_KEYS = 500
+
+
+def _signal_key(sig) -> str:
+    """Identity of a detected event: its type plus the source it came from."""
+    source = (sig.filing_references or sig.source_urls or [sig.headline])[0]
+    return f"{sig.signal_type.value}|{source}"
 
 
 def _ema(current: float, new_value: float) -> float:
@@ -103,12 +106,23 @@ def update_profile(brief: AnalystBrief) -> CompanyRiskProfile:
     profile.rolling_risk_score = _ema(profile.rolling_risk_score, new_risk_contribution)
 
     # Update dimension-specific scores
+    seen = set(profile.seen_signal_keys)
+    new_signals = 0
     for sig in brief.detected_signals:
         dimension = SIGNAL_DIMENSION_MAP.get(sig.signal_type)
         if dimension:
             contribution = SEVERITY_RISK.get(sig.severity, 0.0)
             current_val  = getattr(profile, dimension, 0.0)
             setattr(profile, dimension, _ema(current_val, contribution))
+
+        # Counts below are per event: a signal re-detected from the same source
+        # on a later run (e.g. hourly monitoring) is not a new event.
+        key = _signal_key(sig)
+        if key in seen:
+            continue
+        seen.add(key)
+        profile.seen_signal_keys.append(key)
+        new_signals += 1
 
         # Signal density tracking
         profile.historical_signal_density[sig.signal_type.value] = (
@@ -129,8 +143,10 @@ def update_profile(brief: AnalystBrief) -> CompanyRiskProfile:
         if sig.signal_type == SignalType.REGULATORY_ACTION:
             profile.regulatory_action_count += 1
 
-    # Event velocity: signals per 30 days (simplified EMA)
-    velocity = len(brief.detected_signals)
+    profile.seen_signal_keys = profile.seen_signal_keys[-MAX_SEEN_SIGNAL_KEYS:]
+
+    # Event velocity: new events per run (simplified EMA)
+    velocity = new_signals
     profile.event_velocity = _ema(profile.event_velocity, velocity)
 
     # Trend detection
@@ -174,6 +190,10 @@ def get_profile(company_name: str, ticker: Optional[str] = None) -> Optional[Com
     data = _load()
     cid  = _company_id(company_name, ticker)
     raw  = data.get(cid)
+    if not raw:
+        # A holding added without a ticker should still find a profile created with one.
+        wanted = company_name.strip().lower()
+        raw = next((v for v in data.values() if str(v.get("company_name", "")).strip().lower() == wanted), None)
     if not raw:
         return None
     return CompanyRiskProfile.model_validate(raw)
