@@ -157,6 +157,22 @@ python main.py graph --summary
 
 ---
 
+## Landing Page
+
+The public site lives in `web/` (Next.js 14, Tailwind, no other runtime dependencies):
+
+```bash
+cd web
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # static production build
+```
+
+Set `NEXT_PUBLIC_SITE_URL` once a domain exists (canonical URL and social cards) and
+`NEXT_PUBLIC_CONTACT_URL` to enable the footer contact link (shown as "Soon" until set).
+
+---
+
 ## Data Sources
 
 **US:** SEC EDGAR (8-K with item codes, 10-K, 10-Q, SC 13D/13G, Form 4 open-market trades, DEF 14A), Yahoo Finance RSS, Google News US
