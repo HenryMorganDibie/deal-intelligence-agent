@@ -58,6 +58,9 @@ class AnalysisRequest(BaseModel):
         description="Specific signals to prioritise. Empty = all signals."
     )
     lookback_days: int = Field(default=90, ge=1, le=365, description="Days of history to scan")
+    as_of_date: Optional[str] = Field(
+        default=None, pattern=r"^\d{4}-\d{2}-\d{2}$",
+        description="Analyse as of this date (replay); the lookback window ends here. Default: now.")
     depth: str = Field(default="standard", pattern="^(quick|standard|deep)$")
 
     @field_validator("ticker")

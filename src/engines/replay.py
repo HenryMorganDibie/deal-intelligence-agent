@@ -210,7 +210,7 @@ class ReplayEngine:
                                 if str(f.get("cik", "")).isdigit()), None)
                 except ValueError:
                     pass
-        request = AnalysisRequest(company_name=company_name, ticker=ticker, cik=cik)
+        request = AnalysisRequest(company_name=company_name, ticker=ticker, cik=cik, as_of_date=as_of_date)
         state = AgentState(request=request)
         state.filings    = historical_filings
         state.news_items = historical_news

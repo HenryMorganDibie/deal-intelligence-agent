@@ -108,7 +108,12 @@ AnalystBrief → Terminal | JSON | Markdown
 SEC EDGAR (8-K with item codes, 10-K, 10-Q, SC 13D/13G, Form 4 open-market trades, DEF 14A), Yahoo Finance RSS, Google News US
 
 ### African Exchanges
-JSE SENS (South Africa) is read as an exchange disclosure feed. NGX (Nigeria) and NSE Kenya have no machine-readable disclosure feed; exchange-related coverage for them (and for the JSE when SENS returns nothing) comes from news search and is treated as news, credited to its publisher. GSE, EGX, Casablanca and BRVM are covered through news and scraped sources.
+Official disclosures are read directly from the exchanges' own systems and treated as filings (credibility 1.0):
+- **NGX (Nigeria):** the exchange's corporate-disclosure document library, queried by symbol (or company name), full history within the lookback window.
+- **NSE Kenya:** listed-company documents (results, announcements) in the exchange's document library, searched by company name.
+- **JSE (South Africa):** SENS announcements by JSE code via Sharenet. Free access covers the current trading day only, so each run (and each monitoring cycle) captures that day's SENS; earlier JSE events come from news. The JSE's own site blocks automated access.
+
+Exchange-related results from news search are kept as news, credited to their publisher. GSE, EGX, Casablanca and BRVM are covered through news and scraped sources.
 
 ### African Financial News (49 RSS feeds)
 Nigeria (10): BusinessDay, TechCabal, Stears, Nairametrics, Vanguard, ThisDay, Premium Times, The Guardian, Punch, Channels TV
@@ -157,7 +162,13 @@ The semantic extraction engine uses typed regex clause patterns — not embeddin
 ### 7. Signal Direction
 Earnings surprises and insider activity can go either way. The expected direction is read from the source text: a beat or raised guidance is positive, a miss or warning negative; an open-market insider purchase is positive, a discretionary sale negative. Positive-direction signals do not raise a company's risk score.
 
-Form 4 filings are reduced to discretionary open-market trades: purchases, and sales of at least $1M not made under a Rule 10b5-1 plan. Grants, option exercises and tax withholding are dropped. At most 10 Form 4s are read per run.
+Form 4 filings are reduced to discretionary open-market trades: purchases, and sales of at least $1M not made under a Rule 10b5-1 plan. Grants, option exercises and tax withholding are dropped. Every Form 4 in the lookback window is read, paced to 8 requests per second under SEC's fair-access limit.
+
+### 10. News Scoring and the Lookback Window
+A news item's score is rule strength × publisher credibility. It is no longer also multiplied by a relevance score, which mostly measured whether the company was named (already required by the engine) and forced every single news story to LOW. Every source, from any tool, must fall inside the lookback window, measured from the as-of date for replays and from now otherwise.
+
+### 11. Attribution Is Mention-Based
+A news item counts for a company when it names the company. An article about another company that mentions the target in passing ("Vodacom lifts outlook as Safaricom deal reshapes growth") can still be attributed to the target.
 
 ### 8. Replay Depends on Feedback State
 Replay runs the same deterministic path as a live analysis (rule engine, adaptive calibration, alpha scoring, compound events). Adaptive calibration depends on accumulated analyst feedback, so the feedback statistics in use are recorded in each replay's config snapshot to explain any difference from the original run.

@@ -161,7 +161,7 @@ python main.py graph --summary
 
 **US:** SEC EDGAR (8-K with item codes, 10-K, 10-Q, SC 13D/13G, Form 4 open-market trades, DEF 14A), Yahoo Finance RSS, Google News US
 
-**African Exchanges:** JSE South Africa (SENS feed); NGX Nigeria, NSE Kenya, GSE Ghana, Egyptian Exchange (EGX), Casablanca and BRVM via news search and scraped sources (treated as news, credited to the publisher)
+**African Exchanges:** official disclosures from NGX Nigeria (exchange document library), NSE Kenya (exchange document library) and JSE South Africa (SENS, current day); GSE Ghana, Egyptian Exchange (EGX), Casablanca and BRVM via news search and scraped sources
 
 **African News (49 RSS feeds):** Nigeria (10), South Africa (6), East Africa (7), Pan-African (8), Ghana (3), North Africa/Maghreb (3), West Africa/Francophone (4), Southern Africa (3), Horn of Africa (2), Ethiopia (2)
 
@@ -232,7 +232,7 @@ deal-intelligence-agent/
 │   └── alerts.json                    # Alert history
 └── tests/
     ├── conftest.py                    # Redirects every data store to a per-test temp dir
-    └── test_all.py                    # 318 tests across all layers
+    └── test_all.py                    # 325 tests across all layers
 ```
 
 ---
@@ -243,7 +243,7 @@ deal-intelligence-agent/
 pytest tests/test_all.py -v
 ```
 
-**318 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration.
+**325 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration.
 
 ---
 

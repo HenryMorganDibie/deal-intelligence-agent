@@ -23,6 +23,9 @@ from src.schemas.models import (
 )
 from src.utils.clock import utcnow
 
+# A date inside the default 90-day lookback window, for source fixtures.
+RECENT_DAY = (utcnow() - timedelta(days=2)).strftime("%Y-%m-%d")
+
 # ─── Schemas ──────────────────────────────────────────────────────────────────
 
 class TestAnalysisRequest:
@@ -171,12 +174,12 @@ class TestDeterministicEngine:
 
     def _filing(self, desc="", form="8-K"):
         return SECFiling(accession_number="acc1", form_type=form,
-                         filing_date="2024-01-01", company_name="Acme",
+                         filing_date=RECENT_DAY, company_name="Acme",
                          cik="0000001", document_url="https://sec.gov/x",
                          description=desc)
 
     def _news(self, title="", snippet="", score=0.8):
-        return NewsItem(title=title, source="Reuters", published_date="2024-01-01",
+        return NewsItem(title=title, source="Reuters", published_date=RECENT_DAY,
                         url="http://x.com", snippet=snippet, relevance_score=score)
 
     def test_ma_pattern_fires(self):
@@ -257,8 +260,8 @@ class TestDeterministicEngine:
     def test_exchange_filing_gets_top_credibility(self):
         from src.engines.deterministic_engine import DeterministicSignalEngine
         s = self._state(filings=[
-            SECFiling(accession_number="NGX-001", form_type="NGX Announcement",
-                      filing_date="2024-01-01", company_name="GTBank",
+            SECFiling(accession_number="NGX-001", form_type="NGX Disclosure",
+                      filing_date=RECENT_DAY, company_name="GTBank",
                       cik="NGX", document_url="https://ngx.com/x",
                       description="Acme board approves merger with acquisition target")
         ])
@@ -269,8 +272,8 @@ class TestDeterministicEngine:
         """Live-run regression: an unrelated company's deal was reported as the target's."""
         from src.engines.deterministic_engine import DeterministicSignalEngine
         s = self._state(
-            filings=[SECFiling(accession_number="JSE-1", form_type="JSE Announcement",
-                               filing_date="2024-01-01", company_name="Acme", cik="JSE",
+            filings=[SECFiling(accession_number="JSE-1", form_type="JSE SENS",
+                               filing_date=RECENT_DAY, company_name="Acme", cik="JSE",
                                document_url="u", description="Foschini completes Street Fever acquisition")],
             news=[self._news("Foschini acquisition", "takeover of Street Fever", 0.9)],
         )
@@ -280,7 +283,7 @@ class TestDeterministicEngine:
     def test_third_party_sec_filing_must_name_target(self):
         """Full-text search returns other filers' 8-Ks; they only count if they name the target."""
         from src.engines.deterministic_engine import DeterministicSignalEngine
-        other = SECFiling(accession_number="x", form_type="8-K", filing_date="2024-01-01",
+        other = SECFiling(accession_number="x", form_type="8-K", filing_date=RECENT_DAY,
                           company_name="Beta Corp", cik="0000999", document_url="u",
                           description="Definitive merger agreement signed")
         assert DeterministicSignalEngine().run(self._state(filings=[other])).signal_candidates == []
@@ -882,7 +885,7 @@ class TestDataCollectionAgent:
         profile = {"name":"Apple Inc","cik":"0000320193","ticker":"AAPL"}
         us_f = [SECFiling(accession_number="acc1",form_type="8-K",filing_date="2024-01-15",
                           company_name="Apple",cik="0000320193",document_url="https://sec.gov/x")]
-        af_f = [SECFiling(accession_number="NGX-001",form_type="NGX Announcement",
+        af_f = [SECFiling(accession_number="NGX-001",form_type="NGX Disclosure",
                           filing_date="2024-01-10",company_name="Apple",cik="NGX",document_url="https://ngx.com/x")]
         af_n = [NewsItem(title="Apple Africa",source="BusinessDay Nigeria",published_date="2024-01-08",
                          url="https://bd.ng/x",snippet="Expansion",relevance_score=0.75)]
@@ -925,7 +928,7 @@ class TestDataCollectionAgent:
     @pytest.mark.asyncio
     async def test_deduplicates_filings(self):
         from src.agents.collection_agent import DataCollectionAgent
-        dup = SECFiling(accession_number="DUPE",form_type="8-K",filing_date="2024-01-01",
+        dup = SECFiling(accession_number="DUPE",form_type="8-K",filing_date=RECENT_DAY,
                         company_name="X",cik="001",document_url="https://sec.gov/x")
         em, am, nm = _patch_all(edgar=({"name":"X"},[dup]), africa=([dup],[]))
         with patch("src.agents.collection_agent.search_company_filings",em), \
@@ -938,7 +941,7 @@ class TestDataCollectionAgent:
     @pytest.mark.asyncio
     async def test_deduplicates_news(self):
         from src.agents.collection_agent import DataCollectionAgent
-        shared = NewsItem(title="Same news",source="Reuters",published_date="2024-01-01",
+        shared = NewsItem(title="Same news",source="Reuters",published_date=RECENT_DAY,
                           url="https://reuters.com/x",snippet="x",relevance_score=0.8)
         em, am, nm = _patch_all(africa=([],[shared]), news=[shared])
         with patch("src.agents.collection_agent.search_company_filings",em), \
@@ -1099,10 +1102,10 @@ class TestGraphIntegration:
         from src.agents.graph import run_analysis
 
         profile = {"name":"Acme","cik":"0000001","ticker":"ACME"}
-        filing  = SECFiling(accession_number="acc1",form_type="8-K",filing_date="2024-01-15",
+        filing  = SECFiling(accession_number="acc1",form_type="8-K",filing_date=RECENT_DAY,
                             company_name="Acme",cik="0000001",document_url="https://sec.gov/x",
                             description="Definitive merger agreement signed with Target Corp")
-        news    = [NewsItem(title="Acme merger confirmed",source="Reuters",published_date="2024-01-15",
+        news    = [NewsItem(title="Acme merger confirmed",source="Reuters",published_date=RECENT_DAY,
                             url="https://reuters.com/x",snippet="Merger acquisition deal confirmed",relevance_score=0.9)]
 
         explain_json = json.dumps([{
@@ -2970,7 +2973,7 @@ def test_engine_and_alpha_agree_on_source_credibility():
     from src.engines.deterministic_engine import candidate_credibility
     from src.engines.alpha_scorer import _source_credibility_for_signal
     for source_type, name, expected in [("filing", "8-K", 1.0), ("filing", "10-Q", 1.0),
-                                        ("filing", "SC 13D", 1.0), ("filing", "JSE SENS", 0.95),
+                                        ("filing", "SC 13D", 1.0), ("filing", "JSE SENS", 1.0), ("filing", "NGX Disclosure", 1.0),
                                         ("news", "Reuters", 0.95), ("news", "Bloomberg.com", 0.95)]:
         cand = SignalCandidate(signal_type=SignalType.CREDIT_RISK, matched_patterns=["p"], source_text="t",
                                source_type=source_type, source_name=name, raw_score=0.5)
@@ -3120,12 +3123,12 @@ async def test_replay_uses_live_calibration_and_compounds():
                          detected_signals=[], filings_reviewed=filings)
     store_analysis_run("run-1", brief)
     session = get_session()
-    result = await ReplayEngine(session).replay("Acme", "2024-12-31", "run-1")
+    result = await ReplayEngine(session).replay("Acme", "2024-01-31", "run-1")
     session.close()
     types = {s["type"] for s in result["signal_summary"]}
     assert types == {"distressed_asset", "credit_risk"}
     assert result["compound_events"]                      # credit risk + distress interact
-    live = AgentState(request=AnalysisRequest(company_name="Acme", cik="0000001"))
+    live = AgentState(request=AnalysisRequest(company_name="Acme", cik="0000001", as_of_date="2024-01-31"))
     live.filings = filings
     cand = next(c for c in DeterministicSignalEngine().run(live).signal_candidates
                 if c.signal_type == SignalType.DISTRESSED_ASSET)
@@ -3174,3 +3177,98 @@ async def test_rss_text_is_unescaped():
     tool._client.get = AsyncMock(return_value=resp)
     item = (await tool._fetch_rss("u"))[0]
     assert item["title"] == "A & B" and item["description"] == "Acme Reuters"
+
+
+class TestLimitsRemoved:
+    async def test_all_form4s_read_and_paced(self, monkeypatch):
+        import asyncio as _asyncio
+        from src.tools import edgar_tool as et
+        filings = [SECFiling(accession_number=str(i), form_type="4", filing_date="2026-09-01",
+                             company_name="Acme", cik="1", document_url=f"https://sec.gov/x/xslF345X06/f{i}.xml")
+                   for i in range(25)]
+        times = []
+        async def fake_get(url):
+            times.append(_asyncio.get_running_loop().time())
+            resp = MagicMock(); resp.raise_for_status = MagicMock()
+            resp.text = _form4("P", 100, 10) if url.endswith(("f0.xml", "f24.xml")) else _form4("A", 100, 0)
+            return resp
+        tool = et.EdgarTool(); tool._client = MagicMock(); tool._client.get = fake_get
+        monkeypatch.setattr(et, "SEC_MAX_REQUESTS_PER_SECOND", 200)   # keep the test fast
+        kept = await tool._enrich_form4(filings)
+        assert len(times) == 25                                       # no cap: every Form 4 read
+        assert [k.accession_number for k in kept] == ["0", "24"]      # grants dropped
+        assert all(not k.document_url.count("xslF345X") for k in kept)
+
+    async def test_rate_limiter_spacing(self):
+        import asyncio as _asyncio
+        from src.tools.edgar_tool import _RateLimiter
+        lim = _RateLimiter(50)
+        loop = _asyncio.get_running_loop(); t0 = loop.time()
+        await _asyncio.gather(*(lim.wait() for _ in range(11)))
+        assert loop.time() - t0 >= 0.19                               # 10 intervals of 20ms
+
+    def test_single_credible_news_story_not_forced_low(self):
+        from src.engines.deterministic_engine import DeterministicSignalEngine
+        from src.engines.calibration import calibrate
+        s = AgentState(request=AnalysisRequest(company_name="Intel", ticker="INTC"))
+        s.news_items = [NewsItem(title="Intel forecast crushes estimates", source="Reuters",
+                                 published_date="2026-10-01", url="u", snippet="", relevance_score=0.3)]
+        cand = DeterministicSignalEngine().run(s).signal_candidates[0]
+        assert cand.raw_score == pytest.approx(0.80 * 0.95)
+        assert calibrate(cand)[0] == Severity.HIGH
+
+    def test_exchange_code(self):
+        from src.tools.africa_tool import _exchange_code
+        assert _exchange_code("NPN.JO", ".JO") == "NPN"
+        assert _exchange_code("NPN", ".JO") == "NPN"
+        assert _exchange_code("GTCO.LG", ".JO") is None
+        assert _exchange_code(None, ".JO") is None
+
+    async def test_exchange_disclosure_parsers(self):
+        from src.tools.africa_tool import AfricaTool
+        tool = AfricaTool(); tool._client = MagicMock()
+        def resp(text=None, js=None):
+            r = MagicMock(); r.raise_for_status = MagicMock(); r.text = text; r.json = MagicMock(return_value=js)
+            return r
+        tool._client.get = AsyncMock(return_value=resp(js={"d": {"results": [{
+            "CompanySymbol": "GTCO", "CompanyName": "GUARANTY TRUST HOLDING COMPANY PLC",
+            "Type_of_Submission": "Corporate Actions", "Modified": "2026-09-29T10:00:00Z",
+            "URL": {"Url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47959_GUARANTY_TRUST_HOLDING_COMPANY_PLC-2026_INTERIM_DIVIDEND.pdf"}}]}}))
+        ngx = await tool.fetch_ngx_disclosures("GTBank", "GTCO.LG")
+        assert ngx[0].description == "GTCO: Corporate Actions: GUARANTY TRUST HOLDING COMPANY PLC - 2026 INTERIM DIVIDEND"
+        assert ngx[0].filing_date == "2026-09-29" and ngx[0].form_type == "NGX Disclosure"
+        tool._client.get = AsyncMock(return_value=resp(js=[
+            {"date": "2026-05-07T10:00:00", "mime_type": "application/pdf", "source_url": "https://nse/x.pdf",
+             "title": {"rendered": "Safaricom Plc &#8211; Audited Results"}},
+            {"date": "2026-05-07T10:00:00", "mime_type": "image/png", "source_url": "u", "title": {"rendered": "logo"}}]))
+        nse = await tool.fetch_nse_kenya_documents("Safaricom")
+        assert [f.description for f in nse] == ["Safaricom Plc – Audited Results"]
+        tool._client.get = AsyncMock(return_value=resp(text=(
+            '<tr><td>17:05 - 13 Oct 2026</td><td><a href="/v3/sens_display.php?tdate=20261013170500&amp;seq=90&amp;scode=NPN">'
+            '17:05 - 13 Oct 2026 | NASPERS LIMITED - Update on Repurchase Programme Price: 0</a></td></tr>')))
+        sens = await tool.fetch_jse_sens("NPN.JO")
+        assert sens[0].description == "NPN: NASPERS LIMITED - Update on Repurchase Programme"
+        assert sens[0].filing_date == "2026-10-13"
+        assert await tool.fetch_jse_sens("GTCO.LG") == []
+
+
+def test_sources_outside_lookback_window_are_ignored():
+    """Live-run regression: a 2023 CEO-departure story was reported in a 90-day analysis."""
+    from src.engines.deterministic_engine import DeterministicSignalEngine
+    s = AgentState(request=AnalysisRequest(company_name="Naspers", lookback_days=90))
+    s.news_items = [NewsItem(title="Naspers announces abrupt departure of CEO", source="CNBC Africa",
+                             published_date="2023-09-18", url="u", snippet="", relevance_score=0.5)]
+    out = DeterministicSignalEngine().run(s)
+    assert out.signal_candidates == []
+    assert "1 outside the 90-day window" in out.reasoning_trace[-1]["detail"]
+
+
+async def test_replay_window_ends_at_as_of_date():
+    """Replay measures the lookback window from its as-of date, not from today."""
+    from src.engines.deterministic_engine import DeterministicSignalEngine
+    filing = SECFiling(accession_number="a", form_type="8-K", filing_date="2024-01-02", company_name="Acme",
+                       cik="0000001", document_url="u", description="Item 1.03: Bankruptcy or Receivership")
+    for as_of, expected in [("2024-01-31", 1), ("2024-12-31", 0), ("2023-12-31", 0)]:
+        s = AgentState(request=AnalysisRequest(company_name="Acme", cik="0000001", as_of_date=as_of))
+        s.filings = [filing]
+        assert len(DeterministicSignalEngine().run(s).signal_candidates) == expected, as_of

@@ -32,9 +32,8 @@ WEIGHTS = {
 FILING_STRENGTH: dict[str, float] = {
     "8-K":                1.00,  # material event — highest
     "JSE SENS":           1.00,
-    "NGX Announcement":   0.95,
-    "NSE Kenya Disclosure": 0.93,
-    "JSE Announcement":   0.70,  # exchange-related news found by search, not the exchange feed
+    "NGX Disclosure":     0.95,
+    "NSE Disclosure":     0.93,
     "SC 13D":             0.95,
     "SCHEDULE 13D":       0.95,
     "SC 13G":             0.90,

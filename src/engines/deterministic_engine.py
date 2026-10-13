@@ -18,6 +18,7 @@ import re
 from datetime import datetime, timedelta
 from typing import Optional
 
+from src.utils.clock import utcnow
 from src.schemas.models import (
     SECFiling, NewsItem, SignalCandidate, SignalType, AgentState
 )
@@ -345,8 +346,9 @@ def _company_matchers(*names: Optional[str], ticker: Optional[str] = None) -> li
             continue
         phrase = r"\W+".join(re.escape(w) for w in words)
         patterns.append(re.compile(rf"\b{phrase}\b", re.IGNORECASE))
-    if ticker and len(ticker) >= 3:
-        patterns.append(re.compile(rf"\b{re.escape(ticker.upper())}\b"))
+    base = ticker.split(".")[0] if ticker else None     # GTCO.LG -> GTCO
+    if base and len(base) >= 3:
+        patterns.append(re.compile(rf"\b{re.escape(base.upper())}\b"))
     return patterns
 
 
@@ -363,9 +365,9 @@ def _source_credibility(source_name: str) -> float:
 
 
 # Form types the exchange tools emit (see africa_tool); everything else in state.filings is from SEC EDGAR.
-# Only the JSE SENS feed is an exchange disclosure system; NGX/NSE/JSE-fallback
-# results from news search arrive as news items with their real publisher.
-_EXCHANGE_FORM_TYPES = {"JSE SENS"}
+# Official exchange disclosure systems (see africa_tool) -> credibility source name.
+# Results found by news search arrive as news items credited to their publisher.
+_EXCHANGE_FORM_TYPES = {"JSE SENS": "JSE SENS", "NGX Disclosure": "NGX Group", "NSE Disclosure": "NSE Kenya"}
 
 
 def _source_date(value: Optional[str]) -> Optional[datetime]:
@@ -379,7 +381,7 @@ def candidate_credibility(source_type: str, source_name: str) -> float:
     """Credibility of a candidate's source. Shared by the rule engine and the alpha scorer."""
     if source_type == "filing":
         if source_name in _EXCHANGE_FORM_TYPES:
-            return 0.95
+            return SOURCE_CREDIBILITY[_EXCHANGE_FORM_TYPES[source_name]]
         return SOURCE_CREDIBILITY["SEC EDGAR"]   # fetched from EDGAR by the company's CIK
     return _source_credibility(source_name)
 
@@ -402,6 +404,17 @@ class DeterministicSignalEngine:
             ticker=state.request.ticker or (profile.ticker if profile else None),
         )
         off_target = 0
+        stale = 0
+        # Every source must fall inside the requested lookback window, whatever tool
+        # produced it (undated sources are kept).
+        window_end = _source_date(state.request.as_of_date) or utcnow()
+        if state.request.as_of_date:
+            window_end += timedelta(days=1)          # include the as-of day itself
+        window_start = window_end - timedelta(days=state.request.lookback_days)
+
+        def _too_old(date_str: Optional[str]) -> bool:
+            d = _source_date(date_str)
+            return d is not None and not (window_start <= d <= window_end)
         own_cik = _cik_number(state.request.cik or (profile.cik if profile else None))
 
         # Process filings
@@ -412,6 +425,9 @@ class DeterministicSignalEngine:
                 filing.form_type,
             ]))
             if not text.strip():
+                continue
+            if _too_old(filing.filing_date):
+                stale += 1
                 continue
             # A source that never names the target cannot evidence a signal about it.
             # Only the company's own SEC filings (fetched by its CIK) are exempt; full-text
@@ -442,6 +458,9 @@ class DeterministicSignalEngine:
         # Process news items
         for news in state.news_items:
             text = f"{news.title} {news.snippet}"
+            if _too_old(news.published_date):
+                stale += 1
+                continue
             if not _mentions_company(text, matchers):
                 off_target += 1
                 continue
@@ -449,7 +468,10 @@ class DeterministicSignalEngine:
             credibility = _source_credibility(news.source)
 
             for sig_type, matched_patterns, base_score in hits:
-                raw_score = min(base_score * credibility * news.relevance_score, 1.0)
+                # Relevance was mostly "does it name the company", which the gate above
+                # already enforces; multiplying by it again pushed every single news
+                # story to LOW. Strength now comes from the rule and the publisher.
+                raw_score = min(base_score * credibility, 1.0)
                 if raw_score < 0.20:
                     continue  # filter very weak news hits
                 candidates.append(SignalCandidate(
@@ -505,7 +527,8 @@ class DeterministicSignalEngine:
         state.log(
             "deterministic_engine",
             f"Engine produced {len(final_candidates)} signal candidates "
-            f"({off_target} source(s) skipped: target company not mentioned)",
+            f"({off_target} source(s) skipped: target company not mentioned; "
+            f"{stale} outside the {state.request.lookback_days}-day window)",
             {
                 "candidates": [
                     {"type": c.signal_type.value, "score": round(c.raw_score, 3),

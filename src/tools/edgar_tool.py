@@ -44,8 +44,10 @@ SIGNAL_FORMS = ["8-K", "10-K", "10-Q", "SC 13D", "SCHEDULE 13D", "SC 13G", "4", 
 # Form 4 filings are only signals when they show discretionary open-market trades.
 # Grants (A), option exercises (M), tax withholding (F), gifts (G) and sales under a
 # pre-arranged Rule 10b5-1 plan are routine and are dropped.
-FORM4_MAX_FETCH = 10
 FORM4_MIN_SALE_USD = 1_000_000
+
+# SEC fair-access policy: at most 10 requests per second per client.
+SEC_MAX_REQUESTS_PER_SECOND = 8
 MA_KEYWORDS  = ["merger", "acquisition", "takeover", "tender offer", "going private", "buyout"]
 DISTRESS_KW  = ["bankruptcy", "default", "restructuring", "going concern", "liquidity", "covenant breach"]
 CREDIT_KW    = ["credit facility", "debt", "leverage", "impairment", "write-down", "goodwill"]
@@ -76,6 +78,24 @@ EIGHT_K_ITEMS = {
     "8.01": "Other Events",
     "9.01": "Financial Statements and Exhibits",
 }
+
+
+class _RateLimiter:
+    """Spaces request start times so at most `per_second` begin in any second."""
+
+    def __init__(self, per_second: float):
+        self._interval = 1.0 / per_second
+        self._next = 0.0
+        self._lock = asyncio.Lock()
+
+    async def wait(self) -> None:
+        async with self._lock:
+            loop = asyncio.get_running_loop()
+            now = loop.time()
+            start = max(now, self._next)
+            self._next = start + self._interval
+        if start > now:
+            await asyncio.sleep(start - now)
 
 
 def _xml_value(block: str, tag: str) -> str:
@@ -283,34 +303,29 @@ class EdgarTool:
                 description=desc
             ))
 
-            if len(filings) >= 30:  # cap per company
-                break
-
         return await self._enrich_form4(filings)
 
     async def _enrich_form4(self, filings: list[SECFiling]) -> list[SECFiling]:
         """Replace Form 4 entries with a description of their open-market trades, dropping routine ones."""
-        kept: list[SECFiling] = []
-        fetched = 0
-        for f in filings:
+        limiter = _RateLimiter(SEC_MAX_REQUESTS_PER_SECOND)
+
+        async def enrich(f: SECFiling) -> Optional[SECFiling]:
             if f.form_type != "4":
-                kept.append(f)
-                continue
-            if fetched >= FORM4_MAX_FETCH:
-                continue
-            fetched += 1
+                return f
             # primaryDocument is the XSL-rendered view (xslF345X06/form4.xml); the raw XML drops that prefix.
             xml_url = re.sub(r"/xslF345X\d+/", "/", f.document_url)
+            await limiter.wait()
             try:
                 r = await self.client.get(xml_url)
                 r.raise_for_status()
                 summary = describe_form4(r.text)
             except Exception:
                 summary = None
-            await asyncio.sleep(0.12)   # SEC fair-access limit: 10 requests/second
-            if summary:
-                kept.append(f.model_copy(update={"description": summary, "document_url": xml_url}))
-        return kept
+            return f.model_copy(update={"description": summary, "document_url": xml_url}) if summary else None
+
+        # Every Form 4 in the lookback window is read, paced to SEC's request limit.
+        results = await asyncio.gather(*(enrich(f) for f in filings))
+        return [f for f in results if f is not None]
 
     # ── Full-Text Search ────────────────────────────────────────────────
 

@@ -43,7 +43,14 @@ from src.utils.clock import utcnow
 
 NGX_ANNOUNCEMENTS  = "https://ngxgroup.com/exchange/data/company-announcements/?download=rss"
 NGX_SEARCH         = "https://ngxgroup.com/exchange/data/company-announcements/?q={query}"
-JSE_SENS           = "https://senssearch.co.za/articles.rss?q={query}"           # SENS = Stock Exchange News Service
+# Official disclosure sources (machine-readable):
+# NGX: the exchange's document library (SharePoint list of corporate disclosures, full history).
+NGX_DISCLOSURES    = "https://doclib.ngxgroup.com/_api/Web/Lists/GetByTitle('XFinancial_News')/items"
+# NSE Kenya: listed-company documents in the exchange's own media library (full history).
+NSE_KENYA_MEDIA    = "https://www.nse.co.ke/wp-json/wp/v2/media"
+# JSE SENS: Sharenet republishes SENS; free access covers the current trading day only.
+JSE_SENS_TODAY     = "https://www.sharenet.co.za/v3/sens.php?scode={code}"
+SHARENET_BASE      = "https://www.sharenet.co.za"
 NSE_KENYA_DISC     = "https://www.nse.co.ke/regulatory-framework/announcements/company-announcements.html"
 GSE_ANNOUNCEMENTS  = "https://gse.com.gh/listed-companies/company-news/"
 
@@ -301,6 +308,16 @@ def _stable_id(text: str) -> str:
     return f"{int(hashlib.sha256(text.encode('utf-8')).hexdigest(), 16) % 999999:06d}"
 
 
+def _exchange_code(ticker: Optional[str], suffix: str) -> Optional[str]:
+    """'NPN.JO' -> 'NPN' for suffix '.JO'; a bare ticker is used as-is; other suffixes -> None."""
+    if not ticker:
+        return None
+    t = ticker.strip().upper()
+    if "." in t:
+        return t[: -len(suffix)] if t.endswith(suffix.upper()) else None
+    return t
+
+
 def _is_africa_focused(title: str, snippet: str) -> bool:
     """Heuristic: does this article have African market relevance?"""
     text = (title + " " + snippet).lower()
@@ -421,28 +438,31 @@ class AfricaTool:
 
     # ── Exchange Disclosure Feeds ───────────────────────────────────────
 
-    def _search_news(self, items: list[dict], label: str, company_name: str, limit: int) -> list[NewsItem]:
+    def _search_news(self, items: list[dict], label: str, company_name: str, limit: int,
+                     lookback_days: int = 90) -> list[NewsItem]:
         """
         Exchange-related results from Google News are news articles, not exchange
         disclosures: they carry their real publisher and that publisher's credibility.
         """
+        cutoff = (utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
         news: list[NewsItem] = []
         for item in items[:limit]:
             title = item.get("title", "")
-            if not title:
+            published = _parse_rss_date(item.get("pubDate", ""))
+            if not title or published < cutoff:
                 continue
             snippet = item.get("description", "")[:400]
             news.append(NewsItem(
                 title=title,
                 source=item.get("publisher") or label,
-                published_date=_parse_rss_date(item.get("pubDate", "")),
+                published_date=published,
                 url=item.get("link", ""),
                 snippet=snippet,
                 relevance_score=max(_score_african_relevance(title, snippet, company_name), 0.10),
             ))
         return news
 
-    async def fetch_ngx_announcements(self, company_name: str) -> list[NewsItem]:
+    async def fetch_ngx_announcements(self, company_name: str, lookback_days: int = 90) -> list[NewsItem]:
         """
         NGX-related news via Google News (NGX's own announcement feed is not
         machine-readable). Returned as news, not as exchange filings.
@@ -455,48 +475,122 @@ class AfricaTool:
         for q in queries:
             url = GOOGLE_NEWS_RSS.format(query=quote(q))
             items = await self._fetch_rss(url, "NGX-related news")
-            news.extend(self._search_news(items, "NGX-related news", company_name, limit=3))
+            news.extend(self._search_news(items, "NGX-related news", company_name, limit=3,
+                                          lookback_days=lookback_days))
             await asyncio.sleep(0.1)
         return news
 
-    async def fetch_jse_sens(self, company_name: str) -> list[SECFiling]:
+    async def fetch_jse_sens(self, ticker: Optional[str]) -> list[SECFiling]:
         """
-        Fetch JSE SENS (Stock Exchange News Service) announcements.
-        SENS is the JSE's mandatory disclosure platform — equivalent to 8-K filings.
+        JSE SENS announcements for a JSE share code (today's announcements; Sharenet's
+        free tier does not expose history). Needs the JSE code, e.g. NPN or NPN.JO.
         """
+        code = _exchange_code(ticker, ".JO")
+        if not code:
+            return []
+        try:
+            r = await self.client.get(JSE_SENS_TODAY.format(code=quote(code)))
+            r.raise_for_status()
+        except Exception:
+            return []
         filings: list[SECFiling] = []
-        # SENS RSS via senssearch.co.za
-        url = JSE_SENS.format(query=quote(company_name))
-        items = await self._fetch_rss(url, "JSE SENS")
-
-        for item in items[:8]:
-            title = item.get("title", "")
-            if not title:
+        for row in re.findall(r"<tr[^>]*>(.*?)</tr>", r.text, re.S):
+            link = re.search(r'href="(/v3/sens_display\.php\?tdate=(\d{8})\d*[^"]*)"', row)
+            if not link:
                 continue
+            text = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", row)).split())
+            title = re.sub(r"^.*?\|\s*", "", text)                     # drop the time/date prefix
+            title = re.sub(r"\s*Price:.*$", "", title).strip()
+            d = link.group(2)
             filings.append(SECFiling(
-                accession_number=f"SENS-{_stable_id(title)}",
+                accession_number=f"SENS-{_stable_id(link.group(1))}",
                 form_type="JSE SENS",
-                filing_date=_parse_rss_date(item.get("pubDate", "")),
-                company_name=company_name,
+                filing_date=f"{d[:4]}-{d[4:6]}-{d[6:8]}",
+                company_name=title.split(" - ")[0],
                 cik="JSE",
-                document_url=item.get("link", ""),
-                description=title,
-                raw_excerpt=item.get("description", "")[:300]
+                document_url=SHARENET_BASE + html.unescape(link.group(1)),
+                description=f"{code}: {title}",
             ))
-
         return filings
 
-    async def fetch_jse_news(self, company_name: str) -> list[NewsItem]:
+    async def fetch_ngx_disclosures(
+        self, company_name: str, ticker: Optional[str], lookback_days: int = 90
+    ) -> list[SECFiling]:
+        """Corporate disclosures filed with NGX, by symbol (or company name if no symbol)."""
+        since = (utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%dT00:00:00Z")
+        code = _exchange_code(ticker, ".LG")
+        who = (f"CompanySymbol eq '{code}'" if code
+               else f"substringof('{company_name.replace(chr(39), chr(39) * 2).upper()}',CompanyName)")
+        params = {
+            "$select": "CompanySymbol,CompanyName,Type_of_Submission,Modified,URL",
+            "$filter": f"{who} and Modified ge datetime'{since}'",
+            "$orderby": "Modified desc",
+            "$top": "200",
+        }
+        try:
+            r = await self.client.get(NGX_DISCLOSURES, params=params,
+                                      headers={"Accept": "application/json;odata=verbose"})
+            r.raise_for_status()
+            rows = r.json().get("d", {}).get("results", [])
+        except Exception:
+            return []
+        filings: list[SECFiling] = []
+        for row in rows:
+            url = (row.get("URL") or {}).get("Url", "")
+            # File names carry the announcement title: "48006_COMPANY-TOTAL_VOTING_RIGHTS_..."
+            stem = re.sub(r"^\d+_", "", url.rsplit("/", 1)[-1].rsplit(".", 1)[0])
+            title = " ".join(stem.replace("_", " ").replace("-", " - ").split())
+            filings.append(SECFiling(
+                accession_number=f"NGX-{_stable_id(url)}",
+                form_type="NGX Disclosure",
+                filing_date=(row.get("Modified") or "")[:10],
+                company_name=row.get("CompanyName", company_name),
+                cik="NGX",
+                document_url=url,
+                description=f"{row.get('CompanySymbol', '')}: {row.get('Type_of_Submission', '')}: {title}",
+            ))
+        return filings
+
+    async def fetch_nse_kenya_documents(self, company_name: str, lookback_days: int = 90) -> list[SECFiling]:
+        """Listed-company documents (results, announcements) in NSE Kenya's own document library."""
+        since = (utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%dT00:00:00")
+        params = {"search": company_name, "after": since, "per_page": "50",
+                  "orderby": "date", "order": "desc", "_fields": "date,title,source_url,mime_type"}
+        try:
+            r = await self.client.get(NSE_KENYA_MEDIA, params=params)
+            r.raise_for_status()
+            rows = r.json()
+        except Exception:
+            return []
+        filings: list[SECFiling] = []
+        for row in rows if isinstance(rows, list) else []:
+            if row.get("mime_type") != "application/pdf":
+                continue
+            title = html.unescape((row.get("title") or {}).get("rendered", ""))
+            url = row.get("source_url", "")
+            filings.append(SECFiling(
+                accession_number=f"NSE-{_stable_id(url)}",
+                form_type="NSE Disclosure",
+                filing_date=(row.get("date") or "")[:10],
+                company_name=company_name,
+                cik="NSE-KE",
+                document_url=url,
+                description=title,
+            ))
+        return filings
+
+    async def fetch_jse_news(self, company_name: str, lookback_days: int = 90) -> list[NewsItem]:
         """JSE/SENS-related news via Google News SA (used when the SENS feed has nothing)."""
         url = GOOGLE_NEWS_SA.format(query=quote(f"{company_name} JSE SENS announcement"))
         items = await self._fetch_rss(url, "JSE-related news")
-        return self._search_news(items, "JSE-related news", company_name, limit=4)
+        return self._search_news(items, "JSE-related news", company_name, limit=4, lookback_days=lookback_days)
 
-    async def fetch_nse_kenya_disclosures(self, company_name: str) -> list[NewsItem]:
+    async def fetch_nse_kenya_disclosures(self, company_name: str, lookback_days: int = 90) -> list[NewsItem]:
         """NSE Kenya-related news via Google News Kenya. Returned as news, not filings."""
         url = GOOGLE_NEWS_KE.format(query=quote(f"{company_name} NSE Kenya disclosure announcement"))
         items = await self._fetch_rss(url, "NSE Kenya-related news")
-        return self._search_news(items, "NSE Kenya-related news", company_name, limit=4)
+        return self._search_news(items, "NSE Kenya-related news", company_name, limit=4,
+                                 lookback_days=lookback_days)
 
     # ── HTML Scraping for PE/Capital Sources ───────────────────────────
 
@@ -718,21 +812,20 @@ async def fetch_african_intelligence(
     Returns (exchange_filings, african_news_items).
     """
     async with AfricaTool() as tool:
-        sens_task  = asyncio.create_task(tool.fetch_jse_sens(company_name))
-        ngx_task   = asyncio.create_task(tool.fetch_ngx_announcements(company_name))
-        nse_task   = asyncio.create_task(tool.fetch_nse_kenya_disclosures(company_name))
-        news_task  = asyncio.create_task(tool.fetch_african_news(company_name, lookback_days))
-        sens, ngx, nse, african_news = await asyncio.gather(
-            sens_task, ngx_task, nse_task, news_task, return_exceptions=True
+        results = await asyncio.gather(
+            tool.fetch_jse_sens(ticker),
+            tool.fetch_ngx_disclosures(company_name, ticker, lookback_days),
+            tool.fetch_nse_kenya_documents(company_name, lookback_days),
+            tool.fetch_ngx_announcements(company_name, lookback_days),
+            tool.fetch_nse_kenya_disclosures(company_name, lookback_days),
+            tool.fetch_jse_news(company_name, lookback_days),
+            tool.fetch_african_news(company_name, lookback_days),
+            return_exceptions=True,
         )
-        jse_news = [] if isinstance(sens, list) and sens else await tool.fetch_jse_news(company_name)
 
-    # Only the SENS feed is an exchange disclosure system; everything else is news.
-    filings: list[SECFiling] = sens if isinstance(sens, list) else []
-    news: list[NewsItem] = []
-    for batch in (ngx, nse, jse_news, african_news):
-        if isinstance(batch, list):
-            news.extend(batch)
+    # Exchange disclosure systems are filings; everything found by news search is news.
+    filings: list[SECFiling] = [f for batch in results[:3] if isinstance(batch, list) for f in batch]
+    news: list[NewsItem] = [n for batch in results[3:] if isinstance(batch, list) for n in batch]
 
     seen: set[str] = set()
     deduped_filings: list[SECFiling] = []
