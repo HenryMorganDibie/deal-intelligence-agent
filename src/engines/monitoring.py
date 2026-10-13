@@ -18,6 +18,7 @@ from typing import Optional
 import httpx
 
 from src.schemas.models import AnalysisRequest, AnalystBrief, Severity
+from src.utils.clock import utcnow
 
 WATCHLIST_PATH = Path(__file__).resolve().parents[2] / "data" / "watchlist.json"
 ALERTS_PATH    = Path(__file__).resolve().parents[2] / "data" / "alerts.json"
@@ -63,7 +64,7 @@ def add_to_watchlist(
         "alert_severity": alert_severity,
         "alert_alpha": alert_alpha,
         "webhook_url": webhook_url,
-        "added_at": datetime.utcnow().isoformat(),
+        "added_at": utcnow().isoformat(),
         "last_checked": None,
         "last_signal_severity": None,
         "check_count": 0,
@@ -184,10 +185,10 @@ async def _check_company(entry: dict) -> Optional[dict]:
     try:
         brief = await run_analysis(request)
     except Exception as e:
-        return {"company": company, "error": str(e), "checked_at": datetime.utcnow().isoformat()}
+        return {"company": company, "error": str(e), "checked_at": utcnow().isoformat()}
 
     if not _should_alert(brief, entry):
-        return {"company": company, "checked_at": datetime.utcnow().isoformat(), "alert_keys": []}
+        return {"company": company, "checked_at": utcnow().isoformat(), "alert_keys": []}
 
     # Alert on change, not on every cycle: only new events or a severity escalation.
     from src.engines.company_memory import _signal_key
@@ -196,11 +197,11 @@ async def _check_company(entry: dict) -> Optional[dict]:
     escalated = _SEVERITY_ORDER[brief.overall_severity] > _SEVERITY_ORDER.get(
         _parse_severity(entry.get("last_alert_severity")), -1)
     if previous and set(keys) <= previous and not escalated:
-        return {"company": company, "checked_at": datetime.utcnow().isoformat(),
+        return {"company": company, "checked_at": utcnow().isoformat(),
                 "alert_keys": sorted(previous), "suppressed_repeat": True}
 
     alert = {
-        "alert_id": f"alert_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{company[:8]}",
+        "alert_id": f"alert_{utcnow().strftime('%Y%m%d_%H%M%S')}_{company[:8]}",
         "company": company,
         "ticker": ticker,
         "severity": brief.overall_severity.value,
@@ -209,7 +210,7 @@ async def _check_company(entry: dict) -> Optional[dict]:
         "headline": brief.executive_summary[:200],
         "recommendation": brief.recommendation,
         "requires_human_review": brief.requires_human_review,
-        "triggered_at": datetime.utcnow().isoformat(),
+        "triggered_at": utcnow().isoformat(),
         "signals": [
             {"type": s.signal_type.value, "severity": s.severity.value, "headline": s.headline}
             for s in brief.top_signals(3)
@@ -256,7 +257,7 @@ class MonitoringEngine:
         for entry, result in zip(watchlist, results):
             current = by_name.get(entry["company_name"])
             if current is not None:
-                current["last_checked"] = datetime.utcnow().isoformat()
+                current["last_checked"] = utcnow().isoformat()
                 current["check_count"]  = current.get("check_count", 0) + 1
                 if isinstance(result, dict) and result.get("alert_id"):
                     current["last_signal_severity"] = result.get("severity")
@@ -276,7 +277,7 @@ class MonitoringEngine:
 
         while self._running:
             if console_output:
-                print(f"[Monitor] {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} — Running check cycle...")
+                print(f"[Monitor] {utcnow().strftime('%Y-%m-%d %H:%M:%S')} — Running check cycle...")
             alerts = await self.run_once()
             if alerts and console_output:
                 for a in alerts:

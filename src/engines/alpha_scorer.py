@@ -23,7 +23,8 @@ from src.schemas.models import (
     SignalCandidate, DetectedSignal, Severity, SignalType,
     AlphaScore, LiquidityTier, AnalystBrief
 )
-from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY
+from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY, candidate_credibility
+from src.utils.clock import utcnow
 
 # ─── Expected Move Table ──────────────────────────────────────────────────────
 # Historical median equity price move within 10 trading days of confirmed signal.
@@ -101,15 +102,14 @@ def _recency_decay(detected_at: datetime, half_life_days: float = 14.0) -> float
     Signal at detection time = 1.0. Halves every `half_life_days` days.
     Minimum floor: 0.30 (signal doesn't expire completely).
     """
-    age_days = (datetime.utcnow() - detected_at).total_seconds() / 86400
+    age_days = (utcnow() - detected_at).total_seconds() / 86400
     decay = 0.5 ** (age_days / half_life_days)
     return max(decay, 0.30)
 
 
 def _source_credibility_for_signal(candidate: SignalCandidate) -> float:
     """Get credibility for the best source attached to a candidate."""
-    score = SOURCE_CREDIBILITY.get(candidate.source_name, DEFAULT_CREDIBILITY)
-    return score
+    return candidate_credibility(candidate.source_type, candidate.source_name)
 
 
 def _corroboration_weight(n: int) -> float:
@@ -178,7 +178,7 @@ def compute_alpha_score(
     sev_w    = SEVERITY_WEIGHT[signal.severity]
     cred_w   = _source_credibility_for_signal(candidate)
     corr_w   = _corroboration_weight(candidate.corroboration_count)
-    rec_w    = _recency_decay(candidate.detected_at)
+    rec_w    = _recency_decay(candidate.source_date or candidate.detected_at)
     liq_tier = _infer_liquidity_tier(ticker, exchange, sector)
     liq_w    = LIQUIDITY_WEIGHT[liq_tier]
 

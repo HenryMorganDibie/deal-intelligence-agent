@@ -15,6 +15,7 @@ from src.schemas.models import (
 )
 from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY
 from src.engines.feedback import get_signal_stats, get_source_reliability
+from src.utils.clock import utcnow
 
 # Component weights — must sum to 1.0
 WEIGHTS = {
@@ -95,7 +96,7 @@ def _entity_match_score(candidate: SignalCandidate) -> float:
 
 def _temporal_relevance_score(candidate: SignalCandidate) -> float:
     """Exponential decay from detection time. Floor at 0.35."""
-    age_days = (datetime.utcnow() - candidate.detected_at).total_seconds() / 86400
+    age_days = (utcnow() - (candidate.source_date or candidate.detected_at)).total_seconds() / 86400
     decay = 0.5 ** (age_days / HALF_LIFE_DAYS)
     return round(max(decay, 0.35), 4)
 

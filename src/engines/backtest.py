@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Optional
 
 from src.schemas.models import SignalType, Severity
+from src.utils.clock import utcnow
 
 BACKTEST_PATH = Path(__file__).resolve().parents[2] / "data" / "backtest_results.json"
 
@@ -181,7 +182,7 @@ class BacktestEngine:
             }
 
         result = {
-            "run_at":    datetime.utcnow().isoformat(),
+            "run_at":    utcnow().isoformat(),
             "total_signals_evaluated": len(predictions),
             "total_outcomes_available": len(outcomes),
             "metrics_by_signal_type": per_type,
@@ -249,7 +250,7 @@ class BacktestEngine:
             }
 
         result = {
-            "run_at": datetime.utcnow().isoformat(),
+            "run_at": utcnow().isoformat(),
             "mode": "synthetic",
             "total_signals_evaluated": sum(v["signals_flagged"] for v in synthetic_per_type.values()),
             "metrics_by_signal_type": synthetic_per_type,

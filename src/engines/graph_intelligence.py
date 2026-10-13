@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 import networkx as nx
+from src.utils.clock import utcnow
 
 GRAPH_PATH = Path(__file__).resolve().parents[2] / "data" / "entity_graph.json"
 
@@ -43,36 +44,36 @@ class EntityGraphEngine:
 
     def add_company(self, name: str, **attrs: Any) -> None:
         """Add or update a company node."""
-        self.G.add_node(name, node_type="company", updated_at=datetime.utcnow().isoformat(), **attrs)
+        self.G.add_node(name, node_type="company", updated_at=utcnow().isoformat(), **attrs)
 
     def add_executive(self, name: str, company: str, role: str) -> None:
         """Link an executive to a company."""
         exec_node = f"exec:{name}"
         self.G.add_node(exec_node, node_type="executive", name=name, role=role)
         self.G.add_edge(exec_node, company, edge_type="employed_by", role=role,
-                        added_at=datetime.utcnow().isoformat())
+                        added_at=utcnow().isoformat())
 
     def add_lender_relationship(self, lender: str, borrower: str, facility_type: str = "credit") -> None:
         """Link a lender to a borrower."""
         self.G.add_node(lender, node_type="lender")
         self.G.add_edge(lender, borrower, edge_type="lends_to", facility=facility_type,
-                        added_at=datetime.utcnow().isoformat())
+                        added_at=utcnow().isoformat())
 
     def add_board_overlap(self, executive: str, company_a: str, company_b: str) -> None:
         """Record a shared board member between two companies."""
         self.G.add_edge(company_a, company_b, edge_type="board_overlap", executive=executive,
-                        added_at=datetime.utcnow().isoformat())
+                        added_at=utcnow().isoformat())
 
     def add_acquisition(self, acquirer: str, target: str, status: str = "completed") -> None:
         """Link acquirer and target."""
         self.G.add_edge(acquirer, target, edge_type="acquired", status=status,
-                        added_at=datetime.utcnow().isoformat())
+                        added_at=utcnow().isoformat())
 
     def add_regulatory_link(self, regulator: str, company: str, action_type: str) -> None:
         """Record a regulatory relationship."""
         self.G.add_node(regulator, node_type="regulator")
         self.G.add_edge(regulator, company, edge_type="regulates", action=action_type,
-                        added_at=datetime.utcnow().isoformat())
+                        added_at=utcnow().isoformat())
 
     def save(self) -> None:
         _save_graph(self.G)
@@ -197,6 +198,6 @@ def update_graph_from_brief(brief: Any) -> None:
         ticker=brief.ticker or "",
         last_severity=brief.overall_severity.value,
         last_alpha=brief.top_alpha_score or 0,
-        last_analysed=datetime.utcnow().isoformat(),
+        last_analysed=utcnow().isoformat(),
     )
     engine.save()

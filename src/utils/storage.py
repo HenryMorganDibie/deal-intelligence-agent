@@ -13,6 +13,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
+from src.utils.clock import utcnow
 
 
 def load_json(path: Path, default: Callable[[], Any]) -> Any:
@@ -22,7 +23,7 @@ def load_json(path: Path, default: Callable[[], Any]) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except (ValueError, UnicodeDecodeError):
-        backup = path.with_name(f"{path.name}.unreadable-{datetime.utcnow():%Y%m%d%H%M%S}")
+        backup = path.with_name(f"{path.name}.unreadable-{utcnow():%Y%m%d%H%M%S}")
         path.rename(backup)
         print(f"warning: {path} could not be read; moved to {backup.name} and starting empty",
               file=sys.stderr)

@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Optional
 
 from src.schemas.models import Severity, SignalType, CompanyRiskProfile
+from src.utils.clock import utcnow
 
 PORTFOLIO_PATH = Path(__file__).resolve().parents[2] / "data" / "portfolios.json"
 
@@ -59,7 +60,7 @@ class Portfolio:
     def __init__(self, name: str):
         self.name = name
         portfolios = _load_portfolios()
-        self._data = portfolios.get(name, {"name": name, "holdings": {}, "created_at": datetime.utcnow().isoformat()})
+        self._data = portfolios.get(name, {"name": name, "holdings": {}, "created_at": utcnow().isoformat()})
 
     def add_holding(
         self,
@@ -75,7 +76,7 @@ class Portfolio:
             "weight": weight,
             "sector": sector,
             "market": market,
-            "added_at": datetime.utcnow().isoformat(),
+            "added_at": utcnow().isoformat(),
         }
         self._save()
 
@@ -186,7 +187,7 @@ class Portfolio:
 
         return {
             "portfolio":               self.name,
-            "computed_at":             datetime.utcnow().isoformat(),
+            "computed_at":             utcnow().isoformat(),
             "total_holdings":          len(holdings),
             "holdings_with_profiles":  sum(1 for _, _, p in profiles if p),
             "weighted_portfolio_risk":  round(weighted_risk, 1),

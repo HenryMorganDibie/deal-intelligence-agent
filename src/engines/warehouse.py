@@ -29,6 +29,7 @@ from sqlalchemy import (
     Boolean, DateTime, Text, Index
 )
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from src.utils.clock import utcnow
 
 DB_PATH = Path(__file__).resolve().parents[2] / "data" / "warehouse.db"
 
@@ -49,7 +50,7 @@ class FilingRecord(Base):
     document_url    = Column(String)
     description     = Column(Text)
     raw_excerpt     = Column(Text)
-    ingested_at     = Column(DateTime, default=datetime.utcnow)
+    ingested_at     = Column(DateTime, default=utcnow)
 
 
 class NewsRecord(Base):
@@ -63,7 +64,7 @@ class NewsRecord(Base):
     url             = Column(String)
     snippet         = Column(Text)
     relevance_score = Column(Float)
-    ingested_at     = Column(DateTime, default=datetime.utcnow)
+    ingested_at     = Column(DateTime, default=utcnow)
 
 
 class SignalCandidateRecord(Base):
@@ -79,7 +80,7 @@ class SignalCandidateRecord(Base):
     raw_score           = Column(Float)
     corroboration_count = Column(Integer)
     detected_at         = Column(DateTime)
-    ingested_at         = Column(DateTime, default=datetime.utcnow)
+    ingested_at         = Column(DateTime, default=utcnow)
 
 
 class DetectedSignalRecord(Base):
@@ -98,7 +99,7 @@ class DetectedSignalRecord(Base):
     evidence            = Column(Text)   # JSON
     reasoning           = Column(Text)
     detected_at         = Column(DateTime)
-    ingested_at         = Column(DateTime, default=datetime.utcnow)
+    ingested_at         = Column(DateTime, default=utcnow)
 
 
 class CompoundEventRecord(Base):
@@ -114,7 +115,7 @@ class CompoundEventRecord(Base):
     systemic_risk_level   = Column(String)
     alpha_multiplier      = Column(Float)
     reasoning_chain       = Column(Text)
-    detected_at           = Column(DateTime, default=datetime.utcnow)
+    detected_at           = Column(DateTime, default=utcnow)
 
 
 class AnalystBriefRecord(Base):
@@ -133,7 +134,7 @@ class AnalystBriefRecord(Base):
     compliance_mode         = Column(Boolean)
     processing_time_seconds = Column(Float)
     brief_json              = Column(Text)    # full serialised brief
-    created_at              = Column(DateTime, default=datetime.utcnow)
+    created_at              = Column(DateTime, default=utcnow)
 
 
 class MarketOutcomeRecord(Base):
@@ -152,7 +153,7 @@ class MarketOutcomeRecord(Base):
     confirmation_date        = Column(String)
     direction_correct        = Column(Boolean)
     magnitude_error_pct      = Column(Float)
-    recorded_at              = Column(DateTime, default=datetime.utcnow)
+    recorded_at              = Column(DateTime, default=utcnow)
 
 
 class ReplayRunRecord(Base):
@@ -167,7 +168,7 @@ class ReplayRunRecord(Base):
     scoring_version = Column(String)
     config_snapshot = Column(Text)   # JSON
     brief_json      = Column(Text)
-    created_at      = Column(DateTime, default=datetime.utcnow)
+    created_at      = Column(DateTime, default=utcnow)
 
 
 class ScoringHistoryRecord(Base):
@@ -179,7 +180,7 @@ class ScoringHistoryRecord(Base):
     alpha_score  = Column(Float)
     severity     = Column(String)
     confidence   = Column(Float)
-    recorded_at  = Column(DateTime, default=datetime.utcnow)
+    recorded_at  = Column(DateTime, default=utcnow)
 
 
 # ─── Engine & Session ─────────────────────────────────────────────────────────

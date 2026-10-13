@@ -15,6 +15,7 @@ import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from src.schemas.models import SECFiling, FilingType
+from src.utils.clock import utcnow
 
 EDGAR_BASE       = "https://efts.sec.gov/LATEST/search-index"
 EDGAR_SEARCH     = "https://efts.sec.gov/LATEST/search-index?q={query}&dateRange=custom&startdt={start}&enddt={end}&forms={forms}"
@@ -184,7 +185,7 @@ class EdgarTool:
         except Exception as e:
             return []
 
-        cutoff = (datetime.utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
+        cutoff = (utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
         target_forms = set(forms or SIGNAL_FORMS)
         filings: list[SECFiling] = []
 
@@ -247,8 +248,8 @@ class EdgarTool:
         """
         Full-text search across all EDGAR filings using EFTS endpoint.
         """
-        end_date   = datetime.utcnow().strftime("%Y-%m-%d")
-        start_date = (datetime.utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
+        end_date   = utcnow().strftime("%Y-%m-%d")
+        start_date = (utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
         forms_str  = ",".join(forms or ["8-K", "10-K", "10-Q"])
 
         url = "https://efts.sec.gov/LATEST/search-index"

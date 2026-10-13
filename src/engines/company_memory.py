@@ -17,6 +17,7 @@ from typing import Any, Optional
 from src.schemas.models import (
     CompanyRiskProfile, AnalystBrief, SignalType, Severity
 )
+from src.utils.clock import utcnow
 
 MEMORY_PATH = Path(__file__).resolve().parents[2] / "data" / "company_memory.json"
 
@@ -103,7 +104,12 @@ def update_profile(brief: AnalystBrief) -> CompanyRiskProfile:
     if brief.top_alpha_score:
         new_risk_contribution = max(new_risk_contribution, brief.top_alpha_score * 0.9)
 
-    profile.rolling_risk_score = _ema(profile.rolling_risk_score, new_risk_contribution)
+    # Seed the average with the first observation; an EMA started from 0 reports a
+    # first-time critical company at a quarter of its risk.
+    if profile.total_analyses_run == 0:
+        profile.rolling_risk_score = round(new_risk_contribution, 2)
+    else:
+        profile.rolling_risk_score = _ema(profile.rolling_risk_score, new_risk_contribution)
 
     # Update dimension-specific scores
     seen = set(profile.seen_signal_keys)
@@ -133,7 +139,7 @@ def update_profile(brief: AnalystBrief) -> CompanyRiskProfile:
         # Leadership tracking
         if sig.signal_type == SignalType.LEADERSHIP_CHANGE:
             profile.leadership_change_count += 1
-            profile.last_leadership_change = datetime.utcnow().strftime("%Y-%m-%d")
+            profile.last_leadership_change = utcnow().strftime("%Y-%m-%d")
 
         # Debt restructuring tracking
         if sig.signal_type == SignalType.DEBT_RESTRUCTURE:
@@ -150,13 +156,17 @@ def update_profile(brief: AnalystBrief) -> CompanyRiskProfile:
     profile.event_velocity = _ema(profile.event_velocity, velocity)
 
     # Trend detection
-    profile.risk_delta_30d = round(profile.rolling_risk_score - old_risk, 2)
-    profile.risk_trend = _risk_trend(old_risk, profile.rolling_risk_score)
+    if profile.total_analyses_run == 0:
+        profile.risk_delta_30d = 0.0          # no earlier observation to compare against
+        profile.risk_trend = "stable"
+    else:
+        profile.risk_delta_30d = round(profile.rolling_risk_score - old_risk, 2)
+        profile.risk_trend = _risk_trend(old_risk, profile.rolling_risk_score)
 
     # Alpha score history (keep last 20)
     if brief.top_alpha_score is not None:
         profile.alpha_score_history.append({
-            "date": datetime.utcnow().strftime("%Y-%m-%d"),
+            "date": utcnow().strftime("%Y-%m-%d"),
             "alpha": brief.top_alpha_score,
             "severity": brief.overall_severity.value,
         })
@@ -178,7 +188,7 @@ def update_profile(brief: AnalystBrief) -> CompanyRiskProfile:
         setattr(profile, field, max(0.0, min(100.0, val)))
 
     profile.total_analyses_run += 1
-    profile.last_updated = datetime.utcnow()
+    profile.last_updated = utcnow()
 
     data[cid] = json.loads(profile.model_dump_json())
     _save(data)

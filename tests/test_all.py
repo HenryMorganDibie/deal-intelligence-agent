@@ -21,6 +21,7 @@ from src.schemas.models import (
     SignalType, Severity, SignalCandidate, AlphaScore, LiquidityTier,
     FeedbackEntry, FeedbackType, AuditEntry
 )
+from src.utils.clock import utcnow
 
 # ─── Schemas ──────────────────────────────────────────────────────────────────
 
@@ -457,9 +458,9 @@ class TestAlphaScorer:
 
     def test_recency_decay(self):
         from src.engines.alpha_scorer import _recency_decay
-        now   = _recency_decay(datetime.utcnow())
-        old   = _recency_decay(datetime.utcnow() - timedelta(days=60))
-        floor = _recency_decay(datetime.utcnow() - timedelta(days=365))
+        now   = _recency_decay(utcnow())
+        old   = _recency_decay(utcnow() - timedelta(days=60))
+        floor = _recency_decay(utcnow() - timedelta(days=365))
         assert now >= old >= floor
         assert floor >= 0.30
 
@@ -645,7 +646,7 @@ class TestNewsTool:
 
     def test_parse_rss_date_fallback(self):
         from src.tools.news_tool import _parse_rss_date
-        assert _parse_rss_date("garbage") == datetime.utcnow().strftime("%Y-%m-%d")
+        assert _parse_rss_date("garbage") == utcnow().strftime("%Y-%m-%d")
 
 
 # ─── Africa Tool ──────────────────────────────────────────────────────────────
@@ -2741,7 +2742,7 @@ class TestSourceData:
         from src.tools.news_tool import NewsTool
         rss = ('<rss><channel><item><title>Acme agrees merger - Reuters</title>'
                '<link>https://news.google.com/rss/articles/abc</link>'
-               f'<pubDate>{datetime.utcnow():%a, %d %b %Y %H:%M:%S} GMT</pubDate>'
+               f'<pubDate>{utcnow():%a, %d %b %Y %H:%M:%S} GMT</pubDate>'
                '<description>Acme merger</description>'
                '<source url="https://www.reuters.com">Reuters</source></item></channel></rss>')
         tool = NewsTool()
@@ -2929,3 +2930,74 @@ class TestStorage:
         assert feedback._load()["entries"] == []
         backups = list(isolated_data_dir.glob("feedback.json.unreadable-*"))
         assert backups and backups[0].read_text().startswith('{"entries": [ truncated')
+
+
+class TestEntityResolution:
+    def test_no_substring_false_matches(self):
+        from src.engines.entity_resolver import EntityResolver
+        r = EntityResolver()
+        r.register("Apple Inc", ticker="AAPL")
+        assert r.resolve("Pineapple Holdings") is None
+        assert r.resolve("Apple")["ticker"] == "AAPL"
+
+    def test_ambiguous_fuzzy_query_resolves_to_nothing(self):
+        from src.engines.entity_resolver import EntityResolver
+        r = EntityResolver()
+        r.register("Guaranty Trust Bank")
+        r.register("Standard Trust Holdings")
+        assert r.resolve("Trust") is None
+        assert r.resolve("Guaranty Trust")["canonical_name"] == "Guaranty Trust Bank"
+
+    def test_merge_repoints_duplicate_identifiers(self):
+        from src.engines.entity_resolver import EntityResolver
+        r = EntityResolver()
+        r.register("Guaranty Trust Bank", ticker="GTCO")
+        r.register("GTBank Plc", ticker="GUARANTY")
+        assert r.merge_duplicates("Guaranty Trust Bank", "GTBank Plc")
+        assert r.resolve("GUARANTY")["canonical_name"] == "Guaranty Trust Bank"
+
+
+def test_engine_and_alpha_agree_on_source_credibility():
+    from src.engines.deterministic_engine import candidate_credibility
+    from src.engines.alpha_scorer import _source_credibility_for_signal
+    for source_type, name, expected in [("filing", "8-K", 1.0), ("filing", "10-Q", 1.0),
+                                        ("filing", "SC 13D", 1.0), ("filing", "JSE SENS", 0.95),
+                                        ("news", "Reuters", 0.95), ("news", "Bloomberg.com", 0.95)]:
+        cand = SignalCandidate(signal_type=SignalType.CREDIT_RISK, matched_patterns=["p"], source_text="t",
+                               source_type=source_type, source_name=name, raw_score=0.5)
+        assert candidate_credibility(source_type, name) == expected
+        assert _source_credibility_for_signal(cand) == expected
+
+
+def test_recency_uses_source_date_not_run_time():
+    from src.engines.deterministic_engine import DeterministicSignalEngine
+    from src.engines.alpha_scorer import _recency_decay
+    old = (utcnow() - timedelta(days=56)).strftime("%Y-%m-%d")
+    s = AgentState(request=AnalysisRequest(company_name="Acme"))
+    s.news_items = [NewsItem(title="Acme profit warning", source="Reuters", published_date=old,
+                             url="u", snippet="profit warning issued", relevance_score=0.9)]
+    cand = DeterministicSignalEngine().run(s).signal_candidates[0]
+    assert cand.source_date.strftime("%Y-%m-%d") == old
+    assert _recency_decay(cand.source_date) == pytest.approx(0.30, abs=0.01)   # 4 half-lives, floored
+
+
+def test_alpha_explanation_matches_stored_score():
+    from src.engines.alpha_explainer import explain_alpha
+    a = AlphaScore(score=40.0, severity_component=0.78, source_credibility=0.95, corroboration_weight=0.5,
+                   recency_weight=1.0, liquidity_tier=LiquidityTier.LARGE_CAP)
+    sig = DetectedSignal(signal_type=SignalType.MA_ACTIVITY, severity=Severity.HIGH, headline="H",
+                         evidence=["E"], confidence=0.7, reasoning="R", alpha_score=a)
+    exp = explain_alpha(sig)          # stored score was reduced by a contradictory compound
+    assert exp["final_score"] == 40.0
+    assert exp["compound_boost"] < 0
+    assert "removed" in exp["plain_english"]
+
+
+def test_first_analysis_sets_full_risk_without_trend():
+    from src.engines.company_memory import update_profile
+    brief = AnalystBrief(company_name="Acme", ticker="ACME", executive_summary="x",
+                         overall_severity=Severity.CRITICAL, recommendation="y",
+                         confidence_score=0.8, detected_signals=[])
+    p = update_profile(brief)
+    assert p.rolling_risk_score == 90.0
+    assert p.risk_trend == "stable" and p.risk_delta_30d == 0.0

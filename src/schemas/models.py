@@ -8,6 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 from pydantic import BaseModel, Field, field_validator
+from src.utils.clock import utcnow
 
 
 # ─────────────────────────────────────────────
@@ -99,7 +100,7 @@ class CompanyProfile(BaseModel):
     exchange: Optional[str] = None
     sector: Optional[str] = None
     description: Optional[str] = None
-    resolved_at: datetime = Field(default_factory=datetime.utcnow)
+    resolved_at: datetime = Field(default_factory=utcnow)
 
 
 # ─────────────────────────────────────────────
@@ -122,7 +123,9 @@ class SignalCandidate(BaseModel):
     entity_mentions: list[str] = Field(default_factory=list, description="Named entities found")
     corroboration_count: int = Field(default=1, description="Number of independent sources confirming")
     raw_score: float = Field(..., ge=0.0, le=1.0, description="Pre-calibration score")
-    detected_at: datetime = Field(default_factory=datetime.utcnow)
+    detected_at: datetime = Field(default_factory=utcnow)
+    # Publication / filing date of the source text; recency is measured from this, not from run time.
+    source_date: Optional[datetime] = None
 
 
 # ─────────────────────────────────────────────
@@ -181,7 +184,7 @@ class DetectedSignal(BaseModel):
     source_urls: list[str] = Field(default_factory=list)
     filing_references: list[str] = Field(default_factory=list)
     confidence: float = Field(..., ge=0.0, le=1.0, description="Calibrated confidence score")
-    detected_at: datetime = Field(default_factory=datetime.utcnow)
+    detected_at: datetime = Field(default_factory=utcnow)
     reasoning: str = Field(..., description="LLM explanation of the deterministic signal")
 
     # Provenance — links back to the deterministic engine output
@@ -212,7 +215,7 @@ class FeedbackEntry(BaseModel):
     corrected_severity: Optional[Severity] = None
     analyst_note: str = ""
     source_patterns: list[str] = Field(default_factory=list)
-    submitted_at: datetime = Field(default_factory=datetime.utcnow)
+    submitted_at: datetime = Field(default_factory=utcnow)
     # Outcome tracking
     event_materialised: Optional[bool] = None
     days_to_event: Optional[int] = None
@@ -228,7 +231,7 @@ class AuditEntry(BaseModel):
     Stored with a hash chain for tamper-evidence.
     """
     entry_id: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     pipeline_step: str
     company_name: str
     action: str
@@ -263,7 +266,7 @@ class AnalystBrief(BaseModel):
     # Header
     company_name: str
     ticker: Optional[str] = None
-    brief_date: datetime = Field(default_factory=datetime.utcnow)
+    brief_date: datetime = Field(default_factory=utcnow)
     analyst_model: str = Field(default="unspecified")
 
     # Executive summary
@@ -356,7 +359,7 @@ class AgentState(BaseModel):
             "step": step,
             "detail": detail,
             "data": data,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": utcnow().isoformat()
         })
         self.current_step = step
 
@@ -393,7 +396,7 @@ class CompoundSignal(BaseModel):
     reasoning_chain: str = ""
     temporal_window_days: int = Field(default=30)
     alpha_multiplier: float = Field(default=1.0, ge=0.5, le=3.0)
-    detected_at: datetime = Field(default_factory=datetime.utcnow)
+    detected_at: datetime = Field(default_factory=utcnow)
 
 
 # ─────────────────────────────────────────────
@@ -420,7 +423,7 @@ class ConfidenceDecomposition(BaseModel):
     # Audit trail
     component_weights: dict[str, float] = Field(default_factory=dict)
     reasoning: str = ""
-    computed_at: datetime = Field(default_factory=datetime.utcnow)
+    computed_at: datetime = Field(default_factory=utcnow)
 
 
 # ─────────────────────────────────────────────
@@ -435,7 +438,7 @@ class CompanyRiskProfile(BaseModel):
     company_id: str          # normalised company name or CIK
     company_name: str
     ticker: Optional[str] = None
-    last_updated: datetime = Field(default_factory=datetime.utcnow)
+    last_updated: datetime = Field(default_factory=utcnow)
 
     # Rolling risk scores (0-100, higher = more risk)
     rolling_risk_score: float = Field(default=0.0, ge=0.0, le=100.0)
@@ -500,7 +503,7 @@ class MarketOutcome(BaseModel):
     direction_correct: Optional[bool] = None
     magnitude_error_pct: Optional[float] = None
 
-    recorded_at: datetime = Field(default_factory=datetime.utcnow)
+    recorded_at: datetime = Field(default_factory=utcnow)
 
 
 # ─────────────────────────────────────────────

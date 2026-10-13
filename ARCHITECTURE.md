@@ -37,7 +37,8 @@ Node 2 — DeterministicSignalEngine                     ← ZERO LLM
       ▼
 Node 3 — LLMExplanationNode                            ← LLM (explanation only)
   Adaptive calibration derives severity from outcome-adjusted base rates.
-  7-component confidence decomposition replaces opaque float.
+  Confidence comes from calibrated base-rate tables; a 7-component decomposition
+  exists in engines/confidence.py but is not yet attached to briefs.
   LLM writes: headline, evidence list, 2-3 sentence reasoning. Cannot change signal_type or severity.
   Fallback: if LLM API fails, deterministic output used directly (no crash).
       │
@@ -80,7 +81,7 @@ AnalystBrief → Terminal | JSON | Markdown
 | Signal Interaction Engine | `engines/signal_interaction.py` | 14 compound event rules, alpha multipliers |
 | Calibration | `engines/calibration.py` | Historical base rate tables per signal type |
 | Adaptive Calibration | `engines/adaptive_calibration.py` | Outcome-aware severity adjustment from feedback |
-| Confidence Decomposition | `engines/confidence.py` | 7-component auditable confidence breakdown |
+| Confidence Decomposition | `engines/confidence.py` | 7-component confidence breakdown (not yet wired into the pipeline) |
 | Semantic Extraction | `engines/semantic.py` | 9 typed financial clause categories |
 | Alpha Scorer | `engines/alpha_scorer.py` | 0–100 composite + expected moves |
 | Alpha Explainer | `engines/alpha_explainer.py` | SHAP-style deterministic score attribution |
@@ -90,7 +91,7 @@ AnalystBrief → Terminal | JSON | Markdown
 | Audit Log | `engines/audit_log.py` | SHA-256 hash-chained immutable trail |
 | Historical Warehouse | `engines/warehouse.py` | SQLite, 8 tables, full artifact storage |
 | Replay Engine | `engines/replay.py` | Deterministic as-of-date historical reproduction |
-| Backtesting Engine | `engines/backtest.py` | Precision/recall/F1/hit rate/excess return/drawdown |
+| Backtesting Engine | `engines/backtest.py` | Precision/hit rate/10-day return/drawdown vs recorded outcomes |
 | Company Memory | `engines/company_memory.py` | Longitudinal EMA risk profiles, trend detection |
 | Market Data | `engines/market_data.py` | yfinance price/volatility/auto-outcome fetching |
 | Market Impact | `engines/market_impact.py` | Outcome tracking, direction accuracy, magnitude error |
@@ -134,7 +135,7 @@ Ratings/Macro: GCR Ratings, IMF Africa, World Bank Africa Blog, Moody's Africa, 
 ## Honest Limitations
 
 ### 1. Backtesting Is Still Bootstrap Phase
-`backtest.py` has the full framework (precision/recall/F1/hit rate/excess return/max drawdown/time-to-materialization) but requires accumulated analyst-confirmed outcomes to produce statistically valid results. The synthetic mode demonstrates the framework. Real validation needs 50+ confirmed outcomes per signal type. Use `python main.py backtest --synthetic` for framework demonstration; `--run` for real results as outcomes accumulate.
+`backtest.py` scores each prediction (one per company, signal type and day) against outcomes recorded with `outcomes --record` or `marketdata --auto-outcome`, matched within 7 days. It reports precision, direction hit rate, raw 10-day price move (not benchmark-adjusted), worst drawdown and time to event. Recall and F1 are not reported: they need a ground-truth list of events the engine missed. Results need accumulated analyst-confirmed outcomes to be statistically valid. The synthetic mode demonstrates the framework. Real validation needs 50+ confirmed outcomes per signal type. Use `python main.py backtest --synthetic` for framework demonstration; `--run` for real results as outcomes accumulate.
 
 ### 2. African Market Calibration Is Thinner
 Base rate tables were developed primarily from US/global research. African market dynamics (thinner liquidity, fewer public disclosures, different regulatory timelines) may produce different materialisation rates. Adaptive calibration corrects this over time, but early deployments on African companies should treat severity scores with additional caution.
@@ -150,6 +151,16 @@ The entity relationship graph builds incrementally from briefs and manual additi
 
 ### 6. Semantic Extraction Is Regex-Based
 The semantic extraction engine uses typed regex clause patterns — not embeddings or neural NLP. It handles standard disclosure language reliably but may miss novel phrasings or non-English African disclosures. The hybrid NLP upgrade (FinBERT/sentence-transformers) is the next major detection improvement.
+
+---
+
+### 7. Known Gaps Found in the October 2026 Audit
+- **Exchange "filings" are news search results.** NGX, JSE fallback and NSE Kenya items come from Google News queries, not the exchanges' own disclosure systems, yet carry exchange-level credibility (0.95). They now only count when they name the target company.
+- **Confidence decomposition and the signal registry are not wired in.** `confidence.py` is never called by the pipeline, and `signal_registry.py` is a second copy of the rules that the engine does not read; the two can drift.
+- **Earnings rules detect negative surprises only.** A beat ("crushes estimates") produces no signal.
+- **Form 4 is not collected.** EDGAR names it `4`, not `Form 4`; enabling it as-is would flag every routine insider grant.
+- **Replay uses static calibration.** Live runs use adaptive calibration from current feedback, so a replay can differ from the original run's severities.
+- **Liquidity tiers are a hard-coded ticker list.** Boeing, for example, is classed mid-cap.
 
 ---
 
@@ -221,7 +232,7 @@ python main.py registry --show credit_risk
 | Compound event engine | 14 interaction rules + escalation multipliers | ✅ Done |
 | Institutional audit | Hash-chained audit log + compliance mode | ✅ Done |
 | Feedback loop | False positive tracking + source EMA + precision/recall | ✅ Done |
-| Confidence decomposition | 7-component auditable breakdown | ✅ Done |
+| Confidence decomposition | 7-component auditable breakdown | Built, not yet wired into briefs |
 | Semantic extraction | 9 typed financial clause categories | ✅ Done |
 | Adaptive calibration | Outcome-aware severity adjustment | ✅ Done |
 | Market outcome modeling | Direction accuracy + magnitude error tracking | ✅ Done |
@@ -231,7 +242,7 @@ python main.py registry --show credit_risk
 | Replay engine | Deterministic as-of-date reproduction | ✅ Done |
 | Company memory | Longitudinal EMA risk profiles + trend detection | ✅ Done |
 | Real-time monitoring | Watchlist + Slack/webhook alerting | ✅ Done |
-| Backtesting framework | Precision/recall/F1/hit rate/excess return | ✅ Done |
+| Backtesting framework | Precision/hit rate/return/drawdown (recall needs ground truth) | ✅ Done |
 | Market data integration | yfinance auto-outcome fetching | ✅ Done |
 | Portfolio intelligence | Portfolio risk aggregation + contagion clusters | ✅ Done |
 | Entity resolution | Canonical registry + LEI/CIK/alias deduplication | ✅ Done |

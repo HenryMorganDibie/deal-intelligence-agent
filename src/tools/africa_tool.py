@@ -34,6 +34,7 @@ import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from src.schemas.models import SECFiling, NewsItem
+from src.utils.clock import utcnow
 
 # ─── African Exchange Disclosure Portals ─────────────────────────────────────
 # These are the public company announcement/disclosure feeds where listed
@@ -354,7 +355,7 @@ def _parse_rss_date(date_str: str) -> str:
             return datetime.strptime(date_str.strip(), fmt).strftime("%Y-%m-%d")
         except ValueError:
             continue
-    return datetime.utcnow().strftime("%Y-%m-%d")
+    return utcnow().strftime("%Y-%m-%d")
 
 
 class AfricaTool:
@@ -583,7 +584,7 @@ class AfricaTool:
             items.append({
                 "title": link_text,
                 "link": href,
-                "pubDate": datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT"),
+                "pubDate": utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT"),
                 "description": f"[{source_name}] {link_text}",
                 "source_override": source_name,
             })
@@ -602,7 +603,7 @@ class AfricaTool:
         Scrape private capital and institutional sources for deal intelligence.
         Covers: GPCA, PSG Capital, IFC, Bayport, Zawya, Africa PE News, AVCA.
         """
-        cutoff_date = (datetime.utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
+        cutoff_date = (utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
 
         tasks = [
             self._scrape_pe_source(name, url, company_name, cutoff_date)
@@ -633,7 +634,7 @@ class AfricaTool:
                 news_items.append(NewsItem(
                     title=title,
                     source=source,
-                    published_date=datetime.utcnow().strftime("%Y-%m-%d"),
+                    published_date=utcnow().strftime("%Y-%m-%d"),
                     url=url,
                     snippet=snippet,
                     relevance_score=min(relevance, 1.0),
@@ -655,7 +656,7 @@ class AfricaTool:
           - Private capital & institutional sources: GPCA, PSG Capital, IFC,
             Bayport Finance, Zawya, Africa PE News (deals/exits/debt/VC), AVCA
         """
-        cutoff_date = (datetime.utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
+        cutoff_date = (utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
 
         # African news RSS feeds
         rss_tasks = [

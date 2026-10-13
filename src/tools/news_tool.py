@@ -16,6 +16,7 @@ import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from src.schemas.models import NewsItem
+from src.utils.clock import utcnow
 
 GOOGLE_NEWS_RSS = "https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
 YAHOO_FINANCE_RSS = "https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}&region=US&lang=en-US"
@@ -71,7 +72,7 @@ def _parse_rss_date(date_str: str) -> str:
             return datetime.strptime(date_str.strip(), fmt).strftime("%Y-%m-%d")
         except ValueError:
             continue
-    return datetime.utcnow().strftime("%Y-%m-%d")
+    return utcnow().strftime("%Y-%m-%d")
 
 
 class NewsTool:
@@ -135,7 +136,7 @@ class NewsTool:
         Fetch news for a company from multiple RSS sources.
         Deduplicates, scores relevance, and returns sorted list.
         """
-        cutoff_date = (datetime.utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
+        cutoff_date = (utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
         queries = [
             f"{company_name} merger acquisition deal",
             f"{company_name} bankruptcy debt restructuring",

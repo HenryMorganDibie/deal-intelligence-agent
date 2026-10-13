@@ -54,8 +54,13 @@ def explain_alpha(
 
     raw_alpha      = sev_contrib + cred_contrib + corr_contrib + rec_contrib + liq_contrib
     base_score     = round(raw_alpha * 100, 1)
-    compound_boost = round((compound_multiplier - 1.0) * base_score, 1) if compound_multiplier > 1.0 else 0.0
-    final_score    = min(base_score + compound_boost, 100.0)
+    if compound_multiplier == 1.0 and base_score > 0 and abs(a.score - base_score) >= 0.1:
+        # The stored score already includes compound adjustments (boosts or, for
+        # contradictory signals, reductions); explain the difference rather than
+        # reporting a score that disagrees with the brief.
+        compound_multiplier = round(a.score / base_score, 3)
+    compound_boost = round(min(base_score * compound_multiplier, 100.0) - base_score, 1)
+    final_score    = round(base_score + compound_boost, 1)
 
     # Component contributions in final points
     point_contributions = {
@@ -130,7 +135,10 @@ def explain_alpha(
         f"Primary driver: {driver_labels[top_driver]} ({point_contributions[top_driver]:.1f} pts). "
     )
     if compound_boost > 0:
-        plain += f"Compound signal interaction added {compound_boost:.1f} pts ({compound_multiplier:.1f}× multiplier). "
+        plain += f"Compound signal interaction added {compound_boost:.1f} pts ({compound_multiplier:.2f}× multiplier). "
+    elif compound_boost < 0:
+        plain += (f"Contradictory signals removed {-compound_boost:.1f} pts "
+                  f"({compound_multiplier:.2f}× multiplier). ")
     if signal.severity == Severity.HIGH or signal.severity == Severity.CRITICAL:
         plain += f"Expected move: {a.expected_direction or 'neutral'} "
         if a.expected_magnitude_pct_low is not None:

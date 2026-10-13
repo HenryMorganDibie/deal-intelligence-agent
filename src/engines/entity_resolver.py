@@ -141,12 +141,16 @@ class EntityResolver:
             eid = self._data["alias_map"][normalised]
             return self._data["entities"].get(eid)
 
-        # Fuzzy: check if normalised name is substring of any known entity
-        for eid, entity in self._data["entities"].items():
-            if normalised in eid or eid in normalised:
-                return entity
-
-        return None
+        # Fuzzy: whole-word containment either way ("guaranty trust" ~ "guaranty
+        # trust bank"), never raw substrings ("apple" must not match "pineapple").
+        # An ambiguous query resolves to nothing rather than to an arbitrary entity.
+        if not normalised:
+            return None
+        matches = [
+            entity for eid, entity in self._data["entities"].items()
+            if re.search(rf"\b{re.escape(normalised)}\b", eid) or re.search(rf"\b{re.escape(eid)}\b", normalised)
+        ]
+        return matches[0] if len(matches) == 1 else None
 
     def get_canonical_name(self, name: str) -> str:
         """Return canonical name for a company, or the input if not registered."""
@@ -201,9 +205,14 @@ class EntityResolver:
             primary_entity["lei"] = dup_entity["lei"]
             self._data["lei_map"][dup_entity["lei"]] = primary_id
 
-        # Remove duplicate entity
+        # Remove duplicate entity and repoint every identifier that referenced it
         self._data["entities"].pop(dup_id, None)
         self._data["alias_map"][dup_id] = primary_id
+        for map_name in ("alias_map", "ticker_map", "cik_map", "lei_map"):
+            mapping = self._data.setdefault(map_name, {})
+            for key, eid in list(mapping.items()):
+                if eid == dup_id:
+                    mapping[key] = primary_id
 
         self._data["entities"][primary_id] = primary_entity
         _save(self._data)

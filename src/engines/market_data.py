@@ -14,6 +14,7 @@ from typing import Optional
 import yfinance as yf
 
 from src.schemas.models import SignalType, Severity, MarketOutcome
+from src.utils.clock import utcnow
 
 # African exchange ticker suffixes
 EXCHANGE_SUFFIXES = {
@@ -216,7 +217,7 @@ def get_volatility(ticker: str, days: int = 30) -> Optional[float]:
     try:
         resolved = _resolve_ticker(ticker)
         hist = yf.Ticker(resolved).history(
-            start=(datetime.utcnow() - timedelta(days=days + 10)).strftime("%Y-%m-%d"),
+            start=(utcnow() - timedelta(days=days + 10)).strftime("%Y-%m-%d"),
             auto_adjust=True,
         )
         if len(hist) < 5:

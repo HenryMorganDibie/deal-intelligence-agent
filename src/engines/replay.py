@@ -15,6 +15,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
+from src.utils.clock import utcnow
 
 RULESET_VERSION  = "1.0.0"
 PROMPT_VERSION   = "1.0.0"
@@ -51,7 +52,7 @@ class ReplayEngine:
         return {
             **CONFIG_SNAPSHOT,
             "model_version": _model_version(),
-            "snapshot_at": datetime.utcnow().isoformat(),
+            "snapshot_at": utcnow().isoformat(),
         }
 
     def list_replayable_runs(self, company_name: str) -> list[dict]:
@@ -240,7 +241,7 @@ class ReplayEngine:
                 }
                 for s in replay_signals
             ],
-            "replayed_at": datetime.utcnow().isoformat(),
+            "replayed_at": utcnow().isoformat(),
         }
 
         # Store replay record if warehouse available

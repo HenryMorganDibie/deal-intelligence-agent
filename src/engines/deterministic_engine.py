@@ -353,6 +353,26 @@ def _source_credibility(source_name: str) -> float:
     return DEFAULT_CREDIBILITY
 
 
+# Form types the exchange tools emit (see africa_tool); everything else in state.filings is from SEC EDGAR.
+_EXCHANGE_FORM_TYPES = {"NGX Announcement", "JSE SENS", "JSE Announcement", "NSE Kenya Disclosure"}
+
+
+def _source_date(value: Optional[str]) -> Optional[datetime]:
+    try:
+        return datetime.strptime((value or "")[:10], "%Y-%m-%d")
+    except ValueError:
+        return None
+
+
+def candidate_credibility(source_type: str, source_name: str) -> float:
+    """Credibility of a candidate's source. Shared by the rule engine and the alpha scorer."""
+    if source_type == "filing":
+        if source_name in _EXCHANGE_FORM_TYPES:
+            return 0.95
+        return SOURCE_CREDIBILITY["SEC EDGAR"]   # fetched from EDGAR by the company's CIK
+    return _source_credibility(source_name)
+
+
 class DeterministicSignalEngine:
     """
     Phase 2: Deterministic signal detection.
@@ -386,12 +406,7 @@ class DeterministicSignalEngine:
                 off_target += 1
                 continue
             hits = _match_rules(text)
-            credibility = _source_credibility(filing.form_type)  # filing type is the source signal here
-            # SEC / exchange filings get top credibility
-            if filing.cik in ("NGX", "JSE", "NSE-KE"):
-                credibility = 0.95
-            elif filing.form_type in ("8-K", "JSE SENS", "NGX Announcement", "NSE Kenya Disclosure"):
-                credibility = 1.00
+            credibility = candidate_credibility("filing", filing.form_type)
 
             for sig_type, matched_patterns, base_score in hits:
                 raw_score = min(base_score * credibility, 1.0)
@@ -403,6 +418,7 @@ class DeterministicSignalEngine:
                     source_type="filing",
                     source_name=filing.form_type,
                     filing_reference=filing.accession_number,
+                    source_date=_source_date(filing.filing_date),
                     entity_mentions=_extract_entities(text),
                     corroboration_count=1,
                     raw_score=raw_score,
@@ -428,6 +444,7 @@ class DeterministicSignalEngine:
                     source_url=news.url,
                     source_type="news",
                     source_name=news.source,
+                    source_date=_source_date(news.published_date),
                     entity_mentions=_extract_entities(text),
                     corroboration_count=1,
                     raw_score=raw_score,
