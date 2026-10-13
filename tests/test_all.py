@@ -209,7 +209,7 @@ class TestDeterministicEngine:
 
     def test_regulatory_sec_probe(self):
         from src.engines.deterministic_engine import DeterministicSignalEngine
-        s = self._state(news=[self._news("SEC investigation launched", "SEC probe into fraud allegations")])
+        s = self._state(news=[self._news("SEC investigation launched into Acme", "SEC probe into fraud allegations")])
         result = DeterministicSignalEngine().run(s)
         assert any(c.signal_type == SignalType.REGULATORY_ACTION for c in result.signal_candidates)
 
@@ -235,7 +235,7 @@ class TestDeterministicEngine:
         from src.engines.deterministic_engine import DeterministicSignalEngine
         s = self._state(
             filings=[self._filing("Definitive merger agreement signed")],
-            news=[self._news("Merger confirmed", "acquisition deal announced", 0.9)]
+            news=[self._news("Acme merger confirmed", "acquisition deal announced", 0.9)]
         )
         result = DeterministicSignalEngine().run(s)
         ma = next((c for c in result.signal_candidates if c.signal_type == SignalType.MA_ACTIVITY), None)
@@ -258,10 +258,39 @@ class TestDeterministicEngine:
             SECFiling(accession_number="NGX-001", form_type="NGX Announcement",
                       filing_date="2024-01-01", company_name="GTBank",
                       cik="NGX", document_url="https://ngx.com/x",
-                      description="Board approves merger with acquisition target")
+                      description="Acme board approves merger with acquisition target")
         ])
         result = DeterministicSignalEngine().run(s)
         assert len(result.signal_candidates) > 0
+
+    def test_off_target_sources_do_not_create_signals(self):
+        """Live-run regression: an unrelated company's deal was reported as the target's."""
+        from src.engines.deterministic_engine import DeterministicSignalEngine
+        s = self._state(
+            filings=[SECFiling(accession_number="JSE-1", form_type="JSE Announcement",
+                               filing_date="2024-01-01", company_name="Acme", cik="JSE",
+                               document_url="u", description="Foschini completes Street Fever acquisition")],
+            news=[self._news("Foschini acquisition", "takeover of Street Fever", 0.9)],
+        )
+        result = DeterministicSignalEngine().run(s)
+        assert result.signal_candidates == []
+
+    def test_sec_filing_needs_no_name_mention(self):
+        """SEC filings are fetched by the company's CIK, so they are on-target by construction."""
+        from src.engines.deterministic_engine import DeterministicSignalEngine
+        s = self._state(filings=[self._filing("Definitive merger agreement signed")])
+        assert DeterministicSignalEngine().run(s).signal_candidates
+
+    def test_company_matchers(self):
+        from src.engines.deterministic_engine import _company_matchers, _mentions_company
+        m = _company_matchers("Guaranty Trust Bank Plc", ticker="GTCO")
+        assert _mentions_company("Guaranty Trust Bank posts loss", m)
+        assert _mentions_company("GTCO shares fall", m)
+        assert not _mentions_company("A bank announced a trust merger", m)
+        assert not _mentions_company("gtco lowercase is not the ticker", m)
+        apple = _company_matchers("Apple Inc.", ticker="AAPL")
+        assert _mentions_company("Apple to acquire startup", apple)
+        assert not _mentions_company("Pineapple Holdings acquisition", apple)
 
     def test_entity_extraction(self):
         from src.engines.deterministic_engine import _extract_entities
@@ -928,8 +957,8 @@ class TestBriefSynthesisAgent:
         return s
 
     def _mock(self, text):
-        mc = MagicMock(); mc.text = text
-        mr = MagicMock(); mr.content = [mc]
+        mc = MagicMock(); mc.type = "text"; mc.text = text
+        mr = MagicMock(); mr.content = [mc]; mr.stop_reason = "end_turn"
         return mr
 
     @pytest.mark.asyncio
@@ -942,7 +971,7 @@ class TestBriefSynthesisAgent:
         })
         s = self._state()
         agent = BriefSynthesisAgent()
-        with patch.object(agent.client.messages,"create",return_value=self._mock(payload)):
+        with patch.object(agent.client.beta.messages,"create",return_value=self._mock(payload)):
             r = await agent.run(s)
         assert r.brief is not None
         assert r.brief.company_name == "Acme"
@@ -957,7 +986,7 @@ class TestBriefSynthesisAgent:
         })
         s = self._state(); s.compliance_mode = True
         agent = BriefSynthesisAgent()
-        with patch.object(agent.client.messages,"create",return_value=self._mock(payload)):
+        with patch.object(agent.client.beta.messages,"create",return_value=self._mock(payload)):
             r = await agent.run(s)
         assert r.brief.compliance_mode is True
         assert any("not investment advice" in f.lower() for f in r.brief.compliance_flags)
@@ -967,9 +996,14 @@ class TestBriefSynthesisAgent:
         from src.agents.signal_agent import BriefSynthesisAgent
         s = self._state()
         agent = BriefSynthesisAgent()
-        with patch.object(agent.client.messages,"create",side_effect=Exception("LLM down")):
+        with patch.object(agent.client.beta.messages,"create",side_effect=Exception("LLM down")):
             r = await agent.run(s)
-        assert r.brief is None
+        # Deterministic findings survive an LLM outage, flagged for human review.
+        assert r.brief is not None
+        assert [sig.headline for sig in r.brief.detected_signals] == ["Merger confirmed"]
+        assert r.brief.overall_severity == Severity.HIGH
+        assert r.brief.requires_human_review
+        assert "LLM unavailable" in r.brief.analyst_model
         assert any("BriefSynthesisAgent" in e for e in r.errors)
 
 
@@ -1051,7 +1085,7 @@ class TestFormatter:
 
 class TestGraphIntegration:
     @pytest.mark.asyncio
-    async def test_full_pipeline(self):
+    async def test_full_pipeline(self, monkeypatch):
         from src.agents.graph import run_analysis
 
         profile = {"name":"Acme","cik":"0000001","ticker":"ACME"}
@@ -1072,8 +1106,8 @@ class TestGraphIntegration:
         })
 
         def mock_response(text):
-            mc = MagicMock(); mc.text = text
-            mr = MagicMock(); mr.content = [mc]
+            mc = MagicMock(); mc.type = "text"; mc.text = text
+            mr = MagicMock(); mr.content = [mc]; mr.stop_reason = "end_turn"
             return mr
 
         em, am, nm = _patch_all(edgar=(profile,[filing]), news=news)
@@ -1082,23 +1116,23 @@ class TestGraphIntegration:
              patch("src.agents.collection_agent.fetch_market_news",nm):
             with patch("anthropic.Anthropic") as MockAnth:
                 inst = MockAnth.return_value
-                inst.messages.create.side_effect = [
+                inst.beta.messages.create.side_effect = [
                     mock_response(explain_json),
                     mock_response(brief_json),
                 ]
                 import src.agents.signal_agent as sa
-                def _mock_explain_init(self): self.client = inst; self.provider = "anthropic"
-                def _mock_synth_init(self):   self.client = inst; self.provider = "anthropic"
-                sa.LLMExplanationNode.__init__ = _mock_explain_init
-                sa.BriefSynthesisAgent.__init__ = _mock_synth_init
+                monkeypatch.setattr(sa, "_get_llm_client", lambda: (inst, "anthropic"))
                 brief = await run_analysis(AnalysisRequest(company_name="Acme",ticker="ACME"))
 
         assert brief is not None
         assert brief.company_name == "Acme"
         assert brief.signal_candidates_count >= 1
+        # The mocked LLM text must actually reach the brief.
+        assert brief.executive_summary == "Acme acquired."
+        assert any(s.headline == "Merger confirmed" for s in brief.detected_signals)
 
     @pytest.mark.asyncio
-    async def test_no_candidates_no_signals(self):
+    async def test_no_candidates_no_signals(self, monkeypatch):
         """If deterministic engine finds nothing, final brief has no signals."""
         from src.agents.graph import run_analysis
 
@@ -1114,22 +1148,19 @@ class TestGraphIntegration:
                     "key_metrics":[],"risk_factors":[],"recent_developments":[]
                 })
                 def mock_response(text):
-                    mc = MagicMock(); mc.text = text
-                    mr = MagicMock(); mr.content = [mc]
+                    mc = MagicMock(); mc.type = "text"; mc.text = text
+                    mr = MagicMock(); mr.content = [mc]; mr.stop_reason = "end_turn"
                     return mr
-                inst.messages.create.return_value = mock_response(brief_json)
+                inst.beta.messages.create.return_value = mock_response(brief_json)
                 import src.agents.signal_agent as sa
-                def _mock_explain_init(self): self.client = inst; self.provider = "anthropic"
-                def _mock_synth_init(self):   self.client = inst; self.provider = "anthropic"
-                sa.LLMExplanationNode.__init__ = _mock_explain_init
-                sa.BriefSynthesisAgent.__init__ = _mock_synth_init
+                monkeypatch.setattr(sa, "_get_llm_client", lambda: (inst, "anthropic"))
                 brief = await run_analysis(AnalysisRequest(company_name="Quiet Corp"))
 
         assert brief.detected_signals == []
         assert brief.signal_candidates_count == 0
 
     @pytest.mark.asyncio
-    async def test_compliance_mode_passed_through(self):
+    async def test_compliance_mode_passed_through(self, monkeypatch):
         from src.agents.graph import run_analysis
 
         em, am, nm = _patch_all()
@@ -1143,15 +1174,12 @@ class TestGraphIntegration:
                     "confidence_score":0.3,"key_metrics":[],"risk_factors":[],"recent_developments":[]
                 })
                 def mock_response(text):
-                    mc = MagicMock(); mc.text = text
-                    mr = MagicMock(); mr.content = [mc]
+                    mc = MagicMock(); mc.type = "text"; mc.text = text
+                    mr = MagicMock(); mr.content = [mc]; mr.stop_reason = "end_turn"
                     return mr
-                inst.messages.create.return_value = mock_response(brief_json)
+                inst.beta.messages.create.return_value = mock_response(brief_json)
                 import src.agents.signal_agent as sa
-                def _mock_explain_init(self): self.client = inst; self.provider = "anthropic"
-                def _mock_synth_init(self):   self.client = inst; self.provider = "anthropic"
-                sa.LLMExplanationNode.__init__ = _mock_explain_init
-                sa.BriefSynthesisAgent.__init__ = _mock_synth_init
+                monkeypatch.setattr(sa, "_get_llm_client", lambda: (inst, "anthropic"))
                 brief = await run_analysis(AnalysisRequest(company_name="X"), compliance_mode=True)
 
         assert brief.compliance_mode is True
@@ -2425,16 +2453,46 @@ class TestLLMProvider:
         import src.agents.signal_agent as sa
         assert sa.GROQ_MODEL == "llama-3.3-70b-versatile"
 
+    @staticmethod
+    def _anthropic_client(*blocks, stop_reason="end_turn"):
+        mock_client = MagicMock()
+        mock_resp = MagicMock(); mock_resp.content = list(blocks); mock_resp.stop_reason = stop_reason
+        mock_client.beta.messages.create.return_value = mock_resp
+        return mock_client
+
+    @staticmethod
+    def _block(kind, text=""):
+        b = MagicMock(); b.type = kind; b.text = text
+        return b
+
     def test_call_llm_anthropic_mock(self):
         """_call_llm works with mocked Anthropic client."""
         import src.agents.signal_agent as sa
-        mock_client = MagicMock()
-        mock_content = MagicMock(); mock_content.text = '{"signals":[]}'
-        mock_resp = MagicMock(); mock_resp.content = [mock_content]
-        mock_client.messages.create.return_value = mock_resp
+        mock_client = self._anthropic_client(self._block("text", '{"signals":[]}'))
         result = sa._call_llm(mock_client, "anthropic", "system", "user", max_tokens=100)
         assert result == '{"signals":[]}'
-        mock_client.messages.create.assert_called_once()
+        mock_client.beta.messages.create.assert_called_once()
+        kwargs = mock_client.beta.messages.create.call_args[1]
+        assert kwargs["model"] == sa.ANTHROPIC_MODEL
+        assert kwargs["max_tokens"] > 100          # room for thinking
+        assert kwargs["fallbacks"] == "default"
+
+    def test_call_llm_anthropic_skips_thinking_blocks(self):
+        import src.agents.signal_agent as sa
+        client = self._anthropic_client(self._block("thinking"), self._block("text", "answer"))
+        assert sa._call_llm(client, "anthropic", "s", "u") == "answer"
+
+    def test_call_llm_anthropic_refusal_raises(self):
+        import src.agents.signal_agent as sa
+        client = self._anthropic_client(stop_reason="refusal")
+        with pytest.raises(RuntimeError, match="declined"):
+            sa._call_llm(client, "anthropic", "s", "u")
+
+    def test_call_llm_anthropic_truncation_raises(self):
+        import src.agents.signal_agent as sa
+        client = self._anthropic_client(self._block("text", "{"), stop_reason="max_tokens")
+        with pytest.raises(RuntimeError, match="max_tokens"):
+            sa._call_llm(client, "anthropic", "s", "u")
 
     def test_call_llm_groq_mock(self):
         """_call_llm works with mocked Groq client (OpenAI-compatible format)."""
@@ -2466,14 +2524,11 @@ class TestLLMProvider:
         assert not mock_client.messages.create.called
 
     def test_call_llm_anthropic_uses_messages_create(self):
-        """Anthropic path must use messages.create, not chat.completions."""
+        """Anthropic path must use the Messages API, not chat.completions."""
         import src.agents.signal_agent as sa
-        mock_client = MagicMock()
-        mock_content = MagicMock(); mock_content.text = "ok"
-        mock_resp = MagicMock(); mock_resp.content = [mock_content]
-        mock_client.messages.create.return_value = mock_resp
+        mock_client = self._anthropic_client(self._block("text", "ok"))
         sa._call_llm(mock_client, "anthropic", "sys", "usr")
-        assert mock_client.messages.create.called
+        assert mock_client.beta.messages.create.called
         assert not mock_client.chat.completions.create.called
 
     def test_get_llm_client_returns_anthropic_by_default(self, monkeypatch):
@@ -2518,7 +2573,7 @@ def _cand(sig_type, raw=0.9):
 
 def _patch_llm(monkeypatch, reply):
     import src.agents.signal_agent as sa
-    monkeypatch.setattr(sa, "_get_llm_client", lambda: (None, "anthropic"))
+    monkeypatch.setattr(sa, "_get_llm_client", lambda: (MagicMock(), "anthropic"))
     monkeypatch.setattr(sa, "_call_llm", lambda *a, **k: reply)
     return sa
 
@@ -2548,7 +2603,7 @@ class TestReportIntegrity:
 
     async def test_fallback_respects_compliance_suppression(self, monkeypatch):
         import src.agents.signal_agent as sa
-        monkeypatch.setattr(sa, "_get_llm_client", lambda: (None, "anthropic"))
+        monkeypatch.setattr(sa, "_get_llm_client", lambda: (MagicMock(), "anthropic"))
         def boom(*a, **k): raise RuntimeError("LLM down")
         monkeypatch.setattr(sa, "_call_llm", boom)
         monkeypatch.setattr(sa, "adaptive_calibrate",
@@ -2651,3 +2706,54 @@ class TestReportRendering:
         assert "## Compound Events" in md and "## Competitive Context" in md
         assert "**Systemic Risk:**" in md
         print_brief(b)
+
+
+class TestCLI:
+    def test_main_module_imports_and_builds_parser(self):
+        import importlib
+        main = importlib.import_module("main")
+        parser = main.build_parser()
+        args = parser.parse_args(["analyse", "--company", "Acme", "--output", "markdown"])
+        assert args.company == "Acme"
+
+
+class TestSourceData:
+    def test_8k_items_described_and_matched(self):
+        from src.tools.edgar_tool import _describe_8k_items
+        from src.engines.deterministic_engine import _match_rules
+        d = _describe_8k_items("1.03,9.01")
+        assert d.startswith("Item 1.03: Bankruptcy or Receivership")
+        assert [t for t, _, _ in _match_rules(d)] == [SignalType.DISTRESSED_ASSET]
+        assert _match_rules(_describe_8k_items("2.02,9.01")) == []   # routine results release
+
+    def test_earnings_restatement_rule(self):
+        from src.engines.deterministic_engine import _match_rules
+        assert any(t == SignalType.EARNINGS_SURPRISE for t, _, _ in _match_rules("earnings restatement announced"))
+
+    async def test_google_news_publisher_used_as_source(self):
+        from src.tools.news_tool import NewsTool
+        rss = ('<rss><channel><item><title>Acme agrees merger - Reuters</title>'
+               '<link>https://news.google.com/rss/articles/abc</link>'
+               f'<pubDate>{datetime.utcnow():%a, %d %b %Y %H:%M:%S} GMT</pubDate>'
+               '<description>Acme merger</description>'
+               '<source url="https://www.reuters.com">Reuters</source></item></channel></rss>')
+        tool = NewsTool()
+        tool._client = MagicMock()
+        resp = MagicMock(); resp.text = rss; resp.raise_for_status = MagicMock()
+        tool._client.get = AsyncMock(return_value=resp)
+        items = await tool.fetch_company_news("Acme", lookback_days=30)
+        assert items and items[0].source == "Reuters"
+
+    def test_stable_exchange_ids(self):
+        from src.tools.africa_tool import _stable_id
+        assert _stable_id("same title") == _stable_id("same title") == "%06d" % (
+            int(__import__("hashlib").sha256(b"same title").hexdigest(), 16) % 999999)
+
+
+def test_material_definitive_agreement_is_not_m_and_a():
+    """Live-run regression: a Boeing debt 8-K (Items 1.01 + 2.03) was reported as M&A."""
+    from src.engines.deterministic_engine import _match_rules
+    from src.tools.edgar_tool import _describe_8k_items
+    assert _match_rules(_describe_8k_items("1.01,2.03,9.01")) == []
+    assert any(t == SignalType.MA_ACTIVITY
+               for t, _, _ in _match_rules("Acme signs definitive agreement to be acquired"))

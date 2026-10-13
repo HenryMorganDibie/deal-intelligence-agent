@@ -1,4 +1,3 @@
-import os
 #!/usr/bin/env python3
 """
 Deal Intelligence Agent — CLI
@@ -15,7 +14,7 @@ Commands:
   calibration — adaptive calibration report
 """
 from __future__ import annotations
-import argparse, asyncio, json, sys
+import argparse, asyncio, json, os, sys
 from pathlib import Path
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
@@ -175,6 +174,7 @@ async def _run_analysis(args: argparse.Namespace) -> None:
     from src.schemas.models import AnalysisRequest, SignalType
     from src.agents.graph import run_analysis
     from src.utils.formatter import print_brief, brief_to_json, brief_to_markdown
+    import src.agents.signal_agent as sa
 
     company = args.company
     if not company:
@@ -195,7 +195,7 @@ async def _run_analysis(args: argparse.Namespace) -> None:
         + (f" ([dim]{args.ticker}[/dim])" if args.ticker else "")
         + f"\n[white]Lookback:[/white] {args.lookback} days  [white]Depth:[/white] {args.depth}"
         + (f"\n[yellow]Compliance Mode: ON[/yellow]" if compliance else "")
-        + f"\n[dim]Provider: {provider.upper()} — {('llama-3.3-70b-versatile (free)' if provider == 'groq' else 'claude-sonnet-4-20250514')}[/dim]",
+        + f"\n[dim]Provider: {provider.upper()} — {sa.MODEL}[/dim]",
         border_style="cyan", padding=(0,2)
     ))
     console.print()
@@ -615,8 +615,7 @@ def _print_backtest_result(result: dict) -> None:
         console.print(f"[red]Backtest error:[/red] {result['error']}"); return
 
     overall = result.get("overall", {})
-    console.print(f"
-[bold cyan]Backtest Results[/bold cyan] — {result.get('run_at','')[:19]}")
+    console.print(f"\n[bold cyan]Backtest Results[/bold cyan] — {result.get('run_at','')[:19]}")
     console.print(f"Mode: {result.get('mode','live')} | Signals evaluated: {result.get('total_signals_evaluated',0)} | Outcomes: {result.get('total_outcomes_available',0)}")
     if overall:
         console.print(f"Macro Precision: [bold]{overall.get('macro_precision',0):.1%}[/bold]  F1: [bold]{overall.get('macro_f1',0):.1%}[/bold]  Hit Rate: [bold]{overall.get('avg_hit_rate',0):.1%}[/bold]  Avg Return: [bold]{overall.get('avg_excess_return_pct') or 'n/a'}%[/bold]")
@@ -676,8 +675,7 @@ def _run_portfolio(args: argparse.Namespace) -> None:
         console.print(f"[dim]{result['error']}[/dim]"); return
 
     risk_color = "red" if result["portfolio_risk_level"] in ("critical","high") else "yellow" if result["portfolio_risk_level"] == "medium" else "green"
-    console.print(f"
-[bold]Portfolio:[/bold] {name}  |  Holdings: {result['total_holdings']}  |  Risk: [{risk_color}]{result['portfolio_risk_level'].upper()}[/{risk_color}] ({result['weighted_portfolio_risk']:.1f}/100)")
+    console.print(f"\n[bold]Portfolio:[/bold] {name}  |  Holdings: {result['total_holdings']}  |  Risk: [{risk_color}]{result['portfolio_risk_level'].upper()}[/{risk_color}] ({result['weighted_portfolio_risk']:.1f}/100)")
 
     t = Table(title="Top Risk Positions", box=box.SIMPLE_HEAD, header_style="bold cyan")
     for col in ["Company","Weight","Risk","Trend","Top Signals"]:
@@ -693,8 +691,7 @@ def _run_portfolio(args: argparse.Namespace) -> None:
     console.print(t)
 
     if result.get("contagion_pairs"):
-        console.print(f"
-[yellow]⚠ {len(result['contagion_pairs'])} contagion pair(s) detected[/yellow]")
+        console.print(f"\n[yellow]⚠ {len(result['contagion_pairs'])} contagion pair(s) detected[/yellow]")
         for p in result["contagion_pairs"][:3]:
             console.print(f"  {p['company_a']} ↔ {p['company_b']}: shared signals {p['shared_signal_types']}")
 
@@ -764,14 +761,11 @@ def _run_explain(args: argparse.Namespace) -> None:
     if not profile.alpha_score_history:
         console.print(f"[dim]No alpha score history for {company}.[/dim]"); return
 
-    console.print(f"
-[bold cyan]Alpha Score Explanation: {company}[/bold cyan]")
+    console.print(f"\n[bold cyan]Alpha Score Explanation: {company}[/bold cyan]")
     console.print(f"Latest alpha: [bold]{profile.alpha_score_history[-1].get('alpha','—')}[/bold]  Severity: {profile.alpha_score_history[-1].get('severity','—').upper()}")
-    console.print(f"
-[dim]Full SHAP-style breakdown requires running a live analysis.[/dim]")
-    console.print(f"Run: [bold]python main.py analyse --company "{company}" --output json[/bold]")
-    console.print(f"The JSON output includes alpha_score with full component breakdown per signal.
-")
+    console.print(f"\n[dim]Full SHAP-style breakdown requires running a live analysis.[/dim]")
+    console.print(f"Run: [bold]python main.py analyse --company \"{company}\" --output json[/bold]")
+    console.print(f"The JSON output includes alpha_score with full component breakdown per signal.\n")
 
 
 # ─── marketdata ───────────────────────────────────────────────────────────────

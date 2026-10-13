@@ -50,12 +50,18 @@ from src.engines.audit_log import log_state
 
 # ─── LLM Provider Selection ───────────────────────────────────────────────────
 # Set DEAL_INTEL_PROVIDER=groq to use Groq/Llama (free, good for testing).
-# Default is Anthropic Claude Sonnet (production quality).
+# Default is Anthropic Claude (production quality). DEAL_INTEL_ANTHROPIC_MODEL and
+# DEAL_INTEL_EFFORT override the Claude model and its effort level.
 PROVIDER = os.getenv("DEAL_INTEL_PROVIDER", "anthropic").lower()
 
-ANTHROPIC_MODEL = "claude-sonnet-4-20250514"
-GROQ_MODEL      = "llama-3.3-70b-versatile"
-MODEL           = GROQ_MODEL if PROVIDER == "groq" else ANTHROPIC_MODEL
+ANTHROPIC_MODEL  = os.getenv("DEAL_INTEL_ANTHROPIC_MODEL", "claude-opus-5-5")
+ANTHROPIC_EFFORT = os.getenv("DEAL_INTEL_EFFORT", "high")
+GROQ_MODEL       = "llama-3.3-70b-versatile"
+MODEL            = GROQ_MODEL if PROVIDER == "groq" else ANTHROPIC_MODEL
+
+# Thinking is always on for current Claude models and counts toward max_tokens,
+# so the Anthropic path reserves room for it on top of the caller's reply budget.
+_THINKING_HEADROOM = 12000
 
 
 def _get_llm_client():
@@ -87,13 +93,23 @@ def _call_llm(client, provider: str, system: str, user: str, max_tokens: int = 3
         )
         return response.choices[0].message.content or ""
     else:
-        response = client.messages.create(
+        response = client.beta.messages.create(
             model=ANTHROPIC_MODEL,
-            max_tokens=max_tokens,
+            max_tokens=max_tokens + _THINKING_HEADROOM,
             system=system,
             messages=[{"role": "user", "content": user}],
+            output_config={"effort": ANTHROPIC_EFFORT},
+            # On a safety-classifier decline, retry on the model Anthropic recommends.
+            betas=["server-side-fallback-2026-07-01"],
+            fallbacks="default",
         )
-        return response.content[0].text
+        if response.stop_reason == "refusal":
+            category = getattr(response.stop_details, "category", None)
+            raise RuntimeError(f"Claude declined the request (category: {category})")
+        if response.stop_reason == "max_tokens":
+            raise RuntimeError("Claude response hit max_tokens; output truncated")
+        # The response can begin with thinking blocks; read text blocks by type.
+        return "".join(b.text for b in response.content if b.type == "text")
 
 _SEVERITY_RANK = {Severity.LOW: 0, Severity.MEDIUM: 1, Severity.HIGH: 2, Severity.CRITICAL: 3}
 
@@ -271,7 +287,11 @@ class DeterministicDetectionNode:
 
 class LLMExplanationNode:
     def __init__(self):
-        self.client, self.provider = _get_llm_client()
+        self.client_error = ""
+        try:
+            self.client, self.provider = _get_llm_client()
+        except Exception as e:
+            self.client, self.provider, self.client_error = None, PROVIDER, str(e)
 
     async def run(self, state: AgentState) -> AgentState:
         state.log("llm_explanation", f"Explaining {len(state.signal_candidates)} candidates")
@@ -319,6 +339,8 @@ class LLMExplanationNode:
         )
 
         try:
+            if self.client is None:
+                raise RuntimeError(self.client_error)
             raw = _call_llm(self.client, self.provider, EXPLANATION_SYSTEM, user_prompt, max_tokens=3000)
             signals = _parse_explanations(raw, candidates_for_llm, calibrated, state)
             # The LLM explains signals; it must not be able to drop one by omission.
@@ -359,7 +381,11 @@ class AlphaScoringNode:
 
 class BriefSynthesisAgent:
     def __init__(self):
-        self.client, self.provider = _get_llm_client()
+        self.client_error = ""
+        try:
+            self.client, self.provider = _get_llm_client()
+        except Exception as e:
+            self.client, self.provider, self.client_error = None, PROVIDER, str(e)
 
     async def run(self, state: AgentState) -> AgentState:
         state.log("brief_synthesis", "Synthesising analyst brief")
@@ -404,7 +430,11 @@ class BriefSynthesisAgent:
             f"COMPOUND EVENTS (deterministic):\n{compounds_json}\n\nWrite the synthesis."
         )
 
+        data: dict = {}
+        narrative_error: str | None = None
         try:
+            if self.client is None:
+                raise RuntimeError(self.client_error)
             raw = _call_llm(self.client, self.provider, SYNTHESIS_SYSTEM, user_prompt, max_tokens=2500)
             raw = re.sub(r"```json|```", "", raw).strip()
             try:
@@ -414,99 +444,116 @@ class BriefSynthesisAgent:
                 data = json.loads(match.group()) if match else {}
             if not isinstance(data, dict):
                 data = {}
-
-            def _text(key: str, default: str = "") -> str:
-                v = data.get(key)
-                return str(v).strip() if v not in (None, "") else default
-
-            risk_factors = []
-            for rf in data.get("risk_factors", []):
-                try:
-                    risk_factors.append(RiskFactor(
-                        factor=str(rf.get("factor") or ""), impact=str(rf.get("impact") or ""),
-                        likelihood=Severity(str(rf.get("likelihood") or "medium").lower()),
-                        mitigation=str(rf["mitigation"]) if rf.get("mitigation") else None,
-                    ))
-                except Exception:
-                    pass
-
-            key_metrics = []
-            for km in data.get("key_metrics", []):
-                try:
-                    key_metrics.append(KeyMetric(
-                        name=str(km.get("name") or ""), value=str(km.get("value") or ""),
-                        period=str(km.get("period") or ""),
-                        interpretation=str(km.get("interpretation") or ""),
-                    ))
-                except Exception:
-                    pass
-
-            try:
-                overall_sev = Severity(_text("overall_severity", "medium").lower())
-            except ValueError:
-                overall_sev = Severity.MEDIUM
-            # Severity is calibrated deterministically; the narrative layer may
-            # not rate the brief below its most severe confirmed signal.
-            if state.detected_signals:
-                floor = max((s.severity for s in state.detected_signals), key=_SEVERITY_RANK.get)
-                if _SEVERITY_RANK[floor] > _SEVERITY_RANK[overall_sev]:
-                    overall_sev = floor
-
-            try:
-                confidence = max(0.0, min(1.0, float(data.get("confidence_score", 0.5))))
-            except (TypeError, ValueError):
-                confidence = 0.5
-
-            recent = data.get("recent_developments") or []
-            if isinstance(recent, str):
-                recent = [recent]
-            recent = [str(r) for r in recent if r]
-
-            top_alpha = None
-            top_liq   = None
-            scored = [s for s in state.detected_signals if s.alpha_score]
-            if scored:
-                best = max(scored, key=lambda s: s.alpha_score.score)
-                top_alpha = best.alpha_score.score
-                top_liq   = best.alpha_score.liquidity_tier
-
-            compliance_flags = []
-            if state.compliance_mode:
-                if suppressed:
-                    compliance_flags.append(f"{suppressed} low-confidence signal(s) suppressed")
-                if review_reasons:
-                    compliance_flags.append(f"{len(review_reasons)} signal(s) require human review")
-                compliance_flags.append("Output is AI-generated, unverified, not investment advice")
-
-            state.brief = AnalystBrief(
-                company_name=company, ticker=ticker,
-                analyst_model=GROQ_MODEL if self.provider == "groq" else ANTHROPIC_MODEL,
-                executive_summary=_text("executive_summary", "Analysis complete."),
-                overall_severity=overall_sev,
-                recommendation=_text("recommendation", "Further review recommended."),
-                confidence_score=confidence,
-                detected_signals=state.detected_signals,
-                signal_candidates_count=len(state.signal_candidates),
-                top_alpha_score=top_alpha, liquidity_tier=top_liq,
-                requires_human_review=bool(review_reasons),
-                human_review_reasons=review_reasons,
-                key_metrics=key_metrics, risk_factors=risk_factors,
-                competitive_context=_text("competitive_context") or None,
-                recent_developments=recent,
-                filings_reviewed=state.filings, news_reviewed=state.news_items,
-                total_sources=len(state.filings) + len(state.news_items),
-                compliance_mode=state.compliance_mode,
-                compliance_flags=compliance_flags,
-                low_confidence_signals_suppressed=suppressed,
-                compound_signals=state.compound_signals,
-                systemic_risk_level=_get_systemic_risk(state.compound_signals),
-                reasoning_trace=state.reasoning_trace,
-                audit_entries=state.audit_entries,
-            )
-            log_state(state, "brief_synthesis", "Brief complete")
         except Exception as e:
+            # The narrative is optional; the deterministic findings are not.
+            narrative_error = str(e)
             state.errors.append(f"BriefSynthesisAgent error: {e}")
+            review_reasons = review_reasons + [
+                f"LLM narrative synthesis unavailable: {narrative_error[:200]}"
+            ]
 
+
+        def _text(key: str, default: str = "") -> str:
+            v = data.get(key)
+            return str(v).strip() if v not in (None, "") else default
+
+        risk_factors = []
+        for rf in data.get("risk_factors", []):
+            try:
+                risk_factors.append(RiskFactor(
+                    factor=str(rf.get("factor") or ""), impact=str(rf.get("impact") or ""),
+                    likelihood=Severity(str(rf.get("likelihood") or "medium").lower()),
+                    mitigation=str(rf["mitigation"]) if rf.get("mitigation") else None,
+                ))
+            except Exception:
+                pass
+
+        key_metrics = []
+        for km in data.get("key_metrics", []):
+            try:
+                key_metrics.append(KeyMetric(
+                    name=str(km.get("name") or ""), value=str(km.get("value") or ""),
+                    period=str(km.get("period") or ""),
+                    interpretation=str(km.get("interpretation") or ""),
+                ))
+            except Exception:
+                pass
+
+        try:
+            overall_sev = Severity(_text("overall_severity", "low" if narrative_error else "medium").lower())
+        except ValueError:
+            overall_sev = Severity.MEDIUM
+        # Severity is calibrated deterministically; the narrative layer may
+        # not rate the brief below its most severe confirmed signal.
+        if state.detected_signals:
+            floor = max((s.severity for s in state.detected_signals), key=_SEVERITY_RANK.get)
+            if _SEVERITY_RANK[floor] > _SEVERITY_RANK[overall_sev]:
+                overall_sev = floor
+
+        try:
+            confidence = max(0.0, min(1.0, float(data.get("confidence_score", 0.5))))
+        except (TypeError, ValueError):
+            confidence = 0.5
+        if narrative_error:
+            sigs = state.detected_signals
+            confidence = round(sum(s.confidence for s in sigs) / len(sigs), 3) if sigs else 0.0
+
+        recent = data.get("recent_developments") or []
+        if isinstance(recent, str):
+            recent = [recent]
+        recent = [str(r) for r in recent if r]
+
+        top_alpha = None
+        top_liq   = None
+        scored = [s for s in state.detected_signals if s.alpha_score]
+        if scored:
+            best = max(scored, key=lambda s: s.alpha_score.score)
+            top_alpha = best.alpha_score.score
+            top_liq   = best.alpha_score.liquidity_tier
+
+        compliance_flags = []
+        if state.compliance_mode:
+            if suppressed:
+                compliance_flags.append(f"{suppressed} low-confidence signal(s) suppressed")
+            if review_reasons:
+                compliance_flags.append(f"{len(review_reasons)} signal(s) require human review")
+            compliance_flags.append("Output is AI-generated, unverified, not investment advice")
+
+        state.brief = AnalystBrief(
+            company_name=company, ticker=ticker,
+            analyst_model=("deterministic engine only (LLM unavailable)" if narrative_error
+                           else GROQ_MODEL if self.provider == "groq" else ANTHROPIC_MODEL),
+            executive_summary=_text("executive_summary", (
+                f"Narrative synthesis unavailable. {len(state.detected_signals)} signal(s) were "
+                f"confirmed by the deterministic engine and are listed below."
+                if narrative_error else "Analysis complete."
+            )),
+            overall_severity=overall_sev,
+            recommendation=_text("recommendation", (
+                "Review the confirmed signals and their sources directly before acting."
+                if narrative_error else "Further review recommended."
+            )),
+            confidence_score=confidence,
+            detected_signals=state.detected_signals,
+            signal_candidates_count=len(state.signal_candidates),
+            top_alpha_score=top_alpha, liquidity_tier=top_liq,
+            requires_human_review=bool(review_reasons),
+            human_review_reasons=review_reasons,
+            key_metrics=key_metrics, risk_factors=risk_factors,
+            competitive_context=_text("competitive_context") or None,
+            recent_developments=recent,
+            filings_reviewed=state.filings, news_reviewed=state.news_items,
+            total_sources=len(state.filings) + len(state.news_items),
+            compliance_mode=state.compliance_mode,
+            compliance_flags=compliance_flags,
+            low_confidence_signals_suppressed=suppressed,
+            compound_signals=state.compound_signals,
+            systemic_risk_level=_get_systemic_risk(state.compound_signals),
+            reasoning_trace=state.reasoning_trace,
+            audit_entries=state.audit_entries,
+        )
+        log_state(state, "brief_synthesis",
+                  "Brief complete" + (" (deterministic fallback)" if narrative_error else ""))
         return state
 
 

@@ -82,7 +82,9 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
 
     # ── M&A Activity ──
     (SignalType.MA_ACTIVITY, [
-        r"\bdefinitive\s+(merger|acquisition|agreement)\b",
+        r"\bdefinitive\s+(merger|acquisition)\b",
+        # Not SEC 8-K Item 1.01 boilerplate ("Material Definitive Agreement"), which covers loans and contracts too.
+        r"(?<!material )\bdefinitive\s+agreement\b",
         r"\bletter\s+of\s+intent\b",
         r"\bscheme\s+of\s+arrangement\b",
         r"\btender\s+offer\b",
@@ -150,10 +152,19 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\basset\s+disposal\b.{0,30}\b(forced|compelled|required)\b",
     ], 0.60),
 
+    # ── SEC Form 8-K item codes (filed by the company itself) ──
+    (SignalType.DISTRESSED_ASSET,  [r"\bitem\s+1\.03\b"], 0.95),   # bankruptcy or receivership
+    (SignalType.CREDIT_RISK,       [r"\bitem\s+2\.04\b"], 0.92),   # accelerated obligation
+    (SignalType.EARNINGS_SURPRISE, [r"\bitem\s+4\.02\b"], 0.88),   # non-reliance / restatement
+    (SignalType.MA_ACTIVITY,       [r"\bitem\s+(2\.01|5\.01)\b"], 0.90),  # completed deal / change of control
+    (SignalType.DISTRESSED_ASSET,  [r"\bitem\s+3\.01\b"], 0.80),   # delisting notice
+    (SignalType.CREDIT_RISK,       [r"\bitem\s+2\.06\b"], 0.78),   # material impairment
+    (SignalType.LEADERSHIP_CHANGE, [r"\bitem\s+5\.02\b"], 0.75),   # director/officer departure or appointment
+
     # ── Earnings Surprise ──
     (SignalType.EARNINGS_SURPRISE, [
         r"\bprofit\s+warning\b",
-        r"\brevenueor\s+earnings\s+(restatement|revision|correction)\b",
+        r"\b(revenue|earnings)\s+(restatement|revision|correction)\b",
         r"\bheadline\s+earnings?\b.{0,30}\b(declin|fall|drop|miss|below)\b",
         r"\bguidance\s+(cut|lowered?|reduced?|withdrawn?)\b",
         r"\btrading\s+(update|statement)\b.{0,40}\b(below|miss|declin)\b",
@@ -296,6 +307,44 @@ def _match_rules(text: str) -> list[tuple[SignalType, list[str], float]]:
     return [(sig_type, patterns, score) for sig_type, (patterns, score) in best.items()]
 
 
+# Words too generic to identify a company on their own.
+_GENERIC_NAME_WORDS = {
+    "inc", "incorporated", "corp", "corporation", "co", "company", "ltd", "limited",
+    "plc", "llc", "lp", "holdings", "holding", "group", "the", "and", "of",
+    "bank", "financial", "capital", "international", "global", "trust", "sa", "ag", "nv",
+}
+# SEC filings are fetched by the company's own CIK; exchange "filings" are news search results.
+_NON_SEC_FILING_SOURCES = {"NGX", "JSE", "NSE-KE"}
+
+
+def _company_matchers(*names: Optional[str], ticker: Optional[str] = None) -> list[re.Pattern]:
+    """
+    Word-boundary patterns that identify the target company in free text.
+
+    A multi-word name matches only as a phrase (legal suffixes dropped), so
+    "Guaranty Trust Bank" does not match an article that merely says "bank".
+    A ticker matches only in upper case and only if it is at least 3 characters.
+    """
+    patterns: list[re.Pattern] = []
+    for name in names:
+        if not name:
+            continue
+        words = re.findall(r"[A-Za-z0-9&]+", name)
+        while words and words[-1].lower() in _GENERIC_NAME_WORDS:
+            words.pop()
+        if not words or (len(words) == 1 and words[0].lower() in _GENERIC_NAME_WORDS):
+            continue
+        phrase = r"\W+".join(re.escape(w) for w in words)
+        patterns.append(re.compile(rf"\b{phrase}\b", re.IGNORECASE))
+    if ticker and len(ticker) >= 3:
+        patterns.append(re.compile(rf"\b{re.escape(ticker.upper())}\b"))
+    return patterns
+
+
+def _mentions_company(text: str, matchers: list[re.Pattern]) -> bool:
+    return not matchers or any(m.search(text) for m in matchers)
+
+
 def _source_credibility(source_name: str) -> float:
     """Look up credibility score for a source."""
     for key, score in SOURCE_CREDIBILITY.items():
@@ -315,6 +364,13 @@ class DeterministicSignalEngine:
         state.log("deterministic_engine", "Running deterministic signal engine")
 
         candidates: list[SignalCandidate] = []
+        profile = state.company_profile
+        matchers = _company_matchers(
+            state.request.company_name,
+            profile.name if profile else None,
+            ticker=state.request.ticker or (profile.ticker if profile else None),
+        )
+        off_target = 0
 
         # Process filings
         for filing in state.filings:
@@ -324,6 +380,10 @@ class DeterministicSignalEngine:
                 filing.form_type,
             ]))
             if not text.strip():
+                continue
+            # A source that never names the target cannot evidence a signal about it.
+            if filing.cik in _NON_SEC_FILING_SOURCES and not _mentions_company(text, matchers):
+                off_target += 1
                 continue
             hits = _match_rules(text)
             credibility = _source_credibility(filing.form_type)  # filing type is the source signal here
@@ -351,6 +411,9 @@ class DeterministicSignalEngine:
         # Process news items
         for news in state.news_items:
             text = f"{news.title} {news.snippet}"
+            if not _mentions_company(text, matchers):
+                off_target += 1
+                continue
             hits = _match_rules(text)
             credibility = _source_credibility(news.source)
 
@@ -409,7 +472,8 @@ class DeterministicSignalEngine:
 
         state.log(
             "deterministic_engine",
-            f"Engine produced {len(final_candidates)} signal candidates",
+            f"Engine produced {len(final_candidates)} signal candidates "
+            f"({off_target} source(s) skipped: target company not mentioned)",
             {
                 "candidates": [
                     {"type": c.signal_type.value, "score": round(c.raw_score, 3),

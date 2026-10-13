@@ -37,10 +37,47 @@ HEADERS = {
     "Host": "efts.sec.gov"
 }
 
-SIGNAL_FORMS = ["8-K", "10-K", "10-Q", "SC 13D", "SC 13G", "Form 4", "DEF 14A"]
+# EDGAR renamed "SC 13D" to "SCHEDULE 13D" in December 2024; both spellings are kept.
+SIGNAL_FORMS = ["8-K", "10-K", "10-Q", "SC 13D", "SCHEDULE 13D", "SC 13G", "Form 4", "DEF 14A"]
 MA_KEYWORDS  = ["merger", "acquisition", "takeover", "tender offer", "going private", "buyout"]
 DISTRESS_KW  = ["bankruptcy", "default", "restructuring", "going concern", "liquidity", "covenant breach"]
 CREDIT_KW    = ["credit facility", "debt", "leverage", "impairment", "write-down", "goodwill"]
+
+
+# Form 8-K item titles (17 CFR 249.308). The submissions API gives only the codes.
+EIGHT_K_ITEMS = {
+    "1.01": "Entry into a Material Definitive Agreement",
+    "1.02": "Termination of a Material Definitive Agreement",
+    "1.03": "Bankruptcy or Receivership",
+    "1.05": "Material Cybersecurity Incidents",
+    "2.01": "Completion of Acquisition or Disposition of Assets",
+    "2.02": "Results of Operations and Financial Condition",
+    "2.03": "Creation of a Direct Financial Obligation",
+    "2.04": "Triggering Events That Accelerate or Increase a Direct Financial Obligation",
+    "2.05": "Costs Associated with Exit or Disposal Activities",
+    "2.06": "Material Impairments",
+    "3.01": "Notice of Delisting or Failure to Satisfy a Continued Listing Rule",
+    "3.02": "Unregistered Sales of Equity Securities",
+    "3.03": "Material Modification to Rights of Security Holders",
+    "4.01": "Changes in Registrant's Certifying Accountant",
+    "4.02": "Non-Reliance on Previously Issued Financial Statements",
+    "5.01": "Changes in Control of Registrant",
+    "5.02": "Departure or Appointment of Directors or Certain Officers",
+    "5.03": "Amendments to Articles of Incorporation or Bylaws",
+    "5.07": "Submission of Matters to a Vote of Security Holders",
+    "7.01": "Regulation FD Disclosure",
+    "8.01": "Other Events",
+    "9.01": "Financial Statements and Exhibits",
+}
+
+
+def _describe_8k_items(items: str) -> str:
+    """'2.02,9.01' -> 'Item 2.02: Results of Operations ...; Item 9.01: ...'"""
+    parts = []
+    for code in (c.strip() for c in items.split(",")):
+        if code:
+            parts.append(f"Item {code}: {EIGHT_K_ITEMS.get(code, 'Unlisted item')}")
+    return "; ".join(parts)
 
 
 class EdgarTool:
@@ -95,7 +132,7 @@ class EdgarTool:
             # Parse atom/XML for CIK
             text = r.text
             cik_match = re.search(r'CIK=(\d+)', text)
-            name_match = re.search(r'<company-name>([^<]+)</company-name>', text)
+            name_match = re.search(r'<(?:conformed-name|company-name)>([^<]+)</', text)
             if cik_match:
                 return {
                     "cik": cik_match.group(1).zfill(10),
@@ -113,7 +150,7 @@ class EdgarTool:
             r.raise_for_status()
             text = r.text
             cik_match = re.search(r'CIK=(\d+)', text)
-            name_match = re.search(r'<company-name>([^<]+)</company-name>', text)
+            name_match = re.search(r'<(?:conformed-name|company-name)>([^<]+)</', text)
             return {
                 "cik": cik_match.group(1).zfill(10) if cik_match else None,
                 "name": name_match.group(1) if name_match else name,
@@ -157,6 +194,7 @@ class EdgarTool:
         accessions  = recent.get("accessionNumber", [])
         primary_docs = recent.get("primaryDocument", [])
         descriptions = recent.get("primaryDocDescription", [])
+        item_codes   = recent.get("items", [])
 
         for i, form_type in enumerate(form_types):
             if form_type not in target_forms:
@@ -171,6 +209,9 @@ class EdgarTool:
             acc_nodash = accession.replace("-", "")
             doc = primary_docs[i] if i < len(primary_docs) else ""
             desc = descriptions[i] if i < len(descriptions) else ""
+            items = item_codes[i] if i < len(item_codes) else ""
+            if form_type == "8-K" and items:
+                desc = _describe_8k_items(items)
 
             doc_url = (
                 f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc_nodash}/{doc}"

@@ -118,7 +118,9 @@ class NewsTool:
             desc  = item.findtext("description") or ""
             # strip HTML from description
             desc  = re.sub(r"<[^>]+>", " ", desc).strip()
-            items.append({"title": title, "link": link, "pubDate": pub, "description": desc})
+            publisher = (item.findtext("source") or "").strip()
+            items.append({"title": title, "link": link, "pubDate": pub, "description": desc,
+                          "publisher": publisher})
 
         return items
 
@@ -170,7 +172,8 @@ class NewsTool:
 
             snippet  = raw.get("description", "")[:400]
             url      = raw.get("link", "")
-            source   = _extract_source(url)
+            # Google News links all point at news.google.com; the publisher is in <source>.
+            source   = raw.get("publisher") or _extract_source(url)
             relevance = _score_relevance(title, snippet, company_name)
 
             if relevance < 0.1:

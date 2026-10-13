@@ -23,6 +23,7 @@ No API keys required — all public sources.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import re
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -293,6 +294,11 @@ AFRICAN_COUNTRIES = [
 ]
 
 
+def _stable_id(text: str) -> str:
+    """Deterministic 6-digit id. Python's hash() is salted per process, so ids changed every run."""
+    return f"{int(hashlib.sha256(text.encode('utf-8')).hexdigest(), 16) % 999999:06d}"
+
+
 def _is_africa_focused(title: str, snippet: str) -> bool:
     """Heuristic: does this article have African market relevance?"""
     text = (title + " " + snippet).lower()
@@ -405,7 +411,8 @@ class AfricaTool:
                 "link": link,
                 "pubDate": pub,
                 "description": desc,
-                "source_override": source_name
+                "source_override": source_name,
+                "publisher": (item.findtext("source") or "").strip(),
             })
         return items
 
@@ -430,7 +437,7 @@ class AfricaTool:
                 if not title:
                     continue
                 filings.append(SECFiling(
-                    accession_number=f"NGX-{hash(title) % 999999:06d}",
+                    accession_number=f"NGX-{_stable_id(title)}",
                     form_type="NGX Announcement",
                     filing_date=_parse_rss_date(item.get("pubDate", "")),
                     company_name=company_name,
@@ -457,7 +464,7 @@ class AfricaTool:
             if not title:
                 continue
             filings.append(SECFiling(
-                accession_number=f"SENS-{hash(title) % 999999:06d}",
+                accession_number=f"SENS-{_stable_id(title)}",
                 form_type="JSE SENS",
                 filing_date=_parse_rss_date(item.get("pubDate", "")),
                 company_name=company_name,
@@ -478,7 +485,7 @@ class AfricaTool:
                 if not title:
                     continue
                 filings.append(SECFiling(
-                    accession_number=f"JSE-{hash(title) % 999999:06d}",
+                    accession_number=f"JSE-{_stable_id(title)}",
                     form_type="JSE Announcement",
                     filing_date=_parse_rss_date(item.get("pubDate", "")),
                     company_name=company_name,
@@ -502,7 +509,7 @@ class AfricaTool:
             if not title:
                 continue
             filings.append(SECFiling(
-                accession_number=f"NSE-{hash(title) % 999999:06d}",
+                accession_number=f"NSE-{_stable_id(title)}",
                 form_type="NSE Kenya Disclosure",
                 filing_date=_parse_rss_date(item.get("pubDate", "")),
                 company_name=company_name,
@@ -617,7 +624,7 @@ class AfricaTool:
 
                 snippet   = raw.get("description", "")[:400]
                 url       = raw.get("link", "")
-                source    = raw.get("source_override") or _extract_african_source(url)
+                source    = raw.get("publisher") or raw.get("source_override") or _extract_african_source(url)
                 relevance = _score_african_relevance(title, snippet, company_name)
                 # PE sources are high-signal by nature — lower threshold
                 if relevance < 0.05:
@@ -696,7 +703,7 @@ class AfricaTool:
 
             snippet   = raw.get("description", "")[:400]
             url       = raw.get("link", "")
-            source    = raw.get("source_override") or _extract_african_source(url)
+            source    = raw.get("publisher") or raw.get("source_override") or _extract_african_source(url)
             relevance = _score_african_relevance(title, snippet, company_name)
 
             # Lower threshold for African sources — any mention is worth capturing
