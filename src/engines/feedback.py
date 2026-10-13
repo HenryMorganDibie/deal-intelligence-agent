@@ -21,8 +21,9 @@ from typing import Optional
 from src.schemas.models import (
     FeedbackEntry, FeedbackType, SignalType, Severity
 )
+from src.utils.paths import DATA_DIR
 
-FEEDBACK_PATH = Path(__file__).resolve().parents[2] / "data" / "feedback.json"
+FEEDBACK_PATH = DATA_DIR / "feedback.json"
 
 
 def _load() -> dict:

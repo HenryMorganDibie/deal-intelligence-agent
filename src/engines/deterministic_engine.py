@@ -367,8 +367,9 @@ _CLAUSE_BREAK = re.compile(
     re.IGNORECASE,
 )
 # Events that belong to the clause's subject: the company must be named before the
-# trigger ("Acme beats estimates", not "Rival beats estimates on Acme deal").
-_SUBJECT_ONLY_TYPES = {SignalType.EARNINGS_SURPRISE, SignalType.LEADERSHIP_CHANGE}
+# trigger ("Acme beats estimates", not "Rival beats estimates on Acme deal"; "Rival
+# faces cash burn and Acme deal risk" is the rival's credit, not Acme's).
+_SUBJECT_ONLY_TYPES = {SignalType.EARNINGS_SURPRISE, SignalType.LEADERSHIP_CHANGE, SignalType.CREDIT_RISK}
 
 
 def _clauses(text: str) -> list[str]:

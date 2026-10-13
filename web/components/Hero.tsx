@@ -6,7 +6,7 @@ const FACTS = [
   { k: "115", v: "deterministic detection patterns" },
   { k: "8", v: "signal types, 14 compound-event rules" },
   { k: "US + Africa", v: "SEC EDGAR, NGX, NSE Kenya, JSE SENS" },
-  { k: "330", v: "tests, open source" },
+  { k: "332", v: "tests, open source" },
 ];
 
 export function Hero() {
@@ -48,7 +48,7 @@ export function Hero() {
 
           <Reveal delay={180}>
             <div className="mt-9 flex flex-wrap gap-3">
-              <a href="#quickstart" className="btn btn-primary">
+              <a href="/app" className="btn btn-primary">
                 Run your first brief
                 <ArrowRight />
               </a>

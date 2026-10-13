@@ -955,6 +955,10 @@ class TestDataCollectionAgent:
 # ─── Brief Synthesis Agent ────────────────────────────────────────────────────
 
 class TestBriefSynthesisAgent:
+    @pytest.fixture(autouse=True)
+    def _api_key(self, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+
     def _state(self):
         s = AgentState(request=AnalysisRequest(company_name="Acme",ticker="ACME"))
         s.company_profile = CompanyProfile(name="Acme",ticker="ACME",cik="001")
@@ -1018,6 +1022,17 @@ class TestBriefSynthesisAgent:
         assert r.brief.requires_human_review
         assert "LLM unavailable" in r.brief.analyst_model
         assert any("BriefSynthesisAgent" in e for e in r.errors)
+
+    @pytest.mark.asyncio
+    async def test_no_api_key_gives_clean_review_reason(self, monkeypatch):
+        from src.agents.signal_agent import BriefSynthesisAgent
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+        r = await BriefSynthesisAgent().run(self._state())
+        assert "LLM unavailable" in r.brief.analyst_model
+        reasons = " ".join(r.brief.human_review_reasons)
+        assert "ANTHROPIC_API_KEY is not set" in reasons
+        assert "authentication method" not in reasons
 
 
 # ─── Formatter ────────────────────────────────────────────────────────────────
@@ -3300,6 +3315,13 @@ class TestSubjectAttribution:
         assert self._engine("Acme", "Acme beats estimates").signal_candidates
         cands = self._engine("Beta", "Acme CEO resigns after Beta merger talks collapse").signal_candidates
         assert [c.signal_type for c in cands] == [SignalType.MA_ACTIVITY]   # not Acme's CEO change
+
+    def test_credit_condition_belongs_to_the_subject(self):
+        """Live-run regression: Archer's cash burn was reported as Boeing credit risk."""
+        cands = self._engine("Boeing", "Archer Aviation (ACHR) Stock Rally Faces Cash Burn And Boeing Deal Risk", "BA")
+        assert SignalType.CREDIT_RISK not in [c.signal_type for c in cands.signal_candidates]
+        cands = self._engine("Boeing", "Boeing faces liquidity concern as cash burn deepens", "BA")
+        assert SignalType.CREDIT_RISK in [c.signal_type for c in cands.signal_candidates]
 
     def test_word_stems_match_full_words(self):
         """Rules like invest(igat)\\b never matched 'investigation'."""

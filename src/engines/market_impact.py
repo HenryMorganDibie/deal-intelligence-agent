@@ -14,8 +14,9 @@ from pathlib import Path
 from typing import Optional
 
 from src.schemas.models import SignalType, Severity, MarketOutcome
+from src.utils.paths import DATA_DIR
 
-OUTCOMES_PATH = Path(__file__).resolve().parents[2] / "data" / "market_outcomes.json"
+OUTCOMES_PATH = DATA_DIR / "market_outcomes.json"
 
 
 def _load() -> list[dict]:

@@ -22,8 +22,12 @@ const FAQ = [
     a: "Every signal links to the filing or article it came from, with its publication date and publisher. Sources outside your lookback window are rejected, and the pipeline trace counts what was skipped and why.",
   },
   {
+    q: "Is the hosted app free?",
+    a: "Yes, while it is in beta: sign in with GitHub, Google or email and run up to 10 analyses a day. Your briefs are stored privately against your account and you can download or delete them at any time.",
+  },
+  {
     q: "Is it open source?",
-    a: "Yes. The full system, its 330 tests and an architecture document with its known limits are on GitHub.",
+    a: "Yes. The full system, its 332 tests and an architecture document with its known limits are on GitHub.",
   },
 ];
 

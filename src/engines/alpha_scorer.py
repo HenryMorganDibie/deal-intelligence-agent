@@ -167,10 +167,10 @@ _MCAP_CACHE: dict[str, Optional[float]] = {}
 def _lookup_market_cap_usd(ticker: str) -> Optional[float]:
     """Live market capitalisation in USD via yfinance, or None if unavailable."""
     import logging
-    import yfinance as yf
-    from src.engines.market_data import _resolve_ticker
     logging.getLogger("yfinance").setLevel(logging.CRITICAL)
     try:
+        import yfinance as yf
+        from src.engines.market_data import _resolve_ticker
         info = yf.Ticker(_resolve_ticker(ticker)).fast_info
         cap = float(info["marketCap"])
         currency = info["currency"]

@@ -157,19 +157,32 @@ python main.py graph --summary
 
 ---
 
-## Landing Page
+## Hosted App
 
-The public site lives in `web/` (Next.js 14, Tailwind, no other runtime dependencies):
+The web app in `web/` (Next.js 14, Tailwind, Supabase Auth) is the landing page plus a
+signed-in app: sign in with GitHub, Google or email, run an analysis, and keep a private
+history of briefs (download as Markdown or JSON). The pipeline runs in `api/index.py`, a
+FastAPI function that reuses this repository's code unchanged.
+
+| Piece | Where | Notes |
+|---|---|---|
+| Web | Vercel project, root directory `web/` | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_API_URL`, optional `NEXT_PUBLIC_SITE_URL` |
+| API | Vercel project, repository root (`vercel.json`) | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `ALLOWED_ORIGINS` (the web origin), optional `ANTHROPIC_API_KEY` |
+| Auth + storage | Supabase | `briefs` (owner-only row level security) and `usage` tables, `consume_run()` daily quota |
+
+The API verifies the caller's Supabase access token and writes with that same token, so
+row level security applies to every write and no service-role key is deployed. Each
+account gets 10 analyses a day (capped in the database, not the client). Without
+`ANTHROPIC_API_KEY` briefs come from the deterministic engine only and say so.
+
+Local development:
 
 ```bash
-cd web
-npm install
-npm run dev      # http://localhost:3000
-npm run build    # static production build
+pip install -r requirements.txt && uvicorn api.index:app --port 8787   # API
+cd web && npm install && npm run dev                                    # http://localhost:3000
 ```
 
-Set `NEXT_PUBLIC_SITE_URL` once a domain exists (canonical URL and social cards) and
-`NEXT_PUBLIC_CONTACT_URL` to enable the footer contact link (shown as "Soon" until set).
+with `web/.env.local` pointing `NEXT_PUBLIC_API_URL` at `http://localhost:8787`.
 
 ---
 
@@ -197,7 +210,10 @@ Set `NEXT_PUBLIC_SITE_URL` once a domain exists (canonical URL and social cards)
 ```
 deal-intelligence-agent/
 ├── main.py                              # CLI: 16 command groups
-├── requirements.txt
+├── requirements.txt                     # runtime (also used by the Vercel API)
+├── requirements-dev.txt                 # + pytest
+├── api/index.py                         # hosted API (FastAPI on Vercel)
+├── web/                                 # landing page + signed-in app (Next.js)
 ├── README.md
 ├── ARCHITECTURE.md                      # Full technical reference + honest limitations
 ├── src/
@@ -248,7 +264,7 @@ deal-intelligence-agent/
 │   └── alerts.json                    # Alert history
 └── tests/
     ├── conftest.py                    # Redirects every data store to a per-test temp dir
-    └── test_all.py                    # 330 tests across all layers
+    └── test_all.py                    # 332 tests across all layers
 ```
 
 ---
@@ -256,10 +272,11 @@ deal-intelligence-agent/
 ## Testing
 
 ```bash
+pip install -r requirements-dev.txt
 pytest tests/test_all.py -v
 ```
 
-**330 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration.
+**332 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration.
 
 ---
 

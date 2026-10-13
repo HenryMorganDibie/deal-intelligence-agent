@@ -73,6 +73,8 @@ def _get_llm_client():
         if not api_key:
             raise RuntimeError("GROQ_API_KEY environment variable not set.")
         return GroqClient(api_key=api_key), "groq"
+    if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
+        raise RuntimeError("no LLM API key is configured (ANTHROPIC_API_KEY is not set).")
     return anthropic.Anthropic(), "anthropic"
 
 

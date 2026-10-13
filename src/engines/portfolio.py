@@ -22,8 +22,9 @@ from typing import Optional
 
 from src.schemas.models import Severity, SignalType, CompanyRiskProfile
 from src.utils.clock import utcnow
+from src.utils.paths import DATA_DIR
 
-PORTFOLIO_PATH = Path(__file__).resolve().parents[2] / "data" / "portfolios.json"
+PORTFOLIO_PATH = DATA_DIR / "portfolios.json"
 
 SEVERITY_WEIGHT = {
     Severity.LOW:      10.0,

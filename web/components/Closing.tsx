@@ -23,7 +23,7 @@ export function FinalCta() {
         </Reveal>
         <Reveal delay={160}>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <a href="#quickstart" className="btn btn-primary">
+            <a href="/app" className="btn btn-primary">
               Run your first brief
               <ArrowRight />
             </a>
@@ -46,7 +46,8 @@ export function SiteFooter() {
         { label: "How it works", href: "#pipeline" },
         { label: "Attribution", href: "#attribution" },
         { label: "Coverage", href: "#coverage" },
-        { label: "Quickstart", href: "#quickstart" },
+        { label: "Open the app", href: "/app" },
+        { label: "Self-host", href: "#quickstart" },
       ],
     },
     {

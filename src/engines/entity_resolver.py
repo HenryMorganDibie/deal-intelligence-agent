@@ -13,8 +13,9 @@ import re
 import unicodedata
 from pathlib import Path
 from typing import Optional
+from src.utils.paths import DATA_DIR
 
-ENTITY_REGISTRY_PATH = Path(__file__).resolve().parents[2] / "data" / "entity_registry.json"
+ENTITY_REGISTRY_PATH = DATA_DIR / "entity_registry.json"
 
 # Common company suffix patterns to normalise
 SUFFIX_PATTERNS = [

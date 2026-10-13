@@ -1,0 +1,12 @@
+# The API project deploys from the repository root; the web app is its own
+# Vercel project (root directory web/), so none of this belongs in the API.
+web
+tests
+data
+*.md
+!README.md
+__pycache__
+.pytest_cache
+requirements-dev.txt
+pytest.ini
+supabase

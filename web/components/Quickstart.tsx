@@ -58,12 +58,13 @@ export function Quickstart() {
       <Container className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
         <Heading
           index="10"
-          eyebrow="Quickstart"
+          eyebrow="Self-host"
           id="quickstart-title"
-          title="Your first brief in about a minute."
+          title="Or run it on your own machine."
           lede={
             <>
-              Python, no database to set up. Runs with Claude by default, or Llama through Groq with{" "}
+              The hosted app is the quickest start. The same pipeline runs locally in Python with no database to set
+              up. It uses Claude by default, or Llama through Groq with{" "}
               <code className="kbd text-[color:var(--text)]">--provider groq</code>. Without either key you still get the
               deterministic brief.
             </>

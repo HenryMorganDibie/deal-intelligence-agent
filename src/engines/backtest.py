@@ -31,8 +31,9 @@ from typing import Optional
 
 from src.schemas.models import SignalType, Severity
 from src.utils.clock import utcnow
+from src.utils.paths import DATA_DIR
 
-BACKTEST_PATH = Path(__file__).resolve().parents[2] / "data" / "backtest_results.json"
+BACKTEST_PATH = DATA_DIR / "backtest_results.json"
 
 
 def _load_backtest() -> dict:

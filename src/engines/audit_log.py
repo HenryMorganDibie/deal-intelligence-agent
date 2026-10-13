@@ -18,8 +18,9 @@ from pathlib import Path
 from typing import Any, Optional
 
 from src.schemas.models import AuditEntry, AgentState
+from src.utils.paths import DATA_DIR
 
-AUDIT_PATH = Path(__file__).resolve().parents[2] / "data" / "audit_log.jsonl"
+AUDIT_PATH = DATA_DIR / "audit_log.jsonl"
 def _model_version() -> str:
     """The LLM actually configured for this process (imported lazily: signal_agent imports this module)."""
     try:

@@ -230,6 +230,30 @@ body {
   transform: translateX(3px);
 }
 
+/* Form fields ----------------------------------------------------------- */
+.field {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 0.875rem;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-size: 0.9375rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.field::placeholder {
+  color: var(--dim);
+}
+.field:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.field:focus {
+  outline: none;
+  border-color: rgba(110, 231, 200, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+}
+
 }
 
 /* Scroll reveal. Content is only hidden once the observer is running, so the

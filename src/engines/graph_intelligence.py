@@ -15,8 +15,9 @@ from typing import Any, Optional
 
 import networkx as nx
 from src.utils.clock import utcnow
+from src.utils.paths import DATA_DIR
 
-GRAPH_PATH = Path(__file__).resolve().parents[2] / "data" / "entity_graph.json"
+GRAPH_PATH = DATA_DIR / "entity_graph.json"
 
 
 def _load_graph() -> nx.Graph:

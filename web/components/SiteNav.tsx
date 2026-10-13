@@ -54,8 +54,11 @@ export function SiteNav() {
             <GitHubMark />
             GitHub
           </a>
-          <a href="#quickstart" className="btn btn-primary hidden h-9 px-3.5 text-sm sm:inline-flex">
-            Run it
+          <a href="/login" className="btn btn-ghost hidden h-9 px-3.5 text-sm lg:inline-flex">
+            Sign in
+          </a>
+          <a href="/app" className="btn btn-primary hidden h-9 px-3.5 text-sm sm:inline-flex">
+            Open app
           </a>
           <button
             type="button"
@@ -93,8 +96,8 @@ export function SiteNav() {
               <a href={LINKS.github} className="btn btn-ghost h-10 flex-1 text-sm" target="_blank" rel="noreferrer">
                 <GitHubMark /> GitHub
               </a>
-              <a href="#quickstart" onClick={() => setOpen(false)} className="btn btn-primary h-10 flex-1 text-sm">
-                Run it
+              <a href="/app" className="btn btn-primary h-10 flex-1 text-sm">
+                Open app
               </a>
             </div>
           </Container>

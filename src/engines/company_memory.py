@@ -18,8 +18,9 @@ from src.schemas.models import (
     CompanyRiskProfile, AnalystBrief, SignalType, Severity
 )
 from src.utils.clock import utcnow
+from src.utils.paths import DATA_DIR
 
-MEMORY_PATH = Path(__file__).resolve().parents[2] / "data" / "company_memory.json"
+MEMORY_PATH = DATA_DIR / "company_memory.json"
 
 # EMA smoothing factor for rolling score updates
 EMA_ALPHA = 0.25

@@ -19,9 +19,10 @@ import httpx
 
 from src.schemas.models import AnalysisRequest, AnalystBrief, Severity
 from src.utils.clock import utcnow
+from src.utils.paths import DATA_DIR
 
-WATCHLIST_PATH = Path(__file__).resolve().parents[2] / "data" / "watchlist.json"
-ALERTS_PATH    = Path(__file__).resolve().parents[2] / "data" / "alerts.json"
+WATCHLIST_PATH = DATA_DIR / "watchlist.json"
+ALERTS_PATH    = DATA_DIR / "alerts.json"
 
 # Alert thresholds
 ALERT_SEVERITY_THRESHOLD = Severity.MEDIUM      # alert on MEDIUM and above

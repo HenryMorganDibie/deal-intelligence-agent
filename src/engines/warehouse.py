@@ -30,8 +30,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from src.utils.clock import utcnow
+from src.utils.paths import DATA_DIR
 
-DB_PATH = Path(__file__).resolve().parents[2] / "data" / "warehouse.db"
+DB_PATH = DATA_DIR / "warehouse.db"
 
 
 class Base(DeclarativeBase):
