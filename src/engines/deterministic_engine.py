@@ -120,7 +120,7 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
     (SignalType.CREDIT_RISK, [
         r"\b(credit|debt)\s+(downgrade|deterioration|pressure)\b",
         r"\bliquidity\s+(crisis|concern|risk|shortage)\b",
-        r"\bdebt\s+(maturity|covenant|restructur)\b",
+        r"\bdebt\s+(maturity|covenant|restructur\w*)\b",
         r"\bimpairment\s+(charge|loss|write[-\s]down)\b",
         r"\bgoodwill\s+impairment\b",
         r"\bcash\s+(burn|runway|shortage)\b",
@@ -143,7 +143,7 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
     ], 0.95),
     (SignalType.DISTRESSED_ASSET, [
         r"\b(liquidat(e|ion|or)|wind(ing)?\s+up|wound\s+up)\b",
-        r"\bdebt\s+(moratorium|standstill|restructur)\b",
+        r"\bdebt\s+(moratorium|standstill|restructur\w*)\b",
         r"\bcreditor\s+(protection|committee|arrangement)\b",
         r"\b(distressed|impaired)\s+(asset|portfolio|loan)\b",
     ], 0.80),
@@ -166,13 +166,13 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
     (SignalType.EARNINGS_SURPRISE, [
         r"\bprofit\s+warning\b",
         r"\b(revenue|earnings)\s+(restatement|revision|correction)\b",
-        r"\bheadline\s+earnings?\b.{0,30}\b(declin|fall|drop|miss|below)\b",
+        r"\bheadline\s+earnings?\b.{0,30}\b(declin\w*|fall|drop|miss|below)\b",
         r"\bguidance\s+(cut|lowered?|reduced?|withdrawn?)\b",
-        r"\btrading\s+(update|statement)\b.{0,40}\b(below|miss|declin)\b",
+        r"\btrading\s+(update|statement)\b.{0,40}\b(below|miss|declin\w*)\b",
         r"\bsignificantly\s+below\s+(expectations?|guidance|consensus)\b",
     ], 0.88),
     (SignalType.EARNINGS_SURPRISE, [
-        r"\b(revenue|earnings|profit|ebitda)\b.{0,20}\b(miss|below|declin|fell|dropped)\b",
+        r"\b(revenue|earnings|profit|ebitda)\b.{0,20}\b(miss|below|declin\w*|fell|dropped)\b",
         r"\bloss\s+(after\s+tax|before\s+tax|per\s+share)\b",
         r"\bnegative\s+(surprise|result|performance)\b",
         r"\bbelow[-\s](plan|budget|forecast|expectations?)\b",
@@ -209,34 +209,34 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
 
     # ── Regulatory Action ──
     (SignalType.REGULATORY_ACTION, [
-        r"\b(sec|fsca|cma|cbn|sarb|cbk)\b.{0,30}\b(invest(igat|ment)|probe|enforcement|sanction|fine|penalty|subpoena)\b",
-        r"\b(doj|ftc|competition\s+commission)\b.{0,30}\b(invest|antitrust|charge|fine)\b",
+        r"\b(sec|fsca|cma|cbn|sarb|cbk)\b.{0,30}\b(invest(igat\w*|ment)|probe|enforcement|sanction|fine|penalty|subpoena)\b",
+        r"\b(doj|ftc|competition\s+commission)\b.{0,30}\b(invest\w*|antitrust|charge|fine)\b",
         r"\blicen(c|s)e\s+(revoked?|suspended?|cancelled?)\b",
-        r"\bconsent\s+(order|decree|agreement)\b.{0,30}\b(regulat|enforce|penalt)\b",
+        r"\bconsent\s+(order|decree|agreement)\b.{0,30}\b(regulat\w*|enforce\w*|penalt\w*)\b",
         r"\bcriminal\s+(charge|referral|indictment)\b.{0,30}\b(fraud|financ|securi)\b",
     ], 0.93),
     (SignalType.REGULATORY_ACTION, [
         r"\bregulatory\s+(action|enforcement|sanction|inquiry|investigation)\b",
-        r"\b(fraud|misconduct|manipulation)\s+(alleg|invest|probe|charge)\b",
-        r"\bnon[-\s]compliance\b.{0,30}\b(regulat|penalt|fine)\b",
+        r"\b(fraud|misconduct|manipulation)\s+(alleg\w*|invest\w*|probe|charge)\b",
+        r"\bnon[-\s]compliance\b.{0,30}\b(regulat\w*|penalt\w*|fine)\b",
         r"\bshow[-\s]cause\s+(notice|letter|order)\b",
         r"\b(market|financial)\s+(misconduct|manipulation|abuse)\b",
     ], 0.80),
     (SignalType.REGULATORY_ACTION, [
         r"\b(regulatory|compliance)\s+(concern|issue|breach|violation)\b",
-        r"\bwarning\s+letter\b.{0,30}\b(regulat|author|govern)\b",
+        r"\bwarning\s+letter\b.{0,30}\b(regulat\w*|author\w*|govern\w*)\b",
     ], 0.58),
 
     # ── Debt Restructuring ──
     (SignalType.DEBT_RESTRUCTURE, [
-        r"\bdebt\s+(restructur(ing|ed?)|renegotiat|relief|forgiven)\b",
+        r"\bdebt\s+(restructur(ing|ed?)|renegotiat\w*|relief|forgiven)\b",
         r"\bhaircut\b.{0,20}\b(debt|bond|creditor|lender)\b",
         r"\bprincipal\s+(reduction|write[-\s]down|forgiven)\b",
         r"\bextension\s+of\s+(maturity|repayment|loan\s+term)\b",
         r"\bforbearance\s+(agreement|period|granted)\b",
     ], 0.88),
     (SignalType.DEBT_RESTRUCTURE, [
-        r"\b(bond|loan|facility)\s+(restructur|amendment|modification|waiver)\b",
+        r"\b(bond|loan|facility)\s+(restructur\w*|amendment|modification|waiver)\b",
         r"\bcreditor\s+(negotiation|settlement|agreement)\b",
         r"\bdeferred\s+(payment|repayment|interest)\b",
         r"\bdebt[-\s](for[-\s]equity|swap)\b",
@@ -356,6 +356,59 @@ def _mentions_company(text: str, matchers: list[re.Pattern]) -> bool:
     return not matchers or any(m.search(text) for m in matchers)
 
 
+# ─── Subject attribution for news ─────────────────────────────────────────────
+# A news item names the target, but is the trigger about the target? A rule only
+# counts if its trigger sits in the same clause as the company's name. Headlines
+# are split at separators and subordinating words, so in "Vodacom lifts outlook
+# as Safaricom deal reshapes growth" the outlook clause does not name Safaricom.
+_CLAUSE_BREAK = re.compile(
+    r"\s+[-–—]\s+|[;:|]|(?<=[.!?])\s+"
+    r"|\s(?:as|after|amid|while|following|despite|before|since|whereas|although|though)\s",
+    re.IGNORECASE,
+)
+# Events that belong to the clause's subject: the company must be named before the
+# trigger ("Acme beats estimates", not "Rival beats estimates on Acme deal").
+_SUBJECT_ONLY_TYPES = {SignalType.EARNINGS_SURPRISE, SignalType.LEADERSHIP_CHANGE}
+
+
+def _clauses(text: str) -> list[str]:
+    return [c.strip() for c in _CLAUSE_BREAK.split(text) if c and c.strip()]
+
+
+def _first_mention(text: str, matchers: list[re.Pattern]) -> Optional[int]:
+    starts = [m.start() for p in matchers for m in [p.search(text)] if m]
+    return min(starts) if starts else None
+
+
+def match_rules_for_target(
+    text: str, matchers: list[re.Pattern]
+) -> list[tuple[SignalType, list[str], float]]:
+    """
+    Rule hits whose trigger is attributed to the target company: the trigger must be
+    in a clause that names the company, and for subject-owned events (earnings,
+    leadership) the company must be named before the trigger.
+    """
+    if not matchers:
+        return _match_rules(text)
+    best: dict[SignalType, tuple[list[str], float]] = {}
+    for clause in _clauses(text):
+        mention = _first_mention(clause, matchers)
+        if mention is None:
+            continue
+        for sig_type, patterns, base_score in SIGNAL_RULES:
+            matched = []
+            for pattern in patterns:
+                m = re.search(pattern, clause, re.IGNORECASE)
+                if not m:
+                    continue
+                if sig_type in _SUBJECT_ONLY_TYPES and mention > m.start():
+                    continue
+                matched.append(pattern)
+            if matched and (sig_type not in best or base_score > best[sig_type][1]):
+                best[sig_type] = (matched, base_score)
+    return [(t, ps, sc) for t, (ps, sc) in best.items()]
+
+
 def _source_credibility(source_name: str) -> float:
     """Look up credibility score for a source."""
     for key, score in SOURCE_CREDIBILITY.items():
@@ -405,6 +458,7 @@ class DeterministicSignalEngine:
         )
         off_target = 0
         stale = 0
+        unattributed = 0
         # Every source must fall inside the requested lookback window, whatever tool
         # produced it (undated sources are kept).
         window_end = _source_date(state.request.as_of_date) or utcnow()
@@ -464,7 +518,10 @@ class DeterministicSignalEngine:
             if not _mentions_company(text, matchers):
                 off_target += 1
                 continue
-            hits = _match_rules(text)
+            hits = match_rules_for_target(text, matchers)
+            if not hits and _match_rules(text):
+                unattributed += 1      # names the company, but the event is someone else's
+                continue
             credibility = _source_credibility(news.source)
 
             for sig_type, matched_patterns, base_score in hits:
@@ -528,7 +585,8 @@ class DeterministicSignalEngine:
             "deterministic_engine",
             f"Engine produced {len(final_candidates)} signal candidates "
             f"({off_target} source(s) skipped: target company not mentioned; "
-            f"{stale} outside the {state.request.lookback_days}-day window)",
+            f"{stale} outside the {state.request.lookback_days}-day window; "
+            f"{unattributed} news item(s) whose event is about another company)",
             {
                 "candidates": [
                     {"type": c.signal_type.value, "score": round(c.raw_score, 3),

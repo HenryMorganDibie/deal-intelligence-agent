@@ -167,8 +167,12 @@ Form 4 filings are reduced to discretionary open-market trades: purchases, and s
 ### 10. News Scoring and the Lookback Window
 A news item's score is rule strength × publisher credibility. It is no longer also multiplied by a relevance score, which mostly measured whether the company was named (already required by the engine) and forced every single news story to LOW. Every source, from any tool, must fall inside the lookback window, measured from the as-of date for replays and from now otherwise.
 
-### 11. Attribution Is Mention-Based
-A news item counts for a company when it names the company. An article about another company that mentions the target in passing ("Vodacom lifts outlook as Safaricom deal reshapes growth") can still be attributed to the target.
+### 11. Subject Attribution
+A news item must name the company, and the triggering phrase must be about it:
+- **Clause rule (deterministic, always on).** A rule only fires if its trigger is in the same clause as the company's name. Headlines are split at separators (" - ", ":", ";") and at subordinating words ("as", "after", "amid", "while", ...). For events that belong to the subject (earnings, leadership changes), the company must also be named before the trigger. "Vodacom lifts outlook as Safaricom deal reshapes growth" does not count for Safaricom; "EU clears acquisition of eMAG by Naspers" counts for Naspers. Items dropped this way are counted in the pipeline trace.
+- **LLM check (when an LLM is configured).** The explanation step also reports whether the evidence is about the company. A "no" does not remove the signal (the LLM cannot remove signals); it is shown as an attribution doubt and the brief requires human review.
+
+The clause rule is a heuristic: it can miss an event phrased with the company only after the trigger ("Shares of Acme jump after it beats estimates"), trading some recall for precision.
 
 ### 8. Replay Depends on Feedback State
 Replay runs the same deterministic path as a live analysis (rule engine, adaptive calibration, alpha scoring, compound events). Adaptive calibration depends on accumulated analyst feedback, so the feedback statistics in use are recorded in each replay's config snapshot to explain any difference from the original run.

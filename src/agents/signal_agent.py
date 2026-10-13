@@ -121,6 +121,9 @@ Your job is ONLY to:
 2. List the specific evidence from the source material
 3. Explain the significance and context in plain analyst language
 4. Note any ambiguities or caveats
+5. Say whether the evidence is actually about the named company, or about another
+   company that only mentions it in passing (e.g. a rival's results that refer to
+   a deal involving it)
 
 You MUST NOT invent new signals. You MUST NOT change the signal_type or severity.
 You MUST reference only evidence present in the source material provided.
@@ -130,7 +133,9 @@ For each signal candidate, return a JSON object:
   "signal_type": "<same as input>",
   "headline": "<crisp one-line description>",
   "evidence": ["<specific fact from source>", "<specific fact>"],
-  "reasoning": "<2-3 sentences of professional analyst context>"
+  "reasoning": "<2-3 sentences of professional analyst context>",
+  "about_company": true,
+  "attribution_note": "<if about_company is false: which company the evidence is really about, and why>"
 }
 
 Return ONLY a JSON array of these objects. No markdown. No preamble."""
@@ -248,6 +253,10 @@ def _parse_explanations(
                 filing_references=[cand.filing_reference] if cand.filing_reference else [],
                 confidence=conf,
                 reasoning=str(item.get("reasoning") or ""),
+                attribution_doubt=(
+                    str(item.get("attribution_note") or "evidence appears to concern another company")
+                    if item.get("about_company") is False else None
+                ),
                 candidate_patterns=cand.matched_patterns,
                 corroboration_count=cand.corroboration_count,
             ))
@@ -411,6 +420,9 @@ class BriefSynthesisAgent:
             f"{sig.signal_type.value.replace('_', ' ').title()}: {sig.alpha_score.review_reason}"
             for sig in state.detected_signals
             if sig.alpha_score and sig.alpha_score.requires_human_review and sig.alpha_score.review_reason
+        ] + [
+            f"{sig.signal_type.value.replace('_', ' ').title()}: attribution doubt: {sig.attribution_doubt}"
+            for sig in state.detected_signals if sig.attribution_doubt
         ]
 
         # Low-confidence signals are removed before explanation, so they are no

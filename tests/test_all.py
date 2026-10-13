@@ -3272,3 +3272,65 @@ async def test_replay_window_ends_at_as_of_date():
         s = AgentState(request=AnalysisRequest(company_name="Acme", cik="0000001", as_of_date=as_of))
         s.filings = [filing]
         assert len(DeterministicSignalEngine().run(s).signal_candidates) == expected, as_of
+
+
+class TestSubjectAttribution:
+    def _engine(self, company, title, ticker=None):
+        from src.engines.deterministic_engine import DeterministicSignalEngine
+        s = AgentState(request=AnalysisRequest(company_name=company, ticker=ticker))
+        s.news_items = [NewsItem(title=title, source="Reuters", published_date=RECENT_DAY, url="u",
+                                 snippet="", relevance_score=0.5)]
+        return DeterministicSignalEngine().run(s)
+
+    def test_other_companys_event_not_attributed(self):
+        """Live-run regression: Vodacom's outlook was reported as a Safaricom earnings signal."""
+        out = self._engine("Safaricom", "Earnings call transcript: Vodacom lifts outlook in Q1 2026 "
+                                        "as Safaricom deal reshapes growth - Investing.com", "SCOM")
+        assert out.signal_candidates == []
+        assert "1 news item(s) whose event is about another company" in out.reasoning_trace[-1]["detail"]
+
+    def test_target_as_object_still_counts(self):
+        out = self._engine("Naspers", "EU Commission clears acquisition of eMAG by Naspers - The Diplomat")
+        assert [c.signal_type for c in out.signal_candidates] == [SignalType.MA_ACTIVITY]
+        out = self._engine("Acme", "SEC investigation launched into Acme")
+        assert [c.signal_type for c in out.signal_candidates] == [SignalType.REGULATORY_ACTION]
+
+    def test_subject_owned_events_need_the_company_as_subject(self):
+        assert self._engine("Acme", "Rival beats estimates on Acme deal").signal_candidates == []
+        assert self._engine("Acme", "Acme beats estimates").signal_candidates
+        cands = self._engine("Beta", "Acme CEO resigns after Beta merger talks collapse").signal_candidates
+        assert [c.signal_type for c in cands] == [SignalType.MA_ACTIVITY]   # not Acme's CEO change
+
+    def test_word_stems_match_full_words(self):
+        """Rules like invest(igat)\\b never matched 'investigation'."""
+        from src.engines.deterministic_engine import _match_rules
+        for text, expected in [("SEC investigation into accounting", SignalType.REGULATORY_ACTION),
+                               ("fraud allegations surface", SignalType.REGULATORY_ACTION),
+                               ("loan restructuring signed", SignalType.DEBT_RESTRUCTURE),
+                               ("revenue declined sharply", SignalType.EARNINGS_SURPRISE)]:
+            assert expected in [t for t, _, _ in _match_rules(text)], text
+
+    async def test_llm_attribution_doubt_flags_for_review(self, monkeypatch):
+        import src.agents.signal_agent as sa
+        from src.utils.formatter import brief_to_markdown
+        replies = iter([
+            json.dumps([{"signal_type": "m_and_a_activity", "headline": "Deal", "evidence": ["x"],
+                         "reasoning": "r", "about_company": False,
+                         "attribution_note": "The deal is between two other companies."}]),
+            json.dumps({"executive_summary": "s", "overall_severity": "medium", "recommendation": "r",
+                        "confidence_score": 0.5}),
+        ])
+        monkeypatch.setattr(sa, "_get_llm_client", lambda: (MagicMock(), "anthropic"))
+        monkeypatch.setattr(sa, "_call_llm", lambda *a, **k: next(replies))
+        monkeypatch.setattr(sa, "log_state", lambda *a, **k: None)
+        state = AgentState(request=AnalysisRequest(company_name="Acme"))
+        state.signal_candidates = [SignalCandidate(signal_type=SignalType.MA_ACTIVITY, matched_patterns=["p"],
+                                                   source_text="t", source_type="news", source_name="Reuters",
+                                                   raw_score=0.8)]
+        state = await sa.LLMExplanationNode().run(state)
+        sig = state.detected_signals[0]
+        assert sig.attribution_doubt == "The deal is between two other companies."   # kept, not removed
+        brief = (await sa.BriefSynthesisAgent().run(state)).brief
+        assert brief.requires_human_review
+        assert any("attribution doubt" in r for r in brief.human_review_reasons)
+        assert "**Attribution Doubt:** The deal is between two other companies." in brief_to_markdown(brief)

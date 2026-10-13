@@ -172,6 +172,8 @@ def print_brief(brief: AnalystBrief) -> None:
                     )
                 if a.requires_human_review:
                     alpha_line += f"\n[bold red]⚑ HUMAN REVIEW: {_e(a.review_reason)}[/bold red]"
+            if sig.attribution_doubt:
+                alpha_line += f"\n[bold red]⚑ ATTRIBUTION DOUBT: {_e(sig.attribution_doubt)}[/bold red]"
 
             quality = _evidence_quality(sig)
             if quality:
@@ -319,6 +321,8 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
                              f"(n={a.comparable_events_n}, {a.move_confidence} confidence)  ")
             if a.requires_human_review:
                 lines.append(f"\n> ⚑ **Human Review Required:** {a.review_reason}")
+        if sig.attribution_doubt:
+            lines.append(f"\n> ⚑ **Attribution Doubt:** {' '.join(sig.attribution_doubt.split())}\n")
         quality = _evidence_quality(sig)
         if quality:
             lines.append(f"**Evidence Quality:** {quality}  ")

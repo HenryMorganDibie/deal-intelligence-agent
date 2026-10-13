@@ -197,6 +197,10 @@ class DetectedSignal(BaseModel):
     # Evidence-quality breakdown (source, corroboration, filing strength, ...). Separate
     # from `confidence`, which is the calibrated probability the event materialises.
     confidence_decomposition: Optional["ConfidenceDecomposition"] = None
+    # Set when the LLM judges the evidence to be about another company that only
+    # mentions this one. The signal is kept (the LLM cannot remove signals) and
+    # flagged for human review.
+    attribution_doubt: Optional[str] = None
 
 
 # ─────────────────────────────────────────────
