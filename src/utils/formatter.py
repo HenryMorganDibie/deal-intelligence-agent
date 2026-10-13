@@ -16,7 +16,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from rich import box
-from rich.rule import Rule
+from rich.markup import escape
 
 from src.schemas.models import AnalystBrief, DetectedSignal, Severity, SignalType
 
@@ -50,6 +50,30 @@ def _severity_color(s: Severity) -> str:
     return SEVERITY_COLORS[s]
 
 
+def _e(value) -> str:
+    """Escape untrusted text (LLM output, news titles) so Rich does not parse it as markup."""
+    return escape(str(value)) if value is not None else ""
+
+
+def _cell(value) -> str:
+    """Make text safe for a single Markdown table cell."""
+    text = str(value) if value is not None else ""
+    return " ".join(text.split()).replace("|", "\\|")
+
+
+def _expected_move(a) -> Optional[str]:
+    """'↓ 8–15%' for a directional estimate with both bounds, else None."""
+    if (a.expected_direction not in ("positive", "negative")
+            or a.expected_magnitude_pct_low is None or a.expected_magnitude_pct_high is None):
+        return None
+    arrow = "↑" if a.expected_direction == "positive" else "↓"
+    return f"{arrow} {a.expected_magnitude_pct_low:.0f}–{a.expected_magnitude_pct_high:.0f}%"
+
+
+def _title(value: str) -> str:
+    return value.replace("_", " ").title()
+
+
 def print_brief(brief: AnalystBrief) -> None:
     console.print()
     console.rule("[bold cyan]DEAL INTELLIGENCE BRIEF[/bold cyan]", style="cyan")
@@ -58,8 +82,8 @@ def print_brief(brief: AnalystBrief) -> None:
     h = Table(box=None, padding=(0, 2))
     h.add_column("Field", style="dim", width=22)
     h.add_column("Value", style="bold white")
-    h.add_row("Company",    brief.company_name)
-    h.add_row("Ticker",     brief.ticker or "—")
+    h.add_row("Company",    Text(brief.company_name))
+    h.add_row("Ticker",     Text(brief.ticker or "—"))
     h.add_row("Date",       brief.brief_date.strftime("%B %d, %Y %H:%M UTC"))
     h.add_row("Sources",    str(brief.total_sources))
     h.add_row("Candidates", str(brief.signal_candidates_count))
@@ -67,15 +91,16 @@ def print_brief(brief: AnalystBrief) -> None:
     if brief.top_alpha_score is not None:
         h.add_row("Top Alpha",  f"{brief.top_alpha_score:.1f}/100")
     if brief.liquidity_tier:
-        h.add_row("Liquidity",  brief.liquidity_tier.value.replace("_", " ").title())
+        h.add_row("Liquidity",  _title(brief.liquidity_tier.value))
+    h.add_row("Systemic Risk", _title(brief.systemic_risk_level.value))
     h.add_row("Runtime",    f"{brief.processing_time_seconds:.1f}s" if brief.processing_time_seconds else "—")
-    h.add_row("Model",      brief.analyst_model)
+    h.add_row("Model",      Text(brief.analyst_model))
     console.print(h)
     console.print()
 
     # Compliance banner
     if brief.compliance_mode:
-        flags = "\n".join(f"  ⚠ {f}" for f in brief.compliance_flags)
+        flags = "\n".join(f"  ⚠ {_e(f)}" for f in brief.compliance_flags)
         console.print(Panel(
             f"[bold yellow]COMPLIANCE MODE ACTIVE[/bold yellow]\n{flags}",
             border_style="yellow", padding=(0, 2)
@@ -84,7 +109,7 @@ def print_brief(brief: AnalystBrief) -> None:
 
     # Human review banner
     if brief.requires_human_review:
-        reasons = "\n".join(f"  • {r}" for r in brief.human_review_reasons)
+        reasons = "\n".join(f"  • {_e(r)}" for r in brief.human_review_reasons)
         console.print(Panel(
             f"[bold red]⚑ HUMAN REVIEW REQUIRED BEFORE ACTING[/bold red]\n{reasons}",
             border_style="red", padding=(0, 2)
@@ -96,8 +121,8 @@ def print_brief(brief: AnalystBrief) -> None:
     conf_bar  = "█" * int(brief.confidence_score * 20) + "░" * (20 - int(brief.confidence_score * 20))
     console.print(Panel(
         f"[{sev_color}]{SEVERITY_ICONS[brief.overall_severity]} SEVERITY: {brief.overall_severity.value.upper()}[/{sev_color}]\n\n"
-        f"[white]{brief.executive_summary}[/white]\n\n"
-        f"[bold]Recommendation:[/bold] {brief.recommendation}\n\n"
+        f"[white]{_e(brief.executive_summary)}[/white]\n\n"
+        f"[bold]Recommendation:[/bold] {_e(brief.recommendation)}\n\n"
         f"[dim]Confidence [{conf_bar}] {brief.confidence_score:.0%}[/dim]",
         title="[bold]EXECUTIVE SUMMARY[/bold]",
         border_style=sev_color, padding=(1, 2)
@@ -109,7 +134,8 @@ def print_brief(brief: AnalystBrief) -> None:
     parts  = [f"[{_severity_color(sev)}]{counts[sev.value]} {sev.value}[/{_severity_color(sev)}]"
               for sev in Severity if counts[sev.value] > 0]
     console.print(f"[bold]Signals:[/bold] {len(brief.detected_signals)} confirmed from "
-                  f"{brief.signal_candidates_count} deterministic candidates  ({' | '.join(parts)})")
+                  f"{brief.signal_candidates_count} deterministic candidates"
+                  + (f"  ({' | '.join(parts)})" if parts else ""))
     console.print()
 
     # Signals
@@ -128,33 +154,53 @@ def print_brief(brief: AnalystBrief) -> None:
                     f"Corroboration:{a.corroboration_weight:.2f}  "
                     f"Recency:{a.recency_weight:.2f}[/dim]"
                 )
-                if a.expected_direction and a.expected_direction != "neutral":
-                    arrow = "↑" if a.expected_direction == "positive" else "↓"
+                move = _expected_move(a)
+                if move:
                     alpha_line += (
-                        f"\n[bold]Expected Move:[/bold] [{color}]{arrow} "
-                        f"{a.expected_magnitude_pct_low:.0f}–{a.expected_magnitude_pct_high:.0f}%[/{color}]"
+                        f"\n[bold]Expected Move:[/bold] [{color}]{move}[/{color}]"
                         f"  [dim](n={a.comparable_events_n}, confidence={a.move_confidence})[/dim]"
                     )
                 if a.requires_human_review:
-                    alpha_line += f"\n[bold red]⚑ HUMAN REVIEW: {a.review_reason}[/bold red]"
+                    alpha_line += f"\n[bold red]⚑ HUMAN REVIEW: {_e(a.review_reason)}[/bold red]"
 
             patterns_line = ""
             if sig.candidate_patterns:
-                patterns_line = f"\n[dim]Patterns: {', '.join(sig.candidate_patterns[:3])}[/dim]"
+                patterns_line = f"\n[dim]Patterns: {_e(', '.join(sig.candidate_patterns[:3]))}[/dim]"
 
             console.print(Panel(
                 f"[{color}]{SEVERITY_ICONS[sig.severity]} {sig.severity.value.upper()}[/{color}]  "
                 f"[dim]{sig.signal_type.value.replace('_', ' ').title()}[/dim]  "
                 f"[dim]Confidence: {sig.confidence:.0%}  Corroboration: {sig.corroboration_count}x[/dim]\n\n"
-                f"[white]{sig.headline}[/white]\n\n"
-                + "\n".join(f"  [dim]• {e}[/dim]" for e in sig.evidence[:4])
-                + (f"\n\n[dim italic]{sig.reasoning[:300]}{'...' if len(sig.reasoning) > 300 else ''}[/dim italic]"
+                f"[white]{_e(sig.headline)}[/white]\n\n"
+                + "\n".join(f"  [dim]• {_e(e)}[/dim]" for e in sig.evidence[:4])
+                + (f"\n\n[dim italic]{_e(sig.reasoning[:300])}{'...' if len(sig.reasoning) > 300 else ''}[/dim italic]"
                    if sig.reasoning else "")
                 + alpha_line + patterns_line,
                 title=f"[bold]{icon} Signal #{i}[/bold]",
                 border_style=color, padding=(0, 2)
             ))
         console.print()
+
+    # Compound events
+    if brief.compound_signals:
+        console.rule("[bold]COMPOUND EVENTS[/bold]", style="dim")
+        t = Table(box=box.SIMPLE_HEAD, header_style="bold cyan")
+        t.add_column("Signals"); t.add_column("Interaction")
+        t.add_column("Escalation", justify="right"); t.add_column("Confidence", justify="right")
+        t.add_column("Systemic"); t.add_column("Reasoning", style="dim")
+        for c in brief.compound_signals:
+            t.add_row(
+                " + ".join(_title(st.value) for st in c.component_signal_types),
+                _title(c.interaction_type.value),
+                f"{c.escalation_score:.2f}", f"{c.compounded_confidence:.0%}",
+                _title(c.systemic_risk_level.value), Text(c.reasoning_chain),
+            )
+        console.print(t); console.print()
+
+    # Competitive context
+    if brief.competitive_context:
+        console.rule("[bold]COMPETITIVE CONTEXT[/bold]", style="dim")
+        console.print(Text(brief.competitive_context)); console.print()
 
     # Key metrics
     if brief.key_metrics:
@@ -163,7 +209,7 @@ def print_brief(brief: AnalystBrief) -> None:
         t.add_column("Metric"); t.add_column("Value", style="bold white")
         t.add_column("Period", style="dim"); t.add_column("Interpretation")
         for m in brief.key_metrics:
-            t.add_row(m.name, m.value, m.period, m.interpretation)
+            t.add_row(Text(m.name), Text(m.value), Text(m.period), Text(m.interpretation))
         console.print(t); console.print()
 
     # Risk factors
@@ -174,14 +220,15 @@ def print_brief(brief: AnalystBrief) -> None:
         t.add_column("Impact"); t.add_column("Mitigation", style="dim")
         for rf in brief.risk_factors:
             c = _severity_color(rf.likelihood)
-            t.add_row(rf.factor, Text(rf.likelihood.value.upper(), style=c), rf.impact, rf.mitigation or "—")
+            t.add_row(Text(rf.factor), Text(rf.likelihood.value.upper(), style=c),
+                      Text(rf.impact), Text(rf.mitigation or "—"))
         console.print(t); console.print()
 
     # Recent developments
     if brief.recent_developments:
         console.rule("[bold]RECENT DEVELOPMENTS[/bold]", style="dim")
         for dev in brief.recent_developments:
-            console.print(f"  [dim]▸[/dim] {dev}")
+            console.print(f"  [dim]▸[/dim] {_e(dev)}")
         console.print()
 
     # Reasoning trace (abbreviated)
@@ -190,7 +237,7 @@ def print_brief(brief: AnalystBrief) -> None:
         t = Table(box=box.SIMPLE, header_style="bold cyan")
         t.add_column("Step", style="cyan"); t.add_column("Detail")
         for entry in brief.reasoning_trace[-8:]:
-            t.add_row(entry.get("step",""), str(entry.get("detail",""))[:100])
+            t.add_row(Text(str(entry.get("step", ""))), Text(str(entry.get("detail", ""))[:100]))
         console.print(t); console.print()
 
     # Sources
@@ -199,10 +246,10 @@ def print_brief(brief: AnalystBrief) -> None:
     t.add_column("Type", width=14); t.add_column("Form", width=22)
     t.add_column("Date", width=12); t.add_column("Company / Title")
     for f in brief.filings_reviewed[:8]:
-        t.add_row("SEC/Exchange", f.form_type, f.filing_date, f.company_name)
+        t.add_row("SEC/Exchange", Text(f.form_type), Text(f.filing_date), Text(f.company_name))
     for n in sorted(brief.news_reviewed, key=lambda x: x.relevance_score, reverse=True)[:6]:
-        t.add_row("News", n.source, n.published_date,
-                  n.title[:60] + ("…" if len(n.title) > 60 else ""))
+        t.add_row("News", Text(n.source), Text(n.published_date),
+                  Text(n.title[:60] + ("…" if len(n.title) > 60 else "")))
     console.print(t)
     console.print()
     console.rule(style="dim")
@@ -225,6 +272,9 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
     ]
     if brief.top_alpha_score is not None:
         lines.append(f"**Top Alpha Score:** {brief.top_alpha_score:.1f}/100  ")
+    if brief.liquidity_tier:
+        lines.append(f"**Liquidity:** {_title(brief.liquidity_tier.value)}  ")
+    lines.append(f"**Systemic Risk:** {_title(brief.systemic_risk_level.value)}  ")
     if brief.compliance_mode:
         lines.append(f"**Compliance Mode:** ON  ")
         for f in brief.compliance_flags:
@@ -249,11 +299,10 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
         if sig.alpha_score:
             a = sig.alpha_score
             lines.append(f"**Alpha Score:** {a.score:.1f}/100  ")
-            if a.expected_direction and a.expected_direction != "neutral":
-                arrow = "↑" if a.expected_direction == "positive" else "↓"
-                lines.append(f"**Expected Move:** {arrow} {a.expected_magnitude_pct_low:.0f}–"
-                              f"{a.expected_magnitude_pct_high:.0f}% "
-                              f"(n={a.comparable_events_n}, {a.move_confidence} confidence)  ")
+            move = _expected_move(a)
+            if move:
+                lines.append(f"**Expected Move:** {move} "
+                             f"(n={a.comparable_events_n}, {a.move_confidence} confidence)  ")
             if a.requires_human_review:
                 lines.append(f"\n> ⚑ **Human Review Required:** {a.review_reason}")
         if sig.candidate_patterns:
@@ -261,14 +310,32 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
         lines += ["", "**Evidence:**"]
         for e in sig.evidence:
             lines.append(f"- {e}")
-        lines += ["", f"*{sig.reasoning}*", ""]
+        if sig.reasoning.strip():
+            lines += ["", f"*{' '.join(sig.reasoning.split())}*"]
+        lines.append("")
+
+    if brief.compound_signals:
+        lines += ["---", "", "## Compound Events", "",
+                  "| Signals | Interaction | Escalation | Confidence | Systemic | Reasoning |",
+                  "|---------|-------------|-----------:|-----------:|----------|-----------|"]
+        for c in brief.compound_signals:
+            lines.append(
+                f"| {' + '.join(_title(st.value) for st in c.component_signal_types)} "
+                f"| {_title(c.interaction_type.value)} | {c.escalation_score:.2f} "
+                f"| {c.compounded_confidence:.0%} | {_title(c.systemic_risk_level.value)} "
+                f"| {_cell(c.reasoning_chain)} |"
+            )
+        lines.append("")
+
+    if brief.competitive_context:
+        lines += ["---", "", "## Competitive Context", "", brief.competitive_context, ""]
 
     if brief.key_metrics:
         lines += ["---", "", "## Key Metrics", "",
                   "| Metric | Value | Period | Interpretation |",
                   "|--------|-------|--------|----------------|"]
         for m in brief.key_metrics:
-            lines.append(f"| {m.name} | {m.value} | {m.period} | {m.interpretation} |")
+            lines.append(f"| {_cell(m.name)} | {_cell(m.value)} | {_cell(m.period)} | {_cell(m.interpretation)} |")
         lines.append("")
 
     if brief.risk_factors:
@@ -276,7 +343,8 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
                   "| Risk | Likelihood | Impact | Mitigation |",
                   "|------|-----------|--------|------------|"]
         for rf in brief.risk_factors:
-            lines.append(f"| {rf.factor} | {rf.likelihood.value.upper()} | {rf.impact} | {rf.mitigation or '—'} |")
+            lines.append(f"| {_cell(rf.factor)} | {rf.likelihood.value.upper()} | {_cell(rf.impact)} "
+                         f"| {_cell(rf.mitigation or '—')} |")
         lines.append("")
 
     if brief.recent_developments:
@@ -288,13 +356,14 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
     if brief.reasoning_trace:
         lines += ["---", "", "## Pipeline Trace", "", "| Step | Detail |", "|------|--------|"]
         for entry in brief.reasoning_trace:
-            lines.append(f"| {entry.get('step','')} | {str(entry.get('detail',''))[:120]} |")
+            lines.append(f"| {_cell(entry.get('step', ''))} | {_cell(str(entry.get('detail', ''))[:120])} |")
         lines.append("")
 
     lines += [
         "---", "",
-        f"*Generated by Deal Intelligence Agent | Model: {brief.analyst_model}*",
-        f"*Processing time: {brief.processing_time_seconds:.1f}s*" if brief.processing_time_seconds else "",
-        "*Output is AI-generated, unverified, not investment advice.*"
+        f"*Generated by Deal Intelligence Agent | Model: {brief.analyst_model}*  ",
     ]
+    if brief.processing_time_seconds:
+        lines.append(f"*Processing time: {brief.processing_time_seconds:.1f}s*  ")
+    lines.append("*Output is AI-generated, unverified, not investment advice.*")
     return "\n".join(lines)

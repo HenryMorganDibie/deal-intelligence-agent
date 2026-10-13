@@ -41,7 +41,7 @@ from src.schemas.models import (
     SignalType, Severity, SignalCandidate, LiquidityTier
 )
 from src.engines.deterministic_engine import DeterministicSignalEngine
-from src.engines.calibration import calibrate_all
+from src.engines.signal_interaction import _get_systemic_risk
 from src.engines.adaptive_calibration import adaptive_calibrate
 from src.engines.alpha_scorer import score_all_signals, LOW_CONFIDENCE_SUPPRESS_THRESHOLD
 from src.engines.confidence import decompose_all
@@ -94,6 +94,8 @@ def _call_llm(client, provider: str, system: str, user: str, max_tokens: int = 3
             messages=[{"role": "user", "content": user}],
         )
         return response.content[0].text
+
+_SEVERITY_RANK = {Severity.LOW: 0, Severity.MEDIUM: 1, Severity.HIGH: 2, Severity.CRITICAL: 3}
 
 EXPLANATION_SYSTEM = """You are a senior financial analyst writing explanations for pre-confirmed deal intelligence signals.
 
@@ -198,29 +200,38 @@ def _parse_explanations(
     cand_map: dict[SignalType, SignalCandidate] = {c.signal_type: c for c in candidates}
 
     signals: list[DetectedSignal] = []
+    seen: set[SignalType] = set()
     for item in data:
         try:
-            raw_type = item.get("signal_type", "").lower().replace(" ", "_").replace("-", "_")
+            if not isinstance(item, dict):
+                continue
+            raw_type = str(item.get("signal_type") or "").lower().replace(" ", "_").replace("-", "_")
             try:
                 sig_type = SignalType(raw_type)
             except ValueError:
                 continue
 
             cand = cand_map.get(sig_type)
-            if cand is None:
+            if cand is None or sig_type in seen:
                 continue
+            seen.add(sig_type)
+
+            evidence = item.get("evidence") or []
+            if isinstance(evidence, str):
+                evidence = [evidence]
+            evidence = [str(e) for e in evidence if e]
 
             sev, conf, _ = cal_map.get(sig_type, (Severity.LOW, 0.5, 0.1))
 
             signals.append(DetectedSignal(
                 signal_type=sig_type,
                 severity=sev,
-                headline=item.get("headline", f"{sig_type.value.replace('_',' ').title()} detected"),
-                evidence=item.get("evidence", []),
+                headline=str(item.get("headline") or f"{sig_type.value.replace('_',' ').title()} detected"),
+                evidence=evidence or [cand.source_text[:200]],
                 source_urls=[cand.source_url] if cand.source_url else [],
                 filing_references=[cand.filing_reference] if cand.filing_reference else [],
                 confidence=conf,
-                reasoning=item.get("reasoning", ""),
+                reasoning=str(item.get("reasoning") or ""),
                 candidate_patterns=cand.matched_patterns,
                 corroboration_count=cand.corroboration_count,
             ))
@@ -282,10 +293,12 @@ class LLMExplanationNode:
                 calibrated.append((cand, sev, conf, mat))
 
         if state.compliance_mode:
-            calibrated = [
+            kept = [
                 (c, sev, conf, mr) for c, sev, conf, mr in calibrated
                 if conf >= LOW_CONFIDENCE_SUPPRESS_THRESHOLD
             ]
+            state.low_confidence_signals_suppressed = len(calibrated) - len(kept)
+            calibrated = kept
 
         if not calibrated:
             state.log("llm_explanation", "All candidates suppressed by compliance filter")
@@ -308,11 +321,19 @@ class LLMExplanationNode:
         try:
             raw = _call_llm(self.client, self.provider, EXPLANATION_SYSTEM, user_prompt, max_tokens=3000)
             signals = _parse_explanations(raw, candidates_for_llm, calibrated, state)
+            # The LLM explains signals; it must not be able to drop one by omission.
+            explained = {s.signal_type for s in signals}
+            missing = [row for row in calibrated if row[0].signal_type not in explained]
+            if missing:
+                state.errors.append(
+                    f"LLM omitted {len(missing)} confirmed signal(s); deterministic output used for those"
+                )
+                signals += _fallback_signals(missing)
             state.detected_signals = signals
             log_state(state, "llm_explanation", f"{len(signals)} signals explained")
         except Exception as e:
             state.errors.append(f"LLMExplanationNode error: {e}")
-            state.detected_signals = _fallback_signals(calibrated_all := calibrate_all(state.signal_candidates))
+            state.detected_signals = _fallback_signals(calibrated)
 
         return state
 
@@ -351,14 +372,27 @@ class BriefSynthesisAgent:
         )
 
         review_reasons = [
-            sig.alpha_score.review_reason
+            f"{sig.signal_type.value.replace('_', ' ').title()}: {sig.alpha_score.review_reason}"
             for sig in state.detected_signals
             if sig.alpha_score and sig.alpha_score.requires_human_review and sig.alpha_score.review_reason
         ]
 
-        suppressed = sum(
-            1 for s in state.detected_signals
-            if state.compliance_mode and s.confidence < LOW_CONFIDENCE_SUPPRESS_THRESHOLD
+        # Low-confidence signals are removed before explanation, so they are no
+        # longer in detected_signals; the count is recorded at that point.
+        suppressed = state.low_confidence_signals_suppressed if state.compliance_mode else 0
+
+        compounds_json = json.dumps(
+            [
+                {
+                    "signal_types": [t.value for t in c.component_signal_types],
+                    "interaction": c.interaction_type.value,
+                    "escalation_score": c.escalation_score,
+                    "systemic_risk_level": c.systemic_risk_level.value,
+                    "reasoning": c.reasoning_chain,
+                }
+                for c in state.compound_signals
+            ],
+            indent=2,
         )
 
         user_prompt = (
@@ -366,7 +400,8 @@ class BriefSynthesisAgent:
             f"Signals confirmed: {len(state.detected_signals)}\n"
             f"Sources reviewed: {len(state.filings)} filings, {len(state.news_items)} news items\n"
             f"Compliance mode: {'ON' if state.compliance_mode else 'OFF'}\n\n"
-            f"CONFIRMED SIGNALS:\n{signals_json}\n\nWrite the synthesis."
+            f"CONFIRMED SIGNALS:\n{signals_json}\n\n"
+            f"COMPOUND EVENTS (deterministic):\n{compounds_json}\n\nWrite the synthesis."
         )
 
         try:
@@ -377,14 +412,20 @@ class BriefSynthesisAgent:
             except json.JSONDecodeError:
                 match = re.search(r'\{.*\}', raw, re.DOTALL)
                 data = json.loads(match.group()) if match else {}
+            if not isinstance(data, dict):
+                data = {}
+
+            def _text(key: str, default: str = "") -> str:
+                v = data.get(key)
+                return str(v).strip() if v not in (None, "") else default
 
             risk_factors = []
             for rf in data.get("risk_factors", []):
                 try:
                     risk_factors.append(RiskFactor(
-                        factor=rf.get("factor", ""), impact=rf.get("impact", ""),
-                        likelihood=Severity(rf.get("likelihood", "medium").lower()),
-                        mitigation=rf.get("mitigation"),
+                        factor=str(rf.get("factor") or ""), impact=str(rf.get("impact") or ""),
+                        likelihood=Severity(str(rf.get("likelihood") or "medium").lower()),
+                        mitigation=str(rf["mitigation"]) if rf.get("mitigation") else None,
                     ))
                 except Exception:
                     pass
@@ -393,23 +434,41 @@ class BriefSynthesisAgent:
             for km in data.get("key_metrics", []):
                 try:
                     key_metrics.append(KeyMetric(
-                        name=km.get("name", ""), value=km.get("value", ""),
-                        period=km.get("period", ""), interpretation=km.get("interpretation", ""),
+                        name=str(km.get("name") or ""), value=str(km.get("value") or ""),
+                        period=str(km.get("period") or ""),
+                        interpretation=str(km.get("interpretation") or ""),
                     ))
                 except Exception:
                     pass
 
             try:
-                overall_sev = Severity(data.get("overall_severity", "medium").lower())
+                overall_sev = Severity(_text("overall_severity", "medium").lower())
             except ValueError:
                 overall_sev = Severity.MEDIUM
+            # Severity is calibrated deterministically; the narrative layer may
+            # not rate the brief below its most severe confirmed signal.
+            if state.detected_signals:
+                floor = max((s.severity for s in state.detected_signals), key=_SEVERITY_RANK.get)
+                if _SEVERITY_RANK[floor] > _SEVERITY_RANK[overall_sev]:
+                    overall_sev = floor
 
-            confidence = max(0.0, min(1.0, float(data.get("confidence_score", 0.5))))
-            top_alpha  = None
-            top_liq    = None
-            if state.detected_signals and state.detected_signals[0].alpha_score:
-                top_alpha = state.detected_signals[0].alpha_score.score
-                top_liq   = state.detected_signals[0].alpha_score.liquidity_tier
+            try:
+                confidence = max(0.0, min(1.0, float(data.get("confidence_score", 0.5))))
+            except (TypeError, ValueError):
+                confidence = 0.5
+
+            recent = data.get("recent_developments") or []
+            if isinstance(recent, str):
+                recent = [recent]
+            recent = [str(r) for r in recent if r]
+
+            top_alpha = None
+            top_liq   = None
+            scored = [s for s in state.detected_signals if s.alpha_score]
+            if scored:
+                best = max(scored, key=lambda s: s.alpha_score.score)
+                top_alpha = best.alpha_score.score
+                top_liq   = best.alpha_score.liquidity_tier
 
             compliance_flags = []
             if state.compliance_mode:
@@ -421,9 +480,10 @@ class BriefSynthesisAgent:
 
             state.brief = AnalystBrief(
                 company_name=company, ticker=ticker,
-                executive_summary=data.get("executive_summary", "Analysis complete."),
+                analyst_model=GROQ_MODEL if self.provider == "groq" else ANTHROPIC_MODEL,
+                executive_summary=_text("executive_summary", "Analysis complete."),
                 overall_severity=overall_sev,
-                recommendation=data.get("recommendation", "Further review recommended."),
+                recommendation=_text("recommendation", "Further review recommended."),
                 confidence_score=confidence,
                 detected_signals=state.detected_signals,
                 signal_candidates_count=len(state.signal_candidates),
@@ -431,13 +491,15 @@ class BriefSynthesisAgent:
                 requires_human_review=bool(review_reasons),
                 human_review_reasons=review_reasons,
                 key_metrics=key_metrics, risk_factors=risk_factors,
-                competitive_context=data.get("competitive_context"),
-                recent_developments=data.get("recent_developments", []),
+                competitive_context=_text("competitive_context") or None,
+                recent_developments=recent,
                 filings_reviewed=state.filings, news_reviewed=state.news_items,
                 total_sources=len(state.filings) + len(state.news_items),
                 compliance_mode=state.compliance_mode,
                 compliance_flags=compliance_flags,
                 low_confidence_signals_suppressed=suppressed,
+                compound_signals=state.compound_signals,
+                systemic_risk_level=_get_systemic_risk(state.compound_signals),
                 reasoning_trace=state.reasoning_trace,
                 audit_entries=state.audit_entries,
             )

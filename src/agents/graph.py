@@ -86,12 +86,6 @@ async def _node_post_process(d: dict[str, Any]) -> dict[str, Any]:
 
     run_id = str(uuid.uuid4())
 
-    # Attach compound signals to brief
-    if state.compound_signals and hasattr(state.brief, 'compound_signals'):
-        state.brief = state.brief.model_copy(update={
-            "compound_signals": state.compound_signals
-        })
-
     # Warehouse storage
     try:
         from src.engines.warehouse import store_analysis_run

@@ -300,7 +300,7 @@ class AnalystBrief(BaseModel):
 
     # Compound events (from SignalInteractionEngine)
     compound_signals: list["CompoundSignal"] = Field(default_factory=list)
-    systemic_risk_level: "SystemicRiskLevel" = Field(default="isolated")
+    systemic_risk_level: "SystemicRiskLevel" = Field(default="isolated", validate_default=True)
 
     # Reasoning trace + audit
     reasoning_trace: list[dict[str, Any]] = Field(default_factory=list)
@@ -336,6 +336,7 @@ class AgentState(BaseModel):
 
     # Phase 3 — LLM-explained + alpha-scored signals
     detected_signals: list[DetectedSignal] = Field(default_factory=list)
+    low_confidence_signals_suppressed: int = 0   # compliance mode, set before explanation
 
     # Phase 4 — compound event engine output
     compound_signals: list["CompoundSignal"] = Field(default_factory=list)

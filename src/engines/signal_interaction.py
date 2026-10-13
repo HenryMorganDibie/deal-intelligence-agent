@@ -18,6 +18,7 @@ from src.schemas.models import (
     DetectedSignal, SignalCandidate, CompoundSignal,
     InteractionType, SystemicRiskLevel, SignalType, Severity, AgentState
 )
+from src.engines.alpha_scorer import HUMAN_REVIEW_ALPHA_THRESHOLD
 
 # ─── Interaction Rule Library ─────────────────────────────────────────────────
 # Format: (frozenset of signal types, InteractionType, escalation_score,
@@ -155,10 +156,10 @@ def _find_interactions(
             continue
 
         confidences = [s.confidence for s in participating]
-        compound_conf = min(
-            (sum(c ** 2 for c in confidences) / len(confidences)) ** 0.5,
-            1.0
-        )
+        product = 1.0
+        for c in confidences:
+            product *= c
+        compound_conf = min(product ** (1.0 / len(confidences)), 1.0)
 
         # Boost confidence for high-corroboration signals
         avg_corroboration = sum(s.corroboration_count for s in participating) / len(participating)
@@ -193,24 +194,34 @@ def _apply_alpha_multipliers(
     if not compounds or not signals:
         return signals
 
-    # Find the highest multiplier applicable to each signal type
-    type_multiplier: dict[SignalType, float] = {}
+    # Per signal type: the strongest boost from reinforcing/cascading/etc. rules,
+    # damped by the strongest reduction from any contradictory rule.
+    boost: dict[SignalType, float] = {}
+    damp: dict[SignalType, float] = {}
     for compound in compounds:
-        if compound.interaction_type == InteractionType.CONTRADICTORY:
-            continue  # contradictory compounds reduce, handled separately
         for sig_type in compound.component_signal_types:
-            existing = type_multiplier.get(sig_type, 1.0)
-            type_multiplier[sig_type] = max(existing, compound.alpha_multiplier)
+            if compound.interaction_type == InteractionType.CONTRADICTORY:
+                damp[sig_type] = min(damp.get(sig_type, 1.0), compound.alpha_multiplier)
+            else:
+                boost[sig_type] = max(boost.get(sig_type, 1.0), compound.alpha_multiplier)
 
     updated = []
     for sig in signals:
-        mult = type_multiplier.get(sig.signal_type, 1.0)
+        mult = boost.get(sig.signal_type, 1.0) * damp.get(sig.signal_type, 1.0)
         if mult == 1.0 or sig.alpha_score is None:
             updated.append(sig)
             continue
-        new_score = min(sig.alpha_score.score * mult, 100.0)
+        new_score = round(min(sig.alpha_score.score * mult, 100.0), 1)
+        alpha_update: dict = {"score": new_score}
+        # The human-review gate ran before compounding; re-apply it to the new score.
+        if new_score >= HUMAN_REVIEW_ALPHA_THRESHOLD and not sig.alpha_score.requires_human_review:
+            alpha_update["requires_human_review"] = True
+            alpha_update["review_reason"] = (
+                f"Compound-adjusted alpha score {new_score:.0f} ≥ threshold "
+                f"{HUMAN_REVIEW_ALPHA_THRESHOLD:.0f}"
+            )
         updated.append(sig.model_copy(update={
-            "alpha_score": sig.alpha_score.model_copy(update={"score": round(new_score, 1)})
+            "alpha_score": sig.alpha_score.model_copy(update=alpha_update)
         }))
 
     updated.sort(key=lambda s: s.alpha_score.score if s.alpha_score else 0.0, reverse=True)

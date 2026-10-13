@@ -2497,3 +2497,157 @@ class TestLLMProvider:
         import src.agents.signal_agent as sa
         # groq is installed so should be True
         assert sa._GROQ_AVAILABLE is True
+
+
+# ─── Report integrity (audit regressions) ─────────────────────────────────────
+
+def _sig(sig_type, severity=Severity.HIGH, conf=0.85, alpha=None, reasoning="R", **kw):
+    a = kw.pop("alpha_score", None)
+    if alpha is not None:
+        a = AlphaScore(score=alpha, severity_component=0.5, source_credibility=0.5,
+                       corroboration_weight=0.5, recency_weight=0.5)
+    return DetectedSignal(signal_type=sig_type, severity=severity, headline="H",
+                          evidence=["E"], confidence=conf, reasoning=reasoning,
+                          alpha_score=a, **kw)
+
+
+def _cand(sig_type, raw=0.9):
+    return SignalCandidate(signal_type=sig_type, matched_patterns=["p"], source_text="text",
+                           source_type="filing", source_name="8-K", raw_score=raw)
+
+
+def _patch_llm(monkeypatch, reply):
+    import src.agents.signal_agent as sa
+    monkeypatch.setattr(sa, "_get_llm_client", lambda: (None, "anthropic"))
+    monkeypatch.setattr(sa, "_call_llm", lambda *a, **k: reply)
+    return sa
+
+
+class TestReportIntegrity:
+    @pytest.fixture(autouse=True)
+    def _no_audit_writes(self, monkeypatch):
+        import src.agents.signal_agent as sa
+        monkeypatch.setattr(sa, "log_state", lambda *a, **k: None)
+
+    async def test_llm_cannot_drop_confirmed_signal(self, monkeypatch):
+        sa = _patch_llm(monkeypatch, json.dumps([{
+            "signal_type": "m_and_a_activity", "headline": "Deal", "evidence": ["x"], "reasoning": "y"}]))
+        state = AgentState(request=AnalysisRequest(company_name="Acme"))
+        state.signal_candidates = [_cand(SignalType.MA_ACTIVITY), _cand(SignalType.CREDIT_RISK)]
+        out = await sa.LLMExplanationNode().run(state)
+        assert {s.signal_type for s in out.detected_signals} == {SignalType.MA_ACTIVITY, SignalType.CREDIT_RISK}
+
+    async def test_duplicate_llm_items_deduplicated(self, monkeypatch):
+        item = {"signal_type": "credit_risk", "headline": "C", "evidence": "single string", "reasoning": "r"}
+        sa = _patch_llm(monkeypatch, json.dumps([item, item]))
+        state = AgentState(request=AnalysisRequest(company_name="Acme"))
+        state.signal_candidates = [_cand(SignalType.CREDIT_RISK)]
+        out = await sa.LLMExplanationNode().run(state)
+        assert len(out.detected_signals) == 1
+        assert out.detected_signals[0].evidence == ["single string"]
+
+    async def test_fallback_respects_compliance_suppression(self, monkeypatch):
+        import src.agents.signal_agent as sa
+        monkeypatch.setattr(sa, "_get_llm_client", lambda: (None, "anthropic"))
+        def boom(*a, **k): raise RuntimeError("LLM down")
+        monkeypatch.setattr(sa, "_call_llm", boom)
+        monkeypatch.setattr(sa, "adaptive_calibrate",
+                            lambda c, sector=None: (Severity.LOW, 0.1 if c.signal_type == SignalType.CREDIT_RISK else 0.9, 0.1))
+        state = AgentState(request=AnalysisRequest(company_name="Acme"), compliance_mode=True)
+        state.signal_candidates = [_cand(SignalType.MA_ACTIVITY), _cand(SignalType.CREDIT_RISK)]
+        out = await sa.LLMExplanationNode().run(state)
+        assert [s.signal_type for s in out.detected_signals] == [SignalType.MA_ACTIVITY]
+        assert out.low_confidence_signals_suppressed == 1
+
+    async def test_synthesis_brief_fields(self, monkeypatch):
+        sa = _patch_llm(monkeypatch, json.dumps({
+            "executive_summary": None, "overall_severity": "low", "recommendation": "Watch",
+            "confidence_score": "high", "recent_developments": "one item",
+        }))
+        from src.engines.signal_interaction import _find_interactions
+        state = AgentState(request=AnalysisRequest(company_name="Acme"), compliance_mode=True)
+        state.detected_signals = [
+            _sig(SignalType.CREDIT_RISK, Severity.CRITICAL, alpha=40.0),
+            _sig(SignalType.DISTRESSED_ASSET, Severity.HIGH, alpha=60.0),
+        ]
+        state.compound_signals = _find_interactions(state.detected_signals)
+        state.low_confidence_signals_suppressed = 2
+        out = await sa.BriefSynthesisAgent().run(state)
+        b = out.brief
+        assert b is not None, out.errors
+        assert b.overall_severity == Severity.CRITICAL          # floored at max signal severity
+        assert b.confidence_score == 0.5                        # non-numeric coerced
+        assert b.executive_summary == "Analysis complete."
+        assert b.recent_developments == ["one item"]
+        assert b.top_alpha_score == 60.0                        # max, not list position
+        assert b.analyst_model == sa.ANTHROPIC_MODEL
+        assert b.compound_signals and b.systemic_risk_level.value != "isolated"
+        assert "2 low-confidence signal(s) suppressed" in b.compliance_flags
+
+    def test_compound_boost_retriggers_human_review(self):
+        from src.engines.signal_interaction import _apply_alpha_multipliers, _find_interactions
+        sigs = [_sig(SignalType.CREDIT_RISK, alpha=50.0), _sig(SignalType.DISTRESSED_ASSET, alpha=50.0)]
+        out = _apply_alpha_multipliers(sigs, _find_interactions(sigs))
+        assert all(s.alpha_score.score >= 70 for s in out)
+        assert all(s.alpha_score.requires_human_review for s in out)
+
+    def test_contradictory_compound_reduces_alpha(self):
+        from src.engines.signal_interaction import _apply_alpha_multipliers, _find_interactions
+        sigs = [_sig(SignalType.MA_ACTIVITY, alpha=50.0), _sig(SignalType.DISTRESSED_ASSET, alpha=50.0)]
+        compounds = _find_interactions(sigs)
+        assert any(c.interaction_type.value == "contradictory" for c in compounds)
+        out = {s.signal_type: s.alpha_score.score for s in _apply_alpha_multipliers(sigs, compounds)}
+        assert out[SignalType.MA_ACTIVITY] < 50.0
+
+    def test_compound_confidence_is_geometric_mean(self):
+        from src.engines.signal_interaction import _find_interactions
+        c = _find_interactions([_sig(SignalType.CREDIT_RISK, conf=0.4),
+                                _sig(SignalType.DISTRESSED_ASSET, conf=0.9)])[0]
+        assert c.compounded_confidence == pytest.approx(0.6, abs=1e-3)
+
+
+class TestReportRendering:
+    def _brief(self, **kw):
+        base = dict(company_name="Acme [UPDATE]", executive_summary="Margin [bold]fell[/] sharply",
+                    overall_severity=Severity.HIGH, recommendation="Act [/x]", confidence_score=0.7,
+                    detected_signals=[_sig(SignalType.CREDIT_RISK, reasoning="",
+                                           alpha_score=None)])
+        base.update(kw)
+        return AnalystBrief(**base)
+
+    def test_terminal_tolerates_markup_like_text(self):
+        from src.utils.formatter import print_brief
+        b = self._brief(risk_factors=[RiskFactor(factor="FX [/red]", impact="x", likelihood=Severity.LOW)],
+                        recent_developments=["[/]"],
+                        news_reviewed=[NewsItem(title="[BREAKING] [/b]", source="R", url="u",
+                                                published_date="2026-01-01", snippet="s")])
+        print_brief(b)  # must not raise MarkupError
+
+    def test_markdown_table_cells_escaped(self):
+        from src.utils.formatter import brief_to_markdown
+        b = self._brief(key_metrics=[KeyMetric(name="EV|EBITDA", value="12x", period="LTM",
+                                               interpretation="line1\nline2")])
+        md = brief_to_markdown(b)
+        assert "| EV\\|EBITDA | 12x | LTM | line1 line2 |" in md
+
+    def test_markdown_empty_reasoning_not_rendered_as_stray_markers(self):
+        from src.utils.formatter import brief_to_markdown
+        assert "\n**\n" not in brief_to_markdown(self._brief())
+
+    def test_markdown_expected_move_without_bounds(self):
+        from src.utils.formatter import brief_to_markdown
+        a = AlphaScore(score=50, severity_component=0.5, source_credibility=0.5,
+                       corroboration_weight=0.5, recency_weight=0.5, expected_direction="negative")
+        b = self._brief(detected_signals=[_sig(SignalType.CREDIT_RISK).model_copy(update={"alpha_score": a})])
+        assert "Expected Move" not in brief_to_markdown(b)
+
+    def test_compound_events_and_context_rendered(self):
+        from src.utils.formatter import brief_to_markdown, print_brief
+        from src.engines.signal_interaction import _find_interactions
+        sigs = [_sig(SignalType.CREDIT_RISK), _sig(SignalType.DISTRESSED_ASSET)]
+        b = self._brief(detected_signals=sigs, compound_signals=_find_interactions(sigs),
+                        competitive_context="Peers are stable.")
+        md = brief_to_markdown(b)
+        assert "## Compound Events" in md and "## Competitive Context" in md
+        assert "**Systemic Risk:**" in md
+        print_brief(b)

@@ -168,6 +168,10 @@ def build_parser() -> argparse.ArgumentParser:
 # ─── analyse ──────────────────────────────────────────────────────────────────
 
 async def _run_analysis(args: argparse.Namespace) -> None:
+    # Set provider before importing agents: signal_agent reads it at import time.
+    provider = getattr(args, "provider", None) or os.getenv("DEAL_INTEL_PROVIDER", "anthropic")
+    os.environ["DEAL_INTEL_PROVIDER"] = provider
+
     from src.schemas.models import AnalysisRequest, SignalType
     from src.agents.graph import run_analysis
     from src.utils.formatter import print_brief, brief_to_json, brief_to_markdown
@@ -177,9 +181,6 @@ async def _run_analysis(args: argparse.Namespace) -> None:
         console.print("[red]--company is required[/red]"); sys.exit(1)
 
     focus   = [SignalType(s) for s in (args.signals or [])]
-    # Set provider before importing agents
-    provider = getattr(args, "provider", None) or os.getenv("DEAL_INTEL_PROVIDER", "anthropic")
-    os.environ["DEAL_INTEL_PROVIDER"] = provider
 
     request = AnalysisRequest(
         company_name=company, ticker=args.ticker, cik=args.cik,
@@ -259,7 +260,8 @@ async def _run_analysis(args: argparse.Namespace) -> None:
         Path(args.out_file).write_text(out, encoding="utf-8")
         console.print(f"\n[green]✓[/green] Brief written to [bold]{args.out_file}[/bold]")
     else:
-        console.print_json(out) if args.output == "json" else console.print(out)
+        # Plain stdout: Rich would parse "[...]" in the brief as markup.
+        print(out)
 
 
 # ─── feedback ─────────────────────────────────────────────────────────────────
