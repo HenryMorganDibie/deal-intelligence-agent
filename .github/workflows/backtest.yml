@@ -9,7 +9,8 @@ name: Monthly backtest
 
 on:
   schedule:
-    - cron: "17 3 2 * *"            # 03:17 UTC on the 2nd of every month
+    - cron: "17 3 2 * *"            # 03:17 UTC on the 2nd of every month: the backtest
+    - cron: "41 4 * * 1"            # Mondays: touch the cache, which GitHub deletes after 7 unused days
   workflow_dispatch:
 
 permissions:
@@ -21,7 +22,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  keep-cache:
+    if: github.event.schedule == '41 4 * * 1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Restore the latest backtest cache (keeps it from expiring)
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/hist_cache
+            data/backtest_runs
+          key: backtest-keepalive-${{ github.run_id }}
+          restore-keys: backtest-
+
   backtest:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 3 2 * *'
     runs-on: ubuntu-latest
     timeout-minutes: 355
     env:
