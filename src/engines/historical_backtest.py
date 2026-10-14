@@ -347,6 +347,16 @@ def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_
             "predictions": predictions, "truth": truth, "base": base}
 
 
+def rolling_period(today: date, months: int = 17) -> tuple[date, date]:
+    """The latest replay whose every 90-day horizon has closed: the last as-of date falls on the 15th of
+    the month at least HORIZON_DAYS + 30 days ago; the first is `months` months earlier."""
+    last = today - timedelta(days=HORIZON_DAYS + 30)
+    end = date(last.year, last.month, 15) if last.day >= 15 else \
+        date(last.year - (last.month == 1), (last.month - 2) % 12 + 1, 15)
+    y, m = divmod(end.year * 12 + end.month - 1 - months, 12)
+    return date(y, m + 1, 15), end
+
+
 def _checkpoint(run_dir: Path, ticker: str) -> Path:
     import re
     return run_dir / (re.sub(r"[^A-Za-z0-9.]+", "_", ticker) + ".json")
@@ -354,9 +364,11 @@ def _checkpoint(run_dir: Path, ticker: str) -> Path:
 
 def run(
     start: date, end: date, universe: Optional[list[tuple]] = None, step_days: int = 30,
-    progress: Callable[[str], None] = lambda m: None, workers: int = 8,
-) -> dict:
-    """Walk forward over [start, end] for every company (in parallel, resumable); label, aggregate, save."""
+    progress: Callable[[str], None] = lambda m: None, workers: int = 8, deadline_minutes: Optional[float] = None,
+) -> Optional[dict]:
+    """Walk forward over [start, end] for every company (in parallel, resumable); label, aggregate, save.
+    With a deadline, no new company starts after it; returns None if any company is still to run, so a
+    later call resumes from the checkpoints."""
     from src.engines import backtest_universe
 
     universe = universe or backtest_universe.load()
@@ -369,8 +381,11 @@ def run(
     todo = [e for e in universe if not _checkpoint(run_dir, e[1]).exists()]
     progress(f"{len(universe) - len(todo)} of {len(universe)} companies already done; {len(todo)} to run")
     local = threading.local()
+    stop_at = time.monotonic() + deadline_minutes * 60 if deadline_minutes else None
 
     def work(entry: tuple) -> str:
+        if stop_at and time.monotonic() > stop_at:
+            return f"{entry[0]} ({entry[1]}): deferred to the next run"
         if not hasattr(local, "src"):
             local.src = Sources()
         for attempt in range(3):
@@ -388,6 +403,10 @@ def run(
         for fut in as_completed([pool.submit(work, e) for e in todo]):
             done += 1
             progress(f"[{done}/{len(universe)}] {fut.result()}")
+    remaining = [e for e in universe if not _checkpoint(run_dir, e[1]).exists()]
+    if remaining:
+        progress(f"{len(remaining)} companies still to run; resume to finish")
+        return None
     return aggregate(start, end, universe, dates, run_dir)
 
 

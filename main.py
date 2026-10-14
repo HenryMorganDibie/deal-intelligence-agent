@@ -122,6 +122,10 @@ def build_parser() -> argparse.ArgumentParser:
                     help="Walk-forward replay over past dates with real filings, news and prices (writes docs/BACKTEST.md)")
     bt.add_argument("--universe", action="store_true", help="Rebuild docs/backtest_universe.csv (about 2,000 companies)")
     bt.add_argument("--workers", type=int, default=8, help="Companies run in parallel in --historical")
+    bt.add_argument("--deadline-minutes", type=float, default=None,
+                    help="Stop starting new companies after this long; exit code 75 if the run is incomplete")
+    bt.add_argument("--period", choices=["fixed", "rolling"], default="fixed",
+                    help="rolling: the latest 18 monthly as-of dates whose 90-day horizon has closed")
     bt.add_argument("--start", default="2024-01-15", help="First as-of date for --historical")
     bt.add_argument("--end",   default="2025-06-15", help="Last as-of date for --historical")
 
@@ -669,10 +673,16 @@ def _run_backtest(args: argparse.Namespace) -> None:
         from src.engines import backtest_universe
         from src.engines import historical_backtest as hb
         universe = backtest_universe.load()
+        if args.period == "rolling":
+            args.start, args.end = (d.isoformat() for d in hb.rolling_period(_date.today()))
         console.print(f"[cyan]Walk-forward backtest {args.start} → {args.end} over {len(universe)} companies, "
                       f"{args.workers} in parallel (responses and per-company results are cached; a rerun resumes)…[/cyan]")
         result = hb.run(_date.fromisoformat(args.start), _date.fromisoformat(args.end), universe=universe,
-                        workers=args.workers, progress=lambda m: console.print(f"[dim]{m}[/dim]"))
+                        workers=args.workers, deadline_minutes=args.deadline_minutes,
+                        progress=lambda m: console.print(f"[dim]{m}[/dim]"))
+        if result is None:
+            console.print("[yellow]Run incomplete: per-company results are saved; run the same command again to finish.[/yellow]")
+            sys.exit(75)
         console.print(hb.render_report(result))
         console.print(f"[green]✓[/green] Report written to {hb.REPORT_PATH}")
         return

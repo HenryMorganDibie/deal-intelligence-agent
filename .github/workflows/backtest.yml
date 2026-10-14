@@ -1,0 +1,100 @@
+# Quarterly walk-forward backtest over the ~2,000-company universe.
+#
+# Each quarter replays the latest 18 monthly dates whose 90-day outcome windows have closed, then
+# commits the regenerated evaluation report, measured tables and prediction file; the push deploys
+# the site. A full run takes longer than one job may (6 hours), so each job works to a deadline,
+# keeps every finished company in the Actions cache, and starts the next job until the run is done.
+name: Quarterly backtest
+
+on:
+  schedule:
+    - cron: "17 3 2 1,4,7,10 *"     # 03:17 UTC on 2 January, April, July and October
+  workflow_dispatch:
+
+permissions:
+  contents: write                    # commit the regenerated results
+  actions: write                     # start the next job when a run needs more time
+
+concurrency:
+  group: backtest
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-backtest.txt
+
+      - run: pip install -r requirements-backtest.txt
+
+      - name: Replay period
+        id: period
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          from datetime import date
+          from src.engines.historical_backtest import rolling_period
+          s, e = rolling_period(date.today())
+          print(f"start={s}\nend={e}")
+          PY
+
+      - name: Restore fetched data and finished companies
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/hist_cache
+            data/backtest_runs
+          key: backtest-${{ steps.period.outputs.start }}-${{ steps.period.outputs.end }}-${{ github.run_id }}
+          restore-keys: |
+            backtest-${{ steps.period.outputs.start }}-${{ steps.period.outputs.end }}-
+            backtest-
+
+      - name: Refresh the universe at the start of a new period
+        continue-on-error: true      # on failure, the committed universe is used
+        run: |
+          dir="data/backtest_runs/${{ steps.period.outputs.start }}_${{ steps.period.outputs.end }}"
+          if [ ! -d "$dir" ] || [ -z "$(ls -A "$dir")" ]; then python main.py backtest --universe; fi
+
+      - name: Run (to a deadline; resumes from finished companies)
+        id: run
+        run: |
+          set +e
+          python main.py backtest --historical --period rolling --workers 12 --deadline-minutes 290
+          code=$?
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" -ne 0 ] && [ "$code" -ne 75 ]; then exit "$code"; fi
+
+      - name: Keep fetched data and finished companies
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data/hist_cache
+            data/backtest_runs
+          key: backtest-${{ steps.period.outputs.start }}-${{ steps.period.outputs.end }}-${{ github.run_id }}
+
+      - name: Continue in a new job
+        if: steps.run.outputs.code == '75'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run backtest.yml --ref "${{ github.ref_name }}"
+
+      - name: Commit the results
+        if: steps.run.outputs.code == '0'
+        run: |
+          git config user.name "Henry Dibie"
+          git config user.email "henrymorgandibie@gmail.com"
+          git add docs/evaluation_report.json docs/backtest_predictions.csv docs/backtest_summary.json \
+                  docs/BACKTEST.md docs/backtest_universe.csv src/data/measured_outcomes.json
+          if git diff --cached --quiet; then echo "No changes."; exit 0; fi
+          git commit -m "backtest: quarterly replay ${{ steps.period.outputs.start }} to ${{ steps.period.outputs.end }}"
+          git pull --rebase origin "${{ github.ref_name }}"
+          git push origin "HEAD:${{ github.ref_name }}"
