@@ -34,17 +34,51 @@ def _labelled_samples(s: dict) -> int:
     return s.get("confirmed", 0) + s.get("false_positive", 0)
 
 
-def _get_precision_adjustment(signal_type: SignalType) -> float:
-    """
-    Derive a precision-based adjustment factor from accumulated feedback.
-    Returns a multiplier (>1 = more confident, <1 = less confident).
-    """
-    stats = get_signal_stats()
-    s = stats.get(signal_type.value, {})
-    if _labelled_samples(s) < MIN_SAMPLES_FOR_ADAPTATION:
-        return 1.0  # not enough data — use static calibration
+# Outcome counts per (signal type, market): {"credit_risk|africa": {"confirmed": n, "refuted": m}}.
+# Read from the local outcome store unless a caller (the hosted API) supplies them.
+_OUTCOME_STATS: Optional[dict[str, dict[str, int]]] = None
 
-    precision = s.get("precision", 0.60)
+
+def set_outcome_stats(stats: Optional[dict[str, dict[str, int]]]) -> None:
+    """Use these outcome counts instead of the local store (None: back to the store)."""
+    global _OUTCOME_STATS
+    _OUTCOME_STATS = stats
+
+
+def outcome_stats() -> dict[str, dict[str, int]]:
+    if _OUTCOME_STATS is not None:
+        return _OUTCOME_STATS
+    from src.engines.market_impact import _load
+    stats: dict[str, dict[str, int]] = {}
+    for o in _load():
+        if o.get("event_confirmed") is None or not o.get("market"):
+            continue
+        s = stats.setdefault(f"{o['signal_type']}|{o['market']}", {"confirmed": 0, "refuted": 0})
+        s["confirmed" if o["event_confirmed"] else "refuted"] += 1
+    return stats
+
+
+def _market_precision(signal_type: SignalType, market: Optional[str]) -> Optional[float]:
+    """Observed precision for this signal type in this market, once there are enough outcomes."""
+    if not market:
+        return None
+    s = outcome_stats().get(f"{signal_type.value}|{market}", {})
+    n = s.get("confirmed", 0) + s.get("refuted", 0)
+    return s["confirmed"] / n if n >= MIN_SAMPLES_FOR_ADAPTATION else None
+
+
+def _get_precision_adjustment(signal_type: SignalType, market: Optional[str] = None) -> float:
+    """
+    Derive a precision-based adjustment factor. Prefers observed outcomes for the
+    company's own market (so African signals calibrate on African outcomes), then
+    analyst feedback. Returns a multiplier (>1 = more confident, <1 = less).
+    """
+    precision = _market_precision(signal_type, market)
+    if precision is None:
+        s = get_signal_stats().get(signal_type.value, {})
+        if _labelled_samples(s) < MIN_SAMPLES_FOR_ADAPTATION:
+            return 1.0  # not enough data — use static calibration
+        precision = s.get("precision", 0.60)
     # Map precision to adjustment: precision 0.8 → 1.2x, precision 0.4 → 0.7x
     # Linear interpolation: adjustment = 0.5 + precision
     adjustment = 0.50 + precision
@@ -69,13 +103,15 @@ def _get_fp_penalty(signal_type: SignalType) -> float:
 def adaptive_calibrate(
     candidate: SignalCandidate,
     sector: Optional[str] = None,
+    market: Optional[str] = None,
 ) -> tuple[Severity, float, float]:
     """
     Calibrate a candidate using adaptive + static calibration.
 
     Algorithm:
     1. Start with static calibration (base rate tables)
-    2. Apply precision adjustment from accumulated feedback
+    2. Apply precision adjustment: observed outcomes in the company's market
+       (us / africa) when there are enough, else analyst feedback
     3. Apply false positive penalty
     4. Apply sector-specific adjustment if available
     5. Re-derive severity from adjusted score
@@ -88,7 +124,7 @@ def adaptive_calibrate(
     static_sev, static_conf, mat_rate = static_calibrate(candidate)
 
     # Step 2: precision adjustment
-    precision_adj = _get_precision_adjustment(candidate.signal_type)
+    precision_adj = _get_precision_adjustment(candidate.signal_type, market)
 
     # Step 3: FP penalty
     fp_penalty = _get_fp_penalty(candidate.signal_type)

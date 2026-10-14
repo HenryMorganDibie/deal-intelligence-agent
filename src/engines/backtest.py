@@ -6,7 +6,7 @@ against recorded market outcomes.
 
 Metrics computed per signal type:
   - Precision (of flagged events, how many materialised?)
-  - Recall (of known events, how many were flagged?)
+  - Recall (of SEC-confirmed events, how many were flagged beforehand?)
   - F1 score
   - Hit rate (direction accuracy)
   - Average excess return (post-signal price move)
@@ -34,6 +34,21 @@ from src.utils.clock import utcnow
 from src.utils.paths import DATA_DIR
 
 BACKTEST_PATH = DATA_DIR / "backtest_results.json"
+GROUND_TRUTH_PATH = DATA_DIR / "ground_truth_events.json"
+
+
+def load_ground_truth() -> list[dict]:
+    return load_json(GROUND_TRUTH_PATH, list)
+
+
+def save_ground_truth(events: list[dict]) -> None:
+    seen, out = set(), []
+    for e in events:
+        key = (e["company_name"], e["signal_type"], e["date"], e["source"])
+        if key not in seen:
+            seen.add(key)
+            out.append(e)
+    save_json(GROUND_TRUTH_PATH, out)
 
 
 def _load_backtest() -> dict:
@@ -101,15 +116,18 @@ class BacktestEngine:
 
     def run_from_warehouse(self) -> dict:
         """
-        Score historical signals (warehouse) against recorded market outcomes.
+        Score historical signals (warehouse) against market outcomes.
 
-        Outcomes come from the market-impact store, which is where
-        `outcomes --record` and `marketdata --auto-outcome` write them.
+        Outcomes come from the market-impact store: `outcomes --auto-label`
+        (automatic: price reaction vs a benchmark, SEC filings as ground truth)
+        and `outcomes --record` / `marketdata --auto-outcome` (manual).
 
-        Each prediction is counted once: repeated runs that flag the same
-        company and signal type on the same day are one prediction. A
-        prediction is a true positive if a confirmed outcome for that
-        company and type was detected within OUTCOME_MATCH_DAYS of it.
+        Each prediction is counted once: repeated runs that flag the same company
+        and signal type on the same day are one prediction. It is a true positive
+        if an outcome for that company and type within OUTCOME_MATCH_DAYS is
+        confirmed, a false positive if one is refuted (event_confirmed False), and
+        unlabelled otherwise. Unlabelled predictions are reported, not counted as
+        wrong. Recall uses the ground-truth events the labeller collected.
         """
         try:
             from src.engines.warehouse import get_session, DetectedSignalRecord
@@ -121,6 +139,9 @@ class BacktestEngine:
         except Exception as e:
             return {"error": f"Backtest data load failed: {e}", "metrics": {}}
 
+        from src.engines.outcome_labeller import recall_by_type
+        events = load_ground_truth()
+
         outcome_map: dict[str, list[dict]] = {}
         for o in outcomes:
             outcome_map.setdefault(f"{o.get('company_name')}::{o.get('signal_type')}", []).append(o)
@@ -130,67 +151,83 @@ class BacktestEngine:
         for sig in signals:
             day = sig.detected_at.date() if sig.detected_at else None
             predictions.setdefault((sig.company_name, sig.signal_type, day), sig)
+        recall = recall_by_type(events, [
+            {"company_name": c, "signal_type": t, "date": d} for (c, t, d) in predictions if d
+        ])
 
         per_type: dict[str, dict] = {}
         for sig_type in SignalType:
             preds = [(k, v) for k, v in predictions.items() if k[1] == sig_type.value]
-            if not preds:
+            if not preds and sig_type.value not in recall:
                 continue
 
-            tp = fp = 0
+            tp = fp = unlabelled = 0
             used: dict[str, dict] = {}
             tte_days: list[int] = []
             for (company, stype, day), _sig in preds:
-                matched = [
-                    o for o in outcome_map.get(f"{company}::{stype}", [])
-                    if o.get("event_confirmed") and _within_days(o.get("detection_date"), day)
-                ]
-                if not matched:
-                    fp += 1      # conservative: no confirmed outcome counts against the signal
-                    continue
-                tp += 1
-                for o in matched:
+                near = [o for o in outcome_map.get(f"{company}::{stype}", [])
+                        if _within_days(o.get("detection_date"), day)]
+                confirmed = [o for o in near if o.get("event_confirmed") is True]
+                for o in near:
                     used[o.get("outcome_id") or id(o)] = o
-                    tte = _days_between(o.get("detection_date"), o.get("confirmation_date"))
-                    if tte is not None:
-                        tte_days.append(tte)
+                if confirmed:
+                    tp += 1
+                    for o in confirmed:
+                        tte = _days_between(o.get("detection_date"), o.get("confirmation_date"))
+                        if tte is not None:
+                            tte_days.append(tte)
+                elif any(o.get("event_confirmed") is False for o in near):
+                    fp += 1
+                else:
+                    unlabelled += 1
 
             outs = list(used.values())
-            returns = [o["price_change_10d_pct"] for o in outs if o.get("price_change_10d_pct") is not None]
+            abnormal = [o["abnormal_return_10d_pct"] for o in outs if o.get("abnormal_return_10d_pct") is not None]
+            raw = [o["price_change_10d_pct"] for o in outs
+                   if o.get("abnormal_return_10d_pct") is None and o.get("price_change_10d_pct") is not None]
+            returns = abnormal + raw
             directional = [o["direction_correct"] for o in outs if o.get("direction_correct") is not None]
             drawdowns = [
                 abs(min([o.get(k) for k in ("price_change_5d_pct", "price_change_10d_pct", "price_change_30d_pct")
                          if o.get(k) is not None] + [0.0]))
                 for o in outs
             ]
-            total_flagged = tp + fp
+            labelled = tp + fp
+            precision = round(_safe_div(tp, labelled), 3) if labelled else None
+            r = recall.get(sig_type.value, {})
+            rec = r.get("recall")
 
             per_type[sig_type.value] = {
-                "signals_flagged":           total_flagged,
+                "signals_flagged":           len(preds),
                 "true_positives":            tp,
                 "false_positives":           fp,
-                "precision":                 round(_safe_div(tp, total_flagged), 3),
-                # Recall and F1 need a ground-truth list of events the engine missed; we do not have one.
-                "recall_approx":             None,
-                "f1":                        None,
+                "unlabelled":                unlabelled,
+                "precision":                 precision,
+                "ground_truth_events":       r.get("events", 0),
+                "events_caught":             r.get("caught", 0),
+                "recall":                    rec,
+                "missed_events":             r.get("missed", [])[:20],
+                "f1":                        _f1(precision, rec) if precision is not None and rec is not None else None,
                 # Hit = price moved the way the signal predicted (negative signals predict a fall).
                 "hit_rate":                  round(sum(directional) / len(directional), 3) if directional else None,
                 "avg_excess_return_10d_pct": round(sum(returns) / len(returns), 2) if returns else None,
+                "benchmark_adjusted_share":  round(len(abnormal) / len(returns), 2) if returns else None,
                 "max_drawdown_pct":          round(max(drawdowns), 2) if drawdowns else None,
                 "median_days_to_event":      statistics.median(tte_days) if tte_days else None,
-                "false_positive_rate":       round(_safe_div(fp, total_flagged), 3),
-                "note": "Returns are raw 10-day price moves, not benchmark-adjusted.",
+                "false_positive_rate":       round(_safe_div(fp, labelled), 3) if labelled else None,
             }
 
         result = {
             "run_at":    utcnow().isoformat(),
             "total_signals_evaluated": len(predictions),
             "total_outcomes_available": len(outcomes),
+            "ground_truth_events": len(events),
             "metrics_by_signal_type": per_type,
             "overall": self._compute_overall(per_type),
             "data_quality_note": (
-                "Precision is conservative: signals without a confirmed outcome count as false positives. "
-                "Recall and F1 are not computed: they need a ground-truth database of missed events."
+                "Precision counts only labelled predictions (confirmed or refuted); unlabelled ones are listed "
+                "separately. Returns are net of a market benchmark where one exists (benchmark_adjusted_share). "
+                "Recall uses SEC filings as ground truth, so it covers US companies only."
             ),
         }
 
@@ -203,7 +240,7 @@ class BacktestEngine:
     def _compute_overall(self, per_type: dict) -> dict:
         if not per_type:
             return {}
-        precisions = [v["precision"] for v in per_type.values() if v.get("signals_flagged", 0) > 0]
+        precisions = [v["precision"] for v in per_type.values() if v.get("precision") is not None]
         f1s        = [v["f1"]        for v in per_type.values() if v.get("f1") is not None]
         hit_rates  = [v["hit_rate"]  for v in per_type.values() if v.get("hit_rate") is not None]
         returns    = [v["avg_excess_return_10d_pct"] for v in per_type.values()

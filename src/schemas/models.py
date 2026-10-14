@@ -513,6 +513,15 @@ class MarketOutcome(BaseModel):
     direction_correct: Optional[bool] = None
     magnitude_error_pct: Optional[float] = None
 
+    # Context for automatic labelling (outcome_labeller)
+    ticker: Optional[str] = None
+    market: Optional[str] = None                     # "us" | "africa"
+    benchmark: Optional[str] = None                  # index/ETF the abnormal return is measured against
+    abnormal_return_5d_pct: Optional[float] = None
+    abnormal_return_10d_pct: Optional[float] = None
+    abnormal_return_30d_pct: Optional[float] = None
+    labelled_by: str = "manual"                      # "manual" | "auto"
+
     recorded_at: datetime = Field(default_factory=utcnow)
 
 

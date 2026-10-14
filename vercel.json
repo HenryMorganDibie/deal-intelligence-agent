@@ -1,7 +1,22 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/index.py": { "maxDuration": 300, "includeFiles": "src/**", "excludeFiles": "web/**" }
+    "api/index.py": {
+      "maxDuration": 300,
+      "includeFiles": "src/**",
+      "excludeFiles": "web/**"
+    }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/label",
+      "schedule": "17 6 * * *"
+    }
+  ]
 }

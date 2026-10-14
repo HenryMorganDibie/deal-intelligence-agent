@@ -4,6 +4,7 @@ Open access, no accounts:
   POST /api/analyse      run the pipeline, store the brief, return its id
   GET  /api/briefs/{id}  fetch a stored brief (ids are random UUIDs: share links)
   GET  /api/health
+  GET  /api/cron/label   daily (Vercel Cron): label briefs' outcomes for calibration
 
 Writes go through Supabase functions that require DEAL_INTEL_API_SECRET, which
 only this function holds; the publishable key alone can read a brief by id and
@@ -24,10 +25,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import hashlib  # noqa: E402
 import json  # noqa: E402
 import logging  # noqa: E402
+import time  # noqa: E402
 import uuid  # noqa: E402
+from datetime import date, datetime, timezone  # noqa: E402
 
 import httpx  # noqa: E402
 from fastapi import FastAPI, HTTPException, Request  # noqa: E402
+from fastapi.concurrency import run_in_threadpool  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from pydantic import BaseModel, Field, field_validator  # noqa: E402
 
@@ -38,6 +42,7 @@ SUPABASE_KEY = os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")
 API_SECRET = os.environ.get("DEAL_INTEL_API_SECRET", "")
 PER_VISITOR_DAILY = int(os.environ.get("DEAL_INTEL_PER_VISITOR_DAILY", "10"))
 GLOBAL_DAILY = int(os.environ.get("DEAL_INTEL_GLOBAL_DAILY", "300"))
+CRON_SECRET = os.environ.get("CRON_SECRET", "")
 ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 
 app = FastAPI(title="Deal Intelligence API", docs_url=None, redoc_url=None, openapi_url=None)
@@ -92,6 +97,25 @@ async def health() -> dict:
     }
 
 
+# Outcome counts for per-market calibration, refreshed at most hourly per instance.
+_STATS_TTL = 3600
+_stats_loaded_at = 0.0
+
+
+async def _refresh_outcome_stats(client: httpx.AsyncClient) -> None:
+    global _stats_loaded_at
+    if time.monotonic() - _stats_loaded_at < _STATS_TTL and _stats_loaded_at:
+        return
+    from src.engines.adaptive_calibration import set_outcome_stats
+    try:
+        resp = await _rpc(client, "outcome_stats", {"secret": API_SECRET})
+        if resp.status_code == 200:
+            set_outcome_stats(resp.json() or {})
+            _stats_loaded_at = time.monotonic()
+    except httpx.HTTPError as e:
+        log.warning("outcome stats unavailable: %s", e)
+
+
 @app.post("/api/analyse")
 async def analyse(body: AnalyseBody, request: Request) -> dict:
     if not _configured():
@@ -112,6 +136,8 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
         log.error("start_run failed: %s %s", resp.status_code, message[:300])
         raise HTTPException(503, "The service is busy. Try again shortly.")
     run_id = int(resp.json())
+    async with httpx.AsyncClient(timeout=10) as client:
+        await _refresh_outcome_stats(client)
 
     from src.agents.graph import run_analysis
     from src.schemas.models import AnalysisRequest
@@ -159,3 +185,66 @@ async def get_brief(brief_id: str) -> dict:
     if not rows:
         raise HTTPException(404, "Brief not found.")
     return rows[0]
+
+
+def _label_brief(row: dict, today: date) -> tuple[int, list[dict], list[dict]]:
+    """Outcomes for one stored brief's signals, plus ground truth for its company."""
+    from src.engines.outcome_labeller import (
+        CONFIRMATION_WINDOW_DAYS, fetch_filing_events, ground_truth, label_prediction, market_for_ticker,
+    )
+    from src.schemas.models import SignalType
+
+    created = datetime.fromisoformat(row["created_at"].replace("Z", "+00:00")).astimezone(timezone.utc).date()
+    stage = 2 if (today - created).days >= CONFIRMATION_WINDOW_DAYS + 5 else 1
+    ticker = row.get("ticker")
+    events = fetch_filing_events(ticker) if market_for_ticker(ticker) == "us" else None
+    outcomes = []
+    for sig in (row.get("brief") or {}).get("detected_signals", []):
+        alpha = sig.get("alpha_score") or {}
+        try:
+            signal_type = SignalType(sig["signal_type"])
+        except (KeyError, ValueError):
+            continue
+        o = label_prediction(
+            company_name=row["company"], ticker=ticker, signal_type=signal_type,
+            severity=sig.get("severity", "low"), detection_date=created, alpha_score=alpha.get("score"),
+            expected_direction=alpha.get("expected_direction"),
+            expected_low=alpha.get("expected_magnitude_pct_low"),
+            expected_high=alpha.get("expected_magnitude_pct_high"),
+            events=events, today=today,
+        )
+        if o:
+            outcomes.append(o)
+    truth = ground_truth(row["company"], events, created, today) if events else []
+    return stage, outcomes, truth
+
+
+@app.get("/api/cron/label")
+async def cron_label(request: Request) -> dict:
+    """Daily: label due briefs (price reaction at 12+ days, confirmation at 95+)."""
+    if not CRON_SECRET or request.headers.get("authorization") != f"Bearer {CRON_SECRET}":
+        raise HTTPException(401, "Unauthorized")
+    if not _configured():
+        raise HTTPException(503, "The API is not configured.")
+    deadline = time.monotonic() + 240
+    today = datetime.now(timezone.utc).date()
+    done = outcomes_written = 0
+    async with httpx.AsyncClient(timeout=20) as client:
+        resp = await _rpc(client, "briefs_to_label", {"secret": API_SECRET, "max_n": 60})
+        rows = resp.json() if resp.status_code == 200 else []
+        for row in rows:
+            if time.monotonic() > deadline:
+                break
+            try:
+                stage, outcomes, truth = await run_in_threadpool(_label_brief, row, today)
+            except Exception:
+                log.exception("labelling failed for brief %s", row.get("id"))
+                continue
+            r = await _rpc(client, "save_labels", {
+                "secret": API_SECRET, "p_brief_id": row["id"], "p_stage": stage,
+                "p_outcomes": outcomes, "p_events": truth,
+            })
+            if r.status_code == 200:
+                done += 1
+                outcomes_written += len(outcomes)
+    return {"due": len(rows), "labelled": done, "outcomes": outcomes_written}

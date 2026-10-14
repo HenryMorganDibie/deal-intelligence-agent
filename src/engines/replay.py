@@ -222,8 +222,10 @@ class ReplayEngine:
         from src.engines.signal_interaction import SignalInteractionEngine
         from src.schemas.models import DetectedSignal
         signals = []
+        from src.engines.outcome_labeller import market_for_ticker
+        market = market_for_ticker(state.request.ticker)
         for cand in state.signal_candidates:
-            sev, conf, _ = adaptive_calibrate(cand)
+            sev, conf, _ = adaptive_calibrate(cand, market=market)
             signals.append(DetectedSignal(
                 signal_type=cand.signal_type, severity=sev,
                 headline=f"[REPLAY] {cand.signal_type.value.replace('_',' ').title()}",

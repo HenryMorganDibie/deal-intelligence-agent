@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -2729,7 +2729,7 @@ class TestReportIntegrity:
         def boom(*a, **k): raise RuntimeError("LLM down")
         monkeypatch.setattr(sa, "_call_llm", boom)
         monkeypatch.setattr(sa, "adaptive_calibrate",
-                            lambda c, sector=None: (Severity.LOW, 0.1 if c.signal_type == SignalType.CREDIT_RISK else 0.9, 0.1))
+                            lambda c, sector=None, market=None: (Severity.LOW, 0.1 if c.signal_type == SignalType.CREDIT_RISK else 0.9, 0.1))
         state = AgentState(request=AnalysisRequest(company_name="Acme"), compliance_mode=True)
         state.signal_candidates = [_cand(SignalType.MA_ACTIVITY), _cand(SignalType.CREDIT_RISK)]
         out = await sa.LLMExplanationNode().run(state)
@@ -2908,10 +2908,12 @@ class TestBacktestScoring:
             # the same prediction from two runs on one day counts once
             self._signal("Acme", "credit_risk", day),
             self._signal("Acme", "credit_risk", day.replace(hour=15)),
-            # no matching outcome: a false positive
+            # no outcome at all: unlabelled, not counted against the engine
             self._signal("Beta", "credit_risk", day),
-            # outcome exists but is far outside the matching window: also a false positive
+            # outcome exists but far outside the matching window: also unlabelled
             self._signal("Gamma", "credit_risk", day),
+            # refuted: an outcome says the event did not happen
+            self._signal("Delta", "credit_risk", day),
         ])
         s.commit(); s.close()
         record_outcome("Acme", SignalType.CREDIT_RISK, Severity.HIGH, "2026-03-03",
@@ -2919,14 +2921,127 @@ class TestBacktestScoring:
                        confirmation_date="2026-03-13", expected_direction="negative")
         record_outcome("Gamma", SignalType.CREDIT_RISK, Severity.HIGH, "2025-01-01",
                        event_confirmed=True)
+        record_outcome("Delta", SignalType.CREDIT_RISK, Severity.HIGH, "2026-03-02", event_confirmed=False)
 
         m = bt.BacktestEngine().run_from_warehouse()["metrics_by_signal_type"]["credit_risk"]
-        assert (m["signals_flagged"], m["true_positives"], m["false_positives"]) == (3, 1, 2)
-        assert m["precision"] == pytest.approx(1 / 3, abs=1e-3)
+        assert (m["signals_flagged"], m["true_positives"], m["false_positives"], m["unlabelled"]) == (4, 1, 1, 2)
+        assert m["precision"] == 0.5
         assert m["hit_rate"] == 1.0            # price fell, as a credit-risk signal predicts
         assert m["max_drawdown_pct"] == 9.0
         assert m["median_days_to_event"] == 10
-        assert m["recall_approx"] is None and m["f1"] is None
+        assert m["recall"] is None and m["f1"] is None   # no ground truth collected
+
+    def test_recall_and_f1_from_ground_truth(self):
+        from src.engines import backtest as bt
+        from src.engines.warehouse import get_session
+        from src.engines.market_impact import record_outcome
+        s = get_session()
+        s.add(self._signal("Acme", "m_and_a_activity", datetime(2026, 3, 2, 9)))
+        s.commit(); s.close()
+        record_outcome("Acme", SignalType.MA_ACTIVITY, Severity.HIGH, "2026-03-02", event_confirmed=True,
+                       confirmation_date="2026-04-01")
+        bt.save_ground_truth([
+            {"company_name": "Acme", "signal_type": "m_and_a_activity", "date": "2026-04-01", "source": "SEC 8-K Item 2.01"},
+            {"company_name": "Acme", "signal_type": "m_and_a_activity", "date": "2026-09-01", "source": "SEC 8-K Item 2.01"},
+        ])
+        m = bt.BacktestEngine().run_from_warehouse()["metrics_by_signal_type"]["m_and_a_activity"]
+        assert (m["ground_truth_events"], m["events_caught"], m["recall"]) == (2, 1, 0.5)
+        assert m["missed_events"][0]["date"] == "2026-09-01"     # nothing flagged in the 90 days before
+        assert m["f1"] == pytest.approx(2 * 1.0 * 0.5 / 1.5, abs=1e-3)
+
+
+class TestOutcomeLabeller:
+    """Automatic outcome labelling: benchmark-adjusted moves, SEC ground truth."""
+
+    @staticmethod
+    def _moves(table):
+        return lambda symbol, iso: table.get(symbol, {})
+
+    EVENTS = [
+        {"date": "2026-04-10", "form": "8-K", "items": {"2.01", "9.01"}},   # completed acquisition
+        {"date": "2026-05-01", "form": "8-K", "items": {"2.02"}},           # routine results
+        {"date": "2026-06-15", "form": "8-K", "items": {"5.02"}},           # officer change
+    ]
+
+    def _label(self, **kw):
+        from src.engines.outcome_labeller import label_prediction
+        base = dict(company_name="Acme", ticker="ACME", signal_type=SignalType.MA_ACTIVITY, severity="high",
+                    detection_date="2026-03-02", expected_direction="positive", events=self.EVENTS,
+                    today=date(2026, 9, 1),
+                    price_moves=self._moves({"ACME": {"5d": 6.0, "10d": 9.0, "30d": 12.0},
+                                             "SPY": {"5d": 1.0, "10d": 2.0, "30d": 3.0}}))
+        base.update(kw)
+        return label_prediction(**base)
+
+    def test_confirmed_by_later_8k_with_abnormal_return(self):
+        o = self._label()
+        assert o["event_confirmed"] is True and o["confirmation_date"] == "2026-04-10"
+        assert "Item 2.01" in o["confirmation_source"]
+        assert (o["benchmark"], o["abnormal_return_10d_pct"]) == ("SPY", 7.0)
+        assert o["direction_correct"] is True and o["market"] == "us" and o["labelled_by"] == "auto"
+
+    def test_refuted_once_the_window_has_passed(self):
+        o = self._label(signal_type=SignalType.DISTRESSED_ASSET, expected_direction="negative")
+        assert o["event_confirmed"] is False
+        assert o["direction_correct"] is False          # abnormal +7% against a predicted fall
+
+    def test_open_window_is_unknown_not_wrong(self):
+        o = self._label(signal_type=SignalType.DISTRESSED_ASSET, today=date(2026, 4, 1))
+        assert o["event_confirmed"] is None
+
+    def test_market_move_is_not_credited_to_the_signal(self):
+        """Stock +3%, market +5%: the signal's positive call was wrong net of the market."""
+        o = self._label(price_moves=self._moves({"ACME": {"10d": 3.0}, "SPY": {"10d": 5.0}}))
+        assert o["abnormal_return_10d_pct"] == -2.0 and o["direction_correct"] is False
+
+    def test_african_listing_has_no_sec_ground_truth(self):
+        o = self._label(ticker="NPN.JO", price_moves=self._moves({"NPN.JO": {"10d": 4.0}, "STX40.JO": {"10d": 1.0}}))
+        assert o["market"] == "africa" and o["event_confirmed"] is None
+        assert (o["benchmark"], o["abnormal_return_10d_pct"]) == ("STX40.JO", 3.0)
+
+    def test_too_recent_is_not_labelled(self):
+        assert self._label(today=date(2026, 3, 5)) is None
+
+    def test_ground_truth_and_recall(self):
+        from src.engines.outcome_labeller import ground_truth, recall_by_type
+        events = ground_truth("Acme", self.EVENTS, date(2026, 1, 1), date(2026, 9, 1))
+        assert sorted(e["signal_type"] for e in events) == ["leadership_change", "m_and_a_activity"]
+        r = recall_by_type(events, [{"company_name": "Acme", "signal_type": "m_and_a_activity", "date": "2026-03-02"}])
+        assert r["m_and_a_activity"]["recall"] == 1.0
+        assert r["leadership_change"]["recall"] == 0.0     # no leadership signal before 2026-06-15
+
+    def test_label_warehouse_end_to_end(self):
+        from src.engines.outcome_labeller import label_warehouse
+        from src.engines.warehouse import get_session, DetectedSignalRecord, AnalystBriefRecord
+        from src.engines.market_impact import _load
+        s = get_session()
+        s.add(AnalystBriefRecord(run_id="r1", company_name="Acme", ticker="ACME"))
+        s.add(DetectedSignalRecord(run_id="r1", company_name="Acme", signal_type="m_and_a_activity",
+                                   severity="high", detected_at=datetime(2026, 3, 2, 9)))
+        s.commit(); s.close()
+        kw = dict(today=date(2026, 9, 1), fetch_events=lambda t: self.EVENTS,
+                  price_moves=self._moves({"ACME": {"10d": 9.0}, "SPY": {"10d": 2.0}}))
+        assert label_warehouse(**kw)["labelled"] == 1
+        assert label_warehouse(**kw)["labelled"] == 0          # idempotent
+        assert [o["event_confirmed"] for o in _load()] == [True]
+
+
+def test_calibration_learns_per_market():
+    """Enough African outcomes recalibrate African signals and leave US signals alone."""
+    from src.engines import adaptive_calibration as ac
+    cand = SignalCandidate(signal_type=SignalType.CREDIT_RISK, matched_patterns=["p"], source_text="t",
+                           source_type="news", source_name="Reuters", raw_score=0.6)
+    base_af = ac.adaptive_calibrate(cand, market="africa")
+    base_us = ac.adaptive_calibrate(cand, market="us")
+    ac.set_outcome_stats({"credit_risk|africa": {"confirmed": 2, "refuted": 18}})
+    try:
+        low_af = ac.adaptive_calibrate(cand, market="africa")
+        assert low_af[1] < base_af[1]                       # 10% observed precision lowers confidence
+        assert ac.adaptive_calibrate(cand, market="us") == base_us
+        ac.set_outcome_stats({"credit_risk|africa": {"confirmed": 1, "refuted": 2}})
+        assert ac.adaptive_calibrate(cand, market="africa") == base_af   # too few outcomes: no change
+    finally:
+        ac.set_outcome_stats(None)
 
 
 def test_portfolio_risk_normalises_fractional_weights(monkeypatch):
@@ -3498,3 +3613,43 @@ class TestSubjectAttribution:
         assert brief.requires_human_review
         assert any("attribution doubt" in r for r in brief.human_review_reasons)
         assert "**Attribution Doubt:** The deal is between two other companies." in brief_to_markdown(brief)
+
+
+class TestHostedApi:
+    def _client(self, monkeypatch, **env):
+        import api.index as api
+        for k, v in env.items():
+            monkeypatch.setattr(api, k, v)
+        from fastapi.testclient import TestClient
+        return TestClient(api.app), api
+
+    def test_health(self, monkeypatch):
+        client, _ = self._client(monkeypatch)
+        assert client.get("/api/health").json()["ok"] is True
+
+    def test_cron_requires_the_cron_secret(self, monkeypatch):
+        client, _ = self._client(monkeypatch, CRON_SECRET="s3cret")
+        assert client.get("/api/cron/label").status_code == 401
+        assert client.get("/api/cron/label", headers={"Authorization": "Bearer wrong"}).status_code == 401
+
+    def test_cron_disabled_without_a_secret(self, monkeypatch):
+        client, _ = self._client(monkeypatch, CRON_SECRET="")
+        assert client.get("/api/cron/label", headers={"Authorization": "Bearer "}).status_code == 401
+
+    def test_brief_ids_must_be_uuids(self, monkeypatch):
+        client, _ = self._client(monkeypatch)
+        assert client.get("/api/briefs/not-a-uuid").status_code == 404
+
+    def test_label_brief_uses_brief_signals(self, monkeypatch):
+        import src.engines.outcome_labeller as ol
+        client, api = self._client(monkeypatch)
+        monkeypatch.setattr(ol, "fetch_filing_events", lambda t: [{"date": "2026-09-01", "form": "8-K", "items": {"5.02"}}])
+        monkeypatch.setattr("src.engines.market_data._fetch_price_moves", lambda s, d: {"10d": -5.0} if s == "ACME" else {"10d": 1.0})
+        row = {"id": "b1", "company": "Acme", "ticker": "ACME", "created_at": "2026-08-01T09:00:00+00:00",
+               "brief": {"detected_signals": [{"signal_type": "leadership_change", "severity": "high",
+                                               "alpha_score": {"score": 60, "expected_direction": "negative"}}]}}
+        stage, outcomes, truth = api._label_brief(row, date(2026, 10, 14))
+        assert stage == 1
+        assert [(o["event_confirmed"], o["abnormal_return_10d_pct"], o["direction_correct"]) for o in outcomes] \
+            == [(True, -6.0, True)]
+        assert [e["signal_type"] for e in truth] == ["leadership_change"]

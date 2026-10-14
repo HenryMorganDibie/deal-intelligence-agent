@@ -88,6 +88,8 @@ def build_parser() -> argparse.ArgumentParser:
     oc.add_argument("--stats",   action="store_true")
     oc.add_argument("--signal",  default=None, help="Filter by signal type")
     oc.add_argument("--record",  nargs="+", metavar="KEY=VALUE")
+    oc.add_argument("--auto-label", action="store_true",
+                    help="Label past predictions automatically: price reaction vs a benchmark, SEC filings as ground truth")
 
     # ── graph ─────────────────────────────────────────────────────────────────
     gr = sub.add_parser("graph", help="Entity relationship graph")
@@ -471,6 +473,15 @@ def _run_outcomes(args: argparse.Namespace) -> None:
     from src.engines.market_impact import get_accuracy_metrics, get_signal_accuracy, record_outcome
     from src.schemas.models import SignalType, Severity
 
+    if getattr(args, 'auto_label', False):
+        from src.engines.outcome_labeller import label_warehouse
+        console.print("[cyan]Labelling past predictions (market data + SEC filings)…[/cyan]")
+        r = label_warehouse()
+        console.print(f"[green]✓[/green] {r['labelled']} labelled, {r['not_yet_labellable']} not labellable yet "
+                      f"(too recent or no data), {r['ground_truth_events']} ground-truth events on file. "
+                      "Run [bold]python main.py backtest --run[/bold] to score them.")
+        return
+
     if getattr(args, 'stats', False):
         metrics = get_accuracy_metrics()
         console.print_json(json.dumps(metrics, indent=2))
@@ -631,13 +642,16 @@ def _print_backtest_result(result: dict) -> None:
         console.print(f"Macro Precision: [bold]{_pct(overall.get('macro_precision'))}[/bold]  F1: [bold]{_pct(overall.get('macro_f1'))}[/bold]  Hit Rate: [bold]{_pct(overall.get('avg_hit_rate'))}[/bold]  Avg Return: [bold]{_num(overall.get('avg_excess_return_pct'), '%')}[/bold]")
 
     t = Table(box=box.SIMPLE_HEAD, header_style="bold cyan")
-    for col in ["Signal Type","Flagged","TP","FP","Precision","F1","Hit Rate","Avg Return","Median TTE"]:
+    for col in ["Signal Type","Flagged","TP","FP","Unlabelled","Precision","Recall","F1","Hit Rate","Avg Return","Median TTE"]:
         t.add_column(col)
     for sig, m in result.get("metrics_by_signal_type",{}).items():
-        color = "green" if m.get("precision",0) >= 0.65 else "yellow" if m.get("precision",0) >= 0.45 else "red"
+        p = m.get("precision")
+        color = "dim" if p is None else "green" if p >= 0.65 else "yellow" if p >= 0.45 else "red"
         t.add_row(
             sig, str(m.get("signals_flagged",0)), str(m.get("true_positives",0)), str(m.get("false_positives",0)),
-            f"[{color}]{m.get('precision',0):.1%}[/{color}]",
+            _num(m.get("unlabelled")),
+            f"[{color}]{_pct(p)}[/{color}]",
+            _pct(m.get('recall')),
             _pct(m.get('f1')),
             _pct(m.get('hit_rate')),
             _num(m.get('avg_excess_return_10d_pct'), '%'),

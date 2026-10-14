@@ -347,11 +347,13 @@ class LLMExplanationNode:
             return state
 
         # Use adaptive calibration (falls back to static when insufficient data)
+        from src.engines.outcome_labeller import market_for_ticker
+        market = market_for_ticker(state.request.ticker)
         calibrated = []
         for cand in state.signal_candidates:
             try:
                 sector = state.company_profile.sector if state.company_profile else None
-                sev, conf, mat = adaptive_calibrate(cand, sector=sector)
+                sev, conf, mat = adaptive_calibrate(cand, sector=sector, market=market)
                 calibrated.append((cand, sev, conf, mat))
             except Exception:
                 from src.engines.calibration import calibrate
