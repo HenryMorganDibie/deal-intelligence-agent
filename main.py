@@ -122,6 +122,10 @@ def build_parser() -> argparse.ArgumentParser:
                     help="Walk-forward replay over past dates with real filings, news and prices (writes docs/BACKTEST.md)")
     bt.add_argument("--universe", action="store_true", help="Rebuild docs/backtest_universe.csv (about 2,000 companies)")
     bt.add_argument("--workers", type=int, default=8, help="Companies run in parallel in --historical")
+    bt.add_argument("--tickers", default=None,
+                    help="Only these tickers (comma-separated, or @file): one shard of a run spread over machines")
+    bt.add_argument("--no-aggregate", action="store_true",
+                    help="Write per-company results only (a shard); aggregate later where all shards are merged")
     bt.add_argument("--deadline-minutes", type=float, default=None,
                     help="Stop starting new companies after this long; exit code 75 if the run is incomplete")
     bt.add_argument("--period", choices=["fixed", "rolling"], default="fixed",
@@ -673,6 +677,10 @@ def _run_backtest(args: argparse.Namespace) -> None:
         from src.engines import backtest_universe
         from src.engines import historical_backtest as hb
         universe = backtest_universe.load()
+        if args.tickers:
+            raw = Path(args.tickers[1:]).read_text() if args.tickers.startswith("@") else args.tickers
+            wanted = {t.strip() for t in raw.replace("\n", ",").split(",") if t.strip()}
+            universe = [e for e in universe if e[1] in wanted]
         if args.period == "rolling":
             args.start, args.end = (d.isoformat() for d in hb.rolling_period(_date.today()))
         console.print(f"[cyan]Walk-forward backtest {args.start} → {args.end} over {len(universe)} companies, "
@@ -680,7 +688,11 @@ def _run_backtest(args: argparse.Namespace) -> None:
         result = hb.run(_date.fromisoformat(args.start), _date.fromisoformat(args.end), universe=universe,
                         step_days=0 if args.period == "rolling" else 30,
                         workers=args.workers, deadline_minutes=args.deadline_minutes,
+                        aggregate_results=not args.no_aggregate,
                         progress=lambda m: console.print(f"[dim]{m}[/dim]"))
+        if result is None and args.no_aggregate:
+            console.print("[green]✓[/green] Shard written (per-company results only).")
+            return
         if result is None:
             console.print("[yellow]Run incomplete: per-company results are saved; run the same command again to finish.[/yellow]")
             sys.exit(75)

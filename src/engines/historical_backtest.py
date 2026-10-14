@@ -375,6 +375,7 @@ def _checkpoint(run_dir: Path, ticker: str) -> Path:
 def run(
     start: date, end: date, universe: Optional[list[tuple]] = None, step_days: int = 30,
     progress: Callable[[str], None] = lambda m: None, workers: int = 8, deadline_minutes: Optional[float] = None,
+    aggregate_results: bool = True,
 ) -> Optional[dict]:
     """Walk forward over [start, end] for every company (in parallel, resumable); label, aggregate, save.
     With a deadline, no new company starts after it; returns None if any company is still to run, so a
@@ -414,6 +415,10 @@ def run(
             done += 1
             progress(f"[{done}/{len(universe)}] {fut.result()}")
     remaining = [e for e in universe if not _checkpoint(run_dir, e[1]).exists()]
+    if not aggregate_results:
+        if remaining:
+            progress(f"{len(remaining)} companies still to run in this shard")
+        return None
     if remaining:
         progress(f"{len(remaining)} companies still to run; resume to finish")
         return None
