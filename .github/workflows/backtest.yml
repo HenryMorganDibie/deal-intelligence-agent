@@ -72,6 +72,10 @@ jobs:
           echo "code=$code" >> "$GITHUB_OUTPUT"
           if [ "$code" -ne 0 ] && [ "$code" -ne 75 ]; then exit "$code"; fi
 
+      - name: Stop the run before saving (after a cancel or timeout it may still be writing)
+        if: always()
+        run: pkill -INT -f "main.py backtest" && sleep 20; pkill -KILL -f "main.py backtest"; find data -name "*.tmp" -delete; true
+
       - name: Keep fetched data and finished companies
         if: always()
         uses: actions/cache/save@v4
