@@ -57,6 +57,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [company, setCompany] = useState("");
   const [ticker, setTicker] = useState("");
+  const [country, setCountry] = useState("");
   const [lookback, setLookback] = useState(90);
   const [compliance, setCompliance] = useState(false);
   const [running, setRunning] = useState<string | null>(null);
@@ -76,6 +77,7 @@ export default function Dashboard() {
       const result = await analyse({
         company: company.trim(),
         ...(ticker.trim() ? { ticker: ticker.trim() } : {}),
+        ...(country.trim() ? { country: country.trim().toUpperCase() } : {}),
         lookback_days: lookback,
         compliance,
       });
@@ -96,7 +98,8 @@ export default function Dashboard() {
         </h1>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
           US companies are matched to SEC EDGAR by name or ticker. For African listings, add the exchange suffix: .JO
-          (JSE), .LG (NGX) or .NR (NSE Kenya).
+          (JSE), .LG (NGX) or .NR (NSE Kenya). For any of the 54 African countries, add the country code so news is
+          searched in that country&apos;s own edition and languages.
         </p>
 
         {running ? (
@@ -128,7 +131,17 @@ export default function Dashboard() {
                 />
               </label>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="block">
+                <span className="mb-1.5 block text-[0.8125rem] text-[color:var(--muted)]">Country (optional)</span>
+                <input
+                  maxLength={3}
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value.toUpperCase())}
+                  placeholder="SN"
+                  className="field kbd"
+                />
+              </label>
               <label className="block">
                 <span className="mb-1.5 block text-[0.8125rem] text-[color:var(--muted)]">Lookback</span>
                 <select value={lookback} onChange={(e) => setLookback(Number(e.target.value))} className="field">

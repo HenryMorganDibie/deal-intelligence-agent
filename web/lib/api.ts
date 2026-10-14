@@ -5,6 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? ""
 export type AnalyseInput = {
   company: string;
   ticker?: string;
+  country?: string;
   lookback_days: number;
   compliance: boolean;
 };

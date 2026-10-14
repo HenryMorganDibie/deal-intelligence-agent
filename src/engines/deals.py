@@ -74,6 +74,33 @@ def _to_float(num: str) -> Optional[float]:
 _FRENCH_CONTEXT = re.compile(r"(?i)\b(milliards?|millions?\s+de|milliards?\s+de)\b|FCFA|CFA|\bd['’]euros\b|\bde\s+dollars\b")
 
 
+_INSTRUMENT_AFTER = re.compile(r"(?i)^\W{0,3}(?:\S+\s+){0,2}?(loan|facility|financing|funding|round|investment|equity|"
+                               r"stake|deal|bond|notes|raise|seed|series|debt|credit|acquisition|buyout|fund|prêt|financement)\b")
+_PLEDGE_BEFORE = re.compile(r"(?i)\b(promet|promises?|pledges?|vows?|plans?\s+to\s+invest|to\s+invest|commits?\s+to\s+invest)"
+                            r"\s+(?:\S+\s+){0,2}$")
+# "$7 billion fertiliser expansion": the cost of a project, not the deal.
+_PROJECT_AFTER = re.compile(r"(?i)^\W{0,3}(?:\S+\s+){0,2}?(expansion|project|programme|plan|refinery|port|airport|plant|"
+                            r"factory|complex|corridor|pipeline|railway)\b")
+
+
+def deal_amount(text: str) -> Optional[tuple[float, str]]:
+    """The transaction's amount when a headline has several: the one tied to an instrument word
+    ("with $600m loan"), never a pledge or a project's total cost."""
+    found = []
+    for m in sorted([*_AMOUNT_PREFIXED.finditer(text), *_AMOUNT_SUFFIXED.finditer(text)], key=lambda m: m.start()):
+        parsed = parse_amounts(text[m.start(): m.end() + 12])
+        if not parsed:
+            continue
+        found.append((m, parsed[0]))
+    if not found:
+        return None
+    usable = [(m, a) for m, a in found if not _PLEDGE_BEFORE.search(text[max(0, m.start() - 40): m.start()])
+              and not (len(found) > 1 and _PROJECT_AFTER.match(text[m.end():]))]
+    tied = [(m, a) for m, a in usable if _INSTRUMENT_AFTER.match(text[m.end():])]
+    pick = (tied or usable or [None])[0]
+    return pick[1] if pick else None
+
+
 def parse_amounts(text: str) -> list[tuple[float, str]]:
     """Every money amount in the text as (value, ISO currency), in order."""
     out = []
@@ -143,7 +170,7 @@ def _annual_rate(currency: str, year: Optional[int]) -> Optional[float]:
 
 # ── Parties ───────────────────────────────────────────────────────────────────
 
-_TOKEN = (r"(?<![\w.$€£₦])(?!(?:R|N|Sh|KSh|Ksh|E|GH|US|K|CFA|FCFA|USD|EUR|NGN|KES|ZAR|EGP)[\d$£₵])"
+_TOKEN = (r"(?<![\w.$€£₦])(?!(?:R|N|Sh|KSh|Ksh|E|GH|US|K|CFA|FCFA|USD|EUR|NGN|KES|ZAR|EGP)[\d$£₵])(?!\d+(?:st|nd|rd|th)\b)"
           r"(?:[A-Z][\w&.'’+\-]*|\d+[A-Za-z][\w&.'’+\-]*)")
 _CONNECTOR = r"(?:of|and|&|de|du|des|la|le|the|da|do|dos|pour|et)"
 NAME = rf"{_TOKEN}(?:\s+(?:{_CONNECTOR}\s+)?{_TOKEN}|\s+(?:{_CONNECTOR}\s+)?[dl]['’]{_TOKEN}){{0,6}}"
@@ -164,6 +191,7 @@ _DESCRIPTOR_WORDS = {
     "b2b", "b2c", "e-health", "health", "prop-tech", "ed-tech", "agri-tech", "software", "ai", "tech", "payments",
     "payment", "digital", "online", "electric", "ev", "lending", "credit", "telecoms", "infrastructure", "pharmaceutical",
     "healthcare", "mining", "oil", "gas", "food", "agribusiness", "retail", "real", "estate", "property",
+    "insurance", "broker", "brokerage", "bottler", "brewer", "carrier", "airline", "distributor",
 }
 _STOP_TAIL = re.compile(r"\s+(?:Ltd|Limited|Plc|PLC|Inc|SA|S\.A\.|Holdings?|Group)\.?$")
 _GENERIC = {"africa", "african", "african startups", "startups", "firm", "abu dhabi firm", "consortium",
@@ -171,7 +199,16 @@ _GENERIC = {"africa", "african", "african startups", "startups", "firm", "abu dh
             "police", "state", "shareholders", "residents", "students", "fans", "president", "governor", "accord",
             "world bank", "imf", "treasury", "central bank", "board", "union", "unions", "pdp", "apc", "anc",
             "fitch", "moody's", "moodys", "s&p global ratings", "gcr", "agusto", "now", "today", "trésor", "tresor",
+            "groundbreaking", "landmark", "historic", "record", "major", "massive", "huge", "new", "exclusive",
             "trésor public", "ministry of finance", "debt management office", "dmo", "dgtcp", "dgtcp du mali", "etat",
+            # African capitals: a city "raising" money is a sovereign issue
+            "brazzaville", "kinshasa", "abuja", "nairobi", "dakar", "abidjan", "accra", "pretoria", "cairo", "rabat",
+            "tunis", "algiers", "alger", "addis ababa", "kampala", "kigali", "dar es salaam", "dodoma", "lusaka", "harare",
+            "maputo", "luanda", "yaoundé", "yaounde", "libreville", "niamey", "bamako", "ouagadougou", "lomé", "lome",
+            "cotonou", "conakry", "freetown", "monrovia", "banjul", "bissau", "nouakchott", "windhoek", "gaborone",
+            "maseru", "mbabane", "lilongwe", "antananarivo", "port louis", "moroni", "asmara", "mogadishu", "khartoum",
+            "juba", "n'djamena", "ndjamena", "bangui", "malabo", "praia", "tripoli", "bujumbura",
+            "central bank", "banque centrale", "reserve bank",
             "l'etat", "l’etat", "state government", "nigeria", "kenya", "egypt", "ghana", "startup", "startups", "report", "exclusive",
             "breaking", "update", "news", "deal", "deals", "how", "why", "what", "watch", "opinion", "analysis",
             "weekly", "the big deal", "funding", "investors", "series", "seed", "ceo", "it", "this"}
@@ -191,13 +228,27 @@ def _is_place(words: str) -> bool:
 _GENERIC_TAIL = re.compile(r"\b(firms?|company|companies|startups?|producer|agency|lender|business(es)?|operator|"
                            r"manufacturer|platform|provider|investors?|billionaires|agreement|deal|projects?|"
                            r"licen[cs]e|subsidiary|unit|assets?|portfolio|stake|schools?|communities|programme|program|youth|"
-                           r"farmers|smes|women|deadline|offer|forecast|target)$", re.IGNORECASE)
+                           r"farmers|smes|women|deadline|offer|forecast|target|bank|lender|insurer|telco|miner|bottler|brewer|"
+                           r"retailer|distributor|carrier|airline|maker)$", re.IGNORECASE)
 _ALWAYS_GENERIC_TAIL = re.compile(r"\b(schools?|communities|students|scholarships?|scheme|programmes?|programs?|youth|"
-                                  r"farmers|women|summit|conference|forum|awards?|event|week|plant|factory|now|today|campus|hostel|game)$",
+                                  r"farmers|women|summit|conference|forum|awards?|event|week|plant|factory|now|today|campus|hostel|game|"
+                                  r"etfs?|etns?|aircraft|jets?|rights?|licen[cs]es?|title|tour|datacent(?:er|re)s?|data\s+cent(?:er|re)s?|"
+                                  r"facilities|infrastructure|hospitals|roads?|devices)$",
                                   re.IGNORECASE)
 _GENERIC_RE = re.compile(r"^(?:(?:east|west|north|south|southern|central|sub-saharan)\s+)?africa(n)?$|"
+                         r"^(?:north|south|latin|central)\s+americ(a|an)$|"
                          r"^(?:us|u\.s\.|uk|u\.k\.|usa|china|india|uae|france|europe|asia|gulf|global|local|"
                          r"foreign|international|chinese|indian|american|british|french|emirati|saudi)$", re.IGNORECASE)
+
+
+def _is_lender(name: Optional[str]) -> bool:
+    """A known lender: a registry DFI, multilateral or bank, or a name that says bank, fund or finance."""
+    if not name:
+        return False
+    from src.engines.investors import registry_entry
+    entry = registry_entry(name)
+    return bool(entry and entry.kind in ("dfi", "multilateral", "bank", "pension", "sovereign")) or bool(
+        re.search(r"(?i)\b(bank|banque|finance|financial|capital|fund|credit|exim|afc|eib|ebrd)\b", name))
 
 
 def _is_descriptor(word: str) -> bool:
@@ -205,6 +256,12 @@ def _is_descriptor(word: str) -> bool:
     return w in _DESCRIPTOR_WORDS or bool(re.fullmatch(r"[\w]+-tech|e-\w+", w))
 
 
+_FOREIGN_DEMONYMS = {"african", "pan-african", "chinese", "indian", "american", "british", "french", "emirati", "saudi",
+                     "qatari", "turkish", "japanese", "german", "dutch", "swiss", "italian", "spanish", "portuguese",
+                     "canadian", "australian", "russian", "korean", "brazilian", "israeli", "global", "international",
+                     "us", "u.s.", "uk", "u.k.", "uae", "gulf", "european", "asian", "middle", "eastern"}
+_OWNED_GENERIC = re.compile(r"(?i)\b(purchase|acquisition|expansion|project|operations?|unit|business|assets?|plant|"
+                            r"factory|refinery|subsidiary|arm|division|fleet|network|programme|plan|growth|ipo|listing)$")
 _FILLER = {"ratings", "rating", "three", "two", "four", "five", "six", "several", "local", "foreign", "its", "new",
            "major", "leading", "top", "big", "small", "global", "state", "private", "public", "owned", "listed",
            "investment", "consumer", "core", "banking", "insurance", "fashion", "travel", "technology", "telecom",
@@ -222,27 +279,31 @@ def _clean_name(name: Optional[str]) -> Optional[str]:
         return None
     n = name.strip(" ,.;:'’\"-")
     n = _BACKED.sub("", n)
-    n = re.sub(r"^(?:[A-Z][\w.]*[\s-]){0,2}?[A-Za-z]+-based\s+", "", n)
+    n = re.sub(r"(?i)^(?:[A-Z][\w.]*[\s-]){0,2}?[A-Za-z]+-(?:based|founded|first|focused|headquartered|owned|listed)\s+", "", n)
     n = re.sub(r"^.*?-managed\s+", "", n)
     n = re.split(r"\s+(?:That|Which|Who|Behind|After|Before|As|With)\b", n)[0]
     n = n.strip("'\"‘’“” ")
     n = re.sub(r"^(?:Le|La|Les|L['’]|O|A|Os|As)\s+(?=[A-Z])", "", n)
+    n = re.sub(r"^L['’][a-zéèêàç]+\s+", "", n)                       # "L'indien A2MP"
     n = re.sub(r"^(.+?)-led\s+(?:consortium|group|syndicate|investors)$", r"\1", n, flags=re.IGNORECASE)
     # "Nigeria's Moniepoint", "Tony Elumelu's United Capital" -> the company after the possessive.
     if re.search(r"(?:'s|’s)\s+\S", n):
-        n = re.split(r"(?:'s|’s)\s+", n)[-1]
+        owner, owned = re.split(r"(?:'s|’s)\s+", n, maxsplit=1)
+        # "Air Côte d'Ivoire's Airbus Purchase": the owner is the party; "Nigeria's Moniepoint": the owned is.
+        n = owner if _OWNED_GENERIC.search(owned) and not _is_place(owner) else owned
     n = re.sub(r"(?:'s|’s)$", "", n)
     words = n.split()
     # Strip a leading run of place and descriptor words ("Egyptian E-Health Startup Reme-D") only when
     # it contains a descriptor and leaves a name: "Nigerian Breweries" and "Solar Industries" stay whole.
     run = 0
     while run < len(words) - 1 and (_is_descriptor(words[run]) or _is_place(words[run])
-                                    or words[run].lower() in ("african", "pan-african")):
+                                    or words[run].lower() in _FOREIGN_DEMONYMS):
         run += 1
-    if run and any(_is_descriptor(w) for w in words[:run]) and words[run].lower() not in _CORPORATE_WORDS:
+    if run and any(_is_descriptor(w) for w in words[:run]) and words[run].lower() not in _CORPORATE_WORDS \
+            and not re.fullmatch(r"of|de|du|des|and|&|for|da|do", words[run].lower()):
         words = words[run:]
     n = " ".join(words).strip()
-    if n.upper() in _CURRENCY_CODES:
+    if n.upper() in _CURRENCY_CODES or re.fullmatch(r"(?i)africa(?:n)?\s+\w+", n) and not re.search(r"\d", n):
         return None
     if (not n or _ALWAYS_GENERIC_TAIL.search(n) or n.lower() in _GENERIC or len(n) < 2 or n.isdigit() or _is_place(n) or _GENERIC_RE.match(n)
             or (_GENERIC_TAIL.search(n) and all(_is_filler(w) for w in n.split()[:-1]))):
@@ -262,7 +323,8 @@ def normalise_name(name: Optional[str]) -> str:
 # ── Deal patterns ─────────────────────────────────────────────────────────────
 # Each: (deal_type, compiled pattern). Named groups: subj (the actor), obj (the counterparty).
 _AUX = (r"(?:\s+(?:has|have|will|is|are|to|set\s+to|agrees?\s+to|agreed\s+to|moves?\s+to|plans?\s+to|in\s+talks\s+to|"
-        r"aims?\s+to|looks?\s+to|hopes?\s+to|wants?\s+to|seeks?\s+to|targets?\s+to))*")
+        r"aims?\s+to|looks?\s+to|hopes?\s+to|wants?\s+to|seeks?\s+to|targets?\s+to|is\s+considering|considers|mulls|"
+        r"weighs|(?:wins?|gets?|receives?|secures?|obtains?)\s+(?:\S+\s+){0,2}?(?:approval|nod|clearance)\s+to))*")
 _STAKE_IN = (r"(?:(?:an?\s+|the\s+)?(?:\S+\s+){0,3}?(?:stake|interest|shareholding|holding)\s+in\s+"
              r"|\d{1,3}(?:[.,]\d+)?\s?%\s+(?:of\s+|da\s+|do\s+|de\s+|du\s+|des\s+|in\s+))")
 
@@ -283,8 +345,10 @@ reach reaches reached holds hits forms create creates increases ups enters agree
 has have will is are was were to of in into for from with by on at as after a an its their stake stakes interest
 shareholding majority minority controlling significant strategic acquisition purchase takeover buyout round
 funding financing loan facility close up over talks discloses proposed enters seeks seek exiting
-calls call urges says wants targets eyes launched aims aim looks hopes
-investit acquiert rachète cède lève obtient finance dans investe adquire compra vende capta obtém em
+calls call urges says wants targets eyes launched aims aim looks hopes achieves achieved attains wins win gets
+across among
+considering considers mulls weighs approval nod clearance
+investit acquiert rachète cède lève obtient dans investe adquire compra vende capta obtém em
 """.split())
 _WORD = re.compile(r"\b[A-Za-z][\w'’-]*\b(?!\.)")
 
@@ -304,12 +368,12 @@ _PATTERNS: list[tuple[str, re.Pattern]] = [(t, re.compile(p)) for t, p in [
     ("acquisition", rf"(?P<subj>{NAME}){_AUX}\s+(?:acquires?|acquired|acquiring|buys?|bought|buying|snaps?\s+up|takes?\s+over|took\s+over|purchases?|purchased|rachète|acquiert|adquire|compra|adquiriu)\s+{_STAKE_IN}?(?P<obj>{NAME})"),
     ("acquisition", rf"(?P<subj>{NAME}){_AUX}\s+(?:takes?|took|increases?|ups|raises?)\s+{_STAKE_IN}(?P<obj>{NAME})"),
     ("acquisition", rf"(?P<subj>{NAME})\s+(?i:prend\s+le\s+contr[ôo]le\s+de|prend\s+une\s+participation\s+dans)\s+(?P<obj>{NAME})"),
-    ("exit", rf"(?P<subj>{NAME}){_AUX}\s+(?:sells?|sold|selling|divests?|divested|offloads?|offloaded|disposes?\s+of|cède|vende)\s+{_STAKE_IN}?(?P<obj>{NAME})"),
+    ("exit", rf"(?P<subj>{NAME}){_AUX}\s+(?:sells?|sold|selling|divests?|divested|offloads?|offloaded|disposes?\s+of|cède|vende)\s+{_STAKE_IN}?(?P<obj>{NAME})(?:.{{0,40}}?\s+(?:to|à)\s+(?:the\s+|a\s+)?(?:[a-z]\S*\s+){{0,3}}(?P<to>{NAME}))?"),
     ("exit", rf"(?P<subj>{NAME}){_AUX}\s+(?:exits?|exited|exiting)\s+(?:its\s+|their\s+)?(?:\S+\s+){{0,2}}?(?:stake|investment|holding|position)s?\s+in\s+(?P<obj>{NAME})"),
-    ("fund_raise", rf"(?P<subj>{NAME})(?:'s|’s)?(?:\s+(?i:fund|vehicle)(?:\s+[IVX\d]+)?)?{_AUX}\s+(?:announces?\s+|reaches?\s+|reached\s+|holds?\s+|hits?\s+)?(?:the\s+|its\s+|a\s+)?(?:\S+\s+){{0,2}}?(?i:first|final|second|third|interim|hard)\s+close\b"),
+    ("fund_raise", rf"(?P<subj>{NAME})(?:'s|’s)?(?:\s+(?i:fund|vehicle)(?:\s+[IVX\d]+)?)?{_AUX}\s+(?:announces?\s+|reaches?\s+|reached\s+|holds?\s+|hits?\s+|achieves?\s+|achieved\s+|attains?\s+)?(?:the\s+|its\s+|a\s+)?(?:\S+\s+){{0,2}}?(?i:first|final|second|third|interim|hard|\d(?:st|nd|rd|th))\s+close\b"),
     ("fund_raise", rf"(?P<subj>{NAME}){_AUX}\s+(?:closes?|closed|raises?|raised|launches?|launched|reaches?|hits?)\s+(?:its\s+|a\s+|an?\s+)?(?:\S+\s+){{0,3}}?(?<!to\s)(?i:fund|vehicle)\b(?!\s+(?:expansion|growth|its|the))"),
     ("debt_financing", rf"(?P<subj>{NAME}){_AUX}\s+(?:lends?|lent|extends?|extended|provides?|provided|approves?|approved|grants?|granted|arranges?|signs?|signed|disburses?)\s+(?:a\s+|an\s+)?(?:\S+\s+){{0,4}}?(?i:loan|facility|credit\s+line|debt|financing|guarantee|bond)s?\s+(?:to|for)\s+(?P<obj>{NAME})"),
-    ("debt_financing", rf"(?P<subj>{NAME}){_AUX}\s+(?:secures?|secured|signs?|signed|obtains?|obtained|gets?|got|receives?|received|lands?|raises?|raised|closes?|closed|issues?|issued|obtient|obtém|lève)\s+(?:a\s+|an\s+|un\s+|une\s+|um\s+)?(?:\S+\s+){{0,4}}?(?i:loan|facility|credit\s+line|debt\s+financing|debt|bond|sukuk|notes|eurobond|prêt|financement|emprunt\s+obligataire|empréstimo|financiamento)s?\b(?:\s+from\s+(?P<obj>{NAME}))?"),
+    ("debt_financing", rf"(?P<subj>{NAME}){_AUX}\s+(?:secures?|secured|signs?|signed|obtains?|obtained|gets?|got|receives?|received|lands?|raises?|raised|closes?|closed|issues?|issued|obtient|obtém|lève)\s+(?:a\s+|an\s+|un\s+|une\s+|um\s+)?(?:\S+\s+){{0,4}}?(?i:loan|facility|credit\s+line|debt\s+financing|debt|bond|sukuk|notes|eurobond|prêt|financement|emprunt\s+obligataire|empréstimo|financiamento)s?\b(?:\s+from\s+(?P<obj>{NAME}))?(?:.{{0,30}}?\s+with\s+(?:the\s+)?(?P<with>{NAME}))?"),
     ("equity_funding", rf"(?P<subj>{NAME}){_AUX}\s+(?:leads?|led|co-leads?|co-led|anchors?)\s+(?:a\s+|an\s+|the\s+)?(?:\S+\s+){{0,5}}?(?i:round|investment|raise)\s+(?:in|into|for)\s+(?P<obj>{NAME})"),
     ("equity_funding", rf"(?P<subj>{NAME}){_AUX}\s+(?:discloses\s+|makes\s+|announces\s+|completes\s+)?(?:proposed\s+)?(?:(?:a|an|the|its|\S*\d\S*|million|billion|m|bn|equity|strategic|minority|majority|further|follow-on)\s+){{0,4}}(?i:investment|equity\s+investment)\s+in\s+(?P<obj>{NAME})"),
     ("equity_funding", rf"(?P<subj>{NAME}){_AUX}\s+(?:invests?|invested|investing|injects?|injected|commits?|committed|backs?|backed|investit|investe|injecte)\s+(?:(?:\S+\s+){{0,6}}?(?:in|into|dans|em|no|na)\s+)?(?P<obj>{NAME})"),
@@ -318,27 +382,29 @@ _PATTERNS: list[tuple[str, re.Pattern]] = [(t, re.compile(p)) for t, p in [
     ("joint_venture", rf"(?P<subj>{NAME})\s+and\s+(?P<obj>{NAME})\s+(?i:form|forms|launch|launches|sign|signs|create|creates|set\s+up|sets\s+up)\s+(?:a\s+)?(?i:joint\s+venture|JV)"),
 ]]
 
-_NOT_A_DEAL = re.compile(r"\b(FC|forward|striker|midfielder|defender|goalkeeper|winger|coach|transfer\s+window|"
+_NOT_A_DEAL = re.compile(r"\b(black\s+stars|super\s+eagles|super\s+falcons|bafana|national\s+teams?|sponsorship|sponsors?|"
+                         r"smuggl\w+|fake|tap\s+sale|t-bills?|treasury\s+(?:bonds?|bills?)|bond\s+auction|"
+                         r"infrastructure\s+bond|FC|forward|striker|midfielder|defender|goalkeeper|winger|coach|transfer\s+window|"
                          r"fighter\s+jets?|warplanes?|helicopters?|weapons?|missiles?|calls?\s+for|urges?|"
                          r"to\s+buy\s+now|stocks?\s+to\s+buy|shares\s+to\s+buy|altcoins?|price\s+prediction|"
                          r"raises?\s+(?:its\s+|the\s+)?(?:\S+\s+)?(?:outlook|forecast|rating|alarm|concerns?|awareness|"
                          r"questions?|prices?|tariffs?|rates?|fears?|hopes?|the\s+bar|bursary|igr|revenue\s+target))\b"
-                         r"|\braise[sd]?\s+(?:\S+\s+){0,3}(cap|ceiling|limit|investment|budget|allocation|target|commitment)\s+to\b",
+                         r"|\braise[sd]?\s+(?:\S+\s+){0,3}(cap|ceiling|limit|investment|capital|budget|allocation|target|commitment)\s+to\b",
                          re.IGNORECASE)
 _VALUATION = re.compile(r"(?i)(?:at\s+(?:an?\s+)?(?P<a>[^,;]{2,25}?)\s+(?:(?:post|pre)-money\s+)?(?:valuation|valorisation)"
                         r"|(?P<d>\S*\d[\d.,]*\s?(?:billion|million|bn|m|b)?)\s+(?:price\s+tag|valuation)"
                         r"|valued\s+at\s+(?P<b>[^,;]{2,25}?)(?=$|[,;.]|\s+(?:in|after|as|following)\b)"
                         r"|valuation\s+of\s+(?P<c>[^,;]{2,25}?)(?=$|[,;.]|\s))")
-_CAPEX_AFTER = re.compile(r"^\s*(?:'s\s+)?(?:\S+\s+)?(plant|factory|facility|facilities|project|expansion|hub|office|"
+_CAPEX_AFTER = re.compile(r"^\s*(?:'s\s+)?(?:\S+\s+)?(plant|factory|facility|facilities|project|expansion|hub|office|housing|"
                           r"warehouse|site|refinery|mine|campus|infrastructure|network|schools?|programme|scheme)\b",
                           re.IGNORECASE)
 _EQUITY_EVIDENCE = re.compile(r"\b(invest\w*|funding|capital|stake|equity|round|seed|series|raise[sd]?|"
                               r"lève|levée|investit|investe|capta|financing|financement|investimento)\b", re.IGNORECASE)
 _PUBLIC_SECTOR = re.compile(r"(?i)\b(government|ministry|treasury|trésor|state|federal|senate|house|parliament|court|"
                             r"police|army|military|council|municipality|county|dgtcp|gouvernement|minist[eè]re|tinubu|"
-                            r"president|governor|minister)\b")
+                            r"president|governor|minister|air\s+force|navy|defen[cs]e\s+force)\b")
 _FUND_FOR = re.compile(r"(?i)\bfor\s+(?:its\s+|a\s+|an\s+|the\s+|new\s+)?(?:\S+\s+){0,4}?fund\b")
-_FUND_PURPOSE = re.compile(r"\bto\s+(?:back|invest\s+in|support|finance)\s+(?:\S+\s+){0,3}?"
+_FUND_PURPOSE = re.compile(r"\bto\s+(?:back|invest\s+in|support|finance)\s+(?:\S+\s+){0,5}?"
                            r"(businesses|startups|start-ups|companies|smes|entrepreneurs|founders|ventures)\b", re.IGNORECASE)
 _DEBT_WORDS = re.compile(r"\b(loan|facility|debt|credit\s+line|bond|sukuk|notes|eurobond|financement\s+bancaire|prêt|"
                          r"financing\s+deals?|debt\s+financing|empréstimo)\b", re.IGNORECASE)
@@ -449,7 +515,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     valuation_amounts = parse_amounts(vm.group("a") or vm.group("b") or vm.group("c") or vm.group("d") or "") if vm else []
     deal_title = title[:vm.start()] + title[vm.end():] if vm else title
     # Amounts come from the headline only: a description's figures often refer to something else.
-    amounts = parse_amounts(deal_title)
+    best = deal_amount(deal_title)
+    amounts = [best] if best else []
     amount, currency = amounts[0] if amounts else (None, None)
     if deal_type == "ipo" and amount and not re.search(
             r"(?i)\b(?:(?:rais\w*|offer\w*|ipo)\s+(?:of\s+|worth\s+|up\s+to\s+)?|(?:listing|float)\s+(?:to\s+raise\s+)?)"
@@ -475,6 +542,11 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         buyer, target = subj, obj
     elif deal_type == "exit":
         seller, target = subj, obj
+        buyer = _clean_name(m.groupdict().get("to"))
+        raw_obj = (m.groupdict().get("obj") or "").strip()
+        place = countries_in_text(raw_obj.split()[0]) if raw_obj else []
+        if place and re.search(r"(?i)\b(operations?|business|unit|subsidiary|assets?|arm)$", raw_obj) and subj:
+            target = f"{subj} {place[0].name}"         # "Holcim to sell Nigerian operations" -> "Holcim Nigeria"
     if deal_type in ("equity_funding", "fund_raise") and obj and re.search(r"\b(fund|vehicle)(\s+[IVX\d]+)?$", obj, re.IGNORECASE):
         deal_type = "fund_raise"                 # an LP commitment to a fund
         target, investors = obj, [subj] if subj else []
@@ -485,11 +557,22 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         else:                                    # "Company raises $X"
             target = subj
     elif deal_type == "debt_financing":
-        if re.search(r"\b(lends?|lent|extends?|extended|provides?|provided|approves?|approved|grants?|granted|arranges?|disburses?)\b",
+        if re.search(r"\b(lends?|lent|extends?|extended|provides?|provided|approves?|approved|grants?|granted|arranges?|"
+                     r"disburses?|backs?|backed|invests?|invested|commits?|committed|finances?|financed|funds?|funded)\b",
                      m.group(0), re.IGNORECASE):
             buyer, target = subj, obj            # lender, borrower
         else:
             target, buyer = subj, obj            # borrower, lender
+        withp = _clean_name(m.groupdict().get("with"))
+        raw = (m.groupdict().get("subj") or "")
+        if withp and _is_lender(subj):
+            buyer, target = subj, withp          # "Afreximbank signs a facility with X": Afreximbank lends
+        elif " and " in raw:                     # "MIDROC and IFC sign a $80m loan"
+            a, b = (_clean_name(x) for x in raw.split(" and ", 1))
+            if a and b:
+                buyer, target = (a, b) if _is_lender(a) and not _is_lender(b) else (b, a) if _is_lender(b) else (None, None)
+                if not target:
+                    return None
         if buyer:
             investors = [buyer]
     elif deal_type == "fund_raise" and not target:
@@ -504,14 +587,29 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if not target and not buyer:
         return None
     raw_subj = (m.groupdict().get("subj") or "").strip()
+    if raw_subj and re.search(r"(?i)\b(air\s+force|navy|army|military|government|ministry|treasury|president|governor|"
+                              r"minister|parliament|senate)\b", raw_subj):
+        return None                              # state purchases and spending, not transactions
+    # "Loan for Air Côte d'Ivoire's Airbus purchase": the possessor is the counterparty.
+    raw_obj = (m.groupdict().get("obj") or "").strip()
+    if raw_obj and re.search(r"(?:'s|’s)\s+\S", raw_obj) and re.match(
+            r"(?i)\s+(purchase|acquisition|expansion|project|operations|unit|business|assets|plant|fleet)\b", norm[m.end():]):
+        owner = _clean_name(re.split(r"(?:'s|’s)\s+", raw_obj, maxsplit=1)[0])
+        if owner:
+            if target == obj:
+                target = owner
+            obj = owner
     if raw_subj and not subj and (_is_place(raw_subj.split("'")[0].split("’")[0]) or _PUBLIC_SECTOR.search(raw_subj)):
         return None                              # governments and states: public spending, not deals
+    if target and re.search(r"(?i)\b(central\s+bank|banque\s+centrale|reserve\s+bank|ministry|government|treasury)\b", target):
+        return None                              # lending to a state is sovereign finance, not a company deal
     if deal_type in ("acquisition", "merger", "exit", "ipo", "fund_raise") and not target:
         return None                              # who or what changed hands must be named
-    if deal_type == "fund_raise" and amount is None and not re.search(r"(?i)\b(first|final|second|interim|hard)\s+close", title):
+    if deal_type == "fund_raise" and amount is None and not re.search(r"(?i)\b(first|final|second|third|interim|hard|\d(?:st|nd|rd|th))\s+close", title):
         return None
     # Bonds placed on a regional market are debt.
-    if deal_type == "equity_funding" and re.search(r"(?i)\bsur\s+le\s+march[ée]\s+(?:de\s+l['’]\s*)?(?:uemoa|umoa|financier|obligataire|régional)", title):
+    if deal_type == "equity_funding" and re.search(r"(?i)\bsur\s+le\s+march[ée]\s+(?:de\s+l['’]\s*)?(?:uemoa|umoa|financier|obligataire|régional)"
+                                                   r"|\b(?:à|a)\s+la\s+bourse\s+de\s+luxembourg|\beurobond|\bobligataire", title):
         deal_type = "debt_financing"
     # Financing needs evidence beyond a verb: an amount, or a named counterparty plus an investment word.
     if deal_type in ("equity_funding", "debt_financing"):
@@ -558,6 +656,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
 
     year = int(published[:4]) if published and published[:4].isdigit() else None
     usd = to_usd(amount, currency, year, rates) if amount and currency else None
+    if usd is not None and usd < 50_000:
+        return None                              # donations and micro-grants, not transactions
     implied = round(usd / (stake / 100), 0) if usd and stake and deal_type in ("acquisition", "equity_funding", "exit") else None
     reported_valuation = (to_usd(valuation_amounts[0][0], valuation_amounts[0][1], year, rates)
                           if valuation_amounts else None)

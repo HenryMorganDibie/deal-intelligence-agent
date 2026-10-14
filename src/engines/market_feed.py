@@ -148,7 +148,7 @@ async def _fetch(client: httpx.AsyncClient, sem: asyncio.Semaphore, url: str, la
 
 # Outlets that publish only African business and deal news: their headlines need no country named.
 AFRICA_ONLY_OUTLETS = {"africa private equity news", "disrupt africa", "agence ecofin", "financial afrik",
-                       "financial afrik (fr)", "africa business communities"}
+                       "financial afrik (fr)"}
 
 
 def is_africa_outlet(publisher: str) -> bool:

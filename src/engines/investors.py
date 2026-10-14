@@ -45,7 +45,7 @@ REGISTRY: tuple[Investor, ...] = (
     Investor("DEG", "dfi", "Cologne, Germany", ("DEG - Deutsche Investitions- und Entwicklungsgesellschaft",)),
     Investor("U.S. International Development Finance Corporation", "dfi", "Washington, DC, United States", ("DFC",)),
     Investor("European Investment Bank", "multilateral", "Luxembourg", ("EIB",)),
-    Investor("African Development Bank", "multilateral", "Abidjan, Côte d'Ivoire", ("AfDB",)),
+    Investor("African Development Bank", "multilateral", "Abidjan, Côte d'Ivoire", ("AfDB", "BAD", "Banque africaine de développement")),
     Investor("Afreximbank", "multilateral", "Cairo, Egypt", ("African Export-Import Bank",)),
     Investor("Africa Finance Corporation", "multilateral", "Lagos, Nigeria", ("AFC",)),
     Investor("Africa50", "multilateral", "Casablanca, Morocco"),

@@ -166,6 +166,8 @@ def build_parser() -> argparse.ArgumentParser:
     dl.add_argument("--window", default="when:2d", help="Google News window for --ingest (e.g. when:7d)")
     dl.add_argument("--backfill", type=int, default=0, metavar="MONTHS", help="Backfill this many past months")
     dl.add_argument("--upload", action="store_true", help="Upload local deals and events to the hosted database")
+    dl.add_argument("--reextract", action="store_true",
+                    help="Rebuild deals and events from the kept headlines with the current extractor")
     dl.add_argument("--search", default=None, metavar="TEXT")
     dl.add_argument("--country", default=None)
     dl.add_argument("--type", default=None)
@@ -913,24 +915,44 @@ def _save_events(rows: list) -> None:
     save_json(DATA_DIR / EVENTS_FILE, sorted(by_id.values(), key=lambda e: e.get("day") or "", reverse=True))
 
 
+def _keep_headlines(items: list) -> None:
+    """Raw headlines (JSON lines), so an improved extractor can be re-applied without re-crawling."""
+    from src.utils.paths import DATA_DIR
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with open(DATA_DIR / "headlines.jsonl", "a", encoding="utf-8") as f:
+        for it in items:
+            f.write(json.dumps(it, ensure_ascii=False) + "\n")
+
+
 def _run_deals(args) -> None:
     from datetime import date as _date, timedelta as _td
     from src.engines import deals as dm, market_feed as mf
     store = dm.load_deals()
     if args.ingest:
         items = asyncio.run(mf.collect(args.window))
+        _keep_headlines(items)
         new, events = mf.to_deals(items), mf.to_events(items)
         store = dm.merge_all(new, into=store)
         dm.save_deals(store)
         _save_events(events)
         console.print(f"[green]✓[/green] {len(items)} headlines -> {len(new)} deal reports, {len(events)} events; "
                       f"{len(store)} deals stored")
+    if args.reextract:
+        from src.utils.paths import DATA_DIR
+        path = DATA_DIR / "headlines.jsonl"
+        items = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        store = dm.merge_all(mf.to_deals(items))
+        dm.save_deals(store)
+        from src.utils.storage import save_json
+        save_json(DATA_DIR / EVENTS_FILE, mf.to_events(items))
+        console.print(f"[green]✓[/green] {len(items)} headlines re-extracted: {len(store)} deals")
     if args.backfill:
         today = _date.today()
         for m in range(args.backfill, 0, -1):
             end = today - _td(days=30 * (m - 1))
             start = end - _td(days=30)
             items = asyncio.run(mf.collect_historical(start, end))
+            _keep_headlines(items)
             new = mf.to_deals(items)
             store = dm.merge_all(new, into=store)
             _save_events(mf.to_events(items))
@@ -950,7 +972,7 @@ def _run_deals(args) -> None:
                                 json={"secret": secret, "p_rows": batch_rows[i:i + 500]})
                 r.raise_for_status()
         console.print(f"[green]✓[/green] uploaded {len(rows)} deals and {len(events)} events")
-    if args.search is not None or not (args.ingest or args.backfill or args.upload):
+    if args.search is not None or not (args.ingest or args.backfill or args.upload or args.reextract):
         rows = dm.search(store.values(), q=args.search or "", country=args.country, deal_type=args.type, limit=args.limit)
         t = Table(title=f"Deals ({len(store)} in database)")
         for col in ("Date", "Type", "Stage", "Target", "Buyer / lead", "USD", "Country"):

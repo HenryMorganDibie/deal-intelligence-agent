@@ -486,3 +486,54 @@ def test_french_decimal_comma_and_ipo_offer_size():
     assert d["deal_type"] == "debt_financing" and d["amount"] == pytest.approx(47.913e9)
     assert _deal("Dangote Plans Landmark Multi-Exchange Listing Of $20bn Refinery Across Africa")["amount_usd"] is None
     assert _deal("MTN Nigeria plans $1bn IPO on NGX")["amount_usd"] == 1e9
+
+
+def test_transaction_amount_beats_project_cost_and_pledges():
+    d = _deal("AFC backs Dangote’s $7 billion fertiliser expansion with $600 million loan in Nigeria")
+    assert (d["deal_type"], d["buyer"], d["target"], d["amount_usd"]) == ("debt_financing", "AFC", "Dangote", 600e6)
+    d = _deal("Guinée équatoriale : Vista Bank rachète Société Générale et promet 10 milliards USD d’investissements")
+    assert (d["buyer"], d["target"], d["amount_usd"]) == ("Vista Bank", "Société Générale", None)
+    assert _deal("Dangote raises Ethiopia fertilizer investment capital to $4b") is None
+
+
+@pytest.mark.parametrize("title,expected", [
+    ("BOAD Approves $49.5M Loan for Air Côte d'Ivoire’s Airbus Purchase", ("debt_financing", "Air Côte d'Ivoire", "BOAD")),
+    ("Holcim To Sell Nigerian Operations To Chinese Company Huaxin Cement", ("exit", "Holcim Nigeria", "Huaxin Cement")),
+    ("Nedbank Wins Regulatory Approval To Take Majority Stake In Kenya’s NCBA", ("acquisition", "NCBA", "Nedbank")),
+    ("ARM-Harith Achieves US$76m First Close For Climate Transition Fund in Nigeria", ("fund_raise", "ARM-Harith", None)),
+    ("Mines : L'indien A2MP lève 171 milliards de FCFA pour financer ses projets au Gabon", ("equity_funding", "A2MP", None)),
+])
+def test_counterparty_resolution(title, expected):
+    d = _deal(title)
+    assert (d["deal_type"], d["target"], d["buyer"]) == expected
+
+
+@pytest.mark.parametrize("title", [
+    "Namibian Air Force acquires Shaanxi Y-9 transport aircraft from China",
+    "Three New ETFs Listed on the Johannesburg Stock Exchange in South Africa",
+    "Nigeria’s Biggest Bank Raises $228 Million in Rights Offer",
+])
+def test_state_purchases_and_unnamed_parties_are_dropped(title):
+    assert _deal(title) is None
+
+
+@pytest.mark.parametrize("title,expected", [
+    ("Ethiopia: MIDROC Investment Group and International Finance Corporation Sign USD 80 Million Loan",
+     ("debt_financing", "MIDROC Investment Group", "International Finance Corporation")),
+    ("Afreximbank signs US$100 million facility with Ecobank Ghana", ("debt_financing", "Ecobank Ghana", "Afreximbank")),
+    ("LoftyInc Capital raises $43m to invest in seed and Series A startups across Africa", ("fund_raise", "LoftyInc Capital", None)),
+])
+def test_lender_borrower_and_fund_purpose(title, expected):
+    d = _deal(title)
+    assert (d["deal_type"], d["target"], d["buyer"]) == expected
+
+
+@pytest.mark.parametrize("title", [
+    "Kani Releasing Acquires North America Rights To Japanese Title in Namibia",
+    "WeWire Acquires Treasury License in Mauritius to Scale Cross-Border Trade Tools",
+    "To Grow Africa’s AI Economy, Microsoft Invests $300 Million In Datacenters",
+    "Brazzaville lève 700 millions de dollars sur les marchés internationaux",
+    "Afreximbank signs US$500 million term loan facility with the Central Bank of Tunisia",
+])
+def test_rights_capex_and_sovereign_finance_are_not_deals(title):
+    assert _deal(title) is None
