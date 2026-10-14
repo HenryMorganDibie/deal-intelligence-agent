@@ -125,23 +125,10 @@ from src.hosted_market import router as market_router  # noqa: E402
 app.include_router(market_router)
 
 
-# Outcome counts for per-market calibration, refreshed at most hourly per instance.
-_STATS_TTL = 3600
-_stats_loaded_at = 0.0
-
-
 async def _refresh_outcome_stats(client: httpx.AsyncClient) -> None:
-    global _stats_loaded_at
-    if time.monotonic() - _stats_loaded_at < _STATS_TTL and _stats_loaded_at:
-        return
-    from src.engines.adaptive_calibration import set_outcome_stats
-    try:
-        resp = await _rpc(client, "outcome_stats", {"secret": API_SECRET})
-        if resp.status_code == 200:
-            set_outcome_stats(resp.json() or {})
-            _stats_loaded_at = time.monotonic()
-    except httpx.HTTPError as e:
-        log.warning("outcome stats unavailable: %s", e)
+    """Live outcome counts and observations for calibration, refreshed at most hourly per instance."""
+    from src.hosted_market import refresh_live
+    await refresh_live(client)
 
 
 @app.post("/api/analyse")
@@ -292,4 +279,7 @@ async def cron_label(request: Request) -> dict:
                 done += 1
                 outcomes_written += len(outcomes)
     set_snapshot(None)
+    from src.hosted_market import refresh_live
+    async with httpx.AsyncClient(timeout=30) as client:
+        await refresh_live(client, force=True)
     return {"prices_saved": prices_saved, "due": len(rows), "labelled": done, "outcomes": outcomes_written}

@@ -1,15 +1,26 @@
+import { count, type Pulse } from "../lib/pulse";
 import { LINKS } from "../lib/site";
 import { HeroBrief } from "./HeroBrief";
 import { ArrowRight, Container, Reveal } from "./primitives";
 
-const FACTS = [
-  { k: "54", v: "African countries, in their own languages" },
-  { k: "1,700+", v: "deals: PE, VC, debt and M&A" },
-  { k: "8", v: "signal types, 17 compound-event rules" },
-  { k: "526", v: "automated tests behind every release" },
-];
+function facts(pulse: Pulse | null) {
+  return [
+    { k: "54", v: "African countries, in their own languages" },
+    pulse?.deals.total
+      ? { k: count(pulse.deals.total), v: `deals: PE, VC, debt and M&A, ${pulse.deals.recent} in the last ${pulse.deals.window_days} days` }
+      : { k: "1,700+", v: "deals: PE, VC, debt and M&A" },
+    { k: "8", v: "signal types, 17 compound-event rules" },
+    pulse?.measured.backtest_observations
+      ? {
+          k: count(pulse.measured.backtest_observations + pulse.measured.live_observations),
+          v: "past signals behind every confidence figure",
+        }
+      : { k: "526", v: "automated tests behind every release" },
+  ];
+}
 
-export function Hero() {
+export function Hero({ pulse = null }: { pulse?: Pulse | null }) {
+  const FACTS = facts(pulse);
   return (
     <section id="top" aria-labelledby="hero-title" className="noise relative overflow-hidden pb-20 pt-32 sm:pb-28 sm:pt-40">
       <div aria-hidden className="grid-bg absolute inset-0" />

@@ -38,8 +38,10 @@ Node 2 — DeterministicSignalEngine                     ← ZERO LLM
 Node 3 — LLMExplanationNode                            ← LLM (explanation only)
   Severity comes from rule-strength bands (stated thresholds, not data).
   Confidence is measured: the hit rate of past flags of the same type and severity in
-  the walk-forward backtest (engines/measured.py), smoothed for small samples and
-  replaced by live outcomes per market once 10 exist. Each signal also carries a
+  the walk-forward backtest (engines/measured.py), smoothed for small samples. The
+  hosted service pools every labelled live outcome with the backtest observations
+  hourly (outcome_rows RPC, measured.set_live), so rates and move ranges follow the
+  market; a market's own live rate is used once it has 10 outcomes. Each signal also carries a
   7-component evidence-quality rubric (engines/confidence.py), shown in briefs.
   LLM writes: headline, evidence list, 2-3 sentence reasoning. Cannot change signal_type or severity.
   Fallback: if LLM API fails, deterministic output used directly (no crash).

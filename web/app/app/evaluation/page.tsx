@@ -24,7 +24,13 @@ type Evaluation = {
       by_type?: Record<string, { labelled: number; precision: Record<"low" | "middle" | "high", number | null>; spearman: number | null }>;
     };
   } | null;
-  live_outcomes: unknown;
+  live_outcomes: Record<string, { confirmed: number; refuted: number }> | null;
+  measured_now?: {
+    overall_confirmation?: { labelled: number; confirmed: number; rate: number | null } | null;
+    backtest_observations: number;
+    live_observations: number;
+    live_updated_at?: string | null;
+  };
   method: string;
 };
 
@@ -56,6 +62,15 @@ export default function EvaluationPage() {
           <p className="text-[0.875rem] text-[color:var(--muted)]">
             {b.start} to {b.end}: {b.companies} companies (US, JSE, NGX, NSE Kenya) x {b.as_of_dates} monthly dates.
           </p>
+          {e.measured_now && (
+            <p className="mt-2 text-[0.875rem] text-[color:var(--muted)]">
+              Confidence and expected moves in briefs use {e.measured_now.backtest_observations} backtest observations
+              {" "}pooled with {e.measured_now.live_observations} live outcomes from hosted briefs
+              {e.measured_now.overall_confirmation?.rate != null &&
+                `; across both, ${pct(e.measured_now.overall_confirmation.rate)} of flags were later confirmed (${e.measured_now.overall_confirmation.confirmed} of ${e.measured_now.overall_confirmation.labelled})`}
+              . Live outcomes are added daily and the figures are recomputed hourly.
+            </p>
+          )}
           <div className="mt-4 flex gap-2">
             {(["all", "us", "africa"] as const).map((m) => (
               <button

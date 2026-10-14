@@ -6,6 +6,7 @@ import { Example } from "../components/Example";
 import { Faq } from "../components/Faq";
 import { Hero } from "../components/Hero";
 import { Limits } from "../components/Limits";
+import { MarketPulse } from "../components/MarketPulse";
 import { Pipeline } from "../components/Pipeline";
 import { Platform } from "../components/Platform";
 import { Problem } from "../components/Problem";
@@ -14,8 +15,13 @@ import { Signals } from "../components/Signals";
 import { SiteNav } from "../components/SiteNav";
 import { SourceMarquee } from "../components/SourceMarquee";
 import { Trust } from "../components/Trust";
+import { getPulse } from "../lib/pulse";
 
-export default function LandingPage() {
+// Re-render from the live feed every 30 minutes (see lib/pulse.ts).
+export const revalidate = 1800;
+
+export default async function LandingPage() {
+  const pulse = await getPulse();
   return (
     <div className="relative">
       <a
@@ -26,15 +32,16 @@ export default function LandingPage() {
       </a>
       <SiteNav />
       <main id="main">
-        <Hero />
+        <Hero pulse={pulse} />
         <SourceMarquee />
-        <Platform />
+        <Platform pulse={pulse} />
+        <MarketPulse pulse={pulse} />
         <Problem />
         <Pipeline />
         <Attribution />
         <Signals />
         <Coverage />
-        <Scoring />
+        <Scoring pulse={pulse} />
         <Example />
         <Trust />
         <Limits />

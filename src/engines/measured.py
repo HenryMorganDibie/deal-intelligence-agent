@@ -17,12 +17,16 @@ Every figure carries its sample size. Callers smooth small samples toward the
 type-level (or overall) rate and say "insufficient history" below MIN_N.
 
 The committed file is src/data/measured_outcomes.json, rewritten by
-`python main.py backtest --historical` (or `--tables` from saved results).
+`python main.py backtest --historical` (or `--tables` from saved results). It keeps
+the backtest's individual observations, so the hosted service can pool them with
+every live outcome labelled since (set_live): the tables then move with the market
+each day instead of staying fixed at the backtest.
 """
 from __future__ import annotations
 
 import json
 import statistics
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -53,7 +57,18 @@ def _moves(values: list[float]) -> Optional[dict]:
             "p75": round(q[2], 2), "share_negative": round(sum(v < 0 for v in values) / len(values), 3)}
 
 
-def build(predictions: list[dict], meta: Optional[dict] = None) -> dict:
+_OBS_KEYS = ("signal_type", "severity", "event_confirmed", "direction_correct", "abnormal_return_10d_pct")
+
+
+def _compact(p: dict) -> list:
+    return [p.get(k) for k in _OBS_KEYS]
+
+
+def _expand(row: list) -> dict:
+    return dict(zip(_OBS_KEYS, row))
+
+
+def build(predictions: list[dict], meta: Optional[dict] = None, keep_observations: bool = True) -> dict:
     """Tables from backtest predictions (each with signal_type, severity, event_confirmed,
     direction_correct, abnormal_return_10d_pct)."""
     by_type: dict[str, dict] = {}
@@ -66,12 +81,15 @@ def build(predictions: list[dict], meta: Optional[dict] = None) -> dict:
     confirmable = [p for p in predictions if p["signal_type"] not in PRICE_ONLY and p.get("event_confirmed") is not None]
     overall = {"labelled": len(confirmable), "confirmed": sum(p["event_confirmed"] for p in confirmable),
                "rate": _rate(sum(p["event_confirmed"] for p in confirmable), len(confirmable))}
-    return {"source": "walk-forward historical backtest (docs/BACKTEST.md)", **(meta or {}),
-            "overall_confirmation": overall, "signals": by_type,
+    out = {"source": "walk-forward historical backtest (docs/BACKTEST.md)", **(meta or {}),
+           "overall_confirmation": overall, "signals": by_type,
             "method": f"Confirmation: share of flags followed within 90 days by a confirming filing, disclosure or "
                       f"credible report. Moves: market-adjusted return over 10 trading days after the flag. Figures "
                       f"with fewer than {MIN_N} observations are reported as insufficient history; smaller groups are "
                       f"smoothed toward their parent rate with {SMOOTHING} pseudo-observations."}
+    if keep_observations:
+        out["observations"] = [_compact(p) for p in predictions]
+    return out
 
 
 def _summary(signal_type: str, rows: list[dict]) -> dict:
@@ -91,22 +109,62 @@ def write(tables: dict, path: Optional[Path] = None) -> None:
 
 
 _CACHE: Optional[dict] = None
+_BASE: Optional[dict] = None
+_LIVE: list[dict] = []
+
+
+def _base() -> dict:
+    global _BASE
+    if _BASE is None:
+        try:
+            _BASE = json.loads(TABLES_PATH.read_text())
+        except (OSError, ValueError):
+            _BASE = {"signals": {}, "overall_confirmation": {"labelled": 0, "confirmed": 0, "rate": None}}
+    return _BASE
 
 
 def load() -> dict:
+    """The backtest tables, pooled with live outcomes when set_live has supplied any."""
     global _CACHE
     if _CACHE is None:
-        try:
-            _CACHE = json.loads(TABLES_PATH.read_text())
-        except (OSError, ValueError):
-            _CACHE = {"signals": {}, "overall_confirmation": {"labelled": 0, "confirmed": 0, "rate": None}}
+        base = _base()
+        if not _LIVE or "observations" not in base:
+            _CACHE = {**base, "backtest_observations": len(base.get("observations", [])), "live_observations": 0}
+        else:
+            backtest = [_expand(r) for r in base["observations"]]
+            meta = {k: base[k] for k in ("period", "companies") if k in base}
+            _CACHE = build(backtest + _LIVE, meta, keep_observations=False)
+            _CACHE.update(source="walk-forward historical backtest pooled with live outcomes of hosted briefs",
+                          backtest_observations=len(backtest), live_observations=len(_LIVE),
+                          live_updated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
     return _CACHE
 
 
 def set_tables(tables: Optional[dict]) -> None:
     """Use these tables instead of the committed file (tests; None reloads the file)."""
-    global _CACHE
-    _CACHE = tables
+    global _CACHE, _BASE
+    _BASE = tables
+    _CACHE = None
+
+
+def live_observation(outcome: dict) -> Optional[dict]:
+    """A labelled live outcome as a table observation, or None when it carries no measurement yet."""
+    st = outcome.get("signal_type")
+    if not st:
+        return None
+    obs = {"signal_type": st, "severity": outcome.get("severity_at_detection") or outcome.get("severity") or "low",
+           "event_confirmed": outcome.get("event_confirmed"), "direction_correct": outcome.get("direction_correct"),
+           "abnormal_return_10d_pct": outcome.get("abnormal_return_10d_pct")}
+    if obs["event_confirmed"] is None and obs["direction_correct"] is None and obs["abnormal_return_10d_pct"] is None:
+        return None
+    return obs
+
+
+def set_live(outcomes: Optional[list[dict]]) -> None:
+    """Pool these live outcomes (outcome_labeller payloads) into the tables; None or [] drops them."""
+    global _LIVE, _CACHE
+    _LIVE = [o for o in (live_observation(x) for x in (outcomes or [])) if o]
+    _CACHE = None
 
 
 def _smoothed(k: int, n: int, prior: float) -> float:

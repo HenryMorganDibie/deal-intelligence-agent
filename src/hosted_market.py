@@ -21,6 +21,7 @@ Hosted API routes for market data (mounted by api/index.py):
   POST /api/watchlists                 create a watchlist; GET/DELETE /api/watchlists/{id}
   GET  /api/watchlists/{id}/feed.xml   RSS of matched events and deals
   GET  /api/evaluation                 historical backtest and live outcome statistics
+  GET  /api/pulse                      live market summary for the site (deal flow, events, measured rates)
   GET  /api/cron/ingest                daily (Vercel Cron): feed -> deals and events, webhooks
 """
 from __future__ import annotations
@@ -448,6 +449,63 @@ def _public_host(url: str) -> bool:
     return True
 
 
+# ── Live measurements: outcome counts and observations, refreshed at most hourly ──
+
+_LIVE_TTL = 3600
+_live_loaded_at = 0.0
+_live_stats: Optional[dict] = None
+
+
+async def refresh_live(client: httpx.AsyncClient, force: bool = False) -> Optional[dict]:
+    """Pull live outcome counts (per-market calibration) and observations (pooled into the measured
+    tables) so confidence and expected moves follow what the market has done since the backtest."""
+    global _live_loaded_at, _live_stats
+    if not _configured() or (not force and _live_loaded_at and time.monotonic() - _live_loaded_at < _LIVE_TTL):
+        return _live_stats
+    from src.engines import measured
+    from src.engines.adaptive_calibration import set_outcome_stats
+    try:
+        r1 = await _rpc(client, "outcome_stats", {})
+        r2 = await _rpc(client, "outcome_rows", {})
+    except httpx.HTTPError as e:
+        log.warning("live outcomes unavailable: %s", e)
+        return _live_stats
+    if r1.status_code == 200:
+        _live_stats = r1.json() or {}
+        set_outcome_stats(_live_stats)
+    if r2.status_code == 200:
+        measured.set_live(r2.json() or [])
+    if r1.status_code == 200 and r2.status_code == 200:
+        _live_loaded_at = time.monotonic()
+    return _live_stats
+
+
+def _measured_summary() -> dict:
+    from src.engines import measured
+    t = measured.load()
+    return {"source": t.get("source"), "period": t.get("period"), "overall_confirmation": t.get("overall_confirmation"),
+            "backtest_observations": t.get("backtest_observations", 0), "live_observations": t.get("live_observations", 0),
+            "live_updated_at": t.get("live_updated_at")}
+
+
+# ── Market pulse (public site) ───────────────────────────────────────────────
+
+@router.get("/api/pulse")
+async def market_pulse() -> dict:
+    from src.engines import pulse
+    if _configured():
+        async with httpx.AsyncClient(timeout=15) as client:
+            await refresh_live(client)
+    rows_d, rows_e = await run_in_threadpool(deals), await run_in_threadpool(events)
+    summary = _measured_summary()
+    try:
+        backtest = json.loads(_BACKTEST_SUMMARY.read_text())
+        summary["alpha_validation"] = backtest.get("alpha_validation")
+    except (OSError, ValueError):
+        pass
+    return pulse.build(rows_d, rows_e, summary, today=datetime.now(timezone.utc).date())
+
+
 # ── Evaluation ────────────────────────────────────────────────────────────────
 
 @router.get("/api/evaluation")
@@ -458,13 +516,9 @@ async def evaluation() -> dict:
         backtest = None
     live = None
     if _configured():
-        try:
-            async with httpx.AsyncClient(timeout=15) as client:
-                r = await _rpc(client, "outcome_stats", {})
-            live = r.json() if r.status_code == 200 else None
-        except httpx.HTTPError:
-            live = None
-    return {"historical_backtest": backtest, "live_outcomes": live,
+        async with httpx.AsyncClient(timeout=15) as client:
+            live = await refresh_live(client)
+    return {"historical_backtest": backtest, "live_outcomes": live, "measured_now": _measured_summary(),
             "method": "Historical: walk-forward replay, 30-day lookback, 90-day horizon, confirmation strictly after "
                       "each as-of date. Live: every hosted brief's signals labelled daily against later filings, "
                       "credible news and abnormal price moves."}

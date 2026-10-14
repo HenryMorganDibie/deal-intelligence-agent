@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { Container, Heading, Reveal, Section } from "./primitives";
+import type { Pulse } from "../lib/pulse";
 
 const ALPHA = [
   { name: "Severity", weight: 35, note: "rule-strength band" },
@@ -32,7 +33,16 @@ function Bar({ value, delay, tone = "bg-verified" }: { value: number; delay: num
   );
 }
 
-export function Scoring() {
+function alphaFinding(pulse: Pulse | null): string {
+  const b = pulse?.measured.alpha_validation?.bands;
+  if (!b || b.low.precision == null || b.high.precision == null) return "the evaluation page publishes the answer";
+  const p = (x: number | null) => `${Math.round((x ?? 0) * 100)}%`;
+  return `so far confirmations rise from ${p(b.low.precision)} in the lowest third of scores to ${p(b.middle.precision)} and ${p(
+    b.high.precision,
+  )} in the highest`;
+}
+
+export function Scoring({ pulse = null }: { pulse?: Pulse | null }) {
   return (
     <Section id="scoring" labelledBy="scoring-title">
       <Container>
@@ -65,7 +75,7 @@ export function Scoring() {
               </ul>
               <p className="mt-7 border-t hairline pt-5 text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">
                 The weights are design choices, not fitted values. The backtest tests whether a higher alpha means more
-                confirmed events, and the evaluation page publishes the answer. Scores of 70 or more, and every CRITICAL
+                confirmed events: {alphaFinding(pulse)}. Scores of 70 or more, and every CRITICAL
                 signal, require human review.
               </p>
             </div>

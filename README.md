@@ -266,7 +266,7 @@ deal-intelligence-agent/
 │   ├── data/
 │   │   ├── africa_countries.py         # the 54 countries: codes, languages, currency, exchange, regulators
 │   │   ├── country_indicators.json     # World Bank governance and macro snapshot (committed)
-│   │   └── measured_outcomes.json      # measured hit rates and moves, rebuilt by the backtest
+│   │   └── measured_outcomes.json      # backtest observations, hit rates and moves; pooled hourly with live outcomes
 │   ├── schemas/models.py               # All Pydantic types (25+ models)
 │   ├── engines/                        # 21 deterministic intelligence engines
 │   │   ├── deterministic_engine.py     # 70+ rules, NER, credibility

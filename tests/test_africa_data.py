@@ -600,3 +600,56 @@ def test_alpha_validation_reports_bands_and_correlation():
     assert v["bands"]["high"]["precision"] == 1.0 and v["bands"]["low"]["precision"] == 0.0
     assert v["verdict"] == "higher alpha went with more confirmations"
     assert spearman([1, 2, 3, 4], [1, 2, 3, 4]) == 1.0 and spearman([1, 2, 3], [3, 2, 1]) == -1.0
+
+
+def test_live_outcomes_move_the_measured_tables():
+    preds = [_pred("leadership_change", "high", c, move=m) for c, m in [(True, -2.0), (False, 1.0)] * 6]
+    ms.set_tables(ms.build(preds))
+    try:
+        before = ms.confirmation_rate("leadership_change", "high")
+        assert ms.load()["live_observations"] == 0
+        live = [{"signal_type": "leadership_change", "severity_at_detection": "high", "event_confirmed": True,
+                 "direction_correct": None, "abnormal_return_10d_pct": -5.0}] * 12
+        ms.set_live(live + [{"signal_type": "leadership_change", "severity_at_detection": "high"}])  # unlabelled: ignored
+        t = ms.load()
+        assert t["backtest_observations"] == 12 and t["live_observations"] == 12
+        after = ms.confirmation_rate("leadership_change", "high")
+        assert after["n"] == 24 and after["rate"] > before["rate"]
+        assert ms.expected_move("leadership_change", "high")["median"] < -2.0
+        ms.set_live(None)
+        assert ms.confirmation_rate("leadership_change", "high") == before
+    finally:
+        ms.set_live(None)
+        ms.set_tables(None)
+
+
+def test_committed_tables_keep_their_observations():
+    t = ms.load()
+    assert len(t.get("observations", [])) == t["backtest_observations"] > 0
+
+
+from datetime import date  # noqa: E402
+
+from src.engines import pulse  # noqa: E402
+
+
+def test_pulse_counts_only_stored_records():
+    d = [
+        {"id": "a", "deal_type": "acquisition", "announced": "2026-10-10", "amount_usd": 5e6, "country": "KE",
+         "countries": ["KE"], "headline": "A buys B", "sources": [{"publisher": "X"}], "investors": []},
+        {"id": "b", "deal_type": "equity_funding", "announced": "2026-10-01", "amount_usd": None, "country": "NG",
+         "countries": ["NG"], "headline": "C raises", "sources": [], "investors": []},
+        {"id": "c", "deal_type": "acquisition", "announced": "2025-01-01", "amount_usd": 9e9, "country": "ZA",
+         "countries": ["ZA"], "headline": "old", "sources": [], "investors": []},
+    ]
+    e = [{"id": "e1", "day": "2026-10-12", "signal_type": "credit_risk", "country": "GH", "headline": "h"},
+         {"id": "e2", "day": "2026-09-01", "signal_type": "credit_risk", "country": "GH", "headline": "old"}]
+    p = pulse.build(d, e, {"backtest_observations": 1}, today=date(2026, 10, 14))
+    assert p["deals"]["total"] == 3 and p["deals"]["countries"] == 3
+    assert p["deals"]["recent"] == 2 and p["deals"]["recent_disclosed_usd"] == 5_000_000
+    assert p["deals"]["recent_disclosed_n"] == 1
+    assert p["deals"]["largest"]["id"] == "a"
+    assert [x["id"] for x in p["deals"]["latest"]] == ["a", "b"]
+    assert p["deals"]["top_countries"][0]["name"] in {"Kenya", "Nigeria"}
+    assert p["events"]["recent"] == 1 and p["events"]["latest"][0]["country"]["name"] == "Ghana"
+    assert p["latest_record"] == "2026-10-12"

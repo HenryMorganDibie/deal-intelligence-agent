@@ -3,6 +3,10 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "../../components/Closing";
 import { SiteNav } from "../../components/SiteNav";
 import { Container } from "../../components/primitives";
+import { count, getPulse, shortDate, type Pulse } from "../../lib/pulse";
+
+// Figures in "Current state" follow the live data (see lib/pulse.ts).
+export const revalidate = 1800;
 
 export const metadata: Metadata = {
   title: "Methodology | Deal Intelligence",
@@ -38,7 +42,45 @@ const Code = ({ children }: { children: ReactNode }) => (
   </code>
 );
 
-export default function MethodologyPage() {
+const pct = (x: number | null | undefined) => (x == null ? "n/a" : `${Math.round(x * 100)}%`);
+
+function CurrentState({ pulse }: { pulse: Pulse }) {
+  const m = pulse.measured;
+  const bands = m.alpha_validation?.bands;
+  const rows: [string, string][] = [
+    ["Observations behind confidence and moves", `${count(m.backtest_observations)} backtest + ${count(m.live_observations)} live`],
+    [
+      "Flags later confirmed, all types",
+      m.overall_confirmation?.rate != null
+        ? `${pct(m.overall_confirmation.rate)} (${m.overall_confirmation.confirmed} of ${m.overall_confirmation.labelled})`
+        : "n/a",
+    ],
+  ];
+  if (bands) rows.push(["Confirmed, by alpha third (low / middle / high)", `${pct(bands.low.precision)} / ${pct(bands.middle.precision)} / ${pct(bands.high.precision)}`]);
+  rows.push(
+    ["Deals stored", `${count(pulse.deals.total)} in ${pulse.deals.countries} countries`],
+    [`Deals in the last ${pulse.deals.window_days} days`, `${count(pulse.deals.recent)} in ${pulse.deals.recent_countries} countries`],
+  );
+  return (
+    <section aria-labelledby="state-title" className="panel mt-8 p-6">
+      <h2 id="state-title" className="eyebrow">Current state · {shortDate(pulse.as_of)}</h2>
+      <dl className="mt-4 grid gap-x-6 gap-y-3 text-[0.875rem] sm:grid-cols-[1fr_auto]">
+        {rows.map(([k, v]) => (
+          <div key={k} className="contents">
+            <dt className="text-[color:var(--muted)]">{k}</dt>
+            <dd className="kbd text-[color:var(--text)] sm:text-right">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-4 text-[0.75rem] text-[color:var(--dim)]">
+        Recomputed from the live data every 30 minutes; live outcomes are added as hosted briefs are labelled each day.
+      </p>
+    </section>
+  );
+}
+
+export default async function MethodologyPage() {
+  const pulse = await getPulse();
   return (
     <>
       <SiteNav />
@@ -52,6 +94,7 @@ export default function MethodologyPage() {
             as data that is not. Results, including weak ones, are on the{" "}
             <a href="/app/evaluation" className="text-verified hover:underline">evaluation page</a>.
           </p>
+          {pulse && <CurrentState pulse={pulse} />}
           <nav aria-label="Sections" className="mt-8 flex flex-wrap gap-2 text-[0.8125rem]">
             {[
               ["detection", "Detection"], ["calibration", "Confidence"], ["alpha", "Alpha score"], ["moves", "Expected moves"],
@@ -88,8 +131,10 @@ export default function MethodologyPage() {
             </p>
             <Code>rate = (confirmed + 5 × parent_rate) / (labelled + 5)</Code>
             <p>
-              Once a signal type has 10 live outcomes in a market (US or Africa), the observed live rate replaces the backtest
-              rate for that market.
+              The tables are not frozen at the backtest. Every hosted brief is labelled against what followed (price reaction
+              after 12 days, confirmation after 95), and each hour the service pools those live outcomes with the backtest
+              observations and recomputes every rate and move range. Once a signal type has 10 live outcomes in a market (US
+              or Africa), the observed live rate for that market is used directly.
             </p>
           </Part>
 
@@ -193,7 +238,11 @@ export default function MethodologyPage() {
 
           <Part id="limits" title="Known limits">
             <ul className="list-disc space-y-2 pl-5">
-              <li>Measured rates rest on a backtest of 46 companies over 18 months; several signal types have small samples, shown with every figure.</li>
+              <li>
+                Measured rates rest on a backtest of 46 companies over 18 months
+                {pulse ? `, plus ${count(pulse.measured.live_observations)} live outcomes so far` : ""}; several signal types
+                have small samples, shown with every figure.
+              </li>
               <li>Some signal types do not beat their base rate in the backtest (M&amp;A among them). The evaluation page shows which.</li>
               <li>Deals come from public reporting: undisclosed private deals cannot appear. Sample audits find about 80% of records fully correct and 90% genuine transactions.</li>
               <li>Statement layouts vary, so a figure is only marked verified when an accounting identity confirms it; interim statements are linked, not parsed.</li>

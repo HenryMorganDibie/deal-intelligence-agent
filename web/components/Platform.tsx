@@ -1,6 +1,7 @@
+import { count, type Pulse } from "../lib/pulse";
 import { ArrowRight, Container, Heading, Reveal, Section } from "./primitives";
 
-const MODULES = [
+const modules = (pulse: Pulse | null) => [
   {
     title: "Companies and financial statements",
     body: "NGX and NSE Kenya audited statements parsed from the filing and checked with accounting identities, figure by figure. Yahoo Finance and SEC cross-checks for other listings.",
@@ -8,7 +9,9 @@ const MODULES = [
   },
   {
     title: "PE, VC, debt and M&A transactions",
-    body: "1,700+ deals over two years in 48 countries, extracted daily in English, French and Portuguese, every source linked.",
+    body: pulse?.deals.total
+      ? `${count(pulse.deals.total)} deals in ${pulse.deals.countries} countries, ${pulse.deals.recent} of them in the last ${pulse.deals.window_days} days, extracted daily in English, French and Portuguese, every source linked.`
+      : "1,700+ deals over two years in 48 countries, extracted daily in English, French and Portuguese, every source linked.",
     href: "/app/deals",
   },
   {
@@ -48,7 +51,8 @@ const MODULES = [
   },
 ];
 
-export function Platform() {
+export function Platform({ pulse = null }: { pulse?: Pulse | null }) {
+  const MODULES = modules(pulse);
   return (
     <Section id="platform" labelledBy="platform-title">
       <Container>
