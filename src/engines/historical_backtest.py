@@ -268,7 +268,11 @@ def run(
     from src.engines.event_sources import news_events
     from src.engines.outcome_labeller import (
         filing_events, ground_truth, label_prediction, market_for_ticker, confirming_events, NEWS_CONFIRMABLE,
+        default_price_moves,
     )
+
+    def price_moves(symbol: str, iso: str) -> dict:
+        return _cached(f"px:{symbol}:{iso}", lambda: default_price_moves(symbol, iso)) or {}
 
     universe = universe or UNIVERSE
     src = Sources()
@@ -317,7 +321,7 @@ def run(
                     continue                      # same signal still live: not a new prediction
                 o = label_prediction(company_name=company, ticker=ticker, signal_type=SignalType(p.signal_type),
                                      severity=p.severity, detection_date=as_of, expected_direction=p.direction,
-                                     events=events, today=today) or {}
+                                     events=events, today=today, price_moves=price_moves) or {}
                 official = None
                 if o.get("event_confirmed") is not None:
                     official_events = [e for e in events if not e.get("signal_types")
