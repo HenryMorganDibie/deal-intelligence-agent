@@ -18,6 +18,7 @@ import re
 from datetime import datetime, timedelta
 from typing import Optional
 
+from src.data.africa_countries import COUNTRIES, regulator_acronyms
 from src.utils.clock import utcnow
 from src.schemas.models import (
     SECFiling, NewsItem, SignalCandidate, SignalType, AgentState
@@ -126,6 +127,14 @@ DEFAULT_CREDIBILITY = 0.40
 # Each rule: (signal_type, [patterns], base_score)
 # Patterns are case-insensitive regex. base_score sets the pre-calibration weight.
 # Rules are ordered by specificity — more specific patterns score higher.
+
+# Every African national regulator and central bank in the 54-country registry.
+_AFRICAN_REGULATORS = "|".join(
+    re.escape(n.lower()) for n in sorted(
+        {a for a in regulator_acronyms() if len(a) >= 3}
+        | {c.central_bank.split(" (")[0] for c in COUNTRIES}
+        | {c.securities_regulator for c in COUNTRIES if c.securities_regulator},
+        key=len, reverse=True))
 
 SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
 
@@ -264,6 +273,7 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
     (SignalType.REGULATORY_ACTION, [
         r"\b(sec|fsca|cma|cbn|sarb|cbk)\b.{0,30}\b(invest(igat\w*|ment)|probe|enforcement|sanction|fine|penalty|subpoena)\b",
         r"\b(doj|ftc|competition\s+commission)\b.{0,30}\b(invest\w*|antitrust|charge|fine)\b",
+        rf"\b({_AFRICAN_REGULATORS})\b.{{0,40}}\b(invest(igat\w*)|probe|sanction\w*|fine[sd]?|penalt\w*|suspend\w*|revok\w*)\b",
         r"\blicen(c|s)e\s+(revoked?|suspended?|cancelled?)\b",
         r"\bconsent\s+(order|decree|agreement)\b.{0,30}\b(regulat\w*|enforce\w*|penalt\w*)\b",
         r"\bcriminal\s+(charge|referral|indictment)\b.{0,30}\b(fraud|financ|securi)\b",

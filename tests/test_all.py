@@ -3327,7 +3327,7 @@ async def test_exchange_search_results_are_news_not_filings(monkeypatch):
             return []
         return [{"title": "Acme posts results", "link": "https://news.google.com/x", "description": "Acme",
                  "pubDate": "", "source_override": source_name, "publisher": "BusinessDay"}]
-    async def no_news(self, company_name, lookback_days=90, ticker=None):
+    async def no_news(self, company_name, lookback_days=90, ticker=None, country=None):
         return []
     monkeypatch.setattr(at.AfricaTool, "_fetch_rss", fake_rss)
     monkeypatch.setattr(at.AfricaTool, "fetch_african_news", no_news)

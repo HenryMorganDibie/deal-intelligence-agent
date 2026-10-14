@@ -53,6 +53,9 @@ class AnalysisRequest(BaseModel):
     company_name: str = Field(..., description="Target company name")
     ticker: Optional[str] = Field(None, description="Stock ticker if public (e.g. AAPL)")
     cik: Optional[str] = Field(None, description="SEC CIK identifier if known")
+    country: Optional[str] = Field(
+        None, description="ISO country code of an African company (any of the 54), e.g. NG, SN, AO. "
+                          "Inferred from the ticker suffix when omitted.")
     focus_signals: list[SignalType] = Field(
         default_factory=list,
         description="Specific signals to prioritise. Empty = all signals."
@@ -67,6 +70,17 @@ class AnalysisRequest(BaseModel):
     @classmethod
     def normalise_ticker(cls, v: Optional[str]) -> Optional[str]:
         return v.upper().strip() if v else v
+
+    @field_validator("country")
+    @classmethod
+    def known_country(cls, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return None
+        from src.data.africa_countries import get
+        c = get(v)
+        if c is None:
+            raise ValueError(f"unknown African country code: {v}")
+        return c.iso2
 
 
 # ─────────────────────────────────────────────

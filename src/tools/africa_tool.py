@@ -34,6 +34,7 @@ from urllib.parse import quote
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+from src.data import africa_countries
 from src.schemas.models import SECFiling, NewsItem
 from src.utils.clock import utcnow
 
@@ -718,17 +719,32 @@ class AfricaTool:
         news_items.sort(key=lambda n: n.relevance_score, reverse=True)
         return news_items
 
+    @staticmethod
+    def _country_news_urls(company_name: str, country: Optional[str],
+                           ticker: Optional[str]) -> list[tuple[str, str]]:
+        """Google News searches in the company's country edition, one per working language."""
+        c = africa_countries.resolve(country, ticker)
+        if c is None:
+            return []
+        urls = [(c.news_url(company_name, lang), f"{c.name} ({lang})") for lang in c.languages]
+        # Editions shared by several countries: narrow one query to this country.
+        if not c.news_edition:
+            urls.append((c.news_url(f"{company_name} {c.name}"), c.name))
+        return urls
+
     async def fetch_african_news(
         self,
         company_name: str,
         lookback_days: int = 90,
         max_items: int = 40,
         ticker: Optional[str] = None,
+        country: Optional[str] = None,
     ) -> list[NewsItem]:
         """
         Fetch company-relevant news from:
           - African financial media RSS feeds (BusinessDay, TechCabal, Moneyweb, etc.)
-          - Geo-scoped Google News (NG / ZA / KE, and French for francophone Africa)
+          - Geo-scoped Google News (NG / ZA / KE, French for francophone Africa), plus the
+            company's own country edition in each of its languages (any of the 54 countries)
           - Private capital & institutional sources: GPCA, PSG Capital, IFC,
             Bayport Finance, Zawya, Africa PE News (deals/exits/debt/VC), AVCA
         """
@@ -761,10 +777,8 @@ class AfricaTool:
             # Google requires every word, so keep French queries short.
             for q in (company_name, f"{company_name} résultats", f"{company_name} OPA OR fusion OR cession")
         ] + [
-            self._fetch_rss(url.format(query=quote(company_name)), label)
-            for suffixes, url, label in (((".CA",), GOOGLE_NEWS_AR, "Google News Arabic"),
-                                         ((".MZ", ".AO"), GOOGLE_NEWS_PT, "Google News Portuguese"))
-            if (ticker or "").upper().endswith(suffixes)
+            self._fetch_rss(url, f"Google News {label}")
+            for url, label in self._country_news_urls(company_name, country, ticker)
         ]
 
         all_tasks = rss_tasks + google_tasks
@@ -820,6 +834,7 @@ async def fetch_african_intelligence(
     company_name: str,
     ticker: Optional[str],
     lookback_days: int = 90,
+    country: Optional[str] = None,
 ) -> tuple[list[SECFiling], list[NewsItem]]:
     """
     Convenience wrapper: fetch African exchange filings + African news concurrently.
@@ -833,7 +848,7 @@ async def fetch_african_intelligence(
             tool.fetch_ngx_announcements(company_name, lookback_days),
             tool.fetch_nse_kenya_disclosures(company_name, lookback_days),
             tool.fetch_jse_news(company_name, lookback_days),
-            tool.fetch_african_news(company_name, lookback_days, ticker=ticker),
+            tool.fetch_african_news(company_name, lookback_days, ticker=ticker, country=country),
             return_exceptions=True,
         )
 

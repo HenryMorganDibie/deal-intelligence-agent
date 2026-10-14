@@ -42,7 +42,8 @@ class DataCollectionAgent:
             fetch_african_intelligence(
                 company_name=req.company_name,
                 ticker=req.ticker,
-                lookback_days=req.lookback_days
+                lookback_days=req.lookback_days,
+                country=req.country,
             )
         )
         news_task   = asyncio.create_task(
