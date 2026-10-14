@@ -41,7 +41,9 @@ const modules = (pulse: Pulse | null) => [
   },
   {
     title: "Historical outcomes and evaluation",
-    body: "A walk-forward backtest with precision against base rates, recall and price hit rates. Weak results are published as they are.",
+    body: pulse?.measured.backtest?.companies
+      ? `A walk-forward backtest over ${count(pulse.measured.backtest.companies.us + pulse.measured.backtest.companies.africa)} US and African companies, re-run every month: precision against base rates, recall and price moves, each with its interval. Weak results are published as they are.`
+      : "A walk-forward backtest with precision against base rates, recall and price moves, re-run every month. Weak results are published as they are.",
     href: "/app/evaluation",
   },
   {

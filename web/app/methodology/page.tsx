@@ -58,6 +58,15 @@ function CurrentState({ pulse }: { pulse: Pulse }) {
   ];
   if (bands) rows.push(["Confirmed, by alpha third (low / middle / high)", `${pct(bands.low.precision)} / ${pct(bands.middle.precision)} / ${pct(bands.high.precision)}`]);
   rows.push(
+    ...(m.backtest
+      ? ([
+          [
+            "Signal backtest",
+            `${count((m.backtest.companies?.us ?? 0) + (m.backtest.companies?.africa ?? 0))} companies, ${shortDate(m.backtest.start)} to ${shortDate(m.backtest.end)}${m.backtest.generated_at ? `, run ${shortDate(m.backtest.generated_at)}` : ""}`,
+          ],
+          ["Next backtest refresh", `${shortDate(m.backtest.next)} (monthly, on the 2nd)`],
+        ] as [string, string][])
+      : []),
     ["Deals stored", `${count(pulse.deals.total)} in ${pulse.deals.countries} countries`],
     [`Deals in the last ${pulse.deals.window_days} days`, `${count(pulse.deals.recent)} in ${pulse.deals.recent_countries} countries`],
   );
@@ -278,7 +287,11 @@ export default async function MethodologyPage() {
           <Part id="limits" title="Known limits">
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                Measured rates rest on a backtest of 46 companies over 18 months
+                Measured rates rest on a backtest of{" "}
+                {pulse?.measured.backtest?.companies
+                  ? `${count(pulse.measured.backtest.companies.us + pulse.measured.backtest.companies.africa)} companies`
+                  : "the companies in the current universe"}{" "}
+                over 18 monthly dates, re-run monthly
                 {pulse ? `, plus ${count(pulse.measured.live_observations)} live outcomes so far` : ""}; several signal types
                 have small samples, shown with every figure.
               </li>

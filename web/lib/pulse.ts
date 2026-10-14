@@ -68,6 +68,15 @@ export type Pulse = {
     backtest_observations: number;
     live_observations: number;
     live_updated_at?: string | null;
+    backtest?: {
+      generated_at: string | null;
+      start: string | null;
+      end: string | null;
+      companies: { us: number; africa: number } | null;
+      universe_size: number | null;
+      schedule: string;
+      next: string;
+    } | null;
     alpha_validation?: {
       labelled: number;
       bands: Record<"low" | "middle" | "high", AlphaBand>;

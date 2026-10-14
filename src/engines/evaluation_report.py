@@ -19,6 +19,7 @@ import io
 import json
 import math
 import statistics
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -59,6 +60,13 @@ RULES = [
      "rule": "95% Wilson score intervals for proportions; lift intervals divide the precision interval by the base rate "
              "(base-rate uncertainty not included); means use a normal approximation (mean ± 1.96·sd/√n)."},
 ]
+
+
+def next_refresh(today: date) -> date:
+    """The scheduled monthly backtest runs on the 2nd (.github/workflows/backtest.yml)."""
+    if today.day < 2:
+        return date(today.year, today.month, 2)
+    return date(today.year + (today.month == 12), today.month % 12 + 1, 2)
 
 
 def wilson(k: int, n: int) -> Optional[dict]:
@@ -182,13 +190,15 @@ def build(result: dict) -> dict:
                 "mean_move_in_predicted_direction_pct": mean_ci(signed),
             }
     return {
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "refresh": {"schedule": "monthly, on the 2nd (UTC)", "next": next_refresh(date.today()).isoformat()},
         "design": {"start": result["start"], "end": result["end"], "as_of_dates": result["as_of_dates"],
                    "companies": {"us": by_market.get("us", 0), "africa": by_market.get("africa", 0)},
                    "universe_size": result.get("universe_size"), "uncovered_companies": result.get("uncovered_companies"),
                    "company_months": months, "lookback_days": LOOKBACK_DAYS, "horizon_days": HORIZON_DAYS,
                    "reproduce": "python main.py backtest --historical (network; responses cached in data/hist_cache), "
                                 "then python main.py backtest --evaluation. Data-quality and attribution sets: "
-                                "python -m evaluation.deals.score, python -m evaluation.attribution.score [--heldout]"},
+                                "python -m evaluation.deals.score, python -m evaluation.attribution.score"},
         "funnel": funnel,
         "by_type": by_type,
         "pooled_confirmable": pooled,

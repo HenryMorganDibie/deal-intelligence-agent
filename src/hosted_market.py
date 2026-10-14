@@ -507,7 +507,20 @@ def _measured_summary() -> dict:
     t = measured.load()
     return {"source": t.get("source"), "period": t.get("period"), "overall_confirmation": t.get("overall_confirmation"),
             "backtest_observations": t.get("backtest_observations", 0), "live_observations": t.get("live_observations", 0),
-            "live_updated_at": t.get("live_updated_at")}
+            "live_updated_at": t.get("live_updated_at"), "backtest": _backtest_freshness()}
+
+
+def _backtest_freshness() -> Optional[dict]:
+    """When the backtest behind the measured figures ran, over what, and when it runs next."""
+    from src.engines.evaluation_report import next_refresh
+    r = _read_json(Path(__file__).resolve().parents[1] / "docs" / "evaluation_report.json") or {}
+    d = r.get("design") or {}
+    if not d:
+        return None
+    return {"generated_at": r.get("generated_at"), "start": d.get("start"), "end": d.get("end"),
+            "companies": d.get("companies"), "universe_size": d.get("universe_size"),
+            "schedule": (r.get("refresh") or {}).get("schedule", "monthly, on the 2nd (UTC)"),
+            "next": next_refresh(datetime.now(timezone.utc).date()).isoformat()}
 
 
 # ── Market pulse (public site) ───────────────────────────────────────────────

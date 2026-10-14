@@ -24,6 +24,8 @@ type TypeRow = {
 };
 
 type SignalReport = {
+  generated_at?: string;
+  refresh?: { schedule: string; next: string };
   design: {
     start: string;
     end: string;
@@ -33,6 +35,7 @@ type SignalReport = {
     lookback_days: number;
     horizon_days: number;
     reproduce: string;
+    universe_size?: number | null;
   };
   funnel: Record<string, number | string>;
   by_type: Record<string, { price_only: boolean } & Record<Market, TypeRow>>;
@@ -162,6 +165,46 @@ function returnSummary(r: SignalReport): string {
     .join(", ")}; all others are indistinguishable from no effect.`;
 }
 
+const day = (iso?: string | null) =>
+  iso ? new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }) : null;
+
+function nextRefresh(): string {
+  const d = new Date();
+  const n = d.getUTCDate() < 2 ? new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 2)) : new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 2));
+  return n.toISOString().slice(0, 10);
+}
+
+/** How current each part of the page is, and when it next changes. */
+function Freshness({ r, live }: { r: SignalReport; live: number }) {
+  const total = r.design.companies.us + r.design.companies.africa;
+  return (
+    <div className="mb-6 grid gap-3 text-[0.8125rem] sm:grid-cols-3">
+      <div className="panel p-4">
+        <p className="eyebrow">Signal backtest</p>
+        <p className="mt-1.5 leading-relaxed">
+          {r.generated_at ? <>Last run {day(r.generated_at)}</> : <>Current run</>} over {total.toLocaleString("en-US")} companies (
+          {r.design.companies.us.toLocaleString("en-US")} US, {r.design.companies.africa.toLocaleString("en-US")} African), replaying{" "}
+          {day(r.design.start)} to {day(r.design.end)}.
+        </p>
+        <p className="mt-1.5 text-[color:var(--muted)]">Re-run monthly on the 2nd. Next: {day(r.refresh?.next ?? nextRefresh())}.</p>
+      </div>
+      <div className="panel p-4">
+        <p className="eyebrow">Live outcomes</p>
+        <p className="mt-1.5 leading-relaxed">
+          {live.toLocaleString("en-US")} labelled so far from hosted briefs, added daily and pooled into the measured figures hourly.
+        </p>
+      </div>
+      <div className="panel p-4">
+        <p className="eyebrow">Labelled evaluation sets</p>
+        <p className="mt-1.5 leading-relaxed">
+          Deal data quality and attribution: samples labelled 14 October 2026. They change when new samples are drawn, never
+          silently.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 const NAV = [
   ["summary", "Summary"],
   ["populations", "What was counted"],
@@ -247,6 +290,7 @@ export default function EvaluationPage() {
           </a>
         ))}
       </nav>
+      {e?.signal_report && <Freshness r={e.signal_report} live={e.measured_now?.live_observations ?? 0} />}
       {error && <ErrorNote message={error} />}
       {!e ? (
         <Loading />

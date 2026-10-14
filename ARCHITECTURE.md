@@ -308,7 +308,8 @@ comparable-deal scoring and the risk formulas' scaling. Earlier versions carried
 expected-move ranges and materialisation rates attributed to academic studies that do not
 publish such figures; they were replaced with the measured tables, and the alpha weights
 were tested against outcomes (docs/BACKTEST.md, "Does alpha rank signals?"). The measured
-tables rest on 46 companies over 18 months, so several types have small samples; every
+tables rest on the backtest universe (docs/backtest_universe.csv, about 2,000 companies, re-run
+monthly over 18 monthly dates); some signal types still have small samples, so every
 figure carries its count.
 
 ---
