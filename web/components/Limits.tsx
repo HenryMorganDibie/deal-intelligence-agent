@@ -28,7 +28,7 @@ const limits = (q: Quality | null) => [
   {
     title: "Patterns, not a trained model",
     body: q?.attributionRecall
-      ? `Reproducible and auditable in English, French, Portuguese and Arabic, but phrasings the rules do not cover are missed: on held-out adversarial news headlines the engine found ${ciText(q.attributionRecall)} of real events, with false alarms on ${ciText(q.attributionFalseAlarm)} of no-event headlines.`
+      ? `Reproducible and auditable in English, French, Portuguese and Arabic, but phrasings the rules do not cover are missed: on a random sample of real news headlines about tracked companies the engine found ${ciText(q.attributionRecall)} of real events, with false alarms on ${ciText(q.attributionFalseAlarm)} of no-event headlines.`
       : "Reproducible and auditable in English, French, Portuguese and Arabic, but phrasings the rules do not cover are missed.",
   },
 ];

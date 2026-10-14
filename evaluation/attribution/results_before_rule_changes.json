@@ -1,0 +1,425 @@
+{
+ "natural": {
+  "overall": {
+   "items": 400,
+   "items_with_an_event": 58,
+   "exactly_right": {
+    "value": 0.87,
+    "low": 0.833,
+    "high": 0.899,
+    "k": 348,
+    "n": 400
+   },
+   "precision": {
+    "value": 0.8,
+    "low": 0.49,
+    "high": 0.943,
+    "k": 8,
+    "n": 10
+   },
+   "recall": {
+    "value": 0.133,
+    "low": 0.069,
+    "high": 0.242,
+    "k": 8,
+    "n": 60
+   },
+   "false_alarm_rate_on_no_event_items": {
+    "value": 0.006,
+    "low": 0.002,
+    "high": 0.021,
+    "k": 2,
+    "n": 342
+   }
+  },
+  "high_confidence_labels": {
+   "items": 336,
+   "items_with_an_event": 43,
+   "exactly_right": {
+    "value": 0.881,
+    "low": 0.842,
+    "high": 0.911,
+    "k": 296,
+    "n": 336
+   },
+   "precision": {
+    "value": 0.714,
+    "low": 0.359,
+    "high": 0.918,
+    "k": 5,
+    "n": 7
+   },
+   "recall": {
+    "value": 0.111,
+    "low": 0.048,
+    "high": 0.235,
+    "k": 5,
+    "n": 45
+   },
+   "false_alarm_rate_on_no_event_items": {
+    "value": 0.007,
+    "low": 0.002,
+    "high": 0.025,
+    "k": 2,
+    "n": 293
+   }
+  },
+  "by_market": {
+   "africa": {
+    "items": 200,
+    "items_with_an_event": 31,
+    "exactly_right": {
+     "value": 0.855,
+     "low": 0.8,
+     "high": 0.897,
+     "k": 171,
+     "n": 200
+    },
+    "precision": {
+     "value": 1.0,
+     "low": 0.342,
+     "high": 1.0,
+     "k": 2,
+     "n": 2
+    },
+    "recall": {
+     "value": 0.065,
+     "low": 0.018,
+     "high": 0.207,
+     "k": 2,
+     "n": 31
+    },
+    "false_alarm_rate_on_no_event_items": {
+     "value": 0.0,
+     "low": 0.0,
+     "high": 0.022,
+     "k": 0,
+     "n": 169
+    }
+   },
+   "us": {
+    "items": 200,
+    "items_with_an_event": 27,
+    "exactly_right": {
+     "value": 0.885,
+     "low": 0.833,
+     "high": 0.922,
+     "k": 177,
+     "n": 200
+    },
+    "precision": {
+     "value": 0.75,
+     "low": 0.409,
+     "high": 0.929,
+     "k": 6,
+     "n": 8
+    },
+    "recall": {
+     "value": 0.207,
+     "low": 0.098,
+     "high": 0.384,
+     "k": 6,
+     "n": 29
+    },
+    "false_alarm_rate_on_no_event_items": {
+     "value": 0.012,
+     "low": 0.003,
+     "high": 0.041,
+     "k": 2,
+     "n": 173
+    }
+   }
+  }
+ },
+ "hard": {
+  "overall": {
+   "items": 280,
+   "items_with_an_event": 49,
+   "exactly_right": {
+    "value": 0.85,
+    "low": 0.803,
+    "high": 0.887,
+    "k": 238,
+    "n": 280
+   },
+   "precision": {
+    "value": 0.706,
+    "low": 0.469,
+    "high": 0.867,
+    "k": 12,
+    "n": 17
+   },
+   "recall": {
+    "value": 0.24,
+    "low": 0.143,
+    "high": 0.374,
+    "k": 12,
+    "n": 50
+   },
+   "false_alarm_rate_on_no_event_items": {
+    "value": 0.022,
+    "low": 0.009,
+    "high": 0.05,
+    "k": 5,
+    "n": 231
+   }
+  },
+  "high_confidence_labels": {
+   "items": 218,
+   "items_with_an_event": 24,
+   "exactly_right": {
+    "value": 0.927,
+    "low": 0.884,
+    "high": 0.954,
+    "k": 202,
+    "n": 218
+   },
+   "precision": {
+    "value": 0.786,
+    "low": 0.524,
+    "high": 0.924,
+    "k": 11,
+    "n": 14
+   },
+   "recall": {
+    "value": 0.458,
+    "low": 0.279,
+    "high": 0.649,
+    "k": 11,
+    "n": 24
+   },
+   "false_alarm_rate_on_no_event_items": {
+    "value": 0.015,
+    "low": 0.005,
+    "high": 0.044,
+    "k": 3,
+    "n": 194
+   }
+  },
+  "by_category": {
+   "alias": {
+    "items": 40,
+    "items_with_an_event": 9,
+    "exactly_right": {
+     "value": 0.775,
+     "low": 0.625,
+     "high": 0.877,
+     "k": 31,
+     "n": 40
+    },
+    "precision": null,
+    "recall": {
+     "value": 0.0,
+     "low": 0.0,
+     "high": 0.278,
+     "k": 0,
+     "n": 10
+    },
+    "false_alarm_rate_on_no_event_items": {
+     "value": 0.0,
+     "low": 0.0,
+     "high": 0.11,
+     "k": 0,
+     "n": 31
+    }
+   },
+   "back_reference": {
+    "items": 40,
+    "items_with_an_event": 11,
+    "exactly_right": {
+     "value": 0.75,
+     "low": 0.598,
+     "high": 0.858,
+     "k": 30,
+     "n": 40
+    },
+    "precision": {
+     "value": 0.667,
+     "low": 0.208,
+     "high": 0.939,
+     "k": 2,
+     "n": 3
+    },
+    "recall": {
+     "value": 0.182,
+     "low": 0.051,
+     "high": 0.477,
+     "k": 2,
+     "n": 11
+    },
+    "false_alarm_rate_on_no_event_items": {
+     "value": 0.034,
+     "low": 0.006,
+     "high": 0.172,
+     "k": 1,
+     "n": 29
+    }
+   },
+   "historical": {
+    "items": 40,
+    "items_with_an_event": 2,
+    "exactly_right": {
+     "value": 0.925,
+     "low": 0.801,
+     "high": 0.974,
+     "k": 37,
+     "n": 40
+    },
+    "precision": {
+     "value": 0.0,
+     "low": 0.0,
+     "high": 0.793,
+     "k": 0,
+     "n": 1
+    },
+    "recall": {
+     "value": 0.0,
+     "low": 0.0,
+     "high": 0.658,
+     "k": 0,
+     "n": 2
+    },
+    "false_alarm_rate_on_no_event_items": {
+     "value": 0.026,
+     "low": 0.005,
+     "high": 0.135,
+     "k": 1,
+     "n": 38
+    }
+   },
+   "multi_party": {
+    "items": 40,
+    "items_with_an_event": 3,
+    "exactly_right": {
+     "value": 0.95,
+     "low": 0.835,
+     "high": 0.986,
+     "k": 38,
+     "n": 40
+    },
+    "precision": {
+     "value": 1.0,
+     "low": 0.207,
+     "high": 1.0,
+     "k": 1,
+     "n": 1
+    },
+    "recall": {
+     "value": 0.333,
+     "low": 0.061,
+     "high": 0.792,
+     "k": 1,
+     "n": 3
+    },
+    "false_alarm_rate_on_no_event_items": {
+     "value": 0.0,
+     "low": 0.0,
+     "high": 0.094,
+     "k": 0,
+     "n": 37
+    }
+   },
+   "negation": {
+    "items": 40,
+    "items_with_an_event": 5,
+    "exactly_right": {
+     "value": 0.95,
+     "low": 0.835,
+     "high": 0.986,
+     "k": 38,
+     "n": 40
+    },
+    "precision": {
+     "value": 1.0,
+     "low": 0.438,
+     "high": 1.0,
+     "k": 3,
+     "n": 3
+    },
+    "recall": {
+     "value": 0.6,
+     "low": 0.231,
+     "high": 0.882,
+     "k": 3,
+     "n": 5
+    },
+    "false_alarm_rate_on_no_event_items": {
+     "value": 0.0,
+     "low": 0.0,
+     "high": 0.099,
+     "k": 0,
+     "n": 35
+    }
+   },
+   "rumour_hypothetical": {
+    "items": 40,
+    "items_with_an_event": 10,
+    "exactly_right": {
+     "value": 0.825,
+     "low": 0.68,
+     "high": 0.913,
+     "k": 33,
+     "n": 40
+    },
+    "precision": {
+     "value": 0.714,
+     "low": 0.359,
+     "high": 0.918,
+     "k": 5,
+     "n": 7
+    },
+    "recall": {
+     "value": 0.5,
+     "low": 0.237,
+     "high": 0.763,
+     "k": 5,
+     "n": 10
+    },
+    "false_alarm_rate_on_no_event_items": {
+     "value": 0.067,
+     "low": 0.018,
+     "high": 0.213,
+     "k": 2,
+     "n": 30
+    }
+   },
+   "subsidiary_parent": {
+    "items": 40,
+    "items_with_an_event": 9,
+    "exactly_right": {
+     "value": 0.775,
+     "low": 0.625,
+     "high": 0.877,
+     "k": 31,
+     "n": 40
+    },
+    "precision": {
+     "value": 0.5,
+     "low": 0.095,
+     "high": 0.905,
+     "k": 1,
+     "n": 2
+    },
+    "recall": {
+     "value": 0.111,
+     "low": 0.02,
+     "high": 0.435,
+     "k": 1,
+     "n": 9
+    },
+    "false_alarm_rate_on_no_event_items": {
+     "value": 0.032,
+     "low": 0.006,
+     "high": 0.162,
+     "k": 1,
+     "n": 31
+    }
+   }
+  }
+ },
+ "sets": {
+  "natural": "400 real headlines naming a tracked company (200 US, 200 African), drawn at random from the news fetched for the 46 backtest companies: rates as they occur. The set to quote.",
+  "hard": "280 real headlines selected by filters for known failure modes (40 each): denials, references back to the company, subsidiaries and parents, two tracked companies, rumours and hypotheticals, historical references, short names. Enriched on purpose; read it by category."
+ },
+ "labels": "Labelled from the headline text alone, blind to the engine's output, by an AI annotator; every item keeps its real publisher, date and link. Pending independent human review. Labelled after the rule changes of 14 Oct 2026 and not used to tune them."
+}

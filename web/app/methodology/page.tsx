@@ -258,9 +258,10 @@ export default async function MethodologyPage() {
               downloadable from the evaluation page.
             </p>
             <p>
-              Attribution, whether a news item&apos;s event belongs to the target company, is tested on adversarial headlines
-              (pronouns, aliases, subsidiaries, several companies in one deal, denials, rumours, historical references)
-              {quality?.attributionRecall ? `; on the held-out set the engine found ${ciText(quality.attributionRecall)} of real events with precision ${ciText(quality.attributionPrecision)}` : ""}.
+              Attribution, whether a news item&apos;s event belongs to the target company, is tested on real headlines only, each
+              with its publisher, date and link: a random sample naming tracked companies, and a hard-case sample of denials,
+              references back to the company, subsidiaries, several companies, rumours, history and short names
+              {quality?.attributionRecall ? `. On the random sample the engine found ${ciText(quality.attributionRecall)} of real events with precision ${ciText(quality.attributionPrecision)}` : ""}.
               Corroboration counts independent stories, not articles.
             </p>
           </Part>

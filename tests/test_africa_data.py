@@ -714,19 +714,19 @@ def _news_candidate(text, publisher):
 def test_syndicated_copies_are_one_source():
     from src.engines.deterministic_engine import _StoryClusters
     s = _StoryClusters()
-    keys = {s.key(_news_candidate("MTN agrees to buy IHS Towers in $2.2 billion deal", "Reuters")),
-            s.key(_news_candidate("MTN agrees to buy IHS Towers in $2.2 billion deal - Yahoo Finance", "Yahoo Finance")),
-            s.key(_news_candidate("MTN agrees to buy IHS Towers in $2.2bn deal", "MarketScreener")),
-            s.key(_news_candidate("Telecom deal: MTN to acquire IHS (Reuters) - the group said on Monday", "Investing.com"))}
+    keys = {s.key(_news_candidate("Nimbus agrees to buy Orbit Towers in $2.2 billion deal", "Reuters")),
+            s.key(_news_candidate("Nimbus agrees to buy Orbit Towers in $2.2 billion deal - Yahoo Finance", "Yahoo Finance")),
+            s.key(_news_candidate("Nimbus agrees to buy Orbit Towers in $2.2bn deal", "MarketScreener")),
+            s.key(_news_candidate("Telecom deal: Nimbus to acquire Orbit (Reuters) - the group said on Monday", "Investing.com"))}
     assert len(keys) == 1 and s.duplicates == 3
 
 
 def test_independent_reports_still_corroborate():
     from src.engines.deterministic_engine import _StoryClusters
     s = _StoryClusters()
-    keys = {s.key(_news_candidate("MTN agrees to buy IHS Towers in $2.2 billion deal", "Reuters")),
-            s.key(_news_candidate("IHS board backs takeover by South Africa's MTN after strategic review", "TechCabal")),
-            s.key(_news_candidate("Nigeria's competition regulator to review MTN-IHS merger filing", "BusinessDay"))}
+    keys = {s.key(_news_candidate("Nimbus agrees to buy Orbit Towers in $2.2 billion deal", "Reuters")),
+            s.key(_news_candidate("Orbit board backs takeover by South Africa's Nimbus after strategic review", "TechCabal")),
+            s.key(_news_candidate("Nigeria's competition regulator to review Nimbus-Orbit merger filing", "BusinessDay"))}
     assert len(keys) == 3 and s.duplicates == 0
 
 
@@ -760,34 +760,34 @@ def test_report_keeps_confirmation_and_returns_apart():
 
 
 def _prov_deal(sources, **kw):
-    base = {"id": "x", "deal_type": "equity_funding", "stage": "completed", "target": "Moniepoint", "buyer": "Google",
-            "investors": ["Google"], "amount": 110_000_000.0, "currency": "USD", "amount_usd": 110_000_000.0,
+    base = {"id": "x", "deal_type": "equity_funding", "stage": "completed", "target": "Zuripay", "buyer": "Kestrel Ventures",
+            "investors": ["Kestrel Ventures"], "amount": 110_000_000.0, "currency": "USD", "amount_usd": 110_000_000.0,
             "stake_pct": None, "country": "NG", "sector": "fintech", "announced": "2024-10-29", "sources": sources}
     return {**base, **kw}
 
 
 def test_provenance_corroboration_needs_independent_stories():
     two = [{"publisher": "TechCabal", "date": "2024-10-29", "url": "u1",
-            "title": "Moniepoint raises $110 million led by Google"},
+            "title": "Zuripay raises $110 million led by Kestrel Ventures"},
            {"publisher": "BusinessDay", "date": "2024-10-30", "url": "u2",
-            "title": "Nigeria's Moniepoint secures $110 million from Google"}]
+            "title": "Nigeria's Zuripay secures $110 million from Kestrel Ventures"}]
     v = pv.verify(_prov_deal(two))
     fields = {f["field"]: f for f in v["fields"]}
     assert v["independent_stories"] == 2 and v["tier"] == "corroborated"
     assert fields["Amount (as reported)"]["status"] == "corroborated"
     assert fields["Sector"]["status"] == "classified"
-    copies = [{"publisher": "Reuters", "date": "2024-10-29", "url": "u1", "title": "Moniepoint raises $110 million led by Google"},
+    copies = [{"publisher": "Reuters", "date": "2024-10-29", "url": "u1", "title": "Zuripay raises $110 million led by Kestrel Ventures"},
               {"publisher": "Yahoo Finance", "date": "2024-10-29", "url": "u3",
-               "title": "Moniepoint raises $110 million led by Google - Reuters"}]
+               "title": "Zuripay raises $110 million led by Kestrel Ventures - Reuters"}]
     v = pv.verify(_prov_deal(copies))
     assert v["independent_stories"] == 1 and v["syndicated_copies"] == 1 and v["tier"] == "single source"
     assert {f["field"]: f for f in v["fields"]}["Amount (as reported)"]["status"] == "reported"
 
 
 def test_provenance_flags_disagreement_and_unconfirmed_completion():
-    srcs = [{"publisher": "A", "date": "2025-01-02", "url": "u1", "title": "Axian acquires Zuku for $63 million"},
-            {"publisher": "B", "date": "2025-01-05", "url": "u2", "title": "Axian Telecom acquires Zuku in $80 million deal"}]
-    d = _prov_deal(srcs, deal_type="acquisition", stage="completed", target="Zuku", buyer="Axian", investors=[],
+    srcs = [{"publisher": "A", "date": "2025-01-02", "url": "u1", "title": "Halo acquires Linea for $63 million"},
+            {"publisher": "B", "date": "2025-01-05", "url": "u2", "title": "Halo Telecom acquires Linea in $80 million deal"}]
+    d = _prov_deal(srcs, deal_type="acquisition", stage="completed", target="Linea", buyer="Halo", investors=[],
               amount=63_000_000.0, amount_usd=63_000_000.0)
     fields = {f["field"]: f for f in pv.verify(d)["fields"]}
     assert fields["Amount (as reported)"]["status"] == "uncertain"
@@ -803,14 +803,15 @@ def test_party_strings_are_split_or_dropped():
     assert inv.canonical("NATCO Pharma") == inv.canonical("Natco Pharma")
 
 
+# Fictional companies only: unit tests of code paths, not claims about real firms.
 @pytest.mark.parametrize("company,title,expected", [
-    ("MultiChoice", "MultiChoice denies receiving takeover approach", set()),
-    ("Boeing", "Boeing CEO will not resign, board says", set()),
-    ("GTCO", "GTCO denies merger talks but confirms CFO exit", {"leadership_change"}),
-    ("Safaricom", "Safaricom posts results; it also said its chief executive will step down", {"leadership_change"}),
-    ("MTN Group", "MTN Nigeria CFO resigns", set()),
-    ("Goldman Sachs", "SEC fines Goldman Sachs $6 million over trade reporting failures", {"regulatory_action"}),
-    ("GCB Bank", "S&P downgrades GCB Bank to CCC+ on liquidity strain", {"credit_risk"}),
+    ("Acme Telecom", "Acme Telecom denies receiving takeover approach", set()),
+    ("Acme Holdings", "Acme Holdings CEO will not resign, board says", set()),
+    ("Kora Bank", "Kora Bank denies merger talks but confirms CFO exit", {"leadership_change"}),
+    ("Zuri Retail", "Zuri Retail posts results; it also said its chief executive will step down", {"leadership_change"}),
+    ("Nimbus Group", "Nimbus Nigeria CFO resigns", set()),
+    ("Kora Bank", "Securities regulator fines Kora Bank $6 million over reporting failures", {"regulatory_action"}),
+    ("Kora Bank", "S&P downgrades Kora Bank to CCC+ on liquidity strain", {"credit_risk"}),
 ])
 def test_headline_attribution(company, title, expected):
     from src.engines.deterministic_engine import _company_matchers, _mentions_company, match_rules_for_target

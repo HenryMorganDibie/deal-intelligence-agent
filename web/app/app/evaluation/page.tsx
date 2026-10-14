@@ -69,16 +69,23 @@ type DataQuality = {
   heldout_names: { names: number; malformed_names_caught: CI; valid_names_resolved_to_the_right_organisation: CI } | null;
   labels: string;
 };
-type AttrStats = { exactly_right: CI; precision: CI; recall: CI; false_alarm_rate_on_no_event_cases: CI };
-type Attribution = { cases: number; overall: AttrStats; by_category: Record<string, AttrStats & { cases: number }> };
+type AttrStats = {
+  items: number;
+  items_with_an_event: number;
+  exactly_right: CI;
+  precision: CI;
+  recall: CI;
+  false_alarm_rate_on_no_event_items: CI;
+};
+type AttrSet = { overall: AttrStats; high_confidence_labels: AttrStats; by_market?: Record<string, AttrStats>; by_category?: Record<string, AttrStats> };
+type Attribution = { natural: AttrSet | null; hard: AttrSet | null; sets: Record<string, string>; labels: string };
 
 type Evaluation = {
   signal_report: SignalReport | null;
   data_quality: DataQuality | null;
   data_quality_baseline: DataQuality | null;
   attribution: Attribution | null;
-  attribution_baseline: Attribution | null;
-  attribution_heldout: Attribution | null;
+  attribution_before: Attribution | null;
   live_outcomes: Record<string, { confirmed: number; refuted: number }> | null;
   measured_now?: { backtest_observations: number; live_observations: number };
 };
@@ -225,7 +232,7 @@ export default function EvaluationPage() {
   const r = e?.signal_report;
   const dq = e?.data_quality;
   const ho = dq?.heldout_extraction;
-  const attrHo = e?.attribution_heldout;
+  const attrNat = e?.attribution?.natural;
 
   return (
     <Container className="py-10 lg:py-14">
@@ -271,9 +278,10 @@ export default function EvaluationPage() {
                 <li className="panel p-4 text-[0.875rem] leading-relaxed">
                   <p className="eyebrow">Attribution of news to the right company</p>
                   <p className="mt-2">
-                    On held-out adversarial headlines: precision <Ci x={attrHo?.overall.precision} />, recall{" "}
-                    <Ci x={attrHo?.overall.recall} />. Coverage of news-headline phrasing is the weakest part of the engine;
-                    filings and exchange notices are covered by separate, stronger rules.
+                    On a random sample of real headlines naming tracked companies: precision <Ci x={attrNat?.overall.precision} />,
+                    recall <Ci x={attrNat?.overall.recall} />, false alarms on headlines with no event{" "}
+                    <Ci x={attrNat?.overall.false_alarm_rate_on_no_event_items} />. Filings and exchange notices are covered by
+                    separate, stronger rules.
                   </p>
                 </li>
               </ul>
@@ -564,44 +572,80 @@ export default function EvaluationPage() {
             </Section>
           )}
 
-          {e.attribution && (
+          {e.attribution?.natural && (
             <Section
               id="attribution"
               title="Attribution: is the event about this company?"
               lede={
                 <>
-                  Adversarial headlines written blind to the engine, each with a target company and the events it truly reports
-                  about that company: pronouns, aliases, subsidiaries and parents, deals naming several companies, headlines without
-                  a subject, denials, rumours and historical references. The headlines are synthetic test text, not news.
+                  Real headlines only, each with its publisher, date and link, labelled with the events it reports about a target
+                  company. {e.attribution.sets.natural} {e.attribution.labels}
                 </>
               }
             >
-              <Table head={["Category", "Development, before", "Development, after", "Held-out: exactly right", "Held-out: false alarms on no-event cases", "Held-out: recall"]} minWidth="68rem">
-                {Object.keys(e.attribution.by_category).map((cat) => (
-                  <tr key={cat}>
-                    <Td>{words(cat)}</Td>
-                    <Td className="kbd"><Ci x={e.attribution_baseline?.by_category[cat]?.exactly_right} /></Td>
-                    <Td className="kbd"><Ci x={e.attribution?.by_category[cat]?.exactly_right} /></Td>
-                    <Td className="kbd"><Ci x={attrHo?.by_category[cat]?.exactly_right} /></Td>
-                    <Td className="kbd"><Ci x={attrHo?.by_category[cat]?.false_alarm_rate_on_no_event_cases} /></Td>
-                    <Td className="kbd"><Ci x={attrHo?.by_category[cat]?.recall} /></Td>
-                  </tr>
-                ))}
-                <tr>
-                  <Td className="font-medium">All cases</Td>
-                  <Td className="kbd"><Ci x={e.attribution_baseline?.overall.exactly_right} /></Td>
-                  <Td className="kbd"><Ci x={e.attribution?.overall.exactly_right} /></Td>
-                  <Td className="kbd"><Ci x={attrHo?.overall.exactly_right} /></Td>
-                  <Td className="kbd"><Ci x={attrHo?.overall.false_alarm_rate_on_no_event_cases} /></Td>
-                  <Td className="kbd"><Ci x={attrHo?.overall.recall} /></Td>
-                </tr>
-              </Table>
+              <h3 className="eyebrow">Random sample: the rates to quote</h3>
+              <div className="mt-3">
+                <Table head={["Companies", "Headlines", "With an event", "Exactly right", "Precision", "Recall", "False alarms on no-event headlines"]} minWidth="66rem">
+                  {[["All", e.attribution.natural.overall] as const, ...Object.entries(e.attribution.natural.by_market ?? {})].map(([k, v]) => (
+                    <tr key={k}>
+                      <Td className={k === "All" ? "font-medium" : ""}>{k === "us" ? "US companies" : k === "africa" ? "African companies" : k}</Td>
+                      <Td className="kbd">{v.items}</Td>
+                      <Td className="kbd">{v.items_with_an_event}</Td>
+                      <Td className="kbd"><Ci x={v.exactly_right} /></Td>
+                      <Td className="kbd"><Ci x={v.precision} /></Td>
+                      <Td className="kbd"><Ci x={v.recall} /></Td>
+                      <Td className="kbd"><Ci x={v.false_alarm_rate_on_no_event_items} /></Td>
+                    </tr>
+                  ))}
+                </Table>
+              </div>
+
+              {e.attribution.hard && (
+                <>
+                  <h3 className="eyebrow mt-8">Hard cases, by failure mode</h3>
+                  <p className="mt-2 max-w-3xl text-[0.8125rem] text-[color:var(--muted)]">{e.attribution.sets.hard}</p>
+                  <div className="mt-3">
+                    <Table head={["Failure mode", "Headlines", "With an event", "Exactly right", "Precision", "Recall", "False alarms on no-event headlines"]} minWidth="66rem">
+                      {Object.entries(e.attribution.hard.by_category ?? {}).map(([k, v]) => (
+                        <tr key={k}>
+                          <Td>{words(k)}</Td>
+                          <Td className="kbd">{v.items}</Td>
+                          <Td className="kbd">{v.items_with_an_event}</Td>
+                          <Td className="kbd"><Ci x={v.exactly_right} /></Td>
+                          <Td className="kbd"><Ci x={v.precision} /></Td>
+                          <Td className="kbd"><Ci x={v.recall} /></Td>
+                          <Td className="kbd"><Ci x={v.false_alarm_rate_on_no_event_items} /></Td>
+                        </tr>
+                      ))}
+                    </Table>
+                  </div>
+                </>
+              )}
+
+              {e.attribution_before?.natural && (
+                <>
+                  <h3 className="eyebrow mt-8">Before and after the 14 October rule changes, same headlines</h3>
+                  <div className="mt-3">
+                    <Table head={["Set", "Measure", "Before", "After"]} minWidth="40rem">
+                      {(["natural", "hard"] as const).flatMap((set) =>
+                        (["precision", "recall", "false_alarm_rate_on_no_event_items"] as const).map((m) => (
+                          <tr key={set + m}>
+                            <Td>{set === "natural" ? "Random sample" : "Hard cases"}</Td>
+                            <Td>{m === "false_alarm_rate_on_no_event_items" ? "False alarms" : words(m)}</Td>
+                            <Td className="kbd"><Ci x={e.attribution_before?.[set]?.overall[m]} /></Td>
+                            <Td className="kbd"><Ci x={e.attribution?.[set]?.overall[m]} /></Td>
+                          </tr>
+                        )),
+                      )}
+                    </Table>
+                  </div>
+                </>
+              )}
               <div className="mt-4">
-                <Callout tone="warn">
-                  The gap between development and held-out results shows that the rule changes made after reading the development
-                  errors fitted those cases more than they generalised. The held-out figures are the honest measure: the engine
-                  misses most events phrased in ways its rules do not cover, while false alarms stay low. Corroboration counts
-                  independent stories only: syndicated copies of one wire story, and near-identical headlines, count once.
+                <Callout>
+                  These headlines were labelled after the rule changes and were not used to make them, so both columns are honest
+                  measures. Corroboration counts independent stories only: syndicated copies of one wire story, and near-identical
+                  headlines, count once. Every error is listed in the downloadable error file with its source link.
                 </Callout>
               </div>
             </Section>
@@ -631,9 +675,11 @@ export default function EvaluationPage() {
                 ["identity_labels.jsonl", "Name pair labels"],
                 ["names_heldout_items.jsonl", "Held-out names"],
                 ["names_heldout_labels.jsonl", "Held-out name labels"],
-                ["attribution_cases.json", "Development attribution cases (synthetic headlines)"],
-                ["attribution_heldout_cases.json", "Held-out attribution cases (synthetic headlines)"],
-                ["attribution_errors.jsonl", "Development attribution errors"],
+                ["attribution_natural_items.jsonl", "Attribution: random real headlines"],
+                ["attribution_natural_labels.jsonl", "Attribution: random sample labels"],
+                ["attribution_hard_items.jsonl", "Attribution: hard-case real headlines"],
+                ["attribution_hard_labels.jsonl", "Attribution: hard-case labels"],
+                ["attribution_errors.jsonl", "Attribution: every error, with source links"],
               ].map(([f, label]) => (
                 <li key={f}>
                   <a href={apiUrl(`/api/evaluation/files/${f}`)} className="text-verified hover:underline">

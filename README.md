@@ -350,13 +350,13 @@ intervals, with development and held-out sets kept apart (`evaluation/README.md`
 ```bash
 python main.py backtest --evaluation          # signal outcomes: event confirmation and market reaction, separately
 python -m evaluation.deals.score              # deal extraction, deduplication, identity resolution
-python -m evaluation.attribution.score --heldout   # is a news event about the named company?
+python -m evaluation.attribution.score       # is a news event about the named company? (real headlines)
 ```
 
 Held-out results (14 Oct 2026): 82% [75–88] of extracted deal records are genuine transactions,
 92% [85–96] of deal-like headlines are caught, 71% [61–79] of records have every field right;
-attribution on adversarial news headlines finds 38% [28–49] of real events at 64% [50–77]
-precision. Each deal page shows field-level verification: corroborated by independent stories,
+on a random sample of 400 real news headlines, attribution finds 30% [20–42] of real events at
+86% [65–95] precision, with false alarms on 1% of headlines that report no event. Each deal page shows field-level verification: corroborated by independent stories,
 single source, derived, classified, uncertain or not disclosed.
 
 ---

@@ -19,16 +19,15 @@ page renders them.
   Items the annotator was unsure of are marked `"confidence": "low"` and reported separately.
 - **They have not yet been reviewed by an independent human.** Treat them as a documented first pass:
   every item and label is published, and disagreements change the numbers transparently.
-- The attribution cases are **synthetic headlines written for testing**, some about real companies.
-  They are not news and must not be quoted as such.
+- Attribution is tested on **real headlines only**, each with its real publisher, date and link.
 
 ## Development and held-out sets
 
-The first sets (`extraction_*`, `dedup_*`, `identity_*`, `attribution/cases.json`) were used as
+The first deal sets (`extraction_*`, `dedup_*`, `identity_*`) were used as
 **development sets**: their errors were read and the system was changed. Their post-fix numbers are
 therefore optimistic, and `results_baseline.json` keeps the numbers from before any change.
 
-The **held-out sets** (`heldout_*`, `attribution/heldout_cases.json`) were drawn and labelled after
+The **held-out sets** (`heldout_*`) and both attribution sets were drawn and labelled after
 those changes and have never been used for tuning. They are the numbers to rely on. Once a held-out
 set's errors are used to change the system, it becomes a development set and a new held-out set must
 be drawn (`python -m evaluation.deals.build_sets --heldout` with a new seed).
@@ -64,17 +63,21 @@ Identity: name pairs the resolver joins that are one entity rose from 38% [24–
 fragments ("Tolaram Welcomes IFC") are no longer credited to anyone. Held-out: valid names resolved
 to the right organisation 96% [88–98] n=70; malformed names caught 50% [24–76] n=10.
 
-Attribution (`python -m evaluation.attribution.score [--heldout]`):
+Attribution (`python -m evaluation.attribution.score`), on real headlines about the 46 backtest
+companies (`attribution/build_sets.py`):
 
-| Measure | Development, before | Development, after | Held-out |
+| Set | Measure | Before the 14 Oct rule changes | After |
 |---|---|---|---|
-| Exactly right | 54% [47–62] n=160 | 75% [68–81] n=160 | 55% [46–64] n=120 |
-| Precision | 57% [39–74] | 86% [75–92] | 64% [50–77] |
-| Recall | 19% [12–28] | 64% [53–73] | 38% [28–49] |
-| False alarms on no-event cases | 10% [5–18] | 9% [4–17] | 15% [8–28] |
+| Random sample, 400 headlines (58 with an event) | Precision | 80% [49–94] (8/10) | 86% [65–95] (18/21) |
+| | Recall | 13% [7–24] (8/60) | 30% [20–42] (18/60) |
+| | False alarms on no-event headlines | 1% [0–2] (2/342) | 1% [0–3] (3/342) |
+| Hard cases, 280 headlines (49 with an event) | Precision | 71% [47–87] (12/17) | 68% [46–85] (13/19) |
+| | Recall | 24% [14–37] (12/50) | 26% [16–40] (13/50) |
 
-The development gains did not fully carry over to held-out cases: the rules still miss most events
-phrased in ways they do not cover (news headlines in particular). This is reported as measured.
+On real news the engine is rarely wrong when it fires, but it misses most events: recall is the
+weakness, worst for short names and tickers it is not given (0 of 10) and for events at
+subsidiaries and parents. Both sets were labelled after the rule changes and were not used to make
+them. Every error is in `attribution/errors.jsonl` with its source link.
 
 ## Files
 
@@ -87,5 +90,7 @@ phrased in ways they do not cover (news headlines in particular). This is report
 | `deals/identity_items.jsonl`, `identity_labels.jsonl` | 80 name pairs |
 | `deals/heldout_names_items.jsonl`, `heldout_names_labels.jsonl` | 80 held-out party names |
 | `deals/score.py`, `results.json`, `results_baseline.json`, `errors.jsonl` | Scorer, results, every error |
-| `attribution/cases.json`, `heldout_cases.json` | 160 development and 120 held-out synthetic cases |
-| `attribution/score.py`, `results*.json`, `*errors.jsonl` | Scorer, results, every error |
+| `attribution/build_sets.py` | Samplers for the real-headline sets (fixed seed) |
+| `attribution/natural_items.jsonl`, `natural_labels.jsonl` | 400 random real headlines and labels |
+| `attribution/hard_items.jsonl`, `hard_labels.jsonl` | 280 hard-case real headlines and labels |
+| `attribution/score.py`, `results.json`, `results_before_rule_changes.json`, `errors.jsonl` | Scorer, results, every error |

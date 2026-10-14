@@ -213,14 +213,14 @@ export async function getQuality(): Promise<Quality | null> {
     if (!resp.ok) return null;
     const e = await resp.json();
     const ho = e?.data_quality?.heldout_extraction;
-    const at = e?.attribution_heldout?.overall;
+    const at = e?.attribution?.natural?.overall;
     return {
       dealPrecision: ho?.detection?.all?.precision ?? null,
       dealRecall: ho?.detection?.all?.recall ?? null,
       dealComplete: ho?.fields?.fully_correct_record ?? null,
       attributionPrecision: at?.precision ?? null,
       attributionRecall: at?.recall ?? null,
-      attributionFalseAlarm: at?.false_alarm_rate_on_no_event_cases ?? null,
+      attributionFalseAlarm: at?.false_alarm_rate_on_no_event_items ?? null,
     };
   } catch {
     return null;

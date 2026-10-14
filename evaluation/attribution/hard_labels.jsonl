@@ -1,0 +1,280 @@
+{"item_id": "h000", "about_target": true, "expected": [], "confidence": "high", "note": "complaint dismissed"}
+{"item_id": "h001", "about_target": true, "expected": [], "confidence": "high", "note": "decision not to fine"}
+{"item_id": "h002", "about_target": true, "expected": [], "confidence": "high", "note": "lifestyle piece"}
+{"item_id": "h003", "about_target": false, "expected": [], "confidence": "high", "note": "Apple only as hardware platform for a game"}
+{"item_id": "h004", "about_target": true, "expected": [], "confidence": "low", "note": "CBS News division head, not target C-suite; merger only as context"}
+{"item_id": "h005", "about_target": true, "expected": [], "confidence": "low", "note": "sourcing/recall expos\u00e9, no regulator action stated"}
+{"item_id": "h006", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa, not Visa Inc"}
+{"item_id": "h007", "about_target": true, "expected": [], "confidence": "high", "note": "product news"}
+{"item_id": "h008", "about_target": false, "expected": [], "confidence": "high", "note": "CEO change at separately named subsidiary MTN Cameroon"}
+{"item_id": "h009", "about_target": true, "expected": [], "confidence": "high", "note": "product/technical denial"}
+{"item_id": "h010", "about_target": true, "expected": [], "confidence": "high", "note": "product review"}
+{"item_id": "h011", "about_target": true, "expected": [], "confidence": "high", "note": "historical"}
+{"item_id": "h012", "about_target": true, "expected": [], "confidence": "high", "note": "product/technical"}
+{"item_id": "h013", "about_target": true, "expected": [], "confidence": "low", "note": "Rio chairman silent on bid; no reported bid/talks"}
+{"item_id": "h014", "about_target": true, "expected": [], "confidence": "high", "note": "product strategy"}
+{"item_id": "h015", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "alludes to pending Skydance deal"}
+{"item_id": "h016", "about_target": true, "expected": ["regulatory_action"], "confidence": "low", "note": "advertising watchdog asks Microsoft to change ads"}
+{"item_id": "h017", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "CVS agrees to buy Rite Aid pharmacy assets"}
+{"item_id": "h018", "about_target": true, "expected": ["leadership_change"], "confidence": "low", "note": "target's CEO appointed to group role, implies change"}
+{"item_id": "h019", "about_target": true, "expected": [], "confidence": "high", "note": "operational incident"}
+{"item_id": "h020", "about_target": true, "expected": [], "confidence": "high", "note": "commercial partnership"}
+{"item_id": "h021", "about_target": true, "expected": ["m_and_a_activity", "regulatory_action"], "confidence": "low", "note": "government reviews Nippon acquisition of target"}
+{"item_id": "h022", "about_target": true, "expected": [], "confidence": "high", "note": "product"}
+{"item_id": "h023", "about_target": false, "expected": [], "confidence": "high", "note": "results of subsidiary MTN Nigeria, plain reporting"}
+{"item_id": "h024", "about_target": true, "expected": [], "confidence": "high", "note": "parade"}
+{"item_id": "h025", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "Nippon-US Steel deal reframed as partnership"}
+{"item_id": "h026", "about_target": true, "expected": [], "confidence": "high", "note": "capex plan"}
+{"item_id": "h027", "about_target": false, "expected": [], "confidence": "high", "note": "regulatory action on subsidiary UBA Ghana"}
+{"item_id": "h028", "about_target": false, "expected": [], "confidence": "high", "note": "former Nike exec at another company"}
+{"item_id": "h029", "about_target": true, "expected": [], "confidence": "high", "note": "strategy commentary"}
+{"item_id": "h030", "about_target": true, "expected": [], "confidence": "high", "note": "investment opinion"}
+{"item_id": "h031", "about_target": true, "expected": [], "confidence": "low", "note": "report on plant challenges, no signal event"}
+{"item_id": "h032", "about_target": false, "expected": [], "confidence": "high", "note": "award by subsidiary MTN Nigeria"}
+{"item_id": "h033", "about_target": false, "expected": [], "confidence": "low", "note": "Kellogg cereal = WK Kellogg, not Kellanova"}
+{"item_id": "h034", "about_target": false, "expected": [], "confidence": "low", "note": "about MPI; 'debt-ridden' descriptor only"}
+{"item_id": "h035", "about_target": true, "expected": [], "confidence": "high", "note": "menu"}
+{"item_id": "h036", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "bottling arm sells operations to franchisees"}
+{"item_id": "h037", "about_target": true, "expected": [], "confidence": "high", "note": "customer incident"}
+{"item_id": "h038", "about_target": true, "expected": [], "confidence": "low", "note": "healthcare unit head, not CEO/CFO/board"}
+{"item_id": "h039", "about_target": false, "expected": [], "confidence": "high", "note": "subsidiary UBA Ghana staff event"}
+{"item_id": "h040", "about_target": true, "expected": [], "confidence": "high", "note": "CEO opinion"}
+{"item_id": "h041", "about_target": true, "expected": [], "confidence": "high", "note": "capacity plans"}
+{"item_id": "h042", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "Anglo American spinning off Anglo Platinum"}
+{"item_id": "h043", "about_target": true, "expected": [], "confidence": "high", "note": "product"}
+{"item_id": "h044", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "merger talks"}
+{"item_id": "h045", "about_target": true, "expected": [], "confidence": "high", "note": "product strategy"}
+{"item_id": "h046", "about_target": true, "expected": [], "confidence": "high", "note": "product/PR"}
+{"item_id": "h047", "about_target": true, "expected": [], "confidence": "high", "note": "layoffs, not debt restructuring"}
+{"item_id": "h048", "about_target": true, "expected": [], "confidence": "high", "note": "competitive commentary"}
+{"item_id": "h049", "about_target": true, "expected": [], "confidence": "high", "note": "CSR donation"}
+{"item_id": "h050", "about_target": true, "expected": [], "confidence": "high", "note": "product roadmap"}
+{"item_id": "h051", "about_target": true, "expected": [], "confidence": "high", "note": "operational cuts"}
+{"item_id": "h052", "about_target": true, "expected": [], "confidence": "high", "note": "shareholder ESG question"}
+{"item_id": "h053", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "CEO planned departure"}
+{"item_id": "h054", "about_target": true, "expected": [], "confidence": "high", "note": "denial of M-Pesa spin-off"}
+{"item_id": "h055", "about_target": true, "expected": [], "confidence": "low", "note": "private employee lawsuit, not regulator"}
+{"item_id": "h056", "about_target": true, "expected": [], "confidence": "high", "note": "pricing"}
+{"item_id": "h057", "about_target": true, "expected": [], "confidence": "high", "note": "strategy"}
+{"item_id": "h058", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "opinion on Boeing's Spirit acquisition"}
+{"item_id": "h059", "about_target": true, "expected": [], "confidence": "low", "note": "commercial airplanes unit head, not CEO"}
+{"item_id": "h060", "about_target": true, "expected": [], "confidence": "high", "note": "network partnership"}
+{"item_id": "h061", "about_target": true, "expected": [], "confidence": "high", "note": "picture gallery"}
+{"item_id": "h062", "about_target": true, "expected": [], "confidence": "high", "note": "ranking"}
+{"item_id": "h063", "about_target": true, "expected": [], "confidence": "high", "note": "plain results, no surprise framing"}
+{"item_id": "h064", "about_target": true, "expected": [], "confidence": "high", "note": "foundry customer win"}
+{"item_id": "h065", "about_target": true, "expected": [], "confidence": "high", "note": "pricing"}
+{"item_id": "h066", "about_target": true, "expected": [], "confidence": "high", "note": "IT outage/upgrade"}
+{"item_id": "h067", "about_target": false, "expected": [], "confidence": "high", "note": "Walmart only as shooting location"}
+{"item_id": "h068", "about_target": true, "expected": ["earnings_surprise"], "confidence": "low", "note": "first loss since listing, sharp swing"}
+{"item_id": "h069", "about_target": true, "expected": [], "confidence": "high", "note": "MoU"}
+{"item_id": "h070", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "government reportedly weighs 10% stake in Intel"}
+{"item_id": "h071", "about_target": true, "expected": [], "confidence": "high", "note": "facility"}
+{"item_id": "h072", "about_target": true, "expected": [], "confidence": "high", "note": "anniversary reflections"}
+{"item_id": "h073", "about_target": true, "expected": [], "confidence": "high", "note": "history"}
+{"item_id": "h074", "about_target": true, "expected": [], "confidence": "high", "note": "software for Apple product"}
+{"item_id": "h075", "about_target": true, "expected": [], "confidence": "high", "note": "retail plans"}
+{"item_id": "h076", "about_target": true, "expected": [], "confidence": "high", "note": "tariff mitigation"}
+{"item_id": "h077", "about_target": true, "expected": [], "confidence": "high", "note": "communications exec, not C-suite/board"}
+{"item_id": "h078", "about_target": true, "expected": [], "confidence": "high", "note": "competitor accusation, not regulator"}
+{"item_id": "h079", "about_target": true, "expected": [], "confidence": "high", "note": "market cap ranking"}
+{"item_id": "h080", "about_target": true, "expected": [], "confidence": "high", "note": "supply chain"}
+{"item_id": "h081", "about_target": true, "expected": [], "confidence": "high", "note": "CSR programme"}
+{"item_id": "h082", "about_target": true, "expected": ["regulatory_action"], "confidence": "low", "note": "labor law violation finding (NLRB) re ex-CEO conduct"}
+{"item_id": "h083", "about_target": true, "expected": [], "confidence": "low", "note": "private lawsuit procedural motion"}
+{"item_id": "h084", "about_target": true, "expected": [], "confidence": "high", "note": "competition"}
+{"item_id": "h085", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "takeover bid received (rejected)"}
+{"item_id": "h086", "about_target": true, "expected": [], "confidence": "high", "note": "marketing"}
+{"item_id": "h087", "about_target": true, "expected": [], "confidence": "high", "note": "tariff advocacy"}
+{"item_id": "h088", "about_target": true, "expected": [], "confidence": "high", "note": "logo opinion"}
+{"item_id": "h089", "about_target": true, "expected": [], "confidence": "high", "note": "profitability ranking"}
+{"item_id": "h090", "about_target": false, "expected": [], "confidence": "high", "note": "immigration visa"}
+{"item_id": "h091", "about_target": true, "expected": [], "confidence": "high", "note": "store closure"}
+{"item_id": "h092", "about_target": true, "expected": [], "confidence": "high", "note": "plain results"}
+{"item_id": "h093", "about_target": true, "expected": [], "confidence": "low", "note": "capital raise, not a listed signal"}
+{"item_id": "h094", "about_target": true, "expected": [], "confidence": "high", "note": "historical/opinion"}
+{"item_id": "h095", "about_target": true, "expected": [], "confidence": "high", "note": "product ranking"}
+{"item_id": "h096", "about_target": true, "expected": ["regulatory_action"], "confidence": "high", "note": "FAA restricts production expansion"}
+{"item_id": "h097", "about_target": true, "expected": [], "confidence": "high", "note": "product partnership"}
+{"item_id": "h098", "about_target": true, "expected": [], "confidence": "high", "note": "investment retrospective"}
+{"item_id": "h099", "about_target": true, "expected": [], "confidence": "high", "note": "project cancellation"}
+{"item_id": "h100", "about_target": false, "expected": [], "confidence": "high", "note": "fine on banking partner, not Apple"}
+{"item_id": "h101", "about_target": true, "expected": [], "confidence": "low", "note": "AI division head hire, not CEO/CFO/board"}
+{"item_id": "h102", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "CEO steps down"}
+{"item_id": "h103", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "acquisition completed"}
+{"item_id": "h104", "about_target": true, "expected": [], "confidence": "high", "note": "app store"}
+{"item_id": "h105", "about_target": true, "expected": [], "confidence": "low", "note": "explainer on court case"}
+{"item_id": "h106", "about_target": true, "expected": [], "confidence": "high", "note": "vaccine policy"}
+{"item_id": "h107", "about_target": true, "expected": ["leadership_change"], "confidence": "low", "note": "COO role ends"}
+{"item_id": "h108", "about_target": true, "expected": [], "confidence": "high", "note": "energy"}
+{"item_id": "h109", "about_target": true, "expected": [], "confidence": "high", "note": "product review"}
+{"item_id": "h110", "about_target": false, "expected": [], "confidence": "high", "note": "former Nike exec elsewhere"}
+{"item_id": "h111", "about_target": true, "expected": ["leadership_change"], "confidence": "low", "note": "Steuart Walton to lead (board chair)"}
+{"item_id": "h112", "about_target": true, "expected": [], "confidence": "high", "note": "shareholder proposal"}
+{"item_id": "h113", "about_target": true, "expected": [], "confidence": "high", "note": "employee issue"}
+{"item_id": "h114", "about_target": true, "expected": [], "confidence": "high", "note": "market cap"}
+{"item_id": "h115", "about_target": false, "expected": [], "confidence": "high", "note": "US ShopRite, not Shoprite Holdings"}
+{"item_id": "h116", "about_target": false, "expected": [], "confidence": "high", "note": "travel visas"}
+{"item_id": "h117", "about_target": true, "expected": [], "confidence": "high", "note": "strike"}
+{"item_id": "h118", "about_target": true, "expected": [], "confidence": "low", "note": "store closures, no expectations framing"}
+{"item_id": "h119", "about_target": false, "expected": [], "confidence": "high", "note": "about Spirit routes"}
+{"item_id": "h120", "about_target": true, "expected": [], "confidence": "low", "note": "frozen asset, not a sale"}
+{"item_id": "h121", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "SoftBank investment/stake in Intel"}
+{"item_id": "h122", "about_target": true, "expected": [], "confidence": "low", "note": "acquisition of Poppi as background to product news"}
+{"item_id": "h123", "about_target": true, "expected": [], "confidence": "low", "note": "activist student groups, not regulator"}
+{"item_id": "h124", "about_target": false, "expected": [], "confidence": "high", "note": "subsidiary MTN Nigeria tariffs"}
+{"item_id": "h125", "about_target": true, "expected": [], "confidence": "high", "note": "store closures"}
+{"item_id": "h126", "about_target": true, "expected": [], "confidence": "high", "note": "CEO opinion"}
+{"item_id": "h127", "about_target": true, "expected": [], "confidence": "high", "note": "store closures"}
+{"item_id": "h128", "about_target": true, "expected": [], "confidence": "high", "note": "store closures"}
+{"item_id": "h129", "about_target": true, "expected": [], "confidence": "high", "note": "sales estimate"}
+{"item_id": "h130", "about_target": true, "expected": [], "confidence": "low", "note": "Aetna (named subsidiary) head appointed"}
+{"item_id": "h131", "about_target": true, "expected": [], "confidence": "high", "note": "product"}
+{"item_id": "h132", "about_target": true, "expected": [], "confidence": "high", "note": "editorial"}
+{"item_id": "h133", "about_target": false, "expected": [], "confidence": "high", "note": "former Nike exec at Bath & Body Works"}
+{"item_id": "h134", "about_target": true, "expected": [], "confidence": "high", "note": "merchandise"}
+{"item_id": "h135", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "Mars acquisition clears FTC; clearance not action"}
+{"item_id": "h136", "about_target": true, "expected": [], "confidence": "high", "note": "layoffs"}
+{"item_id": "h137", "about_target": false, "expected": [], "confidence": "high", "note": "Aliko Dangote person"}
+{"item_id": "h138", "about_target": true, "expected": [], "confidence": "high", "note": "vaccine policy"}
+{"item_id": "h139", "about_target": false, "expected": [], "confidence": "high", "note": "Walmart apple juice product"}
+{"item_id": "h140", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "Boeing in talks to buy Spirit"}
+{"item_id": "h141", "about_target": true, "expected": [], "confidence": "high", "note": "historical throwback"}
+{"item_id": "h142", "about_target": true, "expected": [], "confidence": "low", "note": "weighing future of a unit; no reported sale talks"}
+{"item_id": "h143", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "Mars reportedly exploring acquisition of Kellanova"}
+{"item_id": "h144", "about_target": false, "expected": [], "confidence": "high", "note": "former Macy's store building"}
+{"item_id": "h145", "about_target": true, "expected": ["credit_risk"], "confidence": "low", "note": "weak finances propped up by customers; liquidity stress"}
+{"item_id": "h146", "about_target": true, "expected": ["credit_risk"], "confidence": "high", "note": "S&P downgrade to junk"}
+{"item_id": "h147", "about_target": true, "expected": [], "confidence": "high", "note": "network plans"}
+{"item_id": "h148", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "acquisition of US Steel closed"}
+{"item_id": "h149", "about_target": true, "expected": [], "confidence": "high", "note": "CEO trip"}
+{"item_id": "h150", "about_target": false, "expected": [], "confidence": "low", "note": "'Old McDonald's' appears to be a different venue"}
+{"item_id": "h151", "about_target": true, "expected": [], "confidence": "high", "note": "tariff increase, operational"}
+{"item_id": "h152", "about_target": true, "expected": [], "confidence": "high", "note": "safety incident"}
+{"item_id": "h153", "about_target": true, "expected": ["regulatory_action"], "confidence": "low", "note": "court rejects Boeing plea deal in criminal case"}
+{"item_id": "h154", "about_target": true, "expected": [], "confidence": "low", "note": "whistleblower allegations, no regulator action"}
+{"item_id": "h155", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "merger talks with WBD"}
+{"item_id": "h156", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "MTN Group selling shares in subsidiary MTN Uganda"}
+{"item_id": "h157", "about_target": true, "expected": [], "confidence": "high", "note": "product decision"}
+{"item_id": "h158", "about_target": false, "expected": [], "confidence": "high", "note": "MTN Nigeria subsidiary appointment, not C-suite of target"}
+{"item_id": "h159", "about_target": true, "expected": [], "confidence": "high", "note": "consumer comparison"}
+{"item_id": "h160", "about_target": true, "expected": ["regulatory_action"], "confidence": "low", "note": "Turkish antitrust fine on unnamed PepsiCo arm"}
+{"item_id": "h161", "about_target": true, "expected": [], "confidence": "high", "note": "store hours list"}
+{"item_id": "h162", "about_target": true, "expected": [], "confidence": "high", "note": "delivery delays, operational"}
+{"item_id": "h163", "about_target": true, "expected": [], "confidence": "low", "note": "plain net loss report, no expectation framing"}
+{"item_id": "h164", "about_target": false, "expected": [], "confidence": "high", "note": "Foxconn investment"}
+{"item_id": "h165", "about_target": true, "expected": ["leadership_change"], "confidence": "low", "note": "CEO search under way; front-runner speculative"}
+{"item_id": "h166", "about_target": true, "expected": [], "confidence": "high", "note": "network ranking"}
+{"item_id": "h167", "about_target": true, "expected": [], "confidence": "high", "note": "trademark filings"}
+{"item_id": "h168", "about_target": false, "expected": [], "confidence": "high", "note": "former CEO's personal bet"}
+{"item_id": "h169", "about_target": false, "expected": [], "confidence": "high", "note": "police case near a McDonald's"}
+{"item_id": "h170", "about_target": true, "expected": [], "confidence": "high", "note": "product/food safety update"}
+{"item_id": "h171", "about_target": true, "expected": [], "confidence": "high", "note": "product feature"}
+{"item_id": "h172", "about_target": true, "expected": [], "confidence": "high", "note": "labour strike vote"}
+{"item_id": "h173", "about_target": true, "expected": [], "confidence": "high", "note": "supply chain"}
+{"item_id": "h174", "about_target": true, "expected": [], "confidence": "high", "note": "sector commentary"}
+{"item_id": "h175", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "subsidiary share offer is MTN Group's stake sale; headline centres on MTN Uganda"}
+{"item_id": "h176", "about_target": true, "expected": [], "confidence": "high", "note": "retail changes"}
+{"item_id": "h177", "about_target": true, "expected": [], "confidence": "high", "note": "CEO pay"}
+{"item_id": "h178", "about_target": true, "expected": [], "confidence": "low", "note": "senator's report, not a regulator action"}
+{"item_id": "h179", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "merger discussions with WBD"}
+{"item_id": "h180", "about_target": true, "expected": [], "confidence": "high", "note": "capacity cut"}
+{"item_id": "h181", "about_target": true, "expected": [], "confidence": "high", "note": "customer complaint"}
+{"item_id": "h182", "about_target": false, "expected": [], "confidence": "high", "note": "former Visa exec hired elsewhere"}
+{"item_id": "h183", "about_target": true, "expected": [], "confidence": "high", "note": "vague announcement"}
+{"item_id": "h184", "about_target": true, "expected": [], "confidence": "high", "note": "holiday hours"}
+{"item_id": "h185", "about_target": true, "expected": [], "confidence": "low", "note": "vague changes, not a leadership event"}
+{"item_id": "h186", "about_target": true, "expected": [], "confidence": "low", "note": "new division head, not CEO/CFO/board"}
+{"item_id": "h187", "about_target": true, "expected": [], "confidence": "high", "note": "film announcement"}
+{"item_id": "h188", "about_target": true, "expected": [], "confidence": "high", "note": "partnership with former exec's company"}
+{"item_id": "h189", "about_target": false, "expected": [], "confidence": "high", "note": "MTN Nigeria subsidiary project"}
+{"item_id": "h190", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "BHP takeover bid for Anglo (rejected) - a bid was made"}
+{"item_id": "h191", "about_target": true, "expected": [], "confidence": "high", "note": "political comment"}
+{"item_id": "h192", "about_target": false, "expected": [], "confidence": "high", "note": "MTN Nigeria subsidiary appointments"}
+{"item_id": "h193", "about_target": true, "expected": [], "confidence": "high", "note": "sale promotion"}
+{"item_id": "h194", "about_target": true, "expected": [], "confidence": "high", "note": "pricing"}
+{"item_id": "h195", "about_target": true, "expected": [], "confidence": "high", "note": "data center investment"}
+{"item_id": "h196", "about_target": true, "expected": [], "confidence": "high", "note": "product review"}
+{"item_id": "h197", "about_target": true, "expected": [], "confidence": "high", "note": "safety incident"}
+{"item_id": "h198", "about_target": false, "expected": [], "confidence": "high", "note": "building formerly occupied by Discover"}
+{"item_id": "h199", "about_target": true, "expected": [], "confidence": "high", "note": "product launch"}
+{"item_id": "h200", "about_target": true, "expected": [], "confidence": "low", "note": "results growth without expectation framing"}
+{"item_id": "h201", "about_target": true, "expected": [], "confidence": "high", "note": "lawsuit dismissal affirmed"}
+{"item_id": "h202", "about_target": true, "expected": [], "confidence": "low", "note": "sale of a site/real estate, not a business"}
+{"item_id": "h203", "about_target": true, "expected": [], "confidence": "high", "note": "customer switch"}
+{"item_id": "h204", "about_target": false, "expected": [], "confidence": "high", "note": "'Discover' yoga week class"}
+{"item_id": "h205", "about_target": true, "expected": [], "confidence": "low", "note": "private class action settlement"}
+{"item_id": "h206", "about_target": true, "expected": ["regulatory_action"], "confidence": "high", "note": "court upholds labor board ruling against Starbucks"}
+{"item_id": "h207", "about_target": false, "expected": [], "confidence": "high", "note": "individual store manager crime"}
+{"item_id": "h208", "about_target": true, "expected": [], "confidence": "high", "note": "ESG report"}
+{"item_id": "h209", "about_target": true, "expected": [], "confidence": "high", "note": "retrospective on past acquisition"}
+{"item_id": "h210", "about_target": true, "expected": [], "confidence": "high", "note": "store closures explainer"}
+{"item_id": "h211", "about_target": false, "expected": [], "confidence": "high", "note": "MTN Nigeria CSR"}
+{"item_id": "h212", "about_target": true, "expected": [], "confidence": "high", "note": "founder obituary/history"}
+{"item_id": "h213", "about_target": true, "expected": ["earnings_surprise"], "confidence": "low", "note": "huge loss after naira collapse; may refer to MTN Nigeria"}
+{"item_id": "h214", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa"}
+{"item_id": "h215", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "Mars deal to buy Kellanova"}
+{"item_id": "h216", "about_target": true, "expected": [], "confidence": "high", "note": "cancellations"}
+{"item_id": "h217", "about_target": true, "expected": [], "confidence": "high", "note": "product features"}
+{"item_id": "h218", "about_target": true, "expected": [], "confidence": "low", "note": "design team reshuffle, not CEO/CFO/board"}
+{"item_id": "h219", "about_target": true, "expected": [], "confidence": "high", "note": "new route"}
+{"item_id": "h220", "about_target": true, "expected": [], "confidence": "high", "note": "software release"}
+{"item_id": "h221", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "possible sale reported (buyout talks)"}
+{"item_id": "h222", "about_target": false, "expected": [], "confidence": "high", "note": "Stanbic Uganda subsidiary CEO"}
+{"item_id": "h223", "about_target": true, "expected": [], "confidence": "high", "note": "Visa bidding for Apple card partnership, not M&A"}
+{"item_id": "h224", "about_target": true, "expected": [], "confidence": "high", "note": "product review"}
+{"item_id": "h225", "about_target": false, "expected": [], "confidence": "high", "note": "MTN Nigeria program"}
+{"item_id": "h226", "about_target": true, "expected": [], "confidence": "high", "note": "investor yield commentary"}
+{"item_id": "h227", "about_target": true, "expected": [], "confidence": "low", "note": "civil litigation ruling, not a regulator"}
+{"item_id": "h228", "about_target": true, "expected": [], "confidence": "high", "note": "history"}
+{"item_id": "h229", "about_target": true, "expected": [], "confidence": "low", "note": "former shareholder comment on settlement"}
+{"item_id": "h230", "about_target": true, "expected": [], "confidence": "high", "note": "Starliner operational"}
+{"item_id": "h231", "about_target": true, "expected": [], "confidence": "high", "note": "store closures"}
+{"item_id": "h232", "about_target": false, "expected": [], "confidence": "high", "note": "metaphor"}
+{"item_id": "h233", "about_target": true, "expected": [], "confidence": "high", "note": "CEO comments"}
+{"item_id": "h234", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "new COO/CFO appointed"}
+{"item_id": "h235", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "Boeing exploring acquiring part of Spirit"}
+{"item_id": "h236", "about_target": true, "expected": ["leadership_change"], "confidence": "low", "note": "incoming CEO referenced"}
+{"item_id": "h237", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa"}
+{"item_id": "h238", "about_target": true, "expected": [], "confidence": "high", "note": "store hours cut"}
+{"item_id": "h239", "about_target": false, "expected": [], "confidence": "high", "note": "MTN Nigeria subsidiary appointments"}
+{"item_id": "h240", "about_target": false, "expected": [], "confidence": "high", "note": "former exec joins other company"}
+{"item_id": "h241", "about_target": true, "expected": [], "confidence": "low", "note": "vague showdown (proxy fight?), no explicit event"}
+{"item_id": "h242", "about_target": false, "expected": [], "confidence": "high", "note": "Starbucks Korea, separate licensee"}
+{"item_id": "h243", "about_target": true, "expected": [], "confidence": "low", "note": "marketing chief, not CEO/CFO/board"}
+{"item_id": "h244", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa"}
+{"item_id": "h245", "about_target": true, "expected": [], "confidence": "high", "note": "store closures"}
+{"item_id": "h246", "about_target": false, "expected": [], "confidence": "high", "note": "MTN Nigeria subsidiary funding"}
+{"item_id": "h247", "about_target": false, "expected": [], "confidence": "low", "note": "GTB is GTCO's bank subsidiary; probe of subsidiary not target"}
+{"item_id": "h248", "about_target": true, "expected": [], "confidence": "high", "note": "promotion"}
+{"item_id": "h249", "about_target": true, "expected": [], "confidence": "high", "note": "customer complaints"}
+{"item_id": "h250", "about_target": false, "expected": [], "confidence": "high", "note": "MTN Nigeria certification"}
+{"item_id": "h251", "about_target": true, "expected": [], "confidence": "low", "note": "product recall, not regulator action"}
+{"item_id": "h252", "about_target": true, "expected": [], "confidence": "high", "note": "competition"}
+{"item_id": "h253", "about_target": true, "expected": ["leadership_change"], "confidence": "low", "note": "CEO transition referenced"}
+{"item_id": "h254", "about_target": true, "expected": [], "confidence": "low", "note": "lost civil lawsuit, not regulator"}
+{"item_id": "h255", "about_target": true, "expected": [], "confidence": "high", "note": "single restaurant closure"}
+{"item_id": "h256", "about_target": true, "expected": [], "confidence": "high", "note": "plant commissioning"}
+{"item_id": "h257", "about_target": true, "expected": [], "confidence": "high", "note": "store hours"}
+{"item_id": "h258", "about_target": true, "expected": [], "confidence": "high", "note": "investment return"}
+{"item_id": "h259", "about_target": true, "expected": [], "confidence": "low", "note": "hypothetical acquisition"}
+{"item_id": "h260", "about_target": true, "expected": [], "confidence": "high", "note": "mine safety"}
+{"item_id": "h261", "about_target": true, "expected": [], "confidence": "high", "note": "operational"}
+{"item_id": "h262", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "resigns from Access Holdings board"}
+{"item_id": "h263", "about_target": false, "expected": [], "confidence": "high", "note": "former exec obituary"}
+{"item_id": "h264", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "Boeing acquisition of Spirit approaching"}
+{"item_id": "h265", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "pending merger with Capital One"}
+{"item_id": "h266", "about_target": true, "expected": [], "confidence": "high", "note": "employee labour case"}
+{"item_id": "h267", "about_target": true, "expected": [], "confidence": "high", "note": "stock comparison"}
+{"item_id": "h268", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "Apple acquires startup"}
+{"item_id": "h269", "about_target": true, "expected": [], "confidence": "high", "note": "new loan, not restructuring"}
+{"item_id": "h270", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa"}
+{"item_id": "h271", "about_target": false, "expected": [], "confidence": "high", "note": "UBA Uganda subsidiary, denial"}
+{"item_id": "h272", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "commentary on Vizio acquisition"}
+{"item_id": "h273", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "new CEO elected"}
+{"item_id": "h274", "about_target": true, "expected": [], "confidence": "high", "note": "poster clarification"}
+{"item_id": "h275", "about_target": true, "expected": [], "confidence": "high", "note": "layoffs"}
+{"item_id": "h276", "about_target": false, "expected": [], "confidence": "high", "note": "Coca-Cola Southwest Beverages, a bottler"}
+{"item_id": "h277", "about_target": true, "expected": [], "confidence": "high", "note": "ex-employee claim"}
+{"item_id": "h278", "about_target": true, "expected": [], "confidence": "high", "note": "investment return"}
+{"item_id": "h279", "about_target": true, "expected": [], "confidence": "high", "note": "job cuts/restructuring, not debt"}

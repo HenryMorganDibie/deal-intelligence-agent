@@ -1,0 +1,400 @@
+{"item_id": "n000", "about_target": false, "expected": [], "confidence": "high", "note": "Uba Sani, a person"}
+{"item_id": "n001", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n002", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n003", "about_target": true, "expected": [], "confidence": "high", "note": "plain results"}
+{"item_id": "n004", "about_target": true, "expected": ["regulatory_action"], "confidence": "low", "note": "NTSB investigation findings against Boeing"}
+{"item_id": "n005", "about_target": true, "expected": ["regulatory_action"], "confidence": "high", "note": "FDA warning over Quaker plant"}
+{"item_id": "n006", "about_target": false, "expected": [], "confidence": "high", "note": "US visa bulletin"}
+{"item_id": "n007", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n008", "about_target": false, "expected": [], "confidence": "high", "note": "visa = travel permit"}
+{"item_id": "n009", "about_target": true, "expected": ["insider_activity"], "confidence": "high", "note": "activist Elliott stake"}
+{"item_id": "n010", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n011", "about_target": true, "expected": [], "confidence": "low", "note": "shutting a chain is closure, not sale"}
+{"item_id": "n012", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n013", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n014", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n015", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n016", "about_target": true, "expected": [], "confidence": "low", "note": "flat earnings, no expectation framing"}
+{"item_id": "n017", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "takeover bid context; survey about price"}
+{"item_id": "n018", "about_target": false, "expected": [], "confidence": "low", "note": "about Petco hiring ex-Walmart.com exec"}
+{"item_id": "n019", "about_target": true, "expected": [], "confidence": "low", "note": "country exit; sale not stated"}
+{"item_id": "n020", "about_target": false, "expected": [], "confidence": "high", "note": "sports club named after sponsor"}
+{"item_id": "n021", "about_target": true, "expected": ["leadership_change", "m_and_a_activity"], "confidence": "high", "note": ""}
+{"item_id": "n022", "about_target": true, "expected": ["regulatory_action"], "confidence": "high", "note": ""}
+{"item_id": "n023", "about_target": false, "expected": [], "confidence": "high", "note": "US ShopRite chain, different company"}
+{"item_id": "n024", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n025", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n026", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n027", "about_target": false, "expected": [], "confidence": "high", "note": "rugby team"}
+{"item_id": "n028", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n029", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n030", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n031", "about_target": true, "expected": [], "confidence": "low", "note": "response to editorial, no change reported"}
+{"item_id": "n032", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n033", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n034", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n035", "about_target": false, "expected": [], "confidence": "high", "note": "Bangladesh's Standard Bank Ltd, different company"}
+{"item_id": "n036", "about_target": false, "expected": [], "confidence": "high", "note": "sports club"}
+{"item_id": "n037", "about_target": true, "expected": [], "confidence": "low", "note": "strategy head not CEO/CFO/board"}
+{"item_id": "n038", "about_target": true, "expected": ["insider_activity"], "confidence": "high", "note": "chairman raises stake"}
+{"item_id": "n039", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n040", "about_target": false, "expected": [], "confidence": "high", "note": "rugby competition"}
+{"item_id": "n041", "about_target": true, "expected": ["regulatory_action"], "confidence": "low", "note": "fine likely on MTN Nigeria but headline says MTN"}
+{"item_id": "n042", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n043", "about_target": true, "expected": [], "confidence": "low", "note": "profit growth, no expectation framing"}
+{"item_id": "n044", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "reported bid interest"}
+{"item_id": "n045", "about_target": true, "expected": [], "confidence": "low", "note": "post-deal vision piece"}
+{"item_id": "n046", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n047", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n048", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n049", "about_target": true, "expected": [], "confidence": "high", "note": "equity rights issue not a listed signal"}
+{"item_id": "n050", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n051", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n052", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n053", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n054", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "sale of a property asset"}
+{"item_id": "n055", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": ""}
+{"item_id": "n056", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n057", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "implies Zenith sold its stake in JV"}
+{"item_id": "n058", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n059", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": ""}
+{"item_id": "n060", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n061", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n062", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n063", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n064", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n065", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n066", "about_target": true, "expected": ["leadership_change", "m_and_a_activity"], "confidence": "high", "note": ""}
+{"item_id": "n067", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "talks to sell clinics business"}
+{"item_id": "n068", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n069", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "board appointment"}
+{"item_id": "n070", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n071", "about_target": false, "expected": [], "confidence": "high", "note": "visa = travel permit"}
+{"item_id": "n072", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n073", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n074", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n075", "about_target": true, "expected": ["earnings_surprise"], "confidence": "high", "note": "beat estimates"}
+{"item_id": "n076", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n077", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n078", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n079", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n080", "about_target": false, "expected": [], "confidence": "high", "note": "store as crime location"}
+{"item_id": "n081", "about_target": false, "expected": [], "confidence": "low", "note": "product shopping guide"}
+{"item_id": "n082", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "executive director resigned"}
+{"item_id": "n083", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": ""}
+{"item_id": "n084", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n085", "about_target": true, "expected": ["regulatory_action"], "confidence": "high", "note": ""}
+{"item_id": "n086", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n087", "about_target": false, "expected": [], "confidence": "high", "note": "Bangladesh's Standard Bank Ltd"}
+{"item_id": "n088", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n089", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n090", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n091", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n092", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n093", "about_target": false, "expected": [], "confidence": "low", "note": "Coca-Cola United is a separate bottler"}
+{"item_id": "n094", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n095", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n096", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n097", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n098", "about_target": true, "expected": ["regulatory_action"], "confidence": "high", "note": ""}
+{"item_id": "n099", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n100", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n101", "about_target": false, "expected": [], "confidence": "low", "note": "award named after sponsor"}
+{"item_id": "n102", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n103", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n104", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n105", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n106", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n107", "about_target": true, "expected": [], "confidence": "low", "note": "unclear filing"}
+{"item_id": "n108", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n109", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n110", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n111", "about_target": false, "expected": [], "confidence": "high", "note": "US ShopRite"}
+{"item_id": "n112", "about_target": false, "expected": [], "confidence": "low", "note": "about distributor billionaire"}
+{"item_id": "n113", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n114", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": ""}
+{"item_id": "n115", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n116", "about_target": true, "expected": [], "confidence": "low", "note": "government-pushed split; not sanction/fine"}
+{"item_id": "n117", "about_target": false, "expected": [], "confidence": "high", "note": "Microsoft only as descriptor of Crayon"}
+{"item_id": "n118", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n119", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n120", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n121", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "Africa exits/sales; Mozambique review speculative"}
+{"item_id": "n122", "about_target": true, "expected": [], "confidence": "low", "note": "chief commercial officer not CEO/CFO/board"}
+{"item_id": "n123", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "new CFO"}
+{"item_id": "n124", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n125", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n126", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n127", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n128", "about_target": true, "expected": [], "confidence": "low", "note": "former exec; historical departure"}
+{"item_id": "n129", "about_target": false, "expected": [], "confidence": "high", "note": "peloton = cycling pack"}
+{"item_id": "n130", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n131", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": ""}
+{"item_id": "n132", "about_target": true, "expected": [], "confidence": "low", "note": "contract extension, no change"}
+{"item_id": "n133", "about_target": true, "expected": ["leadership_change"], "confidence": "low", "note": "group CEO death; named Access Bank Group"}
+{"item_id": "n134", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": ""}
+{"item_id": "n135", "about_target": false, "expected": [], "confidence": "high", "note": "visa = travel permit"}
+{"item_id": "n136", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n137", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n138", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n139", "about_target": true, "expected": ["regulatory_action"], "confidence": "low", "note": "court ruling against Vodacom in civil dispute"}
+{"item_id": "n140", "about_target": false, "expected": [], "confidence": "high", "note": "Uba Sani, a person"}
+{"item_id": "n141", "about_target": true, "expected": [], "confidence": "low", "note": "CIO not CEO/CFO/board"}
+{"item_id": "n142", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n143", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n144", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n145", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n146", "about_target": false, "expected": [], "confidence": "high", "note": "store as crime location"}
+{"item_id": "n147", "about_target": false, "expected": [], "confidence": "high", "note": "US ShopRite"}
+{"item_id": "n148", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n149", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n150", "about_target": false, "expected": [], "confidence": "high", "note": "Uba Sani, a person"}
+{"item_id": "n151", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n152", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n153", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n154", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n155", "about_target": true, "expected": [], "confidence": "low", "note": "opinion from Masimo CEO"}
+{"item_id": "n156", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n157", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": ""}
+{"item_id": "n158", "about_target": true, "expected": [], "confidence": "low", "note": "investor, not insider/activist"}
+{"item_id": "n159", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n160", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n161", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n162", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n163", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n164", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "reported merger, doubts on completion"}
+{"item_id": "n165", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n166", "about_target": true, "expected": [], "confidence": "low", "note": "debt maturity info, no distress"}
+{"item_id": "n167", "about_target": true, "expected": ["regulatory_action"], "confidence": "high", "note": "central bank finding of breach"}
+{"item_id": "n168", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n169", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n170", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n171", "about_target": false, "expected": [], "confidence": "low", "note": "store as accident location"}
+{"item_id": "n172", "about_target": true, "expected": [], "confidence": "low", "note": "bank is plaintiff"}
+{"item_id": "n173", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n174", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n175", "about_target": false, "expected": [], "confidence": "low", "note": "Macy's-branded fireworks show"}
+{"item_id": "n176", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n177", "about_target": true, "expected": ["distressed_asset"], "confidence": "high", "note": "Chapter 11 report"}
+{"item_id": "n178", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n179", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n180", "about_target": false, "expected": [], "confidence": "high", "note": "person surname Apple"}
+{"item_id": "n181", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n182", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n183", "about_target": false, "expected": [], "confidence": "low", "note": "event branded GTCO"}
+{"item_id": "n184", "about_target": true, "expected": [], "confidence": "low", "note": "weakness, no expectation framing"}
+{"item_id": "n185", "about_target": true, "expected": ["leadership_change"], "confidence": "low", "note": "executives poached; seniority unclear"}
+{"item_id": "n186", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": ""}
+{"item_id": "n187", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n188", "about_target": false, "expected": [], "confidence": "high", "note": "store as crime location"}
+{"item_id": "n189", "about_target": false, "expected": [], "confidence": "high", "note": "Global Drinks Intel publication"}
+{"item_id": "n190", "about_target": true, "expected": [], "confidence": "low", "note": "court rules in Starbucks' favor"}
+{"item_id": "n191", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n192", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n193", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n194", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n195", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "planned sale of Brazil nickel"}
+{"item_id": "n196", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n197", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n198", "about_target": true, "expected": [], "confidence": "low", "note": "historical ex-CEO comments"}
+{"item_id": "n199", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n200", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n201", "about_target": false, "expected": [], "confidence": "high", "note": "Kinyarwanda text, \"uba\" is a word"}
+{"item_id": "n202", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n203", "about_target": true, "expected": [], "confidence": "low", "note": "new CEO mentioned but headline is strategy, not appointment"}
+{"item_id": "n204", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n205", "about_target": true, "expected": [], "confidence": "low", "note": "Valterra earnings; demerger is background"}
+{"item_id": "n206", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n207", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n208", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "sale of coal assets to Peabody"}
+{"item_id": "n209", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n210", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": ""}
+{"item_id": "n211", "about_target": true, "expected": ["earnings_surprise"], "confidence": "high", "note": "earnings beat"}
+{"item_id": "n212", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n213", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n214", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa"}
+{"item_id": "n215", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n216", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n217", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n218", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n219", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n220", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n221", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n222", "about_target": true, "expected": [], "confidence": "low", "note": "trade retaliation, not a sanction on Boeing itself"}
+{"item_id": "n223", "about_target": true, "expected": [], "confidence": "high", "note": "forecast, not a rating downgrade"}
+{"item_id": "n224", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n225", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n226", "about_target": true, "expected": [], "confidence": "low", "note": "KfW (bank) suspicion, not a regulator action"}
+{"item_id": "n227", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "chairman reappointed"}
+{"item_id": "n228", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n229", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n230", "about_target": true, "expected": [], "confidence": "high", "note": "plain results reporting"}
+{"item_id": "n231", "about_target": false, "expected": [], "confidence": "high", "note": "Uba Sani, Kaduna governor"}
+{"item_id": "n232", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "sale of Malaysian unit"}
+{"item_id": "n233", "about_target": true, "expected": [], "confidence": "low", "note": "hypothetical \"may\" and about customer accounts"}
+{"item_id": "n234", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n235", "about_target": false, "expected": [], "confidence": "high", "note": "US ShopRite (Wakefern), not Shoprite Holdings"}
+{"item_id": "n236", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n237", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n238", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n239", "about_target": true, "expected": [], "confidence": "low", "note": "private securities class action, not regulator"}
+{"item_id": "n240", "about_target": false, "expected": [], "confidence": "high", "note": "Uba Sani"}
+{"item_id": "n241", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n242", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n243", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n244", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n245", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n246", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "new GMD/CEO"}
+{"item_id": "n247", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n248", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n249", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n250", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n251", "about_target": true, "expected": [], "confidence": "low", "note": "general counsel not CEO/CFO/chair/board"}
+{"item_id": "n252", "about_target": true, "expected": ["earnings_surprise"], "confidence": "high", "note": "guidance raised"}
+{"item_id": "n253", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa"}
+{"item_id": "n254", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "parent Diageo strategic review of EABL stake; pre-deal"}
+{"item_id": "n255", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n256", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n257", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n258", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa"}
+{"item_id": "n259", "about_target": true, "expected": [], "confidence": "low", "note": "external affairs officer, not C-suite listed"}
+{"item_id": "n260", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n261", "about_target": true, "expected": ["earnings_surprise"], "confidence": "low", "note": "large writedown; no expectation framing"}
+{"item_id": "n262", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n263", "about_target": false, "expected": [], "confidence": "high", "note": "person Uba Michael"}
+{"item_id": "n264", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n265", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n266", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n267", "about_target": false, "expected": [], "confidence": "high", "note": "Uba Sani"}
+{"item_id": "n268", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n269", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa"}
+{"item_id": "n270", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n271", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "CEO retires"}
+{"item_id": "n272", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n273", "about_target": false, "expected": [], "confidence": "high", "note": "Vodacom Bulls rugby team"}
+{"item_id": "n274", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n275", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n276", "about_target": true, "expected": [], "confidence": "high", "note": "loss at separately named MTN Nigeria"}
+{"item_id": "n277", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n278", "about_target": true, "expected": [], "confidence": "low", "note": "output hit, share slump, not results surprise"}
+{"item_id": "n279", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n280", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n281", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n282", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "low", "note": "Equity Bank (main subsidiary) takes over Swafi Foods; could be receivership"}
+{"item_id": "n283", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n284", "about_target": false, "expected": [], "confidence": "high", "note": "cycling peloton"}
+{"item_id": "n285", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n286", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n287", "about_target": false, "expected": [], "confidence": "low", "note": "Procter & Gamble Health Ltd, separately listed Indian company"}
+{"item_id": "n288", "about_target": false, "expected": [], "confidence": "high", "note": "visa waiver"}
+{"item_id": "n289", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n290", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n291", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n292", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n293", "about_target": false, "expected": [], "confidence": "high", "note": "Uba Sani"}
+{"item_id": "n294", "about_target": true, "expected": [], "confidence": "low", "note": "strong results, no expectation framing"}
+{"item_id": "n295", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n296", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n297", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n298", "about_target": true, "expected": [], "confidence": "low", "note": "bonus clawback; no explicit signal"}
+{"item_id": "n299", "about_target": true, "expected": [], "confidence": "low", "note": "subsidiary MoMo listing, speculative"}
+{"item_id": "n300", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa"}
+{"item_id": "n301", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n302", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "divestment"}
+{"item_id": "n303", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n304", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n305", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n306", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n307", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n308", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n309", "about_target": true, "expected": ["earnings_surprise"], "confidence": "low", "note": "profit warning-style headline"}
+{"item_id": "n310", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n311", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n312", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n313", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "Vizio acquisition completed"}
+{"item_id": "n314", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n315", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n316", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n317", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "co-CEO departure"}
+{"item_id": "n318", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n319", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n320", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n321", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n322", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n323", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "takeover approach"}
+{"item_id": "n324", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n325", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n326", "about_target": true, "expected": ["leadership_change"], "confidence": "high", "note": "board appointment"}
+{"item_id": "n327", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n328", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n329", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n330", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n331", "about_target": true, "expected": [], "confidence": "low", "note": "Sasol wins appeal; not action against it"}
+{"item_id": "n332", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n333", "about_target": true, "expected": ["regulatory_action"], "confidence": "high", "note": "antitrust probe"}
+{"item_id": "n334", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n335", "about_target": true, "expected": [], "confidence": "low", "note": "inspection targets onion grower"}
+{"item_id": "n336", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n337", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n338", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n339", "about_target": false, "expected": [], "confidence": "high", "note": "US ShopRite"}
+{"item_id": "n340", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n341", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n342", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n343", "about_target": true, "expected": [], "confidence": "low", "note": "profit dip, no surprise framing"}
+{"item_id": "n344", "about_target": true, "expected": [], "confidence": "low", "note": "unit head, not CEO/board"}
+{"item_id": "n345", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n346", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "sale of coal assets"}
+{"item_id": "n347", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n348", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n349", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n350", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n351", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n352", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n353", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n354", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n355", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n356", "about_target": false, "expected": [], "confidence": "high", "note": "US ShopRite"}
+{"item_id": "n357", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n358", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n359", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n360", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n361", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n362", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n363", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n364", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n365", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n366", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n367", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n368", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n369", "about_target": true, "expected": [], "confidence": "low", "note": "sharp profit rise but no surprise framing"}
+{"item_id": "n370", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n371", "about_target": true, "expected": ["regulatory_action"], "confidence": "high", "note": "DOJ lawsuit"}
+{"item_id": "n372", "about_target": false, "expected": [], "confidence": "high", "note": "visa services provider"}
+{"item_id": "n373", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n374", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n375", "about_target": true, "expected": [], "confidence": "low", "note": "opinion piece on guilty plea"}
+{"item_id": "n376", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n377", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n378", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n379", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n380", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n381", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n382", "about_target": true, "expected": [], "confidence": "low", "note": "cause of past CEO crash; background"}
+{"item_id": "n383", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n384", "about_target": false, "expected": [], "confidence": "high", "note": "Uba Sani"}
+{"item_id": "n385", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n386", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n387", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "acquisition"}
+{"item_id": "n388", "about_target": true, "expected": ["regulatory_action"], "confidence": "high", "note": "antitrust probe"}
+{"item_id": "n389", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n390", "about_target": true, "expected": ["m_and_a_activity"], "confidence": "high", "note": "acquires StanChart units"}
+{"item_id": "n391", "about_target": false, "expected": [], "confidence": "high", "note": "travel visa"}
+{"item_id": "n392", "about_target": false, "expected": [], "confidence": "high", "note": "US ShopRite"}
+{"item_id": "n393", "about_target": true, "expected": [], "confidence": "low", "note": "private lawsuit, not regulator"}
+{"item_id": "n394", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n395", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n396", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n397", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n398", "about_target": true, "expected": [], "confidence": "high", "note": ""}
+{"item_id": "n399", "about_target": true, "expected": [], "confidence": "high", "note": ""}

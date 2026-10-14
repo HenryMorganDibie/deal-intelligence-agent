@@ -544,8 +544,10 @@ _DOWNLOADS = {
     "names_heldout_items.jsonl": ("evaluation/deals/heldout_names_items.jsonl", "application/x-ndjson"),
     "names_heldout_labels.jsonl": ("evaluation/deals/heldout_names_labels.jsonl", "application/x-ndjson"),
     "deal_errors.jsonl": ("evaluation/deals/errors.jsonl", "application/x-ndjson"),
-    "attribution_cases.json": ("evaluation/attribution/cases.json", "application/json"),
-    "attribution_heldout_cases.json": ("evaluation/attribution/heldout_cases.json", "application/json"),
+    "attribution_natural_items.jsonl": ("evaluation/attribution/natural_items.jsonl", "application/x-ndjson"),
+    "attribution_natural_labels.jsonl": ("evaluation/attribution/natural_labels.jsonl", "application/x-ndjson"),
+    "attribution_hard_items.jsonl": ("evaluation/attribution/hard_items.jsonl", "application/x-ndjson"),
+    "attribution_hard_labels.jsonl": ("evaluation/attribution/hard_labels.jsonl", "application/x-ndjson"),
     "attribution_errors.jsonl": ("evaluation/attribution/errors.jsonl", "application/x-ndjson"),
 }
 
@@ -590,8 +592,7 @@ async def evaluation() -> dict:
             "data_quality": _read_json(_ROOT / "evaluation" / "deals" / "results.json"),
             "data_quality_baseline": _read_json(_ROOT / "evaluation" / "deals" / "results_baseline.json"),
             "attribution": _read_json(_ROOT / "evaluation" / "attribution" / "results.json"),
-            "attribution_baseline": _read_json(_ROOT / "evaluation" / "attribution" / "results_baseline.json"),
-            "attribution_heldout": _read_json(_ROOT / "evaluation" / "attribution" / "heldout_results.json"),
+            "attribution_before": _read_json(_ROOT / "evaluation" / "attribution" / "results_before_rule_changes.json"),
             "method": "Historical: walk-forward replay, 30-day lookback, 90-day horizon, confirmation strictly after "
                       "each as-of date. Live: every hosted brief's signals labelled daily against later filings, "
                       "credible news and abnormal price moves."}
