@@ -17,7 +17,7 @@ Built for PE firms, credit analysts, hedge funds, and corporate finance teams.
 | Confidence | Opaque float | Calibrated base-rate probability, plus a 7-component evidence-quality breakdown per signal |
 | Evidence | Keyword hits | 9 typed financial clause categories (going concern, covenant breach, etc.) |
 | Alpha score | None | 0–100 composite + SHAP-style breakdown + expected move estimates |
-| Backtesting | None | Precision/hit rate/10-day return/drawdown per signal type against recorded outcomes |
+| Backtesting | None | Precision, recall, F1, hit rate, benchmark-adjusted return and drawdown per signal type, against automatically labelled outcomes |
 | Adaptive calibration | None | Outcome-aware severity from analyst feedback |
 | Portfolio intelligence | None | Portfolio risk aggregation + contagion cluster detection |
 | Company memory | None | Longitudinal EMA risk profiles + trend detection |
@@ -82,6 +82,7 @@ python main.py analyse --company "SVB Financial" --signals credit_risk debt_rest
 
 ```bash
 python main.py backtest --synthetic    # framework demo with seeded data
+python main.py outcomes --auto-label   # label past predictions (price vs benchmark, SEC filings)
 python main.py backtest --run          # against real warehouse outcomes
 python main.py backtest --report       # show latest results
 ```
@@ -220,6 +221,7 @@ deal-intelligence-agent/
 ├── web/                                 # landing page + signed-in app (Next.js)
 ├── README.md
 ├── ARCHITECTURE.md                      # Full technical reference + honest limitations
+├── supabase/migrations/                 # hosted app schema (briefs, runs, outcomes)
 ├── src/
 │   ├── schemas/models.py               # All Pydantic types (25+ models)
 │   ├── engines/                        # 21 deterministic intelligence engines
@@ -236,7 +238,8 @@ deal-intelligence-agent/
 │   │   ├── audit_log.py               # SHA-256 hash-chained audit trail
 │   │   ├── warehouse.py               # SQLite event warehouse (8 tables)
 │   │   ├── replay.py                  # Deterministic historical replay
-│   │   ├── backtest.py                # Precision/hit rate/return/drawdown vs recorded outcomes
+│   │   ├── backtest.py                # Precision/recall/F1/hit rate/abnormal return/drawdown
+│   │   ├── outcome_labeller.py        # Automatic outcomes: benchmark-adjusted moves, SEC ground truth
 │   │   ├── company_memory.py          # Longitudinal EMA risk profiles
 │   │   ├── market_data.py             # yfinance auto-outcome fetching
 │   │   ├── market_impact.py           # Outcome tracking + accuracy metrics
@@ -268,7 +271,7 @@ deal-intelligence-agent/
 │   └── alerts.json                    # Alert history
 └── tests/
     ├── conftest.py                    # Redirects every data store to a per-test temp dir
-    └── test_all.py                    # 337 tests across all layers
+    └── test_all.py                    # 373 tests across all layers
 ```
 
 ---
@@ -280,7 +283,7 @@ pip install -r requirements-dev.txt
 pytest tests/test_all.py -v
 ```
 
-**337 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration.
+**373 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration, automatic outcome labelling (benchmark-adjusted returns, SEC ground truth, recall), French-language detection, the hosted API.
 
 ---
 

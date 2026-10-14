@@ -23,8 +23,8 @@ const ITEMS = [
   },
   {
     title: "Backtests against real outcomes",
-    body: "Each prediction is scored once against recorded market outcomes. Hit rate follows the predicted direction. Recall is not reported, because it needs a ground truth this system does not have.",
-    code: "backtest --run",
+    body: "Outcomes are labelled automatically: the move net of a market benchmark, and whether a later SEC filing confirmed the event. Each prediction is scored once, with precision, recall against SEC-confirmed events, and hit rate.",
+    code: "outcomes --auto-label",
   },
   {
     title: "Portfolio risk that adds up",

@@ -27,7 +27,7 @@ const FAQ = [
   },
   {
     q: "Is it open source?",
-    a: "Yes. The full system, its 337 tests and an architecture document with its known limits are on GitHub.",
+    a: "Yes. The full system, its 373 tests and an architecture document with its known limits are on GitHub.",
   },
 ];
 

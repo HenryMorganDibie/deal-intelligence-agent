@@ -139,46 +139,114 @@ Ratings/Macro: GCR Ratings, IMF Africa, World Bank Africa Blog, Moody's Africa, 
 
 ## Honest Limitations
 
-### 1. Backtesting Is Still Bootstrap Phase
-`backtest.py` scores each prediction (one per company, signal type and day) against outcomes recorded with `outcomes --record` or `marketdata --auto-outcome`, matched within 7 days. It reports precision, direction hit rate, raw 10-day price move (not benchmark-adjusted), worst drawdown and time to event. Recall and F1 are not reported: they need a ground-truth list of events the engine missed. Results need accumulated analyst-confirmed outcomes to be statistically valid. The synthetic mode demonstrates the framework. Real validation needs 50+ confirmed outcomes per signal type. Use `python main.py backtest --synthetic` for framework demonstration; `--run` for real results as outcomes accumulate.
+Each item says what was done about it and what remains. Where what remains is data,
+not code, the system now gathers that data itself.
 
-### 2. African Market Calibration Is Thinner
-Base rate tables were developed primarily from US/global research. African market dynamics (thinner liquidity, fewer public disclosures, different regulatory timelines) may produce different materialisation rates. Adaptive calibration corrects this over time, but early deployments on African companies should treat severity scores with additional caution.
+### 1. Backtesting needs time to accumulate
+**Done.** Outcomes are labelled automatically (`outcomes --auto-label` locally; a daily
+Vercel cron for hosted briefs). For each prediction the labeller records the 5, 10 and
+30-day price move and the same move net of a market benchmark (SPY for US listings, the
+Satrix 40 tracker for JSE), and, for US companies, whether a confirming SEC filing followed
+within 90 days (8-K Item 2.01/5.01 after an M&A signal, 5.02 after a leadership signal,
+1.03/3.01 after distress, 2.04/2.06 after credit stress, 4.02 after an earnings
+restatement signal, a tender offer or 13D for the matching types). Every such filing is
+also kept as ground truth, so the backtest reports **recall and F1** with the missed
+events listed, alongside precision over labelled predictions and benchmark-adjusted returns.
 
-### 3. LLM Non-Determinism in Explanation Layer
-Deterministic engine gates signals; LLM explanation text is non-deterministic. Two runs with identical candidates may produce slightly different headlines. This does not affect signal type, severity, confidence, or alpha score (all deterministic).
+**Remains.** Statistical weight still needs volume: roughly 50 labelled outcomes per signal
+type. Labelling starts 12 days after a brief and confirmation closes at 95 days, so numbers
+firm up over the first few months of use. Regulatory actions have no confirming SEC form,
+so they are scored on price reaction only.
 
-### 4. Market Data Integration Is Automated for Listed Companies Only
-`market_data.py` (yfinance) covers US and major African listed companies. Private companies, OTC instruments, and thinly traded African stocks may return no data. Manual outcome recording via `python main.py outcomes --record` remains the fallback.
+### 2. African market calibration
+**Done.** Every outcome records its market (`us` / `africa`), and adaptive calibration uses
+observed precision for the company's own market once a signal type has 10 outcomes there,
+so African severities calibrate on African results rather than US base rates. JSE outcomes
+are benchmark-adjusted.
 
-### 5. Entity Graph Is Bootstrap-Phase
-The entity relationship graph builds incrementally from briefs and manual additions. Network effects (contagion, board overlap detection) become meaningful after sustained operation against a consistent company universe.
+**Remains.** There is no African equivalent of SEC filing-based confirmation, so African
+outcomes are labelled from price reaction (and analyst feedback) only, and NGX / NSE Kenya
+returns are raw because Yahoo carries no reliable index for them. Until 10 African outcomes
+accumulate per signal type, treat African severities with the static tables' caution.
 
-### 6. Semantic Extraction Is Regex-Based
-The semantic extraction engine uses typed regex clause patterns — not embeddings or neural NLP. It handles standard disclosure language reliably but may miss novel phrasings or non-English African disclosures. The hybrid NLP upgrade (FinBERT/sentence-transformers) is the next major detection improvement.
+### 3. LLM non-determinism
+**Done.** Identical LLM requests (same provider, model, effort, prompts and token budget)
+return the stored reply, so re-running or replaying an analysis over the same sources gives
+the same wording (`data/llm_cache.json`, at most 2,000 entries; `DEAL_INTEL_LLM_CACHE=0`
+disables it). Signal type, severity, confidence and alpha were already deterministic.
+
+**Remains.** New sources produce new wording, by design. The cache is per machine; the
+hosted API's serverless instances do not share one.
+
+### 4. Market data covers listed companies only
+Yahoo Finance covers US and major African listings. Private companies, OTC instruments and
+thinly traded African stocks may return no prices; those outcomes are labelled from SEC
+filings where available, otherwise left unlabelled (never counted as wrong). Manual
+`outcomes --record` remains for anything else. A licensed feed (Bloomberg, Refinitiv) is the
+only way to close this fully.
+
+### 5. Entity graph
+**Done.** Every Form 4 read during an analysis (routine ones included) names an officer,
+director or 10% holder; they are added to the graph keyed by SEC CIK. A person found at two
+analysed companies links them by board overlap, which contagion detection follows, from the
+first analyses rather than after manual entry.
+
+**Remains.** Links come from SEC insiders, so they cover US-listed companies. Lender and
+acquisition edges are still added by hand (`graph` commands).
+
+### 6. Detection is pattern-based, now in English and French
+**Done.** The rule engine and semantic extractor read French as well as English: 64 French
+patterns across all eight signal types (OPA, redressement judiciaire, avertissement sur
+résultats, démission du directeur général, franchissement de seuil, sanctions by the
+CREPMF, AMF-UMOA, AMMC, COBAC and others), French clause splitting and pronouns for
+attribution, FCFA/XOF/MAD/TND amounts, and French news search for francophone Africa.
+
+**Remains.** Detection is still patterns, not a trained model: unusual phrasings can be
+missed, and Arabic (EGX, parts of the Maghreb) and Portuguese (Mozambique, Angola) are not
+covered. A FinBERT-style model would raise recall but does not fit the hosted function's
+size limit, so it belongs in a separate service.
 
 ---
 
 ### 7. Signal Direction
-Earnings surprises and insider activity can go either way. The expected direction is read from the source text: a beat or raised guidance is positive, a miss or warning negative; an open-market insider purchase is positive, a discretionary sale negative. Positive-direction signals do not raise a company's risk score.
+Earnings surprises and insider activity can go either way. The expected direction is read
+from the source text (English or French): a beat or raised guidance is positive, a miss or
+warning negative; an open-market insider purchase is positive, a discretionary sale
+negative. Positive-direction signals do not raise a company's risk score, and compound
+events only narrate a direction the evidence states (17 direction-aware rules).
 
-Form 4 filings are reduced to discretionary open-market trades: purchases, and sales of at least $1M not made under a Rule 10b5-1 plan. Grants, option exercises and tax withholding are dropped. Every Form 4 in the lookback window is read, paced to 8 requests per second under SEC's fair-access limit.
+Form 4 filings are reduced to discretionary open-market trades for detection: purchases,
+and sales of at least $1M not made under a Rule 10b5-1 plan. Every Form 4 in the lookback
+window is read, paced to 8 requests per second under SEC's fair-access limit.
+
+### 8. Replay Depends on Feedback State
+Replay runs the same deterministic path as a live analysis. Adaptive calibration depends on
+accumulated feedback and outcomes, so the statistics in use are recorded in each replay's
+config snapshot to explain any difference from the original run.
+
+### 9. Liquidity Tiers
+Tiers come from live market capitalisation in USD (large ≥ $10B, mid ≥ $2B, small ≥ $300M),
+converted from local currency where needed. Listings Yahoo does not cover (most NGX and NSE
+Kenya names) fall back to a static list and exchange heuristics.
 
 ### 10. News Scoring and the Lookback Window
-A news item's score is rule strength × publisher credibility. It is no longer also multiplied by a relevance score, which mostly measured whether the company was named (already required by the engine) and forced every single news story to LOW. Every source, from any tool, must fall inside the lookback window, measured from the as-of date for replays and from now otherwise.
+A news item's score is rule strength × publisher credibility. Every source must fall inside
+the lookback window, measured from the as-of date for replays and from now otherwise.
 
 ### 11. Subject Attribution
 A news item must name the company, and the triggering phrase must be about it:
-- **Clause rule (deterministic, always on).** A rule only fires if its trigger is in the same clause as the company's name. Headlines are split at separators (" - ", ":", ";") and at subordinating words ("as", "after", "amid", "while", ...). For events that belong to the subject (earnings, leadership changes), the company must also be named before the trigger. "Vodacom lifts outlook as Safaricom deal reshapes growth" does not count for Safaricom; "EU clears acquisition of eMAG by Naspers" counts for Naspers. Items dropped this way are counted in the pipeline trace.
-- **LLM check (when an LLM is configured).** The explanation step also reports whether the evidence is about the company. A "no" does not remove the signal (the LLM cannot remove signals); it is shown as an attribution doubt and the brief requires human review.
+- **Clause rule (deterministic).** A rule fires only if its trigger is in a clause about
+  the company. Headlines split at separators and subordinating words (English and French).
+  A clause counts as about the company if it names it; if it opens with a back-reference
+  ("it", "the company", "elle", "le groupe") right after a clause the company led ("Shares
+  of Acme jump after it beats estimates"); or if it follows a label that is just the name
+  ("Acme: CEO resigns"). For subject-owned events (earnings, leadership, credit) the company
+  must come before the trigger.
+- **LLM check (when configured).** The explanation step also reports whether the evidence is
+  about the company; a "no" is shown as an attribution doubt and requires human review.
 
-The clause rule is a heuristic: it can miss an event phrased with the company only after the trigger ("Shares of Acme jump after it beats estimates"), trading some recall for precision.
-
-### 8. Replay Depends on Feedback State
-Replay runs the same deterministic path as a live analysis (rule engine, adaptive calibration, alpha scoring, compound events). Adaptive calibration depends on accumulated analyst feedback, so the feedback statistics in use are recorded in each replay's config snapshot to explain any difference from the original run.
-
-### 9. Liquidity Tiers
-Tiers come from live market capitalisation in USD (large ≥ $10B, mid ≥ $2B, small ≥ $300M), converted from local currency where needed. Listings Yahoo does not cover (most NGX and NSE Kenya names) fall back to a static list and exchange heuristics.
+It remains a heuristic: a back-reference after a clause the company did not lead is not
+followed, trading a little recall for precision.
 
 ---
 
@@ -231,6 +299,7 @@ python main.py audit --verify
 python main.py audit --tail 20
 
 # Outcomes
+python main.py outcomes --auto-label   # label past predictions automatically
 python main.py outcomes --stats
 python main.py outcomes --record company=Apple signal_type=m_and_a_activity severity=high detection_date=2024-01-15 price_10d=18.5 confirmed=true
 
@@ -260,18 +329,21 @@ python main.py registry --show credit_risk
 | Replay engine | Deterministic as-of-date reproduction | ✅ Done |
 | Company memory | Longitudinal EMA risk profiles + trend detection | ✅ Done |
 | Real-time monitoring | Watchlist + Slack/webhook alerting | ✅ Done |
-| Backtesting framework | Precision/hit rate/return/drawdown (recall needs ground truth) | ✅ Done |
+| Backtesting framework | Precision, recall, F1, hit rate, abnormal return, drawdown | ✅ Done |
 | Market data integration | yfinance auto-outcome fetching | ✅ Done |
 | Portfolio intelligence | Portfolio risk aggregation + contagion clusters | ✅ Done |
 | Entity resolution | Canonical registry + LEI/CIK/alias deduplication | ✅ Done |
 | African market depth | 49 feeds + 48 PE/DFI sources + 7 exchanges | ✅ Done |
-| Hybrid NLP detection | FinBERT/sentence-transformers alongside deterministic | Next |
+| Automatic outcome labelling | Benchmark-adjusted returns, SEC ground truth, recall/F1, per-market calibration | ✅ Done |
+| French-language detection | Rules, extraction, attribution and news for francophone Africa | ✅ Done |
+| Hybrid NLP detection | FinBERT/sentence-transformers alongside deterministic (separate service) | Next |
 | ML severity model | Trained outcome model replacing base rate tables | Next |
 | Live market data (pro) | Bloomberg/Refinitiv for full coverage | Next |
-| Research dashboard | React frontend: risk timelines, heatmaps, replay UI | Next |
+| Hosted app | Open-access web app with shareable briefs (Next.js + Vercel) | ✅ Done |
+| Research dashboard | Risk timelines, heatmaps, replay UI | Next |
 | Multi-user team mode | Shared watchlists, portfolio briefs, role-based access | Planned |
 | Proprietary dataset | Structured event intelligence dataset for model training | Long-term |
 
 ---
 
-*Last updated: May 2026. Maintained alongside codebase.*
+*Last updated: October 2026. Maintained alongside codebase.*

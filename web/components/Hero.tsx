@@ -6,7 +6,7 @@ const FACTS = [
   { k: "115", v: "deterministic detection patterns" },
   { k: "8", v: "signal types, 17 compound-event rules" },
   { k: "US + Africa", v: "SEC EDGAR, NGX, NSE Kenya, JSE SENS" },
-  { k: "337", v: "tests, open source" },
+  { k: "373", v: "tests, open source" },
 ];
 
 export function Hero() {

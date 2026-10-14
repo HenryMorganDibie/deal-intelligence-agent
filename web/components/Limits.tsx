@@ -7,24 +7,24 @@ const LIMITS = [
     body: "Free SENS access covers today's announcements, and the JSE site blocks automated access. Older JSE events come from news.",
   },
   {
-    title: "Attribution is a heuristic",
-    body: "The clause rule trades some recall for precision: “Shares of Acme jump after it beats estimates” is missed. Other coverage usually catches the same event.",
+    title: "Backtests are still filling up",
+    body: "Outcomes are now labelled automatically, against a market benchmark and SEC filings, with recall. The numbers need about 50 outcomes per signal type, so they firm up over the first months.",
   },
   {
-    title: "Backtests need outcomes",
-    body: "Precision and hit rate are only as good as the outcomes you record. Results need 50+ confirmed outcomes per signal type to mean much.",
-  },
-  {
-    title: "African calibration is thinner",
-    body: "Base rates come mostly from US and global research. Treat early severities on African companies with extra caution until feedback accumulates.",
+    title: "Africa has no filing-based ground truth",
+    body: "US signals are confirmed by later SEC filings. African ones are judged on price reaction only, and calibrate on African outcomes once 10 per signal type exist.",
   },
   {
     title: "Severity means strength, not bad news",
     body: "A widely reported earnings beat can be CRITICAL. Direction is shown separately as an expected move up or down.",
   },
   {
-    title: "Regex, not a language model, finds signals",
-    body: "That is the point: it is reproducible and auditable. It can miss novel phrasings and non-English disclosures.",
+    title: "Patterns, in English and French",
+    body: "Reproducible and auditable by design. Francophone disclosures are now covered; Arabic and Portuguese are not, and novel phrasings can still be missed.",
+  },
+  {
+    title: "Unlisted companies have no prices",
+    body: "Private, OTC and thinly traded names often return no market data, so their outcomes stay unlabelled unless a filing confirms them.",
   },
 ];
 
