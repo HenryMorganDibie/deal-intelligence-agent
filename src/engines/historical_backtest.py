@@ -183,8 +183,10 @@ class Sources:
 
     def news(self, company: str, since: date, until: date, french: bool) -> list[dict]:
         from src.engines.event_sources import historical_news
+        # Strict: a window that cannot be fetched completely raises, so it is neither cached nor used,
+        # and the company is retried rather than scored on partial news.
         return _cached(f"news:{company}:{since}:{until}:{french}",
-                       lambda: historical_news(self.http, company, since, until, french)) or []
+                       lambda: historical_news(self.http, company, since, until, french, strict=True)) or []
 
     def ngx_events(self, ticker: str, company: str, since: date, until: date) -> list[dict]:
         from src.engines.event_sources import NGX_TYPE_EVENTS, _event, classify
@@ -403,7 +405,7 @@ def run(
                 return f"{entry[0]} ({entry[1]}): {len(out['predictions'])} predictions, {out['headlines']} headlines"
             except Exception as e:                  # one company's failure never stops the run
                 log.warning("company %s failed (attempt %d): %r", entry[1], attempt + 1, e)
-                time.sleep(10 * (attempt + 1))
+                time.sleep(60 * (attempt + 1))         # let a news cool-down pass before retrying
         return f"{entry[0]} ({entry[1]}): failed"
 
     done = len(universe) - len(todo)

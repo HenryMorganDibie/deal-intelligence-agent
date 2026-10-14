@@ -17,6 +17,8 @@ from __future__ import annotations
 import html
 import logging
 import re
+import threading
+import os
 import time
 from datetime import date, datetime
 from email.utils import parsedate_to_datetime
@@ -198,9 +200,62 @@ ARABIC_TOPICS = ["", "استحواذ OR استقالة OR تعيين OR غرام
 PORTUGUESE_TOPICS = ["", "aquisição OR fusão OR renuncia OR nomeado OR multa"]
 
 
+class NewsUnavailable(RuntimeError):
+    """A news window could not be fetched completely (throttled or failing after retries)."""
+
+
+# Google News throttles bursts. Every search goes through one shared pace (all threads), and a 429 or
+# 5xx pauses every thread for a growing cool-down instead of hammering on.
+_NEWS_LOCK = threading.Lock()
+_NEWS_STATE = {"next": 0.0, "cooldown_until": 0.0, "strikes": 0}
+NEWS_MIN_INTERVAL = float(os.environ.get("DEAL_INTEL_NEWS_INTERVAL", "0.3"))
+
+
+def _news_pace() -> None:
+    while True:
+        with _NEWS_LOCK:
+            now = time.monotonic()
+            wait = max(_NEWS_STATE["cooldown_until"], _NEWS_STATE["next"]) - now
+            if wait <= 0:
+                _NEWS_STATE["next"] = now + NEWS_MIN_INTERVAL
+                return
+        time.sleep(min(wait, 5))
+
+
+def _news_throttled() -> None:
+    with _NEWS_LOCK:
+        _NEWS_STATE["strikes"] = min(_NEWS_STATE["strikes"] + 1, 6)
+        pause = 15 * 2 ** (_NEWS_STATE["strikes"] - 1)            # 15 s, 30 s, ... up to 8 minutes
+        _NEWS_STATE["cooldown_until"] = max(_NEWS_STATE["cooldown_until"], time.monotonic() + pause)
+
+
+def _news_ok() -> None:
+    with _NEWS_LOCK:
+        _NEWS_STATE["strikes"] = max(_NEWS_STATE["strikes"] - 1, 0)
+
+
+def _news_get(client: httpx.Client, url: str, attempts: int = 6) -> Optional[httpx.Response]:
+    """One search with retries: throttling and server errors wait out a shared cool-down."""
+    for _ in range(attempts):
+        _news_pace()
+        try:
+            r = client.get(url)
+        except httpx.HTTPError:
+            _news_throttled()
+            continue
+        if r.status_code == 200:
+            _news_ok()
+            return r
+        if r.status_code in (429, 500, 502, 503, 504) or r.status_code == 404:
+            _news_throttled()                  # Google answers some throttled searches with 404
+            continue
+        return None
+    return None
+
+
 def historical_news(
     client: httpx.Client, company: str, since: date, until: date, french: bool = False,
-    arabic: bool = False, portuguese: bool = False,
+    arabic: bool = False, portuguese: bool = False, strict: bool = False,
 ) -> Optional[list[dict]]:
     """
     Dated headlines about the company published in [since, until], from Google
@@ -218,14 +273,13 @@ def historical_news(
         queries += [(f'"{company}" {t} {window}'.replace("  ", " "), ("pt-PT", "PT", "pt-150")) for t in PORTUGUESE_TOPICS]
     out, seen, ok = [], set(), False
     for q, (hl, gl, lang) in queries:
-        try:
-            r = client.get(GOOGLE_NEWS.format(q=quote(q), hl=hl, gl=gl, lang=lang))
-            r.raise_for_status()
-            ok = True
-        except Exception as e:
-            log.warning("news search failed for %s: %s", company, e)
-            time.sleep(2)
+        r = _news_get(client, GOOGLE_NEWS.format(q=quote(q), hl=hl, gl=gl, lang=lang))
+        if r is None:
+            log.warning("news search failed for %s after retries: %s", company, q[:80])
+            if strict:                         # never return (and so never cache) a partial window
+                raise NewsUnavailable(f"{company}: {q[:80]}")
             continue
+        ok = True
         for it in re.findall(r"<item>(.*?)</item>", r.text, re.S):
             title = html.unescape(re.sub(r"<!\[CDATA\[|\]\]>", "", (re.search(r"<title>(.*?)</title>", it, re.S) or [None, ""])[1]))
             if not title or title in seen:
@@ -242,7 +296,6 @@ def historical_news(
                 title = title[: -len(publisher) - 3]
             out.append({"title": title, "publisher": publisher, "date": day.isoformat(),
                         "url": (re.search(r"<link>(.*?)</link>", it) or [None, ""])[1]})
-        time.sleep(0.4)
     return out if ok else None
 
 
