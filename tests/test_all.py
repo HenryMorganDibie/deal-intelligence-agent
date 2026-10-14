@@ -3693,3 +3693,38 @@ class TestInsiderGraph:
         update_graph_from_brief(b("Acme"), [{"name": "SMITH JOHN", "role": "Director", "cik": "111"}])
         update_graph_from_brief(b("Beta"), [{"name": "SMITH JOHN", "role": "Director", "cik": "222"}])
         assert not EntityGraphEngine().G.has_edge("Acme", "Beta")
+
+
+class TestAfricanPrices:
+    PAGE = ("<title>Market Pricelist &#8212; 13 Oct 2026 - myStocks Mobile</title>"
+            '<tr class="row r1">\n<td class=nm><a href="/m/stock=SCOM">SCOM</a><br>\n<td class=n>35.20<td class="n x-1">x'
+            '<tr class="row r0">\n<td class=nm><a href="/m/stock=%255ENASI">^NASI</a><br>\n<td class=n>242.62<td class="n x-1">x'
+            '<tr class="row r1">\n<td class=nm><a href="/m/stock=GLD">GLD</a><br>\n<td class=n>5,050.00<td class="n x0">x')
+
+    def test_parse_nse_price_list(self):
+        from src.tools.african_prices import parse_nse_price_list
+        day, prices = parse_nse_price_list(self.PAGE)
+        assert day == "2026-10-13"
+        assert prices == {"SCOM": 35.2, "^NASI": 242.62, "GLD": 5050.0}
+
+    def test_moves_from_series(self):
+        from src.tools.african_prices import moves_from_series
+        series = {"2026-03-02": 100.0, "2026-03-09": 104.0, "2026-03-13": 110.0, "2026-04-02": 90.0}
+        assert moves_from_series(series, "2026-03-01") == {"5d": 4.0, "10d": 10.0, "30d": -10.0}
+        assert moves_from_series({}, "2026-03-01")["10d"] is None
+
+    def test_snapshot_feeds_labelling_with_index_benchmark(self):
+        """NGX/NSE prices come from the exchange snapshot; abnormal return vs the All-Share index."""
+        from src.tools import african_prices as ap
+        from src.engines.outcome_labeller import label_prediction
+        ap.set_snapshot({"nse": {"SCOM": {"2026-03-02": 20.0, "2026-03-13": 22.0},
+                                 "^NASI": {"2026-03-02": 100.0, "2026-03-13": 101.0}}})
+        try:
+            o = label_prediction(company_name="Safaricom", ticker="SCOM.NR", signal_type=SignalType.MA_ACTIVITY,
+                                 severity="high", detection_date="2026-03-02", expected_direction="positive",
+                                 today=date(2026, 9, 1))
+        finally:
+            ap.set_snapshot(None)
+        assert (o["market"], o["benchmark"], o["price_change_10d_pct"], o["abnormal_return_10d_pct"]) \
+            == ("africa", "^NASI", 10.0, 9.0)
+        assert o["direction_correct"] is True

@@ -147,6 +147,8 @@ def build_parser() -> argparse.ArgumentParser:
     md.add_argument("--price",      default=None, metavar="TICKER")
     md.add_argument("--volatility", default=None, metavar="TICKER")
     md.add_argument("--auto-outcome", action="store_true")
+    md.add_argument("--snapshot", action="store_true",
+                    help="Record today's NGX and NSE Kenya closes (run daily to build their price history)")
     md.add_argument("--company",    default=None)
     md.add_argument("--ticker",     default=None)
     md.add_argument("--signal",     default=None)
@@ -799,6 +801,12 @@ def _run_explain(args: argparse.Namespace) -> None:
 def _run_marketdata(args: argparse.Namespace) -> None:
     from src.engines.market_data import get_current_price, get_volatility, auto_record_outcome
     from src.schemas.models import SignalType, Severity
+
+    if getattr(args, "snapshot", False):
+        from src.tools.african_prices import take_snapshot
+        counts = take_snapshot()
+        console.print(f"[green]✓[/green] Snapshot saved: {counts['ngx']} NGX and {counts['nse']} NSE Kenya closes.")
+        return
 
     if getattr(args, "price", None):
         price = get_current_price(args.price)

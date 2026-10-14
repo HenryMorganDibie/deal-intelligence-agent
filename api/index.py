@@ -27,7 +27,7 @@ import json  # noqa: E402
 import logging  # noqa: E402
 import time  # noqa: E402
 import uuid  # noqa: E402
-from datetime import date, datetime, timezone  # noqa: E402
+from datetime import date, datetime, timedelta, timezone  # noqa: E402
 
 import httpx  # noqa: E402
 from fastapi import FastAPI, HTTPException, Request  # noqa: E402
@@ -229,7 +229,19 @@ async def cron_label(request: Request) -> dict:
     deadline = time.monotonic() + 240
     today = datetime.now(timezone.utc).date()
     done = outcomes_written = 0
-    async with httpx.AsyncClient(timeout=20) as client:
+    from src.tools.african_prices import set_snapshot, snapshot_rows
+    async with httpx.AsyncClient(timeout=30) as client:
+        # 1. Snapshot today's NGX / NSE closes: the only way to build their price history.
+        try:
+            price_rows = await run_in_threadpool(snapshot_rows)
+            r = await _rpc(client, "save_prices", {"secret": API_SECRET, "p_rows": price_rows})
+            prices_saved = int(r.json()) if r.status_code == 200 else 0
+        except Exception:
+            log.exception("price snapshot failed")
+            prices_saved = 0
+        # 2. Price history for labelling African briefs.
+        r = await _rpc(client, "get_prices", {"secret": API_SECRET, "p_since": (today - timedelta(days=140)).isoformat()})
+        set_snapshot(r.json() if r.status_code == 200 else {})
         resp = await _rpc(client, "briefs_to_label", {"secret": API_SECRET, "max_n": 60})
         rows = resp.json() if resp.status_code == 200 else []
         for row in rows:
@@ -247,4 +259,5 @@ async def cron_label(request: Request) -> dict:
             if r.status_code == 200:
                 done += 1
                 outcomes_written += len(outcomes)
-    return {"due": len(rows), "labelled": done, "outcomes": outcomes_written}
+    set_snapshot(None)
+    return {"prices_saved": prices_saved, "due": len(rows), "labelled": done, "outcomes": outcomes_written}

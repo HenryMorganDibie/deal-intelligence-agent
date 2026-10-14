@@ -44,9 +44,20 @@ MIN_AGE_DAYS = 12
 
 AFRICAN_SUFFIXES = (".JO", ".LG", ".NR", ".GH", ".CA", ".CS", ".BV")
 
-# Market benchmark per listing, for abnormal returns. Where Yahoo carries no
-# reliable index or tracker (NGX, NSE Kenya, ...), returns stay raw and say so.
-BENCHMARKS = {"us": "SPY", ".JO": "STX40.JO"}
+# Market benchmark per listing, for abnormal returns: SPY, the Satrix 40 tracker
+# (JSE), the NGX All-Share Index and the NSE All-Share Index. Other markets
+# (GSE, BRVM, EGX, ...) stay raw and say so (benchmark = None).
+BENCHMARKS = {"us": "SPY", ".JO": "STX40.JO", ".LG": "^ASI", ".NR": "^NASI"}
+
+
+def default_price_moves(symbol: str, iso_date: str) -> dict:
+    """Yahoo Finance, except NGX/NSE listings and indices, which come from the exchanges."""
+    from src.engines.market_data import _fetch_price_moves, _resolve_ticker
+    from src.tools.african_prices import african_price_moves, market_of
+    resolved = symbol if symbol.startswith("^") else _resolve_ticker(symbol)
+    if market_of(resolved):
+        return african_price_moves(resolved, iso_date)
+    return _fetch_price_moves(resolved, iso_date)
 
 # SEC filings that are the event a signal type predicts.
 CONFIRMING_8K_ITEMS: dict[SignalType, set[str]] = {
@@ -214,7 +225,7 @@ def label_prediction(
     if detected is None or (today - detected).days < MIN_AGE_DAYS:
         return None
     if price_moves is None:
-        from src.engines.market_data import _fetch_price_moves as price_moves
+        price_moves = default_price_moves
     market = market_for_ticker(ticker)
     iso = detected.isoformat()
 
