@@ -23,7 +23,7 @@ const FAQ = [
   },
   {
     q: "Is the hosted app free?",
-    a: "Yes, while it is in beta: sign in with GitHub, Google or email and run up to 10 analyses a day. Your briefs are stored privately against your account and you can download or delete them at any time.",
+    a: "Yes, and there is no account to create. Click Run your first brief and go: up to 10 analyses a day per visitor. Each brief gets its own link you can share, and your list of briefs is kept in your browser.",
   },
   {
     q: "Is it open source?",

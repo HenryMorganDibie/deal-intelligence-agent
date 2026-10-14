@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { SITE } from "../lib/site";
@@ -34,7 +35,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${interTight.variable} ${mono.variable}`}>
-      <body className="font-sans min-h-screen">{children}</body>
+      <body className="font-sans min-h-screen">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

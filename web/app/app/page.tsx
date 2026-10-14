@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { useSession } from "../../components/app/AppShell";
+import { useEffect, useState, type FormEvent } from "react";
 import { SeverityBadge } from "../../components/app/BriefView";
 import { Container } from "../../components/primitives";
 import { analyse, ApiError } from "../../lib/api";
-import { formatDate, type BriefRow } from "../../lib/brief";
-import { supabase } from "../../lib/supabase";
+import { formatDate } from "../../lib/brief";
+import { addToHistory, readHistory, type HistoryItem } from "../../lib/history";
 
 const EXAMPLES = [
   { company: "Intel", ticker: "INTC" },
@@ -55,7 +54,6 @@ function Running({ company }: { company: string }) {
 }
 
 export default function Dashboard() {
-  const session = useSession();
   const router = useRouter();
   const [company, setCompany] = useState("");
   const [ticker, setTicker] = useState("");
@@ -63,27 +61,11 @@ export default function Dashboard() {
   const [compliance, setCompliance] = useState(false);
   const [running, setRunning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [rows, setRows] = useState<BriefRow[] | null>(null);
-  const [runsToday, setRunsToday] = useState<number | null>(null);
-
-  const load = useCallback(async () => {
-    const db = supabase();
-    const today = new Date().toISOString().slice(0, 10);
-    const [briefs, usage] = await Promise.all([
-      db
-        .from("briefs")
-        .select("id, company, ticker, severity, signal_count, llm_used, created_at")
-        .order("created_at", { ascending: false })
-        .limit(100),
-      db.from("usage").select("runs").eq("day", today).maybeSingle(),
-    ]);
-    setRows((briefs.data as BriefRow[] | null) ?? []);
-    setRunsToday(usage.data?.runs ?? 0);
-  }, []);
+  const [rows, setRows] = useState<HistoryItem[] | null>(null);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    setRows(readHistory());
+  }, []);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -91,19 +73,17 @@ export default function Dashboard() {
     setError(null);
     setRunning(company.trim());
     try {
-      const { data } = await supabase().auth.getSession();
-      const token = data.session?.access_token ?? session.access_token;
-      const result = await analyse(token, {
+      const result = await analyse({
         company: company.trim(),
         ...(ticker.trim() ? { ticker: ticker.trim() } : {}),
         lookback_days: lookback,
         compliance,
       });
+      addToHistory({ ...result, created_at: new Date().toISOString() });
       router.push(`/app/briefs/${result.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "The analysis failed. Try again in a minute.");
       setRunning(null);
-      load();
     }
   }
 
@@ -197,11 +177,9 @@ export default function Dashboard() {
               </button>
             ))}
           </div>
-          {runsToday !== null && (
-            <p className="mt-6 text-[0.8125rem] text-[color:var(--dim)]">
-              {runsToday} of 10 free analyses used today. Resets at 00:00 UTC.
-            </p>
-          )}
+          <p className="mt-6 text-[0.8125rem] leading-relaxed text-[color:var(--dim)]">
+            Free and open source. Up to 10 analyses a day per visitor. No account needed.
+          </p>
         </div>
       </section>
 
@@ -217,7 +195,8 @@ export default function Dashboard() {
             <p className="py-6 text-sm text-[color:var(--dim)]">Loading...</p>
           ) : rows.length === 0 ? (
             <p className="py-6 text-sm text-[color:var(--muted)]">
-              No briefs yet. Run your first analysis and it will appear here.
+              No briefs yet. Run your first analysis and it will appear here. This list is kept in your
+              browser only.
             </p>
           ) : (
             <ul>

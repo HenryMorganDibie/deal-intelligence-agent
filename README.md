@@ -161,20 +161,22 @@ python main.py graph --summary
 
 **Live:** [deal-intelligence-app.vercel.app](https://deal-intelligence-app.vercel.app) (API: `deal-intelligence-api.vercel.app`)
 
-The web app in `web/` (Next.js 14, Tailwind, Supabase Auth) is the landing page plus a
-signed-in app: sign in with GitHub, Google or email, run an analysis, and keep a private
-history of briefs (download as Markdown or JSON). The pipeline runs in `api/index.py`, a
-FastAPI function that reuses this repository's code unchanged.
+The web app in `web/` (Next.js 14, Tailwind) is the landing page plus the app. There are no
+accounts: anyone can run an analysis, each brief gets a shareable link, and a visitor's list
+of briefs is kept in their own browser. The pipeline runs in `api/index.py`, a FastAPI
+function that reuses this repository's code unchanged.
 
 | Piece | Where | Notes |
 |---|---|---|
-| Web | Vercel project, root directory `web/` | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_API_URL`, optional `NEXT_PUBLIC_SITE_URL` |
-| API | Vercel project, repository root (`vercel.json`) | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `ALLOWED_ORIGINS` (the web origin), optional `ANTHROPIC_API_KEY` |
-| Auth + storage | Supabase | `briefs` (owner-only row level security) and `usage` tables, `consume_run()` daily quota |
+| Web | Vercel project, root directory `web/` | `NEXT_PUBLIC_API_URL`, optional `NEXT_PUBLIC_SITE_URL` |
+| API | Vercel project, repository root (`vercel.json`) | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `DEAL_INTEL_API_SECRET`, `ALLOWED_ORIGINS`, optional `ANTHROPIC_API_KEY`, `DEAL_INTEL_PER_VISITOR_DAILY` (10), `DEAL_INTEL_GLOBAL_DAILY` (300) |
+| Storage | Supabase | `briefs` and `runs` tables behind functions (`supabase/migrations/`) |
 
-The API verifies the caller's Supabase access token and writes with that same token, so
-row level security applies to every write and no service-role key is deployed. Each
-account gets 10 analyses a day (capped in the database, not the client). Without
+Writes go through database functions that require `DEAL_INTEL_API_SECRET`, which only the
+API holds, so the public key can read a brief by its id and nothing else. Visitors are
+counted by a salted hash of their IP (never the IP itself) for the daily limits. To see
+usage, run `select * from private.daily_usage;` in the Supabase SQL editor (runs, distinct
+visitors, completed and failed per day); page views are in Vercel Web Analytics. Without
 `ANTHROPIC_API_KEY` briefs come from the deterministic engine only and say so.
 
 Local development:

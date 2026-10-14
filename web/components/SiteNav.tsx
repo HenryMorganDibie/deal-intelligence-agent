@@ -54,9 +54,6 @@ export function SiteNav() {
             <GitHubMark />
             GitHub
           </a>
-          <a href="/login" className="btn btn-ghost hidden h-9 px-3.5 text-sm lg:inline-flex">
-            Sign in
-          </a>
           <a href="/app" className="btn btn-primary hidden h-9 px-3.5 text-sm sm:inline-flex">
             Open app
           </a>
