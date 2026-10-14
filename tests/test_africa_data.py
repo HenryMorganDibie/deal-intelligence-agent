@@ -691,3 +691,14 @@ def test_showcase_summary_uses_the_reviewed_sources():
     assert showcase.pick([quiet, s])["id"] == "b1"
     assert showcase.pick([quiet])["id"] == "b2"
     assert showcase.pick([]) is None
+
+
+def test_common_word_company_names_need_their_corporate_word():
+    from src.engines.deterministic_engine import _company_matchers, _mentions_company
+    m = _company_matchers("Equity Group", ticker="EQTY.NR")
+    assert not _mentions_company("Star Equity Holdings Enters Into Merger Agreement to Acquire Harte Hanks", m)
+    assert not _mentions_company("Yorkton Equity Group Inc. completes acquisition", m)
+    assert not _mentions_company("Private equity fund closes at $300m", m)
+    assert _mentions_company("Kenya’s Equity Bank posts record profit", m)
+    assert _mentions_company("Kenyan lender Equity Group expands into Ethiopia", m)
+    assert _mentions_company("EQTY shares rise", m)

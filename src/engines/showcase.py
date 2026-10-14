@@ -52,7 +52,10 @@ def _origin(sig: dict, brief: dict) -> tuple[str, str]:
     for f in brief.get("filings_reviewed") or []:
         if f.get("document_url") in urls:
             text = f.get("description") or f.get("form_type") or ""
-            return text, f"SEC EDGAR · Form {f.get('form_type')}{tail}" if f.get("form_type") else f"Filing{tail}"
+            form = f.get("form_type") or "Filing"
+            if "sec.gov" in (f.get("document_url") or ""):
+                return text, f"SEC EDGAR · Form {form}{tail}"
+            return text, f"{form}{tail}"                     # exchange disclosures: "NGX Disclosure", "SENS"
     for n in brief.get("news_reviewed") or []:
         if n.get("url") in urls:
             title, src = n.get("title") or "", n.get("source") or "News"
@@ -105,6 +108,17 @@ def strength(summary: dict) -> tuple:
     """Order for choosing the brief to show: more severe, then higher alpha, then newer."""
     return (_SEVERITY_RANK.get(summary.get("severity") or "", 0) if summary.get("signal_count") else 0,
             summary.get("top_alpha") or 0, summary.get("created_at") or "")
+
+
+def latest_per_company(summaries: list[dict]) -> list[dict]:
+    """Newest run of each company only (summaries arrive newest first), so a superseded run is never shown."""
+    seen: set = set()
+    out = []
+    for s in summaries:
+        if s.get("company") not in seen:
+            seen.add(s.get("company"))
+            out.append(s)
+    return out
 
 
 def pick(summaries: list[dict]) -> Optional[dict]:

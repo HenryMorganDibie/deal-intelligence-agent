@@ -584,6 +584,36 @@ _GENERIC_NAME_WORDS = {
     "plc", "llc", "lp", "holdings", "holding", "group", "the", "and", "of",
     "bank", "financial", "capital", "international", "global", "trust", "sa", "ag", "nv",
 }
+# Names that are ordinary words once "Group" or "Bank" is dropped ("Equity Group", "Access
+# Holdings", "Standard Bank"): they must appear with a corporate word, and not straight after
+# another proper name ("Star Equity Holdings" is not Equity Group).
+_COMMON_NAME_WORDS = {
+    "equity", "access", "standard", "first", "union", "national", "united", "sterling", "fidelity",
+    "guaranty", "providence", "unity", "heritage", "premier", "prime", "summit", "diamond", "keystone",
+    "african", "star", "royal", "liberty", "imperial", "investment", "development", "commercial",
+}
+_CORPORATE_WORDS = sorted(_GENERIC_NAME_WORDS - {"the", "and", "of", "sa", "ag", "nv"})
+_PRECEDING_NAME = re.compile(r"(?:^|[\s(])([A-Z][\w&.-]*)\s+$")
+_NOT_A_NAME = {"lender", "bank", "kenya", "kenyan", "nigeria", "nigerian", "lenders", "banks", "as", "how", "why", "after",
+               "the", "with", "by", "and", "at", "from", "for", "to", "in", "on", "of", "said"}
+
+
+class _QualifiedName:
+    """A pattern for a common-word company name that skips matches preceded by another proper name."""
+
+    def __init__(self, word: str):
+        corp = "|".join(_CORPORATE_WORDS)
+        self.pattern = re.compile(rf"\b{re.escape(word)}\W+(?:{corp})\b", re.IGNORECASE)
+
+    def search(self, text: str, pos: int = 0) -> Optional[re.Match]:
+        for m in self.pattern.finditer(text, pos):
+            prev = _PRECEDING_NAME.search(text[max(0, m.start() - 40):m.start()])
+            if prev and not re.search(r"['’]s$", prev.group(1)) and prev.group(1).lower() not in _NOT_A_NAME:
+                continue
+            return m
+        return None
+
+
 def _cik_number(cik: Optional[str]) -> Optional[int]:
     try:
         return int(str(cik))
@@ -607,6 +637,9 @@ def _company_matchers(*names: Optional[str], ticker: Optional[str] = None) -> li
         while words and words[-1].lower() in _GENERIC_NAME_WORDS:
             words.pop()
         if not words or (len(words) == 1 and words[0].lower() in _GENERIC_NAME_WORDS):
+            continue
+        if len(words) == 1 and words[0].lower() in _COMMON_NAME_WORDS:
+            patterns.append(_QualifiedName(words[0]))
             continue
         phrase = r"\W+".join(re.escape(w) for w in words)
         # Not a product named after the company: "Boeing 737", "Airbus A320", "Toyota RAV4".
