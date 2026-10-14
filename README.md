@@ -159,6 +159,8 @@ python main.py graph --summary
 
 ## Hosted App
 
+**Live:** [deal-intelligence-app.vercel.app](https://deal-intelligence-app.vercel.app) (API: `deal-intelligence-api.vercel.app`)
+
 The web app in `web/` (Next.js 14, Tailwind, Supabase Auth) is the landing page plus a
 signed-in app: sign in with GitHub, Google or email, run an analysis, and keep a private
 history of briefs (download as Markdown or JSON). The pipeline runs in `api/index.py`, a
