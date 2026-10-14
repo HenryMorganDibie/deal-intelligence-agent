@@ -130,20 +130,33 @@ def filing_events(submissions: dict) -> list[dict]:
     return out
 
 
+# Event types that exchange disclosures and credible news can confirm for any
+# market (event_sources). Earnings surprises and insider trades are excluded:
+# the signal is the event itself, so they are judged on price direction.
+NEWS_CONFIRMABLE = {
+    SignalType.MA_ACTIVITY, SignalType.LEADERSHIP_CHANGE, SignalType.DISTRESSED_ASSET,
+    SignalType.CREDIT_RISK, SignalType.DEBT_RESTRUCTURE, SignalType.REGULATORY_ACTION,
+}
+
+
 def confirming_events(events: list[dict], signal_type: SignalType) -> list[dict]:
-    """The filings among `events` that evidence `signal_type`, with a readable source."""
+    """The events (SEC filings, exchange disclosures, credible reports) that evidence `signal_type`."""
     items, forms = CONFIRMING_8K_ITEMS.get(signal_type, set()), CONFIRMING_FORMS.get(signal_type, set())
     out = []
     for e in events:
-        hit = sorted(e["items"] & items) if e["form"] in ("8-K", "8-K/A") else []
+        hit = sorted(e.get("items", set()) & items) if e.get("form") in ("8-K", "8-K/A") else []
         if hit:
             out.append({**e, "source": f"SEC 8-K Item {', '.join(hit)} ({e['date']})"})
-        elif e["form"] in forms:
+        elif e.get("form") in forms:
             out.append({**e, "source": f"SEC {e['form']} ({e['date']})"})
+        elif signal_type in NEWS_CONFIRMABLE and signal_type.value in e.get("signal_types", ()):
+            out.append({**e, "source": f"{e['source']} ({e['date']})"})
     return out
 
 
 def has_ground_truth(signal_type: SignalType, market: str) -> bool:
+    if signal_type in NEWS_CONFIRMABLE:
+        return True                    # exchange disclosures and credible reports, any market
     return market == "us" and (signal_type in CONFIRMING_8K_ITEMS or signal_type in CONFIRMING_FORMS)
 
 
@@ -165,6 +178,17 @@ def fetch_filing_events(ticker: Optional[str], client: Optional[httpx.Client] = 
     finally:
         if own:
             client.close()
+
+
+def fetch_events(company: str, ticker: Optional[str], since: date, until: date) -> Optional[list[dict]]:
+    """All ground truth for a company: SEC filings (US) plus exchange disclosures and credible news."""
+    from src.engines.event_sources import collect_events
+    market = market_for_ticker(ticker)
+    sec = fetch_filing_events(ticker) if market == "us" else None
+    other = collect_events(company, ticker, market, since, until)
+    if sec is None and other is None:
+        return None
+    return (sec or []) + (other or [])
 
 
 # ── Labelling ─────────────────────────────────────────────────────────────────
@@ -193,10 +217,10 @@ def confirmation(
     window_end = detected + timedelta(days=CONFIRMATION_WINDOW_DAYS)
     for e in sorted(confirming_events(events, signal_type), key=lambda e: e["date"]):
         d = _day(e["date"])
-        if d and detected <= d <= window_end:
+        if d and detected < d <= window_end:     # strictly after: the trigger cannot confirm itself
             return True, e["date"], e["source"]
     if today > window_end:
-        return False, None, f"No confirming SEC filing within {CONFIRMATION_WINDOW_DAYS} days"
+        return False, None, f"No confirming filing, disclosure or credible report within {CONFIRMATION_WINDOW_DAYS} days"
     return None, None, None
 
 
@@ -277,9 +301,9 @@ def label_prediction(
 
 
 def ground_truth(company_name: str, events: list[dict], since: date, until: date) -> list[dict]:
-    """Every confirming filing for the company in [since, until]: events the engine should catch."""
+    """Every confirming event for the company in [since, until]: events the engine should catch."""
     out = []
-    for signal_type in set(CONFIRMING_8K_ITEMS) | set(CONFIRMING_FORMS):
+    for signal_type in set(CONFIRMING_8K_ITEMS) | set(CONFIRMING_FORMS) | NEWS_CONFIRMABLE:
         for e in confirming_events(events, signal_type):
             d = _day(e["date"])
             if d and since <= d <= until:
@@ -329,7 +353,7 @@ def label_warehouse(today: Optional[date] = None, price_moves=None, fetch_events
     from src.engines.warehouse import AnalystBriefRecord, DetectedSignalRecord, get_session
 
     today = today or utcnow().date()
-    fetch_events = fetch_events or fetch_filing_events
+    fetch_events = fetch_events or globals()["fetch_events"]   # (company, ticker, since, until)
     session = get_session()
     try:
         tickers = {b.run_id: b.ticker for b in session.query(AnalystBriefRecord).all()}
@@ -352,12 +376,13 @@ def label_warehouse(today: Optional[date] = None, price_moves=None, fetch_events
         key = (sig.company_name, ticker)
         first_seen[key] = min(first_seen.get(key, d), d)
 
-    events_cache: dict[Optional[str], Optional[list[dict]]] = {}
+    events_cache: dict[tuple, Optional[list[dict]]] = {}
 
-    def events_for(ticker):
-        if ticker not in events_cache:
-            events_cache[ticker] = fetch_events(ticker) if market_for_ticker(ticker) == "us" else None
-        return events_cache[ticker]
+    def events_for(company, ticker):
+        key = (company, ticker)
+        if key not in events_cache:
+            events_cache[key] = fetch_events(company, ticker, first_seen[key], today)
+        return events_cache[key]
 
     added = skipped = 0
     for (company, stype, d), (sig, ticker) in predictions.items():
@@ -373,7 +398,7 @@ def label_warehouse(today: Optional[date] = None, price_moves=None, fetch_events
             expected_direction=alpha.get("expected_direction"),
             expected_low=alpha.get("expected_magnitude_pct_low"),
             expected_high=alpha.get("expected_magnitude_pct_high"),
-            events=events_for(ticker), today=today, price_moves=price_moves,
+            events=events_for(company, ticker), today=today, price_moves=price_moves,
         )
         if outcome is None:
             skipped += 1
@@ -384,7 +409,7 @@ def label_warehouse(today: Optional[date] = None, price_moves=None, fetch_events
 
     truth = load_ground_truth()
     for (company, ticker), since in first_seen.items():
-        events = events_for(ticker)
+        events = events_for(company, ticker)
         if events:
             truth.extend(ground_truth(company, events, since, today))
     save_ground_truth(truth)

@@ -189,15 +189,13 @@ async def get_brief(brief_id: str) -> dict:
 
 def _label_brief(row: dict, today: date) -> tuple[int, list[dict], list[dict]]:
     """Outcomes for one stored brief's signals, plus ground truth for its company."""
-    from src.engines.outcome_labeller import (
-        CONFIRMATION_WINDOW_DAYS, fetch_filing_events, ground_truth, label_prediction, market_for_ticker,
-    )
+    from src.engines.outcome_labeller import CONFIRMATION_WINDOW_DAYS, fetch_events, ground_truth, label_prediction
     from src.schemas.models import SignalType
 
     created = datetime.fromisoformat(row["created_at"].replace("Z", "+00:00")).astimezone(timezone.utc).date()
     stage = 2 if (today - created).days >= CONFIRMATION_WINDOW_DAYS + 5 else 1
     ticker = row.get("ticker")
-    events = fetch_filing_events(ticker) if market_for_ticker(ticker) == "us" else None
+    events = fetch_events(row["company"], ticker, created, today)
     outcomes = []
     for sig in (row.get("brief") or {}).get("detected_signals", []):
         alpha = sig.get("alpha_score") or {}

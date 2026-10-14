@@ -62,6 +62,54 @@ SOURCE_CREDIBILITY: dict[str, float] = {
     "Premium Times Nigeria": 0.67,
     "Disrupt Africa":        0.65,
     "Bayport Finance":       0.65,
+    # Publisher names as Google News reports them (matched as substrings)
+    "Businessday":           0.80,   # Businessday NG
+    "Business Daily Africa": 0.80,
+    "Daily Maverick":        0.78,
+    "News24":                0.74,
+    "Agence Ecofin":         0.78,
+    "Jeune Afrique":         0.78,
+    "Financial Afrik":       0.72,
+    "Sika Finance":          0.72,
+    "Le Matin":              0.72,
+    "Medias24":              0.74,
+    "Proshare":              0.74,
+    "The Guardian Nigeria":  0.72,
+    "Guardian Nigeria":      0.72,
+    "Punch":                 0.68,
+    "ThisDay":               0.68,
+    "Channels Television":   0.68,
+    "The Star":              0.70,   # The Star Kenya
+    "Capital FM":            0.68,
+    "The Citizen":           0.68,
+    "Kenyan Wall Street":    0.72,
+    "Business Insider Africa": 0.72,
+    "Techpoint Africa":      0.70,
+    "IOL":                   0.68,
+    "Ghana Business News":   0.68,
+    "Graphic Online":        0.68,
+    "WSJ":                   0.92,
+    "The New York Times":    0.88,
+    "New York Times":        0.88,
+    "Washington Post":       0.85,
+    "BBC":                   0.88,
+    "NPR":                   0.85,
+    "NBC News":              0.80,
+    "CBS News":              0.80,
+    "ABC News":              0.80,
+    "PBS":                   0.80,
+    "The Guardian":          0.82,
+    "Nikkei":                0.88,
+    "Axios":                 0.80,
+    "Associated Press":      0.92,
+    "AP News":               0.92,
+    "Bloomberg Línea":       0.90,
+    "The Economist":         0.90,
+    "Barron's":              0.85,
+    "Forbes":                0.75,
+    "Business Wire":         0.85,   # company-issued press releases
+    "PR Newswire":           0.85,
+    "GlobeNewswire":         0.85,
     # Tier 4 — aggregators / Google News
     "Yahoo Finance":         0.60,
     "MarketWatch":           0.60,
@@ -601,10 +649,17 @@ def match_rules_for_target(
     return [(t, ps, sc) for t, (ps, sc) in best.items()]
 
 
+_CREDIBILITY_KEYS = sorted(
+    ((re.compile(r"(?<![A-Za-z0-9])" + re.escape(k) + r"(?![A-Za-z0-9])", re.IGNORECASE), v)
+     for k, v in SOURCE_CREDIBILITY.items()),
+    key=lambda kv: -len(kv[0].pattern),
+)
+
+
 def _source_credibility(source_name: str) -> float:
-    """Look up credibility score for a source."""
-    for key, score in SOURCE_CREDIBILITY.items():
-        if key.lower() in source_name.lower():
+    """Credibility of a publisher: the longest table name found as a whole word in it."""
+    for pattern, score in _CREDIBILITY_KEYS:
+        if pattern.search(source_name or ""):
             return score
     return DEFAULT_CREDIBILITY
 

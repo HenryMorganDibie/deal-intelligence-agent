@@ -2994,10 +2994,26 @@ class TestOutcomeLabeller:
         o = self._label(price_moves=self._moves({"ACME": {"10d": 3.0}, "SPY": {"10d": 5.0}}))
         assert o["abnormal_return_10d_pct"] == -2.0 and o["direction_correct"] is False
 
-    def test_african_listing_has_no_sec_ground_truth(self):
-        o = self._label(ticker="NPN.JO", price_moves=self._moves({"NPN.JO": {"10d": 4.0}, "STX40.JO": {"10d": 1.0}}))
-        assert o["market"] == "africa" and o["event_confirmed"] is None
+    def test_african_listing_confirmed_by_exchange_disclosure(self):
+        moves = self._moves({"NPN.JO": {"10d": 4.0}, "STX40.JO": {"10d": 1.0}})
+        ngx = [{"date": "2026-04-20", "source": "NGX disclosure: COMPLETION OF ACQUISITION",
+                "signal_types": {"m_and_a_activity"}}]
+        o = self._label(ticker="NPN.JO", price_moves=moves, events=ngx)
+        assert o["market"] == "africa" and o["event_confirmed"] is True
         assert (o["benchmark"], o["abnormal_return_10d_pct"]) == ("STX40.JO", 3.0)
+        # no source could be read: unknown, never refuted
+        assert self._label(ticker="NPN.JO", price_moves=moves, events=None)["event_confirmed"] is None
+
+    def test_earnings_and_insider_are_not_news_confirmed(self):
+        """The trigger is the event itself: these are judged on price direction only."""
+        news = [{"date": "2026-04-20", "source": "Reuters: Acme beats estimates", "signal_types": {"earnings_surprise"}}]
+        for t in (SignalType.EARNINGS_SURPRISE, SignalType.INSIDER_ACTIVITY):
+            assert self._label(ticker="NPN.JO", signal_type=t, events=news,
+                               price_moves=self._moves({"NPN.JO": {"10d": 4.0}}))["event_confirmed"] is None
+
+    def test_trigger_cannot_confirm_itself(self):
+        same_day = [{"date": "2026-03-02", "source": "Reuters: Acme completes acquisition", "signal_types": {"m_and_a_activity"}}]
+        assert self._label(events=same_day)["event_confirmed"] is False
 
     def test_too_recent_is_not_labelled(self):
         assert self._label(today=date(2026, 3, 5)) is None
@@ -3019,7 +3035,7 @@ class TestOutcomeLabeller:
         s.add(DetectedSignalRecord(run_id="r1", company_name="Acme", signal_type="m_and_a_activity",
                                    severity="high", detected_at=datetime(2026, 3, 2, 9)))
         s.commit(); s.close()
-        kw = dict(today=date(2026, 9, 1), fetch_events=lambda t: self.EVENTS,
+        kw = dict(today=date(2026, 9, 1), fetch_events=lambda c, t, since, until: self.EVENTS,
                   price_moves=self._moves({"ACME": {"10d": 9.0}, "SPY": {"10d": 2.0}}))
         assert label_warehouse(**kw)["labelled"] == 1
         assert label_warehouse(**kw)["labelled"] == 0          # idempotent
@@ -3652,7 +3668,7 @@ class TestHostedApi:
     def test_label_brief_uses_brief_signals(self, monkeypatch):
         import src.engines.outcome_labeller as ol
         client, api = self._client(monkeypatch)
-        monkeypatch.setattr(ol, "fetch_filing_events", lambda t: [{"date": "2026-09-01", "form": "8-K", "items": {"5.02"}}])
+        monkeypatch.setattr(ol, "fetch_events", lambda c, t, since, until: [{"date": "2026-09-01", "form": "8-K", "items": {"5.02"}}])
         monkeypatch.setattr("src.engines.market_data._fetch_price_moves", lambda s, d: {"10d": -5.0} if s == "ACME" else {"10d": 1.0})
         row = {"id": "b1", "company": "Acme", "ticker": "ACME", "created_at": "2026-08-01T09:00:00+00:00",
                "brief": {"detected_signals": [{"signal_type": "leadership_change", "severity": "high",
@@ -3728,3 +3744,34 @@ class TestAfricanPrices:
         assert (o["market"], o["benchmark"], o["price_change_10d_pct"], o["abnormal_return_10d_pct"]) \
             == ("africa", "^NASI", 10.0, 9.0)
         assert o["direction_correct"] is True
+
+
+class TestEventSources:
+    @pytest.mark.parametrize("text,expected", [
+        ("Acme completes acquisition of Beta", {"m_and_a_activity"}),
+        ("Acme appoints new chief executive", {"leadership_change"}),
+        ("Acme placed in business rescue", {"distressed_asset"}),
+        ("Fitch downgrades Acme rating to B", {"credit_risk"}),
+        ("Acme fined N1bn by regulator", {"regulatory_action"}),
+        ("Acme finalise l'acquisition de Beta", {"m_and_a_activity"}),
+        ("DANGCEM_COMPLETION_OF_ACQUISITION_OF_SHARES", {"m_and_a_activity"}),
+    ])
+    def test_completed_events(self, text, expected):
+        from src.engines.event_sources import classify
+        assert {t.value for t in classify(text)} == expected, text
+
+    @pytest.mark.parametrize("text", [
+        "Acme in talks to acquire Beta",
+        "Acme considers sale of unit",
+        "Acme could appoint new CEO",
+    ])
+    def test_speculation_is_not_an_event(self, text):
+        from src.engines.event_sources import classify
+        assert classify(text) == set()
+
+    def test_company_must_be_the_subject(self):
+        from src.engines.event_sources import classify
+        from src.engines.deterministic_engine import _company_matchers
+        m = _company_matchers("Acme")
+        assert classify("Acme completes acquisition of Beta", m)
+        assert not classify("Rival completes acquisition after Acme deal collapsed", m)
