@@ -23,6 +23,7 @@ Architecture (Phase 2 — Separation of Concerns):
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from datetime import datetime
@@ -47,6 +48,9 @@ from src.engines.alpha_scorer import score_all_signals, LOW_CONFIDENCE_SUPPRESS_
 from src.engines.confidence import decompose
 from src.engines.semantic import extract_from_filing, extract_from_news, evidence_to_strings
 from src.engines.audit_log import log_state
+from src.utils.clock import utcnow
+from src.utils.paths import DATA_DIR
+from src.utils.storage import load_json, save_json
 
 # ─── LLM Provider Selection ───────────────────────────────────────────────────
 # Set DEAL_INTEL_PROVIDER=groq to use Groq/Llama (free, good for testing).
@@ -78,7 +82,38 @@ def _get_llm_client():
     return anthropic.Anthropic(), "anthropic"
 
 
+# Identical requests return the stored reply, so re-running or replaying an analysis
+# over the same sources gives the same explanation text. LLM sampling is otherwise
+# not reproducible. The key covers everything that shapes the reply. Disable with
+# DEAL_INTEL_LLM_CACHE=0.
+LLM_CACHE_PATH = DATA_DIR / "llm_cache.json"
+_LLM_CACHE_MAX = 2000
+
+
+def _llm_cache_key(provider: str, system: str, user: str, max_tokens: int) -> str:
+    model = GROQ_MODEL if provider == "groq" else f"{ANTHROPIC_MODEL}|{ANTHROPIC_EFFORT}"
+    payload = json.dumps([provider, model, system, user, max_tokens], ensure_ascii=False)
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
 def _call_llm(client, provider: str, system: str, user: str, max_tokens: int = 3000) -> str:
+    """LLM call through the reproducibility cache (see LLM_CACHE_PATH)."""
+    if os.getenv("DEAL_INTEL_LLM_CACHE", "1") == "0":
+        return _call_llm_uncached(client, provider, system, user, max_tokens)
+    key = _llm_cache_key(provider, system, user, max_tokens)
+    cache: dict = load_json(LLM_CACHE_PATH, dict)
+    if key in cache:
+        return cache[key]["text"]
+    text = _call_llm_uncached(client, provider, system, user, max_tokens)
+    cache[key] = {"text": text, "at": utcnow().isoformat()}
+    if len(cache) > _LLM_CACHE_MAX:   # drop the oldest entries
+        for old in sorted(cache, key=lambda k: cache[k]["at"])[: len(cache) - _LLM_CACHE_MAX]:
+            del cache[old]
+    save_json(LLM_CACHE_PATH, cache)
+    return text
+
+
+def _call_llm_uncached(client, provider: str, system: str, user: str, max_tokens: int = 3000) -> str:
     """
     Unified LLM call that works with both Anthropic and Groq.
     Returns the response text string.

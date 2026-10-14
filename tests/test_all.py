@@ -1035,6 +1035,38 @@ class TestBriefSynthesisAgent:
         assert "authentication method" not in reasons
 
 
+class TestLLMReproducibility:
+    def _client(self, replies):
+        from unittest.mock import MagicMock
+        client = MagicMock()
+        responses = []
+        for text in replies:
+            block = MagicMock(); block.type = "text"; block.text = text
+            r = MagicMock(); r.content = [block]; r.stop_reason = "end_turn"
+            responses.append(r)
+        client.beta.messages.create.side_effect = responses
+        return client
+
+    def test_identical_request_returns_identical_text(self):
+        from src.agents.signal_agent import _call_llm
+        client = self._client(["first wording", "second wording"])
+        assert _call_llm(client, "anthropic", "sys", "same prompt") == "first wording"
+        assert _call_llm(client, "anthropic", "sys", "same prompt") == "first wording"
+        assert client.beta.messages.create.call_count == 1
+
+    def test_changed_input_is_a_new_request(self):
+        from src.agents.signal_agent import _call_llm
+        client = self._client(["a", "b"])
+        assert _call_llm(client, "anthropic", "sys", "prompt one") == "a"
+        assert _call_llm(client, "anthropic", "sys", "prompt two") == "b"
+
+    def test_cache_can_be_disabled(self, monkeypatch):
+        from src.agents.signal_agent import _call_llm
+        monkeypatch.setenv("DEAL_INTEL_LLM_CACHE", "0")
+        client = self._client(["a", "b"])
+        assert [_call_llm(client, "anthropic", "s", "p") for _ in range(2)] == ["a", "b"]
+
+
 # ─── Formatter ────────────────────────────────────────────────────────────────
 
 class TestFormatter:
@@ -3370,6 +3402,19 @@ class TestSubjectAttribution:
         assert self._engine("Acme", "Acme beats estimates").signal_candidates
         cands = self._engine("Beta", "Acme CEO resigns after Beta merger talks collapse").signal_candidates
         assert [c.signal_type for c in cands] == [SignalType.MA_ACTIVITY]   # not Acme's CEO change
+
+    def test_back_reference_to_the_leading_subject_counts(self):
+        """The documented recall gap: the company named only before 'it'."""
+        assert [c.signal_type for c in self._engine("Acme", "Shares of Acme jump after it beats estimates").signal_candidates] \
+            == [SignalType.EARNINGS_SURPRISE]
+        assert [c.signal_type for c in self._engine("Acme", "Acme rallies as the company raises its full-year guidance").signal_candidates] \
+            == [SignalType.EARNINGS_SURPRISE]
+
+    def test_back_reference_does_not_cross_to_another_subject(self):
+        for title in ["Rival buys Acme stake after it beats estimates",          # Acme did not lead
+                      "Acme falls after Rival says its earnings beat estimates",  # 'its' is Rival's
+                      "Acme falls after Rival beats estimates"]:                  # no back-reference
+            assert self._engine("Acme", title).signal_candidates == [], title
 
     def test_credit_condition_belongs_to_the_subject(self):
         """Live-run regression: Archer's cash burn was reported as Boeing credit risk."""

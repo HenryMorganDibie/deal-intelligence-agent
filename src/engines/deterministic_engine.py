@@ -372,6 +372,21 @@ _CLAUSE_BREAK = re.compile(
 _SUBJECT_ONLY_TYPES = {SignalType.EARNINGS_SURPRISE, SignalType.LEADERSHIP_CHANGE, SignalType.CREDIT_RISK}
 
 
+# A clause with no company name can still be about the company when it refers back
+# with a pronoun ("Shares of Acme jump after it beats estimates"). It inherits the
+# previous clause's subject only when the company led that clause, so in "Rival
+# buys Acme stake after it beats estimates" the "it" stays with Rival.
+_BACK_REFERENCE = re.compile(
+    r"\b(it|its|the\s+(company|group|firm|bank|lender|insurer|miner|operator|telco|retailer))\b",
+    re.IGNORECASE,
+)
+_LEADING_SUBJECT_PREFIX = re.compile(r"^\W*((shares|stock|stocks)\s+(of|in)\s+)?$", re.IGNORECASE)
+
+
+def _leads_clause(clause: str, mention: Optional[int]) -> bool:
+    return mention is not None and bool(_LEADING_SUBJECT_PREFIX.match(clause[:mention]))
+
+
 def _clauses(text: str) -> list[str]:
     return [c.strip() for c in _CLAUSE_BREAK.split(text) if c and c.strip()]
 
@@ -386,14 +401,21 @@ def match_rules_for_target(
 ) -> list[tuple[SignalType, list[str], float]]:
     """
     Rule hits whose trigger is attributed to the target company: the trigger must be
-    in a clause that names the company, and for subject-owned events (earnings,
-    leadership) the company must be named before the trigger.
+    in a clause that names the company (or refers back to it, when the company led
+    the previous clause), and for subject-owned events (earnings, leadership,
+    credit) the company must be named before the trigger.
     """
     if not matchers:
         return _match_rules(text)
     best: dict[SignalType, tuple[list[str], float]] = {}
+    previous_led = False
     for clause in _clauses(text):
         mention = _first_mention(clause, matchers)
+        led = _leads_clause(clause, mention)
+        if mention is None and previous_led:
+            back = _BACK_REFERENCE.search(clause)
+            mention = back.start() if back and _leads_clause(clause, back.start()) else None
+        previous_led = led
         if mention is None:
             continue
         for sig_type, patterns, base_score in SIGNAL_RULES:
