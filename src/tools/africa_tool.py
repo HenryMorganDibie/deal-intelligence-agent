@@ -755,7 +755,8 @@ class AfricaTool:
             self._fetch_rss(GOOGLE_NEWS_KE.format(query=quote(f"{company_name} NSE Kenya deal")), "Google News Kenya"),
         ] + [
             self._fetch_rss(GOOGLE_NEWS_FR.format(query=quote(q)), "Google News Afrique")
-            for q in (f"{company_name} acquisition fusion cession", f"{company_name} résultats dette BRVM bourse")
+            # Google requires every word, so keep French queries short.
+            for q in (company_name, f"{company_name} résultats", f"{company_name} OPA OR fusion OR cession")
         ]
 
         all_tasks = rss_tasks + google_tasks

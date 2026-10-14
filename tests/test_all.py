@@ -3573,6 +3573,15 @@ class TestSubjectAttribution:
         assert evidence_direction(SignalType.INSIDER_ACTIVITY, "achat d'actions par un dirigeant") == "positive"
         assert evidence_direction(SignalType.INSIDER_ACTIVITY, "cession d'actions par un administrateur") == "negative"
 
+    def test_rating_upgrade_is_not_credit_risk(self):
+        """Live-run regression: 'GCR Upgrades Sonatel to Highest Regional Credit Rating' was CREDIT_RISK."""
+        for title in ["GCR Upgrades Sonatel to Highest Regional Credit Rating",
+                      "Moody's affirms Sonatel credit rating, outlook stable",
+                      "Fitch relève la notation de Sonatel"]:
+            assert self._engine("Sonatel", title).signal_candidates == [], title
+        assert [c.signal_type for c in self._engine("Sonatel", "Sonatel downgraded by Fitch on liquidity concerns").signal_candidates] \
+            == [SignalType.CREDIT_RISK]
+
     def test_credit_condition_belongs_to_the_subject(self):
         """Live-run regression: Archer's cash burn was reported as Boeing credit risk."""
         cands = self._engine("Boeing", "Archer Aviation (ACHR) Stock Rally Faces Cash Burn And Boeing Deal Risk", "BA")

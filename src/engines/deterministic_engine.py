@@ -411,6 +411,8 @@ def _match_rules(text: str) -> list[tuple[SignalType, list[str], float]]:
     best: dict[SignalType, tuple[list[str], float]] = {}
 
     for signal_type, patterns, base_score in SIGNAL_RULES:
+        if _vetoed(signal_type, base_score, text_lower):
+            continue
         matched = []
         for pattern in patterns:
             if re.search(pattern, text_lower, re.IGNORECASE):
@@ -482,6 +484,24 @@ _CLAUSE_BREAK = re.compile(
 # trigger ("Acme beats estimates", not "Rival beats estimates on Acme deal"; "Rival
 # faces cash burn and Acme deal risk" is the rival's credit, not Acme's).
 _SUBJECT_ONLY_TYPES = {SignalType.EARNINGS_SURPRISE, SignalType.LEADERSHIP_CHANGE, SignalType.CREDIT_RISK}
+
+# Good news that only shares vocabulary with a risk rule: "GCR upgrades Acme to
+# its highest credit rating" mentions a credit rating but is not credit risk. A
+# veto only blocks that type's weaker patterns (base score below 0.9); explicit
+# distress language ("downgraded by Moody's", "event of default") still fires.
+_POSITIVE_VETO = {
+    SignalType.CREDIT_RISK: re.compile(
+        r"\b(upgrad\w*|affirm\w*|outlook\s+(raised|to\s+positive|revised\s+to\s+positive)"
+        r"|rel[eè]ve\w*\s+(la\s+|sa\s+)?notation|rehauss\w*|perspective\s+positive)\b",
+        re.IGNORECASE,
+    ),
+}
+_VETO_MAX_SCORE = 0.9
+
+
+def _vetoed(sig_type: SignalType, base_score: float, text: str) -> bool:
+    veto = _POSITIVE_VETO.get(sig_type)
+    return bool(veto and base_score < _VETO_MAX_SCORE and veto.search(text))
 
 
 # A clause with no company name can still be about the company when it refers back
@@ -566,6 +586,8 @@ def match_rules_for_target(
         if mention is None:
             continue
         for sig_type, patterns, base_score in SIGNAL_RULES:
+            if _vetoed(sig_type, base_score, clause):
+                continue
             matched = []
             for pattern in patterns:
                 m = re.search(pattern, clause, re.IGNORECASE)
