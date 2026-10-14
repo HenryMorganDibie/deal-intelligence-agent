@@ -32,7 +32,9 @@ import hashlib
 import json
 import logging
 import statistics
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -47,6 +49,9 @@ log = logging.getLogger(__name__)
 
 CACHE_DIR = DATA_DIR / "hist_cache"
 RESULTS_PATH = DATA_DIR / "historical_backtest.json"
+RUNS_DIR = DATA_DIR / "backtest_runs"          # one checkpoint file per company, so a run resumes
+_SEC_LOCK = threading.Lock()
+_SEC_LAST = [0.0]
 REPORT_PATH = Path(__file__).resolve().parents[2] / "docs" / "BACKTEST.md"
 SUMMARY_PATH = Path(__file__).resolve().parents[2] / "docs" / "backtest_summary.json"
 # Judged on the price reaction only: an earnings release or an insider trade is itself the event.
@@ -80,6 +85,9 @@ UNIVERSE: list[tuple] = [
 ]
 
 
+_ORIGINAL_TICKERS = {e[1].upper() for e in UNIVERSE}
+
+
 # ── Cache ─────────────────────────────────────────────────────────────────────
 
 def _cached(key: str, fetch: Callable[[], Any]) -> Any:
@@ -92,7 +100,9 @@ def _cached(key: str, fetch: Callable[[], Any]) -> Any:
             pass
     value = fetch()
     if value is not None:
-        path.write_text(json.dumps(value, default=sorted))
+        tmp = path.with_suffix(f".{threading.get_ident()}.tmp")   # atomic: parallel workers share the cache
+        tmp.write_text(json.dumps(value, default=sorted))
+        tmp.replace(path)
     return value
 
 
@@ -103,13 +113,13 @@ class Sources:
         self.http = httpx.Client(timeout=30, follow_redirects=True, headers={
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36"})
         self.sec = httpx.Client(timeout=30, follow_redirects=True, headers=SEC_HEADERS)
-        self._last_sec = 0.0
 
     def _sec_get(self, url: str) -> httpx.Response:
-        wait = 0.13 - (time.monotonic() - self._last_sec)   # under SEC's 10 requests/second
-        if wait > 0:
-            time.sleep(wait)
-        self._last_sec = time.monotonic()
+        with _SEC_LOCK:                                      # under SEC's 10 requests/second, across threads
+            wait = 0.13 - (time.monotonic() - _SEC_LAST[0])
+            if wait > 0:
+                time.sleep(wait)
+            _SEC_LAST[0] = time.monotonic()
         return self.sec.get(url)
 
     def sec_filings(self, ticker: str, since: date, cik: Optional[str] = None) -> list[dict]:
@@ -203,6 +213,14 @@ class Prediction:
     alpha: Optional[float] = None
 
 
+def _french(ticker: str) -> bool:
+    """French-language news searches for francophone markets (Casablanca, BRVM, Tunis) and the original
+    African companies, which were run with them."""
+    from src.engines.outcome_labeller import market_for_ticker
+    t = ticker.upper()
+    return t.endswith((".CS", ".BV", ".TN")) or (market_for_ticker(ticker) == "africa" and t in _ORIGINAL_TICKERS)
+
+
 def _as_of_dates(start: date, end: date, step_days: int) -> list[date]:
     out, d = [], start
     while d <= end:
@@ -242,7 +260,7 @@ def detect(src: Sources, company: str, ticker: str, as_of: date, sec_rows: list[
                                      document_url=d["url"], description=f"{ticker.split('.')[0]}: {d['type']}: {d['title']}"))
     news = [NewsItem(title=n["title"], source=n["publisher"] or "Google News", published_date=n["date"],
                      url=n["url"], snippet="")
-            for n in src.news(company, since, as_of, french=market == "africa")]
+            for n in src.news(company, since, as_of, french=_french(ticker))]
 
     cik = cik or (sec_rows[0]["cik"] if sec_rows else None)
     state = AgentState(request=AnalysisRequest(company_name=company, ticker=ticker, cik=cik,
@@ -268,85 +286,145 @@ def detect(src: Sources, company: str, ticker: str, as_of: date, sec_rows: list[
     return out
 
 
-def run(
-    start: date, end: date, universe: Optional[list[tuple]] = None, step_days: int = 30,
-    progress: Callable[[str], None] = lambda m: None,
-) -> dict:
-    """Walk forward over [start, end]; label each prediction; compute and save metrics."""
+def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_dates: list[date],
+                 horizon_end: date, today: date, src: "Sources") -> dict:
+    """Detections, outcome labels, ground truth and base-rate hits for one company."""
     from src.engines.event_sources import news_events
     from src.engines.outcome_labeller import (
-        filing_events, ground_truth, label_prediction, market_for_ticker, confirming_events, NEWS_CONFIRMABLE,
-        default_price_moves,
+        filing_events, ground_truth, label_prediction, market_for_ticker, confirming_events, default_price_moves,
     )
 
     def price_moves(symbol: str, iso: str) -> dict:
         return _cached(f"px:{symbol}:{iso}", lambda: default_price_moves(symbol, iso)) or {}
 
-    universe = universe or UNIVERSE
-    src = Sources()
+    company, ticker, cik = (tuple(entry) + (None,))[:3]
+    market = market_for_ticker(ticker)
+    sec_rows = src.sec_filings(ticker, start - timedelta(days=LOOKBACK_DAYS), cik) if market == "us" else []
+    events: list[dict] = []
+    if market == "us":
+        events += filing_events({"filings": {"recent": {
+            "form": [r["form"] for r in sec_rows], "filingDate": [r["date"] for r in sec_rows],
+            "items": [r["items"] for r in sec_rows]}}})
+    if ticker.upper().endswith(".LG"):
+        events += src.ngx_events(ticker, company, start, horizon_end)
+    headlines = 0
+    for d in truth_dates:
+        window = src.news(company, d - timedelta(days=LOOKBACK_DAYS), d, french=_french(ticker))
+        headlines += len(window)
+        events += news_events(src.http, company, d - timedelta(days=LOOKBACK_DAYS), d, headlines=window) or []
+    truth = ground_truth(company, events, start, horizon_end)
+
+    base: dict[str, int] = {}
+    predictions: list[dict] = []
+    last_seen: dict[str, date] = {}
+    for as_of in dates:
+        for st in {e["signal_type"] for e in ground_truth(company, events, as_of + timedelta(days=1),
+                                                          as_of + timedelta(days=HORIZON_DAYS))}:
+            base[st] = base.get(st, 0) + 1
+        for p in detect(src, company, ticker, as_of, sec_rows, cik):
+            prev = last_seen.get(p.signal_type)
+            last_seen[p.signal_type] = as_of
+            if prev and (as_of - prev).days < HORIZON_DAYS:
+                continue                      # same signal still live: not a new prediction
+            o = label_prediction(company_name=company, ticker=ticker, signal_type=SignalType(p.signal_type),
+                                 severity=p.severity, detection_date=as_of, expected_direction=p.direction,
+                                 events=events, today=today, price_moves=price_moves) or {}
+            official = None
+            if o.get("event_confirmed") is not None:
+                official_events = [e for e in events if not e.get("signal_types")
+                                   or e["source"].startswith(("NGX disclosure", "NSE Kenya disclosure"))]
+                hit = [e for e in confirming_events(official_events, SignalType(p.signal_type))
+                       if as_of.isoformat() < e["date"] <= (as_of + timedelta(days=HORIZON_DAYS)).isoformat()]
+                official = bool(hit) if (market == "us" or ticker.upper().endswith(".LG")) else None
+            predictions.append({**p.__dict__, "event_confirmed": o.get("event_confirmed"),
+                                "confirmed_by_official_filing": official,
+                                "confirmation_source": o.get("confirmation_source"),
+                                "abnormal_return_10d_pct": o.get("abnormal_return_10d_pct"),
+                                "price_change_10d_pct": o.get("price_change_10d_pct"),
+                                "direction_correct": o.get("direction_correct")})
+    return {"company": company, "ticker": ticker, "market": market, "as_of_dates": len(dates),
+            "headlines": headlines, "filings": len(sec_rows), "covered": bool(headlines or sec_rows),
+            "predictions": predictions, "truth": truth, "base": base}
+
+
+def _checkpoint(run_dir: Path, ticker: str) -> Path:
+    import re
+    return run_dir / (re.sub(r"[^A-Za-z0-9.]+", "_", ticker) + ".json")
+
+
+def run(
+    start: date, end: date, universe: Optional[list[tuple]] = None, step_days: int = 30,
+    progress: Callable[[str], None] = lambda m: None, workers: int = 8,
+) -> dict:
+    """Walk forward over [start, end] for every company (in parallel, resumable); label, aggregate, save."""
+    from src.engines import backtest_universe
+
+    universe = universe or backtest_universe.load()
     today = date.today()
     horizon_end = min(end + timedelta(days=HORIZON_DAYS), today)
     dates = _as_of_dates(start, end, step_days)
+    truth_dates = _as_of_dates(start, horizon_end, step_days)
+    run_dir = RUNS_DIR / f"{start}_{end}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    todo = [e for e in universe if not _checkpoint(run_dir, e[1]).exists()]
+    progress(f"{len(universe) - len(todo)} of {len(universe)} companies already done; {len(todo)} to run")
+    local = threading.local()
+
+    def work(entry: tuple) -> str:
+        if not hasattr(local, "src"):
+            local.src = Sources()
+        for attempt in range(3):
+            try:
+                out = _company_run(entry, start, end, dates, truth_dates, horizon_end, today, local.src)
+                _checkpoint(run_dir, entry[1]).write_text(json.dumps(out, default=str))
+                return f"{entry[0]} ({entry[1]}): {len(out['predictions'])} predictions, {out['headlines']} headlines"
+            except Exception as e:                  # one company's failure never stops the run
+                log.warning("company %s failed (attempt %d): %r", entry[1], attempt + 1, e)
+                time.sleep(10 * (attempt + 1))
+        return f"{entry[0]} ({entry[1]}): failed"
+
+    done = len(universe) - len(todo)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for fut in as_completed([pool.submit(work, e) for e in todo]):
+            done += 1
+            progress(f"[{done}/{len(universe)}] {fut.result()}")
+    return aggregate(start, end, universe, dates, run_dir)
+
+
+def aggregate(start: date, end: date, universe: list[tuple], dates: list[date], run_dir: Path) -> dict:
+    """Combine per-company checkpoints into metrics, tables and reports. Companies with no news and no
+    filings in the whole period (delisted, or never covered) are left out of every denominator."""
     predictions: list[dict] = []
     truth: list[dict] = []
-    company_months = 0
     base: dict[str, dict[str, int]] = {}
-
-    truth_dates = _as_of_dates(start, horizon_end, step_days)
-    for idx, entry in enumerate(universe, 1):
-        company, ticker, cik = (tuple(entry) + (None,))[:3]
-        progress(f"[{idx}/{len(universe)}] {company} ({ticker})")
-        market = market_for_ticker(ticker)
-        sec_rows = src.sec_filings(ticker, start - timedelta(days=LOOKBACK_DAYS), cik) if market == "us" else []
-
-        # Ground truth for the whole span: SEC filings, NGX disclosures, and credible news
-        # from the same monthly windows the detection step reads (each fetched once).
-        events: list[dict] = []
-        if market == "us":
-            events += filing_events({"filings": {"recent": {
-                "form": [r["form"] for r in sec_rows], "filingDate": [r["date"] for r in sec_rows],
-                "items": [r["items"] for r in sec_rows]}}})
-        if ticker.upper().endswith(".LG"):
-            events += src.ngx_events(ticker, company, start, horizon_end)
-        for d in truth_dates:
-            events += news_events(src.http, company, d - timedelta(days=LOOKBACK_DAYS), d,
-                                  headlines=src.news(company, d - timedelta(days=LOOKBACK_DAYS), d,
-                                                     french=market == "africa")) or []
-        truth += ground_truth(company, events, start, horizon_end)
-
-        last_seen: dict[str, date] = {}
-        for as_of in dates:
-            company_months += 1
-            # Base rate: is this company-month followed by each event type?
-            for st in {e["signal_type"] for e in ground_truth(company, events, as_of + timedelta(days=1),
-                                                              as_of + timedelta(days=HORIZON_DAYS))}:
-                base.setdefault(st, {}).setdefault(market, 0)
-                base[st][market] += 1
-            for p in detect(src, company, ticker, as_of, sec_rows, cik):
-                prev = last_seen.get(p.signal_type)
-                last_seen[p.signal_type] = as_of
-                if prev and (as_of - prev).days < HORIZON_DAYS:
-                    continue                      # same signal still live: not a new prediction
-                o = label_prediction(company_name=company, ticker=ticker, signal_type=SignalType(p.signal_type),
-                                     severity=p.severity, detection_date=as_of, expected_direction=p.direction,
-                                     events=events, today=today, price_moves=price_moves) or {}
-                official = None
-                if o.get("event_confirmed") is not None:
-                    official_events = [e for e in events if not e.get("signal_types")
-                                       or e["source"].startswith(("NGX disclosure", "NSE Kenya disclosure"))]
-                    hit = [e for e in confirming_events(official_events, SignalType(p.signal_type))
-                           if as_of.isoformat() < e["date"] <= (as_of + timedelta(days=HORIZON_DAYS)).isoformat()]
-                    official = bool(hit) if (market == "us" or ticker.upper().endswith(".LG")) else None
-                predictions.append({**p.__dict__, "event_confirmed": o.get("event_confirmed"),
-                                    "confirmed_by_official_filing": official,
-                                    "confirmation_source": o.get("confirmation_source"),
-                                    "abnormal_return_10d_pct": o.get("abnormal_return_10d_pct"),
-                                    "price_change_10d_pct": o.get("price_change_10d_pct"),
-                                    "direction_correct": o.get("direction_correct")})
-
-    metrics = compute_metrics(predictions, truth, base, company_months_by_market(universe, len(dates)))
+    months: dict[str, int] = {}
+    companies: dict[str, int] = {}
+    uncovered: dict[str, int] = {}
+    market_of: dict[str, str] = {}
+    missing = 0
+    for entry in universe:
+        path = _checkpoint(run_dir, entry[1])
+        if not path.exists():
+            missing += 1
+            continue
+        c = json.loads(path.read_text())
+        if not c.get("covered", True):
+            uncovered[c["market"]] = uncovered.get(c["market"], 0) + 1
+            continue
+        mk = c["market"]
+        market_of[c["company"]] = mk
+        companies[mk] = companies.get(mk, 0) + 1
+        months[mk] = months.get(mk, 0) + c["as_of_dates"]
+        predictions += c["predictions"]
+        truth += c["truth"]
+        for st, n in c["base"].items():
+            base.setdefault(st, {}).setdefault(mk, 0)
+            base[st][mk] += n
+    metrics = compute_metrics(predictions, truth, base, months, market_of)
     result = {"start": start.isoformat(), "end": end.isoformat(), "as_of_dates": len(dates),
-              "companies": len(universe), "lookback_days": LOOKBACK_DAYS, "horizon_days": HORIZON_DAYS,
+              "companies": sum(companies.values()), "companies_by_market": companies, "company_months": months,
+              "uncovered_companies": uncovered, "missing_companies": missing, "universe_size": len(universe),
+              "lookback_days": LOOKBACK_DAYS, "horizon_days": HORIZON_DAYS,
               "predictions": predictions, "ground_truth_events": truth, "metrics": metrics,
               "by_severity": by_severity(predictions), "alpha_validation": alpha_validation(predictions)}
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -357,20 +435,12 @@ def run(
     from src.engines import evaluation_report
     evaluation_report.write(result)
     SUMMARY_PATH.write_text(json.dumps({k: result[k] for k in ("start", "end", "as_of_dates", "companies",
+                                                                "companies_by_market", "company_months",
+                                                                "uncovered_companies", "universe_size",
                                                                 "lookback_days", "horizon_days", "metrics",
                                                                 "by_severity", "alpha_validation")},
                                        indent=1, default=str))
     return result
-
-
-def company_months_by_market(universe: list[tuple], n_dates: int) -> dict[str, int]:
-    from src.engines.outcome_labeller import market_for_ticker
-    out: dict[str, int] = {}
-    for entry in universe:
-        t = entry[1]
-        m = market_for_ticker(t)
-        out[m] = out.get(m, 0) + n_dates
-    return out
 
 
 # ── Metrics ───────────────────────────────────────────────────────────────────
@@ -379,8 +449,13 @@ def _rate(num: int, den: int) -> Optional[float]:
     return round(num / den, 3) if den else None
 
 
-def compute_metrics(predictions: list[dict], truth: list[dict], base: dict, months: dict[str, int]) -> dict:
+def compute_metrics(predictions: list[dict], truth: list[dict], base: dict, months: dict[str, int],
+                    market_of: Optional[dict[str, str]] = None) -> dict:
     """Per signal type, per market ('all', 'us', 'africa')."""
+    market_of = market_of or {p["company"]: p["market"] for p in predictions}
+    by_key: dict[tuple, list[date]] = {}
+    for p in predictions:
+        by_key.setdefault((p["company"], p["signal_type"]), []).append(date.fromisoformat(p["as_of"]))
     out: dict[str, dict] = {}
     types = sorted({p["signal_type"] for p in predictions} | {e["signal_type"] for e in truth})
     for st in types:
@@ -394,11 +469,11 @@ def compute_metrics(predictions: list[dict], truth: list[dict], base: dict, mont
             off_conf = sum(p["confirmed_by_official_filing"] for p in off)
             # Recall: confirmed events preceded by a prediction of the same type within the horizon.
             ev = [e for e in truth if e["signal_type"] == st
-                  and (mk == "all" or _market_of_company(e["company_name"], predictions, truth) in (mk, None))]
-            caught = sum(1 for e in ev if any(
-                p["company"] == e["company_name"] and p["signal_type"] == st
-                and 0 < (date.fromisoformat(e["date"]) - date.fromisoformat(p["as_of"])).days <= HORIZON_DAYS
-                for p in predictions))
+                  and (mk == "all" or market_of.get(e["company_name"]) in (mk, None))]
+            caught = 0
+            for e in ev:
+                d = date.fromisoformat(e["date"])
+                caught += any(0 < (d - a).days <= HORIZON_DAYS for a in by_key.get((e["company_name"], st), ()))
             n_months = sum(months.values()) if mk == "all" else months.get(mk, 0)
             base_hits = sum(base.get(st, {}).values()) if mk == "all" else base.get(st, {}).get(mk, 0)
             base_rate = _rate(base_hits, n_months)
@@ -515,14 +590,6 @@ def by_severity(predictions: list[dict]) -> dict:
             row[band] = {"labelled": len(ps), "precision": _rate(sum(p["event_confirmed"] for p in ps), len(ps))}
         out[st] = row
     return out
-
-
-def _market_of_company(company: str, predictions: list[dict], truth: list[dict]) -> Optional[str]:
-    from src.engines.outcome_labeller import market_for_ticker
-    for entry in UNIVERSE:
-        if entry[0] == company:
-            return market_for_ticker(entry[1])
-    return None
 
 
 def _fmt(v, pct=True) -> str:

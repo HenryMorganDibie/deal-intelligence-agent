@@ -127,10 +127,13 @@ def _market_rows(rows: list[dict], m: dict, signal_type: str, months: Optional[i
 def build(result: dict) -> dict:
     preds = result["predictions"]
     metrics = result["metrics"]
-    months = {}
-    for entry in UNIVERSE:
-        mk = "us" if "." not in entry[1] else "africa"
-        months[mk] = months.get(mk, 0) + result["as_of_dates"]
+    months = dict(result.get("company_months") or {})
+    if not months:                           # results saved before per-market counts were kept
+        for entry in UNIVERSE:
+            mk = "us" if "." not in entry[1] else "africa"
+            months[mk] = months.get(mk, 0) + result["as_of_dates"]
+    by_market = result.get("companies_by_market") or {"us": sum("." not in e[1] for e in UNIVERSE),
+                                                      "africa": sum("." in e[1] for e in UNIVERSE)}
     confirmable = [p for p in preds if p["signal_type"] not in PRICE_ONLY]
     price_only = [p for p in preds if p["signal_type"] in PRICE_ONLY]
     lab = [p for p in confirmable if p.get("event_confirmed") is not None]
@@ -180,7 +183,8 @@ def build(result: dict) -> dict:
             }
     return {
         "design": {"start": result["start"], "end": result["end"], "as_of_dates": result["as_of_dates"],
-                   "companies": {"us": sum("." not in e[1] for e in UNIVERSE), "africa": sum("." in e[1] for e in UNIVERSE)},
+                   "companies": {"us": by_market.get("us", 0), "africa": by_market.get("africa", 0)},
+                   "universe_size": result.get("universe_size"), "uncovered_companies": result.get("uncovered_companies"),
                    "company_months": months, "lookback_days": LOOKBACK_DAYS, "horizon_days": HORIZON_DAYS,
                    "reproduce": "python main.py backtest --historical (network; responses cached in data/hist_cache), "
                                 "then python main.py backtest --evaluation. Data-quality and attribution sets: "

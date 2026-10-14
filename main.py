@@ -120,6 +120,8 @@ def build_parser() -> argparse.ArgumentParser:
     bt.add_argument("--signal",   default=None, help="Filter report by signal type")
     bt.add_argument("--historical", action="store_true",
                     help="Walk-forward replay over past dates with real filings, news and prices (writes docs/BACKTEST.md)")
+    bt.add_argument("--universe", action="store_true", help="Rebuild docs/backtest_universe.csv (about 2,000 companies)")
+    bt.add_argument("--workers", type=int, default=8, help="Companies run in parallel in --historical")
     bt.add_argument("--start", default="2024-01-15", help="First as-of date for --historical")
     bt.add_argument("--end",   default="2025-06-15", help="Last as-of date for --historical")
 
@@ -640,6 +642,12 @@ def _run_calibration(args: argparse.Namespace) -> None:
 def _run_backtest(args: argparse.Namespace) -> None:
     from src.engines.backtest import BacktestEngine, get_latest_backtest
 
+    if getattr(args, "universe", False):
+        from src.engines import backtest_universe
+        rows = backtest_universe.build()
+        console.print(f"[green]✓[/green] {backtest_universe.UNIVERSE_PATH}: {len(rows)} companies")
+        return
+
     if getattr(args, "evaluation", False):
         from src.engines import evaluation_report as er
         report = er.write()
@@ -658,11 +666,13 @@ def _run_backtest(args: argparse.Namespace) -> None:
 
     if getattr(args, "historical", False):
         from datetime import date as _date
+        from src.engines import backtest_universe
         from src.engines import historical_backtest as hb
-        console.print(f"[cyan]Walk-forward backtest {args.start} → {args.end} over {len(hb.UNIVERSE)} companies "
-                      "(responses are cached; a rerun resumes)…[/cyan]")
-        result = hb.run(_date.fromisoformat(args.start), _date.fromisoformat(args.end),
-                        progress=lambda m: console.print(f"[dim]{m}[/dim]"))
+        universe = backtest_universe.load()
+        console.print(f"[cyan]Walk-forward backtest {args.start} → {args.end} over {len(universe)} companies, "
+                      f"{args.workers} in parallel (responses and per-company results are cached; a rerun resumes)…[/cyan]")
+        result = hb.run(_date.fromisoformat(args.start), _date.fromisoformat(args.end), universe=universe,
+                        workers=args.workers, progress=lambda m: console.print(f"[dim]{m}[/dim]"))
         console.print(hb.render_report(result))
         console.print(f"[green]✓[/green] Report written to {hb.REPORT_PATH}")
         return

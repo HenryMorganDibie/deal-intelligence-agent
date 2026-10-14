@@ -29,6 +29,8 @@ _STORES = [
     ("src.engines.historical_backtest", "REPORT_PATH",         "BACKTEST.md"),
     ("src.engines.historical_backtest", "SUMMARY_PATH",        "backtest_summary.json"),
     ("src.engines.historical_backtest", "CACHE_DIR",           "hist_cache"),
+    ("src.engines.historical_backtest", "RUNS_DIR",            "backtest_runs"),
+    ("src.engines.backtest_universe",   "UNIVERSE_PATH",       "backtest_universe.csv"),
     ("src.engines.deals",              "DEALS_PATH",           "deals.json"),
 ]
 
