@@ -3,28 +3,28 @@ import { ArrowRight, Container, Heading, Reveal, Section } from "./primitives";
 
 const LIMITS = [
   {
-    title: "JSE history is current-day only",
-    body: "Free SENS access covers today's announcements, and the JSE site blocks automated access. Older JSE events come from news.",
+    title: "Deals are what gets reported",
+    body: "Extracted from public reporting: undisclosed deals cannot appear. Sample audits find about 80% of records fully correct and 90% genuine transactions; every record links its sources.",
   },
   {
-    title: "Backtests are still filling up",
-    body: "Outcomes are now labelled automatically, against a market benchmark and SEC filings, with recall. The numbers need about 50 outcomes per signal type, so they firm up over the first months.",
+    title: "Coverage is uneven by country",
+    body: "Machine-readable filings and prices exist for NGX and NSE Kenya, vendor data for JSE, EGX and Casablanca. The other 49 countries are covered through news, deals and risk data.",
   },
   {
-    title: "Africa has no filing-based ground truth",
-    body: "US signals are confirmed by later SEC filings. African ones are judged on price reaction only, and calibrate on African outcomes once 10 per signal type exist.",
+    title: "Statements are parsed, then checked",
+    body: "PDF layouts vary, so each figure is checked against accounting identities and marked verified, inconsistent or unchecked. Interim statements are linked, not parsed.",
   },
   {
-    title: "Severity means strength, not bad news",
-    body: "A widely reported earnings beat can be CRITICAL. Direction is shown separately as an expected move up or down.",
+    title: "Some signals beat chance, some do not",
+    body: "In the backtest, leadership, regulatory and distress flags beat their base rates; M&A flags did not. The evaluation page shows every figure.",
   },
   {
-    title: "Patterns, in English and French",
-    body: "Reproducible and auditable by design. Francophone disclosures are now covered; Arabic and Portuguese are not, and novel phrasings can still be missed.",
+    title: "Country risk uses public data",
+    body: "World Bank indicators are annual and often a year old; sovereign ratings and bond spreads are licensed and not included.",
   },
   {
-    title: "Unlisted companies have no prices",
-    body: "Private, OTC and thinly traded names often return no market data, so their outcomes stay unlabelled unless a filing confirms them.",
+    title: "Patterns, not a trained model",
+    body: "Reproducible and auditable in English, French, Portuguese and Arabic, but novel phrasings can be missed.",
   },
 ];
 

@@ -3,10 +3,10 @@ import { HeroBrief } from "./HeroBrief";
 import { ArrowRight, Container, Reveal } from "./primitives";
 
 const FACTS = [
-  { k: "115", v: "deterministic detection patterns" },
+  { k: "54", v: "African countries, in their own languages" },
+  { k: "1,700+", v: "deals: PE, VC, debt and M&A" },
   { k: "8", v: "signal types, 17 compound-event rules" },
-  { k: "US + Africa", v: "SEC EDGAR, NGX, NSE Kenya, JSE SENS" },
-  { k: "373", v: "tests, open source" },
+  { k: "521", v: "tests, open source" },
 ];
 
 export function Hero() {
@@ -23,11 +23,11 @@ export function Hero() {
         <div className="min-w-0">
           <Reveal>
             <a
-              href="#attribution"
+              href="#platform"
               className="inline-flex items-center gap-2 rounded-full border hairline bg-white/[0.03] py-1 pl-1 pr-3 text-[0.8125rem] text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
             >
               <span className="rounded-full bg-verified/15 px-2 py-0.5 kbd text-[0.6875rem] text-verified">New</span>
-              Subject attribution: no more signals from someone else&apos;s news
+              Deals, investors, financials and risk for all 54 African countries
               <ArrowRight />
             </a>
           </Reveal>
@@ -40,9 +40,9 @@ export function Hero() {
 
           <Reveal delay={120}>
             <p className="lede mt-7 max-w-xl">
-              A rule engine reads SEC filings, African exchange disclosures and the financial press, and finds the
-              signals. An LLM explains them in analyst language, and is never allowed to invent one. Every number in
-              the brief traces back to a source, a rule and a weight.
+              Company signals, private-market deals, investors, financial statements and country risk across all 54
+              African countries and the US. Rules find the facts; an LLM explains them and is never allowed to invent
+              one. Every number traces back to a source.
             </p>
           </Reveal>
 

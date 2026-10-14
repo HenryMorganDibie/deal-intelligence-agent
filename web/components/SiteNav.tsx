@@ -5,6 +5,7 @@ import { LINKS } from "../lib/site";
 import { Container, GitHubMark, LogoMark } from "./primitives";
 
 const NAV = [
+  { href: "#platform", label: "Platform" },
   { href: "#pipeline", label: "How it works" },
   { href: "#attribution", label: "Attribution" },
   { href: "#coverage", label: "Coverage" },

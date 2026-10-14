@@ -7,6 +7,7 @@ import { Faq } from "../components/Faq";
 import { Hero } from "../components/Hero";
 import { Limits } from "../components/Limits";
 import { Pipeline } from "../components/Pipeline";
+import { Platform } from "../components/Platform";
 import { Problem } from "../components/Problem";
 import { Quickstart } from "../components/Quickstart";
 import { Scoring } from "../components/Scoring";
@@ -28,6 +29,7 @@ export default function LandingPage() {
       <main id="main">
         <Hero />
         <SourceMarquee />
+        <Platform />
         <Problem />
         <Pipeline />
         <Attribution />
