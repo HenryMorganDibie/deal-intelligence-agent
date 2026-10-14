@@ -48,7 +48,7 @@ const NODES: Node[] = [
     n: "06",
     name: "Interact",
     kind: "verified",
-    body: "14 compound-event rules: credit risk followed by distress escalates; M&A next to distress contradicts. Boosts re-check the human-review threshold.",
+    body: "17 compound-event rules: credit risk followed by distress escalates; insider selling before a miss is flagged, buying into a beat is not. Boosts re-check the human-review threshold.",
     out: "compound events, systemic risk level",
   },
   {

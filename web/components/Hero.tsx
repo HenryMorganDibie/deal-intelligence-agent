@@ -4,9 +4,9 @@ import { ArrowRight, Container, Reveal } from "./primitives";
 
 const FACTS = [
   { k: "115", v: "deterministic detection patterns" },
-  { k: "8", v: "signal types, 14 compound-event rules" },
+  { k: "8", v: "signal types, 17 compound-event rules" },
   { k: "US + Africa", v: "SEC EDGAR, NGX, NSE Kenya, JSE SENS" },
-  { k: "332", v: "tests, open source" },
+  { k: "337", v: "tests, open source" },
 ];
 
 export function Hero() {

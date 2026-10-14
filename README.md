@@ -40,7 +40,7 @@ Request
   → DeterministicEngine  (70+ rules, NER, semantic extraction, corroboration — zero LLM)
   → LLMExplanation    (explains confirmed candidates only — cannot invent signals)
   → AlphaScoring      (0–100 composite + SHAP breakdown + expected moves)
-  → SignalInteraction  (14 compound event rules, up to 2.5× alpha multipliers)
+  → SignalInteraction  (17 direction-aware compound event rules, up to 2.5× alpha multipliers)
   → BriefSynthesis    (narrative only — all signal data locked)
   → PostProcessing    (warehouse + company memory + entity graph)
   → AnalystBrief
@@ -222,7 +222,7 @@ deal-intelligence-agent/
 │   ├── schemas/models.py               # All Pydantic types (25+ models)
 │   ├── engines/                        # 21 deterministic intelligence engines
 │   │   ├── deterministic_engine.py     # 70+ rules, NER, credibility
-│   │   ├── signal_interaction.py       # 14 compound event rules
+│   │   ├── signal_interaction.py       # 17 direction-aware compound event rules
 │   │   ├── calibration.py             # Historical base rate tables
 │   │   ├── adaptive_calibration.py    # Outcome-aware severity adjustment
 │   │   ├── confidence.py              # 7-component evidence-quality breakdown per signal
@@ -266,7 +266,7 @@ deal-intelligence-agent/
 │   └── alerts.json                    # Alert history
 └── tests/
     ├── conftest.py                    # Redirects every data store to a per-test temp dir
-    └── test_all.py                    # 332 tests across all layers
+    └── test_all.py                    # 337 tests across all layers
 ```
 
 ---
@@ -278,7 +278,7 @@ pip install -r requirements-dev.txt
 pytest tests/test_all.py -v
 ```
 
-**332 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration.
+**337 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration.
 
 ---
 

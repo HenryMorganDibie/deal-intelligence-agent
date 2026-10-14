@@ -1249,6 +1249,7 @@ class TestSignalInteractionEngine:
         state = self._state_with_signals(
             SignalType.LEADERSHIP_CHANGE, SignalType.CREDIT_RISK, SignalType.INSIDER_ACTIVITY
         )
+        state.detected_signals[2].evidence = ["Form 4 filed: open-market sale of 50,000 shares ($2,100,000)"]
         result = SignalInteractionEngine().run(state)
         assert len(result.compound_signals) >= 1
         # Should find the distress escalation rule
@@ -1308,6 +1309,60 @@ class TestSignalInteractionEngine:
         compounds = _find_interactions(signals)
         contradictory = [c for c in compounds if c.interaction_type == InteractionType.CONTRADICTORY]
         assert len(contradictory) >= 1
+
+    def _directional(self, insider_text, earnings_text):
+        insider = self._make_signal(SignalType.INSIDER_ACTIVITY)
+        insider.evidence = [insider_text]
+        earnings = self._make_signal(SignalType.EARNINGS_SURPRISE)
+        earnings.evidence = [earnings_text]
+        return [insider, earnings]
+
+    def test_insider_buy_and_earnings_beat_is_not_informed_trading(self):
+        """Live-run regression: Intel's CEO purchase + earnings beat was narrated as
+        'insider selling ahead of earnings miss'."""
+        from src.engines.signal_interaction import _find_interactions
+        from src.schemas.models import InteractionType
+        compounds = _find_interactions(self._directional(
+            "Form 4 filed: open-market purchase of 105,263 shares ($9,999,985) by TAN LIP BU (CEO)",
+            "Intel forecast crushes estimates as AI boom boosts chip demand; shares jump"))
+        assert len(compounds) == 1
+        c = compounds[0]
+        assert c.interaction_type == InteractionType.REINFORCING
+        assert "buying" in c.reasoning_chain and "beat" in c.reasoning_chain
+        assert "selling" not in c.reasoning_chain and "miss" not in c.reasoning_chain
+        assert c.escalation_score < 0.8 and c.systemic_risk_level.value == "isolated"
+
+    def test_insider_sale_and_earnings_miss_is_informed_trading(self):
+        from src.engines.signal_interaction import _find_interactions
+        compounds = _find_interactions(self._directional(
+            "Form 4 filed: open-market sale of 80,000 shares ($3,200,000), not under a 10b5-1 plan",
+            "Acme misses estimates as revenue declines"))
+        assert [c.reasoning_chain.split(" ")[:3] for c in compounds] == [["Insider", "selling", "ahead"]]
+        assert compounds[0].escalation_score == 0.80
+
+    def test_mixed_insider_and_earnings_directions_are_contradictory(self):
+        from src.engines.signal_interaction import _apply_alpha_multipliers, _find_interactions
+        from src.schemas.models import InteractionType
+        for insider, earnings in [("open-market purchase of 1,000 shares", "Acme misses estimates"),
+                                  ("open-market sale of 1,000 shares", "Acme beats estimates")]:
+            compounds = _find_interactions(self._directional(insider, earnings))
+            assert [c.interaction_type for c in compounds] == [InteractionType.CONTRADICTORY], insider
+
+    def test_unknown_direction_never_claims_a_direction(self):
+        """No purchase/sale or beat/miss in the evidence: no direction-specific narrative fires."""
+        from src.engines.signal_interaction import _find_interactions
+        assert _find_interactions(self._directional("Form 4 filed", "Acme Q2 earnings call scheduled")) == []
+
+    def test_credit_stress_with_earnings_beat_is_not_deterioration(self):
+        from src.engines.signal_interaction import _find_interactions
+        from src.schemas.models import InteractionType
+        credit = self._make_signal(SignalType.CREDIT_RISK)
+        earnings = self._make_signal(SignalType.EARNINGS_SURPRISE)
+        earnings.evidence = ["Acme beats estimates and raises guidance"]
+        compounds = _find_interactions([credit, earnings])
+        assert [c.interaction_type for c in compounds] == [InteractionType.CONTRADICTORY]
+        earnings.evidence = ["Acme misses estimates"]
+        assert [c.interaction_type for c in _find_interactions([credit, earnings])] == [InteractionType.REINFORCING]
 
     def test_reasoning_chain_populated(self):
         from src.engines.signal_interaction import SignalInteractionEngine

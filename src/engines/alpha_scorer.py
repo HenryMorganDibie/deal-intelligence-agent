@@ -110,6 +110,10 @@ _NEGATIVE_EARNINGS = re.compile(
 )
 
 
+INSIDER_SALE = re.compile(r"\b(open-market\s+sale|insider\s+selling|director\s+sale|disposal)\b", re.IGNORECASE)
+INSIDER_PURCHASE = re.compile(r"\b(open-market\s+purchase|insider\s+buying|director\s+purchase)\b", re.IGNORECASE)
+
+
 def signal_direction(signal_type: SignalType, source_text: str, default: str) -> str:
     """
     Direction implied by the source text, where the signal type can go either way.
@@ -122,11 +126,27 @@ def signal_direction(signal_type: SignalType, source_text: str, default: str) ->
             return "positive"
         return default
     if signal_type == SignalType.INSIDER_ACTIVITY:
-        sale = re.search(r"\b(open-market\s+sale|insider\s+selling|director\s+sale|disposal)\b", text, re.I)
-        purchase = re.search(r"\b(open-market\s+purchase|insider\s+buying|director\s+purchase)\b", text, re.I)
-        if sale and not purchase:
+        if INSIDER_SALE.search(text) and not INSIDER_PURCHASE.search(text):
             return "negative"
     return default
+
+
+def evidence_direction(signal_type: SignalType, text: str) -> Optional[str]:
+    """
+    Direction the evidence itself states, or None when it does not say. Unlike
+    signal_direction there is no default: an earnings item is a miss only if the
+    text reports one, and insider activity is buying only if it shows a purchase.
+    """
+    text = text or ""
+    if signal_type == SignalType.EARNINGS_SURPRISE:
+        pos, neg = bool(_POSITIVE_EARNINGS.search(text)), bool(_NEGATIVE_EARNINGS.search(text))
+    elif signal_type == SignalType.INSIDER_ACTIVITY:
+        pos, neg = bool(INSIDER_PURCHASE.search(text)), bool(INSIDER_SALE.search(text))
+    else:
+        return None
+    if pos == neg:
+        return None
+    return "positive" if pos else "negative"
 
 
 def _recency_decay(detected_at: datetime, half_life_days: float = 14.0) -> float:

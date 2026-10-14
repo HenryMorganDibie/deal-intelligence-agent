@@ -78,7 +78,7 @@ AnalystBrief → Terminal | JSON | Markdown
 | Engine | File | Purpose |
 |--------|------|---------|
 | Deterministic Signal Engine | `engines/deterministic_engine.py` | 70+ rules, NER, corroboration, zero LLM |
-| Signal Interaction Engine | `engines/signal_interaction.py` | 14 compound event rules, alpha multipliers |
+| Signal Interaction Engine | `engines/signal_interaction.py` | 17 direction-aware compound event rules, alpha multipliers |
 | Calibration | `engines/calibration.py` | Historical base rate tables per signal type |
 | Adaptive Calibration | `engines/adaptive_calibration.py` | Outcome-aware severity adjustment from feedback |
 | Confidence Decomposition | `engines/confidence.py` | 7-component evidence-quality breakdown attached to every signal |
@@ -247,7 +247,7 @@ python main.py registry --show credit_risk
 |-------|------|--------|
 | Separation of concerns | Deterministic engine + LLM explanation layer | ✅ Done |
 | Alpha score layer | 0–100 composite + expected moves + SHAP explainer | ✅ Done |
-| Compound event engine | 14 interaction rules + escalation multipliers | ✅ Done |
+| Compound event engine | 17 direction-aware interaction rules + escalation multipliers | ✅ Done |
 | Institutional audit | Hash-chained audit log + compliance mode | ✅ Done |
 | Feedback loop | False positive tracking + source EMA + precision/recall | ✅ Done |
 | Confidence decomposition | 7-component auditable breakdown | ✅ Done |

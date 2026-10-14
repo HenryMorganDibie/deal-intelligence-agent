@@ -12,114 +12,171 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import NamedTuple, Optional
 
 from src.schemas.models import (
     DetectedSignal, SignalCandidate, CompoundSignal,
     InteractionType, SystemicRiskLevel, SignalType, Severity, AgentState
 )
-from src.engines.alpha_scorer import HUMAN_REVIEW_ALPHA_THRESHOLD
+from src.engines.alpha_scorer import HUMAN_REVIEW_ALPHA_THRESHOLD, evidence_direction
 
 # ─── Interaction Rule Library ─────────────────────────────────────────────────
-# Format: (frozenset of signal types, InteractionType, escalation_score,
-#          systemic_risk_level, alpha_multiplier, reasoning)
+# Some signal types can point either way (an insider buys or sells, earnings beat
+# or miss). A rule whose narrative depends on that names the direction it needs in
+# `directions`; it fires only when a participating signal's own evidence shows that
+# direction. Unknown direction never satisfies a requirement, so a narrative never
+# claims "insider selling" or "earnings miss" the evidence does not show.
 
-INTERACTION_RULES: list[tuple[frozenset, InteractionType, float, SystemicRiskLevel, float, str]] = [
+POS, NEG = "positive", "negative"
+
+
+class InteractionRule(NamedTuple):
+    types: frozenset
+    interaction: InteractionType
+    escalation: float
+    systemic_risk: SystemicRiskLevel
+    alpha_multiplier: float
+    reasoning: str
+    directions: dict = {}
+
+
+INTERACTION_RULES: list[InteractionRule] = [
 
     # ── Compound Distress Escalation (highest severity combos) ───────────────
-    (
+    InteractionRule(
         frozenset({SignalType.LEADERSHIP_CHANGE, SignalType.CREDIT_RISK, SignalType.INSIDER_ACTIVITY}),
         InteractionType.CASCADING, 0.95, SystemicRiskLevel.CONTAINED, 2.5,
         "CEO/CFO departure + covenant stress + insider selling = classic distress escalation pattern. "
-        "Historically precedes credit events or forced restructuring within 60–90 days."
+        "Historically precedes credit events or forced restructuring within 60–90 days.",
+        {SignalType.INSIDER_ACTIVITY: NEG},
     ),
-    (
+    InteractionRule(
         frozenset({SignalType.CREDIT_RISK, SignalType.DISTRESSED_ASSET}),
         InteractionType.ESCALATING, 0.92, SystemicRiskLevel.CONTAINED, 2.2,
         "Credit risk signals followed by formal distress language indicates transition from "
-        "financial stress to potential insolvency proceedings."
+        "financial stress to potential insolvency proceedings.",
     ),
-    (
+    InteractionRule(
         frozenset({SignalType.CREDIT_RISK, SignalType.DEBT_RESTRUCTURE, SignalType.LEADERSHIP_CHANGE}),
         InteractionType.CASCADING, 0.90, SystemicRiskLevel.CONTAINED, 2.3,
         "Debt restructuring concurrent with leadership change signals governance crisis under "
-        "financial pressure. Management transition under creditor pressure is high-risk."
+        "financial pressure. Management transition under creditor pressure is high-risk.",
     ),
-    (
+    InteractionRule(
         frozenset({SignalType.DISTRESSED_ASSET, SignalType.REGULATORY_ACTION}),
         InteractionType.ESCALATING, 0.93, SystemicRiskLevel.SYSTEMIC, 2.4,
         "Formal insolvency concurrent with regulatory action suggests systemic governance failure. "
-        "Regulatory intervention during distress dramatically reduces recovery probability."
+        "Regulatory intervention during distress dramatically reduces recovery probability.",
     ),
 
     # ── Elevated M&A Probability ──────────────────────────────────────────────
-    (
+    InteractionRule(
         frozenset({SignalType.INSIDER_ACTIVITY, SignalType.MA_ACTIVITY}),
         InteractionType.REINFORCING, 0.88, SystemicRiskLevel.ISOLATED, 1.8,
         "Activist 13D/13G filing concurrent with M&A language strongly suggests coordinated "
-        "acquisition campaign. Activist + strategic review = high deal probability."
+        "acquisition campaign. Activist + strategic review = high deal probability.",
     ),
-    (
+    InteractionRule(
         frozenset({SignalType.MA_ACTIVITY, SignalType.LEADERSHIP_CHANGE}),
         InteractionType.REINFORCING, 0.82, SystemicRiskLevel.ISOLATED, 1.6,
         "Executive departure concurrent with M&A signals often reflects management resistance "
-        "to transaction or post-deal integration planning."
+        "to transaction or post-deal integration planning.",
     ),
-    (
+    InteractionRule(
         frozenset({SignalType.INSIDER_ACTIVITY, SignalType.MA_ACTIVITY, SignalType.LEADERSHIP_CHANGE}),
         InteractionType.CONVERGING, 0.91, SystemicRiskLevel.ISOLATED, 2.0,
         "Three-way convergence: activist position + deal language + leadership change. "
-        "All three independently point to corporate control event in progress."
+        "All three independently point to corporate control event in progress.",
     ),
 
     # ── Severe Credit Deterioration ───────────────────────────────────────────
-    (
+    InteractionRule(
         frozenset({SignalType.CREDIT_RISK, SignalType.EARNINGS_SURPRISE}),
         InteractionType.REINFORCING, 0.85, SystemicRiskLevel.CONTAINED, 1.7,
         "Revenue miss compounding existing credit stress creates debt service coverage concern. "
-        "Earnings deterioration accelerates covenant breach timeline."
+        "Earnings deterioration accelerates covenant breach timeline.",
+        {SignalType.EARNINGS_SURPRISE: NEG},
     ),
-    (
+    InteractionRule(
         frozenset({SignalType.DEBT_RESTRUCTURE, SignalType.EARNINGS_SURPRISE, SignalType.CREDIT_RISK}),
         InteractionType.ESCALATING, 0.92, SystemicRiskLevel.CONTAINED, 2.2,
         "Triple-layer credit deterioration: restructuring negotiations + earnings miss + "
-        "credit signals. Suggests active debt workouts under deteriorating fundamentals."
+        "credit signals. Suggests active debt workouts under deteriorating fundamentals.",
+        {SignalType.EARNINGS_SURPRISE: NEG},
     ),
 
     # ── Regulatory Escalation ─────────────────────────────────────────────────
-    (
+    InteractionRule(
         frozenset({SignalType.REGULATORY_ACTION, SignalType.LEADERSHIP_CHANGE}),
         InteractionType.CASCADING, 0.87, SystemicRiskLevel.CONTAINED, 1.8,
         "Regulatory action triggering leadership departure. Common pattern in enforcement "
-        "cases — management exits precede or accompany consent orders."
+        "cases — management exits precede or accompany consent orders.",
     ),
-    (
+    InteractionRule(
         frozenset({SignalType.REGULATORY_ACTION, SignalType.INSIDER_ACTIVITY}),
         InteractionType.REINFORCING, 0.84, SystemicRiskLevel.CONTAINED, 1.7,
         "Regulatory investigation concurrent with insider selling may indicate informed "
-        "exit ahead of enforcement action announcement."
+        "exit ahead of enforcement action announcement.",
+        {SignalType.INSIDER_ACTIVITY: NEG},
     ),
-    (
+    InteractionRule(
         frozenset({SignalType.REGULATORY_ACTION, SignalType.CREDIT_RISK}),
         InteractionType.ESCALATING, 0.88, SystemicRiskLevel.SYSTEMIC, 1.9,
         "Regulatory action during credit stress creates compounding pressure — legal costs, "
-        "reputational damage, and potential licence suspension worsen credit position."
+        "reputational damage, and potential licence suspension worsen credit position.",
     ),
 
-    # ── Contradictory / Offsetting Signals ───────────────────────────────────
-    (
-        frozenset({SignalType.MA_ACTIVITY, SignalType.DISTRESSED_ASSET}),
-        InteractionType.CONTRADICTORY, 0.60, SystemicRiskLevel.ISOLATED, 0.8,
-        "M&A activity concurrent with distress signals may represent rescue acquisition "
-        "or distressed sale. Contradictory signals — reduce confidence, flag for human review."
-    ),
-    (
+    # ── Insider trading around earnings ───────────────────────────────────────
+    InteractionRule(
         frozenset({SignalType.INSIDER_ACTIVITY, SignalType.EARNINGS_SURPRISE}),
         InteractionType.REINFORCING, 0.80, SystemicRiskLevel.ISOLATED, 1.5,
         "Insider selling ahead of earnings miss suggests possible informed trading. "
-        "Timing correlation warrants regulatory attention flag."
+        "Timing correlation warrants regulatory attention flag.",
+        {SignalType.INSIDER_ACTIVITY: NEG, SignalType.EARNINGS_SURPRISE: NEG},
+    ),
+    InteractionRule(
+        frozenset({SignalType.INSIDER_ACTIVITY, SignalType.EARNINGS_SURPRISE}),
+        InteractionType.REINFORCING, 0.55, SystemicRiskLevel.ISOLATED, 1.2,
+        "Insider buying alongside an earnings beat: management is adding exposure as results "
+        "come in ahead of expectations. Aligned positive conviction, not a compliance concern.",
+        {SignalType.INSIDER_ACTIVITY: POS, SignalType.EARNINGS_SURPRISE: POS},
+    ),
+
+    # ── Contradictory / Offsetting Signals ───────────────────────────────────
+    InteractionRule(
+        frozenset({SignalType.MA_ACTIVITY, SignalType.DISTRESSED_ASSET}),
+        InteractionType.CONTRADICTORY, 0.60, SystemicRiskLevel.ISOLATED, 0.8,
+        "M&A activity concurrent with distress signals may represent rescue acquisition "
+        "or distressed sale. Contradictory signals — reduce confidence, flag for human review.",
+    ),
+    InteractionRule(
+        frozenset({SignalType.INSIDER_ACTIVITY, SignalType.EARNINGS_SURPRISE}),
+        InteractionType.CONTRADICTORY, 0.50, SystemicRiskLevel.ISOLATED, 0.9,
+        "Insider buying despite an earnings miss: management is signalling confidence the "
+        "market does not yet share. Conflicting signals; weigh the trade size against the miss.",
+        {SignalType.INSIDER_ACTIVITY: POS, SignalType.EARNINGS_SURPRISE: NEG},
+    ),
+    InteractionRule(
+        frozenset({SignalType.INSIDER_ACTIVITY, SignalType.EARNINGS_SURPRISE}),
+        InteractionType.CONTRADICTORY, 0.50, SystemicRiskLevel.ISOLATED, 0.9,
+        "Insider selling into an earnings beat: often routine profit-taking after a strong print, "
+        "but check whether the sale preceded the announcement.",
+        {SignalType.INSIDER_ACTIVITY: NEG, SignalType.EARNINGS_SURPRISE: POS},
+    ),
+    InteractionRule(
+        frozenset({SignalType.CREDIT_RISK, SignalType.EARNINGS_SURPRISE}),
+        InteractionType.CONTRADICTORY, 0.50, SystemicRiskLevel.ISOLATED, 0.9,
+        "Earnings beat alongside credit stress: stronger results may ease coverage pressure, "
+        "but one quarter rarely resolves a balance-sheet problem. Conflicting signals.",
+        {SignalType.EARNINGS_SURPRISE: POS},
     ),
 ]
+
+
+def _direction(signal: DetectedSignal) -> Optional[str]:
+    """Direction stated by the signal's own headline and evidence, if any."""
+    return evidence_direction(signal.signal_type, " ".join([signal.headline, *signal.evidence]))
+
 
 # Minimum severity to participate in compound detection
 MIN_SEVERITY_FOR_COMPOUND = {Severity.MEDIUM, Severity.HIGH, Severity.CRITICAL}
@@ -145,15 +202,22 @@ def _find_interactions(
 
     compounds: list[CompoundSignal] = []
 
-    for rule_types, interaction_type, escalation_score, systemic_level, alpha_mult, reasoning in INTERACTION_RULES:
+    for rule in INTERACTION_RULES:
         # Check if all required signal types are present
-        if not rule_types.issubset(signal_types):
+        if not rule.types.issubset(signal_types):
+            continue
+
+        # Participants: signals of the rule's types whose direction matches what the
+        # rule's narrative asserts. Every required type must still be represented.
+        participating = [
+            s for s in qualified
+            if s.signal_type in rule.types
+            and (s.signal_type not in rule.directions or _direction(s) == rule.directions[s.signal_type])
+        ]
+        if {s.signal_type for s in participating} != rule.types:
             continue
 
         # Compute compounded confidence: geometric mean of participating signal confidences
-        participating = [s for s in qualified if s.signal_type in rule_types]
-        if not participating:
-            continue
 
         confidences = [s.confidence for s in participating]
         product = 1.0
@@ -168,14 +232,14 @@ def _find_interactions(
 
         compounds.append(CompoundSignal(
             compound_id=str(uuid.uuid4()),
-            component_signal_types=list(rule_types),
-            interaction_type=interaction_type,
-            escalation_score=escalation_score,
+            component_signal_types=list(rule.types),
+            interaction_type=rule.interaction,
+            escalation_score=rule.escalation,
             compounded_confidence=round(compound_conf, 3),
-            systemic_risk_level=systemic_level,
-            reasoning_chain=reasoning,
+            systemic_risk_level=rule.systemic_risk,
+            reasoning_chain=rule.reasoning,
             temporal_window_days=INTERACTION_WINDOW_DAYS,
-            alpha_multiplier=alpha_mult,
+            alpha_multiplier=rule.alpha_multiplier,
         ))
 
     # Sort by escalation score descending
