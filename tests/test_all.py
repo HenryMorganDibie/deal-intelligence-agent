@@ -3416,6 +3416,48 @@ class TestSubjectAttribution:
                       "Acme falls after Rival beats estimates"]:                  # no back-reference
             assert self._engine("Acme", title).signal_candidates == [], title
 
+    def test_name_label_headlines_count(self):
+        """'Acme: CEO resigns' was split at the colon and never attributed."""
+        assert [c.signal_type for c in self._engine("Acme", "Acme: CEO resigns with immediate effect").signal_candidates] \
+            == [SignalType.LEADERSHIP_CHANGE]
+        assert self._engine("Acme", "Acme Holdings shares, bonds and loans: Rival beats estimates").signal_candidates == []
+
+    @pytest.mark.parametrize("company,title,expected", [
+        ("Sonatel", "Sonatel : offre publique d'achat sur sa filiale malienne", SignalType.MA_ACTIVITY),
+        ("Ecobank", "Ecobank Côte d'Ivoire annonce une restructuration de sa dette", SignalType.DEBT_RESTRUCTURE),
+        ("Orange CI", "Orange CI publie un avertissement sur résultats", SignalType.EARNINGS_SURPRISE),
+        ("SGBCI", "SGBCI : démission du directeur général", SignalType.LEADERSHIP_CHANGE),
+        ("Attijariwafa", "La CREPMF inflige une sanction à Attijariwafa", SignalType.REGULATORY_ACTION),
+        ("Solibra", "Solibra placée en redressement judiciaire", SignalType.DISTRESSED_ASSET),
+        ("SIB", "SIB : franchissement de seuil par un fonds", SignalType.INSIDER_ACTIVITY),
+        ("BOA", "L'action de BOA grimpe après qu'elle dépasse les attentes", SignalType.EARNINGS_SURPRISE),
+        ("Sonatel", "Sonatel : resultats en baisse, perte nette au premier semestre", SignalType.EARNINGS_SURPRISE),
+    ])
+    def test_french_disclosures(self, company, title, expected):
+        assert expected in [c.signal_type for c in self._engine(company, title).signal_candidates], title
+
+    def test_french_clause_rule_keeps_attribution(self):
+        """French subordinators split clauses like their English counterparts."""
+        out = self._engine("Sonatel", "Orange relève ses prévisions malgré la cession de Sonatel")
+        assert SignalType.EARNINGS_SURPRISE not in [c.signal_type for c in out.signal_candidates]
+
+    def test_french_semantic_evidence(self):
+        from src.engines.semantic import extract_from_news
+        found = {e.evidence_type: e for t in [
+            "Solibra : ouverture d'une procédure de redressement judiciaire",
+            "Le conseil d'administration a pris acte de la démission du directeur général",
+            "Ecobank conclut un accord de restructuration de la dette de 120 milliards FCFA",
+        ] for e in extract_from_news(t, "")}
+        assert {"insolvency_formal", "governance_deterioration", "restructuring_clause"} <= set(found)
+        assert "FCFA" in found["restructuring_clause"].financial_amount
+
+    def test_french_direction(self):
+        from src.engines.alpha_scorer import evidence_direction
+        assert evidence_direction(SignalType.EARNINGS_SURPRISE, "BOA dépasse les attentes") == "positive"
+        assert evidence_direction(SignalType.EARNINGS_SURPRISE, "avertissement sur résultats") == "negative"
+        assert evidence_direction(SignalType.INSIDER_ACTIVITY, "achat d'actions par un dirigeant") == "positive"
+        assert evidence_direction(SignalType.INSIDER_ACTIVITY, "cession d'actions par un administrateur") == "negative"
+
     def test_credit_condition_belongs_to_the_subject(self):
         """Live-run regression: Archer's cash burn was reported as Boeing credit risk."""
         cands = self._engine("Boeing", "Archer Aviation (ACHR) Stock Rally Faces Cash Burn And Boeing Deal Risk", "BA")

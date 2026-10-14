@@ -265,6 +265,117 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bopen[-\s]market\s+(purchase|sale)\b",
         r"\bsignificant\s+beneficial\s+(owner|holding)\b",
     ], 0.52),
+
+    # ── French: francophone Africa (BRVM, Casablanca, Tunis, Douala) ─────────
+    # Same tiers and base scores as the English rules for each signal type.
+    # Accent classes ([eé]) also match text with the accents stripped.
+    (SignalType.MA_ACTIVITY, [
+        r"\boffre\s+publique\s+d['’]?\s*(achat|[eé]change|retrait)\b",
+        r"\b(opa|ope|opr)\b.{0,40}\b(sur|vis(e|ant))\b",
+        r"\bprotocole\s+d['’]?\s*accord\b.{0,60}\b(acquisition|fusion|cession|rachat)\b",
+        r"\btraité\s+de\s+fusion\b",
+        r"\bprojet\s+de\s+fusion\b",
+    ], 0.95),
+    (SignalType.MA_ACTIVITY, [
+        r"\b(acquiert|rach[eè]te|a\s+acquis|a\s+rachet[eé]|prend\s+le\s+contr[oô]le)\b",
+        r"\b(n[eé]gociations?|discussions?)\s+exclusives?\b",
+        r"\b(projet|proposition)\s+d['’]?\s*(acquisition|rachat)\b",
+        r"\bcession\s+(de|d['’])\s*(sa|la|une)?\s*(participation|filiale|activit[eé])\b",
+        r"\brevue\s+strat[eé]gique\b",
+    ], 0.75),
+    (SignalType.MA_ACTIVITY, [
+        r"\b(fusion|acquisition|rachat|absorption)\b",
+        r"\bentr[eé]e\s+au\s+capital\b",
+    ], 0.55),
+
+    (SignalType.CREDIT_RISK, [
+        r"\bd[eé]faut\s+de\s+paiement\b",
+        r"\bcontinuit[eé]\s+d['’]?\s*exploitation\b",
+        r"\b(d[eé]gradation|abaissement)\s+de\s+(la\s+)?notation\b",
+        r"\bnotation\b.{0,30}\b(d[eé]grad[eé]e|abaiss[eé]e)\b",
+        r"\bexigibilit[eé]\s+anticip[eé]e\b",
+        r"\bbris\s+de\s+covenants?\b",
+    ], 0.92),
+    (SignalType.CREDIT_RISK, [
+        r"\btensions?\s+de\s+tr[eé]sorerie\b",
+        r"\bprobl[eè]mes?\s+de\s+liquidit[eé]\b",
+        r"\b(d[eé]pr[eé]ciation|perte\s+de\s+valeur)\s+(d['’]?\s*actifs?|du\s+goodwill|d['’]?\s*[eé]cart\s+d['’]?\s*acquisition)\b",
+        r"\bsurendettement\b",
+    ], 0.78),
+
+    (SignalType.DISTRESSED_ASSET, [
+        r"\b(redressement|liquidation)\s+judiciaire\b",
+        r"\bproc[eé]dure\s+(collective|de\s+sauvegarde|de\s+conciliation)\b",
+        r"\b(cessation|suspension)\s+des\s+paiements\b",
+        r"\bmandataire\s+(ad\s+hoc|judiciaire)\b",
+        r"\badministrateur\s+(provisoire|judiciaire)\b",
+    ], 0.95),
+    (SignalType.DISTRESSED_ASSET, [
+        r"\bliquidation\b",
+        r"\bcr[eé]ances?\s+(douteuses?|en\s+souffrance|irr[eé]couvrables?)\b",
+        r"\bradiation\s+de\s+la\s+cote\b",
+    ], 0.80),
+
+    (SignalType.EARNINGS_SURPRISE, [
+        r"\bavertissement\s+sur\s+(les\s+)?r[eé]sultats\b",
+        r"\b(r[eé]vision|r[eé]vise)\s+(à\s+la\s+baisse\s+)?(ses|des|les)\s+(pr[eé]visions|objectifs)\b.{0,20}\bbaisse\b",
+        r"\b(abaisse|r[eé]duit)\s+(ses|son)\s+(pr[eé]visions|objectifs?|perspectives)\b",
+        r"\bnettement\s+(inf[eé]rieurs?|en\s+de[cç]à)\s+(aux|des)\s+attentes\b",
+        r"\bretraitement\s+des\s+comptes\b",
+    ], 0.88),
+    (SignalType.EARNINGS_SURPRISE, [
+        r"\b(r[eé]sultats?|b[eé]n[eé]fices?|chiffre\s+d['’]?\s*affaires|produit\s+net\s+bancaire)\b.{0,30}\b(en\s+(baisse|recul)|recule|chute|plonge|d[eé]cro[iî]t)\b",
+        r"\bperte\s+nette\b",
+        r"\binf[eé]rieurs?\s+aux\s+(attentes|pr[eé]visions)\b",
+    ], 0.72),
+    (SignalType.EARNINGS_SURPRISE, [
+        r"\b(d[eé]passe|d[eé]passent|sup[eé]rieurs?\s+aux)\s+(les\s+)?(attentes|pr[eé]visions|estimations)\b",
+        r"\b(rel[eè]ve|relève|am[eé]liore|rehausse)\s+(ses|son)\s+(pr[eé]visions|objectifs?|perspectives)\b",
+    ], 0.80),
+
+    (SignalType.LEADERSHIP_CHANGE, [
+        r"\b(directeur\s+g[eé]n[eé]ral|pdg|pr[eé]sident(\s+du\s+conseil)?|dg|directeur\s+financier|daf)\b.{0,40}\b(d[eé]mission(ne)?|d[eé]part|limog[eé]|r[eé]voqu[eé]|quitte)\b",
+        r"\b(d[eé]mission|d[eé]part|limogeage|r[eé]vocation)\s+(du|de\s+la|de\s+son|de\s+sa)\s+(directeur\s+g[eé]n[eé]ral|pdg|pr[eé]sident|directrice\s+g[eé]n[eé]rale|dg)\b",
+    ], 0.90),
+    (SignalType.LEADERSHIP_CHANGE, [
+        r"\b(nomm[eé]e?|nomination\s+d[eu]|nouvel(le)?)\s+(au\s+poste\s+de\s+)?(directeur\s+g[eé]n[eé]ral|directrice\s+g[eé]n[eé]rale|pdg|pr[eé]sident|dg)\b",
+        r"\b(directeur\s+g[eé]n[eé]ral|pdg|dg)\s+par\s+int[eé]rim\b",
+        r"\bremaniement\s+(de\s+la\s+direction|du\s+conseil)\b",
+    ], 0.75),
+
+    (SignalType.REGULATORY_ACTION, [
+        r"\b(crepmf|amf[-\s]?umoa|ammc|cmf|cosumaf|bceao|beac|cobac|commission\s+bancaire|bank\s+al[-\s]maghrib)\b.{0,40}\b(sanction\w*|amende|enqu[eê]te|retrait\s+d['’]?\s*agr[eé]ment|mise\s+en\s+demeure)\b",
+        r"\bretrait\s+d['’]?\s*agr[eé]ment\b",
+        r"\b(sanction|amende)\s+(record|de\s+[\d\s,.]+\s*(milliards?|millions?))\b",
+    ], 0.93),
+    (SignalType.REGULATORY_ACTION, [
+        r"\benqu[eê]te\s+(du|de\s+la|des)\s+(r[eé]gulateur|autorit[eé]|parquet|justice)\b",
+        r"\b(fraude|malversations?|d[eé]tournement)\b.{0,30}\b(enqu[eê]te|poursuites?|accus\w*)\b",
+        r"\bmise\s+en\s+demeure\b",
+    ], 0.80),
+
+    (SignalType.DEBT_RESTRUCTURE, [
+        r"\brestructuration\s+de\s+(la\s+|sa\s+)?dette\b",
+        r"\br[eé][eé]chelonnement\s+de\s+(la\s+|sa\s+)?dette\b",
+        r"\babandon\s+de\s+cr[eé]ances?\b",
+        r"\bmoratoire\b.{0,30}\b(dette|cr[eé]anciers|remboursement)\b",
+    ], 0.88),
+    (SignalType.DEBT_RESTRUCTURE, [
+        r"\b(ren[eé]gociation|r[eé]am[eé]nagement)\s+de\s+(la\s+|sa\s+)?dette\b",
+        r"\bconversion\s+de\s+(la\s+)?dette\s+en\s+capital\b",
+        r"\baccord\s+avec\s+(les|ses)\s+cr[eé]anciers\b",
+    ], 0.75),
+
+    (SignalType.INSIDER_ACTIVITY, [
+        r"\bfranchissement\s+de\s+seuil\b",
+        r"\bd[eé]claration\s+de\s+(franchissement|participation)\b",
+        r"\bactionnaire\s+activiste\b",
+    ], 0.85),
+    (SignalType.INSIDER_ACTIVITY, [
+        r"\b(achat|acquisition)\s+d['’]?\s*actions\s+par\s+(un|le|des)\s+(dirigeants?|administrateurs?)\b",
+        r"\b(cession|vente)\s+d['’]?\s*actions\s+par\s+(un|le|des)\s+(dirigeants?|administrateurs?)\b",
+        r"\bmonte\s+(à|au)\s+(\d+[.,]?\d*\s*%|capital)\b",
+    ], 0.72),
 ]
 
 # ─── Named Entity Patterns ────────────────────────────────────────────────────
@@ -363,7 +474,8 @@ def _mentions_company(text: str, matchers: list[re.Pattern]) -> bool:
 # as Safaricom deal reshapes growth" the outlook clause does not name Safaricom.
 _CLAUSE_BREAK = re.compile(
     r"\s+[-–—]\s+|[;:|]|(?<=[.!?])\s+"
-    r"|\s(?:as|after|amid|while|following|despite|before|since|whereas|although|though)\s",
+    r"|\s(?:as|after|amid|while|following|despite|before|since|whereas|although|though)\s"
+    r"|\s(?:apr[eè]s|alors\s+que|malgr[eé]|tandis\s+que|avant|depuis|suite\s+[àa]|car|puisque)\s",
     re.IGNORECASE,
 )
 # Events that belong to the clause's subject: the company must be named before the
@@ -377,18 +489,50 @@ _SUBJECT_ONLY_TYPES = {SignalType.EARNINGS_SURPRISE, SignalType.LEADERSHIP_CHANG
 # previous clause's subject only when the company led that clause, so in "Rival
 # buys Acme stake after it beats estimates" the "it" stays with Rival.
 _BACK_REFERENCE = re.compile(
-    r"\b(it|its|the\s+(company|group|firm|bank|lender|insurer|miner|operator|telco|retailer))\b",
+    r"\b(it|its|the\s+(company|group|firm|bank|lender|insurer|miner|operator|telco|retailer)"
+    r"|il|elle|la\s+(soci[eé]t[eé]|banque|compagnie|firme)|le\s+(groupe|holding|op[eé]rateur))(?=\W|$)",
     re.IGNORECASE,
 )
-_LEADING_SUBJECT_PREFIX = re.compile(r"^\W*((shares|stock|stocks)\s+(of|in)\s+)?$", re.IGNORECASE)
+_LEADING_SUBJECT_PREFIX = re.compile(
+    r"^\W*((shares|stock|stocks)\s+(of|in)\s+|(l['’]\s*)?action\s+(de\s+|d['’]\s*)|le\s+titre\s+(de\s+|d['’]\s*)|qu['’]\s*)?$",
+    re.IGNORECASE,
+)
 
 
 def _leads_clause(clause: str, mention: Optional[int]) -> bool:
     return mention is not None and bool(_LEADING_SUBJECT_PREFIX.match(clause[:mention]))
 
 
+def _is_label(clause: str, matchers: list[re.Pattern]) -> bool:
+    """A clause that is just the company's name (plus at most two words such as
+    'plc' or 'Q3'), as in 'Acme: CEO resigns' or 'Sonatel : OPA sur ...'."""
+    for p in matchers:
+        m = p.search(clause)
+        if m and _LEADING_SUBJECT_PREFIX.match(clause[:m.start()]):
+            return len((clause[:m.start()] + " " + clause[m.end():]).split()) <= 2
+    return False
+
+
 def _clauses(text: str) -> list[str]:
-    return [c.strip() for c in _CLAUSE_BREAK.split(text) if c and c.strip()]
+    return [c for c, _ in _clauses_with_breaks(text)]
+
+
+_LABEL_BREAK = re.compile(r"^\s*([:|]|[-–—])\s*$")
+
+
+def _clauses_with_breaks(text: str) -> list[tuple[str, bool]]:
+    """Clauses, each with whether it ends at a label separator (':', '|', ' - ')."""
+    out: list[tuple[str, bool]] = []
+    pos = 0
+    for m in _CLAUSE_BREAK.finditer(text):
+        clause = text[pos:m.start()].strip()
+        if clause:
+            out.append((clause, bool(_LABEL_BREAK.match(m.group(0)))))
+        pos = m.end()
+    tail = text[pos:].strip()
+    if tail:
+        out.append((tail, False))
+    return out
 
 
 def _first_mention(text: str, matchers: list[re.Pattern]) -> Optional[int]:
@@ -408,14 +552,17 @@ def match_rules_for_target(
     if not matchers:
         return _match_rules(text)
     best: dict[SignalType, tuple[list[str], float]] = {}
-    previous_led = False
-    for clause in _clauses(text):
+    previous_led = previous_label = False
+    for clause, ends_at_label_break in _clauses_with_breaks(text):
         mention = _first_mention(clause, matchers)
         led = _leads_clause(clause, mention)
-        if mention is None and previous_led:
+        label = ends_at_label_break and _is_label(clause, matchers)
+        if mention is None and previous_label:
+            mention = 0                  # 'Acme: CEO resigns' - the clause is about Acme
+        elif mention is None and previous_led:
             back = _BACK_REFERENCE.search(clause)
             mention = back.start() if back and _leads_clause(clause, back.start()) else None
-        previous_led = led
+        previous_led, previous_label = led, label
         if mention is None:
             continue
         for sig_type, patterns, base_score in SIGNAL_RULES:

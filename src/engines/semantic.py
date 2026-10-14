@@ -6,6 +6,7 @@ Extracts typed evidence objects from filing and news text using:
   - Semantic template matching
   - Financial clause classification
   - Embedding similarity (cosine, no external model required)
+  - English and French clause templates (francophone African disclosures)
 
 No LLM used. Fully deterministic.
 """
@@ -39,6 +40,8 @@ CLAUSE_TEMPLATES: list[tuple[str, list[str], float]] = [
         r"going[\s-]concern\s+(?:qualification|opinion|doubt|language|disclosure)",
         r"ability\s+to\s+continue\s+as\s+a\s+going\s+concern",
         r"management\s+(?:has\s+)?(?:identified|noted|disclosed)\s+going[\s-]concern",
+        r"incertitude\s+(?:significative|mat[eé]rielle)\s+(?:sur|quant\s+[àa])\s+la\s+continuit[eé]\s+d['’]?\s*exploitation",
+        r"continuit[eé]\s+d['’]?\s*exploitation\s+(?:est\s+)?(?:compromise|menac[eé]e|incertaine)",
     ], 0.95),
 
     ("covenant_breach", [
@@ -48,6 +51,8 @@ CLAUSE_TEMPLATES: list[tuple[str, list[str], float]] = [
         r"cross[\s-]default\s+(?:provision|clause|event)",
         r"event\s+of\s+default\s+(?:has\s+)?(?:occurred|triggered)",
         r"experienced\s+a\s+(?:breach|violation|default)\s+of",
+        r"(?:non[\s-]respect|bris)\s+(?:des?\s+)?(?:ratios?\s+financiers?|covenants?)",
+        r"d[eé]faut\s+de\s+paiement\s+(?:sur|au\s+titre\s+de)",
     ], 0.93),
 
     ("merger_language", [
@@ -57,6 +62,9 @@ CLAUSE_TEMPLATES: list[tuple[str, list[str], float]] = [
         r"scheme\s+of\s+arrangement\s+(?:pursuant|under|in\s+connection)",
         r"tender\s+offer\s+(?:for\s+all|to\s+acquire)\s+(?:the\s+)?(?:outstanding\s+)?shares",
         r"going[\s-]private\s+transaction",
+        r"offre\s+publique\s+d['’]?\s*(?:achat|[eé]change|retrait)\s+(?:sur|visant)",
+        r"(?:sign[eé]|conclu)\s+un\s+protocole\s+d['’]?\s*accord\s+(?:en\s+vue\s+de\s+)?(?:l['’]\s*)?(?:acquisition|fusion|cession)",
+        r"traité\s+de\s+fusion\s+(?:sign[eé]|approuv[eé])",
     ], 0.92),
 
     ("restructuring_clause", [
@@ -66,6 +74,10 @@ CLAUSE_TEMPLATES: list[tuple[str, list[str], float]] = [
         r"principal\s+(?:reduction|forgiveness|write[\s-]down)\s+of\s+(?:approximately\s+)?[\$£€]",
         r"maturity\s+(?:date\s+)?extended?\s+(?:to|by|from)",
         r"amendment\s+(?:to\s+)?(?:the\s+)?(?:credit\s+)?(?:agreement|facility)\s+(?:to\s+)?(?:extend|modify|waive)",
+        r"accord\s+de\s+restructuration\s+(?:de\s+la\s+dette\s+)?(?:sign[eé]|conclu)",
+        r"(?:conclut|signe|a\s+conclu|a\s+sign[eé])\s+un\s+accord\s+de\s+restructuration",
+        r"r[eé][eé]chelonnement\s+de\s+(?:la\s+|sa\s+)?dette",
+        r"conversion\s+de\s+(?:la\s+)?dette\s+en\s+capital",
     ], 0.90),
 
     ("insolvency_formal", [
@@ -75,6 +87,8 @@ CLAUSE_TEMPLATES: list[tuple[str, list[str], float]] = [
         r"judicial\s+management\s+(?:order\s+)?(?:granted?|placed?|appointed?)",
         r"application\s+for\s+(?:voluntary\s+)?administration",
         r"winding[\s-]up\s+(?:order|petition|resolution)\s+(?:filed|granted|made)",
+        r"(?:ouverture|plac[eé]e?\s+en)\s+(?:d['’]une\s+)?(?:proc[eé]dure\s+de\s+)?(?:redressement|liquidation)\s+judiciaire",
+        r"(?:cessation|suspension)\s+des\s+paiements\s+(?:d[eé]clar[eé]e|constat[eé]e)",
     ], 0.96),
 
     ("impairment_statement", [
@@ -82,6 +96,7 @@ CLAUSE_TEMPLATES: list[tuple[str, list[str], float]] = [
         r"impairment\s+(?:charge|loss|write[\s-]down)\s+of\s+[\$£€\d]",
         r"write[\s-](?:down|off)\s+of\s+(?:approximately\s+)?[\$£€\d]",
         r"(?:asset|goodwill)\s+impairment\s+(?:test(?:ing)?|review)\s+(?:resulted?\s+in|identified?)",
+        r"(?:d[eé]pr[eé]ciation|perte\s+de\s+valeur)\s+(?:de|d['’])\s*(?:[\d\s,.]+\s*(?:milliards?|millions?)|l['’]\s*[eé]cart\s+d['’]\s*acquisition)",
     ], 0.88),
 
     ("litigation_language", [
@@ -89,6 +104,7 @@ CLAUSE_TEMPLATES: list[tuple[str, list[str], float]] = [
         r"(?:sec|fsca|doj|ftc|cma|cbn)\s+(?:has\s+)?(?:commenced?|initiated?|launched?)\s+(?:an?\s+)?(?:investigation|inquiry|enforcement)",
         r"named?\s+(?:as\s+)?(?:a\s+)?defendant\s+in\s+(?:a\s+)?(?:securities?\s+)?class\s+action",
         r"consent\s+(?:order|decree|agreement)\s+(?:with|from)\s+(?:the\s+)?(?:sec|fsca|cma|cbk|cbn)",
+        r"(?:crepmf|amf[\s-]?umoa|ammc|cmf|cosumaf|commission\s+bancaire)\s+(?:a\s+)?(?:ouvert|engag[eé]|prononc[eé]|inflig[eé])\s+(?:une\s+)?(?:enqu[eê]te|proc[eé]dure|sanction|amende)",
     ], 0.91),
 
     ("liquidity_stress", [
@@ -96,6 +112,8 @@ CLAUSE_TEMPLATES: list[tuple[str, list[str], float]] = [
         r"(?:cash\s+)?runway\s+of\s+(?:only\s+)?(?:less\s+than\s+)?\d+\s+(?:months?|weeks?)",
         r"working\s+capital\s+(?:deficit|shortfall|deficiency)\s+of\s+[\$£€\d]",
         r"(?:unable|insufficient)\s+to\s+(?:service|meet|repay)\s+(?:its\s+)?(?:debt\s+)?obligations?",
+        r"(?:tensions?|difficult[eé]s?)\s+de\s+tr[eé]sorerie",
+        r"(?:incapacit[eé]|impossibilit[eé])\s+(?:de|d['’])\s*(?:honorer|rembourser)\s+(?:ses\s+)?(?:engagements|[eé]ch[eé]ances|dettes)",
     ], 0.87),
 
     ("governance_deterioration", [
@@ -103,20 +121,25 @@ CLAUSE_TEMPLATES: list[tuple[str, list[str], float]] = [
         r"board\s+(?:of\s+directors?\s+)?(?:has\s+)?(?:accepted?|approved?|received?)\s+(?:the\s+)?resignation",
         r"(?:sudden|unexpected|abrupt)\s+(?:departure|resignation|exit)\s+of\s+(?:the\s+)?(?:chief|ceo|cfo|managing)",
         r"special\s+committee\s+(?:of\s+)?(?:independent\s+)?directors?\s+(?:formed?|established?|constituted?)",
+        r"(?:d[eé]mission|d[eé]part)\s+(?:du|de\s+la)\s+(?:directeur\s+g[eé]n[eé]ral|directrice\s+g[eé]n[eé]rale|pdg|pr[eé]sident)\s+(?:avec\s+effet\s+imm[eé]diat|effective)",
+        r"conseil\s+d['’]\s*administration\s+a\s+(?:pris\s+acte|accept[eé])\s+(?:de\s+)?la\s+d[eé]mission",
     ], 0.89),
 ]
 
 # Amount patterns
 AMOUNT_RE = re.compile(
     r'(?:approximately\s+)?[\$£€₦R]\s*[\d,]+(?:\.\d+)?\s*(?:million|billion|M|B|bn|mn)?'
-    r'|[\d,]+(?:\.\d+)?\s*(?:million|billion)\s*(?:dollars?|USD|NGN|ZAR|KES|GHS)',
+    r'|[\d,]+(?:\.\d+)?\s*(?:million|billion)\s*(?:dollars?|USD|NGN|ZAR|KES|GHS)'
+    r'|[\d\s,.]+\s*(?:milliards?|millions?)\s*(?:de\s+)?(?:FCFA|F\s?CFA|XOF|XAF|MAD|TND|DH|dirhams?|dinars?|euros?)',
     re.IGNORECASE
 )
 
 # Temporal markers
 TEMPORAL_RE = re.compile(
     r'\b(?:as\s+of|effective|on|dated?|by|prior\s+to|following)\s+'
-    r'(?:January|February|March|April|May|June|July|August|September|October|November|December|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})',
+    r'(?:January|February|March|April|May|June|July|August|September|October|November|December|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})'
+    r'|\b(?:au|le|depuis|avant\s+le|[àa]\s+compter\s+du)\s+\d{1,2}(?:er)?\s+'
+    r'(?:janvier|f[eé]vrier|mars|avril|mai|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[eé]cembre)',
     re.IGNORECASE
 )
 

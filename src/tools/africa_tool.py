@@ -186,6 +186,8 @@ PE_CAPITAL_SOURCES: list[tuple[str, str, str, str]] = [
 GOOGLE_NEWS_RSS = "https://news.google.com/rss/search?q={query}&hl=en-NG&gl=NG&ceid=NG:en"
 GOOGLE_NEWS_SA  = "https://news.google.com/rss/search?q={query}&hl=en-ZA&gl=ZA&ceid=ZA:en"
 GOOGLE_NEWS_KE  = "https://news.google.com/rss/search?q={query}&hl=en-KE&gl=KE&ceid=KE:en"
+# Francophone Africa (BRVM, Casablanca, Tunis, Douala) reports in French.
+GOOGLE_NEWS_FR  = "https://news.google.com/rss/search?q={query}&hl=fr&gl=CI&ceid=CI:fr"
 
 # African regulatory bodies (for regulatory signal queries)
 AFRICAN_REGULATORS = ["SEC Nigeria", "FSCA", "CMA Kenya", "SEC Ghana", "CBN", "SARB", "CBK"]
@@ -723,7 +725,7 @@ class AfricaTool:
         """
         Fetch company-relevant news from:
           - African financial media RSS feeds (BusinessDay, TechCabal, Moneyweb, etc.)
-          - Geo-scoped Google News (NG / ZA / KE)
+          - Geo-scoped Google News (NG / ZA / KE, and French for francophone Africa)
           - Private capital & institutional sources: GPCA, PSG Capital, IFC,
             Bayport Finance, Zawya, Africa PE News (deals/exits/debt/VC), AVCA
         """
@@ -751,6 +753,9 @@ class AfricaTool:
         ] + [
             self._fetch_rss(GOOGLE_NEWS_SA.format(query=quote(f"{company_name} JSE merger acquisition")), "Google News SA"),
             self._fetch_rss(GOOGLE_NEWS_KE.format(query=quote(f"{company_name} NSE Kenya deal")), "Google News Kenya"),
+        ] + [
+            self._fetch_rss(GOOGLE_NEWS_FR.format(query=quote(q)), "Google News Afrique")
+            for q in (f"{company_name} acquisition fusion cession", f"{company_name} résultats dette BRVM bourse")
         ]
 
         all_tasks = rss_tasks + google_tasks

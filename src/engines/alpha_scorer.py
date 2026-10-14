@@ -101,17 +101,24 @@ LOW_CONFIDENCE_SUPPRESS_THRESHOLD = 0.40  # compliance mode: suppress signals be
 _POSITIVE_EARNINGS = re.compile(
     r"\b(beats?|topped|tops|crush(es|ed)?|exceed(s|ed)?|surpass(es|ed)?)\b.{0,30}\b(estimates?|expectations?|consensus|forecasts?)\b"
     r"|\b(raises?|raised|lifts?|lifted|boosts?|boosted)\s+(its\s+)?(full[-\s]year\s+|annual\s+)?(guidance|outlook|forecast)\b"
-    r"|\bsignificantly\s+above\s+(expectations?|guidance|consensus)\b",
+    r"|\bsignificantly\s+above\s+(expectations?|guidance|consensus)\b"
+    r"|\b(d[eé]passe(nt)?|sup[eé]rieurs?\s+aux)\s+(les\s+)?(attentes|pr[eé]visions|estimations)\b"
+    r"|\b(rel[eè]ve|am[eé]liore|rehausse)\s+(ses|son)\s+(pr[eé]visions|objectifs?|perspectives)\b",
     re.IGNORECASE,
 )
 _NEGATIVE_EARNINGS = re.compile(
-    r"\b(miss(es|ed)?|warning|below|cut|lowered|reduced|withdrawn|declin\w*|fell|dropped|disappointing|weaker|loss|restatement)\b",
+    r"\b(miss(es|ed)?|warning|below|cut|lowered|reduced|withdrawn|declin\w*|fell|dropped|disappointing|weaker|loss|restatement"
+    r"|avertissement|baisse|recul|recule|chute|perte|inf[eé]rieurs?|abaisse|retraitement)\b",
     re.IGNORECASE,
 )
 
 
-INSIDER_SALE = re.compile(r"\b(open-market\s+sale|insider\s+selling|director\s+sale|disposal)\b", re.IGNORECASE)
-INSIDER_PURCHASE = re.compile(r"\b(open-market\s+purchase|insider\s+buying|director\s+purchase)\b", re.IGNORECASE)
+INSIDER_SALE = re.compile(
+    r"\b(open-market\s+sale|insider\s+selling|director\s+sale|disposal"
+    r"|(cession|vente)\s+d['’]?\s*actions\s+par)\b", re.IGNORECASE)
+INSIDER_PURCHASE = re.compile(
+    r"\b(open-market\s+purchase|insider\s+buying|director\s+purchase"
+    r"|(achat|acquisition)\s+d['’]?\s*actions\s+par)\b", re.IGNORECASE)
 
 
 def signal_direction(signal_type: SignalType, source_text: str, default: str) -> str:
