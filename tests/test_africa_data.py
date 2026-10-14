@@ -381,3 +381,53 @@ def test_valuation_view_uses_own_marks_and_comparables():
     v = mr.valuation_view("Moniepoint", deals)
     assert v["latest_mark"]["valuation_usd"] == 1e9 and v["latest_mark"]["basis"] == "reported"
     assert [d["target"] for d in v["comparables"]["deals"]] == ["Paystack"]
+
+
+# ── Research ──────────────────────────────────────────────────────────────────
+
+from src.engines import research as rs  # noqa: E402
+
+
+def test_parse_question_scope():
+    p = rs.parse_question("Which fintech startups in Kenya raised a Series A from IFC in 2025?")
+    assert p["countries"] == ["KE"] and p["sectors"] == ["fintech"] and "equity_funding" in p["deal_types"]
+    assert p["investors"] == ["International Finance Corporation"]
+    assert (p["since"], p["until"]) == ("2025-01-01", "2025-12-31")
+
+
+def test_citation_normalisation_and_validation():
+    text = ("Cloud9 raised $500k in its latest round 【2】. The naira fell sharply last year [3, 4]. "
+            "A made up claim cites a missing item [9]. Another claim without a source here.")
+    v = rs.validate_citations(text, 4)
+    assert v["invalid_citations_removed"] == [9] and v["cited_items"] == [2, 3, 4]
+    assert v["uncited_sentences"] == ["A made up claim cites a missing item .", "Another claim without a source here."]
+    assert v["grounded_share"] == 0.5
+
+
+def test_research_retrieves_numbered_evidence_and_uses_llm_with_citations():
+    deals = [_deal("Kenyan neobank Cloud9 raises $500,000 from crypto accelerator Alliance"),
+             _deal("Nigeria’s Moniepoint raises $110m Series C, led by Development Partners International")]
+    seen = {}
+
+    def fake_llm(system, user, max_tokens):
+        seen["user"] = user
+        return "Cloud9 raised $500,000 [2]. Kenya's currency risk is low [4]."
+    r = rs.research("Kenya fintech funding and currency risk", deals, [], live_news=False, llm=fake_llm)
+    kinds = [i["kind"] for i in r["evidence"]]
+    assert kinds[:2] == ["statistics", "deal"] and "country_risk" in kinds and "currency_risk" in kinds
+    assert "[2] (deal" in seen["user"] and "ONLY the numbered evidence" in rs.SYSTEM
+    assert r["mode"] == "llm" and r["validation"]["grounded_share"] == 1.0
+
+
+def test_research_without_llm_is_deterministic(monkeypatch):
+    deals = [_deal("Kenyan neobank Cloud9 raises $500,000 from crypto accelerator Alliance")]
+    r = rs.research("Kenya fintech funding", deals, [], live_news=False)
+    assert r["mode"] == "deterministic" and "Cloud9" in r["answer"] and "[1]" in r["answer"]
+
+
+def test_country_report_sections():
+    deals = [_deal("Kenyan neobank Cloud9 raises $500,000 from crypto accelerator Alliance")]
+    r = rs.country_report("KE", deals, [], live_news=False)
+    for heading in ("# Kenya", "## Executive summary", "## Country risk", "## Currency", "## Deal activity",
+                    "## Most active investors", "## Sources"):
+        assert heading in r["markdown"]
