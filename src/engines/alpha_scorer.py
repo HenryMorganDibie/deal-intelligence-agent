@@ -125,6 +125,9 @@ INSIDER_PURCHASE = re.compile(
     r"|(achat|acquisition)\s+d['’]?\s*actions\s+par)\b", re.IGNORECASE)
 
 
+_DEALING_NOTICE = re.compile(r"\b(directors?'?\s*dealings?|share\s+dealings?|insider\s+(dealings?|notification))\b", re.IGNORECASE)
+
+
 def signal_direction(signal_type: SignalType, source_text: str, default: str) -> str:
     """
     Direction implied by the source text, where the signal type can go either way.
@@ -137,8 +140,11 @@ def signal_direction(signal_type: SignalType, source_text: str, default: str) ->
             return "positive"
         return default
     if signal_type == SignalType.INSIDER_ACTIVITY:
-        if INSIDER_SALE.search(text) and not INSIDER_PURCHASE.search(text):
+        sale, purchase = bool(INSIDER_SALE.search(text)), bool(INSIDER_PURCHASE.search(text))
+        if sale and not purchase:
             return "negative"
+        if not sale and not purchase and _DEALING_NOTICE.search(text):
+            return "neutral"        # an exchange dealing notice that does not say buy or sell
     return default
 
 

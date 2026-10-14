@@ -3641,6 +3641,25 @@ class TestSubjectAttribution:
         assert [c.signal_type for c in self._engine("Acme", "Court orders that Acme be wound up").signal_candidates] \
             == [SignalType.DISTRESSED_ASSET]
 
+    def test_ngx_dealing_notices_and_board_exits(self):
+        """Live-run regression: MTN Nigeria's NGX dealing notices and a board exit produced no signals."""
+        from src.engines.deterministic_engine import _match_rules
+        from src.engines.alpha_scorer import signal_direction
+        assert [t for t, _, _ in _match_rules("MTNN: DirectorsDealings: Notification of Share Dealing by Insider - Moses Oyerinde")] \
+            == [SignalType.INSIDER_ACTIVITY]
+        assert [t for t, _, _ in _match_rules("MTNN: Corporate Actions: EXIT OF MRS. EYITOPE KOLA - OYENEYIN FROM THE BOARD")] \
+            == [SignalType.LEADERSHIP_CHANGE]
+        # a dealing notice does not say buy or sell: neutral, not the default 'positive'
+        assert signal_direction(SignalType.INSIDER_ACTIVITY, "DirectorsDealings: Share Dealing", "positive") == "neutral"
+
+    @pytest.mark.parametrize("title,expected", [
+        ("Acme names Dr. Ade as new CEO", [SignalType.LEADERSHIP_CHANGE]),   # 'Dr.' and role-'as' keep the clause
+        ("Rival names Acme veteran as CEO", []),                            # Rival's change, not Acme's
+        ("Earnings at Acme fell sharply", [SignalType.EARNINGS_SURPRISE]),
+    ])
+    def test_role_as_and_abbreviations(self, title, expected):
+        assert [c.signal_type for c in self._engine("Acme", title).signal_candidates] == expected
+
     def test_credit_condition_belongs_to_the_subject(self):
         """Live-run regression: Archer's cash burn was reported as Boeing credit risk."""
         cands = self._engine("Boeing", "Archer Aviation (ACHR) Stock Rally Faces Cash Burn And Boeing Deal Risk", "BA")

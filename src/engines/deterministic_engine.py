@@ -248,7 +248,11 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\b(executive|board)\s+(reshuffle|shake[-\s]up|overhaul)",
         r"\b(independent\s+)?director\s+(resign|step.?down|depart)",
         r"\b(appointed?|named?)\s+(new\s+)?(ceo|cfo|coo|md|chairman)",
+        r"\b(names|appoints|picks|taps|hires|promotes)\b.{0,40}\bas\s+(its\s+)?(new\s+|next\s+|interim\s+)?(ceo|cfo|coo|chief\s+(executive|financial|operating)|managing\s+director|md|chairman|chair)\b",
         r"\binterim\s+(ceo|cfo|md|chief\s+executive)",
+        # Exchange notices: "Exit of Mrs. X from the Board", "Retirement of a Director"
+        r"\b(exit|retirement|resignation|removal)\s+of\b.{0,60}\bfrom\s+the\s+board\b",
+        r"\b(appointment|retirement|resignation|exit)\s+of\s+(a\s+)?(new\s+)?(non[-\s]executive\s+|independent\s+|executive\s+)?director\b",
         r"\bboard\s+(dissolution|reconstitution|restructure)\b",
     ], 0.75),
     (SignalType.LEADERSHIP_CHANGE, [
@@ -308,6 +312,10 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bdirector\s+(purchase|sale|dealing)\b.{0,20}\b(share|equity|stock)\b",
         r"\bstake\s+(built|increased|acquired)\b.{0,20}\b(\d+\.?\d*%|percent)\b",
         r"\bshareholder\s+(activism|campaign|requisition)\b",
+        # NGX / NSE dealing notices: "DirectorsDealings", "Notification of Share Dealing by Insider"
+        r"\bdirectors?'?\s*dealings?\b",
+        r"\b(share|insider)\s+dealings?\b",
+        r"\binsider\s+notification\b",
         r"\bproposed\s+(board|director)\s+nominee\b.{0,30}\b(activist|investor)\b",
     ], 0.72),
     (SignalType.INSIDER_ACTIVITY, [
@@ -608,8 +616,11 @@ def _mentions_company(text: str, matchers: list[re.Pattern]) -> bool:
 # are split at separators and subordinating words, so in "Vodacom lifts outlook
 # as Safaricom deal reshapes growth" the outlook clause does not name Safaricom.
 _CLAUSE_BREAK = re.compile(
-    r"\s+[-–—]\s+|[;:|]|(?<=[.!?])\s+"
-    r"|\s(?:as|after|amid|while|following|despite|before|since|whereas|although|though)\s"
+    r"\s+[-–—]\s+|[;:|]|(?<!\b(?:Mr|Ms|Dr|St|Co|No|MR|MS|DR|ST|CO|NO)\.)(?<!\b(?:Mrs|MRS|Ltd|LTD|Inc|INC|Plc|PLC)\.)(?<=[.!?])\s+"
+    # "as" joins clauses ("lifts outlook as rival deal closes") but also names roles ("named Ade as CEO").
+    r"|\sas\s(?!(?:its|his|her|their|the|a|an|new|interim|acting|permanent|chief|ceo|cfo|coo|chairman|chair|"
+    r"chairperson|md|managing|president|director|head|group|non|independent|executive|company)\b)"
+    r"|\s(?:after|amid|while|following|despite|before|since|whereas|although|though)\s"
     r"|\s(?:apr[eè]s|alors\s+que|malgr[eé]|tandis\s+que|avant|depuis|suite\s+[àa]|car|puisque)\s"
     r"|\s(?:ap[oó]s|apesar\s+de|enquanto|depois\s+de|antes\s+de)\s"
     r"|\s(?:بعد|رغم|بينما|قبل|في\s+ظل)\s",
@@ -730,7 +741,10 @@ def match_rules_for_target(
                     continue
                 # Subject-owned events: the company comes first ("Acme beats estimates"), or
                 # sits inside the matched phrase ("Earnings at Acme fell", "أرباح حديد عز ترتفع").
-                if sig_type in _SUBJECT_ONLY_TYPES and mention > m.start() and not mention < m.end():
+                # The second form only when the phrase opens the clause, so in "Rival names
+                # Acme veteran as CEO" the subject is still Rival.
+                inside = mention < m.end() and _LEADING_SUBJECT_PREFIX.match(clause[:m.start()])
+                if sig_type in _SUBJECT_ONLY_TYPES and mention > m.start() and not inside:
                     continue
                 matched.append(pattern)
             if matched and (sig_type not in best or base_score > best[sig_type][1]):
