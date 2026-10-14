@@ -425,6 +425,89 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\b(cession|vente)\s+d['’]?\s*actions\s+par\s+(un|le|des)\s+(dirigeants?|administrateurs?)\b",
         r"\bmonte\s+(à|au)\s+(\d+[.,]?\d*\s*%|capital)\b",
     ], 0.72),
+
+    # ── Portuguese: Mozambique (BVM), Angola (BODIVA), Cape Verde ────────────
+    (SignalType.MA_ACTIVITY, [
+        r"\boferta\s+p[uú]blica\s+de\s+(aquisi[cç][aã]o|troca)\b",
+        r"\b(acordo|contrato)\s+(definitivo\s+)?de\s+(fus[aã]o|aquisi[cç][aã]o|compra)\b",
+        r"\bprojeto\s+de\s+fus[aã]o\b",
+    ], 0.95),
+    (SignalType.MA_ACTIVITY, [
+        r"\b(adquire|adquiriu|compra|comprou)\b.{0,60}\b(empresa|companhia|banco|grupo|participa[cç][aã]o)\b",
+        r"\bnegocia[cç][oõ]es\s+exclusivas\b",
+        r"\b(aquisi[cç][aã]o|fus[aã]o|incorpora[cç][aã]o)\b",
+    ], 0.55),
+    (SignalType.CREDIT_RISK, [
+        r"\b(incumprimento|default)\b.{0,30}\b(pagamento|d[ií]vida|obriga[cç][oõ]es)\b",
+        r"\b(rebaixa|rebaixamento|corte)\b.{0,30}\b(rating|nota[cç][aã]o|classifica[cç][aã]o)\b",
+        r"\bcontinuidade\s+(das\s+)?opera[cç][oõ]es\b.{0,30}\b(d[uú]vida|incerteza)\b",
+    ], 0.92),
+    (SignalType.DISTRESSED_ASSET, [
+        r"\b(fal[eê]ncia|insolv[eê]ncia|recupera[cç][aã]o\s+judicial|liquida[cç][aã]o\s+judicial)\b",
+        r"\bsuspens[aã]o\s+(da\s+)?negocia[cç][aã]o\b",
+    ], 0.95),
+    (SignalType.EARNINGS_SURPRISE, [
+        r"\b(lucros?|resultados?|receitas?)\b.{0,25}\b(caem|cai|recua|recuam|desce|descem|queda)\b",
+        r"\bpreju[ií]zo\b",
+        r"\b(lucros?|resultados?)\b.{0,25}\b(sobem|sobe|disparam|crescem|acima\s+das\s+(expectativas|estimativas))\b",
+    ], 0.72),
+    (SignalType.LEADERSHIP_CHANGE, [
+        r"\b(presidente\s+(executivo|do\s+conselho)|ceo|director[a]?\s+geral|administrador[a]?\s+delegad[oa])\b.{0,40}\b(demite|demitiu|renuncia|renunciou|deixa|sai|exonerad[oa])\b",
+        r"\b(demiss[aã]o|ren[uú]ncia|exonera[cç][aã]o)\s+d[oa]\s+(presidente|ceo|director[a]?\s+geral|administrador)\b",
+    ], 0.90),
+    (SignalType.LEADERSHIP_CHANGE, [
+        r"\b(nomead[oa]|nomeia|nova?)\s+(como\s+)?(presidente\s+executivo|ceo|director[a]?\s+geral|administrador[a]?\s+delegad[oa])\b",
+    ], 0.75),
+    (SignalType.REGULATORY_ACTION, [
+        r"\b(banco\s+de\s+mo[cç]ambique|bna|banco\s+nacional\s+de\s+angola|cmc|regulador)\b.{0,40}\b(multa|san[cç][aã]o|sancion\w+|investiga[cç][aã]o|suspende|revoga)\b",
+        r"\b(multad[oa]|multa\s+de)\b",
+    ], 0.80),
+    (SignalType.DEBT_RESTRUCTURE, [
+        r"\breestrutura[cç][aã]o\s+(da|de)\s+d[ií]vida\b",
+        r"\breescalonamento\s+(da|de)\s+d[ií]vida\b",
+    ], 0.88),
+    (SignalType.INSIDER_ACTIVITY, [
+        r"\bparticipa[cç][aã]o\s+qualificada\b",
+        r"\btransa[cç][oõ]es\s+de\s+dirigentes\b",
+    ], 0.85),
+
+    # ── Arabic: Egypt (EGX), Maghreb, Gulf-listed African names ───────────────
+    # Arabic attaches prefixes (al-, wa-, bi-, li-) to the word, so no \b before it.
+    (SignalType.MA_ACTIVITY, [
+        r"عرض\s+(شراء|استحواذ)\s+(إجباري|اجباري)?",
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(استحواذ|اندماج)\s+(على|مع)\s+",
+    ], 0.90),
+    (SignalType.MA_ACTIVITY, [
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(استحواذ|اندماج|صفقة\s+شراء)",
+    ], 0.55),
+    (SignalType.CREDIT_RISK, [
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(تعثر|تخلف)\s+عن\s+(سداد|الدفع)",
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(خفض|تخفيض)\s+(ال)?تصنيف(ها|ه)?\s+(ال)?ائتماني",
+    ], 0.92),
+    (SignalType.DISTRESSED_ASSET, [
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(إفلاس|افلاس|إعسار|تصفية\s+(إجبارية|قضائية)?)",
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(إيقاف|ايقاف|تعليق)\s+(ال)?تداول",
+    ], 0.95),
+    (SignalType.EARNINGS_SURPRISE, [
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(أرباح|ارباح|إيرادات|ايرادات)\S*\s+.{0,20}(تتراجع|تراجع|تنخفض|انخفاض|هبوط)",
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(خسائر|خسارة)\s+(صافية)?",
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(أرباح|ارباح)\S*\s+.{0,20}(ترتفع|ارتفاع|قفزة|تقفز|تتجاوز\s+التوقعات)",
+    ], 0.72),
+    (SignalType.LEADERSHIP_CHANGE, [
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(استقالة|إقالة|اقالة)\s+(ال)?(رئيس\s+(ال)?تنفيذي|عضو\s+(ال)?منتدب|رئيس\s+مجلس\s+(ال)?إدارة)(?:(?:\s+جديد(?:ة)?)?(?:\s+(?:لشركة|للشركة|في\s+شركة|بشركة|ل))?\s+\S+)?",
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(تعيين)\s+.{0,30}(رئيس(ا|اً)?\s+(ال)?تنفيذي(ا|اً)?|عضو(ا|اً)?\s+(ال)?منتدب(ا|اً)?)(?:(?:\s+جديد(?:ة)?)?(?:\s+(?:لشركة|للشركة|في\s+شركة|بشركة|ل))?\s+\S+)?",
+    ], 0.90),
+    (SignalType.REGULATORY_ACTION, [
+        r"(هيئة\s+(ال)?رقابة\s+(ال)?مالية|(ال)?بنك\s+(ال)?مركزي|(ال)?بورصة).{0,40}(غرامة|عقوبة|تحقيق|إيقاف|شطب)",
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(غرامة|عقوبة)\s+(مالية)?",
+    ], 0.80),
+    (SignalType.DEBT_RESTRUCTURE, [
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(إعادة|اعادة)\s+(ال)?هيكلة\s+(ال)?(ديون|مديونية)",
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(جدولة)\s+(ال)?(ديون|مديونية)",
+    ], 0.88),
+    (SignalType.INSIDER_ACTIVITY, [
+        r"(?:و|ف|ب|ل|ك)?(?:ال)?(شراء|بيع)\s+.{0,20}(أسهم|اسهم)\s+.{0,20}(عضو|رئيس|مسؤول|أحد\s+المطلعين)",
+    ], 0.72),
 ]
 
 # ─── Named Entity Patterns ────────────────────────────────────────────────────
@@ -501,7 +584,7 @@ def _company_matchers(*names: Optional[str], ticker: Optional[str] = None) -> li
     for name in names:
         if not name:
             continue
-        words = re.findall(r"[A-Za-z0-9&]+", name)
+        words = re.findall(r"[^\W_]+|&", name)          # Unicode: Moçambique, طلعت مصطفى
         while words and words[-1].lower() in _GENERIC_NAME_WORDS:
             words.pop()
         if not words or (len(words) == 1 and words[0].lower() in _GENERIC_NAME_WORDS):
@@ -527,7 +610,9 @@ def _mentions_company(text: str, matchers: list[re.Pattern]) -> bool:
 _CLAUSE_BREAK = re.compile(
     r"\s+[-–—]\s+|[;:|]|(?<=[.!?])\s+"
     r"|\s(?:as|after|amid|while|following|despite|before|since|whereas|although|though)\s"
-    r"|\s(?:apr[eè]s|alors\s+que|malgr[eé]|tandis\s+que|avant|depuis|suite\s+[àa]|car|puisque)\s",
+    r"|\s(?:apr[eè]s|alors\s+que|malgr[eé]|tandis\s+que|avant|depuis|suite\s+[àa]|car|puisque)\s"
+    r"|\s(?:ap[oó]s|apesar\s+de|enquanto|depois\s+de|antes\s+de)\s"
+    r"|\s(?:بعد|رغم|بينما|قبل|في\s+ظل)\s",
     re.IGNORECASE,
 )
 # Events that belong to the clause's subject: the company must be named before the
@@ -643,7 +728,9 @@ def match_rules_for_target(
                 m = re.search(pattern, clause, re.IGNORECASE)
                 if not m:
                     continue
-                if sig_type in _SUBJECT_ONLY_TYPES and mention > m.start():
+                # Subject-owned events: the company comes first ("Acme beats estimates"), or
+                # sits inside the matched phrase ("Earnings at Acme fell", "أرباح حديد عز ترتفع").
+                if sig_type in _SUBJECT_ONLY_TYPES and mention > m.start() and not mention < m.end():
                     continue
                 matched.append(pattern)
             if matched and (sig_type not in best or base_score > best[sig_type][1]):

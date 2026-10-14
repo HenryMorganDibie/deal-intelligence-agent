@@ -103,12 +103,16 @@ _POSITIVE_EARNINGS = re.compile(
     r"|\b(raises?|raised|lifts?|lifted|boosts?|boosted)\s+(its\s+)?(full[-\s]year\s+|annual\s+)?(guidance|outlook|forecast)\b"
     r"|\bsignificantly\s+above\s+(expectations?|guidance|consensus)\b"
     r"|\b(d[eé]passe(nt)?|sup[eé]rieurs?\s+aux)\s+(les\s+)?(attentes|pr[eé]visions|estimations)\b"
-    r"|\b(rel[eè]ve|am[eé]liore|rehausse)\s+(ses|son)\s+(pr[eé]visions|objectifs?|perspectives)\b",
+    r"|\b(rel[eè]ve|am[eé]liore|rehausse)\s+(ses|son)\s+(pr[eé]visions|objectifs?|perspectives)\b"
+    r"|\b(sobem|sobe|disparam|crescem|acima\s+das\s+(expectativas|estimativas))\b"
+    r"|(ترتفع|ارتفاع|قفزة|تقفز|تتجاوز\s+التوقعات|نمو)",
     re.IGNORECASE,
 )
 _NEGATIVE_EARNINGS = re.compile(
     r"\b(miss(es|ed)?|warning|below|cut|lowered|reduced|withdrawn|declin\w*|fell|dropped|disappointing|weaker|loss|restatement"
-    r"|avertissement|baisse|recul|recule|chute|perte|inf[eé]rieurs?|abaisse|retraitement)\b",
+    r"|avertissement|baisse|recul|recule|chute|perte|inf[eé]rieurs?|abaisse|retraitement"
+    r"|caem|cai|recua|recuam|desce|descem|queda|preju[ií]zo)\b"
+    r"|(تتراجع|تراجع|تنخفض|انخفاض|هبوط|خسائر|خسارة)",
     re.IGNORECASE,
 )
 

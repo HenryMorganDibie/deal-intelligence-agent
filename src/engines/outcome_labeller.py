@@ -42,7 +42,7 @@ CONFIRMATION_WINDOW_DAYS = 90
 # Price reaction is read 10 trading-ish days after detection; label no earlier.
 MIN_AGE_DAYS = 12
 
-AFRICAN_SUFFIXES = (".JO", ".LG", ".NR", ".GH", ".CA", ".CS", ".BV")
+AFRICAN_SUFFIXES = (".JO", ".LG", ".NR", ".GH", ".CA", ".CS", ".BV", ".TN", ".MZ", ".AO")
 
 # Market benchmark per listing, for abnormal returns: SPY, the Satrix 40 tracker
 # (JSE), the NGX All-Share Index and the NSE All-Share Index. Other markets

@@ -188,6 +188,8 @@ GOOGLE_NEWS_SA  = "https://news.google.com/rss/search?q={query}&hl=en-ZA&gl=ZA&c
 GOOGLE_NEWS_KE  = "https://news.google.com/rss/search?q={query}&hl=en-KE&gl=KE&ceid=KE:en"
 # Francophone Africa (BRVM, Casablanca, Tunis, Douala) reports in French.
 GOOGLE_NEWS_FR  = "https://news.google.com/rss/search?q={query}&hl=fr&gl=CI&ceid=CI:fr"
+GOOGLE_NEWS_AR  = "https://news.google.com/rss/search?q={query}&hl=ar&gl=EG&ceid=EG:ar"
+GOOGLE_NEWS_PT  = "https://news.google.com/rss/search?q={query}&hl=pt-PT&gl=PT&ceid=PT:pt-150"
 
 # African regulatory bodies (for regulatory signal queries)
 AFRICAN_REGULATORS = ["SEC Nigeria", "FSCA", "CMA Kenya", "SEC Ghana", "CBN", "SARB", "CBK"]
@@ -721,6 +723,7 @@ class AfricaTool:
         company_name: str,
         lookback_days: int = 90,
         max_items: int = 40,
+        ticker: Optional[str] = None,
     ) -> list[NewsItem]:
         """
         Fetch company-relevant news from:
@@ -757,6 +760,11 @@ class AfricaTool:
             self._fetch_rss(GOOGLE_NEWS_FR.format(query=quote(q)), "Google News Afrique")
             # Google requires every word, so keep French queries short.
             for q in (company_name, f"{company_name} résultats", f"{company_name} OPA OR fusion OR cession")
+        ] + [
+            self._fetch_rss(url.format(query=quote(company_name)), label)
+            for suffixes, url, label in (((".CA",), GOOGLE_NEWS_AR, "Google News Arabic"),
+                                         ((".MZ", ".AO"), GOOGLE_NEWS_PT, "Google News Portuguese"))
+            if (ticker or "").upper().endswith(suffixes)
         ]
 
         all_tasks = rss_tasks + google_tasks
@@ -825,7 +833,7 @@ async def fetch_african_intelligence(
             tool.fetch_ngx_announcements(company_name, lookback_days),
             tool.fetch_nse_kenya_disclosures(company_name, lookback_days),
             tool.fetch_jse_news(company_name, lookback_days),
-            tool.fetch_african_news(company_name, lookback_days),
+            tool.fetch_african_news(company_name, lookback_days, ticker=ticker),
             return_exceptions=True,
         )
 

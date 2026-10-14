@@ -41,12 +41,16 @@ _HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Ch
 # disclosure title (underscores read as spaces).
 CONFIRMATION_PATTERNS: dict[SignalType, list[str]] = {
     SignalType.MA_ACTIVITY: [
+        r"\b(conclui|concluiu|concluída|finaliza|finalizou)\b.{0,40}\b(aquisi[cç][aã]o|fus[aã]o|compra|venda)\b",
+        r"(إتمام|اتمام|استكمال|أتمت|اتمت|أكملت)\s+.{0,30}(استحواذ|اندماج|صفقة)",
         r"\b(complet(es|ed|ion\s+of)|clos(es|ed)|finali[sz](es|ed))\b.{0,40}\b(acquisition|merger|takeover|purchase|sale|disposal)\b",
         r"\b(acquisition|merger|takeover|scheme\s+of\s+arrangement)\b.{0,30}\b(completed|closed|effective|sanctioned|approved\s+by\s+(the\s+)?(court|shareholders))\b",
         r"\b(finalise|finalis[eé]e?|a\s+finalis[eé]|conclut|a\s+conclu)\b.{0,40}\b(acquisition|fusion|cession|rachat)\b",
         r"\b(fusion|acquisition|rachat)\b.{0,30}\b(finalis[eé]e?|effective|approuv[eé]e)\b",
     ],
     SignalType.LEADERSHIP_CHANGE: [
+        r"\b(nomeia|nomeou|nomeado|nomeada|renuncia|renunciou|demite|demitiu)\b.{0,40}\b(presidente|ceo|director[a]?\s+geral|administrador)\b",
+        r"(تعيين|استقالة|إقالة|اقالة)\s+.{0,30}(رئيس\s+(ال)?تنفيذي|عضو\s+(ال)?منتدب|رئيس\s+مجلس)",
         r"\b(appoints?|appointed|names|named|confirms)\b.{0,40}\b(ceo|cfo|chief\s+executive|chief\s+financial|managing\s+director|md|chairman|chairperson|president)\b",
         r"\b(resignation|retirement|exit|departure)\s+of\b.{0,40}\b(ceo|cfo|managing\s+director|md|chairman|director)\b",
         r"\b(ceo|cfo|chief|chief\s+executive|managing\s+director|chairman|president|head)\b.{0,30}\b(resigns|resigned|steps\s+down|stepped\s+down|retires|exits|departs|ousted|fired|replaced)\b",
@@ -55,22 +59,30 @@ CONFIRMATION_PATTERNS: dict[SignalType, list[str]] = {
         r"\b(nomm[eé]e?|nomination|d[eé]mission|d[eé]part)\b.{0,40}\b(directeur\s+g[eé]n[eé]ral|directrice\s+g[eé]n[eé]rale|pdg|pr[eé]sident|dg)\b",
     ],
     SignalType.DISTRESSED_ASSET: [
+        r"\b(fal[eê]ncia|insolv[eê]ncia|recupera[cç][aã]o\s+judicial)\b.{0,20}\b(decretada|declarada|pedido|requer)\b",
+        r"(إشهار\s+(ال)?إفلاس|تصفية|شطب\s+(ال)?سهم|إيقاف\s+(ال)?تداول)",
         r"\b(placed|enters?|entered|files?|filed)\b.{0,30}\b(business\s+rescue|administration|liquidation|receivership|bankruptcy|chapter\s+11|insolvency)\b",
         r"\b(suspended|delisted|suspension\s+of\s+trading)\b",
         r"\b(plac[eé]e?\s+en|ouverture\s+d['’]une)\b.{0,30}\b(redressement|liquidation)\s+judiciaire\b",
     ],
     SignalType.CREDIT_RISK: [
+        r"\b(rebaixa|rebaixou|corta|cortou)\b.{0,30}\b(rating|nota[cç][aã]o)\b",
+        r"(خفض|تخفيض|خفضت)\s+.{0,20}(ال)?تصنيف",
         r"\b(downgrad(es|ed)|cuts?)\b.{0,40}\b(rating|outlook)\b",
         r"\b(defaults?|defaulted|missed)\b.{0,30}\b(payment|coupon|bond|loan|obligation)\b",
         r"\b(d[eé]grad[eé]e?|abaisse)\b.{0,30}\bnotation\b",
         r"\bd[eé]faut\s+de\s+paiement\b",
     ],
     SignalType.DEBT_RESTRUCTURE: [
+        r"\b(acordo|conclui|concluiu)\b.{0,30}\breestrutura[cç][aã]o\s+(da|de)\s+d[ií]vida\b",
+        r"(اتفاق|توقيع)\s+.{0,20}(إعادة|اعادة)\s+(ال)?هيكلة\s+(ال)?(ديون|مديونية)",
         r"\b(creditors?|bondholders?|lenders?)\b.{0,30}\b(approve|approved|agree|agreed|sign|signed)\b.{0,30}\b(restructur\w*|extension|standstill)\b",
         r"\b(completes?|completed|concludes?|concluded|signs?|signed)\b.{0,30}\b(debt\s+restructur\w*|refinancing|restructuring\s+agreement)\b",
         r"\baccord\s+de\s+restructuration\b",
     ],
     SignalType.REGULATORY_ACTION: [
+        r"\b(multad[oa]|multa\s+de|sancionad[oa])\b",
+        r"(فرض|فرضت|توقيع)\s+(ال)?(غرامة|عقوبة)",
         r"\b(fined|sanctioned|penali[sz]ed|charged|licen[cs]e\s+(revoked|suspended))\b",
         r"\b(pleads?|pleaded|pled|agrees?\s+to\s+plead)\s+guilty\b|\bguilty\s+plea\b",
         r"\b(settles?|settled|agrees?\s+to\s+pay)\b.{0,50}\b(sec|doj|ftc|regulator|authorit\w+|commission|charges?|fine|penalty|probe)\b",
@@ -92,7 +104,9 @@ CONFIRMATION_PATTERNS: dict[SignalType, list[str]] = {
 _COMPILED = {t: [re.compile(p, re.IGNORECASE) for p in ps] for t, ps in CONFIRMATION_PATTERNS.items()}
 _SPECULATIVE = re.compile(
     r"\b(talks?|considers?|considering|weighs?|weighing|explores?|exploring|could|may|might|plans?|planning|"
-    r"eyes|eyeing|rumou?rs?|reportedly|proposed|potential|bid\s+for|envisage|pourrait|envisagerait)\b",
+    r"eyes|eyeing|rumou?rs?|reportedly|proposed|potential|bid\s+for|envisage|pourrait|envisagerait|"
+    r"negocia|negociações|poderá|pondera|estuda)\b"
+    r"|(مفاوضات|تدرس|تعتزم|قد\s|محتمل|تخطط)",
     re.IGNORECASE,
 )
 # NGX submission types that are the event itself.
@@ -175,10 +189,13 @@ NEWS_TOPICS = ["",
                "CEO OR chairman OR appoints OR resigns OR acquisition OR merger OR completes OR takeover",
                "downgrade OR default OR restructuring OR administration OR fined OR penalty OR sanctioned OR regulator"]
 FRENCH_TOPICS = ["", "nomme OR démission OR acquisition OR fusion OR sanction"]
+ARABIC_TOPICS = ["", "استحواذ OR استقالة OR تعيين OR غرامة OR هيكلة"]
+PORTUGUESE_TOPICS = ["", "aquisição OR fusão OR renuncia OR nomeado OR multa"]
 
 
 def historical_news(
     client: httpx.Client, company: str, since: date, until: date, french: bool = False,
+    arabic: bool = False, portuguese: bool = False,
 ) -> Optional[list[dict]]:
     """
     Dated headlines about the company published in [since, until], from Google
@@ -190,6 +207,10 @@ def historical_news(
     queries = [(f'"{company}" {t} {window}'.replace("  ", " "), ("en-US", "US", "en")) for t in NEWS_TOPICS]
     if french:
         queries += [(f'"{company}" {t} {window}'.replace("  ", " "), ("fr", "CI", "fr")) for t in FRENCH_TOPICS]
+    if arabic:
+        queries += [(f'"{company}" {t} {window}'.replace("  ", " "), ("ar", "EG", "ar")) for t in ARABIC_TOPICS]
+    if portuguese:
+        queries += [(f'"{company}" {t} {window}'.replace("  ", " "), ("pt-PT", "PT", "pt-150")) for t in PORTUGUESE_TOPICS]
     out, seen, ok = [], set(), False
     for q, (hl, gl, lang) in queries:
         try:
@@ -263,7 +284,9 @@ def collect_events(
         if t.endswith(".NR"):
             results.append(nse_events(client, company, since, until))
         french = t.endswith((".BV", ".CS", ".TN")) or market == "africa"
-        results.append(news_events(client, company, since, until, french=french))
+        items = historical_news(client, company, since, until, french=french,
+                                arabic=t.endswith(".CA"), portuguese=t.endswith((".MZ", ".AO")))
+        results.append(news_events(client, company, since, until, headlines=items) if items is not None else None)
         got = [r for r in results if r is not None]
         return [e for r in got for e in r] if got else None
     finally:

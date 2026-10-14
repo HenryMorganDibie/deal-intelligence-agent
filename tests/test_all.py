@@ -3282,7 +3282,7 @@ async def test_exchange_search_results_are_news_not_filings(monkeypatch):
             return []
         return [{"title": "Acme posts results", "link": "https://news.google.com/x", "description": "Acme",
                  "pubDate": "", "source_override": source_name, "publisher": "BusinessDay"}]
-    async def no_news(self, company_name, lookback_days=90):
+    async def no_news(self, company_name, lookback_days=90, ticker=None):
         return []
     monkeypatch.setattr(at.AfricaTool, "_fetch_rss", fake_rss)
     monkeypatch.setattr(at.AfricaTool, "fetch_african_news", no_news)
@@ -3567,6 +3567,24 @@ class TestSubjectAttribution:
     def test_french_disclosures(self, company, title, expected):
         assert expected in [c.signal_type for c in self._engine(company, title).signal_candidates], title
 
+    @pytest.mark.parametrize("company,title,expected", [
+        ("BCI", "BCI anuncia oferta pública de aquisição sobre o Banco X", SignalType.MA_ACTIVITY),
+        ("Cervejas de Moçambique", "Cervejas de Moçambique: lucros caem 20% no semestre", SignalType.EARNINGS_SURPRISE),
+        ("Banco BAI", "Banco BAI: renúncia do presidente executivo", SignalType.LEADERSHIP_CHANGE),
+        ("Banco Y", "Banco Y em recuperação judicial", SignalType.DISTRESSED_ASSET),
+        ("طلعت مصطفى", "طلعت مصطفى تعلن الاستحواذ على حصة في شركة جديدة", SignalType.MA_ACTIVITY),
+        ("فوري", "فوري: استقالة الرئيس التنفيذي", SignalType.LEADERSHIP_CHANGE),
+        ("القلعة", "القلعة تعلن إعادة هيكلة الديون", SignalType.DEBT_RESTRUCTURE),
+        ("حديد عز", "أرباح حديد عز ترتفع 40% في الربع الثالث", SignalType.EARNINGS_SURPRISE),
+        ("الشرقية للدخان", "تعيين رئيس تنفيذي جديد لشركة الشرقية للدخان", SignalType.LEADERSHIP_CHANGE),
+        ("المصرية للاتصالات", "هيئة الرقابة المالية تفرض غرامة على المصرية للاتصالات", SignalType.REGULATORY_ACTION),
+    ])
+    def test_portuguese_and_arabic_disclosures(self, company, title, expected):
+        assert expected in [c.signal_type for c in self._engine(company, title).signal_candidates], title
+
+    def test_arabic_rival_event_not_attributed(self):
+        assert self._engine("فوري", "استقالة الرئيس التنفيذي لشركة منافسة بعد صفقة فوري").signal_candidates == []
+
     def test_french_clause_rule_keeps_attribution(self):
         """French subordinators split clauses like their English counterparts."""
         out = self._engine("Sonatel", "Orange relève ses prévisions malgré la cession de Sonatel")
@@ -3775,7 +3793,19 @@ class TestEventSources:
         assert {t.value for t in classify("Boeing to plead guilty to criminal fraud charge")} == {"regulatory_action"}
         assert {t.value for t in classify("Acme agrees to pay $50m to settle SEC charges")} == {"regulatory_action"}
 
+    @pytest.mark.parametrize("text,expected", [
+        ("BCI conclui aquisição do Banco X", "m_and_a_activity"),
+        ("Banco BAI nomeia novo presidente executivo", "leadership_change"),
+        ("إتمام صفقة الاستحواذ على شركة جديدة", "m_and_a_activity"),
+        ("هيئة الرقابة المالية تفرض غرامة على الشركة", "regulatory_action"),
+    ])
+    def test_portuguese_and_arabic_confirmations(self, text, expected):
+        from src.engines.event_sources import classify
+        assert {t.value for t in classify(text)} == {expected}
+
     @pytest.mark.parametrize("text", [
+        "الشركة تدرس الاستحواذ على منافس",
+        "BCI negocia aquisição do Banco X",
         "Acme in talks to acquire Beta",
         "Acme considers sale of unit",
         "Acme could appoint new CEO",
