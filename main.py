@@ -128,6 +128,8 @@ def build_parser() -> argparse.ArgumentParser:
                     help="Write per-company results only (a shard); aggregate later where all shards are merged")
     bt.add_argument("--deadline-minutes", type=float, default=None,
                     help="Stop starting new companies after this long; exit code 75 if the run is incomplete")
+    bt.add_argument("--plan-shards", type=int, default=None, metavar="N",
+                    help="Print, as JSON, the companies still to run split into N shards (one per machine)")
     bt.add_argument("--period", choices=["fixed", "rolling"], default="fixed",
                     help="rolling: the latest 18 monthly as-of dates whose 90-day horizon has closed")
     bt.add_argument("--start", default="2024-01-15", help="First as-of date for --historical")
@@ -670,6 +672,18 @@ def _run_backtest(args: argparse.Namespace) -> None:
         result["alpha_validation"] = hb.alpha_validation(result["predictions"])
         hb.write_tables(result)
         console.print(f"[green]✓[/green] Measured outcome tables rebuilt from {hb.RESULTS_PATH}")
+        return
+
+    if getattr(args, "plan_shards", None):
+        import json as _json
+        from datetime import date as _date
+        from src.engines import backtest_universe
+        from src.engines import historical_backtest as hb
+        if args.period == "rolling":
+            args.start, args.end = (d.isoformat() for d in hb.rolling_period(_date.today()))
+        plan = hb.plan_shards(_date.fromisoformat(args.start), _date.fromisoformat(args.end),
+                              backtest_universe.load(), args.plan_shards)
+        print(_json.dumps(plan))
         return
 
     if getattr(args, "historical", False):

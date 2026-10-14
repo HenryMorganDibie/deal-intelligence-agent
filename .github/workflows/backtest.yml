@@ -1,10 +1,14 @@
-# Monthly walk-forward backtest over the ~2,000-company universe.
+# Monthly walk-forward backtest over the ~2,000-company universe, spread across several machines.
 #
 # Each month replays the latest 18 monthly dates (the 15th) whose 90-day outcome windows have closed;
-# consecutive runs share 17 of those windows, so most news and filings come from the cache. It then
-# commits the regenerated evaluation report, measured tables and prediction file; the push deploys
-# the site. A full run takes longer than one job may (6 hours), so each job works to a deadline,
-# keeps every finished company in the Actions cache, and starts the next job until the run is done.
+# consecutive runs share 17 of those windows, so most news and filings come from the cache.
+#
+#   plan    lists the companies not yet finished for this period and splits them into shards.
+#   shard   one machine per shard (each has its own address, so news searches are not throttled
+#           together); works to a deadline and uploads what it fetched and finished.
+#   finish  merges every shard into the cache. If every company is done it aggregates and commits the
+#           evaluation report, measured tables and prediction file (the push deploys the site);
+#           otherwise it starts another round for the companies still left.
 name: Monthly backtest
 
 on:
@@ -12,14 +16,24 @@ on:
     - cron: "17 3 2 * *"            # 03:17 UTC on the 2nd of every month: the backtest
     - cron: "41 4 * * 1"            # Mondays: touch the cache, which GitHub deletes after 7 unused days
   workflow_dispatch:
+    inputs:
+      shards: {description: "Machines per round", required: false, default: "4"}
+      round: {description: "Round number (set by the workflow when it continues itself)", required: false, default: "1"}
+      max_rounds: {description: "Stop continuing after this many rounds", required: false, default: "6"}
 
 permissions:
   contents: write                    # commit the regenerated results
-  actions: write                     # start the next job when a run needs more time
+  actions: write                     # start the next round; delete this run's artifacts and old caches
 
 concurrency:
-  group: backtest
+  group: backtest-${{ github.event.schedule == '41 4 * * 1' && 'keepalive' || 'run' }}
   cancel-in-progress: false
+
+env:
+  PYTHONUNBUFFERED: "1"
+  SHARDS: ${{ inputs.shards || '4' }}
+  ROUND: ${{ inputs.round || '1' }}
+  MAX_ROUNDS: ${{ inputs.max_rounds || '6' }}
 
 jobs:
   keep-cache:
@@ -36,21 +50,22 @@ jobs:
           key: backtest-keepalive-${{ github.run_id }}
           restore-keys: backtest-
 
-  backtest:
+  plan:
     if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 3 2 * *'
     runs-on: ubuntu-latest
-    timeout-minutes: 355
-    env:
-      PYTHONUNBUFFERED: "1"
+    timeout-minutes: 30
+    outputs:
+      start: ${{ steps.plan.outputs.start }}
+      end: ${{ steps.plan.outputs.end }}
+      remaining: ${{ steps.plan.outputs.remaining }}
+      matrix: ${{ steps.plan.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: pip
           cache-dependency-path: requirements-backtest.txt
-
       - run: pip install -r requirements-backtest.txt
 
       - name: Replay period
@@ -80,18 +95,138 @@ jobs:
           dir="data/backtest_runs/${{ steps.period.outputs.start }}_${{ steps.period.outputs.end }}"
           if [ ! -d "$dir" ] || [ -z "$(ls -A "$dir")" ]; then python main.py backtest --universe; fi
 
-      - name: Run (to a deadline; resumes from finished companies)
-        id: run
+      - name: Split the unfinished companies into shards
+        id: plan
         run: |
-          set +e
-          python main.py backtest --historical --period rolling --workers 12 --deadline-minutes 290
-          code=$?
-          echo "code=$code" >> "$GITHUB_OUTPUT"
-          if [ "$code" -ne 0 ] && [ "$code" -ne 75 ]; then exit "$code"; fi
+          python main.py backtest --plan-shards "$SHARDS" --period rolling > plan.json
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          p = json.load(open("plan.json"))
+          print(f"start={p['start']}\nend={p['end']}\nremaining={p['remaining']}")
+          print("matrix=" + json.dumps({"include": p["shards"]}))
+          PY
+          echo "Round $ROUND: $(python -c "import json; print(json.load(open('plan.json'))['remaining'])") companies to run"
 
-      - name: Stop the run before saving (after a cancel or timeout it may still be writing)
+      - name: Share the universe with the shards
+        uses: actions/upload-artifact@v4
+        with:
+          name: backtest-universe
+          path: docs/backtest_universe.csv
+          retention-days: 1
+
+  shard:
+    needs: plan
+    if: needs.plan.outputs.remaining != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    env:
+      DEAL_INTEL_NEWS_INTERVAL: "0.25"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-backtest.txt
+      - run: pip install -r requirements-backtest.txt
+
+      - name: Restore fetched data and finished companies
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/hist_cache
+            data/backtest_runs
+          key: backtest-${{ needs.plan.outputs.start }}-${{ needs.plan.outputs.end }}-${{ github.run_id }}
+          restore-keys: |
+            backtest-${{ needs.plan.outputs.start }}-${{ needs.plan.outputs.end }}-
+            backtest-
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backtest-universe
+          path: docs
+
+      - name: Run this shard (to a deadline)
+        run: |
+          mkdir -p data/hist_cache data/backtest_runs && touch .shard-start
+          printf '%s' "${{ matrix.tickers }}" > tickers.txt
+          python main.py backtest --historical --period rolling --tickers @tickers.txt --no-aggregate \
+            --workers 8 --deadline-minutes 290
+
+      - name: Stop the run before packing (after a cancel or timeout it may still be writing)
         if: always()
         run: pkill -INT -f "main.py backtest" && sleep 20; pkill -KILL -f "main.py backtest"; find data -name "*.tmp" -delete; true
+
+      - name: Pack what this shard fetched and finished
+        if: always()
+        run: |
+          find data/hist_cache data/backtest_runs -type f -newer .shard-start -print0 \
+            | tar --null -czf shard-delta.tgz -T -
+          ls -l shard-delta.tgz
+
+      - name: Upload it
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backtest-delta-${{ matrix.shard }}
+          path: shard-delta.tgz
+          compression-level: 0
+          retention-days: 1
+
+  finish:
+    needs: [plan, shard]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-backtest.txt
+      - run: pip install -r requirements-backtest.txt
+
+      - name: Restore fetched data and finished companies
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/hist_cache
+            data/backtest_runs
+          key: backtest-${{ needs.plan.outputs.start }}-${{ needs.plan.outputs.end }}-${{ github.run_id }}
+          restore-keys: |
+            backtest-${{ needs.plan.outputs.start }}-${{ needs.plan.outputs.end }}-
+            backtest-
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backtest-universe
+          path: docs
+
+      - name: Download every shard
+        if: needs.plan.outputs.remaining != '0'
+        continue-on-error: true      # a shard that died before uploading is simply run again next round
+        uses: actions/download-artifact@v4
+        with:
+          pattern: backtest-delta-*
+          path: deltas
+
+      - name: Merge the shards
+        run: |
+          mkdir -p data/hist_cache data/backtest_runs
+          for f in deltas/*/shard-delta.tgz; do [ -f "$f" ] && tar -xzf "$f"; done
+          python main.py backtest --plan-shards 1 --period rolling > plan.json
+          left=$(python -c "import json; print(json.load(open('plan.json'))['remaining'])")
+          echo "LEFT=$left" >> "$GITHUB_ENV"
+          echo "Round $ROUND: ${{ needs.plan.outputs.remaining }} companies to run, $left still left"
+
+      - name: Aggregate (every company finished)
+        id: aggregate
+        if: env.LEFT == '0'
+        run: python main.py backtest --historical --period rolling --workers 4
 
       - name: Keep fetched data and finished companies
         if: always()
@@ -100,22 +235,44 @@ jobs:
           path: |
             data/hist_cache
             data/backtest_runs
-          key: backtest-${{ steps.period.outputs.start }}-${{ steps.period.outputs.end }}-${{ github.run_id }}
+          key: backtest-${{ needs.plan.outputs.start }}-${{ needs.plan.outputs.end }}-${{ github.run_id }}
 
-      - name: Continue in a new job
-        if: steps.run.outputs.code == '75'
+      - name: Free storage (this run's artifacts and older caches)
+        if: always()
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run backtest.yml --ref "${{ github.ref_name }}"
+        run: |
+          for id in $(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" --jq '.artifacts[].id'); do
+            gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id"
+          done
+          keep="backtest-${{ needs.plan.outputs.start }}-${{ needs.plan.outputs.end }}-${{ github.run_id }}"
+          keys=$(gh cache list --key backtest- --limit 100 --json key --jq '.[].key')
+          if ! grep -qx "$keep" <<<"$keys"; then echo "New cache not listed; keeping the old ones."; exit 0; fi
+          grep -vx "$keep" <<<"$keys" | while read -r k; do [ -n "$k" ] && gh cache delete "$k"; done; true
+
+      - name: Continue in another round
+        if: env.LEFT != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$LEFT" -ge "${{ needs.plan.outputs.remaining }}" ]; then
+            echo "::error::No company finished this round ($LEFT left); not continuing. Check the shard logs."; exit 1
+          fi
+          if [ "$ROUND" -ge "$MAX_ROUNDS" ]; then
+            echo "::error::$LEFT companies still left after $ROUND rounds; run the workflow again to finish."; exit 1
+          fi
+          gh workflow run backtest.yml --ref "${{ github.ref_name }}" \
+            -f shards="$SHARDS" -f round="$((ROUND + 1))" -f max_rounds="$MAX_ROUNDS"
 
       - name: Commit the results
-        if: steps.run.outputs.code == '0'
+        if: steps.aggregate.outcome == 'success'
         run: |
           git config user.name "Henry Dibie"
           git config user.email "henrymorgandibie@gmail.com"
           git add docs/evaluation_report.json docs/backtest_predictions.csv docs/backtest_summary.json \
                   docs/BACKTEST.md docs/backtest_universe.csv src/data/measured_outcomes.json
           if git diff --cached --quiet; then echo "No changes."; exit 0; fi
-          git commit -m "backtest: monthly replay ${{ steps.period.outputs.start }} to ${{ steps.period.outputs.end }}"
+          git commit -m "backtest: monthly replay ${{ needs.plan.outputs.start }} to ${{ needs.plan.outputs.end }}"
           git pull --rebase origin "${{ github.ref_name }}"
           git push origin "HEAD:${{ github.ref_name }}"

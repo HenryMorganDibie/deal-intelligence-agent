@@ -372,6 +372,16 @@ def _checkpoint(run_dir: Path, ticker: str) -> Path:
     return run_dir / (re.sub(r"[^A-Za-z0-9.]+", "_", ticker) + ".json")
 
 
+def plan_shards(start: date, end: date, universe: list[tuple], shards: int) -> dict:
+    """Split the companies of [start, end] that have no checkpoint yet into `shards` interleaved groups,
+    one per machine, so each runner (with its own address) searches news for a different set."""
+    run_dir = RUNS_DIR / f"{start}_{end}"
+    todo = [e[1] for e in universe if not _checkpoint(run_dir, e[1]).exists()]
+    groups = [todo[i::shards] for i in range(max(shards, 1))]
+    return {"start": start.isoformat(), "end": end.isoformat(), "remaining": len(todo),
+            "shards": [{"shard": i + 1, "tickers": ",".join(g)} for i, g in enumerate(groups) if g]}
+
+
 def run(
     start: date, end: date, universe: Optional[list[tuple]] = None, step_days: int = 30,
     progress: Callable[[str], None] = lambda m: None, workers: int = 8, deadline_minutes: Optional[float] = None,
@@ -608,9 +618,15 @@ def alpha_validation(predictions: list[dict]) -> dict:
         out["by_type"][st] = {"labelled": len(sub),
                               "precision": {k: _rate(sum(p["event_confirmed"] for p in v), len(v)) for k, v in thirds.items()},
                               "spearman": spearman([p["alpha"] for p in sub], [float(p["event_confirmed"]) for p in sub])}
-    hi, lo = out["bands"]["high"]["precision"], out["bands"]["low"]["precision"]
-    out["verdict"] = ("higher alpha went with more confirmations" if hi is not None and lo is not None and hi > lo
-                      else "higher alpha did not go with more confirmations")
+    lo, mid, hi = (out["bands"][k]["precision"] for k in ("low", "middle", "high"))
+    if None in (lo, mid, hi):
+        out["verdict"] = "too few labelled flags to compare alpha thirds"
+    elif lo < mid < hi:
+        out["verdict"] = "confirmations rose with alpha across all three thirds"
+    elif hi > lo and mid > lo:
+        out["verdict"] = "the lowest alpha third confirmed least; the top third did not beat the middle"
+    else:
+        out["verdict"] = "higher alpha did not go with more confirmations"
     return out
 
 

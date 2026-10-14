@@ -1,5 +1,5 @@
 {
- "companies": 1288,
+ "companies": 1290,
  "method": "Confirmation: share of flags followed within 90 days by a confirming filing, disclosure or credible report. Moves: market-adjusted return over 10 calendar days after the flag (first close on or after day 10). Figures with fewer than 10 observations are reported as insufficient history; smaller groups are smoothed toward their parent rate with 5 pseudo-observations.",
  "observations": [
   [
@@ -48749,12 +48749,40 @@
    false,
    null,
    null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   false,
+   -1.94
+  ],
+  [
+   "debt_restructuring",
+   "low",
+   false,
+   true,
+   -1.24
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   false,
+   2.11
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   true,
+   2.11
   ]
  ],
  "overall_confirmation": {
   "confirmed": 1172,
-  "labelled": 4104,
-  "rate": 0.2856
+  "labelled": 4108,
+  "rate": 0.2853
  },
  "period": "2024-01-15 to 2025-06-15",
  "signals": {
@@ -48857,17 +48885,17 @@
     "low": {
      "confirmation": {
       "confirmed": 1,
-      "labelled": 7,
-      "rate": 0.1429
+      "labelled": 8,
+      "rate": 0.125
      },
      "moves": {
-      "median": -1.27,
-      "n": 6,
-      "p25": -3.35,
-      "p75": 4.11,
-      "share_negative": 0.667
+      "median": -1.24,
+      "n": 7,
+      "p25": -3.12,
+      "p75": 3.85,
+      "share_negative": 0.714
      },
-     "predictions": 7
+     "predictions": 8
     },
     "medium": {
      "confirmation": {
@@ -48888,17 +48916,17 @@
    "type": {
     "confirmation": {
      "confirmed": 1,
-     "labelled": 16,
-     "rate": 0.0625
+     "labelled": 17,
+     "rate": 0.0588
     },
     "moves": {
-     "median": -0.84,
-     "n": 13,
-     "p25": -2.99,
-     "p75": 1.94,
-     "share_negative": 0.615
+     "median": -1.04,
+     "n": 14,
+     "p25": -2.92,
+     "p75": 1.72,
+     "share_negative": 0.643
     },
-    "predictions": 16
+    "predictions": 17
    }
   },
   "distressed_asset": {
@@ -49143,17 +49171,17 @@
     "low": {
      "confirmation": {
       "confirmed": 60,
-      "labelled": 183,
-      "rate": 0.3279
+      "labelled": 184,
+      "rate": 0.3261
      },
      "moves": {
-      "median": -0.2,
-      "n": 157,
+      "median": -0.12,
+      "n": 158,
       "p25": -2.55,
-      "p75": 3.6,
-      "share_negative": 0.51
+      "p75": 3.53,
+      "share_negative": 0.506
      },
-     "predictions": 183
+     "predictions": 184
     },
     "medium": {
      "confirmation": {
@@ -49174,17 +49202,17 @@
    "type": {
     "confirmation": {
      "confirmed": 1012,
-     "labelled": 2296,
-     "rate": 0.4408
+     "labelled": 2297,
+     "rate": 0.4406
     },
     "moves": {
      "median": -0.15,
-     "n": 2238,
+     "n": 2239,
      "p25": -2.65,
      "p75": 2.49,
      "share_negative": 0.518
     },
-    "predictions": 2296
+    "predictions": 2297
    }
   },
   "m_and_a_activity": {
@@ -49222,17 +49250,17 @@
     "low": {
      "confirmation": {
       "confirmed": 59,
-      "labelled": 863,
-      "rate": 0.0684
+      "labelled": 865,
+      "rate": 0.0682
      },
      "moves": {
       "median": -0.12,
-      "n": 816,
-      "p25": -2.68,
-      "p75": 2.64,
+      "n": 818,
+      "p25": -2.67,
+      "p75": 2.63,
       "share_negative": 0.515
      },
-     "predictions": 863
+     "predictions": 865
     },
     "medium": {
      "confirmation": {
@@ -49253,17 +49281,17 @@
    "type": {
     "confirmation": {
      "confirmed": 120,
-     "labelled": 1282,
-     "rate": 0.0936
+     "labelled": 1284,
+     "rate": 0.0935
     },
     "moves": {
      "median": -0.05,
-     "n": 1203,
-     "p25": -2.72,
-     "p75": 2.63,
+     "n": 1205,
+     "p25": -2.71,
+     "p75": 2.62,
      "share_negative": 0.505
     },
-    "predictions": 1282
+    "predictions": 1284
    }
   },
   "regulatory_action": {

@@ -598,7 +598,11 @@ def test_alpha_validation_reports_bands_and_correlation():
     preds = [_pred("m_and_a_activity", "low", confirmed=a > 60, move=1.0, alpha=a) for a in range(40, 85, 5)]
     v = alpha_validation(preds)
     assert v["bands"]["high"]["precision"] == 1.0 and v["bands"]["low"]["precision"] == 0.0
-    assert v["verdict"] == "higher alpha went with more confirmations"
+    assert v["verdict"] == "confirmations rose with alpha across all three thirds"
+    peaked = [_pred("m_and_a_activity", "low", confirmed=55 <= a < 70, move=1.0, alpha=a) for a in range(40, 85, 5)]
+    assert alpha_validation(peaked)["verdict"] == "higher alpha did not go with more confirmations"
+    middle = [_pred("m_and_a_activity", "low", confirmed=a >= 55 and a != 75, move=1.0, alpha=a) for a in range(40, 85, 5)]
+    assert alpha_validation(middle)["verdict"] == "the lowest alpha third confirmed least; the top third did not beat the middle"
     assert spearman([1, 2, 3, 4], [1, 2, 3, 4]) == 1.0 and spearman([1, 2, 3], [3, 2, 1]) == -1.0
 
 
@@ -818,3 +822,18 @@ def test_headline_attribution(company, title, expected):
     m = _company_matchers(company)
     got = {t.value for t, _, s in match_rules_for_target(title, m) if s * 0.7 >= 0.2} if _mentions_company(title, m) else set()
     assert got == expected
+
+
+def test_shard_plan_splits_only_unfinished_companies():
+    from datetime import date
+    from src.engines import historical_backtest as hb
+    universe = [(f"Fictional Co {i}", f"FIC{i}", "us") for i in range(7)]
+    run_dir = hb.RUNS_DIR / "2024-01-15_2025-06-15"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    hb._checkpoint(run_dir, "FIC0").write_text("{}")
+    plan = hb.plan_shards(date(2024, 1, 15), date(2025, 6, 15), universe, 4)
+    assert plan["remaining"] == 6
+    shards = [s["tickers"].split(",") for s in plan["shards"]]
+    assert sorted(t for s in shards for t in s) == [f"FIC{i}" for i in range(1, 7)]
+    assert len(shards) == 4 and max(map(len, shards)) - min(map(len, shards)) <= 1
+    assert hb.plan_shards(date(2024, 1, 15), date(2025, 6, 15), universe[:1], 4)["shards"] == []

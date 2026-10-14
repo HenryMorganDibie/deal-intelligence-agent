@@ -7,6 +7,10 @@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
 export const REVALIDATE = 1800;
+/** Cached API responses are keyed to the deployed commit, so a deploy (such as the monthly backtest
+ * commit) never serves numbers fetched before it. */
+const BUILD = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ?? "";
+const fresh = (path: string) => `${API_URL}${path}${BUILD ? `${path.includes("?") ? "&" : "?"}build=${BUILD}` : ""}`;
 
 export type PulseCountry = { code: string; name: string };
 
@@ -89,7 +93,7 @@ export type Pulse = {
 export async function getPulse(): Promise<Pulse | null> {
   if (!API_URL) return null;
   try {
-    const resp = await fetch(`${API_URL}/api/pulse`, { next: { revalidate: REVALIDATE } });
+    const resp = await fetch(fresh("/api/pulse"), { next: { revalidate: REVALIDATE } });
     if (!resp.ok) return null;
     return (await resp.json()) as Pulse;
   } catch {
@@ -189,7 +193,7 @@ export type Showcase = { hero: ShowcaseBrief | null; example: ShowcaseBrief | nu
 export async function getShowcase(): Promise<Showcase | null> {
   if (!API_URL) return null;
   try {
-    const resp = await fetch(`${API_URL}/api/showcase`, { next: { revalidate: REVALIDATE } });
+    const resp = await fetch(fresh("/api/showcase"), { next: { revalidate: REVALIDATE } });
     if (!resp.ok) return null;
     return (await resp.json()) as Showcase;
   } catch {
@@ -218,7 +222,7 @@ export type Quality = {
 export async function getQuality(): Promise<Quality | null> {
   if (!API_URL) return null;
   try {
-    const resp = await fetch(`${API_URL}/api/evaluation`, { next: { revalidate: REVALIDATE } });
+    const resp = await fetch(fresh("/api/evaluation"), { next: { revalidate: REVALIDATE } });
     if (!resp.ok) return null;
     const e = await resp.json();
     const ho = e?.data_quality?.heldout_extraction;
