@@ -1,6 +1,6 @@
-# The API project deploys from the repository root; the web app is its own
-# Vercel project (root directory web/), so none of this belongs in the API.
-web
+# Applied by both Vercel projects (Vercel reads it at the repository root even
+# when the root directory is web/), so it must never exclude web/. The API
+# function keeps web/ out of its bundle via excludeFiles in vercel.json.
 tests
 data
 *.md
