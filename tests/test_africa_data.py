@@ -246,3 +246,101 @@ def test_parse_feed_and_extract_deals_and_events():
 def test_country_queries_cover_every_country():
     labels = {c.iso2 for _, _, c in mf.country_queries()}
     assert labels == {c.iso2 for c in ac.COUNTRIES}
+
+
+# ── Investors, funds, LPs and GPs ─────────────────────────────────────────────
+
+from src.engines import investors as inv  # noqa: E402
+
+
+def test_investor_aliases_resolve_to_registry_names():
+    assert inv.canonical("World Bank’s IFC") == "International Finance Corporation"
+    assert inv.canonical("CDC Group") == "British International Investment"
+    assert inv.canonical("Bid Corp") == "Bid Corp"              # lower-case words are not acronyms
+    assert inv.canonical("Standard Bank Group") == "Standard Bank"
+    assert inv.canonical("MTN Group") == "MTN Group"
+
+
+def test_profiles_roles_and_fund_activity():
+    deals = [
+        _deal("Nigeria’s Moniepoint raises $110m Series C, led by Development Partners International"),
+        _deal("IFC-Backed Ventures Platform Raises $84M for Nigerian startups", published="2026-09-01"),
+        _deal("IFC discloses proposed $25m investment in Admaius’ Virunga Africa Fund II"),
+        _deal("Bisedge secures €10 million loan from Finnfund to expand in Nigeria"),
+        _deal("Zenith Bank Completes Acquisition Of Kenya’s Paramount Bank"),
+    ]
+    p = inv.profile(deals, "IFC")
+    assert p["name"] == "International Finance Corporation" and p["type"] == "dfi"
+    assert p["roles"] == {"investor": 1, "lp": 1}
+    assert inv.profile(deals, "DPI")["roles"] == {"investor": 1}
+    assert inv.profile(deals, "Finnfund")["roles"] == {"lender": 1}
+    assert inv.profile(deals, "Zenith Bank")["roles"] == {"acquirer": 1}
+    assert [f["lps"] for f in inv.funds(deals)] == [["International Finance Corporation"]]
+    top = inv.leaderboard(deals, kind="dfi")
+    assert {r["name"] for r in top} == {"International Finance Corporation", "Finnfund"}
+
+
+# ── Financial statements ──────────────────────────────────────────────────────
+
+from src.engines import financials as fin  # noqa: E402
+
+STATEMENT = """DANGOTE CEMENT PLC
+CONSOLIDATED AND SEPARATE STATEMENTS OF PROFIT OR LOSS
+FOR THE YEAR ENDED 31 DECEMBER 2025
+ ₦'million  ₦'million  ₦'million  ₦'million
+Revenue 5  4,306,704  3,580,550  2,956,515  2,192,695
+Production cost of sales 7  (1,634,430)  (1,645,651)  (1,169,998)  (988,041)
+Gross profit  2,672,274  1,934,899  1,786,517  1,204,654
+Impairment of financial assets 30.6.1  (4,724) (726) (10,605)  (387)
+Profit before tax  1,532,660  732,537  1,072,817  1,176,327
+Income tax expense 12  (517,739)  (229,290)  (363,975)  (149,110)
+Profit for the year  1,014,921  503,247  708,842  1,027,217
+Earnings per share, basic and diluted (Naira) 13  59.86  29.74  42.31  61.32
+Total assets  5,000,000  4,000,000  1  1
+Total liabilities  3,000,000  2,500,000  1  1
+Total equity  1,900,000  1,500,000  1  1
+"""
+
+
+def test_statement_parser_reads_group_columns_units_and_period():
+    p = fin.parse_statement_text(STATEMENT)
+    assert p["period"] == {"months": 12, "end": "2025-12-31", "label": "FOR THE YEAR ENDED 31 DECEMBER 2025"}
+    assert p["multiplier"] == 1e6
+    items = {k: (v["current"], v["prior"]) for k, v in p["items"].items()}
+    assert items["revenue"] == (4306704, 3580550)                 # note reference "5" skipped
+    assert items["cost_of_sales"] == (-1634430, -1645651)
+    assert items["eps"] == (59.86, 29.74)
+    assert "impairment" not in " ".join(items)
+
+
+def test_statement_checks_and_per_figure_status():
+    p = fin.parse_statement_text(STATEMENT)
+    checks = {c["check"]: c["passed"] for c in fin.verify(p["items"])}
+    assert checks["gross profit = revenue - cost of sales"] is True
+    assert checks["profit after tax = profit before tax - income tax"] is True
+    assert checks["total assets = total liabilities + total equity"] is False      # 4.9m vs 5.0m
+    status = fin.item_status(p["items"], fin.verify(p["items"]))
+    assert status["revenue"] == "verified" and status["profit_after_tax"] == "verified"
+    assert status["total_assets"] == "inconsistent" and status["eps"] == "unchecked"
+
+
+def test_small_bare_numbers_are_not_statement_figures():
+    p = fin.parse_statement_text("Revenue 6 5\nRevenue 4,192,003 3,970,959")
+    assert p["items"]["revenue"]["current"] == 4192003
+
+
+def test_yahoo_cross_check_against_sec_filing():
+    yahoo = {"annual": {"2025-12-31": {"revenue": 100.0, "profit_after_tax": -10.0}}}
+    sec = {"revenue": {"2025-12-31": 101.0}, "profit_after_tax": {"2025-12-31": -12.0}}
+    out = {r["field"]: r["match"] for r in fin.cross_check(yahoo, sec)}
+    assert out == {"revenue": True, "profit_after_tax": False}
+
+
+def test_private_market_summary_from_deals():
+    from src.engines.company_profile import private_market_summary
+    deals = [_deal("Nigeria’s Moniepoint raises $110m Series C at a $1bn valuation, led by Development Partners International"),
+             _deal("Moniepoint acquires 78% stake in Kenya's Sumac Microfinance Bank", published="2026-11-02")]
+    s = private_market_summary("Moniepoint", deals)
+    assert s["deal_count"] == 2 and s["as_target"] == 1
+    assert s["equity_raised_usd"] == 110e6 and s["last_round"] == "series c"
+    assert s["valuations"][0]["usd"] == 1e9 and s["investors_and_lenders"] == ["Development Partners International"]

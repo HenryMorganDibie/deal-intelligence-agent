@@ -1,0 +1,203 @@
+"""
+Company profiles: identity, listing, market data, financial statements,
+valuation multiples, transactions and filings for any African company.
+
+Listed companies:
+  * NGX: exchange profile (sector, board, auditor, registrar), trading summary,
+    the filed statements list, and the latest audited annual statement parsed
+    and arithmetic-checked (financials.ngx_financials).
+  * Other exchanges Yahoo Finance carries (JSE, EGX, Casablanca, US, Euronext,
+    London): profile, annual statements and multiples; SEC filers are
+    cross-checked against their XBRL filings.
+Private companies (and every company): transactions from the deals database
+(funding history, acquisitions, investors, reported and implied valuations).
+
+Each section names its source, so a reader can tell exchange filings from
+data-vendor figures from news-derived deal records.
+"""
+from __future__ import annotations
+
+import logging
+from typing import Iterable, Optional
+
+from src.data.africa_countries import Country, from_ticker, get as get_country, resolve
+from src.engines import deals as deals_mod
+from src.engines import financials as fin
+from src.engines.investors import parties
+
+log = logging.getLogger(__name__)
+
+
+def _company_deals(name: str, deals: Iterable[dict]) -> list[dict]:
+    key = deals_mod.normalise_name(name)
+    if not key:
+        return []
+    out = []
+    for d in deals:
+        names = [d.get("target"), d.get("buyer"), d.get("seller"), *(d.get("investors") or [])]
+        if any(n and (deals_mod.normalise_name(n) == key or key in deals_mod.normalise_name(n).split(" ") and len(key) > 3
+                      or deals_mod.normalise_name(n).startswith(key + " ")) for n in names):
+            out.append(d)
+    return sorted(out, key=lambda d: d.get("announced") or "", reverse=True)
+
+
+def private_market_summary(name: str, deals: Iterable[dict]) -> dict:
+    """Funding and M&A history for a company from the deals database."""
+    rows = _company_deals(name, deals)
+    key = deals_mod.normalise_name(name)
+    as_target = [d for d in rows if deals_mod.normalise_name(d.get("target")) == key]
+    raised = [d for d in as_target if d["deal_type"] in ("equity_funding", "debt_financing") and d.get("amount_usd")]
+    valuations = [{"announced": d.get("announced"), "usd": d.get("reported_valuation_usd") or d.get("implied_valuation_usd"),
+                   "basis": "reported" if d.get("reported_valuation_usd") else "implied by stake and price",
+                   "deal_id": d["id"]}
+                  for d in as_target if d.get("reported_valuation_usd") or d.get("implied_valuation_usd")]
+    investors = []
+    for d in as_target:
+        for n, role in parties(d):
+            if role in ("investor", "lender", "acquirer") and n not in investors:
+                investors.append(n)
+    return {
+        "deal_count": len(rows),
+        "as_target": len(as_target),
+        "total_raised_usd": round(sum(d["amount_usd"] for d in raised)) if raised else None,
+        "equity_raised_usd": round(sum(d["amount_usd"] for d in raised if d["deal_type"] == "equity_funding")) or None,
+        "debt_raised_usd": round(sum(d["amount_usd"] for d in raised if d["deal_type"] == "debt_financing")) or None,
+        "last_round": next((d.get("round") for d in as_target if d.get("round")), None),
+        "valuations": valuations,
+        "investors_and_lenders": investors,
+        "deals": [{k: d.get(k) for k in ("id", "deal_type", "stage", "round", "target", "buyer", "seller", "investors",
+                                         "amount_usd", "stake_pct", "announced", "headline", "sources")}
+                  for d in rows[:30]],
+        "source": "Deals database (extracted from news and private-capital publications)",
+    }
+
+
+def _ngx_section(ticker: str, fetch=None) -> dict:
+    data = fin.ngx_financials(ticker, fetch=fetch)
+    prof = data.get("profile") or {}
+    summ = data.get("summary") or {}
+    annual = data.get("annual")
+    out = {
+        "identity": {
+            "name": (prof.get("CompanyName") or "").title() or None,
+            "sector": prof.get("Sector"), "sub_sector": prof.get("SubSector"),
+            "business": prof.get("NatureofBusiness"), "board": [b.strip() for b in (prof.get("BoardOfDirectors") or "").split(",") if b.strip()],
+            "auditor": prof.get("Auditor"), "company_secretary": prof.get("CompanySecretary"),
+            "website": prof.get("Website"), "address": prof.get("CompanyAddress"),
+            "listed": (prof.get("DateListed") or "")[:10] or None,
+            "incorporated": (prof.get("DateOfIncorporation") or "")[:10] or None,
+            "market_classification": prof.get("MarketClassification"),
+            "source": "NGX company profile",
+        },
+        "market": {
+            "price": summ.get("StockPriceCur"), "change_pct": summ.get("StockPricePercChange"),
+            "volume": summ.get("Volume"), "high_52w": summ.get("HIGH52WK_PRICE"), "low_52w": summ.get("LOW52WK_PRICE"),
+            "currency": "NGN", "as_at": summ.get("as_at"), "source": "NGX trading summary",
+        } if summ else None,
+        "filings": data.get("statements", [])[:12],
+    }
+    if annual:
+        mult = annual["multiplier"]
+        out["financials"] = {
+            "source": f"Audited annual statement filed with NGX: {annual.get('document')}",
+            "source_url": annual["source_url"], "filed": annual.get("filed"),
+            "period": annual["period"], "currency": "NGN" if (annual.get("unit") or "").strip()[:1] in ("N", "₦", "=") else annual.get("unit"),
+            "unit": annual.get("unit"), "basis": annual["basis"],
+            "items": {k: {"current": v["current"] * (1 if k == "eps" else mult),
+                          "prior": v["prior"] * (1 if k == "eps" else mult), "line": v["line"]}
+                      for k, v in annual["items"].items()},
+            "checks": annual["checks"], "verified": annual.get("verified", False),
+            "status": annual.get("status", {}),
+        }
+    return out
+
+
+def _nse_section(name: str, fetch=None) -> dict:
+    data = fin.nse_financials(name, fetch=fetch)
+    out: dict = {"filings": data["statements"]}
+    annual = data["annual"]
+    if annual:
+        mult = annual["multiplier"] if annual.get("unit") else 1e6       # Kenyan results are stated in KShs millions
+        out["financials"] = {
+            "source": f"Results filed with NSE Kenya: {annual.get('document')}", "source_url": annual["source_url"],
+            "filed": annual.get("filed"), "period": annual["period"], "currency": "KES", "unit": annual.get("unit") or "KShs million (assumed)",
+            "basis": annual["basis"],
+            "items": {k: {"current": v["current"] * (1 if k == "eps" else mult),
+                          "prior": v["prior"] * (1 if k == "eps" else mult), "line": v["line"]}
+                      for k, v in annual["items"].items()},
+            "checks": annual["checks"], "verified": annual.get("verified", False), "status": annual.get("status", {}),
+        }
+    return out
+
+
+def _yahoo_section(ticker: str) -> Optional[dict]:
+    y = fin.yahoo_financials(ticker)
+    if not y:
+        return None
+    info = y["info"]
+    latest_period, latest = next(iter(y["annual"].items()), (None, {}))
+    out = {
+        "identity": {"name": info.get("longName"), "sector": info.get("sector"), "industry": info.get("industry"),
+                     "business": info.get("longBusinessSummary"), "employees": info.get("fullTimeEmployees"),
+                     "website": info.get("website"), "country": info.get("country"), "source": "Yahoo Finance"},
+        "market": {"price": info.get("currentPrice"), "currency": info.get("currency"),
+                   "market_cap": info.get("marketCap"), "enterprise_value": info.get("enterpriseValue"),
+                   "high_52w": info.get("fiftyTwoWeekHigh"), "low_52w": info.get("fiftyTwoWeekLow"),
+                   "exchange": info.get("exchange"), "source": "Yahoo Finance"},
+        "multiples": {k: info.get(k) for k in ("trailingPE", "forwardPE", "priceToBook", "enterpriseToRevenue",
+                                               "enterpriseToEbitda", "dividendYield", "beta") if info.get(k) is not None},
+        "financials": {"source": "Yahoo Finance annual statements", "currency": y.get("unit"),
+                       "period": {"end": latest_period, "months": 12} if latest_period else None,
+                       "annual": y["annual"],
+                       "items": {k: {"current": v} for k, v in latest.items()},
+                       "checks": y["checks"],
+                       "verified": bool(y["checks"]) and all(c["passed"] for c in y["checks"])},
+    }
+    return out
+
+
+def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None,
+          deals: Iterable[dict] = (), cik: Optional[int] = None, fetch=None) -> dict:
+    """Full profile. Sections a source cannot fill are absent rather than guessed."""
+    deals = list(deals)
+    c: Optional[Country] = resolve(country, ticker)
+    profile: dict = {"name": name, "ticker": ticker, "country": c.iso2 if c else None,
+                     "country_name": c.name if c else None, "exchange": c.exchange if c and ticker else None,
+                     "sources": []}
+    listed = None
+    if ticker and ticker.upper().endswith(".LG"):
+        try:
+            listed = _ngx_section(ticker, fetch)
+            profile["sources"].append("NGX")
+        except Exception:
+            log.exception("NGX profile failed for %s", ticker)
+    elif ticker and ticker.upper().endswith(".NR"):
+        try:
+            listed = _nse_section(name, fetch)
+            profile["sources"].append("NSE Kenya")
+        except Exception:
+            log.exception("NSE profile failed for %s", name)
+    elif ticker:
+        listed = _yahoo_section(ticker)
+        if listed:
+            profile["sources"].append("Yahoo Finance")
+            if cik:
+                try:
+                    y = fin.yahoo_financials(ticker)
+                    profile["sec_cross_check"] = fin.cross_check(y, fin.sec_annual_facts(cik))
+                    profile["sources"].append("SEC XBRL")
+                except Exception:
+                    log.exception("SEC cross-check failed for %s", ticker)
+    if listed:
+        profile.update(listed)
+        if listed.get("identity", {}).get("name"):
+            profile["name"] = listed["identity"]["name"]
+    profile["private_markets"] = private_market_summary(name, deals)
+    if profile["private_markets"]["deal_count"]:
+        profile["sources"].append("Deals database")
+    if not profile.get("financials"):
+        profile["financials_note"] = (
+            "No machine-readable statements were found for this listing. Most African exchanges outside NGX and NSE "
+            "Kenya publish results without a data feed; filed documents are linked where available."
+            if ticker else "Private company: financial statements are not public; figures come from reported transactions.")
+    return profile
