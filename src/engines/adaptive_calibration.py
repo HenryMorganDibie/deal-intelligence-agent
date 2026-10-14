@@ -11,22 +11,13 @@ from typing import Optional
 
 from src.schemas.models import SignalType, Severity, SignalCandidate
 from src.engines.feedback import get_signal_stats, false_positive_rate
-from src.engines.calibration import BASE_RATES, calibrate as static_calibrate
+from src.engines.calibration import calibrate as static_calibrate
 
 # Minimum feedback samples before adaptive calibration activates
 MIN_SAMPLES_FOR_ADAPTATION = 10
 
 # How much adaptive calibration can shift the base rate (max ±30%)
 MAX_ADAPTATION_SHIFT = 0.30
-
-# Sector-specific precision adjustments (illustrative — extend with real data)
-SECTOR_PRECISION_MAP: dict[str, dict[str, float]] = {
-    "fintech":     {"credit_risk": 1.15, "regulatory_action": 1.20},
-    "mining":      {"distressed_asset": 1.10, "credit_risk": 1.05},
-    "telecom":     {"regulatory_action": 1.15, "m_and_a_activity": 0.95},
-    "real_estate": {"credit_risk": 1.10, "debt_restructuring": 1.12},
-}
-
 
 def _labelled_samples(s: dict) -> int:
     """Feedback that says whether a flagged signal was right: confirmations and false positives.
@@ -106,70 +97,35 @@ def adaptive_calibrate(
     market: Optional[str] = None,
 ) -> tuple[Severity, float, float]:
     """
-    Calibrate a candidate using adaptive + static calibration.
-
-    Algorithm:
-    1. Start with static calibration (base rate tables)
-    2. Apply precision adjustment: observed outcomes in the company's market
-       (us / africa) when there are enough, else analyst feedback
-    3. Apply false positive penalty
-    4. Apply sector-specific adjustment if available
-    5. Re-derive severity from adjusted score
+    Static calibration, then adjusted by what has been observed since:
+    1. Severity and the measured rate from the static (backtest-based) calibration.
+    2. Once a signal type has MIN_SAMPLES_FOR_ADAPTATION live outcomes in the company's market
+       (us / africa), or that many labelled analyst reviews, the rule score is scaled by observed
+       precision and false-positive rate, and severity re-derived from the same bands.
+    3. Confidence is the measured rate for the resulting severity, replaced by the live market
+       precision when it exists. `sector` is accepted for interface stability; no sector effect is
+       applied, because none has been measured.
 
     Returns: (severity, confidence, materialisation_rate)
     """
-    from src.engines.calibration import calibrate_all, CORROBORATION_MULTIPLIER, MAX_CORROBORATION_MULT, CRITICAL_MIN_CORROBORATION
+    from src.engines.calibration import (CORROBORATION_MULTIPLIER, CRITICAL_MIN_CORROBORATION,
+                                         MAX_CORROBORATION_MULT, measured_rate, severity_for_score)
 
-    # Step 1: static calibration
     static_sev, static_conf, mat_rate = static_calibrate(candidate)
-
-    # Step 2: precision adjustment
     precision_adj = _get_precision_adjustment(candidate.signal_type, market)
-
-    # Step 3: FP penalty
     fp_penalty = _get_fp_penalty(candidate.signal_type)
+    if precision_adj == 1.0 and fp_penalty == 1.0:
+        return static_sev, static_conf, mat_rate
 
-    # Step 4: sector adjustment
-    sector_adj = 1.0
-    if sector:
-        sector_lower = sector.lower()
-        for sector_key, adjustments in SECTOR_PRECISION_MAP.items():
-            if sector_key in sector_lower:
-                sector_adj = adjustments.get(candidate.signal_type.value, 1.0)
-                break
-
-    # Compose adjusted score
-    adjusted_score = candidate.raw_score * precision_adj * fp_penalty * sector_adj
-
-    # Corroboration boost (same as static)
     corr_n = candidate.corroboration_count
     corr_mult = CORROBORATION_MULTIPLIER.get(corr_n, MAX_CORROBORATION_MULT)
-    adjusted_score = min(adjusted_score * corr_mult, 1.0)
-
-    # Re-derive severity from adjusted score using static band table
-    from src.engines.calibration import BASE_RATES
-    bands = BASE_RATES.get(candidate.signal_type, [
-        (0.70, 1.01, 0.50, Severity.HIGH),
-        (0.40, 0.70, 0.25, Severity.MEDIUM),
-        (0.00, 0.40, 0.10, Severity.LOW),
-    ])
-
-    severity = Severity.LOW
-    new_mat_rate = 0.10
-    for min_s, max_s, mr, sev in bands:
-        if min_s <= adjusted_score < max_s:
-            severity = sev
-            new_mat_rate = mr
-            break
-
-    # Compliance constraint: CRITICAL requires ≥2 sources
+    adjusted_score = min(candidate.raw_score * precision_adj * fp_penalty * corr_mult, 1.0)
+    severity = severity_for_score(candidate.signal_type, adjusted_score)
     if severity == Severity.CRITICAL and corr_n < CRITICAL_MIN_CORROBORATION:
         severity = Severity.HIGH
-        new_mat_rate = min(new_mat_rate, 0.70)
-
-    confidence = min(new_mat_rate * corr_mult * precision_adj, 1.0)
-
-    return severity, round(confidence, 3), round(new_mat_rate, 3)
+    live = _market_precision(candidate.signal_type, market)
+    confidence = live if live is not None else measured_rate(candidate.signal_type, severity)
+    return severity, round(confidence, 3), round(confidence, 3)
 
 
 def get_calibration_report() -> dict:

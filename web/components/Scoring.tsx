@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { Container, Heading, Reveal, Section } from "./primitives";
 
 const ALPHA = [
-  { name: "Severity", weight: 35, note: "calibrated band" },
+  { name: "Severity", weight: 35, note: "rule-strength band" },
   { name: "Source credibility", weight: 25, note: "SEC and exchanges 1.0, Reuters 0.95" },
   { name: "Corroboration", weight: 20, note: "independent sources" },
   { name: "Recency", weight: 10, note: "14-day half-life from publication" },
@@ -13,7 +13,7 @@ const ALPHA = [
 const QUALITY = [
   { name: "Source", v: 1.0 },
   { name: "Filing strength", v: 0.88 },
-  { name: "Historical precision", v: 0.6 },
+  { name: "Historical precision", v: 0.53 },
   { name: "Entities", v: 0.55 },
   { name: "Corroboration", v: 0.47 },
   { name: "Extraction", v: 0.65 },
@@ -41,7 +41,7 @@ export function Scoring() {
           eyebrow="Scoring"
           id="scoring-title"
           title="Every score decomposes into parts you can check."
-          lede="The alpha score ranks how actionable a signal is. The evidence-quality breakdown shows how well supported it is. Neither is an opaque float."
+          lede="The alpha score ranks how actionable a signal is. The evidence-quality breakdown shows how well supported it is. The move shown with each signal is what actually followed similar flags, with its sample size."
         />
 
         <div className="mt-14 grid gap-4 lg:grid-cols-2">
@@ -64,8 +64,9 @@ export function Scoring() {
                 ))}
               </ul>
               <p className="mt-7 border-t hairline pt-5 text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">
-                Scores of 70 or more, and every CRITICAL signal, require human review. Compound events can raise or lower
-                a score, and the review check runs again afterwards.
+                The weights are design choices, not fitted values. The backtest tests whether a higher alpha means more
+                confirmed events, and the evaluation page publishes the answer. Scores of 70 or more, and every CRITICAL
+                signal, require human review.
               </p>
             </div>
           </Reveal>
@@ -80,7 +81,7 @@ export function Scoring() {
                 </span>
               </div>
               <p className="mt-2 font-display text-5xl font-semibold tracking-tight">
-                69<span className="text-2xl text-[color:var(--muted)]">%</span>
+                67<span className="text-2xl text-[color:var(--muted)]">%</span>
               </p>
               <ul className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
                 {QUALITY.map((q, i) => (

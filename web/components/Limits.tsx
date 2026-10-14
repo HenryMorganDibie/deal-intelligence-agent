@@ -38,11 +38,11 @@ export function Limits() {
             eyebrow="Honest limits"
             id="limits-title"
             title="What it does not do yet."
-            lede="Written down in the repository, not discovered in production."
+            lede="Written down up front, not discovered in production."
           />
           <Reveal>
-            <a href={LINKS.limitations} className="btn btn-ghost" target="_blank" rel="noreferrer">
-              Full list in ARCHITECTURE.md
+            <a href={LINKS.limitations} className="btn btn-ghost">
+              Full list in the methodology
               <ArrowRight />
             </a>
           </Reveal>

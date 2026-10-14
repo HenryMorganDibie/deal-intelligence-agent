@@ -1,18 +1,25 @@
 """
 Alpha Score Engine.
 
-Converts calibrated signals into investable rankings (0–100 alpha score).
-Incorporates:
-  - Calibrated severity (outcome-grounded, not LLM opinion)
-  - Source credibility weighting
-  - Corroboration count
-  - Recency decay (signal strength decays without reinforcement)
-  - Market liquidity tier (signal actionability depends on tradability)
-  - Expected move estimates from historical comparable events
-  - Compliance flags (human review triggers)
+The alpha score is a 0-100 ranking of how actionable a confirmed signal is. It is
+a weighted composite, and the weights are design choices, stated here rather than
+presented as fitted:
+
+    alpha = 100 x (0.35 severity + 0.25 source credibility + 0.20 corroboration
+                   + 0.10 recency + 0.10 liquidity)
+
+Whether a higher alpha actually goes with more confirmed events is measured in the
+walk-forward backtest (docs/BACKTEST.md, "Does alpha rank signals?"), and the
+result is published whatever it shows.
+
+The expected move attached to each score is measured, not assumed: the
+distribution of market-adjusted 10-day returns that followed the same kind of
+flag in the backtest (src/engines/measured.py), given as a signed interquartile
+range with its median and sample size, or "insufficient history" when there are
+fewer than 10 observations. Its direction is the text's own (an earnings beat,
+an insider purchase) when the source states one, else the measured majority.
 
 The alpha score is NOT a buy/sell recommendation.
-It is a ranked input to the portfolio manager's own decision process.
 """
 from __future__ import annotations
 
@@ -28,51 +35,8 @@ from src.schemas.models import (
 from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY, candidate_credibility
 from src.utils.clock import utcnow
 
-# ─── Expected Move Table ──────────────────────────────────────────────────────
-# Historical median equity price move within 10 trading days of confirmed signal.
-# Sources: Mitchell & Mulherin (1996), Bhana JSE (2010), AVCA exit data 2018-2023.
-# (direction, low_pct, high_pct, comparable_n, confidence_band)
-
-EXPECTED_MOVES: dict[tuple[SignalType, Severity], tuple[str, float, float, int, str]] = {
-    # M&A
-    (SignalType.MA_ACTIVITY, Severity.CRITICAL): ("positive", 15.0, 35.0, 47, "high"),
-    (SignalType.MA_ACTIVITY, Severity.HIGH):     ("positive",  8.0, 20.0, 62, "medium"),
-    (SignalType.MA_ACTIVITY, Severity.MEDIUM):   ("positive",  3.0, 10.0, 38, "low"),
-    (SignalType.MA_ACTIVITY, Severity.LOW):      ("neutral",   0.0,  5.0, 21, "low"),
-    # Credit Risk
-    (SignalType.CREDIT_RISK, Severity.CRITICAL): ("negative", 18.0, 45.0, 33, "high"),
-    (SignalType.CREDIT_RISK, Severity.HIGH):     ("negative",  8.0, 22.0, 55, "medium"),
-    (SignalType.CREDIT_RISK, Severity.MEDIUM):   ("negative",  3.0, 10.0, 44, "low"),
-    (SignalType.CREDIT_RISK, Severity.LOW):      ("neutral",   0.0,  4.0, 29, "low"),
-    # Distressed
-    (SignalType.DISTRESSED_ASSET, Severity.CRITICAL): ("negative", 35.0, 80.0, 28, "high"),
-    (SignalType.DISTRESSED_ASSET, Severity.HIGH):     ("negative", 15.0, 40.0, 41, "high"),
-    (SignalType.DISTRESSED_ASSET, Severity.MEDIUM):   ("negative",  5.0, 20.0, 32, "medium"),
-    (SignalType.DISTRESSED_ASSET, Severity.LOW):      ("negative",  2.0,  8.0, 18, "low"),
-    # Earnings Surprise
-    (SignalType.EARNINGS_SURPRISE, Severity.CRITICAL): ("negative", 8.0, 25.0, 72, "high"),
-    (SignalType.EARNINGS_SURPRISE, Severity.HIGH):     ("negative", 4.0, 12.0, 91, "medium"),
-    (SignalType.EARNINGS_SURPRISE, Severity.MEDIUM):   ("negative", 1.5,  5.0, 58, "low"),
-    (SignalType.EARNINGS_SURPRISE, Severity.LOW):      ("neutral",  0.0,  3.0, 44, "low"),
-    # Leadership Change
-    (SignalType.LEADERSHIP_CHANGE, Severity.HIGH):   ("negative",  2.0,  8.0, 53, "low"),
-    (SignalType.LEADERSHIP_CHANGE, Severity.MEDIUM): ("neutral",   0.0,  4.0, 61, "low"),
-    (SignalType.LEADERSHIP_CHANGE, Severity.LOW):    ("neutral",   0.0,  2.0, 38, "low"),
-    # Regulatory
-    (SignalType.REGULATORY_ACTION, Severity.CRITICAL): ("negative", 10.0, 30.0, 29, "medium"),
-    (SignalType.REGULATORY_ACTION, Severity.HIGH):     ("negative",  5.0, 15.0, 42, "medium"),
-    (SignalType.REGULATORY_ACTION, Severity.MEDIUM):   ("negative",  2.0,  8.0, 35, "low"),
-    (SignalType.REGULATORY_ACTION, Severity.LOW):      ("neutral",   0.0,  3.0, 22, "low"),
-    # Debt Restructuring
-    (SignalType.DEBT_RESTRUCTURE, Severity.CRITICAL): ("negative", 12.0, 35.0, 24, "medium"),
-    (SignalType.DEBT_RESTRUCTURE, Severity.HIGH):     ("negative",  6.0, 18.0, 37, "medium"),
-    (SignalType.DEBT_RESTRUCTURE, Severity.MEDIUM):   ("negative",  2.0,  8.0, 29, "low"),
-    (SignalType.DEBT_RESTRUCTURE, Severity.LOW):      ("neutral",   0.0,  4.0, 17, "low"),
-    # Insider Activity
-    (SignalType.INSIDER_ACTIVITY, Severity.HIGH):   ("positive",  3.0, 12.0, 48, "medium"),
-    (SignalType.INSIDER_ACTIVITY, Severity.MEDIUM): ("positive",  1.0,  5.0, 55, "low"),
-    (SignalType.INSIDER_ACTIVITY, Severity.LOW):    ("neutral",   0.0,  2.0, 31, "low"),
-}
+# ─── Component weights (design choices; see the module docstring) ─────────────
+WEIGHTS = {"severity": 0.35, "source_credibility": 0.25, "corroboration": 0.20, "recency": 0.10, "liquidity": 0.10}
 
 # ─── Severity Weights ─────────────────────────────────────────────────────────
 SEVERITY_WEIGHT = {
@@ -166,13 +130,13 @@ def evidence_direction(signal_type: SignalType, text: str) -> Optional[str]:
     return "positive" if pos else "negative"
 
 
-def _recency_decay(detected_at: datetime, half_life_days: float = 14.0) -> float:
+def _recency_decay(detected_at: datetime, half_life_days: float = 14.0, now: Optional[datetime] = None) -> float:
     """
     Exponential recency decay.
     Signal at detection time = 1.0. Halves every `half_life_days` days.
     Minimum floor: 0.30 (signal doesn't expire completely).
     """
-    age_days = (utcnow() - detected_at).total_seconds() / 86400
+    age_days = ((now or utcnow()) - detected_at).total_seconds() / 86400
     decay = 0.5 ** (age_days / half_life_days)
     return max(decay, 0.30)
 
@@ -279,6 +243,37 @@ def _infer_liquidity_tier(
     return LiquidityTier.MID_CAP  # default for listed companies with ticker
 
 
+def alpha_components(severity: Severity, candidate: SignalCandidate, liquidity: LiquidityTier,
+                     now: Optional[datetime] = None) -> dict[str, float]:
+    """The five component values (0-1) and the weighted 0-100 score."""
+    c = {
+        "severity": SEVERITY_WEIGHT[severity],
+        "source_credibility": _source_credibility_for_signal(candidate),
+        "corroboration": _corroboration_weight(candidate.corroboration_count),
+        "recency": _recency_decay(candidate.source_date or candidate.detected_at, now=now),
+        "liquidity": LIQUIDITY_WEIGHT[liquidity],
+    }
+    c["score"] = round(100 * sum(WEIGHTS[k] * c[k] for k in WEIGHTS), 1)
+    return c
+
+
+def expected_move_for(signal_type: SignalType, severity: Severity, source_text: str) -> dict:
+    """Measured move after this kind of flag, with the text's own direction when it states one."""
+    from src.engines.measured import expected_move, measured_direction, move_confidence
+    move = expected_move(signal_type.value, severity.value)
+    stated = evidence_direction(signal_type, source_text)
+    if signal_type == SignalType.INSIDER_ACTIVITY and stated is None and _DEALING_NOTICE.search(source_text or ""):
+        stated = "neutral"
+    direction = stated or measured_direction(move)
+    if not move:
+        return {"direction": stated, "low": None, "high": None, "median": None, "n": 0,
+                "confidence": "insufficient", "basis": "insufficient history for this kind of flag"}
+    return {"direction": direction, "low": move["p25"], "high": move["p75"], "median": move["median"],
+            "n": move["n"], "confidence": move_confidence(move["n"]),
+            "basis": f"market-adjusted 10-day return after {move['basis']} in the backtest"
+                     + ("; direction stated by the source" if stated else "")}
+
+
 def compute_alpha_score(
     signal: DetectedSignal,
     candidate: SignalCandidate,
@@ -290,7 +285,7 @@ def compute_alpha_score(
     """
     Compute the alpha score for a single confirmed signal.
 
-    Formula:
+    Formula (design weights, validated in the backtest):
         alpha = 100 × (
             severity_weight × 0.35
           + source_credibility × 0.25
@@ -299,29 +294,10 @@ def compute_alpha_score(
           + liquidity_weight × 0.10
         )
     """
-    sev_w    = SEVERITY_WEIGHT[signal.severity]
-    cred_w   = _source_credibility_for_signal(candidate)
-    corr_w   = _corroboration_weight(candidate.corroboration_count)
-    rec_w    = _recency_decay(candidate.source_date or candidate.detected_at)
     liq_tier = _infer_liquidity_tier(ticker, exchange, sector)
-    liq_w    = LIQUIDITY_WEIGHT[liq_tier]
-
-    raw_alpha = (
-        sev_w  * 0.35 +
-        cred_w * 0.25 +
-        corr_w * 0.20 +
-        rec_w  * 0.10 +
-        liq_w  * 0.10
-    )
-    alpha_score = round(raw_alpha * 100, 1)
-
-    # Expected move
-    move = EXPECTED_MOVES.get((signal.signal_type, signal.severity))
-    direction, low_pct, high_pct, comparable_n, move_confidence = (
-        move if move else ("neutral", 0.0, 0.0, 0, "low")
-    )
-    if direction != "neutral":
-        direction = signal_direction(signal.signal_type, candidate.source_text, direction)
+    c = alpha_components(signal.severity, candidate, liq_tier)
+    alpha_score = c["score"]
+    move = expected_move_for(signal.signal_type, signal.severity, candidate.source_text)
 
     # Compliance flags
     requires_review = False
@@ -339,16 +315,18 @@ def compute_alpha_score(
 
     return AlphaScore(
         score=alpha_score,
-        severity_component=round(sev_w, 3),
-        source_credibility=round(cred_w, 3),
-        corroboration_weight=round(corr_w, 3),
-        recency_weight=round(rec_w, 3),
+        severity_component=round(c["severity"], 3),
+        source_credibility=round(c["source_credibility"], 3),
+        corroboration_weight=round(c["corroboration"], 3),
+        recency_weight=round(c["recency"], 3),
         liquidity_tier=liq_tier,
-        expected_direction=direction,
-        expected_magnitude_pct_low=low_pct,
-        expected_magnitude_pct_high=high_pct,
-        comparable_events_n=comparable_n,
-        move_confidence=move_confidence,
+        expected_direction=move["direction"],
+        expected_magnitude_pct_low=move["low"],
+        expected_magnitude_pct_high=move["high"],
+        expected_median_pct=move["median"],
+        comparable_events_n=move["n"],
+        move_confidence=move["confidence"],
+        move_basis=move["basis"],
         requires_human_review=requires_review,
         review_reason=review_reason,
     )

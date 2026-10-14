@@ -11,7 +11,7 @@ const FAQ = [
   },
   {
     q: "Which model does it use?",
-    a: "Claude and Groq, with no lock-in to either. Every provider with a key is used in order, Claude first, then Groq (gpt-oss-120b, with Qwen behind it); if one fails, the next answers. Set DEAL_INTEL_PROVIDER to pin one. Each brief and the audit log record which model actually wrote it.",
+    a: "Claude and Groq, with no lock-in to either. Claude first, then Groq (gpt-oss-120b, with Qwen behind it); if one fails, the next answers. Each brief and the audit log record which model actually wrote it.",
   },
   {
     q: "Is this investment advice?",
@@ -26,8 +26,8 @@ const FAQ = [
     a: "Yes, and there is no account to create. Click Run your first brief and go: up to 10 analyses a day per visitor. Each brief gets its own link you can share, and your list of briefs is kept in your browser.",
   },
   {
-    q: "Is it open source?",
-    a: "Yes. The full system, its 521 tests and an architecture document with its known limits are on GitHub.",
+    q: "How do I know the numbers are right?",
+    a: "Every figure names its source, and the methodology page sets out how each score is computed. The evaluation page publishes how often past signals were right, weak results included, and the coverage page states how far each country's data can be verified.",
   },
 ];
 
@@ -35,7 +35,7 @@ export function Faq() {
   return (
     <Section id="faq" labelledBy="faq-title">
       <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
-        <Heading index="11" eyebrow="Questions" id="faq-title" title="Asked before you have to." />
+        <Heading index="10" eyebrow="Questions" id="faq-title" title="Asked before you have to." />
         <Reveal delay={100} className="min-w-0">
           <div className="border-t hairline">
             {FAQ.map((f) => (

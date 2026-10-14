@@ -9,7 +9,6 @@ import { Limits } from "../components/Limits";
 import { Pipeline } from "../components/Pipeline";
 import { Platform } from "../components/Platform";
 import { Problem } from "../components/Problem";
-import { Quickstart } from "../components/Quickstart";
 import { Scoring } from "../components/Scoring";
 import { Signals } from "../components/Signals";
 import { SiteNav } from "../components/SiteNav";
@@ -39,7 +38,6 @@ export default function LandingPage() {
         <Example />
         <Trust />
         <Limits />
-        <Quickstart />
         <Faq />
         <FinalCta />
       </main>

@@ -62,12 +62,18 @@ def _cell(value) -> str:
 
 
 def _expected_move(a) -> Optional[str]:
-    """'↓ 8–15%' for a directional estimate with both bounds, else None."""
-    if (a.expected_direction not in ("positive", "negative")
-            or a.expected_magnitude_pct_low is None or a.expected_magnitude_pct_high is None):
+    """'↓ -2.8% to +1.3% (median -1.3%, n=53)': the measured range after this kind of flag, else None."""
+    from src.engines.measured import describe_move, signed_range
+    lo, hi = signed_range(a.expected_direction, a.expected_magnitude_pct_low, a.expected_magnitude_pct_high)
+    text = describe_move(lo, hi, getattr(a, "expected_median_pct", None), a.comparable_events_n)
+    if text is None:
         return None
-    arrow = "↑" if a.expected_direction == "positive" else "↓"
-    return f"{arrow} {a.expected_magnitude_pct_low:.0f}–{a.expected_magnitude_pct_high:.0f}%"
+    median = getattr(a, "expected_median_pct", None)
+    # An arrow only when the stated direction agrees with what similar flags measured.
+    agrees = median is None or (a.expected_direction == "positive" and median > 0) or \
+        (a.expected_direction == "negative" and median < 0)
+    arrow = {"positive": "↑ ", "negative": "↓ "}.get(a.expected_direction or "", "") if agrees else ""
+    return arrow + text
 
 
 def _evidence_quality(sig) -> Optional[str]:
@@ -167,8 +173,8 @@ def print_brief(brief: AnalystBrief) -> None:
                 move = _expected_move(a)
                 if move:
                     alpha_line += (
-                        f"\n[bold]Expected Move:[/bold] [{color}]{move}[/{color}]"
-                        f"  [dim](n={a.comparable_events_n}, confidence={a.move_confidence})[/dim]"
+                        f"\n[bold]Measured move after similar flags:[/bold] [{color}]{move}[/{color}]"
+                        f"  [dim](market-adjusted, 10 trading days; {a.move_confidence} confidence)[/dim]"
                     )
                 if a.requires_human_review:
                     alpha_line += f"\n[bold red]⚑ HUMAN REVIEW: {_e(a.review_reason)}[/bold red]"
@@ -314,11 +320,13 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
         ]
         if sig.alpha_score:
             a = sig.alpha_score
-            lines.append(f"**Alpha Score:** {a.score:.1f}/100  ")
+            compound = (f" (compound-adjusted {a.compound_adjusted_score:.1f}, untested)"
+                        if getattr(a, "compound_adjusted_score", None) is not None else "")
+            lines.append(f"**Alpha Score:** {a.score:.1f}/100{compound}  ")
             move = _expected_move(a)
             if move:
-                lines.append(f"**Expected Move:** {move} "
-                             f"(n={a.comparable_events_n}, {a.move_confidence} confidence)  ")
+                lines.append(f"**Measured move after similar flags:** {move}, market-adjusted over 10 trading "
+                             f"days ({a.move_confidence} confidence)  ")
             if a.requires_human_review:
                 lines.append(f"\n> ⚑ **Human Review Required:** {a.review_reason}")
         if sig.attribution_doubt:

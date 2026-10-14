@@ -165,12 +165,8 @@ def auto_record_outcome(
         direction_correct = (actual == expected_direction)
 
     # Magnitude error
-    magnitude_error: Optional[float] = None
-    if (p10 is not None and
-            expected_magnitude_low is not None and
-            expected_magnitude_high is not None):
-        mid = (expected_magnitude_low + expected_magnitude_high) / 2
-        magnitude_error = round(abs(abs(p10) - mid), 2)
+    from src.engines.measured import magnitude_error as _magnitude_error
+    magnitude_error = _magnitude_error(p10, expected_direction, expected_magnitude_low, expected_magnitude_high)
 
     outcome = MarketOutcome(
         outcome_id=str(uuid.uuid4()),

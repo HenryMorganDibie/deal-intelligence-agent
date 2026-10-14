@@ -2,8 +2,8 @@ import { Container, Heading, Reveal, Section } from "./primitives";
 
 const ROWS = [
   ["Who decides a signal exists", "The model", "115 deterministic patterns. Zero candidates means zero signals."],
-  ["Severity", "The model's opinion", "Calibrated against historical base rates, adjusted by analyst feedback"],
-  ["Confidence", "An opaque float", "A materialisation probability plus a 7-part evidence-quality breakdown"],
+  ["Severity", "The model's opinion", "Rule-strength bands; CRITICAL needs two independent sources"],
+  ["Confidence", "An opaque float", "The measured hit rate of past flags like it, with its sample size"],
   ["Evidence", "Whatever the model recalls", "A source document, a publication date and a credited publisher"],
   ["Wrong company", "Silently attributed", "Must be named in the same clause as the event, or it is dropped"],
   ["Audit", "None", "SHA-256 hash-chained log that detects edited and deleted entries"],

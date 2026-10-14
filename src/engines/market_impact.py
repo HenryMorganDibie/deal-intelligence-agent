@@ -52,10 +52,9 @@ def record_outcome(
         actual_dir = "positive" if price_change_10d_pct > 0 else "negative" if price_change_10d_pct < 0 else "neutral"
         direction_correct = (actual_dir == expected_direction)
 
-    if (price_change_10d_pct is not None and
-            expected_magnitude_low is not None and expected_magnitude_high is not None):
-        expected_mid = (expected_magnitude_low + expected_magnitude_high) / 2
-        magnitude_error = round(abs(abs(price_change_10d_pct) - expected_mid), 2)
+    from src.engines.measured import magnitude_error as _magnitude_error
+    magnitude_error = _magnitude_error(price_change_10d_pct, expected_direction,
+                                       expected_magnitude_low, expected_magnitude_high)
 
     outcome = MarketOutcome(
         outcome_id=str(uuid.uuid4()),

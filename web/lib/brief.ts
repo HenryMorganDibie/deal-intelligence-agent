@@ -4,9 +4,14 @@ export type Severity = "low" | "medium" | "high" | "critical";
 
 export type AlphaScore = {
   score: number;
-  expected_direction?: "positive" | "negative" | "neutral" | null;
+  expected_direction?: "positive" | "negative" | "mixed" | "neutral" | null;
   expected_magnitude_pct_low?: number | null;
   expected_magnitude_pct_high?: number | null;
+  expected_median_pct?: number | null;
+  comparable_events_n?: number;
+  move_confidence?: string;
+  move_basis?: string | null;
+  compound_adjusted_score?: number | null;
   liquidity_tier?: string;
 };
 
@@ -83,11 +88,21 @@ export function label(value: string): string {
   return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/** Measured move after similar flags: "↓ -2.8% to +1.3% (median -1.3%, n=53)". */
 export function expectedMove(a?: AlphaScore | null): string | null {
-  if (!a || (a.expected_direction !== "positive" && a.expected_direction !== "negative")) return null;
-  if (a.expected_magnitude_pct_low == null || a.expected_magnitude_pct_high == null) return null;
-  const arrow = a.expected_direction === "positive" ? "↑" : "↓";
-  return `${arrow} ${a.expected_magnitude_pct_low.toFixed(0)}–${a.expected_magnitude_pct_high.toFixed(0)}%`;
+  if (!a || a.expected_magnitude_pct_low == null || a.expected_magnitude_pct_high == null) return null;
+  let lo = a.expected_magnitude_pct_low;
+  let hi = a.expected_magnitude_pct_high;
+  // Briefs stored before measured moves held unsigned magnitudes with a separate direction.
+  if (a.expected_direction === "negative" && lo >= 0 && hi >= 0) [lo, hi] = [-hi, -lo];
+  const sign = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
+  // An arrow only when the stated direction agrees with what similar flags measured.
+  const m = a.expected_median_pct;
+  const agrees = m == null || (a.expected_direction === "positive" && m > 0) || (a.expected_direction === "negative" && m < 0);
+  const arrow = !agrees ? "" : a.expected_direction === "positive" ? "↑ " : a.expected_direction === "negative" ? "↓ " : "";
+  const median = a.expected_median_pct != null ? `, median ${sign(a.expected_median_pct)}` : "";
+  const n = a.comparable_events_n ? `, n=${a.comparable_events_n}` : "";
+  return `${arrow}${sign(lo)} to ${sign(hi)}${median}${n}`;
 }
 
 export function formatDate(iso: string): string {

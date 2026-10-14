@@ -160,7 +160,7 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
         if "client_limit" in message:
             raise HTTPException(429, f"You have run {PER_VISITOR_DAILY} analyses today. The limit resets at 00:00 UTC.")
         if "global_limit" in message:
-            raise HTTPException(429, "The free service has reached today's capacity. Try again tomorrow, or run it yourself from GitHub.")
+            raise HTTPException(429, "The free service has reached today's capacity. Try again tomorrow.")
         log.error("start_run failed: %s %s", resp.status_code, message[:300])
         raise HTTPException(503, "The service is busy. Try again shortly.")
     run_id = int(resp.json())

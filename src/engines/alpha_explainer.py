@@ -12,7 +12,7 @@ from src.schemas.models import DetectedSignal, SignalCandidate, AlphaScore, Seve
 from src.engines.alpha_scorer import (
     SEVERITY_WEIGHT, LIQUIDITY_WEIGHT, _recency_decay,
     _corroboration_weight, _infer_liquidity_tier,
-    HUMAN_REVIEW_ALPHA_THRESHOLD,
+    HUMAN_REVIEW_ALPHA_THRESHOLD, WEIGHTS,
 )
 from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY
 
@@ -54,13 +54,18 @@ def explain_alpha(
 
     raw_alpha      = sev_contrib + cred_contrib + corr_contrib + rec_contrib + liq_contrib
     base_score     = round(raw_alpha * 100, 1)
-    if compound_multiplier == 1.0 and base_score > 0 and abs(a.score - base_score) >= 0.1:
+    stored_separately = getattr(a, "compound_multiplier", 1.0) != 1.0
+    if compound_multiplier == 1.0 and stored_separately:
+        compound_multiplier = a.compound_multiplier
+    elif compound_multiplier == 1.0 and base_score > 0 and abs(a.score - base_score) >= 0.1:
         # The stored score already includes compound adjustments (boosts or, for
         # contradictory signals, reductions); explain the difference rather than
         # reporting a score that disagrees with the brief.
         compound_multiplier = round(a.score / base_score, 3)
     compound_boost = round(min(base_score * compound_multiplier, 100.0) - base_score, 1)
-    final_score    = round(base_score + compound_boost, 1)
+    # The alpha score is the validated composite; a compound effect stored beside it is reported,
+    # not folded in (briefs stored before that change carry it inside the score).
+    final_score    = base_score if stored_separately else round(base_score + compound_boost, 1)
 
     # Component contributions in final points
     point_contributions = {
@@ -135,15 +140,20 @@ def explain_alpha(
         f"Primary driver: {driver_labels[top_driver]} ({point_contributions[top_driver]:.1f} pts). "
     )
     if compound_boost > 0:
-        plain += f"Compound signal interaction added {compound_boost:.1f} pts ({compound_multiplier:.2f}× multiplier). "
+        plain += (f"Compound signal interaction would add {compound_boost:.1f} pts ({compound_multiplier:.2f}× multiplier, "
+                  f"untested, not included in the score). ")
     elif compound_boost < 0:
         plain += (f"Contradictory signals removed {-compound_boost:.1f} pts "
                   f"({compound_multiplier:.2f}× multiplier). ")
+    from src.engines.measured import describe_move, signed_range
+    lo, hi = signed_range(a.expected_direction, a.expected_magnitude_pct_low, a.expected_magnitude_pct_high)
+    move_text = describe_move(lo, hi, a.expected_median_pct, a.comparable_events_n)
     if signal.severity == Severity.HIGH or signal.severity == Severity.CRITICAL:
-        plain += f"Expected move: {a.expected_direction or 'neutral'} "
-        if a.expected_magnitude_pct_low is not None:
-            plain += f"{a.expected_magnitude_pct_low:.0f}–{a.expected_magnitude_pct_high:.0f}% "
-        plain += f"(based on {a.comparable_events_n} comparable historical events, {a.move_confidence} confidence)."
+        if move_text:
+            plain += (f"Measured move after similar flags: {move_text}, market-adjusted over 10 trading days "
+                      f"({a.move_confidence} confidence).")
+        else:
+            plain += "Expected move: insufficient history for this kind of flag."
 
     return {
         "signal_type":    signal.signal_type.value,
@@ -167,18 +177,18 @@ def explain_alpha(
             "recency_weight":     rec_raw,
             "liquidity_weight":   liq_raw,
         },
-        "weights_used": {
-            "severity": 0.35, "source_credibility": 0.25,
-            "corroboration": 0.20, "recency": 0.10, "liquidity": 0.10,
-        },
+        "weights_used": dict(WEIGHTS),
+        "weights_basis": "design weights, validated in the backtest (docs/BACKTEST.md)",
         "compliance_notes":   compliance_notes,
         "plain_english":      plain,
         "expected_move": {
             "direction":   a.expected_direction,
-            "range_pct":   f"{a.expected_magnitude_pct_low:.0f}–{a.expected_magnitude_pct_high:.0f}%" if a.expected_magnitude_pct_low else None,
-            "comparables": a.comparable_events_n,
+            "range_pct":   move_text,
+            "median_pct":  a.expected_median_pct,
+            "observations": a.comparable_events_n,
             "confidence":  a.move_confidence,
-        } if a.expected_direction else None,
+            "basis":       a.move_basis,
+        },
     }
 
 

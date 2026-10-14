@@ -1,22 +1,20 @@
 """
 Signal Calibration Engine.
 
-Maps deterministic engine raw scores → calibrated severity + confidence intervals
-using historical base rate tables.
+Maps a candidate's raw rule score to a severity, and attaches the measured
+probability that signals like it materialise.
 
-Base rates represent: "Given a raw_score in this band + this signal_type,
-what % of historical cases materialised into a real event?"
+Severity bands are rule-strength thresholds: a design choice, stated here and
+not presented as data. "Definitive agreement" language scores higher than
+"in talks", so it lands in a higher band.
 
-The base rates here are seeded from public academic and industry research:
-  - Ince & Porter (2006): earnings restatement / fraud patterns in SEC filings
-  - Altman Z-Score literature: distress prediction from filing language
-  - Mitchell & Mulherin (1996): M&A announcement patterns in press
-  - African PE datasets: AVCA Annual Reports 2018–2023 (deal flow / exit rates)
-  - JSE SENS study: Bhana (2010) — abnormal returns following SENS announcements
-
-In production (Phase 1 upgrade), these tables would be replaced by a
-logistic regression or gradient boosting model trained on your own signal
-outcome dataset. The interface stays identical — only the lookup changes.
+Confidence is measured, not asserted: the share of past flags of the same type
+and severity that were followed within 90 days by a confirming filing,
+exchange disclosure or credible report, from the walk-forward backtest
+(src/engines/measured.py, docs/BACKTEST.md). For earnings and insider signals,
+whose event is the disclosure itself, it is the share whose market-adjusted
+move went the hypothesised way. Small samples are smoothed toward the
+type-level rate, and adaptive calibration then shifts it with live outcomes.
 """
 from __future__ import annotations
 
@@ -24,61 +22,35 @@ from src.schemas.models import (
     SignalCandidate, SignalType, Severity
 )
 
-# ─── Base Rate Tables ─────────────────────────────────────────────────────────
-# Structure: signal_type → list of (min_raw_score, max_raw_score, materialisation_rate, severity)
-# materialisation_rate = historical % of cases where signal led to confirmed event within 90 days
-# severity assigned based on both score band AND base rate
-
-BASE_RATES: dict[SignalType, list[tuple[float, float, float, Severity]]] = {
-    SignalType.MA_ACTIVITY: [
-        (0.85, 1.01, 0.78, Severity.CRITICAL),  # definitive agreement language → very high hit rate
-        (0.70, 0.85, 0.55, Severity.HIGH),
-        (0.50, 0.70, 0.32, Severity.MEDIUM),
-        (0.00, 0.50, 0.14, Severity.LOW),
-    ],
-    SignalType.CREDIT_RISK: [
-        (0.88, 1.01, 0.72, Severity.CRITICAL),  # covenant breach / going concern → high materialisation
-        (0.72, 0.88, 0.50, Severity.HIGH),
-        (0.50, 0.72, 0.28, Severity.MEDIUM),
-        (0.00, 0.50, 0.10, Severity.LOW),
-    ],
-    SignalType.DISTRESSED_ASSET: [
-        (0.88, 1.01, 0.91, Severity.CRITICAL),  # formal insolvency language — near-certain
-        (0.72, 0.88, 0.70, Severity.HIGH),
-        (0.50, 0.72, 0.40, Severity.MEDIUM),
-        (0.00, 0.50, 0.18, Severity.LOW),
-    ],
-    SignalType.EARNINGS_SURPRISE: [
-        (0.82, 1.01, 0.85, Severity.CRITICAL),  # profit warning = confirmed miss
-        (0.65, 0.82, 0.58, Severity.HIGH),
-        (0.45, 0.65, 0.30, Severity.MEDIUM),
-        (0.00, 0.45, 0.12, Severity.LOW),
-    ],
-    SignalType.LEADERSHIP_CHANGE: [
-        (0.85, 1.01, 0.95, Severity.HIGH),      # named departure = confirmed; severity capped at HIGH
-        (0.65, 0.85, 0.70, Severity.MEDIUM),
-        (0.00, 0.65, 0.35, Severity.LOW),
-    ],
-    SignalType.REGULATORY_ACTION: [
-        (0.88, 1.01, 0.82, Severity.CRITICAL),  # SEC/FSCA named action
-        (0.70, 0.88, 0.55, Severity.HIGH),
-        (0.48, 0.70, 0.30, Severity.MEDIUM),
-        (0.00, 0.48, 0.12, Severity.LOW),
-    ],
-    SignalType.DEBT_RESTRUCTURE: [
-        (0.84, 1.01, 0.80, Severity.CRITICAL),
-        (0.65, 0.84, 0.55, Severity.HIGH),
-        (0.45, 0.65, 0.30, Severity.MEDIUM),
-        (0.00, 0.45, 0.12, Severity.LOW),
-    ],
-    SignalType.INSIDER_ACTIVITY: [
-        (0.80, 1.01, 0.65, Severity.HIGH),      # Form 4 / 13D is factual — severity HIGH max
-        (0.55, 0.80, 0.40, Severity.MEDIUM),
-        (0.00, 0.55, 0.18, Severity.LOW),
-    ],
+# ─── Severity Bands ───────────────────────────────────────────────────────────
+# signal_type -> (min_score, max_score, severity), on the corroboration-adjusted rule score.
+# Thresholds are design choices (rule strength), not measured rates.
+SEVERITY_BANDS: dict[SignalType, list[tuple[float, float, Severity]]] = {
+    SignalType.MA_ACTIVITY:       [(0.85, 1.01, Severity.CRITICAL), (0.70, 0.85, Severity.HIGH), (0.50, 0.70, Severity.MEDIUM), (0.00, 0.50, Severity.LOW)],
+    SignalType.CREDIT_RISK:       [(0.88, 1.01, Severity.CRITICAL), (0.72, 0.88, Severity.HIGH), (0.50, 0.72, Severity.MEDIUM), (0.00, 0.50, Severity.LOW)],
+    SignalType.DISTRESSED_ASSET:  [(0.88, 1.01, Severity.CRITICAL), (0.72, 0.88, Severity.HIGH), (0.50, 0.72, Severity.MEDIUM), (0.00, 0.50, Severity.LOW)],
+    SignalType.EARNINGS_SURPRISE: [(0.82, 1.01, Severity.CRITICAL), (0.65, 0.82, Severity.HIGH), (0.45, 0.65, Severity.MEDIUM), (0.00, 0.45, Severity.LOW)],
+    SignalType.LEADERSHIP_CHANGE: [(0.85, 1.01, Severity.HIGH), (0.65, 0.85, Severity.MEDIUM), (0.00, 0.65, Severity.LOW)],
+    SignalType.REGULATORY_ACTION: [(0.88, 1.01, Severity.CRITICAL), (0.70, 0.88, Severity.HIGH), (0.48, 0.70, Severity.MEDIUM), (0.00, 0.48, Severity.LOW)],
+    SignalType.DEBT_RESTRUCTURE:  [(0.84, 1.01, Severity.CRITICAL), (0.65, 0.84, Severity.HIGH), (0.45, 0.65, Severity.MEDIUM), (0.00, 0.45, Severity.LOW)],
+    SignalType.INSIDER_ACTIVITY:  [(0.80, 1.01, Severity.HIGH), (0.55, 0.80, Severity.MEDIUM), (0.00, 0.55, Severity.LOW)],
 }
+DEFAULT_BANDS = [(0.70, 1.01, Severity.HIGH), (0.40, 0.70, Severity.MEDIUM), (0.00, 0.40, Severity.LOW)]
 
-# Corroboration multiplier: multiple independent sources raise confidence
+
+def severity_for_score(signal_type: SignalType, adjusted_score: float) -> Severity:
+    for lo, hi, sev in SEVERITY_BANDS.get(signal_type, DEFAULT_BANDS):
+        if lo <= adjusted_score < hi:
+            return sev
+    return Severity.LOW
+
+
+def measured_rate(signal_type: SignalType, severity: Severity) -> float:
+    from src.engines.measured import confirmation_rate
+    return confirmation_rate(signal_type.value, severity.value)["rate"]
+
+
+# Corroboration raises the rule score used for the severity band (not the measured confidence).
 CORROBORATION_MULTIPLIER: dict[int, float] = {
     1: 1.00,
     2: 1.12,
@@ -98,45 +70,18 @@ def _corroboration_mult(n: int) -> float:
 
 def calibrate(candidate: SignalCandidate) -> tuple[Severity, float, float]:
     """
-    Calibrate a SignalCandidate into (severity, confidence, materialisation_rate).
+    (severity, confidence, materialisation_rate) for a candidate.
 
-    Args:
-        candidate: output from DeterministicSignalEngine
-
-    Returns:
-        severity: calibrated Severity enum
-        confidence: float 0-1, adjusted for corroboration
-        materialisation_rate: historical base rate for this band
+    severity: from the rule score (raised by corroboration) and the type's bands; CRITICAL needs at
+    least two corroborating sources. confidence and materialisation_rate: the measured rate for this
+    type and severity (they are the same number; both names are kept for callers).
     """
-    adjusted_score = min(
-        candidate.raw_score * _corroboration_mult(candidate.corroboration_count),
-        1.0
-    )
-
-    bands = BASE_RATES.get(candidate.signal_type, [
-        (0.70, 1.01, 0.50, Severity.HIGH),
-        (0.40, 0.70, 0.25, Severity.MEDIUM),
-        (0.00, 0.40, 0.10, Severity.LOW),
-    ])
-
-    severity = Severity.LOW
-    materialisation_rate = 0.10
-
-    for min_score, max_score, mat_rate, sev in bands:
-        if min_score <= adjusted_score < max_score:
-            severity = sev
-            materialisation_rate = mat_rate
-            break
-
-    # Compliance constraint: CRITICAL requires ≥ 2 corroborating sources
+    adjusted_score = min(candidate.raw_score * _corroboration_mult(candidate.corroboration_count), 1.0)
+    severity = severity_for_score(candidate.signal_type, adjusted_score)
     if severity == Severity.CRITICAL and candidate.corroboration_count < CRITICAL_MIN_CORROBORATION:
         severity = Severity.HIGH
-        materialisation_rate = min(materialisation_rate, 0.70)
-
-    # Confidence = materialisation_rate adjusted slightly for corroboration
-    confidence = min(materialisation_rate * _corroboration_mult(candidate.corroboration_count), 1.0)
-
-    return severity, round(confidence, 3), round(materialisation_rate, 3)
+    rate = measured_rate(candidate.signal_type, severity)
+    return severity, round(rate, 3), round(rate, 3)
 
 
 def calibrate_all(candidates: list[SignalCandidate]) -> list[tuple[SignalCandidate, Severity, float, float]]:

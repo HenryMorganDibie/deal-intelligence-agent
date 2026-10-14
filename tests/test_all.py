@@ -334,6 +334,21 @@ class TestDeterministicEngine:
 
 # ─── Calibration ──────────────────────────────────────────────────────────────
 
+# A small measured-outcomes table for tests (the committed one changes with every backtest run).
+MEASURED_FIXTURE = {
+    "overall_confirmation": {"labelled": 40, "confirmed": 10, "rate": 0.25},
+    "signals": {
+        "distressed_asset": {
+            "type": {"predictions": 20, "confirmation": {"labelled": 20, "confirmed": 9, "rate": 0.45},
+                     "moves": {"n": 25, "median": -4.0, "p25": -9.0, "p75": -1.0, "share_negative": 0.8}},
+            "by_severity": {"critical": {"predictions": 8, "confirmation": {"labelled": 8, "confirmed": 6, "rate": 0.75},
+                                         "moves": {"n": 8, "median": -6.0, "p25": -12.0, "p75": -2.0,
+                                                   "share_negative": 0.9}}},
+        },
+    },
+}
+
+
 class TestCalibration:
     def _cand(self, sig_type, raw_score, corroboration=1):
         return SignalCandidate(
@@ -343,11 +358,18 @@ class TestCalibration:
         )
 
     def test_high_score_gives_critical(self):
+        from src.engines import measured
         from src.engines.calibration import calibrate
         c = self._cand(SignalType.DISTRESSED_ASSET, 0.92, corroboration=2)
-        sev, conf, mat = calibrate(c)
+        measured.set_tables(MEASURED_FIXTURE)
+        try:
+            sev, conf, mat = calibrate(c)
+        finally:
+            measured.set_tables(None)
         assert sev == Severity.CRITICAL
-        assert conf > 0.7
+        # Confidence is the measured rate: 6 of 8 critical flags, smoothed toward the type's 9 of 20.
+        type_rate = (9 + 5 * 0.25) / (20 + 5)
+        assert conf == mat == round((6 + 5 * type_rate) / (8 + 5), 3)
 
     def test_low_score_gives_low(self):
         from src.engines.calibration import calibrate
@@ -429,14 +451,26 @@ class TestAlphaScorer:
         assert high_corr.score > low_corr.score
 
     def test_expected_move_populated(self):
+        from src.engines import measured
         from src.engines.alpha_scorer import compute_alpha_score
-        alpha = compute_alpha_score(
-            self._signal(SignalType.DISTRESSED_ASSET, Severity.CRITICAL),
-            self._candidate(SignalType.DISTRESSED_ASSET)
-        )
-        assert alpha.expected_direction == "negative"
-        assert alpha.expected_magnitude_pct_high > 0
-        assert alpha.comparable_events_n > 0
+        measured.set_tables(MEASURED_FIXTURE)
+        try:
+            alpha = compute_alpha_score(
+                self._signal(SignalType.DISTRESSED_ASSET, Severity.CRITICAL),
+                self._candidate(SignalType.DISTRESSED_ASSET)
+            )
+            none = compute_alpha_score(self._signal(SignalType.CREDIT_RISK, Severity.HIGH),
+                                       self._candidate(SignalType.CREDIT_RISK))
+        finally:
+            measured.set_tables(None)
+        # Too few critical moves (8 < 20), so the type's 25 measured moves are used.
+        assert (alpha.expected_direction, alpha.expected_magnitude_pct_low, alpha.expected_magnitude_pct_high,
+                alpha.expected_median_pct, alpha.comparable_events_n, alpha.move_confidence) == \
+            ("negative", -9.0, -1.0, -4.0, 25, "low")
+        assert "all distressed asset flags" in alpha.move_basis
+        # No history at all: no invented range.
+        assert none.expected_magnitude_pct_low is None and none.comparable_events_n == 0
+        assert none.move_confidence == "insufficient"
 
     def test_human_review_flagged_above_threshold(self):
         from src.engines.alpha_scorer import compute_alpha_score, HUMAN_REVIEW_ALPHA_THRESHOLD
@@ -1125,7 +1159,7 @@ class TestFormatter:
         md = brief_to_markdown(self._brief())
         for section in ["# Deal Intelligence Brief","## Executive Summary",
                          "## Confirmed Signals","## Key Metrics","## Risk Factors",
-                         "Alpha Score","Expected Move","Patterns Fired"]:
+                         "Alpha Score","Measured move after similar flags","Patterns Fired"]:
             assert section in md, f"Missing: {section}"
 
     def test_markdown_compliance_banner(self):
@@ -1323,8 +1357,9 @@ class TestSignalInteractionEngine:
         result = SignalInteractionEngine().run(state)
         # Signals in compound should have boosted alpha
         if result.compound_signals:
-            max_score = max(s.alpha_score.score for s in result.detected_signals if s.alpha_score)
-            assert max_score > 50.0
+            scored = [s.alpha_score for s in result.detected_signals if s.alpha_score]
+            assert all(a.score == 50.0 for a in scored)              # the validated score is left alone
+            assert max(a.compound_adjusted_score or 0 for a in scored) > 50.0
 
     def test_compound_confidence_geometric_mean(self):
         from src.engines.signal_interaction import _find_interactions
@@ -2810,7 +2845,7 @@ class TestReportIntegrity:
         from src.engines.signal_interaction import _apply_alpha_multipliers, _find_interactions
         sigs = [_sig(SignalType.CREDIT_RISK, alpha=50.0), _sig(SignalType.DISTRESSED_ASSET, alpha=50.0)]
         out = _apply_alpha_multipliers(sigs, _find_interactions(sigs))
-        assert all(s.alpha_score.score >= 70 for s in out)
+        assert all(s.alpha_score.compound_adjusted_score >= 70 for s in out)
         assert all(s.alpha_score.requires_human_review for s in out)
 
     def test_contradictory_compound_reduces_alpha(self):
@@ -2818,7 +2853,7 @@ class TestReportIntegrity:
         sigs = [_sig(SignalType.MA_ACTIVITY, alpha=50.0), _sig(SignalType.DISTRESSED_ASSET, alpha=50.0)]
         compounds = _find_interactions(sigs)
         assert any(c.interaction_type.value == "contradictory" for c in compounds)
-        out = {s.signal_type: s.alpha_score.score for s in _apply_alpha_multipliers(sigs, compounds)}
+        out = {s.signal_type: s.alpha_score.compound_adjusted_score for s in _apply_alpha_multipliers(sigs, compounds)}
         assert out[SignalType.MA_ACTIVITY] < 50.0
 
     def test_compound_confidence_is_geometric_mean(self):
@@ -2861,7 +2896,7 @@ class TestReportRendering:
         a = AlphaScore(score=50, severity_component=0.5, source_credibility=0.5,
                        corroboration_weight=0.5, recency_weight=0.5, expected_direction="negative")
         b = self._brief(detected_signals=[_sig(SignalType.CREDIT_RISK).model_copy(update={"alpha_score": a})])
-        assert "Expected Move" not in brief_to_markdown(b)
+        assert "Measured move" not in brief_to_markdown(b)
 
     def test_compound_events_and_context_rendered(self):
         from src.utils.formatter import brief_to_markdown, print_brief
@@ -3097,7 +3132,7 @@ def test_calibration_learns_per_market():
     ac.set_outcome_stats({"credit_risk|africa": {"confirmed": 2, "refuted": 18}})
     try:
         low_af = ac.adaptive_calibrate(cand, market="africa")
-        assert low_af[1] < base_af[1]                       # 10% observed precision lowers confidence
+        assert low_af[1] == 0.1                              # live precision (2 of 20) replaces the backtest rate
         assert ac.adaptive_calibrate(cand, market="us") == base_us
         ac.set_outcome_stats({"credit_risk|africa": {"confirmed": 1, "refuted": 2}})
         assert ac.adaptive_calibrate(cand, market="africa") == base_af   # too few outcomes: no change

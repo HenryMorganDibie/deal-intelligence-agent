@@ -34,7 +34,7 @@ import logging
 import statistics
 import time
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable, Optional
 
@@ -200,6 +200,7 @@ class Prediction:
     direction: Optional[str]
     source: str
     source_kind: str            # "filing" | "news"
+    alpha: Optional[float] = None
 
 
 def _as_of_dates(start: date, end: date, step_days: int) -> list[date]:
@@ -213,7 +214,9 @@ def _as_of_dates(start: date, end: date, step_days: int) -> list[date]:
 def detect(src: Sources, company: str, ticker: str, as_of: date, sec_rows: list[dict],
            cik: Optional[str] = None) -> list[Prediction]:
     """Run the rule engine on what was public in the LOOKBACK_DAYS before as_of."""
-    from src.engines.alpha_scorer import EXPECTED_MOVES, signal_direction
+    from src.engines.alpha_scorer import alpha_components, signal_direction
+    from src.engines.measured import DIRECTION_HYPOTHESIS
+    from src.schemas.models import LiquidityTier
     from src.engines.calibration import calibrate
     from src.engines.deterministic_engine import DeterministicSignalEngine
     from src.engines.outcome_labeller import market_for_ticker
@@ -254,12 +257,14 @@ def detect(src: Sources, company: str, ticker: str, as_of: date, sec_rows: list[
     out = []
     for sig_type, cand in best.items():
         severity, _, _ = calibrate(cand)
-        move = EXPECTED_MOVES.get((sig_type, severity))
-        direction = move[0] if move else None
-        if direction and direction != "neutral":
-            direction = signal_direction(sig_type, cand.source_text, direction)
+        # The direction tested is the type's hypothesis, refined by what the text states (a beat, a
+        # purchase); measured moves are not used here, so the test does not grade its own answers.
+        direction = signal_direction(sig_type, cand.source_text, DIRECTION_HYPOTHESIS[sig_type.value])
+        # Alpha as of the replay date. Liquidity is held constant: today's market caps would leak.
+        alpha = alpha_components(severity, cand, LiquidityTier.MID_CAP,
+                                 now=datetime.combine(as_of, datetime.min.time()))["score"]
         out.append(Prediction(company, ticker, market, sig_type.value, severity.value, as_of.isoformat(),
-                              direction, cand.source_text[:160], cand.source_type))
+                              direction, cand.source_text[:160], cand.source_type, alpha))
     return out
 
 
@@ -343,14 +348,15 @@ def run(
     result = {"start": start.isoformat(), "end": end.isoformat(), "as_of_dates": len(dates),
               "companies": len(universe), "lookback_days": LOOKBACK_DAYS, "horizon_days": HORIZON_DAYS,
               "predictions": predictions, "ground_truth_events": truth, "metrics": metrics,
-              "by_severity": by_severity(predictions)}
+              "by_severity": by_severity(predictions), "alpha_validation": alpha_validation(predictions)}
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
     RESULTS_PATH.write_text(json.dumps(result, indent=1, default=str))
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(render_report(result))
+    write_tables(result)
     SUMMARY_PATH.write_text(json.dumps({k: result[k] for k in ("start", "end", "as_of_dates", "companies",
                                                                 "lookback_days", "horizon_days", "metrics",
-                                                                "by_severity")},
+                                                                "by_severity", "alpha_validation")},
                                        indent=1, default=str))
     return result
 
@@ -412,6 +418,84 @@ def compute_metrics(predictions: list[dict], truth: list[dict], base: dict, mont
                 "directional_n": len(directional),
                 "mean_abnormal_return_10d_pct": round(statistics.mean(abn), 2) if abn else None,
             }
+    return out
+
+
+def write_tables(result: dict) -> dict:
+    """Measured outcome tables (confirmation rates, moves) for live calibration and expected moves."""
+    from src.engines import measured
+    tables = measured.build(result["predictions"], {"period": f"{result['start']} to {result['end']}",
+                                                    "companies": result["companies"]})
+    measured.write(tables)
+    measured.set_tables(None)
+    return tables
+
+
+def _ranks(xs: list[float]) -> list[float]:
+    order = sorted(range(len(xs)), key=lambda i: xs[i])
+    ranks = [0.0] * len(xs)
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and xs[order[j + 1]] == xs[order[i]]:
+            j += 1
+        for k in range(i, j + 1):
+            ranks[order[k]] = (i + j) / 2 + 1
+        i = j + 1
+    return ranks
+
+
+def spearman(xs: list[float], ys: list[float]) -> Optional[float]:
+    if len(xs) < 3:
+        return None
+    rx, ry = _ranks(xs), _ranks(ys)
+    mx, my = statistics.mean(rx), statistics.mean(ry)
+    num = sum((a - mx) * (b - my) for a, b in zip(rx, ry))
+    den = (sum((a - mx) ** 2 for a in rx) * sum((b - my) ** 2 for b in ry)) ** 0.5
+    return round(num / den, 3) if den else None
+
+
+def alpha_validation(predictions: list[dict]) -> dict:
+    """
+    Does a higher alpha go with more confirmed events? Confirmable predictions are split into
+    alpha terciles; each tercile's precision and mean absolute market-adjusted move are reported,
+    with the rank correlation between alpha and confirmation.
+    """
+    rows = [p for p in predictions if p.get("alpha") is not None and p["signal_type"] not in PRICE_ONLY
+            and p.get("event_confirmed") is not None]
+    if len(rows) < 9:
+        return {"labelled": len(rows), "note": "too few labelled predictions"}
+    alphas = sorted(p["alpha"] for p in rows)
+    cut1, cut2 = alphas[len(alphas) // 3], alphas[2 * len(alphas) // 3]
+    bands = {"low": [p for p in rows if p["alpha"] < cut1],
+             "middle": [p for p in rows if cut1 <= p["alpha"] < cut2],
+             "high": [p for p in rows if p["alpha"] >= cut2]}
+    out = {"labelled": len(rows), "cutoffs": [cut1, cut2], "bands": {}}
+    for name, ps in bands.items():
+        moves = [abs(p["abnormal_return_10d_pct"]) for p in ps if p.get("abnormal_return_10d_pct") is not None]
+        out["bands"][name] = {"n": len(ps), "alpha_range": [min((p["alpha"] for p in ps), default=None),
+                                                             max((p["alpha"] for p in ps), default=None)],
+                              "precision": _rate(sum(p["event_confirmed"] for p in ps), len(ps)),
+                              "mean_abs_move_10d_pct": round(statistics.mean(moves), 2) if moves else None,
+                              "moves_n": len(moves)}
+    out["spearman_alpha_vs_confirmed"] = spearman([p["alpha"] for p in rows],
+                                                  [float(p["event_confirmed"]) for p in rows])
+    # Within each signal type with enough labels: the pooled result could be signal-type mix alone.
+    out["by_type"] = {}
+    for st in sorted({p["signal_type"] for p in rows}):
+        sub = [p for p in rows if p["signal_type"] == st]
+        if len(sub) < 30:
+            continue
+        a = sorted(p["alpha"] for p in sub)
+        c1, c2 = a[len(a) // 3], a[2 * len(a) // 3]
+        thirds = {"low": [p for p in sub if p["alpha"] < c1], "middle": [p for p in sub if c1 <= p["alpha"] < c2],
+                  "high": [p for p in sub if p["alpha"] >= c2]}
+        out["by_type"][st] = {"labelled": len(sub),
+                              "precision": {k: _rate(sum(p["event_confirmed"] for p in v), len(v)) for k, v in thirds.items()},
+                              "spearman": spearman([p["alpha"] for p in sub], [float(p["event_confirmed"]) for p in sub])}
+    hi, lo = out["bands"]["high"]["precision"], out["bands"]["low"]["precision"]
+    out["verdict"] = ("higher alpha went with more confirmations" if hi is not None and lo is not None and hi > lo
+                      else "higher alpha did not go with more confirmations")
     return out
 
 
@@ -482,6 +566,30 @@ def render_report(result: dict) -> str:
             lines.append(f"| {st.replace('_', ' ')} | {_fmt(mp['precision'])} ({mp['labelled']}) | "
                          f"{_fmt(lo['precision'])} ({lo['labelled']}) |")
         lines.append("")
+    av = result.get("alpha_validation") or alpha_validation(result.get("predictions", []))
+    if av.get("bands"):
+        lines += ["## Does alpha rank signals?", "",
+                  "Confirmable predictions split into thirds by alpha (computed as of each replay date, liquidity "
+                  "held constant). If the alpha weights are useful, precision should rise from the low to the "
+                  "high third.", "",
+                  "| Alpha third | Alpha range | Predictions | Precision | Mean absolute 10-day move |",
+                  "|---|---|---:|---:|---:|"]
+        for name, b in av["bands"].items():
+            rng = b["alpha_range"]
+            lines.append(f"| {name} | {rng[0]} to {rng[1]} | {b['n']} | {_fmt(b['precision'])} | "
+                         f"{(str(b['mean_abs_move_10d_pct']) + '%') if b['mean_abs_move_10d_pct'] is not None else '–'} "
+                         f"({b['moves_n']}) |")
+        lines += ["", f"Rank correlation between alpha and confirmation: {av['spearman_alpha_vs_confirmed']}. "
+                      f"Verdict: {av['verdict']}.", ""]
+        if av.get("by_type"):
+            lines += ["Within signal types (30 or more labelled predictions), so the result is not just signal-type mix:", "",
+                      "| Signal type | Labelled | Low third | Middle third | High third | Rank correlation |",
+                      "|---|---:|---:|---:|---:|---:|"]
+            for st, r in av["by_type"].items():
+                p = r["precision"]
+                lines.append(f"| {st.replace('_', ' ')} | {r['labelled']} | {_fmt(p['low'])} | {_fmt(p['middle'])} | "
+                             f"{_fmt(p['high'])} | {r['spearman']} |")
+            lines.append("")
     lines += ["## By market", ""]
     for mk in ("us", "africa"):
         lines += [f"### {'United States' if mk == 'us' else 'Africa (JSE, NGX, NSE Kenya)'}", "",

@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { LINKS } from "../lib/site";
-import { Container, GitHubMark, LogoMark } from "./primitives";
+import { Container, LogoMark } from "./primitives";
 
 const NAV = [
-  { href: "#platform", label: "Platform" },
-  { href: "#pipeline", label: "How it works" },
-  { href: "#attribution", label: "Attribution" },
-  { href: "#coverage", label: "Coverage" },
-  { href: "#example", label: "Example" },
-  { href: "#limits", label: "Limits" },
+  { href: "/#platform", label: "Platform" },
+  { href: "/#pipeline", label: "How it works" },
+  { href: "/#attribution", label: "Attribution" },
+  { href: "/#coverage", label: "Coverage" },
+  { href: "/#example", label: "Example" },
+  { href: "/#limits", label: "Limits" },
 ];
 
 export function SiteNav() {
@@ -37,7 +37,7 @@ export function SiteNav() {
       }`}
     >
       <Container className="flex h-16 items-center justify-between">
-        <a href="#top" className="flex items-center gap-2.5 text-[0.9375rem] font-medium tracking-tight">
+        <a href="/#top" className="flex items-center gap-2.5 text-[0.9375rem] font-medium tracking-tight">
           <LogoMark />
           <span>Deal Intelligence</span>
         </a>
@@ -51,9 +51,8 @@ export function SiteNav() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <a href={LINKS.github} className="btn btn-ghost hidden h-9 px-3.5 text-sm sm:inline-flex" target="_blank" rel="noreferrer">
-            <GitHubMark />
-            GitHub
+          <a href={LINKS.methodology} className="btn btn-ghost hidden h-9 px-3.5 text-sm sm:inline-flex">
+            Methodology
           </a>
           <a href="/app" className="btn btn-primary hidden h-9 px-3.5 text-sm sm:inline-flex">
             Open app
@@ -91,8 +90,8 @@ export function SiteNav() {
               </a>
             ))}
             <div className="mt-2 flex gap-2 pb-2">
-              <a href={LINKS.github} className="btn btn-ghost h-10 flex-1 text-sm" target="_blank" rel="noreferrer">
-                <GitHubMark /> GitHub
+              <a href={LINKS.methodology} className="btn btn-ghost h-10 flex-1 text-sm">
+                Methodology
               </a>
               <a href="/app" className="btn btn-primary h-10 flex-1 text-sm">
                 Open app

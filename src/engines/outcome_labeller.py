@@ -273,9 +273,8 @@ def label_prediction(
     direction_correct = None
     if move is not None and expected_direction in ("positive", "negative"):
         direction_correct = (move > 0) == (expected_direction == "positive") if move != 0 else False
-    magnitude_error = None
-    if move is not None and expected_low is not None and expected_high is not None:
-        magnitude_error = round(abs(abs(move) - (expected_low + expected_high) / 2), 2)
+    from src.engines.measured import magnitude_error as _magnitude_error
+    magnitude_error = _magnitude_error(move, expected_direction, expected_low, expected_high)
 
     return {
         "outcome_id": str(uuid.uuid4()),

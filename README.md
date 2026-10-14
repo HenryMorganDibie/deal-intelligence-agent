@@ -29,12 +29,12 @@ Data is what public sources carry: undisclosed private deals that no one reports
 | Dimension | Typical AI finance tool | This system |
 |-----------|------------------------|-------------|
 | Signal detection | LLM decides | Deterministic rule engine — reproducible, auditable |
-| Severity | LLM opinion | Calibrated against historical materialisation rates |
+| Severity | LLM opinion | Rule-strength bands (stated thresholds); CRITICAL needs two independent sources |
 | Compound events | None | 14 typed interaction rules (cascading/reinforcing/contradictory) |
 | LLM role | Primary decision maker | Explanation only — cannot invent signals |
-| Confidence | Opaque float | Calibrated base-rate probability, plus a 7-component evidence-quality breakdown per signal |
+| Confidence | Opaque float | Measured hit rate of past flags of the same type and severity (walk-forward backtest, then live outcomes), with its sample size, plus a 7-component evidence-quality rubric |
 | Evidence | Keyword hits | 9 typed financial clause categories (going concern, covenant breach, etc.) |
-| Alpha score | None | 0–100 composite + SHAP-style breakdown + expected move estimates |
+| Alpha score | None | 0–100 composite with stated design weights, validated in the backtest (confirmation rate 13% / 25% / 40% across alpha thirds), SHAP-style breakdown, measured moves after similar flags |
 | Backtesting | None | Precision, recall, F1, hit rate, benchmark-adjusted return and drawdown per signal type, against automatically labelled outcomes |
 | Adaptive calibration | None | Outcome-aware severity from analyst feedback |
 | Portfolio intelligence | None | Portfolio risk aggregation + contagion cluster detection |
@@ -57,8 +57,8 @@ Request
   → DataCollection    (SEC EDGAR + 49 African feeds + 48 PE sources + global news, concurrent)
   → DeterministicEngine  (70+ rules, NER, semantic extraction, corroboration — zero LLM)
   → LLMExplanation    (explains confirmed candidates only — cannot invent signals)
-  → AlphaScoring      (0–100 composite + SHAP breakdown + expected moves)
-  → SignalInteraction  (17 direction-aware compound event rules, up to 2.5× alpha multipliers)
+  → AlphaScoring      (0–100 composite + SHAP breakdown + measured moves after similar flags)
+  → SignalInteraction  (17 direction-aware compound event rules; compound-adjusted score shown beside alpha, untested)
   → BriefSynthesis    (narrative only — all signal data locked)
   → PostProcessing    (warehouse + company memory + entity graph)
   → AnalystBrief
@@ -265,16 +265,18 @@ deal-intelligence-agent/
 │   ├── hosted_market.py                # API routes: countries, deals, investors, companies, research, alerts
 │   ├── data/
 │   │   ├── africa_countries.py         # the 54 countries: codes, languages, currency, exchange, regulators
-│   │   └── country_indicators.json     # World Bank governance and macro snapshot (committed)
+│   │   ├── country_indicators.json     # World Bank governance and macro snapshot (committed)
+│   │   └── measured_outcomes.json      # measured hit rates and moves, rebuilt by the backtest
 │   ├── schemas/models.py               # All Pydantic types (25+ models)
 │   ├── engines/                        # 21 deterministic intelligence engines
 │   │   ├── deterministic_engine.py     # 70+ rules, NER, credibility
 │   │   ├── signal_interaction.py       # 17 direction-aware compound event rules
-│   │   ├── calibration.py             # Historical base rate tables
+│   │   ├── calibration.py             # Severity bands + measured hit rates
+│   │   ├── measured.py                # measured outcome tables (from the backtest)
 │   │   ├── adaptive_calibration.py    # Outcome-aware severity adjustment
 │   │   ├── confidence.py              # 7-component evidence-quality breakdown per signal
 │   │   ├── semantic.py                # 9 typed financial clause categories
-│   │   ├── alpha_scorer.py            # 0–100 composite + expected moves
+│   │   ├── alpha_scorer.py            # 0–100 composite + measured moves
 │   │   ├── alpha_explainer.py         # SHAP-style attribution breakdown
 │   │   ├── signal_registry.py         # Signal metadata; patterns derived from the engine rules
 │   │   ├── feedback.py                # Analyst corrections + source EMA
@@ -338,7 +340,7 @@ pip install -r requirements-dev.txt
 pytest -q
 ```
 
-**520 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration, automatic outcome labelling (benchmark-adjusted returns, SEC ground truth, recall), French-language detection, the hosted API, the 54-country registry, country and currency risk formulas, deal extraction (amounts, roles, stages, rejection of non-deals) in three languages, investor roles, statement parsing and accounting checks, citation validation, watchlist matching and webhook safety, coverage tiers.
+**526 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration, automatic outcome labelling (benchmark-adjusted returns, SEC ground truth, recall), French-language detection, the hosted API, the 54-country registry, country and currency risk formulas, deal extraction (amounts, roles, stages, rejection of non-deals) in three languages, investor roles, statement parsing and accounting checks, citation validation, watchlist matching and webhook safety, coverage tiers.
 
 ---
 

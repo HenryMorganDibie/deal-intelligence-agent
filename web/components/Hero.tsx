@@ -6,7 +6,7 @@ const FACTS = [
   { k: "54", v: "African countries, in their own languages" },
   { k: "1,700+", v: "deals: PE, VC, debt and M&A" },
   { k: "8", v: "signal types, 17 compound-event rules" },
-  { k: "521", v: "tests, open source" },
+  { k: "526", v: "automated tests behind every release" },
 ];
 
 export function Hero() {
@@ -52,8 +52,8 @@ export function Hero() {
                 Run your first brief
                 <ArrowRight />
               </a>
-              <a href={LINKS.architecture} className="btn btn-ghost" target="_blank" rel="noreferrer">
-                Read the architecture
+              <a href={LINKS.methodology} className="btn btn-ghost">
+                Read the methodology
               </a>
             </div>
           </Reveal>

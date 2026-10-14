@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { LINKS } from "../../lib/site";
-import { Container, GitHubMark, LogoMark } from "../primitives";
+import { Container, LogoMark } from "../primitives";
 
 const NAV: [string, string][] = [
   ["/app", "Briefs"],
@@ -47,9 +47,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               })}
             </nav>
           </div>
-          <a href={LINKS.github} target="_blank" rel="noreferrer" className="btn btn-ghost h-8 shrink-0 px-3 text-[0.8125rem]">
-            <GitHubMark />
-            <span className="hidden sm:inline">Open source</span>
+          <a href={LINKS.methodology} className="btn btn-ghost h-8 shrink-0 px-3 text-[0.8125rem]">
+            Methodology
           </a>
         </Container>
       </header>

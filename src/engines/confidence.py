@@ -1,8 +1,14 @@
 """
-Confidence Decomposition Framework (#5).
-Replaces opaque single confidence floats with a fully auditable
-breakdown of every component that contributed to the score.
-Every DetectedSignal gets a ConfidenceDecomposition object.
+Evidence-quality breakdown (#5).
+
+A rubric, not a probability: seven graded components of how well a signal is
+supported (source reliability, corroboration, filing strength, historical
+precision, entity matches, recency, extraction), combined with the fixed
+weights below. The grade steps are design choices and are stated as such.
+The one measured component is historical precision: the measured hit rate for
+the signal type (src/engines/measured.py), or the analysts' observed precision
+once there are enough labelled reviews. The probability a signal materialises
+is the separate, measured `confidence` on the signal.
 """
 from __future__ import annotations
 
@@ -72,13 +78,13 @@ def _filing_strength_score(candidate: SignalCandidate) -> float:
 
 
 def _historical_precision_score(signal_type: SignalType) -> float:
-    """Use accumulated feedback precision for this signal type."""
+    """Analysts' observed precision once there are enough labels, else the measured backtest rate."""
     from src.engines.adaptive_calibration import MIN_SAMPLES_FOR_ADAPTATION, _labelled_samples
+    from src.engines.measured import confirmation_rate
     s = get_signal_stats().get(signal_type.value)
     if not s or _labelled_samples(s) < MIN_SAMPLES_FOR_ADAPTATION:
-        # Not enough confirmed/false-positive labels — use conservative default
-        return 0.60
-    return round(s.get("precision", 0.60), 4)
+        return round(confirmation_rate(signal_type.value, "")["rate"], 4)
+    return round(s["precision"], 4)
 
 
 def _entity_match_score(candidate: SignalCandidate) -> float:

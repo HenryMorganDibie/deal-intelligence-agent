@@ -1,5 +1,5 @@
 import { LINKS } from "../lib/site";
-import { ArrowRight, Container, GitHubMark, LogoMark, Reveal } from "./primitives";
+import { ArrowRight, Container, LogoMark, Reveal } from "./primitives";
 
 export function FinalCta() {
   return (
@@ -27,9 +27,8 @@ export function FinalCta() {
               Run your first brief
               <ArrowRight />
             </a>
-            <a href={LINKS.github} className="btn btn-ghost" target="_blank" rel="noreferrer">
-              <GitHubMark />
-              Star on GitHub
+            <a href={LINKS.evaluation} className="btn btn-ghost">
+              See how often it was right
             </a>
           </div>
         </Reveal>
@@ -43,20 +42,19 @@ export function SiteFooter() {
     {
       title: "Product",
       links: [
-        { label: "How it works", href: "#pipeline" },
-        { label: "Attribution", href: "#attribution" },
-        { label: "Coverage", href: "#coverage" },
+        { label: "How it works", href: "/#pipeline" },
+        { label: "Attribution", href: "/#attribution" },
+        { label: "Coverage", href: "/#coverage" },
         { label: "Open the app", href: "/app" },
-        { label: "Self-host", href: "#quickstart" },
       ],
     },
     {
-      title: "Project",
+      title: "Evidence",
       links: [
-        { label: "GitHub", href: LINKS.github },
-        { label: "README", href: LINKS.readme },
-        { label: "Architecture", href: LINKS.architecture },
-        { label: "Report an issue", href: LINKS.issues },
+        { label: "Methodology", href: LINKS.methodology },
+        { label: "Evaluation", href: LINKS.evaluation },
+        { label: "Coverage by country", href: "/app/coverage" },
+        { label: "Known limits", href: LINKS.limitations },
       ],
     },
     {
@@ -69,12 +67,12 @@ export function SiteFooter() {
     <footer className="border-t hairline py-14">
       <div className="mx-auto grid w-full max-w-page gap-10 px-4 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)] lg:px-8">
         <div>
-          <a href="#top" className="flex items-center gap-2.5 text-[0.9375rem] font-medium">
+          <a href="/#top" className="flex items-center gap-2.5 text-[0.9375rem] font-medium">
             <LogoMark />
             Deal Intelligence
           </a>
           <p className="mt-4 max-w-xs text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">
-            Open-source deal intelligence for US and African markets. Research tooling, not investment advice.
+            Deal intelligence for African and US markets. Research tooling, not investment advice.
           </p>
         </div>
         {cols.map((c) => (

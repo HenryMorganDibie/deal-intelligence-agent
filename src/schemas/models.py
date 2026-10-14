@@ -174,12 +174,20 @@ class AlphaScore(BaseModel):
     recency_weight: float = Field(..., ge=0.0, le=1.0)
     liquidity_tier: LiquidityTier = LiquidityTier.PRIVATE
 
-    # Expected move (backtested estimate)
-    expected_direction: Optional[str] = None          # "positive" | "negative" | "neutral"
-    expected_magnitude_pct_low: Optional[float] = None
-    expected_magnitude_pct_high: Optional[float] = None
-    comparable_events_n: int = 0
-    move_confidence: str = "low"                       # "low" | "medium" | "high"
+    # Expected move: measured market-adjusted 10-day returns after the same kind of flag
+    # (signed interquartile range and median), or None with confidence "insufficient".
+    expected_direction: Optional[str] = None          # "positive" | "negative" | "mixed" | "neutral"
+    expected_magnitude_pct_low: Optional[float] = None   # 25th percentile, signed %
+    expected_magnitude_pct_high: Optional[float] = None  # 75th percentile, signed %
+    expected_median_pct: Optional[float] = None
+    comparable_events_n: int = 0                       # observations behind the range
+    move_confidence: str = "insufficient"              # "insufficient" | "low" | "medium" | "high"
+    move_basis: Optional[str] = None
+
+    # Compound events: the multiplier from interacting signals and the score it would give. Kept
+    # apart from `score`, which is the backtest-validated composite; the multipliers are untested.
+    compound_multiplier: float = 1.0
+    compound_adjusted_score: Optional[float] = None
 
     # Compliance flag
     requires_human_review: bool = False

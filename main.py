@@ -113,6 +113,8 @@ def build_parser() -> argparse.ArgumentParser:
     bt.add_argument("--run",      action="store_true", help="Run backtest against warehouse data")
     bt.add_argument("--synthetic",action="store_true", help="Run synthetic backtest (demo)")
     bt.add_argument("--report",   action="store_true", help="Show latest backtest results")
+    bt.add_argument("--tables",   action="store_true",
+                    help="Rebuild the measured outcome tables from the saved historical backtest")
     bt.add_argument("--signal",   default=None, help="Filter report by signal type")
     bt.add_argument("--historical", action="store_true",
                     help="Walk-forward replay over past dates with real filings, news and prices (writes docs/BACKTEST.md)")
@@ -635,6 +637,14 @@ def _run_calibration(args: argparse.Namespace) -> None:
 
 def _run_backtest(args: argparse.Namespace) -> None:
     from src.engines.backtest import BacktestEngine, get_latest_backtest
+
+    if getattr(args, "tables", False):
+        from src.engines import historical_backtest as hb
+        result = json.loads(hb.RESULTS_PATH.read_text())
+        result["alpha_validation"] = hb.alpha_validation(result["predictions"])
+        hb.write_tables(result)
+        console.print(f"[green]✓[/green] Measured outcome tables rebuilt from {hb.RESULTS_PATH}")
+        return
 
     if getattr(args, "historical", False):
         from datetime import date as _date

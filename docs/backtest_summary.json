@@ -18,8 +18,8 @@
     "base_rate": 0.021,
     "lift": 0.0,
     "price_only": false,
-    "hit_rate": 0.857,
-    "directional_n": 7,
+    "hit_rate": 0.75,
+    "directional_n": 8,
     "mean_abnormal_return_10d_pct": -5.7
    },
    "us": {
@@ -33,8 +33,8 @@
     "base_rate": 0.039,
     "lift": 0.0,
     "price_only": false,
-    "hit_rate": 0.857,
-    "directional_n": 7,
+    "hit_rate": 0.75,
+    "directional_n": 8,
     "mean_abnormal_return_10d_pct": -5.7
    },
    "africa": {
@@ -159,8 +159,8 @@
     "base_rate": 0.004,
     "lift": null,
     "price_only": true,
-    "hit_rate": 0.481,
-    "directional_n": 27,
+    "hit_rate": 0.477,
+    "directional_n": 44,
     "mean_abnormal_return_10d_pct": 0.32
    },
    "us": {
@@ -174,8 +174,8 @@
     "base_rate": 0.007,
     "lift": null,
     "price_only": true,
-    "hit_rate": 0.478,
-    "directional_n": 23,
+    "hit_rate": 0.474,
+    "directional_n": 38,
     "mean_abnormal_return_10d_pct": 0.59
    },
    "africa": {
@@ -190,7 +190,7 @@
     "lift": null,
     "price_only": true,
     "hit_rate": 0.5,
-    "directional_n": 4,
+    "directional_n": 6,
     "mean_abnormal_return_10d_pct": -1.42
    }
   },
@@ -253,8 +253,8 @@
     "base_rate": 0.364,
     "lift": 1.41,
     "price_only": false,
-    "hit_rate": 0.818,
-    "directional_n": 11,
+    "hit_rate": 0.588,
+    "directional_n": 51,
     "mean_abnormal_return_10d_pct": -1.57
    },
    "us": {
@@ -268,8 +268,8 @@
     "base_rate": 0.609,
     "lift": 1.11,
     "price_only": false,
-    "hit_rate": 0.818,
-    "directional_n": 11,
+    "hit_rate": 0.659,
+    "directional_n": 41,
     "mean_abnormal_return_10d_pct": -2.71
    },
    "africa": {
@@ -283,8 +283,8 @@
     "base_rate": 0.096,
     "lift": 0.91,
     "price_only": false,
-    "hit_rate": null,
-    "directional_n": 0,
+    "hit_rate": 0.3,
+    "directional_n": 10,
     "mean_abnormal_return_10d_pct": 3.1
    }
   },
@@ -300,8 +300,8 @@
     "base_rate": 0.112,
     "lift": 0.77,
     "price_only": false,
-    "hit_rate": 0.333,
-    "directional_n": 9,
+    "hit_rate": 0.358,
+    "directional_n": 53,
     "mean_abnormal_return_10d_pct": -1.52
    },
    "us": {
@@ -315,8 +315,8 @@
     "base_rate": 0.188,
     "lift": 0.68,
     "price_only": false,
-    "hit_rate": 0.143,
-    "directional_n": 7,
+    "hit_rate": 0.297,
+    "directional_n": 37,
     "mean_abnormal_return_10d_pct": -1.88
    },
    "africa": {
@@ -330,8 +330,8 @@
     "base_rate": 0.03,
     "lift": 0.97,
     "price_only": false,
-    "hit_rate": 1.0,
-    "directional_n": 2,
+    "hit_rate": 0.5,
+    "directional_n": 16,
     "mean_abnormal_return_10d_pct": -0.67
    }
   },
@@ -347,8 +347,8 @@
     "base_rate": 0.068,
     "lift": 2.21,
     "price_only": false,
-    "hit_rate": 0.167,
-    "directional_n": 6,
+    "hit_rate": 0.308,
+    "directional_n": 13,
     "mean_abnormal_return_10d_pct": 1.63
    },
    "us": {
@@ -362,8 +362,8 @@
     "base_rate": 0.13,
     "lift": 1.92,
     "price_only": false,
-    "hit_rate": 0.0,
-    "directional_n": 4,
+    "hit_rate": 0.2,
+    "directional_n": 10,
     "mean_abnormal_return_10d_pct": 1.91
    },
    "africa": {
@@ -377,8 +377,8 @@
     "base_rate": 0.0,
     "lift": null,
     "price_only": false,
-    "hit_rate": 0.5,
-    "directional_n": 2,
+    "hit_rate": 0.667,
+    "directional_n": 3,
     "mean_abnormal_return_10d_pct": 0.73
    }
   }
@@ -444,5 +444,66 @@
     "precision": 0.154
    }
   }
+ },
+ "alpha_validation": {
+  "labelled": 202,
+  "cutoffs": [
+   44.9,
+   65.3
+  ],
+  "bands": {
+   "low": {
+    "n": 63,
+    "alpha_range": [
+     39.7,
+     44.6
+    ],
+    "precision": 0.127,
+    "mean_abs_move_10d_pct": 3.66,
+    "moves_n": 44
+   },
+   "middle": {
+    "n": 71,
+    "alpha_range": [
+     44.9,
+     64.9
+    ],
+    "precision": 0.254,
+    "mean_abs_move_10d_pct": 3.93,
+    "moves_n": 40
+   },
+   "high": {
+    "n": 68,
+    "alpha_range": [
+     65.3,
+     93.7
+    ],
+    "precision": 0.397,
+    "mean_abs_move_10d_pct": 6.76,
+    "moves_n": 44
+   }
+  },
+  "spearman_alpha_vs_confirmed": 0.263,
+  "by_type": {
+   "leadership_change": {
+    "labelled": 82,
+    "precision": {
+     "low": 0.296,
+     "middle": 0.615,
+     "high": 0.621
+    },
+    "spearman": 0.263
+   },
+   "m_and_a_activity": {
+    "labelled": 81,
+    "precision": {
+     "low": 0.038,
+     "middle": 0.074,
+     "high": 0.143
+    },
+    "spearman": 0.121
+   }
+  },
+  "verdict": "higher alpha went with more confirmations"
  }
 }

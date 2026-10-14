@@ -16,6 +16,13 @@ type Evaluation = {
     start: string; end: string; companies: number; as_of_dates: number; lookback_days: number; horizon_days: number;
     metrics: Record<string, Record<"all" | "us" | "africa", Metric>>;
     by_severity?: Record<string, Record<"medium_plus" | "low", { labelled: number; precision: number | null }>>;
+    alpha_validation?: {
+      labelled: number;
+      bands?: Record<"low" | "middle" | "high", { n: number; alpha_range: [number, number]; precision: number | null; mean_abs_move_10d_pct: number | null; moves_n: number }>;
+      spearman_alpha_vs_confirmed?: number | null;
+      verdict?: string;
+      by_type?: Record<string, { labelled: number; precision: Record<"low" | "middle" | "high", number | null>; spearman: number | null }>;
+    };
   } | null;
   live_outcomes: unknown;
   method: string;
@@ -82,6 +89,53 @@ export default function EvaluationPage() {
             </Table>
           </div>
           <p className="mt-3 text-[0.75rem] text-[color:var(--dim)]">Counts in brackets are the sample behind each figure. {e.method}</p>
+
+          {b.alpha_validation?.bands && (
+            <>
+              <h2 className="eyebrow mt-12">Does the alpha score rank signals?</h2>
+              <p className="mt-2 max-w-3xl text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">
+                The alpha weights are design choices, so they are tested: confirmable predictions are split into thirds by
+                their alpha as of the replay date. If the score is useful, the confirmation rate should rise from the low third
+                to the high third. Verdict: {b.alpha_validation.verdict} (rank correlation{" "}
+                {b.alpha_validation.spearman_alpha_vs_confirmed}).
+              </p>
+              <div className="mt-4">
+                <Table head={["Alpha third", "Alpha range", "Predictions", "Confirmed", "Mean absolute 10-day move"]} minWidth="36rem">
+                  {(["low", "middle", "high"] as const).map((k) => {
+                    const band = b.alpha_validation!.bands![k];
+                    return (
+                      <tr key={k}>
+                        <Td>{words(k)}</Td>
+                        <Td className="kbd">{band.alpha_range[0]} to {band.alpha_range[1]}</Td>
+                        <Td className="kbd">{band.n}</Td>
+                        <Td className="kbd">{pct(band.precision)}</Td>
+                        <Td className="kbd">{band.mean_abs_move_10d_pct != null ? `${band.mean_abs_move_10d_pct}% (${band.moves_n})` : "n/a"}</Td>
+                      </tr>
+                    );
+                  })}
+                </Table>
+              </div>
+              {b.alpha_validation.by_type && Object.keys(b.alpha_validation.by_type).length > 0 && (
+                <div className="mt-6">
+                  <p className="text-[0.8125rem] text-[color:var(--muted)]">Within signal types with 30 or more labelled predictions, so the result is not only signal-type mix:</p>
+                  <div className="mt-3">
+                    <Table head={["Signal type", "Labelled", "Low third", "Middle third", "High third", "Rank correlation"]} minWidth="40rem">
+                      {Object.entries(b.alpha_validation.by_type).map(([st, r]) => (
+                        <tr key={st}>
+                          <Td>{words(st)}</Td>
+                          <Td className="kbd">{r.labelled}</Td>
+                          <Td className="kbd">{pct(r.precision.low)}</Td>
+                          <Td className="kbd">{pct(r.precision.middle)}</Td>
+                          <Td className="kbd">{pct(r.precision.high)}</Td>
+                          <Td className="kbd">{r.spearman ?? "n/a"}</Td>
+                        </tr>
+                      ))}
+                    </Table>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
 
           {b.by_severity && (
             <>

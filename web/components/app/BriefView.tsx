@@ -25,13 +25,28 @@ function SignalCard({ s }: { s: Signal }) {
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-verified">{label(s.signal_type)}</span>
         <SeverityBadge severity={s.severity} />
-        <span className="kbd text-[0.75rem] text-[color:var(--muted)]">{Math.round(s.confidence * 100)}% confidence</span>
+        <span
+          className="kbd text-[0.75rem] text-[color:var(--muted)]"
+          title="Share of past flags of this type and severity that were confirmed (walk-forward backtest)"
+        >
+          {Math.round(s.confidence * 100)}% historical hit rate
+        </span>
         {s.alpha_score && (
-          <span className="kbd text-[0.75rem] text-[color:var(--muted)]">alpha {s.alpha_score.score.toFixed(0)}</span>
+          <span
+            className="kbd text-[0.75rem] text-[color:var(--muted)]"
+            title={
+              s.alpha_score.compound_adjusted_score != null
+                ? `Compound-adjusted ${s.alpha_score.compound_adjusted_score.toFixed(0)} (untested multiplier, not included)`
+                : "Composite of severity, credibility, corroboration, recency and liquidity"
+            }
+          >
+            alpha {s.alpha_score.score.toFixed(0)}
+          </span>
         )}
         {move && (
           <span
-            className={`kbd ml-auto text-[0.8125rem] ${s.alpha_score?.expected_direction === "negative" ? "text-risk" : "text-verified"}`}
+            title={s.alpha_score?.move_basis ?? "Measured market-adjusted 10-day move after similar flags"}
+            className={`kbd ml-auto text-[0.8125rem] ${move.startsWith("↓") ? "text-risk" : move.startsWith("↑") ? "text-verified" : "text-[color:var(--muted)]"}`}
           >
             {move}
           </span>

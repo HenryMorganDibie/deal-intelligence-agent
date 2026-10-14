@@ -18,14 +18,14 @@ const SIGNALS = [
   {
     type: "Insider activity",
     sev: "HIGH",
-    move: "↑ 3–12%",
+    move: "-3.0% to +1.0%",
     text: "Form 4: open-market purchase of 105,263 shares ($10.0M) by the CEO",
     source: "SEC EDGAR · Form 4",
   },
   {
     type: "Earnings surprise",
     sev: "CRITICAL",
-    move: "↑",
+    move: "-2.2% to +0.9%",
     text: "Intel forecast crushes estimates as AI boom boosts chip demand",
     source: "Reuters · 0.95 credibility",
   },
@@ -103,7 +103,7 @@ export function HeroBrief() {
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-verified">{s.type}</span>
                 <span className="kbd text-[0.6875rem] text-[color:var(--muted)]">{s.sev}</span>
-                <span className="kbd ml-auto text-[0.75rem] text-verified">{s.move}</span>
+                <span className="kbd ml-auto text-[0.75rem] text-[color:var(--muted)]" title="Measured market-adjusted 10-day move after similar flags (interquartile range)">{s.move}</span>
               </div>
               <p className="mt-1.5 text-[0.8125rem] leading-snug text-[color:var(--text)]">{s.text}</p>
               <p className="kbd mt-1 text-[0.6875rem] text-[color:var(--dim)]">{s.source}</p>

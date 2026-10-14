@@ -546,3 +546,57 @@ def test_research_filters_and_labels_investor_types():
     assert p["investor_kinds"] == ["dfi"]
     texts = [i["text"] for i in items if i["kind"] == "deal"]
     assert len(texts) == 1 and "Proparco (development finance institution)" in texts[0]
+
+
+# ── Measured outcomes: calibration and expected moves come from data ─────────
+
+from src.engines import measured as ms  # noqa: E402
+
+
+def _pred(st, sev, confirmed=None, correct=None, move=None, alpha=None):
+    return {"signal_type": st, "severity": sev, "event_confirmed": confirmed, "direction_correct": correct,
+            "abnormal_return_10d_pct": move, "alpha": alpha}
+
+
+def test_measured_tables_count_only_what_happened():
+    preds = ([_pred("m_and_a_activity", "low", c, move=m) for c, m in [(True, 2.0), (False, -1.0), (False, -3.0)]]
+             + [_pred("insider_activity", "high", correct=k, move=1.0) for k in (True, False)])
+    t = ms.build(preds)
+    ma = t["signals"]["m_and_a_activity"]["type"]
+    assert ma["confirmation"] == {"labelled": 3, "confirmed": 1, "rate": 0.3333}
+    assert ma["moves"]["median"] == -1.0 and ma["moves"]["n"] == 3
+    assert t["signals"]["insider_activity"]["type"]["direction"] == {"labelled": 2, "correct": 1, "rate": 0.5}
+    assert t["overall_confirmation"]["rate"] == 0.3333
+
+
+def test_no_history_means_no_invented_move():
+    ms.set_tables({"signals": {}, "overall_confirmation": {"labelled": 0, "confirmed": 0, "rate": None}})
+    try:
+        assert ms.expected_move("credit_risk", "high") is None
+        assert ms.confirmation_rate("credit_risk", "high")["n"] == 0
+    finally:
+        ms.set_tables(None)
+
+
+def test_signed_ranges_and_legacy_briefs():
+    assert ms.signed_range("negative", 8.0, 20.0) == (-20.0, -8.0)        # stored before measured moves
+    assert ms.signed_range("negative", -3.0, 1.0) == (-3.0, 1.0)
+    assert ms.magnitude_error(-5.0, "negative", -6.0, -2.0) == 1.0
+    assert ms.describe_move(-2.8, 1.3, -1.3, 53) == "-2.8% to +1.3% (median -1.3%, n=53)"
+
+
+def test_committed_tables_have_no_hand_typed_rows():
+    t = ms.load()
+    assert t["source"].startswith("walk-forward historical backtest")
+    for entry in t["signals"].values():
+        moves = entry["type"]["moves"]
+        assert moves is None or moves["n"] >= 1
+
+
+def test_alpha_validation_reports_bands_and_correlation():
+    from src.engines.historical_backtest import alpha_validation, spearman
+    preds = [_pred("m_and_a_activity", "low", confirmed=a > 60, move=1.0, alpha=a) for a in range(40, 85, 5)]
+    v = alpha_validation(preds)
+    assert v["bands"]["high"]["precision"] == 1.0 and v["bands"]["low"]["precision"] == 0.0
+    assert v["verdict"] == "higher alpha went with more confirmations"
+    assert spearman([1, 2, 3, 4], [1, 2, 3, 4]) == 1.0 and spearman([1, 2, 3], [3, 2, 1]) == -1.0

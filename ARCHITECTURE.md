@@ -36,24 +36,31 @@ Node 2 — DeterministicSignalEngine                     ← ZERO LLM
       │
       ▼
 Node 3 — LLMExplanationNode                            ← LLM (explanation only)
-  Adaptive calibration derives severity from outcome-adjusted base rates.
-  Confidence comes from calibrated base-rate tables. Each signal also carries a
-  7-component evidence-quality breakdown (engines/confidence.py), shown in briefs.
+  Severity comes from rule-strength bands (stated thresholds, not data).
+  Confidence is measured: the hit rate of past flags of the same type and severity in
+  the walk-forward backtest (engines/measured.py), smoothed for small samples and
+  replaced by live outcomes per market once 10 exist. Each signal also carries a
+  7-component evidence-quality rubric (engines/confidence.py), shown in briefs.
   LLM writes: headline, evidence list, 2-3 sentence reasoning. Cannot change signal_type or severity.
   Fallback: if LLM API fails, deterministic output used directly (no crash).
       │
       ▼
 Node 4 — AlphaScoringNode                              ← ZERO LLM
   0–100 composite score: severity×0.35 + credibility×0.25 + corroboration×0.20 + recency×0.10 + liquidity×0.10
-  Expected move estimates from 14–91 historical comparables per signal type.
+  Weights are design choices, tested in the backtest: confirmation rate by alpha third
+  13% / 25% / 40%, and within leadership (30% -> 62%) and M&A (4% -> 14%).
+  Expected move: the measured market-adjusted 10-day return after the same kind of flag
+  (interquartile range, median, n), or "insufficient history" below 10 observations.
   SHAP-style explainer: every point attributed to a specific component.
   Compliance flags: human review at alpha ≥70 or CRITICAL severity.
       │
       ▼
 Node 5 — SignalInteractionEngine                       ← ZERO LLM
   14 typed interaction rules across 5 categories (reinforcing/cascading/escalating/converging/contradictory).
-  Alpha multipliers up to 2.5× applied to participating signals.
-  Example: CEO departure + covenant breach + insider selling → CASCADING distress (2.5×).
+  Each rule carries a multiplier (up to 2.5×). It is recorded as a compound-adjusted
+  score beside the alpha, not folded into it, because it has not been validated; it can
+  still trigger human review. Example: CEO departure + covenant breach + insider selling
+  → CASCADING distress (2.5×).
       │
       ▼
 Node 6 — BriefSynthesisAgent                          ← LLM (narrative only)
@@ -78,12 +85,12 @@ AnalystBrief → Terminal | JSON | Markdown
 | Engine | File | Purpose |
 |--------|------|---------|
 | Deterministic Signal Engine | `engines/deterministic_engine.py` | 70+ rules, NER, corroboration, zero LLM |
-| Signal Interaction Engine | `engines/signal_interaction.py` | 17 direction-aware compound event rules, alpha multipliers |
-| Calibration | `engines/calibration.py` | Historical base rate tables per signal type |
+| Signal Interaction Engine | `engines/signal_interaction.py` | 17 direction-aware compound event rules, compound-adjusted scores (untested) |
+| Calibration | `engines/calibration.py` | Severity bands + measured hit rates (`engines/measured.py`) |
 | Adaptive Calibration | `engines/adaptive_calibration.py` | Outcome-aware severity adjustment from feedback |
 | Confidence Decomposition | `engines/confidence.py` | 7-component evidence-quality breakdown attached to every signal |
 | Semantic Extraction | `engines/semantic.py` | 9 typed financial clause categories |
-| Alpha Scorer | `engines/alpha_scorer.py` | 0–100 composite + expected moves |
+| Alpha Scorer | `engines/alpha_scorer.py` | 0–100 composite + measured moves after similar flags |
 | Alpha Explainer | `engines/alpha_explainer.py` | SHAP-style deterministic score attribution |
 | Signal Registry | `engines/signal_registry.py` | Signal metadata; patterns derived from the engine's `SIGNAL_RULES` |
 | Signal Interaction | `engines/signal_interaction.py` | Compound event detection, escalation |
@@ -287,6 +294,18 @@ risk. Machine-readable filings and prices exist for NGX and NSE Kenya (tier A), 
 for JSE, EGX and Casablanca (tier B); the other 49 are news-only (tier C). The coverage
 page states this per country.
 
+### 17. What is measured and what is a design choice
+Measured: signal confidence (hit rates by type and severity), expected moves (market-
+adjusted returns after similar flags), the evidence rubric's historical-precision
+component, country risk inputs, deal amounts and FX conversion. Design choices, stated:
+severity band thresholds, the alpha weights, the evidence rubric's other grades,
+comparable-deal scoring and the risk formulas' scaling. Earlier versions carried hand-typed
+expected-move ranges and materialisation rates attributed to academic studies that do not
+publish such figures; they were replaced with the measured tables, and the alpha weights
+were tested against outcomes (docs/BACKTEST.md, "Does alpha rank signals?"). The measured
+tables rest on 46 companies over 18 months, so several types have small samples; every
+figure carries its count.
+
 ---
 
 ## CLI Command Reference
@@ -361,7 +380,7 @@ python main.py registry --show credit_risk
 | Phase | What | Status |
 |-------|------|--------|
 | Separation of concerns | Deterministic engine + LLM explanation layer | ✅ Done |
-| Alpha score layer | 0–100 composite + expected moves + SHAP explainer | ✅ Done |
+| Alpha score layer | 0–100 composite + measured moves + SHAP explainer, validated in the backtest | ✅ Done |
 | Compound event engine | 17 direction-aware interaction rules + escalation multipliers | ✅ Done |
 | Institutional audit | Hash-chained audit log + compliance mode | ✅ Done |
 | Feedback loop | False positive tracking + source EMA + precision/recall | ✅ Done |
@@ -383,7 +402,7 @@ python main.py registry --show credit_risk
 | Automatic outcome labelling | Benchmark-adjusted returns, SEC ground truth, recall/F1, per-market calibration | ✅ Done |
 | French-language detection | Rules, extraction, attribution and news for francophone Africa | ✅ Done |
 | Hybrid NLP detection | FinBERT/sentence-transformers alongside deterministic (separate service) | Next |
-| ML severity model | Trained outcome model replacing base rate tables | Next |
+| ML severity model | Trained outcome model replacing the rule-strength bands | Next |
 | Live market data (pro) | Bloomberg/Refinitiv for full coverage | Next |
 | Hosted app | Open-access web app with shareable briefs (Next.js + Vercel) | ✅ Done |
 | All 54 African countries | Registry, national news editions and languages, regulators, coverage tiers | ✅ Done |

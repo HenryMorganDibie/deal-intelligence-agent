@@ -27,8 +27,8 @@ const NODES: Node[] = [
     n: "03",
     name: "Calibrate",
     kind: "verified",
-    body: "Raw scores map to severity bands from historical base rates. CRITICAL needs two independent sources. Analyst feedback adjusts the bands once 10 labelled outcomes exist.",
-    out: "severity + materialisation probability",
+    body: "Rule strength sets the severity band; CRITICAL needs two independent sources. Confidence is measured: how often past flags of the same type and severity were confirmed in a walk-forward backtest. Live outcomes take over once 10 exist.",
+    out: "severity + measured hit rate",
   },
   {
     n: "04",
@@ -41,7 +41,7 @@ const NODES: Node[] = [
     n: "05",
     name: "Score",
     kind: "verified",
-    body: "Alpha score from severity, source credibility, corroboration, recency and liquidity, plus an expected move and an evidence-quality breakdown.",
+    body: "Alpha score from severity, source credibility, corroboration, recency and liquidity, with the measured move that followed similar flags and an evidence-quality breakdown.",
     out: "0–100 alpha, direction, review flags",
   },
   {

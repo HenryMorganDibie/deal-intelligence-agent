@@ -6,14 +6,14 @@ Walk-forward replay over **2024-01-15 to 2025-06-15**: 46 companies (US, JSE, NG
 
 | Signal type | Predictions | Precision | Official | Base rate | Lift | Recall | Hit rate | Abn. return 10d |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| credit risk | 11 | 0% (11) | 0% (11) | 2% | 0.0x | 0% (7) | 86% (7) | -5.7% |
+| credit risk | 11 | 0% (11) | 0% (11) | 2% | 0.0x | 0% (7) | 75% (8) | -5.7% |
 | debt restructuring | 1 | 0% (1) | 0% (1) | 1% | 0.0x | 0% (3) | 100% (1) | -26.7% |
 | distressed asset | 7 | 14% (7) | 14% (7) | 6% | 2.31x | 9% (35) | 50% (2) | 3.06% |
-| earnings surprise | 56 | – (0) | – (0) | 0% | –x | 0% (1) | 48% (27) | 0.32% |
+| earnings surprise | 56 | – (0) | – (0) | 0% | –x | 0% (1) | 48% (44) | 0.32% |
 | insider activity | 67 | – (0) | – (0) | 3% | –x | 24% (17) | 52% (40) | -0.19% |
-| leadership change | 82 | 51% (82) | 49% (69) | 36% | 1.41x | 38% (248) | 82% (11) | -1.57% |
-| m and a activity | 81 | 9% (81) | 8% (59) | 11% | 0.77x | 22% (110) | 33% (9) | -1.52% |
-| regulatory action | 20 | 15% (20) | 0% (16) | 7% | 2.21x | 17% (46) | 17% (6) | 1.63% |
+| leadership change | 82 | 51% (82) | 49% (69) | 36% | 1.41x | 38% (248) | 59% (51) | -1.57% |
+| m and a activity | 81 | 9% (81) | 8% (59) | 11% | 0.77x | 22% (110) | 36% (53) | -1.52% |
+| regulatory action | 20 | 15% (20) | 0% (16) | 7% | 2.21x | 17% (46) | 31% (13) | 1.63% |
 
 Counts in brackets are the sample behind each figure.
 
@@ -30,31 +30,50 @@ Low-severity flags are the noisy tail; medium and above is the operating point f
 | m and a activity | 12% (17) | 8% (64) |
 | regulatory action | 14% (7) | 15% (13) |
 
+## Does alpha rank signals?
+
+Confirmable predictions split into thirds by alpha (computed as of each replay date, liquidity held constant). If the alpha weights are useful, precision should rise from the low to the high third.
+
+| Alpha third | Alpha range | Predictions | Precision | Mean absolute 10-day move |
+|---|---|---:|---:|---:|
+| low | 39.7 to 44.6 | 63 | 13% | 3.66% (44) |
+| middle | 44.9 to 64.9 | 71 | 25% | 3.93% (40) |
+| high | 65.3 to 93.7 | 68 | 40% | 6.76% (44) |
+
+Rank correlation between alpha and confirmation: 0.263. Verdict: higher alpha went with more confirmations.
+
+Within signal types (30 or more labelled predictions), so the result is not just signal-type mix:
+
+| Signal type | Labelled | Low third | Middle third | High third | Rank correlation |
+|---|---:|---:|---:|---:|---:|
+| leadership change | 82 | 30% | 62% | 62% | 0.263 |
+| m and a activity | 81 | 4% | 7% | 14% | 0.121 |
+
 ## By market
 
 ### United States
 
 | Signal type | Predictions | Precision | Base rate | Lift | Recall | Hit rate |
 |---|---:|---:|---:|---:|---:|---:|
-| credit risk | 11 | 0% (11) | 4% | 0.0x | 0% (7) | 86% (7) |
+| credit risk | 11 | 0% (11) | 4% | 0.0x | 0% (7) | 75% (8) |
 | debt restructuring | 1 | 0% (1) | 1% | 0.0x | 0% (3) | 100% (1) |
 | distressed asset | 6 | 17% (6) | 11% | 1.48x | 9% (34) | 50% (2) |
-| earnings surprise | 48 | – (0) | 1% | –x | 0% (1) | 48% (23) |
+| earnings surprise | 48 | – (0) | 1% | –x | 0% (1) | 47% (38) |
 | insider activity | 52 | – (0) | 6% | –x | 24% (17) | 51% (39) |
-| leadership change | 59 | 68% (59) | 61% | 1.11x | 39% (220) | 82% (11) |
-| m and a activity | 47 | 13% (47) | 19% | 0.68x | 22% (106) | 14% (7) |
-| regulatory action | 12 | 25% (12) | 13% | 1.92x | 18% (44) | 0% (4) |
+| leadership change | 59 | 68% (59) | 61% | 1.11x | 39% (220) | 66% (41) |
+| m and a activity | 47 | 13% (47) | 19% | 0.68x | 22% (106) | 30% (37) |
+| regulatory action | 12 | 25% (12) | 13% | 1.92x | 18% (44) | 20% (10) |
 
 ### Africa (JSE, NGX, NSE Kenya)
 
 | Signal type | Predictions | Precision | Base rate | Lift | Recall | Hit rate |
 |---|---:|---:|---:|---:|---:|---:|
 | distressed asset | 1 | 0% (1) | 0% | 0.0x | 0% (1) | – (0) |
-| earnings surprise | 8 | – (0) | 0% | –x | – (0) | 50% (4) |
+| earnings surprise | 8 | – (0) | 0% | –x | – (0) | 50% (6) |
 | insider activity | 15 | – (0) | 0% | –x | – (0) | 100% (1) |
-| leadership change | 23 | 9% (23) | 10% | 0.91x | 29% (28) | – (0) |
-| m and a activity | 34 | 3% (34) | 3% | 0.97x | 25% (4) | 100% (2) |
-| regulatory action | 8 | 0% (8) | 0% | –x | 0% (2) | 50% (2) |
+| leadership change | 23 | 9% (23) | 10% | 0.91x | 29% (28) | 30% (10) |
+| m and a activity | 34 | 3% (34) | 3% | 0.97x | 25% (4) | 50% (16) |
+| regulatory action | 8 | 0% (8) | 0% | –x | 0% (2) | 67% (3) |
 
 ## Method and caveats
 

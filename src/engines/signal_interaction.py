@@ -252,8 +252,9 @@ def _apply_alpha_multipliers(
     compounds: list[CompoundSignal],
 ) -> list[DetectedSignal]:
     """
-    Apply compound alpha multipliers back to participating signals.
-    Signals involved in compound events get boosted alpha scores.
+    Record compound multipliers on participating signals. The alpha score itself is left as the
+    validated composite; the compound-adjusted score is stored beside it, and it can still trigger
+    human review (more review is the safe side of an untested multiplier).
     """
     if not compounds or not signals:
         return signals
@@ -276,7 +277,7 @@ def _apply_alpha_multipliers(
             updated.append(sig)
             continue
         new_score = round(min(sig.alpha_score.score * mult, 100.0), 1)
-        alpha_update: dict = {"score": new_score}
+        alpha_update: dict = {"compound_multiplier": round(mult, 3), "compound_adjusted_score": new_score}
         # The human-review gate ran before compounding; re-apply it to the new score.
         if new_score >= HUMAN_REVIEW_ALPHA_THRESHOLD and not sig.alpha_score.requires_human_review:
             alpha_update["requires_human_review"] = True
