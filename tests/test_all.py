@@ -3653,3 +3653,34 @@ class TestHostedApi:
         assert [(o["event_confirmed"], o["abnormal_return_10d_pct"], o["direction_correct"]) for o in outcomes] \
             == [(True, -6.0, True)]
         assert [e["signal_type"] for e in truth] == ["leadership_change"]
+
+
+class TestInsiderGraph:
+    XML = ("<ownershipDocument><reportingOwner><reportingOwnerId><rptOwnerCik>0001234</rptOwnerCik>"
+           "<rptOwnerName>DOE JANE</rptOwnerName></reportingOwnerId><reportingOwnerRelationship>"
+           "<isDirector>1</isDirector><officerTitle>CFO</officerTitle></reportingOwnerRelationship>"
+           "</reportingOwner></ownershipDocument>")
+
+    def test_form4_owner(self):
+        from src.tools.edgar_tool import form4_owner
+        assert form4_owner(self.XML) == {"name": "DOE JANE", "role": "Director, CFO", "cik": "0001234"}
+
+    def test_shared_insider_links_companies(self):
+        from src.engines.graph_intelligence import EntityGraphEngine, update_graph_from_brief
+        from types import SimpleNamespace
+        def brief(name):
+            return SimpleNamespace(company_name=name, ticker=None, overall_severity=Severity.LOW, top_alpha_score=None)
+        jane = {"name": "DOE JANE", "role": "Director", "cik": "0001234"}
+        update_graph_from_brief(brief("Acme"), [jane, {"name": "ROE RICHARD", "role": "CEO", "cik": "0009"}])
+        update_graph_from_brief(brief("Beta"), [jane])
+        g = EntityGraphEngine()
+        assert g.G.has_edge("Acme", "Beta") and g.G["Acme"]["Beta"]["edge_type"] == "board_overlap"
+        assert "Beta" in g.get_connected_companies("Acme")
+
+    def test_same_name_different_person_is_not_linked(self):
+        from src.engines.graph_intelligence import EntityGraphEngine, update_graph_from_brief
+        from types import SimpleNamespace
+        b = lambda n: SimpleNamespace(company_name=n, ticker=None, overall_severity=Severity.LOW, top_alpha_score=None)
+        update_graph_from_brief(b("Acme"), [{"name": "SMITH JOHN", "role": "Director", "cik": "111"}])
+        update_graph_from_brief(b("Beta"), [{"name": "SMITH JOHN", "role": "Director", "cik": "222"}])
+        assert not EntityGraphEngine().G.has_edge("Acme", "Beta")

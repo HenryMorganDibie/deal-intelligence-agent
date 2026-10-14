@@ -72,6 +72,7 @@ class DataCollectionAgent:
             exchange=profile_dict.get("exchange"),
             sector=profile_dict.get("sector"),
             description=profile_dict.get("description"),
+            insiders=profile_dict.get("insiders") or [],
         )
 
         # ── Process African exchange disclosures ────────────────────────

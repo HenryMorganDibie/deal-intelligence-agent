@@ -5,6 +5,7 @@ Uses the official EDGAR APIs (no auth required, rate-limited to 10 req/s).
 from __future__ import annotations
 
 import asyncio
+import html
 import json
 import re
 from datetime import datetime, timedelta
@@ -105,7 +106,22 @@ def _xml_value(block: str, tag: str) -> str:
         return ""
     inner = m.group(1)
     v = re.search(r"<value>(.*?)</value>", inner, re.S)
-    return (v.group(1) if v else inner).strip()
+    return html.unescape((v.group(1) if v else inner).strip())
+
+
+def form4_owner(xml: str) -> Optional[dict[str, str]]:
+    """The reporting owner of a Form 4 and their role, for the entity graph."""
+    name = _xml_value(xml, "rptOwnerName")
+    if not name:
+        return None
+    roles = []
+    if _xml_value(xml, "isDirector") in ("1", "true"):
+        roles.append("Director")
+    if _xml_value(xml, "officerTitle"):
+        roles.append(_xml_value(xml, "officerTitle"))
+    if _xml_value(xml, "isTenPercentOwner") in ("1", "true"):
+        roles.append("10% owner")
+    return {"name": name, "role": ", ".join(roles) or "Insider", "cik": _xml_value(xml, "rptOwnerCik")}
 
 
 def describe_form4(xml: str) -> Optional[str]:
@@ -163,6 +179,8 @@ class EdgarTool:
     def __init__(self, timeout: float = 20.0):
         self._client: Optional[httpx.AsyncClient] = None
         self.timeout = timeout
+        # Reporting owners seen in every Form 4 read, routine ones included.
+        self.insiders: dict[str, dict[str, str]] = {}
 
     async def __aenter__(self) -> "EdgarTool":
         self._client = httpx.AsyncClient(
@@ -319,6 +337,9 @@ class EdgarTool:
                 r = await self.client.get(xml_url)
                 r.raise_for_status()
                 summary = describe_form4(r.text)
+                owner = form4_owner(r.text)
+                if owner:
+                    self.insiders.setdefault(owner["cik"] or owner["name"], owner)
             except Exception:
                 summary = None
             return f.model_copy(update={"description": summary, "document_url": xml_url}) if summary else None
@@ -451,4 +472,5 @@ async def search_company_filings(
                 seen.add(key)
                 all_filings.append(f)
 
+        profile = {**profile, "insiders": list(edgar.insiders.values())}
         return profile, all_filings

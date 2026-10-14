@@ -47,12 +47,25 @@ class EntityGraphEngine:
         """Add or update a company node."""
         self.G.add_node(name, node_type="company", updated_at=utcnow().isoformat(), **attrs)
 
-    def add_executive(self, name: str, company: str, role: str) -> None:
-        """Link an executive to a company."""
-        exec_node = f"exec:{name}"
+    def add_executive(self, name: str, company: str, role: str, person_id: Optional[str] = None) -> list[str]:
+        """
+        Link an executive (or director, or major holder) to a company. When the
+        same person already sits at other companies, record board overlaps with
+        each of them. person_id (e.g. an SEC CIK) disambiguates shared names.
+        Returns the companies newly linked by overlap.
+        """
+        exec_node = f"exec:{person_id or name}"
         self.G.add_node(exec_node, node_type="executive", name=name, role=role)
+        others = [n for n in self.G.neighbors(exec_node)
+                  if n != company and self.G.nodes[n].get("node_type") == "company"] if exec_node in self.G else []
         self.G.add_edge(exec_node, company, edge_type="employed_by", role=role,
                         added_at=utcnow().isoformat())
+        new = []
+        for other in others:
+            if not self.G.has_edge(company, other):
+                self.add_board_overlap(name, company, other)
+                new.append(other)
+        return new
 
     def add_lender_relationship(self, lender: str, borrower: str, facility_type: str = "credit") -> None:
         """Link a lender to a borrower."""
@@ -188,10 +201,12 @@ class EntityGraphEngine:
         }
 
 
-def update_graph_from_brief(brief: Any) -> None:
+def update_graph_from_brief(brief: Any, insiders: Optional[list[dict]] = None) -> None:
     """
-    Auto-update the entity graph from a completed analyst brief.
-    Adds company node and links from detected signal context.
+    Auto-update the entity graph from a completed analyst brief: the company
+    node, plus its SEC Form 4 insiders (officers, directors, 10% holders). A
+    person who appears at two analysed companies links them by board overlap,
+    which contagion detection then follows.
     """
     engine = EntityGraphEngine()
     engine.add_company(
@@ -201,4 +216,8 @@ def update_graph_from_brief(brief: Any) -> None:
         last_alpha=brief.top_alpha_score or 0,
         last_analysed=utcnow().isoformat(),
     )
+    for person in insiders or []:
+        if person.get("name"):
+            engine.add_executive(person["name"], brief.company_name, person.get("role", "Insider"),
+                                 person_id=person.get("cik") or None)
     engine.save()

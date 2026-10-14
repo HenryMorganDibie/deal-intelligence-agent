@@ -103,7 +103,7 @@ async def _node_post_process(d: dict[str, Any]) -> dict[str, Any]:
     # Entity graph update
     try:
         from src.engines.graph_intelligence import update_graph_from_brief
-        update_graph_from_brief(state.brief)
+        update_graph_from_brief(state.brief, state.company_profile.insiders if state.company_profile else None)
     except Exception as e:
         state.errors.append(f"Graph update failed (non-fatal): {e}")
 

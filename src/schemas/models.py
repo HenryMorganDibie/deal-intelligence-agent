@@ -103,6 +103,8 @@ class CompanyProfile(BaseModel):
     exchange: Optional[str] = None
     sector: Optional[str] = None
     description: Optional[str] = None
+    # SEC Form 4 reporting owners: [{"name", "role", "cik"}], for the entity graph.
+    insiders: list[dict[str, str]] = Field(default_factory=list)
     resolved_at: datetime = Field(default_factory=utcnow)
 
 
