@@ -2,7 +2,7 @@
 # when the root directory is web/), so it must never exclude web/. The API
 # function keeps web/ out of its bundle via excludeFiles in vercel.json.
 tests
-data
+/data
 *.md
 !README.md
 __pycache__
