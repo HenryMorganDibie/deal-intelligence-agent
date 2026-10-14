@@ -174,7 +174,7 @@ def print_brief(brief: AnalystBrief) -> None:
                 if move:
                     alpha_line += (
                         f"\n[bold]Measured move after similar flags:[/bold] [{color}]{move}[/{color}]"
-                        f"  [dim](market-adjusted, 10 trading days; {a.move_confidence} confidence)[/dim]"
+                        f"  [dim](market-adjusted, 10 calendar days; {a.move_confidence} confidence)[/dim]"
                     )
                 if a.requires_human_review:
                     alpha_line += f"\n[bold red]⚑ HUMAN REVIEW: {_e(a.review_reason)}[/bold red]"

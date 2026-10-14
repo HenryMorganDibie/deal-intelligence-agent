@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "../../components/Closing";
 import { SiteNav } from "../../components/SiteNav";
 import { Container } from "../../components/primitives";
-import { count, getPulse, shortDate, type Pulse } from "../../lib/pulse";
+import { ciText, count, getPulse, getQuality, shortDate, type Pulse } from "../../lib/pulse";
 
 // Figures in "Current state" follow the live data (see lib/pulse.ts).
 export const revalidate = 1800;
@@ -80,7 +80,7 @@ function CurrentState({ pulse }: { pulse: Pulse }) {
 }
 
 export default async function MethodologyPage() {
-  const pulse = await getPulse();
+  const [pulse, quality] = await Promise.all([getPulse(), getQuality()]);
   return (
     <>
       <SiteNav />
@@ -151,14 +151,17 @@ export default async function MethodologyPage() {
             <p>
               Whether the weights are useful is tested <Label kind="measured" />: the backtest splits predictions into thirds by
               alpha and reports each third&apos;s confirmation rate, with the rank correlation. The evaluation page shows the
-              result. Alpha is not a recommendation to buy or sell.
+              result. A rising confirmation rate shows the score orders flags by how often the event happened; it does not show
+              that high-alpha flags earn returns, which the evaluation page measures separately and finds indistinguishable from
+              zero at the current sample size. Alpha is not a recommendation to buy or sell.
             </p>
           </Part>
 
           <Part id="moves" title="Expected moves">
             <p>
-              The move shown with a signal <Label kind="measured" /> is the distribution of market-adjusted returns over the 10
-              trading days after the same kind of flag in the backtest (benchmarks: S&amp;P 500, Satrix 40, NGX ASI, NSE NASI). It
+              The move shown with a signal <Label kind="measured" /> is the distribution of market-adjusted returns over 10
+              calendar days after the same kind of flag in the backtest (close on the first trading day on or after day 10,
+              against the first close on or after the flag; about 7 trading days) (benchmarks: S&amp;P 500, Satrix 40, NGX ASI, NSE NASI). It
               is shown as the interquartile range with the median and the number of observations. With fewer than 10
               observations the product says &quot;insufficient history&quot; rather than show a range. The direction is the
               source&apos;s own when it states one (an earnings beat, an insider purchase), else the measured majority.
@@ -181,6 +184,21 @@ export default async function MethodologyPage() {
               parties, amount, stake, round, stage, sector and country, with every source linked. Amounts are as reported and
               converted to US dollars at the deal year&apos;s average official rate <Label kind="measured" />. Implied valuations
               are amount ÷ stake. Reports of one transaction merge by company and month.
+            </p>
+            <p>
+              Each record shows its own verification <Label kind="measured" />. Every source keeps its headline, sources are
+              grouped into independent stories (syndicated copies of one wire story and near-identical headlines count once),
+              and each field is marked corroborated (stated by two or more independent stories), single source, derived
+              (currency conversion, stake-implied valuation), classified (sector, by keyword rules), uncertain (sources disagree,
+              a malformed party name, or a present-tense acquisition headline that does not confirm completion) or not disclosed.
+              The first-reported date, the date a source first reported the deal as announced, and the date one first reported
+              it completed are shown separately; none is a legal signing or closing date.
+            </p>
+            <p>
+              Accuracy is measured on labelled samples of raw headlines, with a held-out set drawn after all fixes and never used
+              for tuning{quality?.dealComplete ? `: ${ciText(quality.dealPrecision)} of extracted records are genuine transactions, ${ciText(quality.dealRecall)} of deal-like headlines are caught, and ${ciText(quality.dealComplete)} of records have every field right` : ""}.
+              Field-by-field results, by country, source, language and deal type, are on the{" "}
+              <a href="/app/evaluation#data-quality" className="text-verified hover:underline">evaluation page</a>.
             </p>
             <p>
               Comparables are scored <Label kind="design" />: 3 points for the same sector, 2 for the same type, 2 for the same
@@ -225,6 +243,26 @@ export default async function MethodologyPage() {
               a random company-month had the event anyway. Hosted briefs are also labelled daily against later filings,
               credible news and abnormal price moves.
             </p>
+            <p>
+              Two outcomes are kept apart throughout. <strong className="text-[color:var(--text)]">Event confirmation</strong>{" "}
+              asks whether the flagged event happened within 90 calendar days. <strong className="text-[color:var(--text)]">Market
+              reaction</strong> asks whether the market-adjusted share price moved the predicted way over 10 calendar days. A
+              confirmed event can come with no price move, and neither is a trading result: no costs, sizing or portfolio
+              construction are applied.
+            </p>
+            <p>
+              Time windows, reconciled: the backtest judges confirmation over 90 calendar days and price over 10 calendar days.
+              Hosted briefs use the same windows but are labelled later, at 12 days for price (so the day-10 close exists even
+              across a weekend or holiday) and at 95 days for confirmation (the 90-day window plus 5 days for filings and reports
+              inside it to be indexed). Intervals are 95% Wilson intervals; the full labelling rules and every prediction are
+              downloadable from the evaluation page.
+            </p>
+            <p>
+              Attribution, whether a news item&apos;s event belongs to the target company, is tested on adversarial headlines
+              (pronouns, aliases, subsidiaries, several companies in one deal, denials, rumours, historical references)
+              {quality?.attributionRecall ? `; on the held-out set the engine found ${ciText(quality.attributionRecall)} of real events with precision ${ciText(quality.attributionPrecision)}` : ""}.
+              Corroboration counts independent stories, not articles.
+            </p>
           </Part>
 
           <Part id="coverage" title="Coverage">
@@ -243,11 +281,14 @@ export default async function MethodologyPage() {
                 {pulse ? `, plus ${count(pulse.measured.live_observations)} live outcomes so far` : ""}; several signal types
                 have small samples, shown with every figure.
               </li>
-              <li>Some signal types do not beat their base rate in the backtest (M&amp;A among them). The evaluation page shows which.</li>
-              <li>Deals come from public reporting: undisclosed private deals cannot appear. Sample audits find about 80% of records fully correct and 90% genuine transactions.</li>
+              <li>Only leadership-change flags clearly beat their base rate in the backtest; M&amp;A and credit flags do not, and other types have samples too small to tell. The evaluation page shows each with its interval.</li>
+              <li>
+                Deals come from public reporting: undisclosed private deals cannot appear.
+                {quality?.dealComplete ? ` On the held-out set ${ciText(quality.dealComplete)} of records have every field right, so individual fields marked single-source or uncertain should be checked against the linked sources.` : " Fields marked single-source or uncertain should be checked against the linked sources."}
+              </li>
               <li>Statement layouts vary, so a figure is only marked verified when an accounting identity confirms it; interim statements are linked, not parsed.</li>
               <li>World Bank data are annual and often a year old; sovereign ratings and bond spreads are licensed and not included.</li>
-              <li>Detection is pattern-based: auditable and reproducible, but unusual phrasings can be missed.</li>
+              <li>Detection is pattern-based: auditable and reproducible, but phrasings the rules do not cover are missed, and on news headlines most are. Filings and exchange notices are covered by stronger, item-code rules.</li>
             </ul>
           </Part>
         </Container>

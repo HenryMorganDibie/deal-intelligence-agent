@@ -265,9 +265,12 @@ followed, trading a little recall for precision.
 
 ### 12. Deals database: extracted from reporting
 Deals are extracted by rules from headlines (English, French, Portuguese), with every
-source linked. Audits of random samples of 40 found about 75 to 80% fully correct and
-about 90% genuine transactions; the errors are mostly a wrong deal type or a generic
-counterparty name. Amounts are as reported, converted at the deal year's average official
+source linked. On a held-out labelled set (evaluation/README.md) 82% [75–88] of extracted
+records are genuine transactions, 92% [85–96] of deal-like headlines are caught, and 71%
+[61–79] of records have every field right; missed duplicates and malformed party names are
+the main weaknesses. Each record carries its own verification (engines/provenance.py):
+sources grouped into independent stories, and every field marked corroborated, single
+source, derived, classified, uncertain or not disclosed. Amounts are as reported, converted at the deal year's average official
 rate. Undisclosed deals that no one reports cannot appear, and a headline that names no
 African country or Africa is not placed. Raw headlines are kept, so an improved extractor
 is re-applied with `deals --reextract`.

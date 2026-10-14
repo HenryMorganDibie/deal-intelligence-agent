@@ -3635,7 +3635,7 @@ class TestSubjectAttribution:
 
     @pytest.mark.parametrize("company,title,expected", [
         ("Sonatel", "Sonatel : offre publique d'achat sur sa filiale malienne", SignalType.MA_ACTIVITY),
-        ("Ecobank", "Ecobank Côte d'Ivoire annonce une restructuration de sa dette", SignalType.DEBT_RESTRUCTURE),
+        ("Ecobank Côte d'Ivoire", "Ecobank Côte d'Ivoire annonce une restructuration de sa dette", SignalType.DEBT_RESTRUCTURE),
         ("Orange CI", "Orange CI publie un avertissement sur résultats", SignalType.EARNINGS_SURPRISE),
         ("SGBCI", "SGBCI : démission du directeur général", SignalType.LEADERSHIP_CHANGE),
         ("Attijariwafa", "La CREPMF inflige une sanction à Attijariwafa", SignalType.REGULATORY_ACTION),

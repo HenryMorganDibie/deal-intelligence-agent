@@ -1,0 +1,80 @@
+{"item_id": "i000", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "low", "note": "b is a fragment embedding IFC"}
+{"item_id": "i001", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "possessive of IFC"}
+{"item_id": "i002", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a is combination; World Bank IFC = IFC"}
+{"item_id": "i003", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "subsidiary vs parent"}
+{"item_id": "i004", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a is combination"}
+{"item_id": "i005", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b is combination"}
+{"item_id": "i006", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "both sentence fragments"}
+{"item_id": "i007", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "French form of IFC"}
+{"item_id": "i008", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "French form of IFC"}
+{"item_id": "i009", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "low", "note": "Alterra short for Alterra Capital (ambiguous short name)"}
+{"item_id": "i010", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "different country subsidiaries"}
+{"item_id": "i011", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b is combination"}
+{"item_id": "i012", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "combination vs fragment"}
+{"item_id": "i013", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a is combination"}
+{"item_id": "i014", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "both IFC"}
+{"item_id": "i015", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "both combinations"}
+{"item_id": "i016", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b fragment"}
+{"item_id": "i017", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "abbreviation"}
+{"item_id": "i018", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "case variant"}
+{"item_id": "i019", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a combination (IFC + Government of Canada)"}
+{"item_id": "i020", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "different companies"}
+{"item_id": "i021", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b combination"}
+{"item_id": "i022", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a combination"}
+{"item_id": "i023", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "both IFC"}
+{"item_id": "i024", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a fragment (IFC + Jumia run-on)"}
+{"item_id": "i025", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "Govt generic"}
+{"item_id": "i026", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "BAD = French abbreviation of AfDB"}
+{"item_id": "i027", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "both fragments"}
+{"item_id": "i028", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "low", "note": "descriptor prefix on Proparco"}
+{"item_id": "i029", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "different CFAO subsidiaries"}
+{"item_id": "i030", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "low", "note": "b fragment embedding IFC"}
+{"item_id": "i031", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "CCHBC vs ECCBC are distinct bottlers"}
+{"item_id": "i032", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "low", "note": "Zenith short for Zenith Bank"}
+{"item_id": "i033", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "low", "note": "parent vs distinctly named PE unit"}
+{"item_id": "i034", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b fragment"}
+{"item_id": "i035", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a run-on of two names"}
+{"item_id": "i036", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "different CFAO units"}
+{"item_id": "i037", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a combination"}
+{"item_id": "i038", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b fragment; different companies"}
+{"item_id": "i039", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "parent vs UK subsidiary"}
+{"item_id": "i040", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "short name"}
+{"item_id": "i041", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "generic phrases"}
+{"item_id": "i042", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "generic phrases"}
+{"item_id": "i043", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a combination"}
+{"item_id": "i044", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "combination vs fragment"}
+{"item_id": "i045", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a combination"}
+{"item_id": "i046", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "The Coca-Cola Company vs ECCBC bottler"}
+{"item_id": "i047", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b fragment"}
+{"item_id": "i048", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "low", "note": "descriptor prefix on BII"}
+{"item_id": "i049", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "unrelated"}
+{"item_id": "i050", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "low", "note": "b fragment embedding IFC"}
+{"item_id": "i051", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "legal/group suffix"}
+{"item_id": "i052", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "combination vs fragment"}
+{"item_id": "i053", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b fragment"}
+{"item_id": "i054", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a fragment"}
+{"item_id": "i055", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b combination"}
+{"item_id": "i056", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "different banks"}
+{"item_id": "i057", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a combination"}
+{"item_id": "i058", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "both fragments"}
+{"item_id": "i059", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "Mineral Resources Ltd vs Pan African Resources"}
+{"item_id": "i060", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b combination"}
+{"item_id": "i061", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "parent vs listed subsidiary"}
+{"item_id": "i062", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "AfDB = African Development Bank Group"}
+{"item_id": "i063", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "high", "note": "a combination"}
+{"item_id": "i064", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "low", "note": "unrelated; b likely descriptor + Savannah Energy"}
+{"item_id": "i065", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "short name"}
+{"item_id": "i066", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "generic phrases"}
+{"item_id": "i067", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "parent vs subsidiary"}
+{"item_id": "i068", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "different Hollard entities"}
+{"item_id": "i069", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b combination"}
+{"item_id": "i070", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "both IFC"}
+{"item_id": "i071", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b combination"}
+{"item_id": "i072", "valid_a": true, "valid_b": false, "same_entity": false, "confidence": "high", "note": "b combination"}
+{"item_id": "i073", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "abbreviation"}
+{"item_id": "i074", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "both fragments"}
+{"item_id": "i075", "valid_a": false, "valid_b": true, "same_entity": false, "confidence": "low", "note": "a fragment embedding IFC"}
+{"item_id": "i076", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "abbreviation"}
+{"item_id": "i077", "valid_a": false, "valid_b": false, "same_entity": false, "confidence": "high", "note": "combination vs fragment"}
+{"item_id": "i078", "valid_a": true, "valid_b": true, "same_entity": true, "confidence": "high", "note": "both IFC"}
+{"item_id": "i079", "valid_a": true, "valid_b": true, "same_entity": false, "confidence": "high", "note": "unrelated"}

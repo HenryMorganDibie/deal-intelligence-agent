@@ -44,7 +44,35 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-export type Source = { publisher?: string; url?: string; date?: string };
+export type Source = { publisher?: string; url?: string; date?: string; title?: string; stage?: string | null };
+
+export type Interval = { value: number; low: number; high: number; k: number; n: number } | null;
+
+export type FieldCheck = {
+  field: string;
+  value: string | number | null;
+  status: "corroborated" | "reported" | "derived" | "classified" | "uncertain" | "not disclosed";
+  basis: string;
+  independent_stories?: number;
+};
+
+export type Verification = {
+  tier: "official" | "corroborated" | "single source";
+  tier_label: string;
+  sources: number;
+  independent_stories: number;
+  syndicated_copies: number;
+  dates: { first_reported: string | null; announced_or_rumoured: string | null; completed_reported: string | null; note: string };
+  fields: FieldCheck[];
+  story_groups: { publisher: string | null; date: string | null; title: string | null; url: string | null }[][];
+};
+
+export type FieldAccuracy = {
+  set: string;
+  fields: Record<string, Interval>;
+  fully_correct_record: Interval;
+  detection: { precision: Interval; recall: Interval } | null;
+} | null;
 
 export type Deal = {
   id: string;
@@ -69,6 +97,8 @@ export type Deal = {
   sources: Source[];
   similarity?: number;
   why?: string[];
+  independent_stories?: number;
+  verification?: "corroborated" | "single source";
 };
 
 export type Stats = { n: number; min: number; p25: number; median: number; p75: number; max: number } | null;

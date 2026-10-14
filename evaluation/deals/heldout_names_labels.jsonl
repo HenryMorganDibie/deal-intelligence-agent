@@ -1,0 +1,80 @@
+{"item_id": "n000", "valid": true, "organisations": [{"name": "MobileMoney Limited", "short": "MML"}], "confidence": "low", "note": "company name with legal suffix; likely MTN's Uganda mobile money unit, identity uncertain"}
+{"item_id": "n001", "valid": true, "organisations": [{"name": "OR Royalties Inc.", "short": "OR Royalties"}], "confidence": "high", "note": "formerly Osisko Gold Royalties, renamed 2025"}
+{"item_id": "n002", "valid": true, "organisations": [{"name": "West Indian Ocean Cable Company", "short": "WIOCC"}], "confidence": "high", "note": "known acronym"}
+{"item_id": "n003", "valid": true, "organisations": [{"name": "O&L Leisure", "short": null}], "confidence": "low", "note": "plausible company (Mauritian O&L group leisure arm); identity uncertain"}
+{"item_id": "n004", "valid": true, "organisations": [{"name": "Zijin Mining Group Co., Ltd.", "short": "Zijin"}], "confidence": "high", "note": "known company"}
+{"item_id": "n005", "valid": true, "organisations": [{"name": "Algebra Ventures", "short": null}], "confidence": "high", "note": "Egyptian VC"}
+{"item_id": "n006", "valid": true, "organisations": [{"name": "C-One Ventures", "short": null}], "confidence": "low", "note": "plausible VC name, unknown"}
+{"item_id": "n007", "valid": true, "organisations": [{"name": "Swedfund International AB", "short": "Swedfund"}], "confidence": "high", "note": "Swedish DFI"}
+{"item_id": "n008", "valid": true, "organisations": [{"name": "Coris Bank International", "short": "Coris"}], "confidence": "low", "note": "short form; most likely Coris Bank International (Burkina Faso)"}
+{"item_id": "n009", "valid": true, "organisations": [{"name": "Lankhaar", "short": null}], "confidence": "low", "note": "bare proper noun (surname or company); unidentified"}
+{"item_id": "n010", "valid": true, "organisations": [{"name": "A.P. Moller Capital", "short": null}], "confidence": "high", "note": "Maersk-affiliated infra fund manager"}
+{"item_id": "n011", "valid": false, "organisations": [], "confidence": "low", "note": "bare word 'Bid', likely headline fragment ('makes bid'); not reliably Bid Corporation"}
+{"item_id": "n012", "valid": true, "organisations": [{"name": "Moniepoint Inc.", "short": "Moniepoint"}], "confidence": "high", "note": "Nigerian fintech"}
+{"item_id": "n013", "valid": true, "organisations": [{"name": "Africa Finance Corporation", "short": "AFC"}], "confidence": "high", "note": "multilateral DFI"}
+{"item_id": "n014", "valid": true, "organisations": [{"name": "Adenia Partners", "short": "Adenia"}], "confidence": "high", "note": "PE firm"}
+{"item_id": "n015", "valid": true, "organisations": [{"name": "Standard Bank Group", "short": "Standard Bank"}], "confidence": "high", "note": "SA bank"}
+{"item_id": "n016", "valid": true, "organisations": [{"name": "Prosus N.V.", "short": "Prosus"}], "confidence": "low", "note": "org with descriptor 'Koos Bekker-led'; Bekker is chair, not a party"}
+{"item_id": "n017", "valid": true, "organisations": [{"name": "Rostam Aziz", "short": null}], "confidence": "high", "note": "person with descriptor; Tanzanian tycoon (spelling Azizi/Aziz)"}
+{"item_id": "n018", "valid": true, "organisations": [{"name": "Paul Biya", "short": null}], "confidence": "high", "note": "person, President of Cameroon"}
+{"item_id": "n019", "valid": true, "organisations": [{"name": "Ethiopian Airlines Group", "short": "Ethiopian Airlines"}], "confidence": "high", "note": "airline"}
+{"item_id": "n020", "valid": true, "organisations": [{"name": "CPBN", "short": null}], "confidence": "low", "note": "unidentified acronym, treated as org name"}
+{"item_id": "n021", "valid": true, "organisations": [{"name": "TLG Capital", "short": null}], "confidence": "high", "note": "Africa-focused credit fund"}
+{"item_id": "n022", "valid": false, "organisations": [{"name": "First Quantum Minerals Ltd.", "short": "First Quantum"}], "confidence": "high", "note": "sentence fragment containing First Quantum"}
+{"item_id": "n023", "valid": true, "organisations": [{"name": "Shell plc", "short": "Shell"}], "confidence": "high", "note": "energy major"}
+{"item_id": "n024", "valid": true, "organisations": [{"name": "Vercel Inc.", "short": "Vercel"}], "confidence": "high", "note": "US software company"}
+{"item_id": "n025", "valid": true, "organisations": [{"name": "Providus Bank Limited", "short": "Providus Bank"}], "confidence": "high", "note": "Nigerian bank"}
+{"item_id": "n026", "valid": true, "organisations": [{"name": "Swissport International AG", "short": "Swissport"}], "confidence": "high", "note": "aviation services"}
+{"item_id": "n027", "valid": false, "organisations": [], "confidence": "low", "note": "generic word ('representatives'), no identifiable org"}
+{"item_id": "n028", "valid": true, "organisations": [{"name": "Mubadala Investment Company", "short": "Mubadala"}], "confidence": "high", "note": "Abu Dhabi SWF"}
+{"item_id": "n029", "valid": true, "organisations": [{"name": "Traxtion", "short": null}], "confidence": "high", "note": "SA rail logistics company"}
+{"item_id": "n030", "valid": true, "organisations": [{"name": "Amethis", "short": null}], "confidence": "high", "note": "Africa PE firm"}
+{"item_id": "n031", "valid": true, "organisations": [{"name": "Nedbank Group", "short": "Nedbank"}], "confidence": "high", "note": "SA bank"}
+{"item_id": "n032", "valid": true, "organisations": [{"name": "Y Combinator", "short": "YC"}], "confidence": "high", "note": "accelerator"}
+{"item_id": "n033", "valid": true, "organisations": [{"name": "Femi Otedola", "short": null}], "confidence": "low", "note": "surname only; most likely Nigerian billionaire Femi Otedola"}
+{"item_id": "n034", "valid": true, "organisations": [{"name": "Fidence", "short": null}], "confidence": "low", "note": "plausible org name, unidentified"}
+{"item_id": "n035", "valid": true, "organisations": [{"name": "STUDI International", "short": null}], "confidence": "low", "note": "plausible company (Tunisian engineering consultancy); identity uncertain"}
+{"item_id": "n036", "valid": true, "organisations": [{"name": "Co-operative Bank of Kenya", "short": "Co-op Bank"}], "confidence": "low", "note": "short form; Kenya most likely in African deal context"}
+{"item_id": "n037", "valid": true, "organisations": [{"name": "Transfer HS Limited", "short": null}], "confidence": "low", "note": "company with legal suffix, unidentified"}
+{"item_id": "n038", "valid": true, "organisations": [{"name": "National University of Science and Technology", "short": "NUST"}], "confidence": "low", "note": "acronym ambiguous (Zimbabwe NUST vs Namibia University of Science and Technology)"}
+{"item_id": "n039", "valid": true, "organisations": [{"name": "EIB Global", "short": null}], "confidence": "high", "note": "development arm of European Investment Bank"}
+{"item_id": "n040", "valid": true, "organisations": [{"name": "Partech Partners", "short": "Partech"}], "confidence": "high", "note": "VC firm"}
+{"item_id": "n041", "valid": true, "organisations": [{"name": "Baloobhai Patel", "short": null}], "confidence": "high", "note": "person name"}
+{"item_id": "n042", "valid": true, "organisations": [{"name": "Hillside Triumph", "short": null}], "confidence": "low", "note": "plausible org name, unidentified"}
+{"item_id": "n043", "valid": true, "organisations": [{"name": "AfricInvest", "short": null}], "confidence": "high", "note": "PE firm"}
+{"item_id": "n044", "valid": true, "organisations": [{"name": "Coris Bank International", "short": "Coris Bank"}], "confidence": "high", "note": "Burkinabe bank"}
+{"item_id": "n045", "valid": true, "organisations": [{"name": "Standard Chartered PLC", "short": "Standard Chartered"}], "confidence": "high", "note": "bank"}
+{"item_id": "n046", "valid": true, "organisations": [{"name": "Hemas Holdings PLC", "short": "Hemas"}], "confidence": "high", "note": "Sri Lankan conglomerate"}
+{"item_id": "n047", "valid": true, "organisations": [{"name": "Anthony Mwaura", "short": null}], "confidence": "high", "note": "person name"}
+{"item_id": "n048", "valid": true, "organisations": [{"name": "Norwegian Investment Fund for Developing Countries", "short": "Norfund"}], "confidence": "high", "note": "Norwegian DFI"}
+{"item_id": "n049", "valid": true, "organisations": [{"name": "Tether Holdings Limited", "short": "Tether"}], "confidence": "high", "note": "stablecoin issuer"}
+{"item_id": "n050", "valid": false, "organisations": [], "confidence": "high", "note": "purpose phrase fragment ('to boost African commodity trade'), no org"}
+{"item_id": "n051", "valid": true, "organisations": [{"name": "Deutsche Investitions- und Entwicklungsgesellschaft", "short": "DEG"}], "confidence": "high", "note": "German DFI"}
+{"item_id": "n052", "valid": true, "organisations": [{"name": "PPC Zimbabwe", "short": null}], "confidence": "high", "note": "cement company, subsidiary of PPC Ltd"}
+{"item_id": "n053", "valid": true, "organisations": [{"name": "Mérieux NutriSciences", "short": null}], "confidence": "high", "note": "food testing company"}
+{"item_id": "n054", "valid": true, "organisations": [{"name": "Old Mutual Zimbabwe Limited", "short": "Old Mutual Zimbabwe"}], "confidence": "high", "note": "insurer"}
+{"item_id": "n055", "valid": true, "organisations": [{"name": "QatarEnergy", "short": null}], "confidence": "high", "note": "Qatari state energy company"}
+{"item_id": "n056", "valid": true, "organisations": [{"name": "Asahi Group Holdings", "short": "Asahi"}], "confidence": "high", "note": "Japanese brewer"}
+{"item_id": "n057", "valid": true, "organisations": [{"name": "Ninety One", "short": null}], "confidence": "high", "note": "asset manager"}
+{"item_id": "n058", "valid": false, "organisations": [{"name": "African Export-Import Bank", "short": "Afreximbank"}, {"name": "Achieve Financial", "short": null}], "confidence": "low", "note": "two names run together without separator; Achieve Financial unidentified"}
+{"item_id": "n059", "valid": true, "organisations": [{"name": "Public Investment Corporation", "short": "PIC"}], "confidence": "low", "note": "acronym; SA Public Investment Corporation most likely, but ambiguous"}
+{"item_id": "n060", "valid": true, "organisations": [{"name": "U.S. International Development Finance Corporation", "short": "DFC"}], "confidence": "high", "note": "garbled but clearly US DFC"}
+{"item_id": "n061", "valid": true, "organisations": [{"name": "Harith General Partners", "short": "Harith"}], "confidence": "high", "note": "org with descriptor 'PE fund'"}
+{"item_id": "n062", "valid": true, "organisations": [{"name": "Abdourahamane Tiani", "short": null}], "confidence": "low", "note": "surname only; likely Niger's military leader"}
+{"item_id": "n063", "valid": true, "organisations": [{"name": "Government of the Republic of Kenya", "short": "Kenya"}], "confidence": "low", "note": "sovereign with descriptor; country as borrower party"}
+{"item_id": "n064", "valid": true, "organisations": [{"name": "Banyan Group", "short": null}], "confidence": "low", "note": "plausible org name, unidentified"}
+{"item_id": "n065", "valid": false, "organisations": [{"name": "Y Combinator", "short": "YC"}], "confidence": "high", "note": "fragment of two sentences; YC named"}
+{"item_id": "n066", "valid": false, "organisations": [{"name": "Quona Capital", "short": null}, {"name": "Jem", "short": null}], "confidence": "low", "note": "two names joined by period (sentence boundary); Jem likely startup"}
+{"item_id": "n067", "valid": true, "organisations": [{"name": "Norrsken22", "short": null}], "confidence": "high", "note": "Africa VC fund"}
+{"item_id": "n068", "valid": true, "organisations": [{"name": "Africa Lighthouse Capital", "short": null}], "confidence": "low", "note": "plausible fund manager, unidentified"}
+{"item_id": "n069", "valid": true, "organisations": [{"name": "Zijin Mining Group Co., Ltd.", "short": "Zijin"}], "confidence": "high", "note": "short name"}
+{"item_id": "n070", "valid": true, "organisations": [{"name": "Lami Technologies", "short": "Lami"}], "confidence": "low", "note": "short name; likely Kenyan insurtech Lami"}
+{"item_id": "n071", "valid": false, "organisations": [{"name": "Swedfund International AB", "short": "Swedfund"}, {"name": "Norwegian Investment Fund for Developing Countries", "short": "Norfund"}], "confidence": "high", "note": "combination of two DFIs"}
+{"item_id": "n072", "valid": true, "organisations": [{"name": "Janngo Capital", "short": null}], "confidence": "high", "note": "Africa VC"}
+{"item_id": "n073", "valid": true, "organisations": [{"name": "Apex Capital Partners", "short": null}], "confidence": "low", "note": "plausible PE name, unidentified"}
+{"item_id": "n074", "valid": true, "organisations": [{"name": "Absa Group Limited", "short": "Absa"}], "confidence": "high", "note": "SA bank"}
+{"item_id": "n075", "valid": false, "organisations": [], "confidence": "low", "note": "place name used as metonym for US government; not a usable org string"}
+{"item_id": "n076", "valid": true, "organisations": [{"name": "Whirlpool Mauritius", "short": null}], "confidence": "low", "note": "plausible local company, unidentified"}
+{"item_id": "n077", "valid": true, "organisations": [{"name": "Visa Inc.", "short": "Visa"}], "confidence": "high", "note": "payments company"}
+{"item_id": "n078", "valid": false, "organisations": [{"name": "Development Partners International", "short": "DPI"}, {"name": "Google LLC", "short": "Google"}], "confidence": "high", "note": "combination of two parties"}
+{"item_id": "n079", "valid": true, "organisations": [{"name": "African Export-Import Bank", "short": "Afreximbank"}], "confidence": "high", "note": "multilateral trade bank"}

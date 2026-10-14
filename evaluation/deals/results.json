@@ -1,0 +1,1386 @@
+{
+ "extraction": {
+  "items": 220,
+  "gold_transactions": 144,
+  "sample": "160 headlines the extractor turned into a deal and 60 it rejected that contain transaction vocabulary, drawn at random (seed 20261014) from the stored raw headlines. Development set: fixes were made after looking at its errors, so results after fixes are optimistic.",
+  "note_on_recall": "Recall here is measured on a sample enriched for rejected deal-like headlines; it is a measure of misses among plausible candidates, not of coverage of all deals that happened.",
+  "detection": {
+   "all": {
+    "n": 220,
+    "precision": {
+     "value": 0.825,
+     "low": 0.759,
+     "high": 0.876,
+     "k": 132,
+     "n": 160
+    },
+    "recall": {
+     "value": 0.917,
+     "low": 0.86,
+     "high": 0.952,
+     "k": 132,
+     "n": 144
+    }
+   },
+   "high_confidence_labels": {
+    "n": 157,
+    "precision": {
+     "value": 0.806,
+     "low": 0.721,
+     "high": 0.869,
+     "k": 87,
+     "n": 108
+    },
+    "recall": {
+     "value": 0.967,
+     "low": 0.907,
+     "high": 0.989,
+     "k": 87,
+     "n": 90
+    }
+   },
+   "by_language": {
+    "en": {
+     "n": 181,
+     "precision": {
+      "value": 0.839,
+      "low": 0.769,
+      "high": 0.891,
+      "k": 115,
+      "n": 137
+     },
+     "recall": {
+      "value": 0.927,
+      "low": 0.868,
+      "high": 0.961,
+      "k": 115,
+      "n": 124
+     }
+    },
+    "fr": {
+     "n": 30,
+     "precision": {
+      "value": 0.739,
+      "low": 0.535,
+      "high": 0.875,
+      "k": 17,
+      "n": 23
+     },
+     "recall": {
+      "value": 0.85,
+      "low": 0.64,
+      "high": 0.948,
+      "k": 17,
+      "n": 20
+     }
+    },
+    "pt": {
+     "n": 9,
+     "precision": null,
+     "recall": null
+    }
+   },
+   "by_country": {
+    "other": {
+     "n": 62,
+     "precision": {
+      "value": 0.784,
+      "low": 0.628,
+      "high": 0.886,
+      "k": 29,
+      "n": 37
+     },
+     "recall": {
+      "value": 0.935,
+      "low": 0.793,
+      "high": 0.982,
+      "k": 29,
+      "n": 31
+     }
+    },
+    "unknown": {
+     "n": 62,
+     "precision": {
+      "value": 0.804,
+      "low": 0.668,
+      "high": 0.893,
+      "k": 37,
+      "n": 46
+     },
+     "recall": {
+      "value": 0.881,
+      "low": 0.75,
+      "high": 0.948,
+      "k": 37,
+      "n": 42
+     }
+    },
+    "NG": {
+     "n": 25,
+     "precision": {
+      "value": 0.952,
+      "low": 0.773,
+      "high": 0.992,
+      "k": 20,
+      "n": 21
+     },
+     "recall": {
+      "value": 0.952,
+      "low": 0.773,
+      "high": 0.992,
+      "k": 20,
+      "n": 21
+     }
+    },
+    "ZA": {
+     "n": 18,
+     "precision": {
+      "value": 0.923,
+      "low": 0.667,
+      "high": 0.986,
+      "k": 12,
+      "n": 13
+     },
+     "recall": {
+      "value": 0.857,
+      "low": 0.601,
+      "high": 0.96,
+      "k": 12,
+      "n": 14
+     }
+    },
+    "KE": {
+     "n": 15,
+     "precision": {
+      "value": 0.857,
+      "low": 0.601,
+      "high": 0.96,
+      "k": 12,
+      "n": 14
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.757,
+      "high": 1.0,
+      "k": 12,
+      "n": 12
+     }
+    },
+    "MA": {
+     "n": 12,
+     "precision": {
+      "value": 1.0,
+      "low": 0.722,
+      "high": 1.0,
+      "k": 10,
+      "n": 10
+     },
+     "recall": {
+      "value": 0.833,
+      "low": 0.552,
+      "high": 0.953,
+      "k": 10,
+      "n": 12
+     }
+    },
+    "GH": {
+     "n": 11,
+     "precision": {
+      "value": 0.4,
+      "low": 0.118,
+      "high": 0.769,
+      "k": 2,
+      "n": 5
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.342,
+      "high": 1.0,
+      "k": 2,
+      "n": 2
+     }
+    },
+    "ET": {
+     "n": 10,
+     "precision": {
+      "value": 0.556,
+      "low": 0.267,
+      "high": 0.811,
+      "k": 5,
+      "n": 9
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.566,
+      "high": 1.0,
+      "k": 5,
+      "n": 5
+     }
+    },
+    "ZM": {
+     "n": 5,
+     "precision": {
+      "value": 1.0,
+      "low": 0.566,
+      "high": 1.0,
+      "k": 5,
+      "n": 5
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.566,
+      "high": 1.0,
+      "k": 5,
+      "n": 5
+     }
+    }
+   },
+   "by_publisher": {
+    "other": {
+     "n": 172,
+     "precision": {
+      "value": 0.802,
+      "low": 0.72,
+      "high": 0.864,
+      "k": 93,
+      "n": 116
+     },
+     "recall": {
+      "value": 0.903,
+      "low": 0.83,
+      "high": 0.946,
+      "k": 93,
+      "n": 103
+     }
+    },
+    "Africa Private Equity News": {
+     "n": 9,
+     "precision": {
+      "value": 1.0,
+      "low": 0.676,
+      "high": 1.0,
+      "k": 8,
+      "n": 8
+     },
+     "recall": {
+      "value": 0.889,
+      "low": 0.565,
+      "high": 0.98,
+      "k": 8,
+      "n": 9
+     }
+    },
+    "Dabafinance": {
+     "n": 7,
+     "precision": {
+      "value": 0.833,
+      "low": 0.436,
+      "high": 0.97,
+      "k": 5,
+      "n": 6
+     },
+     "recall": {
+      "value": 0.833,
+      "low": 0.436,
+      "high": 0.97,
+      "k": 5,
+      "n": 6
+     }
+    },
+    "Billionaires.Africa": {
+     "n": 6,
+     "precision": {
+      "value": 0.833,
+      "low": 0.436,
+      "high": 0.97,
+      "k": 5,
+      "n": 6
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.566,
+      "high": 1.0,
+      "k": 5,
+      "n": 5
+     }
+    },
+    "Launch Base Africa": {
+     "n": 6,
+     "precision": {
+      "value": 1.0,
+      "low": 0.61,
+      "high": 1.0,
+      "k": 6,
+      "n": 6
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.61,
+      "high": 1.0,
+      "k": 6,
+      "n": 6
+     }
+    },
+    "Africa Business Communities": {
+     "n": 6,
+     "precision": {
+      "value": 1.0,
+      "low": 0.61,
+      "high": 1.0,
+      "k": 6,
+      "n": 6
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.61,
+      "high": 1.0,
+      "k": 6,
+      "n": 6
+     }
+    },
+    "Financial Afrik": {
+     "n": 5,
+     "precision": {
+      "value": 0.6,
+      "low": 0.231,
+      "high": 0.882,
+      "k": 3,
+      "n": 5
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.438,
+      "high": 1.0,
+      "k": 3,
+      "n": 3
+     }
+    },
+    "Business Insider Africa": {
+     "n": 5,
+     "precision": {
+      "value": 1.0,
+      "low": 0.438,
+      "high": 1.0,
+      "k": 3,
+      "n": 3
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.438,
+      "high": 1.0,
+      "k": 3,
+      "n": 3
+     }
+    },
+    "Condia": {
+     "n": 4,
+     "precision": {
+      "value": 0.75,
+      "low": 0.301,
+      "high": 0.954,
+      "k": 3,
+      "n": 4
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.438,
+      "high": 1.0,
+      "k": 3,
+      "n": 3
+     }
+    }
+   }
+  },
+  "fields": {
+   "n_records": 132,
+   "all": {
+    "deal_type": {
+     "value": 0.939,
+     "low": 0.885,
+     "high": 0.969,
+     "k": 124,
+     "n": 132
+    },
+    "stage (announced / completed / rumoured)": {
+     "value": 0.742,
+     "low": 0.662,
+     "high": 0.809,
+     "k": 98,
+     "n": 132
+    },
+    "target": {
+     "value": 0.894,
+     "low": 0.83,
+     "high": 0.936,
+     "k": 118,
+     "n": 132
+    },
+    "buyer, lead investor or lender": {
+     "value": 0.833,
+     "low": 0.726,
+     "high": 0.904,
+     "k": 55,
+     "n": 66
+    },
+    "amount disclosed or not": {
+     "value": 0.97,
+     "low": 0.925,
+     "high": 0.988,
+     "k": 128,
+     "n": 132
+    },
+    "amount and currency (when disclosed)": {
+     "value": 0.939,
+     "low": 0.865,
+     "high": 0.974,
+     "k": 77,
+     "n": 82
+    },
+    "stake %": {
+     "value": 1.0,
+     "low": 0.646,
+     "high": 1.0,
+     "k": 7,
+     "n": 7
+    },
+    "country": {
+     "value": 0.806,
+     "low": 0.715,
+     "high": 0.874,
+     "k": 75,
+     "n": 93
+    }
+   },
+   "high_confidence_labels": {
+    "deal_type": {
+     "value": 0.943,
+     "low": 0.872,
+     "high": 0.975,
+     "k": 82,
+     "n": 87
+    },
+    "stage (announced / completed / rumoured)": {
+     "value": 0.747,
+     "low": 0.647,
+     "high": 0.827,
+     "k": 65,
+     "n": 87
+    },
+    "target": {
+     "value": 0.931,
+     "low": 0.858,
+     "high": 0.968,
+     "k": 81,
+     "n": 87
+    },
+    "buyer, lead investor or lender": {
+     "value": 0.789,
+     "low": 0.637,
+     "high": 0.889,
+     "k": 30,
+     "n": 38
+    },
+    "amount disclosed or not": {
+     "value": 0.977,
+     "low": 0.92,
+     "high": 0.994,
+     "k": 85,
+     "n": 87
+    },
+    "amount and currency (when disclosed)": {
+     "value": 0.981,
+     "low": 0.899,
+     "high": 0.997,
+     "k": 51,
+     "n": 52
+    },
+    "stake %": {
+     "value": 1.0,
+     "low": 0.61,
+     "high": 1.0,
+     "k": 6,
+     "n": 6
+    },
+    "country": {
+     "value": 0.836,
+     "low": 0.724,
+     "high": 0.908,
+     "k": 51,
+     "n": 61
+    }
+   },
+   "fully_correct_record": {
+    "value": 0.5,
+    "low": 0.416,
+    "high": 0.584,
+    "k": 66,
+    "n": 132
+   },
+   "by_deal_type": {
+    "equity_funding": {
+     "value": 0.78,
+     "low": 0.648,
+     "high": 0.872,
+     "k": 39,
+     "n": 50
+    },
+    "acquisition": {
+     "value": 0.184,
+     "low": 0.092,
+     "high": 0.334,
+     "k": 7,
+     "n": 38
+    },
+    "debt_financing": {
+     "value": 0.316,
+     "low": 0.154,
+     "high": 0.54,
+     "k": 6,
+     "n": 19
+    },
+    "fund_raise": {
+     "value": 0.714,
+     "low": 0.454,
+     "high": 0.883,
+     "k": 10,
+     "n": 14
+    },
+    "exit": {
+     "value": 0.167,
+     "low": 0.03,
+     "high": 0.564,
+     "k": 1,
+     "n": 6
+    },
+    "ipo": {
+     "value": 0.6,
+     "low": 0.231,
+     "high": 0.882,
+     "k": 3,
+     "n": 5
+    }
+   },
+   "by_country": {
+    "unknown": {
+     "value": 0.784,
+     "low": 0.628,
+     "high": 0.886,
+     "k": 29,
+     "n": 37
+    },
+    "other": {
+     "value": 0.379,
+     "low": 0.227,
+     "high": 0.56,
+     "k": 11,
+     "n": 29
+    },
+    "NG": {
+     "value": 0.45,
+     "low": 0.258,
+     "high": 0.658,
+     "k": 9,
+     "n": 20
+    },
+    "KE": {
+     "value": 0.417,
+     "low": 0.193,
+     "high": 0.68,
+     "k": 5,
+     "n": 12
+    },
+    "ZA": {
+     "value": 0.333,
+     "low": 0.138,
+     "high": 0.609,
+     "k": 4,
+     "n": 12
+    },
+    "MA": {
+     "value": 0.4,
+     "low": 0.168,
+     "high": 0.687,
+     "k": 4,
+     "n": 10
+    },
+    "ZM": {
+     "value": 0.4,
+     "low": 0.118,
+     "high": 0.769,
+     "k": 2,
+     "n": 5
+    },
+    "ET": {
+     "value": 0.4,
+     "low": 0.118,
+     "high": 0.769,
+     "k": 2,
+     "n": 5
+    },
+    "GH": {
+     "value": 0.0,
+     "low": 0.0,
+     "high": 0.658,
+     "k": 0,
+     "n": 2
+    }
+   },
+   "by_language": {
+    "en": {
+     "value": 0.539,
+     "low": 0.448,
+     "high": 0.627,
+     "k": 62,
+     "n": 115
+    },
+    "fr": {
+     "value": 0.235,
+     "low": 0.096,
+     "high": 0.473,
+     "k": 4,
+     "n": 17
+    }
+   }
+  }
+ },
+ "heldout_extraction": {
+  "items": 160,
+  "gold_transactions": 108,
+  "sample": "120 headlines the extractor turned into a deal and 40 it rejected that contain transaction vocabulary, drawn at random (seed 20261015) from stored raw headlines, excluding the development set; built after the development-set fixes and never used to tune.",
+  "note_on_recall": "Recall here is measured on a sample enriched for rejected deal-like headlines; it is a measure of misses among plausible candidates, not of coverage of all deals that happened.",
+  "detection": {
+   "all": {
+    "n": 160,
+    "precision": {
+     "value": 0.825,
+     "low": 0.747,
+     "high": 0.883,
+     "k": 99,
+     "n": 120
+    },
+    "recall": {
+     "value": 0.917,
+     "low": 0.849,
+     "high": 0.956,
+     "k": 99,
+     "n": 108
+    }
+   },
+   "high_confidence_labels": {
+    "n": 126,
+    "precision": {
+     "value": 0.833,
+     "low": 0.743,
+     "high": 0.896,
+     "k": 75,
+     "n": 90
+    },
+    "recall": {
+     "value": 0.915,
+     "low": 0.834,
+     "high": 0.958,
+     "k": 75,
+     "n": 82
+    }
+   },
+   "by_language": {
+    "en": {
+     "n": 131,
+     "precision": {
+      "value": 0.815,
+      "low": 0.731,
+      "high": 0.877,
+      "k": 88,
+      "n": 108
+     },
+     "recall": {
+      "value": 0.936,
+      "low": 0.868,
+      "high": 0.97,
+      "k": 88,
+      "n": 94
+     }
+    },
+    "fr": {
+     "n": 20,
+     "precision": {
+      "value": 0.909,
+      "low": 0.623,
+      "high": 0.984,
+      "k": 10,
+      "n": 11
+     },
+     "recall": {
+      "value": 0.769,
+      "low": 0.497,
+      "high": 0.918,
+      "k": 10,
+      "n": 13
+     }
+    },
+    "pt": {
+     "n": 9,
+     "precision": {
+      "value": 1.0,
+      "low": 0.207,
+      "high": 1.0,
+      "k": 1,
+      "n": 1
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.207,
+      "high": 1.0,
+      "k": 1,
+      "n": 1
+     }
+    }
+   },
+   "by_country": {
+    "other": {
+     "n": 51,
+     "precision": {
+      "value": 0.8,
+      "low": 0.627,
+      "high": 0.905,
+      "k": 24,
+      "n": 30
+     },
+     "recall": {
+      "value": 0.857,
+      "low": 0.685,
+      "high": 0.943,
+      "k": 24,
+      "n": 28
+     }
+    },
+    "unknown": {
+     "n": 43,
+     "precision": {
+      "value": 0.75,
+      "low": 0.589,
+      "high": 0.862,
+      "k": 27,
+      "n": 36
+     },
+     "recall": {
+      "value": 0.9,
+      "low": 0.744,
+      "high": 0.965,
+      "k": 27,
+      "n": 30
+     }
+    },
+    "KE": {
+     "n": 17,
+     "precision": {
+      "value": 0.933,
+      "low": 0.702,
+      "high": 0.988,
+      "k": 14,
+      "n": 15
+     },
+     "recall": {
+      "value": 0.933,
+      "low": 0.702,
+      "high": 0.988,
+      "k": 14,
+      "n": 15
+     }
+    },
+    "ZA": {
+     "n": 14,
+     "precision": {
+      "value": 1.0,
+      "low": 0.772,
+      "high": 1.0,
+      "k": 13,
+      "n": 13
+     },
+     "recall": {
+      "value": 0.929,
+      "low": 0.685,
+      "high": 0.987,
+      "k": 13,
+      "n": 14
+     }
+    },
+    "NG": {
+     "n": 14,
+     "precision": {
+      "value": 0.833,
+      "low": 0.552,
+      "high": 0.953,
+      "k": 10,
+      "n": 12
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.722,
+      "high": 1.0,
+      "k": 10,
+      "n": 10
+     }
+    },
+    "MZ": {
+     "n": 8,
+     "precision": {
+      "value": 1.0,
+      "low": 0.438,
+      "high": 1.0,
+      "k": 3,
+      "n": 3
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.438,
+      "high": 1.0,
+      "k": 3,
+      "n": 3
+     }
+    },
+    "UG": {
+     "n": 5,
+     "precision": {
+      "value": 0.5,
+      "low": 0.15,
+      "high": 0.85,
+      "k": 2,
+      "n": 4
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.342,
+      "high": 1.0,
+      "k": 2,
+      "n": 2
+     }
+    },
+    "EG": {
+     "n": 4,
+     "precision": {
+      "value": 1.0,
+      "low": 0.51,
+      "high": 1.0,
+      "k": 4,
+      "n": 4
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.51,
+      "high": 1.0,
+      "k": 4,
+      "n": 4
+     }
+    },
+    "ZM": {
+     "n": 4,
+     "precision": {
+      "value": 0.667,
+      "low": 0.208,
+      "high": 0.939,
+      "k": 2,
+      "n": 3
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.342,
+      "high": 1.0,
+      "k": 2,
+      "n": 2
+     }
+    }
+   },
+   "by_publisher": {
+    "other": {
+     "n": 120,
+     "precision": {
+      "value": 0.783,
+      "low": 0.683,
+      "high": 0.858,
+      "k": 65,
+      "n": 83
+     },
+     "recall": {
+      "value": 0.878,
+      "low": 0.785,
+      "high": 0.935,
+      "k": 65,
+      "n": 74
+     }
+    },
+    "Africa Private Equity News": {
+     "n": 10,
+     "precision": {
+      "value": 1.0,
+      "low": 0.722,
+      "high": 1.0,
+      "k": 10,
+      "n": 10
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.722,
+      "high": 1.0,
+      "k": 10,
+      "n": 10
+     }
+    },
+    "Dabafinance": {
+     "n": 6,
+     "precision": {
+      "value": 1.0,
+      "low": 0.61,
+      "high": 1.0,
+      "k": 6,
+      "n": 6
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.61,
+      "high": 1.0,
+      "k": 6,
+      "n": 6
+     }
+    },
+    "Africa Business Communities": {
+     "n": 5,
+     "precision": {
+      "value": 0.8,
+      "low": 0.376,
+      "high": 0.964,
+      "k": 4,
+      "n": 5
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.51,
+      "high": 1.0,
+      "k": 4,
+      "n": 4
+     }
+    },
+    "Financial Afrik": {
+     "n": 4,
+     "precision": {
+      "value": 1.0,
+      "low": 0.438,
+      "high": 1.0,
+      "k": 3,
+      "n": 3
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.438,
+      "high": 1.0,
+      "k": 3,
+      "n": 3
+     }
+    },
+    "The Kenyan Wall Street": {
+     "n": 4,
+     "precision": {
+      "value": 0.5,
+      "low": 0.15,
+      "high": 0.85,
+      "k": 2,
+      "n": 4
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.342,
+      "high": 1.0,
+      "k": 2,
+      "n": 2
+     }
+    },
+    "WeeTracker": {
+     "n": 4,
+     "precision": {
+      "value": 1.0,
+      "low": 0.51,
+      "high": 1.0,
+      "k": 4,
+      "n": 4
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.51,
+      "high": 1.0,
+      "k": 4,
+      "n": 4
+     }
+    },
+    "Businessday NG": {
+     "n": 4,
+     "precision": {
+      "value": 1.0,
+      "low": 0.342,
+      "high": 1.0,
+      "k": 2,
+      "n": 2
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.342,
+      "high": 1.0,
+      "k": 2,
+      "n": 2
+     }
+    },
+    "TechCabal": {
+     "n": 3,
+     "precision": {
+      "value": 1.0,
+      "low": 0.438,
+      "high": 1.0,
+      "k": 3,
+      "n": 3
+     },
+     "recall": {
+      "value": 1.0,
+      "low": 0.438,
+      "high": 1.0,
+      "k": 3,
+      "n": 3
+     }
+    }
+   }
+  },
+  "fields": {
+   "n_records": 99,
+   "all": {
+    "deal_type": {
+     "value": 0.939,
+     "low": 0.874,
+     "high": 0.972,
+     "k": 93,
+     "n": 99
+    },
+    "stage (announced / completed / rumoured)": {
+     "value": 0.929,
+     "low": 0.861,
+     "high": 0.965,
+     "k": 92,
+     "n": 99
+    },
+    "target": {
+     "value": 0.939,
+     "low": 0.874,
+     "high": 0.972,
+     "k": 93,
+     "n": 99
+    },
+    "buyer, lead investor or lender": {
+     "value": 0.868,
+     "low": 0.752,
+     "high": 0.935,
+     "k": 46,
+     "n": 53
+    },
+    "amount disclosed or not": {
+     "value": 0.96,
+     "low": 0.901,
+     "high": 0.984,
+     "k": 95,
+     "n": 99
+    },
+    "amount and currency (when disclosed)": {
+     "value": 0.949,
+     "low": 0.861,
+     "high": 0.983,
+     "k": 56,
+     "n": 59
+    },
+    "stake %": {
+     "value": 0.917,
+     "low": 0.646,
+     "high": 0.985,
+     "k": 11,
+     "n": 12
+    },
+    "country": {
+     "value": 0.884,
+     "low": 0.788,
+     "high": 0.94,
+     "k": 61,
+     "n": 69
+    }
+   },
+   "high_confidence_labels": {
+    "deal_type": {
+     "value": 0.973,
+     "low": 0.908,
+     "high": 0.993,
+     "k": 73,
+     "n": 75
+    },
+    "stage (announced / completed / rumoured)": {
+     "value": 0.947,
+     "low": 0.871,
+     "high": 0.979,
+     "k": 71,
+     "n": 75
+    },
+    "target": {
+     "value": 0.973,
+     "low": 0.908,
+     "high": 0.993,
+     "k": 73,
+     "n": 75
+    },
+    "buyer, lead investor or lender": {
+     "value": 0.946,
+     "low": 0.823,
+     "high": 0.985,
+     "k": 35,
+     "n": 37
+    },
+    "amount disclosed or not": {
+     "value": 0.973,
+     "low": 0.908,
+     "high": 0.993,
+     "k": 73,
+     "n": 75
+    },
+    "amount and currency (when disclosed)": {
+     "value": 1.0,
+     "low": 0.918,
+     "high": 1.0,
+     "k": 43,
+     "n": 43
+    },
+    "stake %": {
+     "value": 1.0,
+     "low": 0.722,
+     "high": 1.0,
+     "k": 10,
+     "n": 10
+    },
+    "country": {
+     "value": 0.96,
+     "low": 0.865,
+     "high": 0.989,
+     "k": 48,
+     "n": 50
+    }
+   },
+   "fully_correct_record": {
+    "value": 0.707,
+    "low": 0.611,
+    "high": 0.788,
+    "k": 70,
+    "n": 99
+   },
+   "by_deal_type": {
+    "equity_funding": {
+     "value": 0.73,
+     "low": 0.57,
+     "high": 0.846,
+     "k": 27,
+     "n": 37
+    },
+    "acquisition": {
+     "value": 0.765,
+     "low": 0.6,
+     "high": 0.876,
+     "k": 26,
+     "n": 34
+    },
+    "debt_financing": {
+     "value": 0.615,
+     "low": 0.355,
+     "high": 0.823,
+     "k": 8,
+     "n": 13
+    },
+    "fund_raise": {
+     "value": 0.545,
+     "low": 0.28,
+     "high": 0.787,
+     "k": 6,
+     "n": 11
+    },
+    "exit": {
+     "value": 0.667,
+     "low": 0.208,
+     "high": 0.939,
+     "k": 2,
+     "n": 3
+    },
+    "ipo": {
+     "value": 1.0,
+     "low": 0.207,
+     "high": 1.0,
+     "k": 1,
+     "n": 1
+    }
+   },
+   "by_country": {
+    "unknown": {
+     "value": 0.815,
+     "low": 0.633,
+     "high": 0.918,
+     "k": 22,
+     "n": 27
+    },
+    "other": {
+     "value": 0.708,
+     "low": 0.508,
+     "high": 0.851,
+     "k": 17,
+     "n": 24
+    },
+    "KE": {
+     "value": 0.643,
+     "low": 0.388,
+     "high": 0.837,
+     "k": 9,
+     "n": 14
+    },
+    "ZA": {
+     "value": 0.462,
+     "low": 0.232,
+     "high": 0.709,
+     "k": 6,
+     "n": 13
+    },
+    "NG": {
+     "value": 0.8,
+     "low": 0.49,
+     "high": 0.943,
+     "k": 8,
+     "n": 10
+    },
+    "EG": {
+     "value": 1.0,
+     "low": 0.51,
+     "high": 1.0,
+     "k": 4,
+     "n": 4
+    },
+    "MZ": {
+     "value": 0.667,
+     "low": 0.208,
+     "high": 0.939,
+     "k": 2,
+     "n": 3
+    },
+    "ZM": {
+     "value": 0.5,
+     "low": 0.095,
+     "high": 0.905,
+     "k": 1,
+     "n": 2
+    },
+    "UG": {
+     "value": 0.5,
+     "low": 0.095,
+     "high": 0.905,
+     "k": 1,
+     "n": 2
+    }
+   },
+   "by_language": {
+    "en": {
+     "value": 0.727,
+     "low": 0.626,
+     "high": 0.809,
+     "k": 64,
+     "n": 88
+    },
+    "fr": {
+     "value": 0.5,
+     "low": 0.237,
+     "high": 0.763,
+     "k": 5,
+     "n": 10
+    },
+    "pt": {
+     "value": 1.0,
+     "low": 0.207,
+     "high": 1.0,
+     "k": 1,
+     "n": 1
+    }
+   }
+  }
+ },
+ "dedup": {
+  "pairs": 100,
+  "sample": "40 pairs of reports the deduplicator merged into one record, and 60 pairs of separate records that share a distinctive target word or the same amount and country within about two months.",
+  "merge_precision": {
+   "value": 0.975,
+   "low": 0.871,
+   "high": 0.996,
+   "k": 39,
+   "n": 40
+  },
+  "missed_duplicates_among_lookalikes": {
+   "value": 0.433,
+   "low": 0.316,
+   "high": 0.559,
+   "k": 26,
+   "n": 60
+  }
+ },
+ "identity": {
+  "pairs": 80,
+  "sample": "40 name pairs the resolver joins into one registry entity and 40 look-alike pairs it keeps apart, from every buyer, seller and investor string in the deal store.",
+  "join_precision": {
+   "value": 1.0,
+   "low": 0.824,
+   "high": 1.0,
+   "k": 18,
+   "n": 18
+  },
+  "method": "Each string is split into canonical parties (combined names split, headline fragments and generic phrases dropped); two strings are the same entity when they yield the same single party.",
+  "join_recall": {
+   "value": 0.9,
+   "low": 0.699,
+   "high": 0.972,
+   "k": 18,
+   "n": 20
+  },
+  "valid_party_names_in_sample": {
+   "value": 0.656,
+   "low": 0.58,
+   "high": 0.725,
+   "k": 105,
+   "n": 160
+  },
+  "malformed_names_caught": {
+   "value": 0.855,
+   "low": 0.738,
+   "high": 0.924,
+   "k": 47,
+   "n": 55
+  },
+  "valid_names_kept": {
+   "value": 1.0,
+   "low": 0.965,
+   "high": 1.0,
+   "k": 105,
+   "n": 105
+  },
+  "note": "The name-validity rate is measured on look-alike names, which over-represent extraction fragments; it is not the rate across all stored names."
+ },
+ "heldout_names": {
+  "names": 80,
+  "malformed_names_caught": {
+   "value": 0.5,
+   "low": 0.237,
+   "high": 0.763,
+   "k": 5,
+   "n": 10
+  },
+  "valid_names_resolved_to_the_right_organisation": {
+   "value": 0.957,
+   "low": 0.881,
+   "high": 0.985,
+   "k": 67,
+   "n": 70
+  }
+ },
+ "labels": "Labelled from headline text only, blind to the system's output, by an AI annotator; items marked low-confidence are reported separately. Pending independent human review."
+}

@@ -5,9 +5,16 @@ import { useEffect, useState } from "react";
 import { Container } from "../../../../components/primitives";
 import { DealRows, ErrorNote, Loading, PageHeader, Stat, usd, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
-import { get, type Comparables, type Deal } from "../../../../lib/market";
+import { VerificationPanel } from "../../../../components/app/Verification";
+import { get, type Comparables, type Deal, type FieldAccuracy, type Verification } from "../../../../lib/market";
 
-type DealResponse = { deal: Deal; parties: { name: string; role: string }[]; comparables: Comparables };
+type DealResponse = {
+  deal: Deal;
+  verification?: Verification;
+  field_accuracy?: FieldAccuracy;
+  parties: { name: string; role: string }[];
+  comparables: Comparables;
+};
 
 export default function DealPage({ params }: { params: { id: string } }) {
   const [data, setData] = useState<DealResponse | null>(null);
@@ -21,7 +28,7 @@ export default function DealPage({ params }: { params: { id: string } }) {
 
   if (error) return <Container className="py-14"><ErrorNote message={error} /></Container>;
   if (!data) return <Container className="py-14"><Loading /></Container>;
-  const { deal: d, parties, comparables } = data;
+  const { deal: d, parties, comparables, verification, field_accuracy } = data;
   const valuation = d.reported_valuation_usd ?? d.implied_valuation_usd;
   return (
     <Container className="max-w-5xl py-10 lg:py-14">
@@ -37,7 +44,7 @@ export default function DealPage({ params }: { params: { id: string } }) {
         <Stat label="Amount" value={usd(d.amount_usd)} note={d.amount && d.currency !== "USD" ? `${d.amount.toLocaleString()} ${d.currency}` : undefined} />
         <Stat label="Valuation" value={usd(valuation)} note={d.reported_valuation_usd ? "Reported" : d.implied_valuation_usd ? "Implied by stake and price" : undefined} />
         <Stat label="Stake" value={d.stake_pct ? `${d.stake_pct}%` : "n/a"} note={d.round ? words(d.round) : undefined} />
-        <Stat label="Announced" value={d.announced ?? "n/a"} note={`${d.country ?? "Pan-African"} · ${words(d.sector) || "Sector n/a"}`} />
+        <Stat label="First reported" value={d.announced ?? "n/a"} note={`${d.country ?? "Pan-African"} · ${words(d.sector) || "Sector n/a"}`} />
       </div>
 
       <h2 className="eyebrow mt-10">Parties</h2>
@@ -64,17 +71,23 @@ export default function DealPage({ params }: { params: { id: string } }) {
         )}
       </ul>
 
-      <h2 className="eyebrow mt-10">Sources ({d.sources.length})</h2>
-      <ul className="mt-3 space-y-1.5 text-[0.8125rem]">
-        {d.sources.map((s, i) => (
-          <li key={i}>
-            <a href={s.url} target="_blank" rel="noreferrer" className="hover:underline">
-              {s.publisher || "Source"}
-            </a>{" "}
-            <span className="text-[color:var(--dim)]">{s.date}</span>
-          </li>
-        ))}
-      </ul>
+      {verification ? (
+        <VerificationPanel v={verification} accuracy={field_accuracy ?? null} />
+      ) : (
+        <>
+          <h2 className="eyebrow mt-10">Sources ({d.sources.length})</h2>
+          <ul className="mt-3 space-y-1.5 text-[0.8125rem]">
+            {d.sources.map((s, i) => (
+              <li key={i}>
+                <a href={s.url} target="_blank" rel="noreferrer" className="hover:underline">
+                  {s.publisher || "Source"}
+                </a>{" "}
+                <span className="text-[color:var(--dim)]">{s.date}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <h2 className="eyebrow mt-10">Comparable deals</h2>
       <p className="mt-2 text-[0.8125rem] text-[color:var(--dim)]">{comparables.method}</p>

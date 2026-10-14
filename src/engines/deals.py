@@ -424,7 +424,10 @@ _ANNOUNCED = re.compile(r"\b(to\s+(acquire|buy|merge|invest|sell|list)|agrees?\s
 _COMPLETED = re.compile(r"\b(completes?|completed|closes?|closed|finali[sz]e[sd]?|concludes?|concluded|raises?|raised|"
                         r"secures?|secured|acquired|bought|merged|sold|exited|lands?|landed|bagged|nets?|netted|"
                         r"invests?|invested|backs?|backed|injects?|injected|lends?|lent|disburses?|disbursed|listed|"
-                        r"debuted|receives?|received|obtient|obtém|lève|investit|investe|capta|reach(es|ed)\s+(\S+\s+)?(first|final|second)\s+close)\b", re.IGNORECASE)
+                        r"debuted|debuts?|receives?|received|obtient|obtém|lève|investit|investe|capta|reach(es|ed)\s+(\S+\s+)?(first|final|second)\s+close|"
+                        r"gets?|got|bags?|wins?|won|pockets?|pocketed|grabs?|grabbed|snags?|snagged|scoops?|scooped|attracts?|attracted|"
+                        r"lists?\s+on|divests?|divested|offloads?|offloaded|clinches|clinched|seals?|sealed|"
+                        r"boucle|a\s+lev[ée]|cl[oô]ture|conclut|finalise)\b", re.IGNORECASE)
 
 SECTORS: tuple[tuple[str, str], ...] = (
     ("fintech", r"fintech|payments?|mobile\s+money|wallet|neobank|digital\s+bank|lending\s+app|remittance|bnpl|insurtech|crypto"),
@@ -703,7 +706,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         "countries": countries,
         "announced": published,
         "headline": title,
-        "sources": [{"publisher": publisher, "url": url, "date": published}],
+        "sources": [{"publisher": publisher, "url": url, "date": published, "title": title, "stage": stage}],
     }
     deal["id"] = deal_id(deal)
     return deal

@@ -183,7 +183,27 @@ async def deal_search(q: str = "", country: Optional[str] = None, type: Optional
     ds = deals()
     rows = deals_mod.search(ds, q=q, country=country, deal_type=type, sector=sector, since=since, until=until,
                             investor=investor, min_usd=min_usd, limit=limit)
-    return {"total_in_database": len(ds), "count": len(rows), "deals": rows}
+    from src.engines import provenance
+    out = []
+    for d in rows:
+        n = len(provenance.stories(d.get("sources") or []))
+        out.append({**d, "independent_stories": n,
+                    "verification": "corroborated" if n >= 2 else "single source"})
+    return {"total_in_database": len(ds), "count": len(out), "deals": out}
+
+
+_DEAL_EVAL = Path(__file__).resolve().parents[1] / "evaluation" / "deals" / "results.json"
+
+
+def _field_accuracy() -> Optional[dict]:
+    """Measured accuracy of each extracted field on the held-out evaluation set, shown next to the record."""
+    try:
+        r = json.loads(_DEAL_EVAL.read_text()).get("heldout_extraction") or {}
+    except (OSError, ValueError):
+        return None
+    f = (r.get("fields") or {}).get("all") or {}
+    return {"set": "held-out evaluation set", "fields": f, "fully_correct_record": (r.get("fields") or {}).get("fully_correct_record"),
+            "detection": (r.get("detection") or {}).get("all")}
 
 
 @router.get("/api/deals/{deal_id}")
@@ -191,7 +211,9 @@ async def deal(deal_id: str) -> dict:
     d = next((d for d in deals() if d.get("id") == deal_id), None)
     if d is None:
         raise HTTPException(404, "Deal not found.")
-    return {"deal": d, "parties": [{"name": n, "role": r} for n, r in investors.parties(d)],
+    from src.engines import provenance
+    return {"deal": d, "verification": provenance.verify(d), "field_accuracy": _field_accuracy(),
+            "parties": [{"name": n, "role": r} for n, r in investors.parties(d)],
             "comparables": deals_mod.comparables(deals(), sector=d.get("sector"), country=d.get("country"),
                                                  deal_type=d.get("deal_type"), amount_usd=d.get("amount_usd"),
                                                  exclude_id=d["id"], limit=10)}
@@ -508,6 +530,51 @@ async def market_pulse() -> dict:
 
 # ── Evaluation ────────────────────────────────────────────────────────────────
 
+_ROOT = Path(__file__).resolve().parents[1]
+_DOWNLOADS = {
+    "backtest_predictions.csv": ("docs/backtest_predictions.csv", "text/csv"),
+    "deal_extraction_items.jsonl": ("evaluation/deals/extraction_items.jsonl", "application/x-ndjson"),
+    "deal_extraction_labels.jsonl": ("evaluation/deals/extraction_labels.jsonl", "application/x-ndjson"),
+    "deal_heldout_items.jsonl": ("evaluation/deals/heldout_extraction_items.jsonl", "application/x-ndjson"),
+    "deal_heldout_labels.jsonl": ("evaluation/deals/heldout_extraction_labels.jsonl", "application/x-ndjson"),
+    "dedup_items.jsonl": ("evaluation/deals/dedup_items.jsonl", "application/x-ndjson"),
+    "dedup_labels.jsonl": ("evaluation/deals/dedup_labels.jsonl", "application/x-ndjson"),
+    "identity_items.jsonl": ("evaluation/deals/identity_items.jsonl", "application/x-ndjson"),
+    "identity_labels.jsonl": ("evaluation/deals/identity_labels.jsonl", "application/x-ndjson"),
+    "names_heldout_items.jsonl": ("evaluation/deals/heldout_names_items.jsonl", "application/x-ndjson"),
+    "names_heldout_labels.jsonl": ("evaluation/deals/heldout_names_labels.jsonl", "application/x-ndjson"),
+    "deal_errors.jsonl": ("evaluation/deals/errors.jsonl", "application/x-ndjson"),
+    "attribution_cases.json": ("evaluation/attribution/cases.json", "application/json"),
+    "attribution_heldout_cases.json": ("evaluation/attribution/heldout_cases.json", "application/json"),
+    "attribution_errors.jsonl": ("evaluation/attribution/errors.jsonl", "application/x-ndjson"),
+}
+
+
+def _read_json(path: Path) -> Optional[dict]:
+    try:
+        return json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+
+
+@router.get("/api/evaluation/files")
+async def evaluation_files() -> dict:
+    return {"files": [{"name": k, "url": f"/api/evaluation/files/{k}", "available": (_ROOT / v[0]).exists()}
+                      for k, v in _DOWNLOADS.items()]}
+
+
+@router.get("/api/evaluation/files/{name}")
+async def evaluation_file(name: str) -> Response:
+    if name not in _DOWNLOADS:
+        raise HTTPException(404, "Unknown file.")
+    rel, media = _DOWNLOADS[name]
+    try:
+        body = (_ROOT / rel).read_text()
+    except OSError:
+        raise HTTPException(404, "File not published.")
+    return Response(body, media_type=media, headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
 @router.get("/api/evaluation")
 async def evaluation() -> dict:
     try:
@@ -519,6 +586,12 @@ async def evaluation() -> dict:
         async with httpx.AsyncClient(timeout=15) as client:
             live = await refresh_live(client)
     return {"historical_backtest": backtest, "live_outcomes": live, "measured_now": _measured_summary(),
+            "signal_report": _read_json(_ROOT / "docs" / "evaluation_report.json"),
+            "data_quality": _read_json(_ROOT / "evaluation" / "deals" / "results.json"),
+            "data_quality_baseline": _read_json(_ROOT / "evaluation" / "deals" / "results_baseline.json"),
+            "attribution": _read_json(_ROOT / "evaluation" / "attribution" / "results.json"),
+            "attribution_baseline": _read_json(_ROOT / "evaluation" / "attribution" / "results_baseline.json"),
+            "attribution_heldout": _read_json(_ROOT / "evaluation" / "attribution" / "heldout_results.json"),
             "method": "Historical: walk-forward replay, 30-day lookback, 90-day horizon, confirmation strictly after "
                       "each as-of date. Live: every hosted brief's signals labelled daily against later filings, "
                       "credible news and abnormal price moves."}

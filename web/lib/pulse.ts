@@ -194,3 +194,42 @@ export function moveRange(lo: number | null, hi: number | null): string | null {
   const f = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
   return `${f(lo)} to ${f(hi)}`;
 }
+
+/** Headline accuracy figures from the held-out evaluation sets, for copy that quotes them. */
+export type QualityCI = { value: number; low: number; high: number; n: number } | null;
+export type Quality = {
+  dealPrecision: QualityCI;
+  dealRecall: QualityCI;
+  dealComplete: QualityCI;
+  attributionPrecision: QualityCI;
+  attributionRecall: QualityCI;
+  attributionFalseAlarm: QualityCI;
+};
+
+export async function getQuality(): Promise<Quality | null> {
+  if (!API_URL) return null;
+  try {
+    const resp = await fetch(`${API_URL}/api/evaluation`, { next: { revalidate: REVALIDATE } });
+    if (!resp.ok) return null;
+    const e = await resp.json();
+    const ho = e?.data_quality?.heldout_extraction;
+    const at = e?.attribution_heldout?.overall;
+    return {
+      dealPrecision: ho?.detection?.all?.precision ?? null,
+      dealRecall: ho?.detection?.all?.recall ?? null,
+      dealComplete: ho?.fields?.fully_correct_record ?? null,
+      attributionPrecision: at?.precision ?? null,
+      attributionRecall: at?.recall ?? null,
+      attributionFalseAlarm: at?.false_alarm_rate_on_no_event_cases ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** "71% (95% CI 61–79%, n=99)". */
+export function ciText(x: QualityCI): string {
+  if (!x) return "n/a";
+  const p = (v: number) => Math.round(v * 100);
+  return `${p(x.value)}% (95% CI ${p(x.low)}–${p(x.high)}%, n=${x.n})`;
+}

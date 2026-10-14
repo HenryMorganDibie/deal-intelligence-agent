@@ -15,7 +15,7 @@ function facts(pulse: Pulse | null) {
           k: count(pulse.measured.backtest_observations + pulse.measured.live_observations),
           v: "past signals behind every confidence figure",
         }
-      : { k: "526", v: "automated tests behind every release" },
+      : { k: "546", v: "automated tests behind every release" },
   ];
 }
 

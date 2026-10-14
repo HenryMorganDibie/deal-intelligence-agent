@@ -84,7 +84,7 @@ def build(predictions: list[dict], meta: Optional[dict] = None, keep_observation
     out = {"source": "walk-forward historical backtest (docs/BACKTEST.md)", **(meta or {}),
            "overall_confirmation": overall, "signals": by_type,
             "method": f"Confirmation: share of flags followed within 90 days by a confirming filing, disclosure or "
-                      f"credible report. Moves: market-adjusted return over 10 trading days after the flag. Figures "
+                      f"credible report. Moves: market-adjusted return over 10 calendar days after the flag (first close on or after day 10). Figures "
                       f"with fewer than {MIN_N} observations are reported as insufficient history; smaller groups are "
                       f"smoothed toward their parent rate with {SMOOTHING} pseudo-observations."}
     if keep_observations:

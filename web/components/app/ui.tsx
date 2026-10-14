@@ -108,7 +108,7 @@ export function Td({ children, className = "" }: { children: ReactNode; classNam
 
 export function DealRows({ deals, showWhy = false }: { deals: Deal[]; showWhy?: boolean }) {
   return (
-    <Table head={["Date", "Type", "Target", "Buyer / lead / lender", "Amount", "Country", showWhy ? "Similarity" : "Stage"]}>
+    <Table head={["First reported", "Type", "Target", "Buyer / lead / lender", "Amount", "Country", showWhy ? "Similarity" : "Stage", "Sources"]}>
       {deals.map((d) => (
         <tr key={d.id}>
           <Td className="whitespace-nowrap kbd text-[0.75rem] text-[color:var(--muted)]">{d.announced ?? ""}</Td>
@@ -124,6 +124,18 @@ export function DealRows({ deals, showWhy = false }: { deals: Deal[]; showWhy?: 
           <Td>{d.country ?? "Pan-African"}</Td>
           <Td className="whitespace-nowrap text-[color:var(--muted)]">
             {showWhy ? `${d.similarity} (${(d.why ?? []).join(", ")})` : words(d.stage)}
+          </Td>
+          <Td className="whitespace-nowrap">
+            {d.independent_stories !== undefined && (
+              <span
+                title="Independent stories reporting this deal (syndicated copies counted once)"
+                className={`inline-flex rounded-full border px-2 py-0.5 text-[0.6875rem] ${
+                  d.independent_stories >= 2 ? "border-verified/50 text-verified" : "border-white/20 text-[color:var(--muted)]"
+                }`}
+              >
+                {d.independent_stories >= 2 ? `${d.independent_stories} independent` : "single source"}
+              </span>
+            )}
           </Td>
         </tr>
       ))}

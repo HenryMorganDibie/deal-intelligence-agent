@@ -340,7 +340,24 @@ pip install -r requirements-dev.txt
 pytest -q
 ```
 
-**526 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration, automatic outcome labelling (benchmark-adjusted returns, SEC ground truth, recall), French-language detection, the hosted API, the 54-country registry, country and currency risk formulas, deal extraction (amounts, roles, stages, rejection of non-deals) in three languages, investor roles, statement parsing and accounting checks, citation validation, watchlist matching and webhook safety, coverage tiers.
+**546 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration, automatic outcome labelling (benchmark-adjusted returns, SEC ground truth, recall), French-language detection, the hosted API, the 54-country registry, country and currency risk formulas, deal extraction (amounts, roles, stages, rejection of non-deals) in three languages, investor roles, statement parsing and accounting checks, citation validation, watchlist matching and webhook safety, coverage tiers.
+
+## Evaluation
+
+Signals, deals and attribution are measured on published, labelled sets with sample sizes and 95%
+intervals, with development and held-out sets kept apart (`evaluation/README.md`):
+
+```bash
+python main.py backtest --evaluation          # signal outcomes: event confirmation and market reaction, separately
+python -m evaluation.deals.score              # deal extraction, deduplication, identity resolution
+python -m evaluation.attribution.score --heldout   # is a news event about the named company?
+```
+
+Held-out results (14 Oct 2026): 82% [75–88] of extracted deal records are genuine transactions,
+92% [85–96] of deal-like headlines are caught, 71% [61–79] of records have every field right;
+attribution on adversarial news headlines finds 38% [28–49] of real events at 64% [50–77]
+precision. Each deal page shows field-level verification: corroborated by independent stories,
+single source, derived, classified, uncertain or not disclosed.
 
 ---
 

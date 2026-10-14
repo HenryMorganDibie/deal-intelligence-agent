@@ -39,7 +39,10 @@ log = logging.getLogger(__name__)
 
 # A signal predicts an event within this many days of detection.
 CONFIRMATION_WINDOW_DAYS = 90
-# Price reaction is read 10 trading-ish days after detection; label no earlier.
+# Price reaction: close on the first trading day on or after detection + 10 calendar days (about 7
+# trading days), against the first close on or after detection. 12 days leaves room for a weekend or
+# holiday before that close exists; confirmation is checked over 90 days and labelled at 95 so that
+# late-indexed filings and reports inside the window are found.
 MIN_AGE_DAYS = 12
 
 AFRICAN_SUFFIXES = (".JO", ".LG", ".NR", ".GH", ".CA", ".CS", ".BV", ".TN", ".MZ", ".AO")

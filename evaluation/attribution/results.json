@@ -1,0 +1,329 @@
+{
+ "cases": 160,
+ "overall": {
+  "exactly_right": {
+   "value": 0.75,
+   "low": 0.678,
+   "high": 0.811,
+   "k": 120,
+   "n": 160
+  },
+  "precision": {
+   "value": 0.857,
+   "low": 0.75,
+   "high": 0.923,
+   "k": 54,
+   "n": 63
+  },
+  "recall": {
+   "value": 0.635,
+   "low": 0.529,
+   "high": 0.73,
+   "k": 54,
+   "n": 85
+  },
+  "false_alarm_rate_on_no_event_cases": {
+   "value": 0.087,
+   "low": 0.043,
+   "high": 0.17,
+   "k": 7,
+   "n": 80
+  }
+ },
+ "by_category": {
+  "alias": {
+   "cases": 18,
+   "exactly_right": {
+    "value": 0.167,
+    "low": 0.058,
+    "high": 0.392,
+    "k": 3,
+    "n": 18
+   },
+   "false_alarm_rate_on_no_event_cases": {
+    "value": 0.5,
+    "low": 0.095,
+    "high": 0.905,
+    "k": 1,
+    "n": 2
+   },
+   "precision": {
+    "value": 0.667,
+    "low": 0.208,
+    "high": 0.939,
+    "k": 2,
+    "n": 3
+   },
+   "recall": {
+    "value": 0.125,
+    "low": 0.035,
+    "high": 0.36,
+    "k": 2,
+    "n": 16
+   }
+  },
+  "historical": {
+   "cases": 17,
+   "exactly_right": {
+    "value": 0.765,
+    "low": 0.527,
+    "high": 0.904,
+    "k": 13,
+    "n": 17
+   },
+   "false_alarm_rate_on_no_event_cases": {
+    "value": 0.143,
+    "low": 0.04,
+    "high": 0.399,
+    "k": 2,
+    "n": 14
+   },
+   "precision": {
+    "value": 0.4,
+    "low": 0.118,
+    "high": 0.769,
+    "k": 2,
+    "n": 5
+   },
+   "recall": {
+    "value": 0.667,
+    "low": 0.208,
+    "high": 0.939,
+    "k": 2,
+    "n": 3
+   }
+  },
+  "multi_party": {
+   "cases": 18,
+   "exactly_right": {
+    "value": 0.611,
+    "low": 0.386,
+    "high": 0.797,
+    "k": 11,
+    "n": 18
+   },
+   "false_alarm_rate_on_no_event_cases": {
+    "value": 0.286,
+    "low": 0.082,
+    "high": 0.641,
+    "k": 2,
+    "n": 7
+   },
+   "precision": {
+    "value": 0.75,
+    "low": 0.409,
+    "high": 0.929,
+    "k": 6,
+    "n": 8
+   },
+   "recall": {
+    "value": 0.545,
+    "low": 0.28,
+    "high": 0.787,
+    "k": 6,
+    "n": 11
+   }
+  },
+  "negation": {
+   "cases": 17,
+   "exactly_right": {
+    "value": 0.941,
+    "low": 0.73,
+    "high": 0.99,
+    "k": 16,
+    "n": 17
+   },
+   "false_alarm_rate_on_no_event_cases": {
+    "value": 0.062,
+    "low": 0.011,
+    "high": 0.283,
+    "k": 1,
+    "n": 16
+   },
+   "precision": {
+    "value": 0.5,
+    "low": 0.095,
+    "high": 0.905,
+    "k": 1,
+    "n": 2
+   },
+   "recall": {
+    "value": 1.0,
+    "low": 0.207,
+    "high": 1.0,
+    "k": 1,
+    "n": 1
+   }
+  },
+  "negative_control": {
+   "cases": 10,
+   "exactly_right": {
+    "value": 1.0,
+    "low": 0.722,
+    "high": 1.0,
+    "k": 10,
+    "n": 10
+   },
+   "false_alarm_rate_on_no_event_cases": {
+    "value": 0.0,
+    "low": 0.0,
+    "high": 0.278,
+    "k": 0,
+    "n": 10
+   },
+   "precision": null,
+   "recall": null
+  },
+  "omitted_subject": {
+   "cases": 17,
+   "exactly_right": {
+    "value": 0.706,
+    "low": 0.469,
+    "high": 0.867,
+    "k": 12,
+    "n": 17
+   },
+   "false_alarm_rate_on_no_event_cases": {
+    "value": 0.0,
+    "low": 0.0,
+    "high": 0.434,
+    "k": 0,
+    "n": 5
+   },
+   "precision": {
+    "value": 1.0,
+    "low": 0.676,
+    "high": 1.0,
+    "k": 8,
+    "n": 8
+   },
+   "recall": {
+    "value": 0.615,
+    "low": 0.355,
+    "high": 0.823,
+    "k": 8,
+    "n": 13
+   }
+  },
+  "positive_control": {
+   "cases": 10,
+   "exactly_right": {
+    "value": 0.7,
+    "low": 0.397,
+    "high": 0.892,
+    "k": 7,
+    "n": 10
+   },
+   "false_alarm_rate_on_no_event_cases": null,
+   "precision": {
+    "value": 0.9,
+    "low": 0.596,
+    "high": 0.982,
+    "k": 9,
+    "n": 10
+   },
+   "recall": {
+    "value": 0.818,
+    "low": 0.523,
+    "high": 0.949,
+    "k": 9,
+    "n": 11
+   }
+  },
+  "pronoun": {
+   "cases": 18,
+   "exactly_right": {
+    "value": 0.889,
+    "low": 0.672,
+    "high": 0.969,
+    "k": 16,
+    "n": 18
+   },
+   "false_alarm_rate_on_no_event_cases": {
+    "value": 0.0,
+    "low": 0.0,
+    "high": 0.793,
+    "k": 0,
+    "n": 1
+   },
+   "precision": {
+    "value": 1.0,
+    "low": 0.824,
+    "high": 1.0,
+    "k": 18,
+    "n": 18
+   },
+   "recall": {
+    "value": 0.9,
+    "low": 0.699,
+    "high": 0.972,
+    "k": 18,
+    "n": 20
+   }
+  },
+  "rumour_hypothetical": {
+   "cases": 17,
+   "exactly_right": {
+    "value": 0.882,
+    "low": 0.657,
+    "high": 0.967,
+    "k": 15,
+    "n": 17
+   },
+   "false_alarm_rate_on_no_event_cases": {
+    "value": 0.0,
+    "low": 0.0,
+    "high": 0.278,
+    "k": 0,
+    "n": 10
+   },
+   "precision": {
+    "value": 1.0,
+    "low": 0.566,
+    "high": 1.0,
+    "k": 5,
+    "n": 5
+   },
+   "recall": {
+    "value": 0.714,
+    "low": 0.359,
+    "high": 0.918,
+    "k": 5,
+    "n": 7
+   }
+  },
+  "subsidiary_parent": {
+   "cases": 18,
+   "exactly_right": {
+    "value": 0.944,
+    "low": 0.742,
+    "high": 0.99,
+    "k": 17,
+    "n": 18
+   },
+   "false_alarm_rate_on_no_event_cases": {
+    "value": 0.067,
+    "low": 0.012,
+    "high": 0.298,
+    "k": 1,
+    "n": 15
+   },
+   "precision": {
+    "value": 0.75,
+    "low": 0.301,
+    "high": 0.954,
+    "k": 3,
+    "n": 4
+   },
+   "recall": {
+    "value": 1.0,
+    "low": 0.438,
+    "high": 1.0,
+    "k": 3,
+    "n": 3
+   }
+  }
+ },
+ "labels": "Cases and gold labels written blind to the engine by an AI annotator; each case carries its reasoning. Pending independent human review.",
+ "set": "development: rule changes were made after reading its errors, so post-fix results are optimistic"
+}

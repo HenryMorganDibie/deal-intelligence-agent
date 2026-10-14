@@ -150,7 +150,7 @@ def explain_alpha(
     move_text = describe_move(lo, hi, a.expected_median_pct, a.comparable_events_n)
     if signal.severity == Severity.HIGH or signal.severity == Severity.CRITICAL:
         if move_text:
-            plain += (f"Measured move after similar flags: {move_text}, market-adjusted over 10 trading days "
+            plain += (f"Measured move after similar flags: {move_text}, market-adjusted over 10 calendar days "
                       f"({a.move_confidence} confidence).")
         else:
             plain += "Expected move: insufficient history for this kind of flag."

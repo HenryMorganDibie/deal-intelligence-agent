@@ -15,13 +15,13 @@ import { Signals } from "../components/Signals";
 import { SiteNav } from "../components/SiteNav";
 import { SourceMarquee } from "../components/SourceMarquee";
 import { Trust } from "../components/Trust";
-import { getPulse, getShowcase } from "../lib/pulse";
+import { getPulse, getQuality, getShowcase } from "../lib/pulse";
 
 // Re-render from the live feed every 30 minutes (see lib/pulse.ts).
 export const revalidate = 1800;
 
 export default async function LandingPage() {
-  const [pulse, showcase] = await Promise.all([getPulse(), getShowcase()]);
+  const [pulse, showcase, quality] = await Promise.all([getPulse(), getShowcase(), getQuality()]);
   return (
     <div className="relative">
       <a
@@ -44,7 +44,7 @@ export default async function LandingPage() {
         <Scoring pulse={pulse} />
         <Example brief={showcase?.example ?? showcase?.hero ?? null} />
         <Trust />
-        <Limits />
+        <Limits quality={quality} />
         <Faq />
         <FinalCta />
       </main>

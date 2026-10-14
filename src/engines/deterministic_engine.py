@@ -552,6 +552,93 @@ def _extract_entities(text: str) -> list[str]:
     return list(dict.fromkeys(entities))[:10]  # deduplicate, cap at 10
 
 
+# ── Headline phrasing ────────────────────────────────────────────────────────
+# News headlines state events with active verbs and job titles that the filing-oriented
+# rules above miss ("S&P downgrades X", "SEC fines X", "CEO quits", "files for bankruptcy").
+# Measured on the attribution suite (evaluation/attribution); same tiers as above.
+_ROLE = (r"(ceo|cfo|coo|cto|md|managing\s+director|chairman|chairwoman|chair|president|"
+         r"chief\s+(executive|financial|operating|technology)(\s+officer)?|finance\s+director|group\s+ceo)")
+_AGENCY = r"(moody'?s|s&p|standard\s+&\s+poor'?s|fitch|gcr|global\s+credit\s+rating|agusto|dbrs|r&i)"
+_MONEY = r"(\$|us\$|€|£|₦|n\d|r\d|ksh|egp|usd|eur|naira|rand|dirhams?|euros?|dollars?|\d+(\.\d+)?\s*(m|bn|million|billion))"
+# Patterns whose company is the object ("S&P downgrades Acme"): exempt from the subject-first rule.
+_OBJECT_PATTERNS = {
+    rf"\b{_AGENCY}\b.{{0,40}}\b(downgrades?|downgraded|cuts?|lowers?|lowered|slashes|slashed)\b",
+}
+HEADLINE_RULES: list[tuple[SignalType, list[str], float]] = [
+    (SignalType.LEADERSHIP_CHANGE, [
+        rf"\b{_ROLE}\b.{{0,30}}\b(resign\w*|quits?|quit|exits?|exited|steps?\s+down|stepped\s+down|step\s+down|retires?|retired|"
+        rf"departs?|departed|ousted|fired|sacked|leaves|leaving|to\s+leave|will\s+leave)\b",
+        rf"\b(resigns?|resigned|quits?|exits?|steps?\s+down|retires?)\s+as\s+(its\s+)?(group\s+)?{_ROLE}\b",
+    ], 0.90),
+    (SignalType.LEADERSHIP_CHANGE, [
+        rf"\b(names?|named|appoints?|appointed|picks?|taps?|hires?|promotes?)\b.{{0,40}}\bas\s+(its\s+)?(new\s+|next\s+|interim\s+|acting\s+|permanent\s+)?(group\s+)?{_ROLE}\b",
+        rf"\b(names?|named|appoints?|appointed|unveils?)\s+(a\s+)?(new|next|interim|acting)\s+(group\s+)?{_ROLE}\b",
+        rf"\bnew\s+(group\s+)?{_ROLE}\b.{{0,20}}\b(named|appointed|takes\s+over|starts)\b",
+        r"\b(nomination|nomme|a\s+nomm[eé])\s+(d['’]\s*un\s+|un\s+)?nouve(au|l|lle)\s+(pr[eé]sident[-\s]directeur\s+g[eé]n[eé]ral|directeur\s+g[eé]n[eé]ral|pdg|dg|pr[eé]sident|directeur\s+financier)\b",
+        r"\bnomm[eé]e?\s+(au\s+poste\s+de\s+)?(directeur|directrice)\s+(g[eé]n[eé]ral|financier)",
+        r"\b(directeur\s+financier|daf|directeur\s+g[eé]n[eé]ral|pdg)\b.{0,20}\bquitte\s+ses\s+fonctions\b",
+        r"\b(nomeia|nomeou|nomea[cç][aã]o\s+d[eo])\s+(um\s+)?nov[oa]\s+(presidente|ceo|director|administrador)",
+        r"\bsa[ií]da\s+do\s+(seu\s+)?(presidente|ceo|director)",
+        r"\b(presidente|ceo)\b.{0,60}\b(renunciou|renuncia|demitiu-se|deixa\s+o\s+cargo)\b",
+    ], 0.75),
+    (SignalType.CREDIT_RISK, [
+        rf"\b{_AGENCY}\b.{{0,40}}\b(downgrades?|downgraded|cuts?|lowers?|lowered|slashes|slashed)\b",
+        rf"\b(downgrades?|downgraded|cuts?|lowers?|lowered)\b.{{0,40}}\b(rating|outlook\s+to\s+negative|to\s+(junk|ccc|cc|b-|b\+|bb-))",
+        r"\b(defaults?|defaulted)\s+on\b",
+        r"\b(misses?|missed|skips?|skipped)\s+(an?\s+|its\s+)?(coupon|interest|bond|debt|loan|eurobond)\s+(payments?|repayments?)\b",
+        r"\b(fitch|moody'?s|s&p)\s+a\s+abaiss[eé]\b.{0,40}\bnote\b",
+        r"\babaiss[eé]\w*\b.{0,30}\bla\s+note\b",
+    ], 0.92),
+    (SignalType.DISTRESSED_ASSET, [
+        r"\b(files?|filed|filing)\s+for\s+(chapter\s+(11|7)|bankruptcy|insolvency|business\s+rescue|administration|liquidation|receivership)\b",
+        r"\b(enters?|entered|placed?|placed\s+(in|into|under)|goes\s+into|went\s+into|to\s+enter|under)\s+(voluntary\s+)?(business\s+rescue|administration|liquidation|receivership)\b",
+        r"\bvoluntary\s+business\s+rescue\b",
+        r"\bplace\s+it\s+in\s+(voluntary\s+)?(business\s+rescue|administration|liquidation)\b",
+    ], 0.95),
+    (SignalType.REGULATORY_ACTION, [
+        rf"\b(fined|fines?|penali[sz]ed|sanctioned|censured)\b.{{0,40}}{_MONEY}",
+        rf"\b(hit\s+with|slapped\s+with|faces?)\s+(a\s+|an\s+)?(\S+\s+){{0,4}}(fine|penalty|antitrust\s+suit|lawsuit|enforcement\s+action)\b",
+        r"\b(securities\s+and\s+exchange\s+commission|competition\s+(commission|authority|tribunal)|data\s+protection\s+(commission|authority))\b.{0,60}\b(investigat\w*|probe|sanction\w*|fine[sd]?|penalt\w*|charge[sd]?)\b",
+        r"\b(opened|opens|launched|launches)\s+(an?\s+)?(investigation|probe|inquiry)\s+into\b",
+        r"\b(sues?|sued|charges?|charged)\b.{0,30}\b(antitrust|fraud|securities|misconduct|bribery|price[-\s]fixing)\b",
+        r"\b(inflige|infligé)\s+(une\s+)?(sanction|amende)",
+        r"\bcondamn[eé]e?\b.{0,40}\bamende\b",
+        r"\bamende\s+de\s+[\d\s,.]+\s*(milliards?|millions?)",
+    ], 0.93),
+    (SignalType.INSIDER_ACTIVITY, [
+        rf"\b({_ROLE}|directors?|insiders?|founder|executives?)\b.{{0,40}}\b(buys?|bought|sells?|sold|purchases?|purchased|"
+        r"scoops?\s+up|scooped\s+up|offloads?|offloaded|dumps?|dumped|acquires?|acquired)\b.{0,40}\b(shares|stock|stake)\b",
+        r"\bactivist\b.{0,40}\b(stake|builds|built|takes|took|discloses|disclosed)\b",
+        r"\bdisclosed\s+a\s+stake\b",
+    ], 0.85),
+    (SignalType.DEBT_RESTRUCTURE, [
+        r"\b(exchange\s+offer|consent\s+solicitation|tender\s+offer)\b.{0,40}\b(bonds?|notes?|debt|eurobonds?)\b",
+        r"\b(restructure|reschedule|restructuring|rescheduling)\s+(of\s+)?(\S+\s+){0,4}(debt|loans?|bonds?|notes?|eurobonds?|obligations)\b",
+        r"\bpush(es|ed)?\s+back\b.{0,30}\bmaturit",
+        r"\b(talks|negotiations|agreement|agreed)\s+with\s+(its\s+)?(creditors|lenders|bondholders|noteholders)\b",
+    ], 0.80),
+    (SignalType.MA_ACTIVITY, [
+        r"\b(agrees?|agreed|to|plans?\s+to|moves?\s+to|set\s+to)\s+(buy|acquire|sell|merge|take\s+over)\b",
+        r"\b(buys?|bought|sells?|sold|acquires?|acquired|takes?|took)\s+(a\s+)?(\d+(\.\d+)?\s*(%|percent|per\s+cent|pc)\s+(stake\s+)?(of|in))",
+        r"\b(sells?|sold|to\s+sell)\s+(its\s+|a\s+)?(stake|unit|subsidiary|division|business|operations?)\b",
+        r"\breceives?\s+(a\s+|an\s+)?(takeover\s+|buyout\s+|acquisition\s+)?(offer|bid|approach)\b",
+        r"\bbuy\s+out\s+(the\s+)?minorit",
+        r"\b(weighs|explores|exploring|considers|considering)\s+(a\s+)?(bid|sale|offer|takeover)\b",
+        r"\b(in|enters?|entered)\s+(exclusive\s+)?talks\s+to\s+(buy|acquire|sell|merge)\b",
+    ], 0.75),
+]
+SIGNAL_RULES.extend(HEADLINE_RULES)
+
+# Denials and non-events: a clause that negates its own event is not evidence of it.
+_NEGATED = re.compile(
+    r"\b(denies|denied|deny|rules?\s+out|ruled\s+out|no\s+plans?\s+to|not\s+in\s+talks|will\s+not|won['’]?t|"
+    r"dismiss(es|ed)?\s+(reports?|speculation|rumou?rs)|refutes?|refuted|rejects?\s+(reports?|claims?)|"
+    r"no\s+(profit\s+warning|merger|takeover|deal|default|restructuring)|"
+    r"d[eé]ment\w*|[eé]carte\s+toute|exclut|n['’]envisage\s+pas|nega|desmente)\b",
+    re.IGNORECASE,
+)
+
+
 def _match_rules(text: str) -> list[tuple[SignalType, list[str], float]]:
     """
     Run all signal rules against text.
@@ -621,6 +708,57 @@ def _cik_number(cik: Optional[str]) -> Optional[int]:
         return None
 
 
+def _country_words() -> tuple[set[str], str]:
+    from src.data.africa_countries import COUNTRIES
+    names = sorted({c.name for c in COUNTRIES} | {"South Africa", "Ivory Coast", "Cote d'Ivoire", "DRC", "Congo"},
+                   key=len, reverse=True)
+    return {w.lower() for n in names for w in re.findall(r"[^\W_]+", n)}, "|".join(re.escape(n) for n in names)
+
+
+_COUNTRY_WORDS, _COUNTRY_ALT = _country_words()
+
+
+# ─── Source independence ─────────────────────────────────────────────────────
+# Corroboration counts independent stories, not articles: a wire story republished by Yahoo
+# Finance, MarketScreener and Investing.com is one source. Near-identical headlines (token overlap
+# of 0.6 or more) and reports crediting the same wire service are one story; filings count once
+# per accession number.
+_WIRES = re.compile(r"\b(reuters|bloomberg|afp|agence\s+france[-\s]presse|associated\s+press|\(ap\)|apo\s+group|"
+                    r"dow\s+jones|xinhua|anadolu|business\s+wire|pr\s+newswire|globe\s*newswire|accesswire)\b", re.IGNORECASE)
+_STOP = {"the", "and", "for", "with", "from", "that", "this", "after", "over", "into", "its", "des", "les", "pour", "dans"}
+
+
+def _story_tokens(text: str) -> set[str]:
+    head = re.split(r"\s[-–|]\s", text or "", maxsplit=1)[0]
+    return {w for w in re.findall(r"[^\W_]{3,}", head.lower()) if w not in _STOP}
+
+
+class _StoryClusters:
+    def __init__(self) -> None:
+        self._clusters: list[tuple[set[str], str]] = []
+        self.duplicates = 0
+
+    def key(self, c: "SignalCandidate") -> str:
+        if c.source_type == "filing":
+            return f"filing:{c.filing_reference or c.source_url or c.source_name}"
+        toks = _story_tokens(c.source_text)
+        wire = _WIRES.search(c.source_name or "") or _WIRES.search(c.source_text or "")
+        if wire:                          # the wire's own story and every copy crediting it
+            k = "wire:" + re.sub(r"\W+", "", wire.group(1).lower())
+            if any(k == other for _, other in self._clusters):
+                self.duplicates += 1
+            else:
+                self._clusters.append((toks, k))
+            return k
+        for other, k in self._clusters:
+            if toks and other and len(toks & other) / len(toks | other) >= 0.6:
+                self.duplicates += 1
+                return k
+        k = f"story:{len(self._clusters)}"
+        self._clusters.append((toks, k))
+        return k
+
+
 def _company_matchers(*names: Optional[str], ticker: Optional[str] = None) -> list[re.Pattern]:
     """
     Word-boundary patterns that identify the target company in free text.
@@ -642,8 +780,10 @@ def _company_matchers(*names: Optional[str], ticker: Optional[str] = None) -> li
             patterns.append(_QualifiedName(words[0]))
             continue
         phrase = r"\W+".join(re.escape(w) for w in words)
-        # Not a product named after the company: "Boeing 737", "Airbus A320", "Toyota RAV4".
-        patterns.append(re.compile(rf"\b{phrase}\b(?!\s*-?\d{{2,}}|\s+[A-Z]{{1,3}}-?\d)", re.IGNORECASE))
+        # Not a product named after the company ("Boeing 737", "Airbus A320", "Toyota RAV4"), and not a
+        # country subsidiary of a parent ("MTN Nigeria", "Sanlam Kenya" are not "MTN Group", "Sanlam").
+        sub = "" if any(w.lower() in _COUNTRY_WORDS for w in words) else rf"|\s+(?:{_COUNTRY_ALT})\b"
+        patterns.append(re.compile(rf"\b{phrase}\b(?!\s*-?\d{{2,}}|\s+[A-Z]{{1,3}}-?\d{sub})", re.IGNORECASE))
     base = ticker.split(".")[0] if ticker else None     # GTCO.LG -> GTCO
     if base and len(base) >= 3:
         patterns.append(re.compile(rf"\b{re.escape(base.upper())}\b"))
@@ -664,8 +804,8 @@ _CLAUSE_BREAK = re.compile(
     # "as" joins clauses ("lifts outlook as rival deal closes") but also names roles ("named Ade as CEO").
     r"|\sas\s(?!(?:its|his|her|their|the|a|an|new|interim|acting|permanent|chief|ceo|cfo|coo|chairman|chair|"
     r"chairperson|md|managing|president|director|head|group|non|independent|executive|company)\b)"
-    r"|\s(?:after|amid|while|following|despite|before|since|whereas|although|though)\s"
-    r"|\s(?:apr[eè]s|alors\s+que|malgr[eé]|tandis\s+que|avant|depuis|suite\s+[àa]|car|puisque)\s"
+    r"|\s(?:after|amid|while|following|despite|before|since|whereas|although|though|but|however)\s"
+    r"|\s(?:apr[eè]s|alors\s+que|malgr[eé]|tandis\s+que|avant|depuis|suite\s+[àa]|car|puisque|mais)\s"
     r"|\s(?:ap[oó]s|apesar\s+de|enquanto|depois\s+de|antes\s+de)\s"
     r"|\s(?:بعد|رغم|بينما|قبل|في\s+ظل)\s",
     re.IGNORECASE,
@@ -698,9 +838,12 @@ def _vetoed(sig_type: SignalType, base_score: float, text: str) -> bool:
 # with a pronoun ("Shares of Acme jump after it beats estimates"). It inherits the
 # previous clause's subject only when the company led that clause, so in "Rival
 # buys Acme stake after it beats estimates" the "it" stays with Rival.
+_ROLE_NOUNS = (r"company|group|firm|bank|lender|insurer|miner|operator|telco|retailer|carrier|airline|explorer|"
+               r"producer|maker|planemaker|chipmaker|carmaker|automaker|brewer|refiner|conglomerate|giant|"
+               r"manufacturer|developer|utility|grocer|chain|platform|fintech|startup|provider|supplier")
 _BACK_REFERENCE = re.compile(
-    r"\b(it|its|the\s+(company|group|firm|bank|lender|insurer|miner|operator|telco|retailer)"
-    r"|il|elle|la\s+(soci[eé]t[eé]|banque|compagnie|firme)|le\s+(groupe|holding|op[eé]rateur))(?=\W|$)",
+    rf"\b(it|its|the\s+([\w&-]+\s+){{0,2}}({_ROLE_NOUNS})"
+    r"|il|elle|la\s+(soci[eé]t[eé]|banque|compagnie|firme)|l['’]\s*op[eé]rateur|le\s+(groupe|holding|op[eé]rateur))(?=\W|$)",
     re.IGNORECASE,
 )
 _LEADING_SUBJECT_PREFIX = re.compile(
@@ -771,10 +914,17 @@ def match_rules_for_target(
             mention = 0                  # 'Acme: CEO resigns' - the clause is about Acme
         elif mention is None and previous_led:
             back = _BACK_REFERENCE.search(clause)
-            mention = back.start() if back and _leads_clause(clause, back.start()) else None
+            if back and _leads_clause(clause, back.start()):
+                mention = back.start()
+            elif re.match(r"\s*(also\s+|then\s+)?[a-z]+(s|ed)\b", clause):
+                mention = 0              # 'Acme denies talks but confirms CFO exit': the subject carries over
+                led = True
         previous_led, previous_label = led, label
         if mention is None:
             continue
+        if _NEGATED.search(clause):
+            continue                     # 'Acme denies takeover approach', 'CEO will not resign'
+
         for sig_type, patterns, base_score in SIGNAL_RULES:
             if _vetoed(sig_type, base_score, clause):
                 continue
@@ -788,7 +938,7 @@ def match_rules_for_target(
                 # The second form only when the phrase opens the clause, so in "Rival names
                 # Acme veteran as CEO" the subject is still Rival.
                 inside = mention < m.end() and _LEADING_SUBJECT_PREFIX.match(clause[:m.start()])
-                if sig_type in _SUBJECT_ONLY_TYPES and mention > m.start() and not inside:
+                if sig_type in _SUBJECT_ONLY_TYPES and mention > m.start() and not inside and pattern not in _OBJECT_PATTERNS:
                     continue
                 matched.append(pattern)
             if matched and (sig_type not in best or base_score > best[sig_type][1]):
@@ -946,13 +1096,15 @@ class DeterministicSignalEngine:
         # Merge into one candidate per signal_type, keeping highest raw_score.
         merged: dict[SignalType, SignalCandidate] = {}
         corroboration_tracker: dict[SignalType, set[str]] = {}
+        stories = _StoryClusters()
 
         for c in candidates:
+            key = stories.key(c)
             if c.signal_type not in merged:
                 merged[c.signal_type] = c
-                corroboration_tracker[c.signal_type] = {c.source_type + ":" + c.source_name}
+                corroboration_tracker[c.signal_type] = {key}
             else:
-                corroboration_tracker[c.signal_type].add(c.source_type + ":" + c.source_name)
+                corroboration_tracker[c.signal_type].add(key)
                 # Take higher raw_score, merge patterns
                 existing = merged[c.signal_type]
                 merged_patterns = list(dict.fromkeys(existing.matched_patterns + c.matched_patterns))
@@ -991,6 +1143,7 @@ class DeterministicSignalEngine:
                     for c in final_candidates
                 ],
                 "off_target": off_target, "stale": stale, "unattributed": unattributed,
+                "syndicated_duplicates": stories.duplicates,
                 "unattributed_titles": unattributed_titles,
             }
         )

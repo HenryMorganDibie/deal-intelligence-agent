@@ -11,6 +11,7 @@ const NAV = [
   { href: "/#coverage", label: "Coverage" },
   { href: "/#example", label: "Example" },
   { href: "/#limits", label: "Limits" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function SiteNav() {

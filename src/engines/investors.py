@@ -106,9 +106,51 @@ def canonical(name: Optional[str]) -> Optional[str]:
     for alias, inv in _ALIAS.items():
         if " " in alias and f" {alias} " in f" {key} ":
             return inv.name
-    # Unknown parties: one display form per company ("Standard Bank Group" and "Standard Bank" are one).
+    # A descriptor before a registry name: "French DFI Proparco", "Dutch lender FMO".
+    words = name.strip().split()
+    for k in (1, 2):
+        tail = normalise_name(" ".join(words[-k:])) if len(words) > k else ""
+        if tail in _ALIAS and len(tail) >= 4:
+            return _ALIAS[tail].name
+    # Unknown parties: one display form per company ("Standard Bank Group" and "Standard Bank" are one,
+    # "NATCO Pharma" and "Natco Pharma" are one). A lone remaining word is kept only if distinctive.
     stripped = re.sub(r"(?:\s+(?:Group|Holdings?|Plc|PLC|Limited|Ltd\.?|Inc\.?|S\.?A\.?))+$", "", name.strip())
-    return stripped if len(stripped.split()) >= 2 else name.strip()
+    if len(stripped.split()) < 2 and (not stripped or stripped.lower() in _COMMON_WORDS or len(stripped) < 4):
+        stripped = name.strip()
+    return _DISPLAY.setdefault(normalise_name(stripped), stripped)
+
+
+_DISPLAY: dict[str, str] = {}
+_COMMON_WORDS = {"access", "equity", "standard", "first", "union", "national", "united", "sterling", "fidelity",
+                 "heritage", "premier", "prime", "summit", "diamond", "royal", "liberty", "imperial", "capital",
+                 "africa", "african", "global", "international"}
+
+# Extraction fragments: a headline clause rather than a name ("Tolaram Welcomes IFC", "Why Uganda").
+_FRAGMENT = re.compile(
+    r"\b(welcomes?|makes?|confirms?|says?|plans?|eyes|backs?|announces?|secures?|raises?|signs?|seeks?|targets?|"
+    r"invests?|wins?|gets?|bags?|joins?|launches?|unveils?|agreement|deal|move)\b|^(why|how|what|when|govt|others?|"
+    r"other\s+investors|investors?|saudi\s+investor)\b|\.\s+\S",
+    re.IGNORECASE,
+)
+_GENERIC_PARTY = re.compile(r"^(capital\s+market|investors?|others?|other\s+investors|govt|government|state|the\s+state)$",
+                            re.IGNORECASE)
+
+
+def split_names(name: Optional[str]) -> list[str]:
+    """Canonical parties in an extracted party string: combined names are split ("IFC and Proparco" ->
+    IFC, Proparco); headline fragments and generic phrases yield nothing, so no deal is credited to them."""
+    if not name or not name.strip():
+        return []
+    raw = name.strip()
+    parts = re.split(r"\s+(?:and|&|et|e)\s+|\s*,\s*", raw)
+    if len(parts) > 1 and all(p.strip() for p in parts):
+        # Split only when a part is a known investor: "Procter & Gamble" and "Johnson & Johnson" stay whole.
+        if any(registry_entry(p) for p in parts):
+            return [c for p in parts for c in split_names(p)]
+    if _GENERIC_PARTY.match(raw) or _FRAGMENT.search(raw):
+        return []
+    c = canonical(raw)
+    return [c] if c else []
 
 
 def registry_entry(name: str) -> Optional[Investor]:
@@ -122,9 +164,9 @@ def parties(deal: dict) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
 
     def add(name: Optional[str], role: str) -> None:
-        c = canonical(name)
-        if c and (c, role) not in out:
-            out.append((c, role))
+        for c in split_names(name):
+            if (c, role) not in out:
+                out.append((c, role))
 
     if t == "equity_funding":
         add(deal.get("buyer"), "investor")

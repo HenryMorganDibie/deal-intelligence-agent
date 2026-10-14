@@ -1,0 +1,1467 @@
+[
+  {
+    "id": "h001",
+    "category": "pronoun",
+    "language": "en",
+    "company": "Seplat Energy",
+    "ticker": "SEPLAT.LG",
+    "title": "Nigerian oil producer says it has closed purchase of Mobil Producing Nigeria",
+    "snippet": "Seplat Energy said on Monday it had completed the $1.28 billion acquisition after receiving final ministerial consent, more than doubling its output.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Subject of the headline is only 'it'; the snippet resolves it to Seplat as the acquirer."
+  },
+  {
+    "id": "h002",
+    "category": "pronoun",
+    "language": "en",
+    "company": "Safaricom",
+    "ticker": "SCOM.NR",
+    "title": "Telecoms operator says its finance chief will leave at year-end",
+    "snippet": "Safaricom said she would step down on Dec. 31 after six years in the role; the board has begun a search for a successor.",
+    "expected": [
+      "leadership_change"
+    ],
+    "note": "Pronouns 'its' and 'she' refer back to Safaricom's CFO."
+  },
+  {
+    "id": "h003",
+    "category": "pronoun",
+    "language": "en",
+    "company": "Boeing",
+    "ticker": "BA",
+    "title": "S&P cuts planemaker to junk as its cash burn deepens",
+    "snippet": "S&P Global Ratings said it lowered Boeing's long-term rating to BB+, citing negative free cash flow and the strike at its Seattle-area plants.",
+    "expected": [
+      "credit_risk"
+    ],
+    "note": "The planemaker and 'its' must be resolved to Boeing; 'it' in the snippet is S&P."
+  },
+  {
+    "id": "h004",
+    "category": "pronoun",
+    "language": "en",
+    "company": "Sasol",
+    "ticker": "SOL.JO",
+    "title": "Sasol warns its annual earnings will fall by as much as 40%",
+    "snippet": "The petrochemicals group said it expected headline earnings per share to drop between 30% and 40%, below consensus, on weaker chemical prices.",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "Profit warning described with 'its'/'it'/'the group'."
+  },
+  {
+    "id": "h005",
+    "category": "pronoun",
+    "language": "en",
+    "company": "Wells Fargo",
+    "ticker": "WFC",
+    "title": "Wells Fargo says it agreed to pay $250 million to settle OCC enforcement action",
+    "snippet": "The bank said the regulator found it had failed to fix risk-management deficiencies; it admitted no wrongdoing.",
+    "expected": [
+      "regulatory_action"
+    ],
+    "note": "Regulator penalty against 'it' = Wells Fargo."
+  },
+  {
+    "id": "h006",
+    "category": "pronoun",
+    "language": "en",
+    "company": "Tongaat Hulett",
+    "ticker": "TON.JO",
+    "title": "Sugar producer says board has voluntarily placed it in business rescue",
+    "snippet": "Tongaat Hulett said its directors resolved to begin business rescue proceedings after it was unable to reach agreement with lenders on a new funding package.",
+    "expected": [
+      "distressed_asset",
+      "credit_risk"
+    ],
+    "note": "Business rescue of 'it' plus failure to agree funding with lenders (liquidity crisis)."
+  },
+  {
+    "id": "h007",
+    "category": "pronoun",
+    "language": "fr",
+    "company": "Maroc Telecom",
+    "ticker": "IAM.CS",
+    "title": "Maroc Telecom indique qu'il a été condamné à une amende de 6,3 milliards de dirhams par l'ANRT",
+    "snippet": "L'opérateur historique a précisé qu'il étudiait les voies de recours après la décision du régulateur des télécommunications.",
+    "expected": [
+      "regulatory_action"
+    ],
+    "note": "French pronoun 'il' and 'l'opérateur historique' refer to Maroc Telecom."
+  },
+  {
+    "id": "h008",
+    "category": "pronoun",
+    "language": "fr",
+    "company": "Sonatel",
+    "ticker": null,
+    "title": "Sonatel : son directeur général quitte ses fonctions après huit ans",
+    "snippet": "Le groupe a annoncé que son conseil d'administration désignera un successeur lors de sa prochaine réunion.",
+    "expected": [
+      "leadership_change"
+    ],
+    "note": "Possessive 'son' refers to Sonatel's CEO."
+  },
+  {
+    "id": "h009",
+    "category": "pronoun",
+    "language": "pt",
+    "company": "Sonangol",
+    "ticker": null,
+    "title": "Petrolífera estatal angolana diz que renegociou o seu empréstimo com bancos chineses",
+    "snippet": "A Sonangol afirmou que o novo acordo alonga os prazos de reembolso em cinco anos e reduz as prestações anuais.",
+    "expected": [
+      "debt_restructuring"
+    ],
+    "note": "Portuguese possessive 'seu' and descriptor resolve to Sonangol renegotiating its loan."
+  },
+  {
+    "id": "h010",
+    "category": "pronoun",
+    "language": "en",
+    "company": "Peloton",
+    "ticker": "PTON",
+    "title": "Peloton says it will swap its 2026 convertible notes for new secured debt",
+    "snippet": "The fitness company said holders of about 80% of the notes had agreed to the exchange, pushing its nearest maturity out to 2029.",
+    "expected": [
+      "debt_restructuring"
+    ],
+    "note": "Debt exchange of 'its' notes."
+  },
+  {
+    "id": "h011",
+    "category": "pronoun",
+    "language": "en",
+    "company": "Access Holdings",
+    "ticker": "ACCESSCORP.LG",
+    "title": "Access Holdings: its chairman bought 5 million shares last week, filing shows",
+    "snippet": "The purchase, disclosed to the Nigerian Exchange, was made at an average price of N24.50 per share.",
+    "expected": [
+      "insider_activity"
+    ],
+    "note": "'its chairman' buying company shares is insider activity at the target."
+  },
+  {
+    "id": "h012",
+    "category": "pronoun",
+    "language": "en",
+    "company": "Commercial International Bank",
+    "ticker": "COMI.CA",
+    "title": "Egypt's largest private lender says its Q1 profit beat forecasts",
+    "snippet": "CIB said net profit rose 38% to EGP 16.9 billion, ahead of the EGP 14.8 billion analysts had expected, as its net interest income surged.",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "Descriptor plus 'its' resolve to CIB's earnings beat."
+  },
+  {
+    "id": "h013",
+    "category": "alias",
+    "language": "en",
+    "company": "MTN Nigeria",
+    "ticker": "MTNN.LG",
+    "title": "MTNN names new chief executive as Toriola moves to group role",
+    "snippet": "The board of MTN Nigeria Communications said the appointment takes effect from April 1.",
+    "expected": [
+      "leadership_change"
+    ],
+    "note": "Ticker MTNN used as subject."
+  },
+  {
+    "id": "h014",
+    "category": "alias",
+    "language": "en",
+    "company": "First HoldCo",
+    "ticker": "FIRSTHOLDCO.LG",
+    "title": "FBNH chairman raises stake to 7.6% in fresh share purchases",
+    "snippet": "Femi Otedola, chairman of the group formerly known as FBN Holdings, bought another 150 million shares, according to an exchange filing.",
+    "expected": [
+      "insider_activity"
+    ],
+    "note": "Former name abbreviation FBNH refers to First HoldCo; chairman buying shares."
+  },
+  {
+    "id": "h015",
+    "category": "alias",
+    "language": "en",
+    "company": "Meta Platforms",
+    "ticker": "META",
+    "title": "Facebook owner fined 1.2 billion euros by Irish regulator over data transfers",
+    "snippet": "Ireland's Data Protection Commission said the company had breached EU privacy rules by moving users' data to the United States.",
+    "expected": [
+      "regulatory_action"
+    ],
+    "note": "'Facebook owner' is an alias for Meta Platforms."
+  },
+  {
+    "id": "h016",
+    "category": "alias",
+    "language": "en",
+    "company": "Intel",
+    "ticker": "INTC",
+    "title": "INTC slumps after hours as fourth-quarter outlook misses Street",
+    "snippet": "The chipmaker forecast revenue of $13.3 billion, short of the $14.2 billion analysts had expected.",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "Ticker-only subject."
+  },
+  {
+    "id": "h017",
+    "category": "alias",
+    "language": "en",
+    "company": "Absa Group",
+    "ticker": "ABG.JO",
+    "title": "Former Barclays Africa names interim CEO after chief's abrupt exit",
+    "snippet": "Absa said its chief executive had left by mutual agreement and that the financial director would act in the role.",
+    "expected": [
+      "leadership_change"
+    ],
+    "note": "Former name Barclays Africa refers to Absa Group."
+  },
+  {
+    "id": "h018",
+    "category": "alias",
+    "language": "fr",
+    "company": "Attijariwafa bank",
+    "ticker": "ATW.CS",
+    "title": "ATW : le conseil coopte un nouvel administrateur indépendant",
+    "snippet": "Le conseil d'administration de la banque a coopté une ancienne dirigeante de Bank Al-Maghrib en remplacement d'un administrateur démissionnaire.",
+    "expected": [
+      "leadership_change"
+    ],
+    "note": "Ticker ATW for Attijariwafa bank; director appointed and director resigned."
+  },
+  {
+    "id": "h019",
+    "category": "alias",
+    "language": "fr",
+    "company": "Banque Centrale Populaire",
+    "ticker": "BCP.CS",
+    "title": "BCP : Fitch abaisse la note à long terme d'un cran",
+    "snippet": "L'agence de notation justifie la dégradation de la note du groupe bancaire par la hausse des créances en souffrance.",
+    "expected": [
+      "credit_risk"
+    ],
+    "note": "Abbreviation BCP refers to Banque Centrale Populaire (Moroccan context)."
+  },
+  {
+    "id": "h020",
+    "category": "alias",
+    "language": "en",
+    "company": "GE Aerospace",
+    "ticker": "GE",
+    "title": "GE raises 2026 profit outlook above Wall Street forecasts",
+    "snippet": "The jet-engine maker, formerly General Electric, now sees adjusted EPS of $6.40 to $6.60, versus consensus of $6.10.",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "GE / formerly General Electric = GE Aerospace."
+  },
+  {
+    "id": "h021",
+    "category": "alias",
+    "language": "en",
+    "company": "EFG Hermes",
+    "ticker": "HRHO.CA",
+    "title": "EFG Holding fined by FRA over disclosure lapse",
+    "snippet": "Egypt's Financial Regulatory Authority imposed the penalty on the investment bank, which changed its name from EFG Hermes Holding last year.",
+    "expected": [
+      "regulatory_action"
+    ],
+    "note": "New name EFG Holding refers to the target typed as EFG Hermes."
+  },
+  {
+    "id": "h022",
+    "category": "alias",
+    "language": "en",
+    "company": "Kenya Power",
+    "ticker": "KPLC.NR",
+    "title": "KPLC breaches loan covenants; auditors flag going-concern doubt",
+    "snippet": "Kenya Power and Lighting Company said it was in talks with lenders for waivers after its debt service ratio fell below required levels.",
+    "expected": [
+      "credit_risk"
+    ],
+    "note": "Ticker-like abbreviation KPLC; covenant breach and going-concern doubt."
+  },
+  {
+    "id": "h023",
+    "category": "alias",
+    "language": "en",
+    "company": "Guaranty Trust Holding Company",
+    "ticker": "GTCO.LG",
+    "title": "GTBank parent posts 70% jump in profit, beating analyst forecasts",
+    "snippet": "GTCO said pre-tax profit for the nine months reached N1.1 trillion, ahead of consensus.",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "'GTBank parent' and GTCO refer to the holding company target."
+  },
+  {
+    "id": "h024",
+    "category": "alias",
+    "language": "en",
+    "company": "Shoprite Holdings",
+    "ticker": "SHP.JO",
+    "title": "SHP offloads Nigerian supermarkets to local investor Ketron",
+    "snippet": "Shoprite said it sold its 100% interest in Retail Supermarkets Nigeria as part of its exit from the market.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Ticker SHP; target selling a unit."
+  },
+  {
+    "id": "h025",
+    "category": "subsidiary_parent",
+    "language": "en",
+    "company": "MTN Group",
+    "ticker": "MTN.JO",
+    "title": "MTN Nigeria CEO to step down at end of year",
+    "snippet": "MTN Nigeria Communications said its chief executive would retire; the Johannesburg-based parent has not commented.",
+    "expected": [],
+    "note": "Leadership change at a separately named subsidiary is not the parent's own event."
+  },
+  {
+    "id": "h026",
+    "category": "subsidiary_parent",
+    "language": "en",
+    "company": "MTN Group",
+    "ticker": "MTN.JO",
+    "title": "MTN Group agrees to buy out minority shareholders in MTN Ghana",
+    "snippet": "The Johannesburg-listed parent will offer 1.70 cedis per share to take its holding in the Ghanaian unit to 100% and delist it.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Target buying out minorities in its subsidiary is the target's own M&A."
+  },
+  {
+    "id": "h027",
+    "category": "subsidiary_parent",
+    "language": "en",
+    "company": "Airtel Africa",
+    "ticker": "AIRTELAFRI.LG",
+    "title": "Airtel Uganda fined by UCC over SIM registration lapses",
+    "snippet": "The Uganda Communications Commission imposed a 2 billion shilling penalty on the operator.",
+    "expected": [],
+    "note": "Regulatory fine on a country subsidiary is not the parent's own regulatory action."
+  },
+  {
+    "id": "h028",
+    "category": "subsidiary_parent",
+    "language": "en",
+    "company": "Ecobank Transnational",
+    "ticker": "ETI.LG",
+    "title": "Ecobank Ghana posts 30% profit jump, beating forecasts",
+    "snippet": "The Ghanaian lender said net profit rose to 980 million cedis for the half year.",
+    "expected": [],
+    "note": "Earnings beat at a separately listed subsidiary is not the parent's own earnings event."
+  },
+  {
+    "id": "h029",
+    "category": "subsidiary_parent",
+    "language": "en",
+    "company": "Ecobank Ghana",
+    "ticker": "EGH.GH",
+    "title": "Fitch downgrades Ecobank Transnational on Nigeria exposure",
+    "snippet": "The rating agency cut the Lomé-based group's long-term rating to B-, citing pressure on capital at its Nigerian unit.",
+    "expected": [],
+    "note": "Downgrade of the parent is not the subsidiary target's own credit event."
+  },
+  {
+    "id": "h030",
+    "category": "subsidiary_parent",
+    "language": "en",
+    "company": "Vodacom Group",
+    "ticker": "VOD.JO",
+    "title": "Vodacom agrees to buy 55% of Vodafone Egypt from Vodafone Plc",
+    "snippet": "The South African operator will pay $2.7 billion in cash and new shares for the stake.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Target is the acquirer of a stake in another company."
+  },
+  {
+    "id": "h031",
+    "category": "subsidiary_parent",
+    "language": "en",
+    "company": "Safaricom",
+    "ticker": "SCOM.NR",
+    "title": "Safaricom Ethiopia names new chief executive",
+    "snippet": "Safaricom Telecommunications Ethiopia said the appointment follows the departure of its founding CEO.",
+    "expected": [],
+    "note": "Leadership change at a separately named country subsidiary."
+  },
+  {
+    "id": "h032",
+    "category": "subsidiary_parent",
+    "language": "fr",
+    "company": "Sonatel",
+    "ticker": null,
+    "title": "Orange Mali : l'autorité de régulation inflige une amende pour qualité de service insuffisante",
+    "snippet": "L'AMRTP reproche à l'opérateur malien, filiale du groupe Sonatel, des coupures répétées du réseau.",
+    "expected": [],
+    "note": "Fine on a subsidiary (Orange Mali) is not Sonatel's own regulatory action."
+  },
+  {
+    "id": "h033",
+    "category": "subsidiary_parent",
+    "language": "fr",
+    "company": "Attijariwafa bank",
+    "ticker": "ATW.CS",
+    "title": "Attijariwafa bank cède sa filiale congolaise à un consortium local",
+    "snippet": "Le groupe bancaire marocain a annoncé la vente de la totalité de sa participation dans sa filiale au Congo pour un montant non divulgué.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Target selling a subsidiary is its own M&A."
+  },
+  {
+    "id": "h034",
+    "category": "subsidiary_parent",
+    "language": "en",
+    "company": "Berkshire Hathaway",
+    "ticker": "BRK.B",
+    "title": "BNSF Railway fined by federal regulator after derailment probe",
+    "snippet": "The Federal Railroad Administration said the railroad violated track-inspection rules.",
+    "expected": [],
+    "note": "Fine on a separately named subsidiary (BNSF) is not the parent's own regulatory action."
+  },
+  {
+    "id": "h035",
+    "category": "subsidiary_parent",
+    "language": "en",
+    "company": "Johnson & Johnson",
+    "ticker": "JNJ",
+    "title": "J&J talc unit Red River Talc files for Chapter 11",
+    "snippet": "The subsidiary was created to hold liabilities from ovarian-cancer lawsuits; Johnson & Johnson itself is not part of the filing.",
+    "expected": [],
+    "note": "Bankruptcy of a separately named subsidiary is not the parent's distressed event."
+  },
+  {
+    "id": "h036",
+    "category": "subsidiary_parent",
+    "language": "en",
+    "company": "Naspers",
+    "ticker": "NPN.JO",
+    "title": "Takealot names new chief executive",
+    "snippet": "The Naspers-owned online retailer said its chief operating officer would take over from the departing CEO.",
+    "expected": [],
+    "note": "Leadership change at a subsidiary (Takealot), not at Naspers."
+  },
+  {
+    "id": "h037",
+    "category": "multi_party",
+    "language": "en",
+    "company": "KCB Group",
+    "ticker": "KCB.NR",
+    "title": "Access Bank completes acquisition of National Bank of Kenya from KCB",
+    "snippet": "KCB Group said the sale of its entire stake in NBK closes its exit from the unit it rescued in 2019.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Target KCB is the seller of a unit to another party."
+  },
+  {
+    "id": "h038",
+    "category": "multi_party",
+    "language": "en",
+    "company": "Rivian Automotive",
+    "ticker": "RIVN",
+    "title": "S&P cuts Lucid to CCC+, affirms Rivian at B",
+    "snippet": "S&P said Lucid's liquidity runway had shortened, while Rivian's outlook remains stable.",
+    "expected": [],
+    "note": "Downgrade applies to the other party; the target's rating was affirmed."
+  },
+  {
+    "id": "h039",
+    "category": "multi_party",
+    "language": "en",
+    "company": "Lucid Group",
+    "ticker": "LCID",
+    "title": "S&P cuts Lucid to CCC+, affirms Rivian at B",
+    "snippet": "S&P said Lucid's liquidity runway had shortened, while Rivian's outlook remains stable.",
+    "expected": [
+      "credit_risk"
+    ],
+    "note": "Same headline; for Lucid the downgrade is its own credit event."
+  },
+  {
+    "id": "h040",
+    "category": "multi_party",
+    "language": "en",
+    "company": "Paramount Global",
+    "ticker": "PARA",
+    "title": "Paramount-Skydance merger closes as Shari Redstone exits board",
+    "snippet": "Redstone, who had been non-executive chair of Paramount Global, stepped down as David Ellison became chief executive of the combined company.",
+    "expected": [
+      "m_and_a_activity",
+      "leadership_change"
+    ],
+    "note": "Merger completion and chair departure both belong to the target."
+  },
+  {
+    "id": "h041",
+    "category": "multi_party",
+    "language": "en",
+    "company": "Hess",
+    "ticker": "HES",
+    "title": "Chevron wins arbitration against Exxon, clearing way for Hess deal",
+    "snippet": "The ruling removes the last hurdle to Chevron's $53 billion all-stock takeover of Hess.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Target is being acquired; the arbitration dispute is between other parties."
+  },
+  {
+    "id": "h042",
+    "category": "multi_party",
+    "language": "en",
+    "company": "Union Bank of Nigeria",
+    "ticker": "UBN.LG",
+    "title": "CBN dissolves boards of Union Bank, Keystone and Polaris over regulatory breaches",
+    "snippet": "The Central Bank of Nigeria appointed new interim management teams at the three lenders.",
+    "expected": [
+      "regulatory_action",
+      "leadership_change"
+    ],
+    "note": "Target is one of several banks whose boards were dissolved by the regulator."
+  },
+  {
+    "id": "h043",
+    "category": "multi_party",
+    "language": "en",
+    "company": "Lafarge Africa",
+    "ticker": "WAPCO.LG",
+    "title": "Holcim completes sale of Lafarge Africa stake to Huaxin Cement",
+    "snippet": "China's Huaxin now holds a controlling 83.8% interest in the Nigerian cement maker.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Target's controlling stake changed hands between two other parties."
+  },
+  {
+    "id": "h044",
+    "category": "multi_party",
+    "language": "en",
+    "company": "Chevron",
+    "ticker": "CVX",
+    "title": "SEC fines Exxon over climate disclosures; Chevron not named in order",
+    "snippet": "The order concerns ExxonMobil's reporting of proxy carbon costs; other oil majors were not cited.",
+    "expected": [],
+    "note": "Regulatory action targets Exxon; Chevron is explicitly not named."
+  },
+  {
+    "id": "h045",
+    "category": "multi_party",
+    "language": "en",
+    "company": "Sterling Financial Holdings",
+    "ticker": "STERLINGNG.LG",
+    "title": "Wema Bank beats forecasts while Sterling misses as Nigerian lenders report",
+    "snippet": "Sterling's half-year profit came in 18% below analysts' estimates on higher impairment charges.",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "The miss belongs to Sterling; the beat belongs to Wema."
+  },
+  {
+    "id": "h046",
+    "category": "multi_party",
+    "language": "fr",
+    "company": "Lydec",
+    "ticker": "LYD.CS",
+    "title": "Lydec et Redal : le Conseil de la concurrence sanctionne Redal",
+    "snippet": "L'autorité reproche au délégataire de Rabat des pratiques tarifaires abusives ; Lydec n'est pas concernée par la décision.",
+    "expected": [],
+    "note": "Sanction is against Redal, not the target Lydec."
+  },
+  {
+    "id": "h047",
+    "category": "multi_party",
+    "language": "fr",
+    "company": "TotalEnergies Marketing Maroc",
+    "ticker": "TMA.CS",
+    "title": "Hydrocarbures : le Conseil de la concurrence sanctionne neuf distributeurs dont TotalEnergies Marketing Maroc et Afriquia",
+    "snippet": "Les sociétés se sont vu infliger des amendes transactionnelles d'un montant total de 1,84 milliard de dirhams.",
+    "expected": [
+      "regulatory_action"
+    ],
+    "note": "Target is one of several fined distributors."
+  },
+  {
+    "id": "h048",
+    "category": "multi_party",
+    "language": "en",
+    "company": "Talaat Moustafa Group",
+    "ticker": "TMGH.CA",
+    "title": "Talaat Moustafa wins Ras El Hekma contract; Palm Hills appoints new CEO",
+    "snippet": "TMG will develop residential districts in the Emirati-funded coastal city.",
+    "expected": [],
+    "note": "Leadership change belongs to Palm Hills; a contract win is not a tracked signal."
+  },
+  {
+    "id": "h049",
+    "category": "omitted_subject",
+    "language": "en",
+    "company": "Carvana",
+    "ticker": "CVNA",
+    "title": "Debt swap extends maturities, cuts annual interest bill by $430 million",
+    "snippet": "Carvana said holders of 95% of its senior unsecured notes tendered them in its exchange offer for new secured notes.",
+    "expected": [
+      "debt_restructuring"
+    ],
+    "note": "Headline lacks a subject; snippet identifies Carvana's debt exchange."
+  },
+  {
+    "id": "h050",
+    "category": "omitted_subject",
+    "language": "en",
+    "company": "GCB Bank",
+    "ticker": "GCB.GH",
+    "title": "Profit jumps 80%, well ahead of analyst estimates",
+    "snippet": "GCB Bank said on Thursday that net profit for the nine months to September rose to 1.2 billion cedis.",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "Subjectless headline clarified by snippet."
+  },
+  {
+    "id": "h051",
+    "category": "omitted_subject",
+    "language": "en",
+    "company": "Ellies Holdings",
+    "ticker": "ELI.JO",
+    "title": "Electronics retailer enters business rescue after lenders pull support",
+    "snippet": "Ellies Holdings said its board resolved to begin business rescue after it failed to secure new funding and could not pay creditors as they fell due.",
+    "expected": [
+      "distressed_asset",
+      "credit_risk"
+    ],
+    "note": "Generic descriptor in headline; snippet names Ellies and its inability to pay creditors."
+  },
+  {
+    "id": "h052",
+    "category": "omitted_subject",
+    "language": "en",
+    "company": "Nike",
+    "ticker": "NKE",
+    "title": "Chief executive to retire; former executive returns to lead turnaround",
+    "snippet": "Nike said John Donahoe would step down on Oct. 13 and be replaced by Elliott Hill.",
+    "expected": [
+      "leadership_change"
+    ],
+    "note": "Subjectless headline; snippet clarifies Nike."
+  },
+  {
+    "id": "h053",
+    "category": "omitted_subject",
+    "language": "fr",
+    "company": "Cosumar",
+    "ticker": "CSR.CS",
+    "title": "Bénéfice semestriel en hausse de 25 %, au-delà des attentes",
+    "snippet": "Le sucrier Cosumar a publié un résultat net consolidé supérieur au consensus des analystes, porté par la baisse du prix du sucre brut.",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "French headline without subject; snippet names Cosumar."
+  },
+  {
+    "id": "h054",
+    "category": "omitted_subject",
+    "language": "fr",
+    "company": "Alliances Développement Immobilier",
+    "ticker": "ADI.CS",
+    "title": "Accord avec les banques pour rééchelonner 2 milliards de dirhams de dette",
+    "snippet": "Le promoteur Alliances a conclu avec ses créanciers un allongement de sept ans de la maturité de ses emprunts.",
+    "expected": [
+      "debt_restructuring"
+    ],
+    "note": "Subjectless headline; 'Alliances' in snippet resolves to the target."
+  },
+  {
+    "id": "h055",
+    "category": "omitted_subject",
+    "language": "en",
+    "company": "Twilio",
+    "ticker": "TWLO",
+    "title": "Activist discloses stake, pushes for board seats",
+    "snippet": "Legion Partners said it owned about 1% of Twilio and wants the cloud-communications company to explore cost cuts.",
+    "expected": [
+      "insider_activity"
+    ],
+    "note": "Activist stake in target, subject only in snippet."
+  },
+  {
+    "id": "h056",
+    "category": "omitted_subject",
+    "language": "en",
+    "company": "Oando",
+    "ticker": "OANDO.LG",
+    "title": "Regulator suspends trading, orders forensic audit",
+    "snippet": "Nigeria's Securities and Exchange Commission suspended trading in Oando shares pending a forensic audit of its books.",
+    "expected": [
+      "regulatory_action"
+    ],
+    "note": "Subjectless headline; snippet identifies regulatory action against Oando."
+  },
+  {
+    "id": "h057",
+    "category": "omitted_subject",
+    "language": "en",
+    "company": "Kenya Airways",
+    "ticker": "KQ.NR",
+    "title": "Misses loan repayment to Exim-backed lenders; Treasury steps in",
+    "snippet": "Kenya Airways failed to make a $45 million instalment, prompting the National Treasury to draw on its guarantee.",
+    "expected": [
+      "credit_risk"
+    ],
+    "note": "Missed payment by target revealed only in the snippet."
+  },
+  {
+    "id": "h058",
+    "category": "omitted_subject",
+    "language": "en",
+    "company": "Spirit Airlines",
+    "ticker": "SAVE",
+    "title": "Files for Chapter 11 after failed merger and bondholder talks",
+    "snippet": "Spirit Airlines filed for bankruptcy with a prearranged plan to swap $795 million of debt for equity; its earlier deal with JetBlue was blocked in January.",
+    "expected": [
+      "distressed_asset",
+      "debt_restructuring"
+    ],
+    "note": "Bankruptcy and debt-for-equity swap are current; the failed merger is background only."
+  },
+  {
+    "id": "h059",
+    "category": "omitted_subject",
+    "language": "pt",
+    "company": "Moza Banco",
+    "ticker": null,
+    "title": "Banco central destitui conselho de administração e nomeia gestão provisória",
+    "snippet": "O Banco de Moçambique interveio no Moza Banco, alegando deterioração dos indicadores prudenciais.",
+    "expected": [
+      "regulatory_action",
+      "leadership_change"
+    ],
+    "note": "Portuguese subjectless headline; snippet identifies Moza Banco."
+  },
+  {
+    "id": "h060",
+    "category": "omitted_subject",
+    "language": "en",
+    "company": "Uber Technologies",
+    "ticker": "UBER",
+    "title": "Agrees to buy delivery rival in $950 million deal",
+    "snippet": "Uber Technologies said it would acquire the Taiwanese unit of Foodpanda from Delivery Hero.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Subjectless headline; snippet names the acquirer."
+  },
+  {
+    "id": "h061",
+    "category": "negation",
+    "language": "en",
+    "company": "Nedbank Group",
+    "ticker": "NED.JO",
+    "title": "Moody's affirms Nedbank at Ba2, outlook stable",
+    "snippet": "",
+    "expected": [],
+    "note": "Affirmed rating is not a downgrade."
+  },
+  {
+    "id": "h062",
+    "category": "negation",
+    "language": "en",
+    "company": "Zenith Bank",
+    "ticker": "ZENITHBANK.LG",
+    "title": "Zenith Bank denies report it is in talks to buy Polaris Bank",
+    "snippet": "The lender said in a statement it was not in any discussions and described the report as speculative.",
+    "expected": [],
+    "note": "Denied talks are not M&A activity."
+  },
+  {
+    "id": "h063",
+    "category": "negation",
+    "language": "en",
+    "company": "Tesla",
+    "ticker": "TSLA",
+    "title": "Tesla says Musk will not step down as CEO, dismisses report of board search",
+    "snippet": "",
+    "expected": [],
+    "note": "Denial of a leadership change."
+  },
+  {
+    "id": "h064",
+    "category": "negation",
+    "language": "en",
+    "company": "MultiChoice Group",
+    "ticker": "MCG.JO",
+    "title": "MultiChoice rejects Canal+ takeover offer as too low",
+    "snippet": "The board said the R105-a-share mandatory offer undervalued the pay-TV company; Canal+ said it would keep engaging.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "A rejected but actual bid is still a credible offer for the target."
+  },
+  {
+    "id": "h065",
+    "category": "negation",
+    "language": "fr",
+    "company": "Maroc Telecom",
+    "ticker": "IAM.CS",
+    "title": "Maroc Telecom dément tout projet de cession de sa filiale malienne",
+    "snippet": "L'opérateur qualifie d'infondées les informations parues dans la presse.",
+    "expected": [],
+    "note": "Denial of a planned disposal."
+  },
+  {
+    "id": "h066",
+    "category": "negation",
+    "language": "fr",
+    "company": "Sonatel",
+    "ticker": null,
+    "title": "Sonatel n'est pas visée par l'enquête de l'ARTP, précise l'opérateur",
+    "snippet": "Le régulateur sénégalais enquête sur deux fournisseurs d'accès à Internet concurrents.",
+    "expected": [],
+    "note": "Target explicitly not under investigation."
+  },
+  {
+    "id": "h067",
+    "category": "negation",
+    "language": "en",
+    "company": "Equity Group",
+    "ticker": "EQTY.NR",
+    "title": "Equity Group rules out rights issue, says no plan to restructure bonds",
+    "snippet": "",
+    "expected": [],
+    "note": "Explicitly rules out debt restructuring."
+  },
+  {
+    "id": "h068",
+    "category": "negation",
+    "language": "en",
+    "company": "Warner Bros. Discovery",
+    "ticker": "WBD",
+    "title": "WBD chief says company is not for sale, shuts down merger chatter",
+    "snippet": "",
+    "expected": [],
+    "note": "Denial of M&A."
+  },
+  {
+    "id": "h069",
+    "category": "negation",
+    "language": "en",
+    "company": "Fawry",
+    "ticker": "FWRY.CA",
+    "title": "Fawry says no change in CFO after social media rumours",
+    "snippet": "The Egyptian payments firm said its chief financial officer remains in post.",
+    "expected": [],
+    "note": "Denial of a leadership change."
+  },
+  {
+    "id": "h070",
+    "category": "negation",
+    "language": "en",
+    "company": "Sibanye-Stillwater",
+    "ticker": "SSW.JO",
+    "title": "Sibanye-Stillwater says it will not need covenant waiver as leverage stays within limits",
+    "snippet": "",
+    "expected": [],
+    "note": "Explicitly no covenant breach."
+  },
+  {
+    "id": "h071",
+    "category": "negation",
+    "language": "en",
+    "company": "Safaricom",
+    "ticker": "SCOM.NR",
+    "title": "Communications Authority says Safaricom not under investigation over data leak",
+    "snippet": "The regulator said its probe concerns a third-party agent network.",
+    "expected": [],
+    "note": "Target explicitly not investigated."
+  },
+  {
+    "id": "h072",
+    "category": "negation",
+    "language": "en",
+    "company": "MTN Ghana",
+    "ticker": "MTNGH.GH",
+    "title": "MTN Ghana says it has no plan to delist and is not in talks to sell stake",
+    "snippet": "",
+    "expected": [],
+    "note": "Denial of M&A talks."
+  },
+  {
+    "id": "h073",
+    "category": "rumour_hypothetical",
+    "language": "en",
+    "company": "Ardova",
+    "ticker": "ARDOVA.LG",
+    "title": "Ardova in talks to sell controlling stake to Enyo-backed group, sources say",
+    "snippet": "Three people familiar with the matter told Reuters the parties were negotiating price and could sign within weeks.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Credibly sourced talks count as M&A activity."
+  },
+  {
+    "id": "h074",
+    "category": "rumour_hypothetical",
+    "language": "en",
+    "company": "Standard Bank Group",
+    "ticker": "SBK.JO",
+    "title": "Could Standard Bank be next to bid for a Nigerian lender? Analysts speculate",
+    "snippet": "",
+    "expected": [],
+    "note": "Pure analyst speculation."
+  },
+  {
+    "id": "h075",
+    "category": "rumour_hypothetical",
+    "language": "en",
+    "company": "Starbucks",
+    "ticker": "SBUX",
+    "title": "Starbucks CEO could face pressure to step down if turnaround stalls, analysts say",
+    "snippet": "",
+    "expected": [],
+    "note": "Hypothetical leadership change."
+  },
+  {
+    "id": "h076",
+    "category": "rumour_hypothetical",
+    "language": "en",
+    "company": "Kenya Airways",
+    "ticker": "KQ.NR",
+    "title": "Kenya Airways may need debt restructuring if fuel costs stay high, analyst says",
+    "snippet": "",
+    "expected": [],
+    "note": "Conditional speculation, no restructuring under way."
+  },
+  {
+    "id": "h077",
+    "category": "rumour_hypothetical",
+    "language": "en",
+    "company": "Walgreens Boots Alliance",
+    "ticker": "WBA",
+    "title": "Sycamore Partners in talks to take Walgreens private, WSJ reports",
+    "snippet": "The private-equity firm is negotiating a deal that could be announced in coming weeks, people familiar said.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Credibly reported buyout talks."
+  },
+  {
+    "id": "h078",
+    "category": "rumour_hypothetical",
+    "language": "fr",
+    "company": "Akdital",
+    "ticker": "AKT.CS",
+    "title": "Akdital pourrait s'intéresser à des cliniques dans le Golfe, selon des spéculations de marché",
+    "snippet": "Aucune discussion n'a été confirmée par le groupe de santé.",
+    "expected": [],
+    "note": "Market speculation with no talks."
+  },
+  {
+    "id": "h079",
+    "category": "rumour_hypothetical",
+    "language": "fr",
+    "company": "Label'Vie",
+    "ticker": "LBV.CS",
+    "title": "Label'Vie en négociations exclusives pour racheter une chaîne de supermarchés, selon des sources proches",
+    "snippet": "Le distributeur aurait signé une lettre d'intention, selon deux sources proches du dossier citées par Médias24.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Sourced exclusive negotiations count as M&A activity."
+  },
+  {
+    "id": "h080",
+    "category": "rumour_hypothetical",
+    "language": "en",
+    "company": "Tullow Oil",
+    "ticker": "TLW.GH",
+    "title": "Tullow might face default risk if Brent falls below $60, analyst note speculates",
+    "snippet": "",
+    "expected": [],
+    "note": "Hypothetical credit risk from an analyst scenario."
+  },
+  {
+    "id": "h081",
+    "category": "rumour_hypothetical",
+    "language": "en",
+    "company": "Notore Chemical Industries",
+    "ticker": "NOTORE.LG",
+    "title": "Notore could be placed in receivership if AMCON loan is not repaid, lawyers say",
+    "snippet": "",
+    "expected": [],
+    "note": "Conditional distress, not an actual receivership."
+  },
+  {
+    "id": "h082",
+    "category": "rumour_hypothetical",
+    "language": "en",
+    "company": "Walt Disney",
+    "ticker": "DIS",
+    "title": "Disney board said to be considering former Morgan Stanley chief as next CEO",
+    "snippet": "No decision has been made and the search is continuing, people familiar said.",
+    "expected": [],
+    "note": "Succession deliberation is not an appointment or departure."
+  },
+  {
+    "id": "h083",
+    "category": "rumour_hypothetical",
+    "language": "en",
+    "company": "Seplat Energy",
+    "ticker": "SEPLAT.LG",
+    "title": "Seplat makes offer for Eni's Nigerian onshore assets, people familiar say",
+    "snippet": "The bid values the assets at about $700 million, according to two people with knowledge of the matter.",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Credibly reported offer by the target."
+  },
+  {
+    "id": "h084",
+    "category": "rumour_hypothetical",
+    "language": "pt",
+    "company": "Unitel",
+    "ticker": null,
+    "title": "Unitel poderá ser privatizada no próximo ano, admite analista",
+    "snippet": "O governo angolano ainda não tomou qualquer decisão sobre a operadora.",
+    "expected": [],
+    "note": "Portuguese speculation about possible privatisation."
+  },
+  {
+    "id": "h085",
+    "category": "historical",
+    "language": "en",
+    "company": "Dangote Cement",
+    "ticker": "DANGCEM.LG",
+    "title": "Five years after its debt refinancing, Dangote Cement opens new plant in Ogun",
+    "snippet": "",
+    "expected": [],
+    "note": "Past refinancing is background; plant opening is not a signal."
+  },
+  {
+    "id": "h086",
+    "category": "historical",
+    "language": "en",
+    "company": "Pepkor Holdings",
+    "ticker": "PPH.JO",
+    "title": "Pepkor, once part of scandal-hit Steinhoff, opens 500th store in Angola",
+    "snippet": "",
+    "expected": [],
+    "note": "Past Steinhoff connection is background."
+  },
+  {
+    "id": "h087",
+    "category": "historical",
+    "language": "en",
+    "company": "Boeing",
+    "ticker": "BA",
+    "title": "Boeing, fined $2.5 billion in 2021 over 737 MAX, unveils new pilot training centre",
+    "snippet": "",
+    "expected": [],
+    "note": "Historical fine is background."
+  },
+  {
+    "id": "h088",
+    "category": "historical",
+    "language": "en",
+    "company": "African Bank",
+    "ticker": null,
+    "title": "African Bank, rescued after 2014 collapse, posts record annual profit",
+    "snippet": "The lender said headline earnings rose 15%, in line with guidance.",
+    "expected": [],
+    "note": "Past collapse is background; in-line results are not a surprise."
+  },
+  {
+    "id": "h089",
+    "category": "historical",
+    "language": "en",
+    "company": "Honeywell International",
+    "ticker": "HON",
+    "title": "Honeywell, which spun off its Solstice unit last year, appoints new CFO",
+    "snippet": "",
+    "expected": [
+      "leadership_change"
+    ],
+    "note": "Past spin-off is background; CFO appointment is current."
+  },
+  {
+    "id": "h090",
+    "category": "historical",
+    "language": "en",
+    "company": "ArcelorMittal South Africa",
+    "ticker": "ACL.JO",
+    "title": "ArcelorMittal SA, bailed out by its parent in 2020, swings to surprise profit",
+    "snippet": "The steelmaker reported headline earnings of R620 million against analyst expectations of a loss.",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "Past bailout is background; surprise profit is current."
+  },
+  {
+    "id": "h091",
+    "category": "historical",
+    "language": "fr",
+    "company": "CIH Bank",
+    "ticker": "CIH.CS",
+    "title": "CIH Bank, sanctionné par Bank Al-Maghrib en 2019, lance une nouvelle offre digitale",
+    "snippet": "",
+    "expected": [],
+    "note": "Past sanction is background."
+  },
+  {
+    "id": "h092",
+    "category": "historical",
+    "language": "fr",
+    "company": "Jumia Technologies",
+    "ticker": "JMIA",
+    "title": "Jumia, qui avait quitté l'Algérie et la Tunisie, ouvre un entrepôt à Casablanca",
+    "snippet": "",
+    "expected": [],
+    "note": "Past market exits are background; no current signal."
+  },
+  {
+    "id": "h093",
+    "category": "historical",
+    "language": "en",
+    "company": "Orascom Construction",
+    "ticker": "ORAS.CA",
+    "title": "Orascom Construction, which bought into BESIX in 2004, wins $1 billion Saudi contract",
+    "snippet": "",
+    "expected": [],
+    "note": "Old acquisition is background; contract win is not tracked."
+  },
+  {
+    "id": "h094",
+    "category": "historical",
+    "language": "en",
+    "company": "Nampak",
+    "ticker": "NPK.JO",
+    "title": "Nampak, which completed debt restructuring and rights offer in 2023, resumes dividend",
+    "snippet": "",
+    "expected": [],
+    "note": "Past restructuring is background."
+  },
+  {
+    "id": "h095",
+    "category": "historical",
+    "language": "en",
+    "company": "JPMorgan Chase",
+    "ticker": "JPM",
+    "title": "JPMorgan, which bought First Republic in 2023, beats third-quarter profit estimates",
+    "snippet": "",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "Past acquisition is background; earnings beat is current."
+  },
+  {
+    "id": "h096",
+    "category": "historical",
+    "language": "en",
+    "company": "Hertz Global",
+    "ticker": "HTZ",
+    "title": "Hertz, which emerged from bankruptcy in 2021, names new finance chief",
+    "snippet": "",
+    "expected": [
+      "leadership_change"
+    ],
+    "note": "Past bankruptcy is background; CFO appointment is current."
+  },
+  {
+    "id": "h097",
+    "category": "positive_control",
+    "language": "en",
+    "company": "UAC of Nigeria",
+    "ticker": "UACN.LG",
+    "title": "UACN completes acquisition of CHI Limited from Coca-Cola",
+    "snippet": "",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Straightforward completed acquisition."
+  },
+  {
+    "id": "h098",
+    "category": "positive_control",
+    "language": "en",
+    "company": "Wolfspeed",
+    "ticker": "WOLF",
+    "title": "Wolfspeed files for Chapter 11 with plan to cut $4.6 billion of debt",
+    "snippet": "",
+    "expected": [
+      "distressed_asset",
+      "debt_restructuring"
+    ],
+    "note": "Bankruptcy filing with debt restructuring plan."
+  },
+  {
+    "id": "h099",
+    "category": "positive_control",
+    "language": "en",
+    "company": "Ghana Oil Company",
+    "ticker": "GOIL.GH",
+    "title": "Moody's downgrades GOIL to Caa2 on liquidity concerns",
+    "snippet": "",
+    "expected": [
+      "credit_risk"
+    ],
+    "note": "Direct downgrade."
+  },
+  {
+    "id": "h100",
+    "category": "positive_control",
+    "language": "en",
+    "company": "Nikola",
+    "ticker": "NKLA",
+    "title": "SEC charges Nikola with defrauding investors",
+    "snippet": "",
+    "expected": [
+      "regulatory_action"
+    ],
+    "note": "Direct regulatory action."
+  },
+  {
+    "id": "h101",
+    "category": "positive_control",
+    "language": "fr",
+    "company": "Lesieur Cristal",
+    "ticker": "LES.CS",
+    "title": "Lesieur Cristal : le PDG démissionne, le conseil nomme un intérimaire",
+    "snippet": "",
+    "expected": [
+      "leadership_change"
+    ],
+    "note": "Direct leadership change."
+  },
+  {
+    "id": "h102",
+    "category": "positive_control",
+    "language": "fr",
+    "company": "Douja Promotion Groupe Addoha",
+    "ticker": "ADH.CS",
+    "title": "Addoha lance un avertissement sur ses résultats annuels",
+    "snippet": "Le promoteur prévoit un résultat net inférieur de plus de 30 % à celui de l'exercice précédent.",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "Profit warning."
+  },
+  {
+    "id": "h103",
+    "category": "positive_control",
+    "language": "en",
+    "company": "Coronation Fund Managers",
+    "ticker": "CML.JO",
+    "title": "Coronation CEO buys R5 million worth of company shares",
+    "snippet": "",
+    "expected": [
+      "insider_activity"
+    ],
+    "note": "Officer share purchase."
+  },
+  {
+    "id": "h104",
+    "category": "positive_control",
+    "language": "en",
+    "company": "Autodesk",
+    "ticker": "ADSK",
+    "title": "Starboard takes stake in Autodesk, plans proxy fight",
+    "snippet": "",
+    "expected": [
+      "insider_activity"
+    ],
+    "note": "Activist stake."
+  },
+  {
+    "id": "h105",
+    "category": "positive_control",
+    "language": "pt",
+    "company": "Banco Económico",
+    "ticker": null,
+    "title": "BNA coloca Banco Económico sob intervenção e suspende conselho de administração",
+    "snippet": "O Banco Nacional de Angola nomeou uma comissão administrativa provisória.",
+    "expected": [
+      "regulatory_action",
+      "leadership_change"
+    ],
+    "note": "Regulator intervention and board suspension."
+  },
+  {
+    "id": "h106",
+    "category": "positive_control",
+    "language": "en",
+    "company": "Ezz Steel",
+    "ticker": "ESRS.CA",
+    "title": "Ezz Steel reports surprise quarterly loss, missing forecasts",
+    "snippet": "",
+    "expected": [
+      "earnings_surprise"
+    ],
+    "note": "Earnings miss."
+  },
+  {
+    "id": "h107",
+    "category": "positive_control",
+    "language": "en",
+    "company": "Sun International",
+    "ticker": "SUI.JO",
+    "title": "Sun International agrees to buy Peermont in R7.6 billion deal",
+    "snippet": "",
+    "expected": [
+      "m_and_a_activity"
+    ],
+    "note": "Acquisition agreement."
+  },
+  {
+    "id": "h108",
+    "category": "positive_control",
+    "language": "en",
+    "company": "Notore Chemical Industries",
+    "ticker": "NOTORE.LG",
+    "title": "Notore misses bond coupon, opens talks with creditors to restructure debt",
+    "snippet": "",
+    "expected": [
+      "credit_risk",
+      "debt_restructuring"
+    ],
+    "note": "Missed payment plus creditor negotiation."
+  },
+  {
+    "id": "h109",
+    "category": "negative_control",
+    "language": "en",
+    "company": "Nestle Nigeria",
+    "ticker": "NESTLE.LG",
+    "title": "Nestle Nigeria launches new Milo variant for school market",
+    "snippet": "",
+    "expected": [],
+    "note": "Product launch, no signal."
+  },
+  {
+    "id": "h110",
+    "category": "negative_control",
+    "language": "en",
+    "company": "Apple",
+    "ticker": "AAPL",
+    "title": "Apple supplier Foxconn reports record quarterly sales",
+    "snippet": "",
+    "expected": [],
+    "note": "Event concerns a supplier, not Apple."
+  },
+  {
+    "id": "h111",
+    "category": "negative_control",
+    "language": "en",
+    "company": "Safaricom",
+    "ticker": "SCOM.NR",
+    "title": "Safaricom to host developer summit in Nairobi next month",
+    "snippet": "",
+    "expected": [],
+    "note": "Corporate event, no signal."
+  },
+  {
+    "id": "h112",
+    "category": "negative_control",
+    "language": "en",
+    "company": "CAL Bank",
+    "ticker": "CAL.GH",
+    "title": "CAL Bank sponsors national science and maths quiz",
+    "snippet": "",
+    "expected": [],
+    "note": "Sponsorship, no signal."
+  },
+  {
+    "id": "h113",
+    "category": "negative_control",
+    "language": "fr",
+    "company": "Marsa Maroc",
+    "ticker": "MSA.CS",
+    "title": "Marsa Maroc : trafic portuaire en hausse de 8 % au premier semestre",
+    "snippet": "",
+    "expected": [],
+    "note": "Operating statistics, no surprise or signal."
+  },
+  {
+    "id": "h114",
+    "category": "negative_control",
+    "language": "fr",
+    "company": "Sonatel",
+    "ticker": null,
+    "title": "Sonatel déploie la 5G dans trois nouveaux quartiers de Dakar",
+    "snippet": "",
+    "expected": [],
+    "note": "Network rollout, no signal."
+  },
+  {
+    "id": "h115",
+    "category": "negative_control",
+    "language": "fr",
+    "company": "Orange Côte d'Ivoire",
+    "ticker": null,
+    "title": "Le marché ivoirien de la téléphonie mobile dépasse 50 millions d'abonnés, Orange en tête",
+    "snippet": "",
+    "expected": [],
+    "note": "Market statistics, no signal."
+  },
+  {
+    "id": "h116",
+    "category": "negative_control",
+    "language": "en",
+    "company": "Microsoft",
+    "ticker": "MSFT",
+    "title": "Microsoft rival Salesforce names new chief financial officer",
+    "snippet": "",
+    "expected": [],
+    "note": "Leadership change belongs to Salesforce."
+  },
+  {
+    "id": "h117",
+    "category": "negative_control",
+    "language": "pt",
+    "company": "Unitel",
+    "ticker": null,
+    "title": "Unitel lança novo pacote de dados para estudantes universitários",
+    "snippet": "",
+    "expected": [],
+    "note": "Product launch, no signal."
+  },
+  {
+    "id": "h118",
+    "category": "negative_control",
+    "language": "en",
+    "company": "Netflix",
+    "ticker": "NFLX",
+    "title": "Netflix shares rise ahead of earnings as analysts expect subscriber gains",
+    "snippet": "",
+    "expected": [],
+    "note": "Earnings preview, not a reported surprise."
+  },
+  {
+    "id": "h119",
+    "category": "negative_control",
+    "language": "en",
+    "company": "Telecom Egypt",
+    "ticker": "ETEL.CA",
+    "title": "Telecom Egypt signs subsea cable landing agreement with Meta",
+    "snippet": "",
+    "expected": [],
+    "note": "Commercial agreement, not M&A."
+  },
+  {
+    "id": "h120",
+    "category": "negative_control",
+    "language": "en",
+    "company": "Dangote Cement",
+    "ticker": "DANGCEM.LG",
+    "title": "Cement prices fall as Dangote and BUA cut ex-factory rates",
+    "snippet": "",
+    "expected": [],
+    "note": "Pricing move, no signal."
+  }
+]

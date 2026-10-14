@@ -1,4 +1,4 @@
-import { LINKS } from "../lib/site";
+import { CONTACT_EMAIL, LINKS, REQUESTS, mailto } from "../lib/site";
 import { ArrowRight, Container, LogoMark, Reveal } from "./primitives";
 
 export function FinalCta() {
@@ -26,6 +26,9 @@ export function FinalCta() {
             <a href="/app" className="btn btn-primary">
               Run your first brief
               <ArrowRight />
+            </a>
+            <a href={LINKS.contact} className="btn btn-ghost">
+              Request a demo or pilot
             </a>
             <a href={LINKS.evaluation} className="btn btn-ghost">
               See how often it was right
@@ -59,7 +62,12 @@ export function SiteFooter() {
     },
     {
       title: "Contact",
-      links: [{ label: "Get in touch", href: LINKS.contact }],
+      links: [
+        { label: "Request a demo", href: mailto(REQUESTS[0].subject, REQUESTS[0].template) },
+        { label: "Discuss a pilot", href: mailto(REQUESTS[1].subject, REQUESTS[1].template) },
+        { label: "All contact options", href: LINKS.contact },
+        { label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
+      ],
     },
   ];
 
@@ -81,19 +89,13 @@ export function SiteFooter() {
             <ul className="mt-4 space-y-2.5">
               {c.links.map((l) => (
                 <li key={l.label}>
-                  {l.href ? (
-                    <a
+                  <a
                       href={l.href}
                       {...(l.href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
-                      className="text-[0.875rem] text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
+                      className="break-all text-[0.875rem] text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
                     >
                       {l.label}
                     </a>
-                  ) : (
-                    <span className="text-[0.875rem] text-[color:var(--dim)]">
-                      {l.label} <span className="kbd ml-1 text-[0.6875rem] uppercase tracking-[0.12em]">Soon</span>
-                    </span>
-                  )}
                 </li>
               ))}
             </ul>

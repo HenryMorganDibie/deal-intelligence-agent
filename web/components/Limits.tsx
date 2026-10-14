@@ -1,10 +1,13 @@
+import { ciText, type Quality } from "../lib/pulse";
 import { LINKS } from "../lib/site";
 import { ArrowRight, Container, Heading, Reveal, Section } from "./primitives";
 
-const LIMITS = [
+const limits = (q: Quality | null) => [
   {
     title: "Deals are what gets reported",
-    body: "Extracted from public reporting: undisclosed deals cannot appear. Sample audits find about 80% of records fully correct and 90% genuine transactions; every record links its sources.",
+    body: q?.dealComplete
+      ? `Extracted from public reporting: undisclosed deals cannot appear. On a held-out test set, ${ciText(q.dealPrecision)} of extracted records are genuine transactions and ${ciText(q.dealComplete)} have every field right. Each deal page shows which of its fields are corroborated, single-source or uncertain.`
+      : "Extracted from public reporting: undisclosed deals cannot appear. Each deal page shows which of its fields are corroborated, single-source or uncertain, and the evaluation page measures accuracy by field.",
   },
   {
     title: "Coverage is uneven by country",
@@ -16,7 +19,7 @@ const LIMITS = [
   },
   {
     title: "Some signals beat chance, some do not",
-    body: "In the backtest, leadership, regulatory and distress flags beat their base rates; M&A flags did not. The evaluation page shows every figure.",
+    body: "In the backtest only leadership-change flags clearly beat their base rate; regulatory and distress flags look better than chance but on samples too small to be sure, and M&A and credit flags do not. Confirming an event is not the same as a profitable price move, which is measured separately.",
   },
   {
     title: "Country risk uses public data",
@@ -24,11 +27,14 @@ const LIMITS = [
   },
   {
     title: "Patterns, not a trained model",
-    body: "Reproducible and auditable in English, French, Portuguese and Arabic, but novel phrasings can be missed.",
+    body: q?.attributionRecall
+      ? `Reproducible and auditable in English, French, Portuguese and Arabic, but phrasings the rules do not cover are missed: on held-out adversarial news headlines the engine found ${ciText(q.attributionRecall)} of real events, with false alarms on ${ciText(q.attributionFalseAlarm)} of no-event headlines.`
+      : "Reproducible and auditable in English, French, Portuguese and Arabic, but phrasings the rules do not cover are missed.",
   },
 ];
 
-export function Limits() {
+export function Limits({ quality = null }: { quality?: Quality | null }) {
+  const LIMITS = limits(quality);
   return (
     <Section id="limits" labelledBy="limits-title">
       <Container>

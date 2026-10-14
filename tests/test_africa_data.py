@@ -702,3 +702,118 @@ def test_common_word_company_names_need_their_corporate_word():
     assert _mentions_company("Kenya’s Equity Bank posts record profit", m)
     assert _mentions_company("Kenyan lender Equity Group expands into Ethiopia", m)
     assert _mentions_company("EQTY shares rise", m)
+
+
+def _news_candidate(text, publisher):
+    from src.schemas.models import SignalCandidate, SignalType
+    return SignalCandidate(signal_type=SignalType.MA_ACTIVITY, matched_patterns=["x"], source_text=text,
+                           source_url=f"https://example.com/{abs(hash(text + publisher))}", source_type="news",
+                           source_name=publisher, entity_mentions=[], corroboration_count=1, raw_score=0.5)
+
+
+def test_syndicated_copies_are_one_source():
+    from src.engines.deterministic_engine import _StoryClusters
+    s = _StoryClusters()
+    keys = {s.key(_news_candidate("MTN agrees to buy IHS Towers in $2.2 billion deal", "Reuters")),
+            s.key(_news_candidate("MTN agrees to buy IHS Towers in $2.2 billion deal - Yahoo Finance", "Yahoo Finance")),
+            s.key(_news_candidate("MTN agrees to buy IHS Towers in $2.2bn deal", "MarketScreener")),
+            s.key(_news_candidate("Telecom deal: MTN to acquire IHS (Reuters) - the group said on Monday", "Investing.com"))}
+    assert len(keys) == 1 and s.duplicates == 3
+
+
+def test_independent_reports_still_corroborate():
+    from src.engines.deterministic_engine import _StoryClusters
+    s = _StoryClusters()
+    keys = {s.key(_news_candidate("MTN agrees to buy IHS Towers in $2.2 billion deal", "Reuters")),
+            s.key(_news_candidate("IHS board backs takeover by South Africa's MTN after strategic review", "TechCabal")),
+            s.key(_news_candidate("Nigeria's competition regulator to review MTN-IHS merger filing", "BusinessDay"))}
+    assert len(keys) == 3 and s.duplicates == 0
+
+
+from src.engines import evaluation_report as er  # noqa: E402
+from src.engines import provenance as pv  # noqa: E402
+
+
+def test_wilson_interval_matches_reference_values():
+    w = er.wilson(42, 82)
+    assert w["value"] == 0.512 and w["low"] == 0.406 and w["high"] == 0.617
+    assert er.wilson(0, 0) is None
+    assert er.wilson(0, 11)["low"] == 0.0 and er.wilson(11, 11)["high"] == 1.0
+
+
+def test_report_keeps_confirmation_and_returns_apart():
+    preds = [
+        {"signal_type": "leadership_change", "market": "us", "event_confirmed": True, "confirmed_by_official_filing": True,
+         "direction": "negative", "abnormal_return_10d_pct": -2.0, "direction_correct": True, "alpha": 70},
+        {"signal_type": "leadership_change", "market": "us", "event_confirmed": False, "confirmed_by_official_filing": False,
+         "direction": "negative", "abnormal_return_10d_pct": 3.0, "direction_correct": False, "alpha": 40},
+        {"signal_type": "earnings_surprise", "market": "africa", "event_confirmed": None, "confirmed_by_official_filing": None,
+         "direction": "positive", "abnormal_return_10d_pct": 1.0, "direction_correct": True, "alpha": 60},
+    ]
+    row = er._market_rows(preds[:2], {"base_rate": 0.25, "events": 4, "caught": 1}, "leadership_change", 100)
+    ec, mr = row["event_confirmation"], row["market_reaction"]
+    assert ec["precision"]["k"] == 1 and ec["precision"]["n"] == 2 and ec["base_rate"]["hits"] == 25
+    assert ec["lift"]["value"] == 2.0 and ec["recall"]["n"] == 4
+    assert mr["moves_n"] == 2 and mr["mean_move_in_predicted_direction_pct"]["value"] == -0.5   # +2 and -3, signed
+    price_only = er._market_rows(preds[2:], {}, "earnings_surprise")
+    assert price_only["event_confirmation"] is None and price_only["market_reaction"]["moves_n"] == 1
+
+
+def _prov_deal(sources, **kw):
+    base = {"id": "x", "deal_type": "equity_funding", "stage": "completed", "target": "Moniepoint", "buyer": "Google",
+            "investors": ["Google"], "amount": 110_000_000.0, "currency": "USD", "amount_usd": 110_000_000.0,
+            "stake_pct": None, "country": "NG", "sector": "fintech", "announced": "2024-10-29", "sources": sources}
+    return {**base, **kw}
+
+
+def test_provenance_corroboration_needs_independent_stories():
+    two = [{"publisher": "TechCabal", "date": "2024-10-29", "url": "u1",
+            "title": "Moniepoint raises $110 million led by Google"},
+           {"publisher": "BusinessDay", "date": "2024-10-30", "url": "u2",
+            "title": "Nigeria's Moniepoint secures $110 million from Google"}]
+    v = pv.verify(_prov_deal(two))
+    fields = {f["field"]: f for f in v["fields"]}
+    assert v["independent_stories"] == 2 and v["tier"] == "corroborated"
+    assert fields["Amount (as reported)"]["status"] == "corroborated"
+    assert fields["Sector"]["status"] == "classified"
+    copies = [{"publisher": "Reuters", "date": "2024-10-29", "url": "u1", "title": "Moniepoint raises $110 million led by Google"},
+              {"publisher": "Yahoo Finance", "date": "2024-10-29", "url": "u3",
+               "title": "Moniepoint raises $110 million led by Google - Reuters"}]
+    v = pv.verify(_prov_deal(copies))
+    assert v["independent_stories"] == 1 and v["syndicated_copies"] == 1 and v["tier"] == "single source"
+    assert {f["field"]: f for f in v["fields"]}["Amount (as reported)"]["status"] == "reported"
+
+
+def test_provenance_flags_disagreement_and_unconfirmed_completion():
+    srcs = [{"publisher": "A", "date": "2025-01-02", "url": "u1", "title": "Axian acquires Zuku for $63 million"},
+            {"publisher": "B", "date": "2025-01-05", "url": "u2", "title": "Axian Telecom acquires Zuku in $80 million deal"}]
+    d = _prov_deal(srcs, deal_type="acquisition", stage="completed", target="Zuku", buyer="Axian", investors=[],
+              amount=63_000_000.0, amount_usd=63_000_000.0)
+    fields = {f["field"]: f for f in pv.verify(d)["fields"]}
+    assert fields["Amount (as reported)"]["status"] == "uncertain"
+    assert fields["Stage"]["status"] == "uncertain"
+
+
+def test_party_strings_are_split_or_dropped():
+    from src.engines import investors as inv
+    assert inv.split_names("IFC and Proparco") == [inv.canonical("IFC"), inv.canonical("Proparco")]
+    assert inv.split_names("Tolaram Welcomes IFC") == []
+    assert inv.split_names("Other Investors") == []
+    assert inv.split_names("Procter & Gamble") == ["Procter & Gamble"]
+    assert inv.canonical("NATCO Pharma") == inv.canonical("Natco Pharma")
+
+
+@pytest.mark.parametrize("company,title,expected", [
+    ("MultiChoice", "MultiChoice denies receiving takeover approach", set()),
+    ("Boeing", "Boeing CEO will not resign, board says", set()),
+    ("GTCO", "GTCO denies merger talks but confirms CFO exit", {"leadership_change"}),
+    ("Safaricom", "Safaricom posts results; it also said its chief executive will step down", {"leadership_change"}),
+    ("MTN Group", "MTN Nigeria CFO resigns", set()),
+    ("Goldman Sachs", "SEC fines Goldman Sachs $6 million over trade reporting failures", {"regulatory_action"}),
+    ("GCB Bank", "S&P downgrades GCB Bank to CCC+ on liquidity strain", {"credit_risk"}),
+])
+def test_headline_attribution(company, title, expected):
+    from src.engines.deterministic_engine import _company_matchers, _mentions_company, match_rules_for_target
+    m = _company_matchers(company)
+    got = {t.value for t, _, s in match_rules_for_target(title, m) if s * 0.7 >= 0.2} if _mentions_company(title, m) else set()
+    assert got == expected

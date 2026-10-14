@@ -1,174 +1,656 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Table, Td, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
-import { get } from "../../../lib/market";
+import { apiUrl, get } from "../../../lib/market";
 
-type Metric = {
-  predictions: number; labelled: number; precision: number | null; precision_official_filings: number | null; official_labelled: number;
-  events: number; recall: number | null; base_rate: number | null; lift: number | null; hit_rate: number | null; directional_n: number;
-  mean_abnormal_return_10d_pct: number | null; price_only?: boolean;
-};
-type Evaluation = {
-  historical_backtest: {
-    start: string; end: string; companies: number; as_of_dates: number; lookback_days: number; horizon_days: number;
-    metrics: Record<string, Record<"all" | "us" | "africa", Metric>>;
-    by_severity?: Record<string, Record<"medium_plus" | "low", { labelled: number; precision: number | null }>>;
-    alpha_validation?: {
-      labelled: number;
-      bands?: Record<"low" | "middle" | "high", { n: number; alpha_range: [number, number]; precision: number | null; mean_abs_move_10d_pct: number | null; moves_n: number }>;
-      spearman_alpha_vs_confirmed?: number | null;
-      verdict?: string;
-      by_type?: Record<string, { labelled: number; precision: Record<"low" | "middle" | "high", number | null>; spearman: number | null }>;
-    };
+type CI = { value: number; low: number | null; high: number | null; k?: number; n: number; median?: number } | null;
+type Market = "all" | "us" | "africa";
+
+type TypeRow = {
+  predictions: number;
+  event_confirmation: {
+    labelled: number;
+    confirmed: number;
+    precision: CI;
+    precision_official_only: CI;
+    base_rate: { value: number | null; hits: number | null; company_months: number | null };
+    lift: { value: number; low: number; high: number } | null;
+    recall: CI;
   } | null;
-  live_outcomes: Record<string, { confirmed: number; refuted: number }> | null;
-  measured_now?: {
-    overall_confirmation?: { labelled: number; confirmed: number; rate: number | null } | null;
-    backtest_observations: number;
-    live_observations: number;
-    live_updated_at?: string | null;
+  market_reaction: { moves_n: number; direction_hit_rate: CI; mean_move_in_predicted_direction_pct: CI };
+};
+
+type SignalReport = {
+  design: {
+    start: string;
+    end: string;
+    as_of_dates: number;
+    companies: { us: number; africa: number };
+    company_months: { us: number; africa: number };
+    lookback_days: number;
+    horizon_days: number;
+    reproduce: string;
   };
-  method: string;
+  funnel: Record<string, number | string>;
+  by_type: Record<string, { price_only: boolean } & Record<Market, TypeRow>>;
+  pooled_confirmable: Record<Market, TypeRow>;
+  alpha: {
+    what_it_is: string;
+    reading: string;
+    spearman_alpha_vs_confirmed: number | null;
+    bands: Record<"low" | "middle" | "high", {
+      alpha_range: [number, number] | null;
+      event_confirmation: CI;
+      direction_hit_rate: CI;
+      mean_move_in_predicted_direction_pct: CI;
+    }>;
+    by_type: Record<string, { labelled: number; precision: Record<"low" | "middle" | "high", number | null>; spearman: number | null }> | null;
+  };
+  rules: { name: string; rule: string }[];
+};
+
+type Slice = Record<string, CI | { n: number; precision: CI; recall: CI } | null>;
+type Extraction = {
+  items: number;
+  gold_transactions: number;
+  sample: string;
+  note_on_recall: string;
+  detection: { all: { n: number; precision: CI; recall: CI }; by_language: Slice; by_country: Slice; by_publisher: Slice };
+  fields: { n_records: number; all: Record<string, CI>; fully_correct_record: CI; by_deal_type: Slice; by_country: Slice; by_language: Slice };
+};
+type DataQuality = {
+  extraction: Extraction;
+  heldout_extraction: Extraction | null;
+  dedup: { pairs: number; sample: string; merge_precision: CI; missed_duplicates_among_lookalikes: CI };
+  identity: { pairs: number; sample: string; join_precision: CI; join_recall: CI; malformed_names_caught: CI; valid_names_kept: CI };
+  heldout_names: { names: number; malformed_names_caught: CI; valid_names_resolved_to_the_right_organisation: CI } | null;
+  labels: string;
+};
+type AttrStats = { exactly_right: CI; precision: CI; recall: CI; false_alarm_rate_on_no_event_cases: CI };
+type Attribution = { cases: number; overall: AttrStats; by_category: Record<string, AttrStats & { cases: number }> };
+
+type Evaluation = {
+  signal_report: SignalReport | null;
+  data_quality: DataQuality | null;
+  data_quality_baseline: DataQuality | null;
+  attribution: Attribution | null;
+  attribution_baseline: Attribution | null;
+  attribution_heldout: Attribution | null;
+  live_outcomes: Record<string, { confirmed: number; refuted: number }> | null;
+  measured_now?: { backtest_observations: number; live_observations: number };
 };
 
 const pct = (v: number | null | undefined) => (v === null || v === undefined ? "n/a" : `${Math.round(v * 100)}%`);
 
+/** "51% [41–62] n=82": the value, its 95% interval and the sample behind it. */
+function Ci({ x, unit = "%", digits = 0 }: { x: CI | undefined; unit?: "%" | "pp"; digits?: number }) {
+  if (!x) return <span className="text-[color:var(--dim)]">n/a</span>;
+  const f = (v: number | null) => (v === null ? "?" : unit === "%" ? (v * 100).toFixed(digits) : v.toFixed(1));
+  const interval = x.low !== null && x.high !== null;
+  const zeroInside = unit === "pp" && interval && (x.low as number) <= 0 && (x.high as number) >= 0;
+  return (
+    <span className="whitespace-nowrap">
+      <span className={zeroInside ? "text-[color:var(--muted)]" : ""}>
+        {unit === "pp" && x.value > 0 ? "+" : ""}
+        {f(x.value)}
+        {unit === "%" ? "%" : "%"}
+      </span>
+      {interval && (
+        <span className="text-[color:var(--dim)]">
+          {" "}
+          [{f(x.low)} to {f(x.high)}]
+        </span>
+      )}
+      <span className="text-[color:var(--dim)]"> n={x.n}</span>
+    </span>
+  );
+}
+
+function Section({ id, title, children, lede }: { id: string; title: string; lede?: ReactNode; children: ReactNode }) {
+  return (
+    <section id={id} aria-labelledby={`${id}-t`} className="scroll-mt-24 border-t hairline pt-10 mt-12">
+      <h2 id={`${id}-t`} className="h3 text-[1.25rem]">
+        {title}
+      </h2>
+      {lede && <div className="mt-3 max-w-3xl text-[0.875rem] leading-relaxed text-[color:var(--muted)]">{lede}</div>}
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
+
+function Callout({ tone = "neutral", children }: { tone?: "neutral" | "warn"; children: ReactNode }) {
+  return (
+    <div
+      className={`rounded-[10px] border px-4 py-3 text-[0.8125rem] leading-relaxed ${
+        tone === "warn" ? "border-risk/40 bg-risk/[0.05]" : "hairline bg-white/[0.02]"
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function liftSummary(r: SignalReport): string {
+  const rows = Object.entries(r.by_type).filter(([, v]) => !v.price_only);
+  const above = rows.filter(([, v]) => (v.all.event_confirmation?.lift?.low ?? 0) > 1).map(([k]) => words(k).toLowerCase());
+  const unclear = rows.filter(([, v]) => {
+    const l = v.all.event_confirmation?.lift;
+    return !l || l.low <= 1;
+  }).map(([k]) => words(k).toLowerCase());
+  return `${above.length ? `Clearly above the base rate: ${above.join(", ")}.` : "No type is clearly above its base rate."} ` +
+    `Not distinguishable from, or below, the base rate: ${unclear.join(", ")}.`;
+}
+
+function returnSummary(r: SignalReport): string {
+  const sig = Object.entries(r.by_type).filter(([, v]) => {
+    const m = v.all.market_reaction.mean_move_in_predicted_direction_pct;
+    return m && m.low !== null && m.high !== null && (m.low > 0 || m.high < 0);
+  });
+  if (!sig.length) return "No signal type shows a mean market-adjusted move whose 95% interval excludes zero.";
+  return `Mean move interval excludes zero for: ${sig
+    .map(([k, v]) => `${words(k).toLowerCase()} (${(v.all.market_reaction.mean_move_in_predicted_direction_pct!.value ?? 0) > 0 ? "the predicted way" : "against the prediction"})`)
+    .join(", ")}; all others are indistinguishable from no effect.`;
+}
+
+const NAV = [
+  ["summary", "Summary"],
+  ["populations", "What was counted"],
+  ["events", "Did the event happen?"],
+  ["returns", "Did the price move?"],
+  ["alpha", "Alpha score"],
+  ["rules", "Labelling rules"],
+  ["data-quality", "Deal data quality"],
+  ["attribution", "Attribution tests"],
+  ["reproduce", "Reproduce"],
+];
+
+function MarketToggle({ market, set }: { market: Market; set: (m: Market) => void }) {
+  return (
+    <div className="flex flex-wrap gap-2" role="group" aria-label="Market">
+      {(["all", "us", "africa"] as const).map((m) => (
+        <button
+          key={m}
+          type="button"
+          aria-pressed={market === m}
+          onClick={() => set(m)}
+          className={`rounded-full border px-3 py-1.5 text-[0.8125rem] ${
+            market === m ? "border-white/30 text-[color:var(--text)]" : "hairline text-[color:var(--muted)]"
+          }`}
+        >
+          {m === "all" ? "All markets" : m === "us" ? "US companies" : "African companies"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function SliceTable({ title, slice, kind }: { title: string; slice: Slice; kind: "detection" | "complete" }) {
+  return (
+    <div>
+      <p className="text-[0.8125rem] text-[color:var(--muted)]">{title}</p>
+      <div className="mt-2">
+        <Table head={kind === "detection" ? ["Group", "Items", "Precision", "Recall"] : ["Group", "Every field right"]} minWidth="28rem">
+          {Object.entries(slice).map(([k, v]) => (
+            <tr key={k}>
+              <Td>{k === "other" ? "Other (smaller groups)" : k === "unknown" ? "Not identifiable" : words(k)}</Td>
+              {kind === "detection" && v && "precision" in v ? (
+                <>
+                  <Td className="kbd">{v.n}</Td>
+                  <Td className="kbd"><Ci x={v.precision} /></Td>
+                  <Td className="kbd"><Ci x={v.recall} /></Td>
+                </>
+              ) : (
+                <Td className="kbd"><Ci x={v as CI} /></Td>
+              )}
+            </tr>
+          ))}
+        </Table>
+      </div>
+    </div>
+  );
+}
+
 export default function EvaluationPage() {
   const [e, setE] = useState<Evaluation | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [market, setMarket] = useState<"all" | "us" | "africa">("all");
+  const [market, setMarket] = useState<Market>("all");
+  const [returnsMarket, setReturnsMarket] = useState<Market>("all");
   useEffect(() => {
     get<Evaluation>("/api/evaluation").then(setE).catch((err) => setError(err instanceof ApiError ? err.message : "Could not load the evaluation."));
   }, []);
-  const b = e?.historical_backtest;
+
+  const r = e?.signal_report;
+  const dq = e?.data_quality;
+  const ho = dq?.heldout_extraction;
+  const attrHo = e?.attribution_heldout;
+
   return (
     <Container className="py-10 lg:py-14">
-      <PageHeader eyebrow="Historical outcomes and signal evaluation" title="How often the signals were right.">
-        A walk-forward replay: on each monthly date the engine sees only what was published in the previous 30 days, and
-        each prediction is judged on the 90 days that followed against SEC filings, exchange disclosures, credible news and
-        abnormal price moves. Lift compares precision with the base rate, the chance a random company-month had that event
-        anyway. Weak results are shown as they are.
+      <PageHeader eyebrow="Evaluation" title="What was measured, how, and how often it was right.">
+        Every figure below has its sample size and a 95% interval. Event confirmation and market returns are reported
+        separately and never combined. The labelled sets and per-prediction files are downloadable at the end of the page.
       </PageHeader>
+      <nav aria-label="Sections" className="mb-2 flex flex-wrap gap-2 text-[0.8125rem]">
+        {NAV.map(([id, label]) => (
+          <a key={id} href={`#${id}`} className="rounded-full border hairline px-3 py-1.5 text-[color:var(--muted)] hover:text-[color:var(--text)]">
+            {label}
+          </a>
+        ))}
+      </nav>
       {error && <ErrorNote message={error} />}
       {!e ? (
         <Loading />
-      ) : !b ? (
-        <p className="text-sm text-[color:var(--muted)]">No backtest summary is published yet.</p>
       ) : (
         <>
-          <p className="text-[0.875rem] text-[color:var(--muted)]">
-            {b.start} to {b.end}: {b.companies} companies (US, JSE, NGX, NSE Kenya) x {b.as_of_dates} monthly dates.
-          </p>
-          {e.measured_now && (
-            <p className="mt-2 text-[0.875rem] text-[color:var(--muted)]">
-              Confidence and expected moves in briefs use {e.measured_now.backtest_observations} backtest observations
-              {" "}pooled with {e.measured_now.live_observations} live outcomes from hosted briefs
-              {e.measured_now.overall_confirmation?.rate != null &&
-                `; across both, ${pct(e.measured_now.overall_confirmation.rate)} of flags were later confirmed (${e.measured_now.overall_confirmation.confirmed} of ${e.measured_now.overall_confirmation.labelled})`}
-              . Live outcomes are added daily and the figures are recomputed hourly.
-            </p>
-          )}
-          <div className="mt-4 flex gap-2">
-            {(["all", "us", "africa"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMarket(m)}
-                className={`rounded-full border hairline px-3 py-1.5 text-[0.8125rem] ${market === m ? "text-[color:var(--text)]" : "text-[color:var(--muted)]"}`}
-              >
-                {m === "all" ? "All markets" : m === "us" ? "United States" : "Africa"}
-              </button>
-            ))}
-          </div>
-          <div className="mt-6">
-            <Table head={["Signal type", "Predictions", "Precision", "Official filings only", "Base rate", "Lift", "Recall", "Price hit rate", "Abnormal return 10d"]} minWidth="60rem">
-              {Object.entries(b.metrics).map(([st, by]) => {
-                const a = by[market];
-                return (
-                  <tr key={st}>
-                    <Td>{words(st)}</Td>
-                    <Td className="kbd">{a.predictions}</Td>
-                    <Td className="kbd">{a.price_only ? "Price only" : `${pct(a.precision)} (${a.labelled})`}</Td>
-                    <Td className="kbd">{a.price_only ? "" : `${pct(a.precision_official_filings)} (${a.official_labelled})`}</Td>
-                    <Td className="kbd">{pct(a.base_rate)}</Td>
-                    <Td className={`kbd ${a.lift && a.lift > 1 ? "text-verified" : a.lift !== null ? "text-risk" : ""}`}>{a.lift !== null ? `${a.lift}x` : "n/a"}</Td>
-                    <Td className="kbd">{pct(a.recall)} ({a.events})</Td>
-                    <Td className="kbd">{pct(a.hit_rate)} ({a.directional_n})</Td>
-                    <Td className="kbd">{a.mean_abnormal_return_10d_pct !== null ? `${a.mean_abnormal_return_10d_pct}%` : "n/a"}</Td>
-                  </tr>
-                );
-              })}
-            </Table>
-          </div>
-          <p className="mt-3 text-[0.75rem] text-[color:var(--dim)]">Counts in brackets are the sample behind each figure. {e.method}</p>
-
-          {b.alpha_validation?.bands && (
-            <>
-              <h2 className="eyebrow mt-12">Does the alpha score rank signals?</h2>
-              <p className="mt-2 max-w-3xl text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">
-                The alpha weights are design choices, so they are tested: confirmable predictions are split into thirds by
-                their alpha as of the replay date. If the score is useful, the confirmation rate should rise from the low third
-                to the high third. Verdict: {b.alpha_validation.verdict} (rank correlation{" "}
-                {b.alpha_validation.spearman_alpha_vs_confirmed}).
+          {r && (
+            <Section id="summary" title="Summary">
+              <ul className="grid gap-3 lg:grid-cols-2">
+                <li className="panel p-4 text-[0.875rem] leading-relaxed">
+                  <p className="eyebrow">Signals: did the event happen?</p>
+                  <p className="mt-2">
+                    Across confirmable signal types, <Ci x={r.pooled_confirmable.all.event_confirmation?.precision} /> of flags were
+                    followed by the event within {r.design.horizon_days} days. {liftSummary(r)}
+                  </p>
+                </li>
+                <li className="panel p-4 text-[0.875rem] leading-relaxed">
+                  <p className="eyebrow">Signals: did the price move?</p>
+                  <p className="mt-2">
+                    This is a separate question. {returnSummary(r)} Nothing here is a trading result.
+                  </p>
+                </li>
+                <li className="panel p-4 text-[0.875rem] leading-relaxed">
+                  <p className="eyebrow">Deal records</p>
+                  <p className="mt-2">
+                    On a held-out set never used for tuning: detection precision <Ci x={ho?.detection.all.precision} />, recall{" "}
+                    <Ci x={ho?.detection.all.recall} />; every field right on <Ci x={ho?.fields.fully_correct_record} /> of records.
+                  </p>
+                </li>
+                <li className="panel p-4 text-[0.875rem] leading-relaxed">
+                  <p className="eyebrow">Attribution of news to the right company</p>
+                  <p className="mt-2">
+                    On held-out adversarial headlines: precision <Ci x={attrHo?.overall.precision} />, recall{" "}
+                    <Ci x={attrHo?.overall.recall} />. Coverage of news-headline phrasing is the weakest part of the engine;
+                    filings and exchange notices are covered by separate, stronger rules.
+                  </p>
+                </li>
+              </ul>
+              <p className="mt-4 text-[0.75rem] text-[color:var(--dim)]">
+                Labelled sets were annotated from the source text alone, blind to the system&apos;s output, by an AI annotator.
+                They are published item by item for inspection and are pending independent human review.
               </p>
+            </Section>
+          )}
+
+          {r && (
+            <Section
+              id="populations"
+              title="What was counted, and how the numbers relate"
+              lede={String(r.funnel.explanation)}
+            >
+              <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  [r.funnel.predictions, "predictions", `every flag in the replay: ${r.design.companies.us} US and ${r.design.companies.africa} African companies × ${r.design.as_of_dates} monthly dates (${r.design.start} to ${r.design.end})`],
+                  [r.funnel.confirmation_labelled, "labelled for event confirmation", `the ${r.funnel.confirmable_predictions} flags of confirmable types (M&A, credit, distress, leadership, regulatory, restructuring); ${r.funnel.confirmation_unlabelled} could not be checked`],
+                  [r.funnel.confirmed, "confirmed", "of those labelled, the event was recorded within the horizon"],
+                  [r.funnel.with_market_move, "with a market move", `flags of any type with prices on both dates; ${r.funnel.price_only_predictions} earnings and insider flags are judged on price only (${r.funnel.price_only_direction_labelled} with prices)`],
+                ].map(([n, label, note]) => (
+                  <li key={String(label)} className="panel p-4">
+                    <p className="font-display text-2xl font-semibold">{n}</p>
+                    <p className="text-[0.875rem]">{label}</p>
+                    <p className="mt-1 text-[0.75rem] leading-snug text-[color:var(--muted)]">{note}</p>
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">
+                The confidence figures shown in briefs use all {e.measured_now?.backtest_observations ?? r.funnel.predictions} backtest
+                observations plus {e.measured_now?.live_observations ?? 0} live outcomes from hosted briefs, which are labelled under
+                the same rules as they mature.
+              </p>
+            </Section>
+          )}
+
+          {r && (
+            <Section
+              id="events"
+              title="Did the flagged event happen?"
+              lede={
+                <>
+                  Precision is the share of labelled flags followed by the event. The base rate is the share of all
+                  company-months followed by that event anyway; lift is precision divided by base rate, so a lift whose interval
+                  includes 1 is no better than picking a company-month at random. Recall is the share of recorded events that a
+                  flag preceded. This measures whether events happened, not whether anyone could profit from them.
+                </>
+              }
+            >
+              <MarketToggle market={market} set={setMarket} />
               <div className="mt-4">
-                <Table head={["Alpha third", "Alpha range", "Predictions", "Confirmed", "Mean absolute 10-day move"]} minWidth="36rem">
-                  {(["low", "middle", "high"] as const).map((k) => {
-                    const band = b.alpha_validation!.bands![k];
+                <Table
+                  head={["Signal type", "Predictions", "Confirmed / labelled", "Precision [95% CI]", "Official sources only", "Base rate", "Lift [95% CI]", "Recall [95% CI]"]}
+                  minWidth="72rem"
+                >
+                  {Object.entries(r.by_type)
+                    .filter(([, v]) => !v.price_only)
+                    .map(([st, v]) => {
+                      const ec = v[market].event_confirmation;
+                      const lift = ec?.lift;
+                      return (
+                        <tr key={st}>
+                          <Td>{words(st)}</Td>
+                          <Td className="kbd">{v[market].predictions}</Td>
+                          <Td className="kbd">{ec ? `${ec.confirmed} / ${ec.labelled}` : "n/a"}</Td>
+                          <Td className="kbd"><Ci x={ec?.precision} /></Td>
+                          <Td className="kbd"><Ci x={ec?.precision_official_only} /></Td>
+                          <Td className="kbd">
+                            {ec?.base_rate.value != null ? (
+                              <>
+                                {pct(ec.base_rate.value)}
+                                <span className="text-[color:var(--dim)]"> {ec.base_rate.hits}/{ec.base_rate.company_months}</span>
+                              </>
+                            ) : (
+                              "n/a"
+                            )}
+                          </Td>
+                          <Td className={`kbd ${lift ? (lift.low > 1 ? "text-verified" : lift.high < 1 ? "text-risk" : "") : ""}`}>
+                            {lift ? `${lift.value}x [${lift.low} to ${lift.high}]` : "n/a"}
+                          </Td>
+                          <Td className="kbd"><Ci x={ec?.recall} /></Td>
+                        </tr>
+                      );
+                    })}
+                  <tr>
+                    <Td className="font-medium">All confirmable types</Td>
+                    <Td className="kbd">{r.pooled_confirmable[market].predictions}</Td>
+                    <Td className="kbd">
+                      {r.pooled_confirmable[market].event_confirmation?.confirmed} / {r.pooled_confirmable[market].event_confirmation?.labelled}
+                    </Td>
+                    <Td className="kbd"><Ci x={r.pooled_confirmable[market].event_confirmation?.precision} /></Td>
+                    <Td className="kbd"><Ci x={r.pooled_confirmable[market].event_confirmation?.precision_official_only} /></Td>
+                    <Td>{""}</Td>
+                    <Td>{""}</Td>
+                    <Td>{""}</Td>
+                  </tr>
+                </Table>
+              </div>
+              <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">
+                Green lift: interval entirely above 1. Red: entirely below 1. Uncoloured: the data cannot tell it apart from the base
+                rate. Earnings surprises and insider trades are not in this table: the disclosure is the event, so they are judged
+                on price only (next section).
+              </p>
+            </Section>
+          )}
+
+          {r && (
+            <Section
+              id="returns"
+              title="Did the share price move the predicted way?"
+              lede={
+                <>
+                  A different outcome from the one above. For every flag with prices, the market-adjusted move over 10 calendar
+                  days, signed so that a positive number means it went the predicted way. No trading costs, sizing, slippage or
+                  portfolio construction are applied, so these are not returns anyone earned. Intervals that include zero (grey)
+                  mean the data cannot distinguish the move from no effect.
+                </>
+              }
+            >
+              <MarketToggle market={returnsMarket} set={setReturnsMarket} />
+              <div className="mt-4">
+                <Table head={["Signal type", "Flags with prices", "Went the predicted way [95% CI]", "Mean move in predicted direction [95% CI]", "Median"]} minWidth="56rem">
+                  {Object.entries(r.by_type).map(([st, v]) => {
+                    const m = v[returnsMarket].market_reaction;
                     return (
-                      <tr key={k}>
-                        <Td>{words(k)}</Td>
-                        <Td className="kbd">{band.alpha_range[0]} to {band.alpha_range[1]}</Td>
-                        <Td className="kbd">{band.n}</Td>
-                        <Td className="kbd">{pct(band.precision)}</Td>
-                        <Td className="kbd">{band.mean_abs_move_10d_pct != null ? `${band.mean_abs_move_10d_pct}% (${band.moves_n})` : "n/a"}</Td>
+                      <tr key={st}>
+                        <Td>{words(st)}</Td>
+                        <Td className="kbd">{m.moves_n}</Td>
+                        <Td className="kbd"><Ci x={m.direction_hit_rate} /></Td>
+                        <Td className="kbd"><Ci x={m.mean_move_in_predicted_direction_pct} unit="pp" digits={1} /></Td>
+                        <Td className="kbd">
+                          {m.mean_move_in_predicted_direction_pct?.median != null ? `${m.mean_move_in_predicted_direction_pct.median}%` : "n/a"}
+                        </Td>
                       </tr>
                     );
                   })}
                 </Table>
               </div>
-              {b.alpha_validation.by_type && Object.keys(b.alpha_validation.by_type).length > 0 && (
+            </Section>
+          )}
+
+          {r && (
+            <Section id="alpha" title="The alpha score is a ranking, not a return forecast" lede={r.alpha.what_it_is}>
+              <Table head={["Alpha third", "Alpha range", "Event confirmed [95% CI]", "Price went the predicted way [95% CI]", "Mean move in predicted direction [95% CI]"]} minWidth="60rem">
+                {(["low", "middle", "high"] as const).map((k) => {
+                  const b = r.alpha.bands[k];
+                  return (
+                    <tr key={k}>
+                      <Td>{words(k)}</Td>
+                      <Td className="kbd">{b.alpha_range ? `${b.alpha_range[0]} to ${b.alpha_range[1]}` : "n/a"}</Td>
+                      <Td className="kbd"><Ci x={b.event_confirmation} /></Td>
+                      <Td className="kbd"><Ci x={b.direction_hit_rate} /></Td>
+                      <Td className="kbd"><Ci x={b.mean_move_in_predicted_direction_pct} unit="pp" digits={1} /></Td>
+                    </tr>
+                  );
+                })}
+              </Table>
+              <div className="mt-4">
+                <Callout tone="warn">
+                  {r.alpha.reading} Rank correlation between alpha and confirmation: {r.alpha.spearman_alpha_vs_confirmed}.
+                </Callout>
+              </div>
+              {r.alpha.by_type && Object.keys(r.alpha.by_type).length > 0 && (
                 <div className="mt-6">
-                  <p className="text-[0.8125rem] text-[color:var(--muted)]">Within signal types with 30 or more labelled predictions, so the result is not only signal-type mix:</p>
-                  <div className="mt-3">
+                  <p className="text-[0.8125rem] text-[color:var(--muted)]">
+                    Within signal types with 30 or more labelled flags, so the result is not only a mix of types:
+                  </p>
+                  <div className="mt-2">
                     <Table head={["Signal type", "Labelled", "Low third", "Middle third", "High third", "Rank correlation"]} minWidth="40rem">
-                      {Object.entries(b.alpha_validation.by_type).map(([st, r]) => (
+                      {Object.entries(r.alpha.by_type).map(([st, x]) => (
                         <tr key={st}>
                           <Td>{words(st)}</Td>
-                          <Td className="kbd">{r.labelled}</Td>
-                          <Td className="kbd">{pct(r.precision.low)}</Td>
-                          <Td className="kbd">{pct(r.precision.middle)}</Td>
-                          <Td className="kbd">{pct(r.precision.high)}</Td>
-                          <Td className="kbd">{r.spearman ?? "n/a"}</Td>
+                          <Td className="kbd">{x.labelled}</Td>
+                          <Td className="kbd">{pct(x.precision.low)}</Td>
+                          <Td className="kbd">{pct(x.precision.middle)}</Td>
+                          <Td className="kbd">{pct(x.precision.high)}</Td>
+                          <Td className="kbd">{x.spearman ?? "n/a"}</Td>
                         </tr>
                       ))}
                     </Table>
                   </div>
                 </div>
               )}
-            </>
+            </Section>
           )}
 
-          {b.by_severity && (
-            <>
-              <h2 className="eyebrow mt-12">By severity</h2>
-              <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">Low-severity flags are the noisy tail; medium and above is the operating point for action.</p>
-              <div className="mt-4">
-                <Table head={["Signal type", "Precision, medium and above", "Precision, low"]} minWidth="32rem">
-                  {Object.entries(b.by_severity).map(([st, r]) => (
-                    <tr key={st}>
-                      <Td>{words(st)}</Td>
-                      <Td className="kbd">{pct(r.medium_plus.precision)} ({r.medium_plus.labelled})</Td>
-                      <Td className="kbd">{pct(r.low.precision)} ({r.low.labelled})</Td>
+          {r && (
+            <Section id="rules" title="Labelling rules and time windows" lede="The same rules apply to the backtest and to hosted briefs; the differing day counts are buffers, explained below.">
+              <dl className="grid gap-3">
+                {r.rules.map((x) => (
+                  <div key={x.name} className="panel p-4">
+                    <dt className="text-[0.875rem] font-medium">{x.name}</dt>
+                    <dd className="mt-1 text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">{x.rule}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Section>
+          )}
+
+          {dq && (
+            <Section
+              id="data-quality"
+              title="Deal data quality"
+              lede={
+                <>
+                  The pipeline from raw headline to deal record, scored against labels made from the headline text alone. The
+                  development set was used to find and fix errors, so its post-fix numbers are optimistic. The held-out set was drawn
+                  afterwards and never used for tuning: its numbers are the ones to rely on.
+                </>
+              }
+            >
+              <Table head={["Measure", "Development set, before fixes", "Development set, after fixes", "Held-out set"]} minWidth="56rem">
+                {[
+                  ["Detection precision (is it a real transaction?)", (d: DataQuality | null | undefined) => d?.extraction.detection.all.precision, ho?.detection.all.precision],
+                  ["Detection recall (deal-like headlines caught)", (d: DataQuality | null | undefined) => d?.extraction.detection.all.recall, ho?.detection.all.recall],
+                  ["Every field right", (d: DataQuality | null | undefined) => d?.extraction.fields.fully_correct_record, ho?.fields.fully_correct_record],
+                ].map(([label, f, h]) => (
+                  <tr key={String(label)}>
+                    <Td>{String(label)}</Td>
+                    <Td className="kbd"><Ci x={(f as (d: DataQuality | null | undefined) => CI)(e.data_quality_baseline)} /></Td>
+                    <Td className="kbd"><Ci x={(f as (d: DataQuality | null | undefined) => CI)(dq)} /></Td>
+                    <Td className="kbd"><Ci x={h as CI} /></Td>
+                  </tr>
+                ))}
+              </Table>
+
+              <h3 className="eyebrow mt-8">By field, on records that are real transactions</h3>
+              <div className="mt-3">
+                <Table head={["Field", "Development (after fixes)", "Held-out"]} minWidth="44rem">
+                  {Object.keys(dq.extraction.fields.all).map((f) => (
+                    <tr key={f}>
+                      <Td>{f.replace(/_/g, " ")}</Td>
+                      <Td className="kbd"><Ci x={dq.extraction.fields.all[f]} /></Td>
+                      <Td className="kbd"><Ci x={ho?.fields.all[f]} /></Td>
                     </tr>
                   ))}
                 </Table>
               </div>
-            </>
+
+              {ho && (
+                <div className="mt-8 grid gap-6 lg:grid-cols-2">
+                  <SliceTable title="Held-out detection by country" slice={ho.detection.by_country} kind="detection" />
+                  <SliceTable title="Held-out detection by source" slice={ho.detection.by_publisher} kind="detection" />
+                  <SliceTable title="Held-out detection by language" slice={ho.detection.by_language} kind="detection" />
+                  <SliceTable title="Held-out records fully correct, by deal type" slice={ho.fields.by_deal_type} kind="complete" />
+                </div>
+              )}
+              <p className="mt-3 text-[0.75rem] text-[color:var(--dim)]">
+                {ho?.note_on_recall} Small groups have wide intervals; groups under about 20 items are indicative only.
+              </p>
+
+              <h3 className="eyebrow mt-8">Deduplication and identity</h3>
+              <div className="mt-3">
+                <Table head={["Measure", "Result", "Sample"]} minWidth="48rem">
+                  <tr>
+                    <Td>Merged reports that really are one deal</Td>
+                    <Td className="kbd"><Ci x={dq.dedup.merge_precision} /></Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Pairs of reports merged into one record</Td>
+                  </tr>
+                  <tr>
+                    <Td>Separate records that are actually one deal (missed duplicates)</Td>
+                    <Td className="kbd text-risk"><Ci x={dq.dedup.missed_duplicates_among_lookalikes} /></Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Look-alike pairs: same distinctive name or amount within two months</Td>
+                  </tr>
+                  <tr>
+                    <Td>Name pairs the resolver joins that are one entity (development)</Td>
+                    <Td className="kbd"><Ci x={dq.identity.join_precision} /></Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">{dq.identity.sample}</Td>
+                  </tr>
+                  <tr>
+                    <Td>Valid names resolved to the right organisation (held-out)</Td>
+                    <Td className="kbd"><Ci x={dq.heldout_names?.valid_names_resolved_to_the_right_organisation} /></Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Random stored party names</Td>
+                  </tr>
+                  <tr>
+                    <Td>Malformed names caught: fragments, combinations (held-out)</Td>
+                    <Td className="kbd"><Ci x={dq.heldout_names?.malformed_names_caught} /></Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Same sample; malformed names are not credited to anyone</Td>
+                  </tr>
+                </Table>
+              </div>
+              <p className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">
+                Every deal page shows these checks for that record: which fields are corroborated by independent stories, which are
+                single-source, derived or uncertain, with the measured accuracy of each field next to it.
+              </p>
+            </Section>
           )}
+
+          {e.attribution && (
+            <Section
+              id="attribution"
+              title="Attribution: is the event about this company?"
+              lede={
+                <>
+                  Adversarial headlines written blind to the engine, each with a target company and the events it truly reports
+                  about that company: pronouns, aliases, subsidiaries and parents, deals naming several companies, headlines without
+                  a subject, denials, rumours and historical references. The headlines are synthetic test text, not news.
+                </>
+              }
+            >
+              <Table head={["Category", "Development, before", "Development, after", "Held-out: exactly right", "Held-out: false alarms on no-event cases", "Held-out: recall"]} minWidth="68rem">
+                {Object.keys(e.attribution.by_category).map((cat) => (
+                  <tr key={cat}>
+                    <Td>{words(cat)}</Td>
+                    <Td className="kbd"><Ci x={e.attribution_baseline?.by_category[cat]?.exactly_right} /></Td>
+                    <Td className="kbd"><Ci x={e.attribution?.by_category[cat]?.exactly_right} /></Td>
+                    <Td className="kbd"><Ci x={attrHo?.by_category[cat]?.exactly_right} /></Td>
+                    <Td className="kbd"><Ci x={attrHo?.by_category[cat]?.false_alarm_rate_on_no_event_cases} /></Td>
+                    <Td className="kbd"><Ci x={attrHo?.by_category[cat]?.recall} /></Td>
+                  </tr>
+                ))}
+                <tr>
+                  <Td className="font-medium">All cases</Td>
+                  <Td className="kbd"><Ci x={e.attribution_baseline?.overall.exactly_right} /></Td>
+                  <Td className="kbd"><Ci x={e.attribution?.overall.exactly_right} /></Td>
+                  <Td className="kbd"><Ci x={attrHo?.overall.exactly_right} /></Td>
+                  <Td className="kbd"><Ci x={attrHo?.overall.false_alarm_rate_on_no_event_cases} /></Td>
+                  <Td className="kbd"><Ci x={attrHo?.overall.recall} /></Td>
+                </tr>
+              </Table>
+              <div className="mt-4">
+                <Callout tone="warn">
+                  The gap between development and held-out results shows that the rule changes made after reading the development
+                  errors fitted those cases more than they generalised. The held-out figures are the honest measure: the engine
+                  misses most events phrased in ways its rules do not cover, while false alarms stay low. Corroboration counts
+                  independent stories only: syndicated copies of one wire story, and near-identical headlines, count once.
+                </Callout>
+              </div>
+            </Section>
+          )}
+
+          <Section
+            id="reproduce"
+            title="Reproduce it"
+            lede={
+              <>
+                {r?.design.reproduce} Every labelled item carries its reasoning; disagreements are welcome through the{" "}
+                <a href="/contact" className="text-verified hover:underline">contact page</a>.
+              </>
+            }
+          >
+            <ul className="grid gap-2 text-[0.8125rem] sm:grid-cols-2">
+              {[
+                ["backtest_predictions.csv", "Every backtest prediction with its outcome labels"],
+                ["deal_extraction_items.jsonl", "Development headlines"],
+                ["deal_extraction_labels.jsonl", "Development labels"],
+                ["deal_heldout_items.jsonl", "Held-out headlines"],
+                ["deal_heldout_labels.jsonl", "Held-out labels"],
+                ["deal_errors.jsonl", "Every extraction, dedup and identity error"],
+                ["dedup_items.jsonl", "Deduplication pairs"],
+                ["dedup_labels.jsonl", "Deduplication labels"],
+                ["identity_items.jsonl", "Name pairs"],
+                ["identity_labels.jsonl", "Name pair labels"],
+                ["names_heldout_items.jsonl", "Held-out names"],
+                ["names_heldout_labels.jsonl", "Held-out name labels"],
+                ["attribution_cases.json", "Development attribution cases (synthetic headlines)"],
+                ["attribution_heldout_cases.json", "Held-out attribution cases (synthetic headlines)"],
+                ["attribution_errors.jsonl", "Development attribution errors"],
+              ].map(([f, label]) => (
+                <li key={f}>
+                  <a href={apiUrl(`/api/evaluation/files/${f}`)} className="text-verified hover:underline">
+                    {label}
+                  </a>{" "}
+                  <span className="kbd text-[0.6875rem] text-[color:var(--dim)]">{f}</span>
+                </li>
+              ))}
+            </ul>
+            {e.live_outcomes && (
+              <p className="mt-4 text-[0.8125rem] text-[color:var(--muted)]">
+                Live outcomes so far:{" "}
+                {Object.values(e.live_outcomes).reduce((a, x) => a + x.confirmed + x.refuted, 0)} labelled across{" "}
+                {Object.keys(e.live_outcomes).length} signal-type and market groups.
+              </p>
+            )}
+          </Section>
         </>
       )}
     </Container>

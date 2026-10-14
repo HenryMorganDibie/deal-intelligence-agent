@@ -354,6 +354,8 @@ def run(
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(render_report(result))
     write_tables(result)
+    from src.engines import evaluation_report
+    evaluation_report.write(result)
     SUMMARY_PATH.write_text(json.dumps({k: result[k] for k in ("start", "end", "as_of_dates", "companies",
                                                                 "lookback_days", "horizon_days", "metrics",
                                                                 "by_severity", "alpha_validation")},
@@ -410,7 +412,11 @@ def compute_metrics(predictions: list[dict], truth: list[dict], base: dict, mont
                 "precision_official_filings": _rate(off_conf, len(off)),
                 "official_labelled": len(off),
                 "events": len(ev),
+                "caught": caught,
+                "confirmed": conf,
                 "recall": _rate(caught, len(ev)),
+                "base_hits": base_hits,
+                "company_months": n_months,
                 "base_rate": base_rate,
                 "lift": round(precision / base_rate, 2) if precision is not None and base_rate else None,
                 "price_only": price_only,
@@ -542,7 +548,7 @@ def render_report(result: dict) -> str:
         "*Base rate*: share of all company-months followed by that event anyway. *Lift*: precision / base rate, "
         "how much better a flag is than picking a company-month at random. *Recall*: share of confirmed events "
         "a prediction preceded. *Hit rate*: price moved in the predicted direction net of the market "
-        "(10 days). Earnings surprises and insider trades are judged on price only.",
+        "(10 calendar days: first close on or after day 10). Earnings surprises and insider trades are judged on price only.",
         "",
         "| Signal type | Predictions | Precision | Official | Base rate | Lift | Recall | Hit rate | Abn. return 10d |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
