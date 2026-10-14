@@ -57,7 +57,7 @@ CRON_SECRET = os.environ.get("CRON_SECRET", "")
 PER_VISITOR_DAILY = int(os.environ.get("DEAL_INTEL_PER_VISITOR_DAILY", "10"))
 GLOBAL_DAILY = int(os.environ.get("DEAL_INTEL_GLOBAL_DAILY", "300"))
 APP_URL = os.environ.get("DEAL_INTEL_APP_URL", "").rstrip("/")
-SUMMARY_PATH = Path(__file__).resolve().parents[1] / "docs" / "backtest_summary.json"
+from src.engines.historical_backtest import SUMMARY_PATH as _BACKTEST_SUMMARY  # noqa: E402
 
 
 def _configured() -> bool:
@@ -452,7 +452,7 @@ def _public_host(url: str) -> bool:
 @router.get("/api/evaluation")
 async def evaluation() -> dict:
     try:
-        backtest = json.loads(SUMMARY_PATH.read_text())
+        backtest = json.loads(_BACKTEST_SUMMARY.read_text())
     except (OSError, ValueError):
         backtest = None
     live = None
