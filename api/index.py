@@ -5,6 +5,8 @@ Open access, no accounts:
   GET  /api/briefs/{id}  fetch a stored brief (ids are random UUIDs: share links)
   GET  /api/health
   GET  /api/cron/label   daily (Vercel Cron): label briefs' outcomes for calibration
+  plus the market-data routes in src/hosted_market.py (countries, deals, investors,
+  companies, research, watchlists, coverage, evaluation, daily ingestion)
 
 Writes go through Supabase functions that require DEAL_INTEL_API_SECRET, which
 only this function holds; the publishable key alone can read a brief by id and
@@ -49,7 +51,7 @@ app = FastAPI(title="Deal Intelligence API", docs_url=None, redoc_url=None, open
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS or ["http://localhost:3000"],
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type"],
     max_age=600,
 )
@@ -58,10 +60,11 @@ app.add_middleware(
 class AnalyseBody(BaseModel):
     company: str = Field(..., min_length=1, max_length=120)
     ticker: str | None = Field(None, max_length=20)
+    country: str | None = Field(None, max_length=3)
     lookback_days: int = Field(90, ge=1, le=365)
     compliance: bool = False
 
-    @field_validator("company", "ticker")
+    @field_validator("company", "ticker", "country")
     @classmethod
     def strip(cls, v: str | None) -> str | None:
         v = v.strip() if v else v
@@ -117,6 +120,10 @@ def _install_shared_llm_cache() -> None:
 
 _install_shared_llm_cache()
 
+from src.hosted_market import router as market_router  # noqa: E402
+
+app.include_router(market_router)
+
 
 # Outcome counts for per-market calibration, refreshed at most hourly per instance.
 _STATS_TTL = 3600
@@ -164,7 +171,13 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
     from src.schemas.models import AnalysisRequest
     from src.utils.formatter import brief_to_markdown
 
-    request_model = AnalysisRequest(company_name=body.company, ticker=body.ticker, lookback_days=body.lookback_days)
+    try:
+        request_model = AnalysisRequest(company_name=body.company, ticker=body.ticker, country=body.country,
+                                        lookback_days=body.lookback_days)
+    except ValueError as e:
+        async with httpx.AsyncClient(timeout=15) as client:
+            await _rpc(client, "fail_run", {"secret": API_SECRET, "p_run_id": run_id})
+        raise HTTPException(422, str(e).splitlines()[-1][:200])
     try:
         brief = await run_analysis(request_model, compliance_mode=body.compliance)
     except Exception:

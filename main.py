@@ -37,6 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--company",    required=True)
     a.add_argument("--ticker",     default=None)
     a.add_argument("--cik",        default=None)
+    a.add_argument("--country",    default=None, help="ISO code of an African company's country (any of the 54)")
     a.add_argument("--lookback",   type=int, default=90)
     a.add_argument("--depth",      choices=["quick","standard","deep"], default="standard")
     a.add_argument("--signals",    nargs="*", default=[], choices=[
@@ -159,6 +160,31 @@ def build_parser() -> argparse.ArgumentParser:
     md.add_argument("--severity",   default="medium")
     md.add_argument("--date",       default=None)
 
+    # ── market data: deals, events, countries, research, company profiles ────
+    dl = sub.add_parser("deals", help="Deals database: ingest, backfill, search, upload")
+    dl.add_argument("--ingest", action="store_true", help="Read every feed now and store new deals and events")
+    dl.add_argument("--window", default="when:2d", help="Google News window for --ingest (e.g. when:7d)")
+    dl.add_argument("--backfill", type=int, default=0, metavar="MONTHS", help="Backfill this many past months")
+    dl.add_argument("--upload", action="store_true", help="Upload local deals and events to the hosted database")
+    dl.add_argument("--search", default=None, metavar="TEXT")
+    dl.add_argument("--country", default=None)
+    dl.add_argument("--type", default=None)
+    dl.add_argument("--limit", type=int, default=25)
+
+    co = sub.add_parser("countries", help="Country risk, currency risk and coverage for the 54 countries")
+    co.add_argument("--refresh", action="store_true", help="Re-download World Bank indicators (slow)")
+    co.add_argument("--country", default=None)
+
+    rs = sub.add_parser("research", help="Source-grounded AI answer from deals, events, risk and news")
+    rs.add_argument("question")
+    rs.add_argument("--no-news", action="store_true")
+
+    pf = sub.add_parser("profile", help="Company profile and verified financial statements")
+    pf.add_argument("--company", required=True)
+    pf.add_argument("--ticker", default=None)
+    pf.add_argument("--country", default=None)
+    pf.add_argument("--cik", type=int, default=None)
+
     # Root-level bare flags for convenience (backwards compat)
     p.add_argument("--company",    default=None)
     p.add_argument("--ticker",     default=None)
@@ -191,7 +217,7 @@ async def _run_analysis(args: argparse.Namespace) -> None:
     focus   = [SignalType(s) for s in (args.signals or [])]
 
     request = AnalysisRequest(
-        company_name=company, ticker=args.ticker, cik=args.cik,
+        company_name=company, ticker=args.ticker, cik=args.cik, country=getattr(args, "country", None),
         lookback_days=args.lookback, depth=args.depth, focus_signals=focus,
     )
     compliance = getattr(args, "compliance", False)
@@ -868,6 +894,109 @@ def _run_marketdata(args: argparse.Namespace) -> None:
     console.print("[dim]Use --price TICKER, --volatility TICKER, or --auto-outcome[/dim]")
 
 
+# ─── Market data commands ─────────────────────────────────────────────────────
+
+EVENTS_FILE = "events.json"
+
+
+def _local_events() -> list:
+    from src.utils.paths import DATA_DIR
+    from src.utils.storage import load_json
+    return load_json(DATA_DIR / EVENTS_FILE, list)
+
+
+def _save_events(rows: list) -> None:
+    from src.utils.paths import DATA_DIR
+    from src.utils.storage import save_json
+    by_id = {e["id"]: e for e in _local_events()}
+    by_id.update({e["id"]: e for e in rows})
+    save_json(DATA_DIR / EVENTS_FILE, sorted(by_id.values(), key=lambda e: e.get("day") or "", reverse=True))
+
+
+def _run_deals(args) -> None:
+    from datetime import date as _date, timedelta as _td
+    from src.engines import deals as dm, market_feed as mf
+    store = dm.load_deals()
+    if args.ingest:
+        items = asyncio.run(mf.collect(args.window))
+        new, events = mf.to_deals(items), mf.to_events(items)
+        store = dm.merge_all(new, into=store)
+        dm.save_deals(store)
+        _save_events(events)
+        console.print(f"[green]✓[/green] {len(items)} headlines -> {len(new)} deal reports, {len(events)} events; "
+                      f"{len(store)} deals stored")
+    if args.backfill:
+        today = _date.today()
+        for m in range(args.backfill, 0, -1):
+            end = today - _td(days=30 * (m - 1))
+            start = end - _td(days=30)
+            items = asyncio.run(mf.collect_historical(start, end))
+            new = mf.to_deals(items)
+            store = dm.merge_all(new, into=store)
+            _save_events(mf.to_events(items))
+            dm.save_deals(store)
+            console.print(f"  {start} to {end}: {len(items)} headlines, {len(new)} deal reports ({len(store)} total)")
+    if args.upload:
+        import httpx as _httpx
+        url, key, secret = (os.environ.get("SUPABASE_URL", "").rstrip("/"), os.environ.get("SUPABASE_PUBLISHABLE_KEY", ""),
+                            os.environ.get("DEAL_INTEL_API_SECRET", ""))
+        if not (url and key and secret):
+            raise RuntimeError("set SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY and DEAL_INTEL_API_SECRET to upload")
+        headers = {"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        rows, events = list(store.values()), _local_events()
+        for fn, batch_rows in (("upsert_deals", rows), ("upsert_events", events)):
+            for i in range(0, len(batch_rows), 500):
+                r = _httpx.post(f"{url}/rest/v1/rpc/{fn}", headers=headers, timeout=120,
+                                json={"secret": secret, "p_rows": batch_rows[i:i + 500]})
+                r.raise_for_status()
+        console.print(f"[green]✓[/green] uploaded {len(rows)} deals and {len(events)} events")
+    if args.search is not None or not (args.ingest or args.backfill or args.upload):
+        rows = dm.search(store.values(), q=args.search or "", country=args.country, deal_type=args.type, limit=args.limit)
+        t = Table(title=f"Deals ({len(store)} in database)")
+        for col in ("Date", "Type", "Stage", "Target", "Buyer / lead", "USD", "Country"):
+            t.add_column(col)
+        for d in rows:
+            t.add_row(d.get("announced") or "", d["deal_type"], d.get("stage") or "", d.get("target") or "",
+                      d.get("buyer") or "", f"{d['amount_usd']:,.0f}" if d.get("amount_usd") else "",
+                      d.get("country") or "")
+        console.print(t)
+
+
+def _run_countries(args) -> None:
+    from src.data.africa_countries import get as get_country
+    from src.engines import country_risk as cr, market_risk as mr
+    if args.refresh:
+        cr.refresh()
+        console.print("[green]✓[/green] World Bank indicators refreshed")
+    if args.country:
+        c = get_country(args.country)
+        if c is None:
+            raise RuntimeError(f"unknown country {args.country}")
+        console.print_json(data={"risk": cr.assess(c), "currency": mr.currency_risk(c.currency)})
+        return
+    t = Table(title="Country risk (54 countries)")
+    for col in ("Country", "Region", "Score", "Tier", "Coverage", "Currency"):
+        t.add_column(col)
+    for r in cr.ranking():
+        t.add_row(r["country"], r["region"], str(r["score"]), r["tier"] or "", f"{r['coverage']:.0%}", r["currency"])
+    console.print(t)
+
+
+def _run_research(args) -> None:
+    from src.engines import deals as dm, research as rs
+    r = rs.research(args.question, dm.load_deals().values(), _local_events(), live_news=not args.no_news)
+    console.print(Panel(r["answer"], title=f"Answer ({r['mode']}{', ' + r['model'] if r.get('model') else ''})"))
+    v = r["validation"]
+    console.print(f"Grounded sentences: {v['grounded_share']:.0%}; citations removed: {v['invalid_citations_removed']}")
+    for i in r["evidence"]:
+        console.print(f"[dim][{i['n']}] {i['kind']}: {i['title']} {i.get('url') or ''}[/dim]")
+
+
+def _run_profile(args) -> None:
+    from src.engines import company_profile as cp, deals as dm
+    console.print_json(data=cp.build(args.company, args.ticker, args.country, dm.load_deals().values(), args.cik))
+
+
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -905,6 +1034,14 @@ def main() -> None:
             _run_explain(args)
         elif cmd == "marketdata":
             _run_marketdata(args)
+        elif cmd == "deals":
+            _run_deals(args)
+        elif cmd == "countries":
+            _run_countries(args)
+        elif cmd == "research":
+            _run_research(args)
+        elif cmd == "profile":
+            _run_profile(args)
         else:
             console.print("[red]Unknown command. Run with --help.[/red]")
     except KeyboardInterrupt:

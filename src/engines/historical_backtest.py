@@ -48,6 +48,9 @@ log = logging.getLogger(__name__)
 CACHE_DIR = DATA_DIR / "hist_cache"
 RESULTS_PATH = DATA_DIR / "historical_backtest.json"
 REPORT_PATH = Path(__file__).resolve().parents[2] / "docs" / "BACKTEST.md"
+SUMMARY_PATH = Path(__file__).resolve().parents[2] / "docs" / "backtest_summary.json"
+# Judged on the price reaction only: an earnings release or an insider trade is itself the event.
+PRICE_ONLY = {"earnings_surprise", "insider_activity"}
 
 LOOKBACK_DAYS = 30
 HORIZON_DAYS = 90
@@ -344,6 +347,9 @@ def run(
     RESULTS_PATH.write_text(json.dumps(result, indent=1, default=str))
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(render_report(result))
+    SUMMARY_PATH.write_text(json.dumps({k: result[k] for k in ("start", "end", "as_of_dates", "companies",
+                                                                "lookback_days", "horizon_days", "metrics")},
+                                       indent=1, default=str))
     return result
 
 
@@ -371,9 +377,10 @@ def compute_metrics(predictions: list[dict], truth: list[dict], base: dict, mont
         out[st] = {}
         for mk in ("all", "us", "africa"):
             ps = [p for p in predictions if p["signal_type"] == st and (mk == "all" or p["market"] == mk)]
-            labelled = [p for p in ps if p["event_confirmed"] is not None]
+            price_only = st in PRICE_ONLY
+            labelled = [] if price_only else [p for p in ps if p["event_confirmed"] is not None]
             conf = sum(p["event_confirmed"] for p in labelled)
-            off = [p for p in ps if p["confirmed_by_official_filing"] is not None]
+            off = [] if price_only else [p for p in ps if p["confirmed_by_official_filing"] is not None]
             off_conf = sum(p["confirmed_by_official_filing"] for p in off)
             # Recall: confirmed events preceded by a prediction of the same type within the horizon.
             ev = [e for e in truth if e["signal_type"] == st
@@ -398,6 +405,7 @@ def compute_metrics(predictions: list[dict], truth: list[dict], base: dict, mont
                 "recall": _rate(caught, len(ev)),
                 "base_rate": base_rate,
                 "lift": round(precision / base_rate, 2) if precision is not None and base_rate else None,
+                "price_only": price_only,
                 "hit_rate": _rate(sum(directional), len(directional)),
                 "directional_n": len(directional),
                 "mean_abnormal_return_10d_pct": round(statistics.mean(abn), 2) if abn else None,

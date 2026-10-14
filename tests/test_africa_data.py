@@ -431,3 +431,38 @@ def test_country_report_sections():
     for heading in ("# Kenya", "## Executive summary", "## Country risk", "## Currency", "## Deal activity",
                     "## Most active investors", "## Sources"):
         assert heading in r["markdown"]
+
+
+# ── Monitoring, coverage ──────────────────────────────────────────────────────
+
+from src.engines import coverage as cov  # noqa: E402
+from src.engines import watch  # noqa: E402
+
+
+def test_watchlist_matching_and_rss():
+    wl = {"id": "w1", "name": "Kenya banks", "companies": ["Paramount Bank", "Safaricom"], "countries": ["GH"],
+          "signal_types": [], "include_deals": True}
+    events = mf.to_events([{"title": "Ghana bank fined by Bank of Ghana for breaches", "date": "2026-10-12"},
+                           {"title": "Safaricom CEO resigns with immediate effect", "date": "2026-10-13"}])
+    deals = [_deal("Zenith Bank Completes Acquisition Of Kenya’s Paramount Bank", publisher="Proshare", url="https://x/1")]
+    alerts = watch.matches(wl, events, deals)
+    assert [(a["kind"], a["why"]) for a in alerts] == [
+        ("event", ["company: Safaricom"]), ("event", ["country: GH"]), ("deal", ["company: Paramount Bank"])]
+    assert watch.matches({**wl, "signal_types": ["leadership_change"]}, events, [])[0]["title"].startswith("Safaricom")
+    feed = watch.rss(wl, alerts, "https://app/watch/w1")
+    assert feed.count("<item>") == 3 and "Kenya banks | Deal Intelligence" in feed
+
+
+@pytest.mark.parametrize("url,ok", [("https://hooks.slack.com/services/x", True), ("http://example.com", False),
+                                    ("https://localhost/x", False), ("https://10.0.0.1/x", False),
+                                    ("https://192.168.1.4/hook", False), (None, True)])
+def test_webhook_urls_must_be_public_https(url, ok):
+    assert watch.valid_webhook(url) is ok
+
+
+def test_coverage_matrix_covers_54_countries_with_tiers():
+    m = cov.matrix([_deal("Wave lève 90 millions de dollars au Sénégal")])
+    assert m["summary"]["countries"] == 54 and set(m["summary"]["by_tier"]) <= {"A", "B", "C"}
+    rows = {r["iso2"]: r for r in m["countries"]}
+    assert rows["NG"]["tier"] == "A" and rows["ZA"]["tier"] == "B" and rows["TD"]["tier"] == "C"
+    assert rows["SN"]["deals"] == 1 and rows["SN"]["news"]["national_edition"]

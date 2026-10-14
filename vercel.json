@@ -3,7 +3,7 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 300,
-      "includeFiles": "src/**",
+      "includeFiles": "{src/**,docs/backtest_summary.json}",
       "excludeFiles": "web/**"
     }
   },
@@ -17,6 +17,10 @@
     {
       "path": "/api/cron/label",
       "schedule": "17 6 * * *"
+    },
+    {
+      "path": "/api/cron/ingest",
+      "schedule": "41 5 * * *"
     }
   ]
 }
