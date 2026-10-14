@@ -2887,7 +2887,7 @@ def test_every_data_store_is_isolated_in_tests():
     from tests.conftest import _STORES
     declared = set()
     for f in Path("src").rglob("*.py"):
-        for m in re.finditer(r"^(\w+_PATH)\s*=\s*Path\(__file__\)", f.read_text(), re.M):
+        for m in re.finditer(r"^(\w+_(?:PATH|DIR))\s*=\s*(?:Path\(__file__\)|DATA_DIR)", f.read_text(), re.M):
             declared.add((".".join(f.with_suffix("").parts), m.group(1)))
     assert declared <= {(m, a) for m, a, _ in _STORES}
 
@@ -3598,6 +3598,16 @@ class TestSubjectAttribution:
         assert [c.signal_type for c in self._engine("Sonatel", "Sonatel downgraded by Fitch on liquidity concerns").signal_candidates] \
             == [SignalType.CREDIT_RISK]
 
+    def test_product_named_after_company_is_not_the_company(self):
+        """Backtest regression: 'Acquisition of Boeing 737-700' was Boeing M&A."""
+        assert self._engine("Boeing", "Coulson Aviation expands fleet through acquisition of Boeing 737-700", "BA").signal_candidates == []
+
+    def test_wound_up_in_is_not_insolvency(self):
+        """Backtest regression: 'falsified parts wound up in Boeing jets' was DISTRESSED_ASSET."""
+        assert self._engine("Boeing", "FAA probes how falsified titanium parts wound up in Boeing jets", "BA").signal_candidates == []
+        assert [c.signal_type for c in self._engine("Acme", "Court orders that Acme be wound up").signal_candidates] \
+            == [SignalType.DISTRESSED_ASSET]
+
     def test_credit_condition_belongs_to_the_subject(self):
         """Live-run regression: Archer's cash burn was reported as Boeing credit risk."""
         cands = self._engine("Boeing", "Archer Aviation (ACHR) Stock Rally Faces Cash Burn And Boeing Deal Risk", "BA")
@@ -3760,6 +3770,11 @@ class TestEventSources:
         from src.engines.event_sources import classify
         assert {t.value for t in classify(text)} == expected, text
 
+    def test_guilty_plea_and_settlement_confirm_regulatory_action(self):
+        from src.engines.event_sources import classify
+        assert {t.value for t in classify("Boeing to plead guilty to criminal fraud charge")} == {"regulatory_action"}
+        assert {t.value for t in classify("Acme agrees to pay $50m to settle SEC charges")} == {"regulatory_action"}
+
     @pytest.mark.parametrize("text", [
         "Acme in talks to acquire Beta",
         "Acme considers sale of unit",
@@ -3775,3 +3790,19 @@ class TestEventSources:
         m = _company_matchers("Acme")
         assert classify("Acme completes acquisition of Beta", m)
         assert not classify("Rival completes acquisition after Acme deal collapsed", m)
+
+
+def test_historical_metrics_precision_base_rate_lift():
+    from src.engines.historical_backtest import compute_metrics
+    preds = [
+        {"company": "A", "signal_type": "m_and_a_activity", "market": "us", "as_of": "2024-02-15",
+         "event_confirmed": True, "confirmed_by_official_filing": True, "direction_correct": True, "abnormal_return_10d_pct": 4.0},
+        {"company": "B", "signal_type": "m_and_a_activity", "market": "us", "as_of": "2024-02-15",
+         "event_confirmed": False, "confirmed_by_official_filing": False, "direction_correct": False, "abnormal_return_10d_pct": -2.0},
+    ]
+    truth = [{"company_name": "A", "signal_type": "m_and_a_activity", "date": "2024-03-20", "source": "SEC 8-K"},
+             {"company_name": "C", "signal_type": "m_and_a_activity", "date": "2024-05-01", "source": "SEC 8-K"}]
+    m = compute_metrics(preds, truth, {"m_and_a_activity": {"us": 2}}, {"us": 20})["m_and_a_activity"]["all"]
+    assert (m["precision"], m["base_rate"], m["lift"]) == (0.5, 0.1, 5.0)
+    assert (m["recall"], m["events"]) == (0.5, 2)          # A's event was preceded by a prediction, C's was not
+    assert m["hit_rate"] == 0.5 and m["mean_abnormal_return_10d_pct"] == 1.0

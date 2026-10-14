@@ -24,6 +24,10 @@ _STORES = [
     ("src.engines.monitoring",         "ALERTS_PATH",          "alerts.json"),
     ("src.engines.portfolio",          "PORTFOLIO_PATH",       "portfolios.json"),
     ("src.engines.warehouse",          "DB_PATH",              "warehouse.db"),
+    ("src.tools.african_prices",       "SNAPSHOT_PATH",        "african_prices.json"),
+    ("src.engines.historical_backtest", "RESULTS_PATH",        "historical_backtest.json"),
+    ("src.engines.historical_backtest", "REPORT_PATH",         "BACKTEST.md"),
+    ("src.engines.historical_backtest", "CACHE_DIR",           "hist_cache"),
 ]
 
 

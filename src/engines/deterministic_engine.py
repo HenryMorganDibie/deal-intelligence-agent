@@ -190,7 +190,8 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\binsolvency\s+(proceedings?|petition|filed?)\b",
     ], 0.95),
     (SignalType.DISTRESSED_ASSET, [
-        r"\b(liquidat(e|ion|or)|wind(ing)?\s+up|wound\s+up)\b",
+        # "wound up" only as insolvency ("the company was wound up"), not "ended up in".
+        r"\b(liquidat(e|ion|or)|winding[\s-]up|(is|was|be|been|being|to\s+be)\s+wound\s+up|wind[\s-]up\s+(order|petition|proceedings|resolution))\b",
         r"\bdebt\s+(moratorium|standstill|restructur\w*)\b",
         r"\bcreditor\s+(protection|committee|arrangement)\b",
         r"\b(distressed|impaired)\s+(asset|portfolio|loan)\b",
@@ -506,7 +507,8 @@ def _company_matchers(*names: Optional[str], ticker: Optional[str] = None) -> li
         if not words or (len(words) == 1 and words[0].lower() in _GENERIC_NAME_WORDS):
             continue
         phrase = r"\W+".join(re.escape(w) for w in words)
-        patterns.append(re.compile(rf"\b{phrase}\b", re.IGNORECASE))
+        # Not a product named after the company: "Boeing 737", "Airbus A320", "Toyota RAV4".
+        patterns.append(re.compile(rf"\b{phrase}\b(?!\s*-?\d{{2,}}|\s+[A-Z]{{1,3}}-?\d)", re.IGNORECASE))
     base = ticker.split(".")[0] if ticker else None     # GTCO.LG -> GTCO
     if base and len(base) >= 3:
         patterns.append(re.compile(rf"\b{re.escape(base.upper())}\b"))

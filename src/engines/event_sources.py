@@ -72,6 +72,8 @@ CONFIRMATION_PATTERNS: dict[SignalType, list[str]] = {
     ],
     SignalType.REGULATORY_ACTION: [
         r"\b(fined|sanctioned|penali[sz]ed|charged|licen[cs]e\s+(revoked|suspended))\b",
+        r"\b(pleads?|pleaded|pled|agrees?\s+to\s+plead)\s+guilty\b|\bguilty\s+plea\b",
+        r"\b(settles?|settled|agrees?\s+to\s+pay)\b.{0,50}\b(sec|doj|ftc|regulator|authorit\w+|commission|charges?|fine|penalty|probe)\b",
         r"\b(fine|penalty|sanction)\s+(of|on|against)\b",
         r"\b(sanctionn[eé]e?|amende|retrait\s+d['’]agr[eé]ment)\b",
     ],
@@ -169,57 +171,76 @@ def nse_events(client: httpx.Client, company: str, since: date, until: date) -> 
     return out
 
 
-def news_events(
+NEWS_TOPICS = ["",
+               "CEO OR chairman OR appoints OR resigns OR acquisition OR merger OR completes OR takeover",
+               "downgrade OR default OR restructuring OR administration OR fined OR penalty OR sanctioned OR regulator"]
+FRENCH_TOPICS = ["", "nomme OR démission OR acquisition OR fusion OR sanction"]
+
+
+def historical_news(
     client: httpx.Client, company: str, since: date, until: date, french: bool = False,
 ) -> Optional[list[dict]]:
     """
-    Completed events about the company in credible outlets, from Google News
-    restricted to [since, until]. None if the search returned nothing at all
-    (no coverage: unknown, not 'no event').
+    Dated headlines about the company published in [since, until], from Google
+    News date-restricted searches: [{title, publisher, date, url}]. A broad query
+    returns at most 100 items, which one big story can fill, so each event family
+    also gets its own query. None if every search failed.
     """
-    from src.engines.deterministic_engine import _company_matchers, _source_credibility
-    matchers = _company_matchers(company)
     window = f"after:{since.isoformat()} before:{until.isoformat()}"
-    # A broad query returns at most 100 items, which one big story can fill, so
-    # each event family also gets its own query.
-    topics = ["", "CEO OR chairman OR appoints OR resigns", "acquisition OR merger OR completes OR takeover",
-              "downgrade OR default OR restructuring OR administration", "fined OR penalty OR sanctioned OR regulator"]
-    queries = [(f'"{company}" {t} {window}'.replace("  ", " "), ("en-US", "US", "en")) for t in topics]
+    queries = [(f'"{company}" {t} {window}'.replace("  ", " "), ("en-US", "US", "en")) for t in NEWS_TOPICS]
     if french:
-        queries += [(f'"{company}" {t} {window}'.replace("  ", " "), ("fr", "CI", "fr"))
-                    for t in ("", "nomme OR démission OR acquisition OR fusion OR sanction")]
-    items, seen = [], set()
+        queries += [(f'"{company}" {t} {window}'.replace("  ", " "), ("fr", "CI", "fr")) for t in FRENCH_TOPICS]
+    out, seen, ok = [], set(), False
     for q, (hl, gl, lang) in queries:
         try:
             r = client.get(GOOGLE_NEWS.format(q=quote(q), hl=hl, gl=gl, lang=lang))
             r.raise_for_status()
-            for it in re.findall(r"<item>(.*?)</item>", r.text, re.S):
-                key = (re.search(r"<title>(.*?)</title>", it, re.S) or [None, it])[1]
-                if key not in seen:
-                    seen.add(key)
-                    items.append(it)
+            ok = True
         except Exception as e:
             log.warning("news search failed for %s: %s", company, e)
+            time.sleep(2)
+            continue
+        for it in re.findall(r"<item>(.*?)</item>", r.text, re.S):
+            title = html.unescape(re.sub(r"<!\[CDATA\[|\]\]>", "", (re.search(r"<title>(.*?)</title>", it, re.S) or [None, ""])[1]))
+            if not title or title in seen:
+                continue
+            seen.add(title)
+            publisher = html.unescape((re.search(r"<source[^>]*>(.*?)</source>", it, re.S) or [None, ""])[1])
+            try:
+                day = parsedate_to_datetime((re.search(r"<pubDate>(.*?)</pubDate>", it) or [None, ""])[1]).date()
+            except (TypeError, ValueError):
+                continue
+            if not (since <= day <= until):
+                continue
+            if publisher and title.endswith(" - " + publisher):
+                title = title[: -len(publisher) - 3]
+            out.append({"title": title, "publisher": publisher, "date": day.isoformat(),
+                        "url": (re.search(r"<link>(.*?)</link>", it) or [None, ""])[1]})
         time.sleep(0.4)
+    return out if ok else None
+
+
+def news_events(
+    client: httpx.Client, company: str, since: date, until: date, french: bool = False,
+    headlines: Optional[list[dict]] = None,
+) -> Optional[list[dict]]:
+    """
+    Completed events about the company in credible outlets (credibility >= 0.70)
+    between since and until. None if the search returned nothing at all (no
+    coverage: unknown, not 'no event').
+    """
+    from src.engines.deterministic_engine import _company_matchers, _source_credibility
+    items = headlines if headlines is not None else historical_news(client, company, since, until, french)
     if not items:
         return None
+    matchers = _company_matchers(company)
     out = []
     for it in items:
-        title = html.unescape(re.sub(r"<!\[CDATA\[|\]\]>", "", (re.search(r"<title>(.*?)</title>", it, re.S) or [None, ""])[1]))
-        publisher = html.unescape((re.search(r"<source[^>]*>(.*?)</source>", it, re.S) or [None, ""])[1])
-        pub = (re.search(r"<pubDate>(.*?)</pubDate>", it) or [None, ""])[1]
-        if not publisher or _source_credibility(publisher) < MIN_NEWS_CREDIBILITY:
+        if _source_credibility(it["publisher"]) < MIN_NEWS_CREDIBILITY:
             continue
-        headline = title.rsplit(" - ", 1)[0] if publisher and title.endswith(publisher) else title
-        try:
-            day = parsedate_to_datetime(pub).date()
-        except (TypeError, ValueError):
-            continue
-        if not (since <= day <= until):
-            continue
-        types = classify(headline, matchers)
+        types = classify(it["title"], matchers)
         if types:
-            out.append(_event(day.isoformat(), f"{publisher}: {headline[:90]}", types))
+            out.append(_event(it["date"], f"{it['publisher']}: {it['title'][:90]}", types))
     return out
 
 

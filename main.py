@@ -113,6 +113,10 @@ def build_parser() -> argparse.ArgumentParser:
     bt.add_argument("--synthetic",action="store_true", help="Run synthetic backtest (demo)")
     bt.add_argument("--report",   action="store_true", help="Show latest backtest results")
     bt.add_argument("--signal",   default=None, help="Filter report by signal type")
+    bt.add_argument("--historical", action="store_true",
+                    help="Walk-forward replay over past dates with real filings, news and prices (writes docs/BACKTEST.md)")
+    bt.add_argument("--start", default="2024-01-15", help="First as-of date for --historical")
+    bt.add_argument("--end",   default="2025-06-15", help="Last as-of date for --historical")
 
     # ── portfolio ─────────────────────────────────────────────────────────
     po = sub.add_parser("portfolio", help="Portfolio-level risk aggregation")
@@ -603,6 +607,17 @@ def _run_calibration(args: argparse.Namespace) -> None:
 
 def _run_backtest(args: argparse.Namespace) -> None:
     from src.engines.backtest import BacktestEngine, get_latest_backtest
+
+    if getattr(args, "historical", False):
+        from datetime import date as _date
+        from src.engines import historical_backtest as hb
+        console.print(f"[cyan]Walk-forward backtest {args.start} → {args.end} over {len(hb.UNIVERSE)} companies "
+                      "(responses are cached; a rerun resumes)…[/cyan]")
+        result = hb.run(_date.fromisoformat(args.start), _date.fromisoformat(args.end),
+                        progress=lambda m: console.print(f"[dim]{m}[/dim]"))
+        console.print(hb.render_report(result))
+        console.print(f"[green]✓[/green] Report written to {hb.REPORT_PATH}")
+        return
 
     if getattr(args, "synthetic", False):
         console.print("[cyan]Running synthetic backtest…[/cyan]")
