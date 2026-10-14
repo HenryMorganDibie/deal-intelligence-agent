@@ -27,7 +27,7 @@ import hashlib
 import json
 import re
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 import os
 import anthropic
@@ -96,6 +96,16 @@ def _llm_cache_key(provider: str, system: str, user: str, max_tokens: int) -> st
     return hashlib.sha256(payload.encode()).hexdigest()
 
 
+# Optional shared store behind the local file: (get(key) -> text | None, put(key, text)).
+# The hosted API sets one backed by Supabase, so every serverless instance agrees.
+_SHARED_LLM_CACHE: Optional[tuple] = None
+
+
+def set_shared_llm_cache(get, put) -> None:
+    global _SHARED_LLM_CACHE
+    _SHARED_LLM_CACHE = (get, put) if get and put else None
+
+
 def _call_llm(client, provider: str, system: str, user: str, max_tokens: int = 3000) -> str:
     """LLM call through the reproducibility cache (see LLM_CACHE_PATH)."""
     if os.getenv("DEAL_INTEL_LLM_CACHE", "1") == "0":
@@ -104,7 +114,21 @@ def _call_llm(client, provider: str, system: str, user: str, max_tokens: int = 3
     cache: dict = load_json(LLM_CACHE_PATH, dict)
     if key in cache:
         return cache[key]["text"]
-    text = _call_llm_uncached(client, provider, system, user, max_tokens)
+    shared = None
+    if _SHARED_LLM_CACHE:
+        try:
+            shared = _SHARED_LLM_CACHE[0](key)
+        except Exception:
+            shared = None
+    if shared is not None:
+        text = shared
+    else:
+        text = _call_llm_uncached(client, provider, system, user, max_tokens)
+        if _SHARED_LLM_CACHE:
+            try:
+                _SHARED_LLM_CACHE[1](key, text)
+            except Exception:
+                pass
     cache[key] = {"text": text, "at": utcnow().isoformat()}
     if len(cache) > _LLM_CACHE_MAX:   # drop the oldest entries
         for old in sorted(cache, key=lambda k: cache[k]["at"])[: len(cache) - _LLM_CACHE_MAX]:

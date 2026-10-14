@@ -1060,6 +1060,21 @@ class TestLLMReproducibility:
         assert _call_llm(client, "anthropic", "sys", "prompt one") == "a"
         assert _call_llm(client, "anthropic", "sys", "prompt two") == "b"
 
+    def test_shared_cache_is_used_across_instances(self):
+        """A reply cached by another instance (Supabase in the hosted API) is reused."""
+        from src.agents import signal_agent as sa
+        store = {}
+        sa.set_shared_llm_cache(store.get, store.__setitem__)
+        try:
+            first = self._client(["shared wording"])
+            assert sa._call_llm(first, "anthropic", "sys", "p") == "shared wording"
+            sa.LLM_CACHE_PATH.unlink()                       # a fresh instance: empty local cache
+            second = self._client(["different wording"])
+            assert sa._call_llm(second, "anthropic", "sys", "p") == "shared wording"
+            assert second.beta.messages.create.call_count == 0
+        finally:
+            sa.set_shared_llm_cache(None, None)
+
     def test_cache_can_be_disabled(self, monkeypatch):
         from src.agents.signal_agent import _call_llm
         monkeypatch.setenv("DEAL_INTEL_LLM_CACHE", "0")

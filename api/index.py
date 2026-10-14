@@ -97,6 +97,27 @@ async def health() -> dict:
     }
 
 
+def _install_shared_llm_cache() -> None:
+    """LLM replies cached in Supabase, so identical requests read the same text on every instance."""
+    if not _configured():
+        return
+    from src.agents.signal_agent import set_shared_llm_cache
+
+    def get(key: str):
+        r = httpx.post(f"{SUPABASE_URL}/rest/v1/rpc/llm_cache_get", headers=_headers(),
+                       json={"secret": API_SECRET, "p_key": key}, timeout=10)
+        return r.json() if r.status_code == 200 else None
+
+    def put(key: str, text: str) -> None:
+        httpx.post(f"{SUPABASE_URL}/rest/v1/rpc/llm_cache_put", headers=_headers(),
+                   json={"secret": API_SECRET, "p_key": key, "p_text": text}, timeout=10)
+
+    set_shared_llm_cache(get, put)
+
+
+_install_shared_llm_cache()
+
+
 # Outcome counts for per-market calibration, refreshed at most hourly per instance.
 _STATS_TTL = 3600
 _stats_loaded_at = 0.0
