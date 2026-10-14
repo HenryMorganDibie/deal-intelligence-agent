@@ -38,6 +38,7 @@ create table if not exists public.watchlists (
   webhook_url text,
   client_hash text,
   last_delivered_at timestamptz,
+  deleted_at timestamptz,                -- soft delete: kept for audit, invisible to every function
   created_at timestamptz not null default now()
 );
 alter table public.watchlists enable row level security;
@@ -56,12 +57,13 @@ begin
   return n;
 end; $$;
 
+-- One JSON array, not a row set: PostgREST caps row sets at max_rows (1000).
 create or replace function public.list_deals(secret text, p_since date)
-returns setof jsonb language plpgsql stable security definer set search_path = '' as $$
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
 begin
   perform private.check_secret(secret);
-  return query select d.data from public.deals d
-    where d.announced is null or d.announced >= p_since order by d.announced desc nulls last;
+  return (select coalesce(jsonb_agg(d.data order by d.announced desc nulls last), '[]'::jsonb)
+          from public.deals d where d.announced is null or d.announced >= p_since);
 end; $$;
 
 create or replace function public.upsert_events(secret text, p_rows jsonb)
@@ -78,11 +80,11 @@ begin
 end; $$;
 
 create or replace function public.list_events(secret text, p_since date)
-returns setof jsonb language plpgsql stable security definer set search_path = '' as $$
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
 begin
   perform private.check_secret(secret);
-  return query select e.data from public.events e
-    where e.day is null or e.day >= p_since order by e.day desc nulls last;
+  return (select coalesce(jsonb_agg(e.data order by e.day desc nulls last), '[]'::jsonb)
+          from public.events e where e.day is null or e.day >= p_since);
 end; $$;
 
 create or replace function public.create_watchlist(
@@ -92,7 +94,7 @@ create or replace function public.create_watchlist(
 declare new_id uuid;
 begin
   perform private.check_secret(secret);
-  if (select count(*) from public.watchlists w where w.client_hash = p_client_hash) >= 20 then
+  if (select count(*) from public.watchlists w where w.client_hash = p_client_hash and w.deleted_at is null) >= 20 then
     raise exception 'watchlist_limit';
   end if;
   insert into public.watchlists (name, companies, countries, signal_types, include_deals, webhook_url, client_hash)
@@ -106,21 +108,21 @@ create or replace function public.get_watchlist(secret text, p_id uuid)
 returns setof public.watchlists language plpgsql stable security definer set search_path = '' as $$
 begin
   perform private.check_secret(secret);
-  return query select * from public.watchlists w where w.id = p_id;
+  return query select * from public.watchlists w where w.id = p_id and w.deleted_at is null;
 end; $$;
 
-create or replace function public.delete_watchlist(secret text, p_id uuid)
+create or replace function public.remove_watchlist(secret text, p_id uuid)
 returns void language plpgsql security definer set search_path = '' as $$
 begin
   perform private.check_secret(secret);
-  delete from public.watchlists w where w.id = p_id;
+  update public.watchlists set deleted_at = now(), webhook_url = null where id = p_id;
 end; $$;
 
 create or replace function public.webhook_watchlists(secret text)
 returns setof public.watchlists language plpgsql stable security definer set search_path = '' as $$
 begin
   perform private.check_secret(secret);
-  return query select * from public.watchlists w where w.webhook_url is not null;
+  return query select * from public.watchlists w where w.webhook_url is not null and w.deleted_at is null;
 end; $$;
 
 create or replace function public.mark_delivered(secret text, p_id uuid, p_at timestamptz)
@@ -144,7 +146,7 @@ begin
   foreach f in array array[
     'upsert_deals(text, jsonb)', 'list_deals(text, date)', 'upsert_events(text, jsonb)', 'list_events(text, date)',
     'create_watchlist(text, text, text, text[], text[], text[], boolean, text)', 'get_watchlist(text, uuid)',
-    'delete_watchlist(text, uuid)', 'webhook_watchlists(text)', 'mark_delivered(text, uuid, timestamptz)',
+    'remove_watchlist(text, uuid)', 'webhook_watchlists(text)', 'mark_delivered(text, uuid, timestamptz)',
     'finish_research(text, bigint)']
   loop
     execute format('revoke execute on function public.%s from public', f);

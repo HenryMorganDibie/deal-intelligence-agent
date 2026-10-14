@@ -405,6 +405,7 @@ async def _get_watchlist(wl_id: str) -> dict:
         raise HTTPException(404, "Watchlist not found.")
     wl = rows[0]
     wl.pop("client_hash", None)
+    wl.pop("deleted_at", None)
     return wl
 
 
@@ -427,7 +428,7 @@ async def watchlist_feed(wl_id: str) -> Response:
 async def delete_watchlist(wl_id: str) -> dict:
     await _get_watchlist(wl_id)
     async with httpx.AsyncClient(timeout=15) as client:
-        await _rpc(client, "delete_watchlist", {"p_id": wl_id})
+        await _rpc(client, "remove_watchlist", {"p_id": wl_id})
     return {"deleted": True}
 
 

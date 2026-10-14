@@ -17,7 +17,7 @@ export function num(v: number | null | undefined, digits = 1): string {
 
 export function words(s: string | null | undefined): string {
   if (!s) return "";
-  const t = s.replace(/_/g, " ");
+  const t = s.replace(/_/g, " ").replace(/\b(ipo|lp|gp|dfi|m and a)\b/gi, (m) => (m.toLowerCase() === "m and a" ? "M&A" : m.toUpperCase()));
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 

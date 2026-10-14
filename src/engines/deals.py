@@ -232,7 +232,7 @@ _GENERIC_TAIL = re.compile(r"\b(firms?|company|companies|startups?|producer|agen
                            r"retailer|distributor|carrier|airline|maker)$", re.IGNORECASE)
 _ALWAYS_GENERIC_TAIL = re.compile(r"\b(schools?|communities|students|scholarships?|scheme|programmes?|programs?|youth|"
                                   r"farmers|women|summit|conference|forum|awards?|event|week|plant|factory|now|today|campus|hostel|game|"
-                                  r"etfs?|etns?|aircraft|jets?|rights?|licen[cs]es?|title|tour|datacent(?:er|re)s?|data\s+cent(?:er|re)s?|"
+                                  r"etfs?|etns?|aircraft|jets?|king|giant|leader|champion|rights?|licen[cs]es?|title|tour|datacent(?:er|re)s?|data\s+cent(?:er|re)s?|"
                                   r"facilities|infrastructure|hospitals|roads?|devices)$",
                                   re.IGNORECASE)
 _GENERIC_RE = re.compile(r"^(?:(?:east|west|north|south|southern|central|sub-saharan)\s+)?africa(n)?$|"
