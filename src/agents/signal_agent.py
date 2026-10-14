@@ -53,14 +53,18 @@ from src.utils.paths import DATA_DIR
 from src.utils.storage import load_json, save_json
 
 # ─── LLM Provider Selection ───────────────────────────────────────────────────
-# Set DEAL_INTEL_PROVIDER=groq to use Groq/Llama (free, good for testing).
-# Default is Anthropic Claude (production quality). DEAL_INTEL_ANTHROPIC_MODEL and
-# DEAL_INTEL_EFFORT override the Claude model and its effort level.
-PROVIDER = os.getenv("DEAL_INTEL_PROVIDER", "anthropic").lower()
+# DEAL_INTEL_PROVIDER:
+#   auto (default)  every provider with a key, in order: Claude, then Groq. A failed
+#                   call (outage, rate limit, refusal) falls through to the next.
+#   anthropic|groq  that provider only.
+# DEAL_INTEL_ANTHROPIC_MODEL / DEAL_INTEL_EFFORT choose the Claude model and effort;
+# DEAL_INTEL_GROQ_MODEL the Groq model (with GROQ_FALLBACK_MODELS behind it).
+PROVIDER = os.getenv("DEAL_INTEL_PROVIDER", "auto").lower()
 
 ANTHROPIC_MODEL  = os.getenv("DEAL_INTEL_ANTHROPIC_MODEL", "claude-opus-5-5")
 ANTHROPIC_EFFORT = os.getenv("DEAL_INTEL_EFFORT", "high")
-GROQ_MODEL       = "llama-3.3-70b-versatile"
+GROQ_MODEL       = os.getenv("DEAL_INTEL_GROQ_MODEL", "openai/gpt-oss-120b")
+GROQ_FALLBACK_MODELS = ["qwen/qwen3.8-27b"]
 MODEL            = GROQ_MODEL if PROVIDER == "groq" else ANTHROPIC_MODEL
 
 # Thinking is always on for current Claude models and counts toward max_tokens,
@@ -68,18 +72,74 @@ MODEL            = GROQ_MODEL if PROVIDER == "groq" else ANTHROPIC_MODEL
 _THINKING_HEADROOM = 12000
 
 
-def _get_llm_client():
-    """Return (client, provider) tuple based on DEAL_INTEL_PROVIDER env var."""
-    if PROVIDER == "groq":
-        if not _GROQ_AVAILABLE:
-            raise RuntimeError("groq package not installed. Run: pip install groq")
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise RuntimeError("GROQ_API_KEY environment variable not set.")
-        return GroqClient(api_key=api_key), "groq"
+def _anthropic_client():
     if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
         raise RuntimeError("no LLM API key is configured (ANTHROPIC_API_KEY is not set).")
-    return anthropic.Anthropic(), "anthropic"
+    return anthropic.Anthropic()
+
+
+def _groq_client():
+    if not _GROQ_AVAILABLE:
+        raise RuntimeError("groq package not installed. Run: pip install groq")
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise RuntimeError("GROQ_API_KEY environment variable not set.")
+    return GroqClient(api_key=api_key)
+
+
+class LLMRouter:
+    """Several providers behind one call: each is tried in order until one answers."""
+
+    def __init__(self, providers: list[tuple[Any, str]]):
+        self.providers = providers
+        self.last_model: Optional[str] = None
+
+    @property
+    def name(self) -> str:
+        return "+".join(p for _, p in self.providers)
+
+    def call(self, system: str, user: str, max_tokens: int) -> str:
+        errors = []
+        for client, provider in self.providers:
+            try:
+                text = _call_llm_uncached(client, provider, system, user, max_tokens)
+                self.last_model = _last_model.get(provider)
+                return text
+            except Exception as e:                 # outage, rate limit, refusal: try the next
+                errors.append(f"{provider}: {e}")
+        raise RuntimeError("all LLM providers failed: " + "; ".join(errors))
+
+
+def _get_llm_client():
+    """
+    (client, provider) for DEAL_INTEL_PROVIDER. In auto mode with more than one
+    key, the client is an LLMRouter and provider is "router".
+    """
+    if PROVIDER == "groq":
+        return _groq_client(), "groq"
+    if PROVIDER == "anthropic":
+        return _anthropic_client(), "anthropic"
+    available, errors = [], []
+    for make, name in ((_anthropic_client, "anthropic"), (_groq_client, "groq")):
+        try:
+            available.append((make(), name))
+        except RuntimeError as e:
+            errors.append(str(e))
+    if not available:
+        raise RuntimeError("no LLM API key is configured (ANTHROPIC_API_KEY is not set, GROQ_API_KEY is not set).")
+    if len(available) == 1:
+        return available[0]
+    return LLMRouter(available), "router"
+
+
+# Model that served the latest call per provider (Groq may fall back between models).
+_last_model: dict[str, str] = {}
+
+
+def _model_label(client, provider: str) -> str:
+    if provider == "router":
+        return getattr(client, "last_model", None) or "unknown"
+    return _last_model.get(provider) or (GROQ_MODEL if provider == "groq" else ANTHROPIC_MODEL)
 
 
 # Identical requests return the stored reply, so re-running or replaying an analysis
@@ -91,7 +151,9 @@ _LLM_CACHE_MAX = 2000
 
 
 def _llm_cache_key(provider: str, system: str, user: str, max_tokens: int) -> str:
-    model = GROQ_MODEL if provider == "groq" else f"{ANTHROPIC_MODEL}|{ANTHROPIC_EFFORT}"
+    groq = f"{GROQ_MODEL}|{','.join(GROQ_FALLBACK_MODELS)}"
+    model = {"groq": groq, "router": f"{ANTHROPIC_MODEL}|{ANTHROPIC_EFFORT}>{groq}"}.get(
+        provider, f"{ANTHROPIC_MODEL}|{ANTHROPIC_EFFORT}")
     payload = json.dumps([provider, model, system, user, max_tokens], ensure_ascii=False)
     return hashlib.sha256(payload.encode()).hexdigest()
 
@@ -143,16 +205,30 @@ def _call_llm_uncached(client, provider: str, system: str, user: str, max_tokens
     Returns the response text string.
     Groq uses the OpenAI-compatible messages format; Anthropic uses its own.
     """
+    if provider == "router":
+        return client.call(system, user, max_tokens)
     if provider == "groq":
-        response = client.chat.completions.create(
-            model=GROQ_MODEL,
-            max_tokens=max_tokens,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user",   "content": user},
-            ],
-        )
-        return response.choices[0].message.content or ""
+        errors = []
+        for model in [GROQ_MODEL, *[m for m in GROQ_FALLBACK_MODELS if m != GROQ_MODEL]]:
+            try:
+                response = client.chat.completions.create(
+                    model=model,
+                    # gpt-oss reasons before answering; leave room for it on top of the reply.
+                    max_tokens=max_tokens + 4000,
+                    messages=[
+                        {"role": "system", "content": system},
+                        {"role": "user",   "content": user},
+                    ],
+                )
+            except Exception as e:            # model retired or overloaded: try the next
+                errors.append(f"{model}: {e}")
+                continue
+            text = response.choices[0].message.content or ""
+            if text.strip():
+                _last_model["groq"] = model
+                return text
+            errors.append(f"{model}: empty reply")
+        raise RuntimeError("Groq failed: " + "; ".join(errors))
     else:
         response = client.beta.messages.create(
             model=ANTHROPIC_MODEL,
@@ -170,6 +246,8 @@ def _call_llm_uncached(client, provider: str, system: str, user: str, max_tokens
         if response.stop_reason == "max_tokens":
             raise RuntimeError("Claude response hit max_tokens; output truncated")
         # The response can begin with thinking blocks; read text blocks by type.
+        served = getattr(response, "model", None)
+        _last_model["anthropic"] = served if isinstance(served, str) and served else ANTHROPIC_MODEL
         return "".join(b.text for b in response.content if b.type == "text")
 
 _SEVERITY_RANK = {Severity.LOW: 0, Severity.MEDIUM: 1, Severity.HIGH: 2, Severity.CRITICAL: 3}
@@ -608,7 +686,7 @@ class BriefSynthesisAgent:
         state.brief = AnalystBrief(
             company_name=company, ticker=ticker,
             analyst_model=("deterministic engine only (LLM unavailable)" if narrative_error
-                           else GROQ_MODEL if self.provider == "groq" else ANTHROPIC_MODEL),
+                           else _model_label(self.client, self.provider)),
             executive_summary=_text("executive_summary", (
                 f"Narrative synthesis unavailable. {len(state.detected_signals)} signal(s) were "
                 f"confirmed by the deterministic engine and are listed below."

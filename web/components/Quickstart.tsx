@@ -12,6 +12,7 @@ const TABS = [
       "cd deal-intelligence-agent",
       "pip install -r requirements.txt",
       "export ANTHROPIC_API_KEY=sk-ant-...   # optional",
+      "export GROQ_API_KEY=gsk_...          # optional, used too",
     ],
   },
   {
@@ -64,9 +65,8 @@ export function Quickstart() {
           lede={
             <>
               The hosted app is the quickest start. The same pipeline runs locally in Python with no database to set
-              up. It uses Claude by default, or Llama through Groq with{" "}
-              <code className="kbd text-[color:var(--text)]">--provider groq</code>. Without either key you still get the
-              deterministic brief.
+              up. It uses Claude and Groq, whichever keys you set, falling back from one to the other. Without either key you
+              still get the deterministic brief.
             </>
           }
         />

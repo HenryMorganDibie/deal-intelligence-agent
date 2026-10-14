@@ -2561,14 +2561,12 @@ class TestAfricanSourcesExpansion:
 # ─── LLM Provider (Groq + Anthropic) ─────────────────────────────────────────
 
 class TestLLMProvider:
-    def test_default_provider_is_anthropic(self):
-        import os
-        os.environ.pop("DEAL_INTEL_PROVIDER", None)
-        # Re-import to pick up default
+    def test_default_provider_is_auto(self, monkeypatch):
+        monkeypatch.delenv("DEAL_INTEL_PROVIDER", raising=False)
         import importlib
         import src.agents.signal_agent as sa
         importlib.reload(sa)
-        assert sa.PROVIDER == "anthropic"
+        assert sa.PROVIDER == "auto"
         assert sa.MODEL == sa.ANTHROPIC_MODEL
 
     def test_groq_provider_sets_model(self, monkeypatch):
@@ -2577,8 +2575,6 @@ class TestLLMProvider:
         importlib.reload(sa)
         assert sa.PROVIDER == "groq"
         assert sa.MODEL == sa.GROQ_MODEL
-        assert "llama" in sa.GROQ_MODEL.lower()
-        # Reset
         monkeypatch.delenv("DEAL_INTEL_PROVIDER", raising=False)
         importlib.reload(sa)
 
@@ -2586,9 +2582,42 @@ class TestLLMProvider:
         import src.agents.signal_agent as sa
         assert "claude" in sa.ANTHROPIC_MODEL.lower()
 
-    def test_groq_model_is_versatile(self):
+    def test_groq_default_model_is_current(self):
+        """llama-3.3-70b-versatile was retired by Groq; the default must be a live model."""
         import src.agents.signal_agent as sa
-        assert sa.GROQ_MODEL == "llama-3.3-70b-versatile"
+        assert sa.GROQ_MODEL == "openai/gpt-oss-120b"
+        assert "llama-3.3-70b-versatile" not in [sa.GROQ_MODEL, *sa.GROQ_FALLBACK_MODELS]
+
+    def test_auto_uses_every_configured_provider(self, monkeypatch):
+        import src.agents.signal_agent as sa
+        monkeypatch.setattr(sa, "PROVIDER", "auto")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "a"); monkeypatch.setenv("GROQ_API_KEY", "g")
+        client, provider = sa._get_llm_client()
+        assert provider == "router" and [p for _, p in client.providers] == ["anthropic", "groq"]
+        monkeypatch.delenv("ANTHROPIC_API_KEY")
+        assert sa._get_llm_client()[1] == "groq"            # only Groq configured
+        monkeypatch.delenv("GROQ_API_KEY")
+        with pytest.raises(RuntimeError, match="no LLM API key"):
+            sa._get_llm_client()
+
+    def test_router_falls_back_to_groq(self):
+        import src.agents.signal_agent as sa
+        claude = MagicMock(); claude.beta.messages.create.side_effect = RuntimeError("overloaded")
+        groq = MagicMock()
+        msg = MagicMock(); msg.message.content = "from groq"
+        groq.chat.completions.create.return_value = MagicMock(choices=[msg])
+        router = sa.LLMRouter([(claude, "anthropic"), (groq, "groq")])
+        assert router.call("s", "u", 100) == "from groq"
+        assert router.last_model == sa.GROQ_MODEL
+        assert sa._model_label(router, "router") == sa.GROQ_MODEL
+
+    def test_groq_falls_back_between_models(self):
+        import src.agents.signal_agent as sa
+        groq = MagicMock()
+        msg = MagicMock(); msg.message.content = "ok"
+        groq.chat.completions.create.side_effect = [RuntimeError("model_decommissioned"), MagicMock(choices=[msg])]
+        assert sa._call_llm_uncached(groq, "groq", "s", "u", 100) == "ok"
+        assert sa._last_model["groq"] == sa.GROQ_FALLBACK_MODELS[0]
 
     @staticmethod
     def _anthropic_client(*blocks, stop_reason="end_turn"):
@@ -2668,12 +2697,13 @@ class TestLLMProvider:
         assert mock_client.beta.messages.create.called
         assert not mock_client.chat.completions.create.called
 
-    def test_get_llm_client_returns_anthropic_by_default(self, monkeypatch):
+    def test_get_llm_client_returns_anthropic_when_only_claude_is_configured(self, monkeypatch):
         import importlib, src.agents.signal_agent as sa
         monkeypatch.delenv("DEAL_INTEL_PROVIDER", raising=False)
         importlib.reload(sa)
-        # With no GROQ_API_KEY set, default should try anthropic
-        assert sa.PROVIDER == "anthropic"
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "a")
+        monkeypatch.delenv("GROQ_API_KEY", raising=False)
+        assert sa._get_llm_client()[1] == "anthropic"
 
     def test_groq_raises_without_api_key(self, monkeypatch):
         monkeypatch.setenv("DEAL_INTEL_PROVIDER", "groq")

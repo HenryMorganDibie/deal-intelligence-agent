@@ -61,7 +61,8 @@ Optional configuration:
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `DEAL_INTEL_PROVIDER` | `anthropic` | `groq` to use Llama via Groq (needs `GROQ_API_KEY`) |
+| `DEAL_INTEL_PROVIDER` | `auto` | `auto` uses every provider with a key, Claude first then Groq, falling through on any failure; `anthropic` or `groq` to pin one |
+| `DEAL_INTEL_GROQ_MODEL` | `openai/gpt-oss-120b` | Groq model (falls back to `qwen/qwen3.8-27b`) |
 | `DEAL_INTEL_ANTHROPIC_MODEL` | `claude-opus-5-5` | Claude model for explanation and synthesis |
 | `DEAL_INTEL_EFFORT` | `high` | Claude effort level (`low`, `medium`, `high`, `xhigh`, `max`) |
 | `DEAL_INTEL_WEBHOOK_URL` | unset | Default webhook for monitoring alerts |

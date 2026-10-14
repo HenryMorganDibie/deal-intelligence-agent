@@ -45,8 +45,8 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--output",     choices=["terminal","json","markdown"], default="terminal")
     a.add_argument("--out-file",   default=None)
     a.add_argument("--compliance", action="store_true")
-    a.add_argument("--provider",   choices=["anthropic","groq"], default=None,
-                   help="LLM provider: anthropic (default) or groq (free, llama-3.3-70b-versatile)")
+    a.add_argument("--provider",   choices=["auto","anthropic","groq"], default=None,
+                   help="LLM provider: auto (default: Claude then Groq, whichever keys are set), anthropic or groq")
 
     # ── feedback ─────────────────────────────────────────────────────────────
     f = sub.add_parser("feedback", help="Analyst feedback and signal precision stats")
@@ -176,7 +176,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 async def _run_analysis(args: argparse.Namespace) -> None:
     # Set provider before importing agents: signal_agent reads it at import time.
-    provider = getattr(args, "provider", None) or os.getenv("DEAL_INTEL_PROVIDER", "anthropic")
+    provider = getattr(args, "provider", None) or os.getenv("DEAL_INTEL_PROVIDER", "auto")
     os.environ["DEAL_INTEL_PROVIDER"] = provider
 
     from src.schemas.models import AnalysisRequest, SignalType

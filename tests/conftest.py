@@ -39,6 +39,9 @@ def isolated_data_dir(tmp_path, monkeypatch):
     for module_name, attr, filename in _STORES:
         module = importlib.import_module(module_name)
         monkeypatch.setattr(module, attr, data_dir / filename)
+    # No real LLM keys from the environment: tests set the ones they need.
+    for key in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "GROQ_API_KEY"):
+        monkeypatch.delenv(key, raising=False)
     # Keep tests offline and deterministic: no live market-cap lookups.
     monkeypatch.setattr(importlib.import_module("src.engines.alpha_scorer"), "_market_cap_usd", lambda ticker: None)
     # Cached singletons hold data loaded from the previous test's store.

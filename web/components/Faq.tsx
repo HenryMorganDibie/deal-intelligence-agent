@@ -3,7 +3,7 @@ import { Container, Heading, Reveal, Section } from "./primitives";
 const FAQ = [
   {
     q: "Does it need an LLM?",
-    a: "No. Detection, calibration, scoring, attribution and compound events are deterministic. Without a key the brief is built from those findings, labelled as such and flagged for human review. With Claude (or Llama via Groq) you also get analyst-language headlines, reasoning, an executive summary and an attribution check.",
+    a: "No. Detection, calibration, scoring, attribution and compound events are deterministic. Without a key the brief is built from those findings, labelled as such and flagged for human review. With Claude or Groq you also get analyst-language headlines, reasoning, an executive summary and an attribution check.",
   },
   {
     q: "Can the LLM change a signal?",
@@ -11,7 +11,7 @@ const FAQ = [
   },
   {
     q: "Which model does it use?",
-    a: "Claude Opus 5.5 by default. Set DEAL_INTEL_ANTHROPIC_MODEL to use another Claude model (for example Sonnet 5.5 at about half the cost), DEAL_INTEL_EFFORT to change the effort level, or --provider groq for Llama. The audit log records which model actually ran.",
+    a: "Claude and Groq, with no lock-in to either. Every provider with a key is used in order, Claude first, then Groq (gpt-oss-120b, with Qwen behind it); if one fails, the next answers. Set DEAL_INTEL_PROVIDER to pin one. Each brief and the audit log record which model actually wrote it.",
   },
   {
     q: "Is this investment advice?",
