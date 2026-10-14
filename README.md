@@ -1,8 +1,26 @@
 # Deal Intelligence Agent
 
-An autonomous multi-agent deal intelligence system for **US and African markets**. Deterministic signal engine + LLM explanation layer + compound event detection + alpha scoring + backtesting + portfolio intelligence + real-time monitoring + entity resolution + institutional audit trail.
+An autonomous multi-agent deal intelligence system for **US and African markets**, covering all 54 African countries. Deterministic signal engine + LLM explanation layer (Claude and Groq) + compound event detection + alpha scoring + backtesting + deals database + investors and funds + company financials + country, currency and sector risk + source-grounded research + monitoring and alerts + institutional audit trail.
 
-Built for PE firms, credit analysts, hedge funds, and corporate finance teams.
+Built for PE firms, credit analysts, research houses, hedge funds, and corporate finance teams.
+
+---
+
+## What It Covers
+
+| Capability | What it does | Where |
+|---|---|---|
+| **Company profiles and financial statements** | NGX and NSE Kenya audited statements parsed from the filed PDFs (Group current and prior year) and checked with accounting identities, each figure marked verified, inconsistent or unchecked; Yahoo Finance statements and multiples for JSE, EGX, Casablanca, US and European listings, cross-checked against SEC XBRL for SEC filers; exchange profile (board, auditor, sector) | `financials.py`, `company_profile.py` |
+| **PE, VC, debt and M&A transactions** | 1,700+ deals over two years across 48 countries, extracted daily from African business and private-capital publications in English, French and Portuguese: type, parties, amount in USD (at the year's official rate), stake, round, stage, sector, country, every source linked | `deals.py`, `market_feed.py` |
+| **Investors, funds, LPs and GP activity** | Every party gets a role (investor, lender, acquirer, seller, LP, GP); a registry of Africa-focused DFIs, multilaterals, PE, VC, sovereign and pension investors resolves name variants (BII = CDC Group, BAD = AfDB); profiles, leaderboards, fund closes with their LPs | `investors.py` |
+| **Valuations and comparable deals** | Reported and stake-implied valuations, comparables scored on sector, type, country and size with size and valuation quartiles, listed multiples | `deals.py`, `market_risk.py` |
+| **Country, currency and sector risk** | All 54 countries: a 0 to 100 score from World Bank governance and macro indicators with every component and formula shown; 42 currencies: regime, spot vs official, depreciation, volatility; sector risk from the balance of adverse events and deal flow | `country_risk.py`, `market_risk.py` |
+| **Research reports and source-grounded AI search** | Questions answered only from numbered evidence (deals, events, risk, investors, live news); citations checked, invalid ones removed, uncited sentences reported; country and sector reports | `research.py` |
+| **Corporate event monitoring and alerts** | Daily feed of corporate events and deals across all 54 countries; watchlists by company, country and event type with an RSS feed and webhooks | `market_feed.py`, `watch.py` |
+| **Historical outcomes and signal evaluation** | Walk-forward backtest (46 companies, 18 months), precision vs base rate (lift), recall, price hit rates, severity breakdown; live briefs labelled daily | `historical_backtest.py`, [docs/BACKTEST.md](docs/BACKTEST.md) |
+| **Data coverage and verification by country** | For each country: prices, statements, filings, news edition and languages, regulators, risk-data coverage, deals and events, and a verification tier (A, B, C) | `coverage.py` |
+
+Data is what public sources carry: undisclosed private deals that no one reports cannot appear, and most African exchanges outside NGX and NSE Kenya publish no machine-readable filings (they are tier C). The coverage page states this per country.
 
 ---
 
@@ -28,7 +46,7 @@ Built for PE firms, credit analysts, hedge funds, and corporate finance teams.
 | Graph intelligence | None | NetworkX entity graph + contagion risk detection |
 | Monitoring | None | Continuous watchlist + Slack/webhook alerting |
 | Replay | None | Deterministic as-of-date historical reproduction |
-| African markets | None | 49 RSS feeds, 7 exchanges, 48 PE/DFI/regulatory sources |
+| African markets | None | All 54 countries: national news editions in their languages, every regulator and central bank, 49 RSS feeds, 48 PE/DFI/regulatory sources |
 
 ---
 
@@ -70,6 +88,22 @@ Optional configuration:
 If the LLM is unavailable (no key, outage, or a declined request), the brief is still
 produced from the deterministic engine's findings, labelled as such and flagged for
 human review.
+
+### Deals, Countries, Research, Companies
+
+```bash
+python main.py deals --ingest                       # read every feed now (54 countries)
+python main.py deals --backfill 24                  # two years of history (date-restricted searches)
+python main.py deals --search Moniepoint --country NG
+python main.py deals --reextract                    # re-apply the extractor to the kept headlines
+python main.py deals --upload                       # push to the hosted database
+python main.py countries                            # risk ranking for the 54 countries
+python main.py countries --country SN               # risk components and currency for one country
+python main.py countries --refresh                  # re-download World Bank indicators (slow)
+python main.py research "Which Kenyan fintechs raised money this year, and from whom?"
+python main.py profile --company "Dangote Cement" --ticker DANGCEM.LG
+python main.py analyse --company Sonatel --country SN
+```
 
 ### Core Analysis
 
@@ -171,15 +205,18 @@ function that reuses this repository's code unchanged.
 | Piece | Where | Notes |
 |---|---|---|
 | Web | Vercel project, root directory `web/` | `NEXT_PUBLIC_API_URL`, optional `NEXT_PUBLIC_SITE_URL` |
-| API | Vercel project, repository root (`vercel.json`) | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `DEAL_INTEL_API_SECRET`, `ALLOWED_ORIGINS`, optional `ANTHROPIC_API_KEY`, `DEAL_INTEL_PER_VISITOR_DAILY` (10), `DEAL_INTEL_GLOBAL_DAILY` (300) |
-| Storage | Supabase | `briefs` and `runs` tables behind functions (`supabase/migrations/`) |
+| API | Vercel project, repository root (`vercel.json`) | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `DEAL_INTEL_API_SECRET`, `ALLOWED_ORIGINS`, `CRON_SECRET`, `DEAL_INTEL_APP_URL`, `ANTHROPIC_API_KEY` and/or `GROQ_API_KEY`, `DEAL_INTEL_PER_VISITOR_DAILY` (10), `DEAL_INTEL_GLOBAL_DAILY` (300) |
+| Storage | Supabase | briefs, runs, outcomes, prices, LLM cache, deals, events and watchlists behind functions (`supabase/migrations/`) |
+| Crons | Vercel (daily) | `/api/cron/ingest` reads every feed into deals and events and delivers webhooks; `/api/cron/label` labels brief outcomes and snapshots NGX/NSE prices |
+
+App pages: Briefs, Research, Deals, Investors, Companies, Countries, Alerts, Coverage, Evaluation. The API routes are listed at the top of `src/hosted_market.py`.
 
 Writes go through database functions that require `DEAL_INTEL_API_SECRET`, which only the
 API holds, so the public key can read a brief by its id and nothing else. Visitors are
 counted by a salted hash of their IP (never the IP itself) for the daily limits. To see
 usage, run `select * from private.daily_usage;` in the Supabase SQL editor (runs, distinct
 visitors, completed and failed per day); page views are in Vercel Web Analytics. Without
-`ANTHROPIC_API_KEY` briefs come from the deterministic engine only and say so.
+an LLM key (Claude or Groq) briefs and research answers come from the deterministic engine only and say so.
 
 Local development:
 
@@ -223,7 +260,12 @@ deal-intelligence-agent/
 ├── README.md
 ├── ARCHITECTURE.md                      # Full technical reference + honest limitations
 ├── supabase/migrations/                 # hosted app schema (briefs, runs, outcomes)
+├── docs/BACKTEST.md                     # historical backtest report (+ backtest_summary.json)
 ├── src/
+│   ├── hosted_market.py                # API routes: countries, deals, investors, companies, research, alerts
+│   ├── data/
+│   │   ├── africa_countries.py         # the 54 countries: codes, languages, currency, exchange, regulators
+│   │   └── country_indicators.json     # World Bank governance and macro snapshot (committed)
 │   ├── schemas/models.py               # All Pydantic types (25+ models)
 │   ├── engines/                        # 21 deterministic intelligence engines
 │   │   ├── deterministic_engine.py     # 70+ rules, NER, credibility
@@ -247,7 +289,18 @@ deal-intelligence-agent/
 │   │   ├── portfolio.py               # Portfolio risk aggregation
 │   │   ├── entity_resolver.py         # Canonical registry + LEI/CIK/alias
 │   │   ├── graph_intelligence.py      # NetworkX entity graph + contagion
-│   │   └── monitoring.py              # Watchlist + Slack/webhook alerts
+│   │   ├── monitoring.py              # Watchlist + Slack/webhook alerts (CLI)
+│   │   ├── deals.py                   # deal extraction, merging, search, comparables
+│   │   ├── market_feed.py             # daily feed: 54-country searches + RSS -> deals and events
+│   │   ├── investors.py               # investor registry, roles, profiles, funds and LPs
+│   │   ├── financials.py              # statement parsing (NGX, NSE Kenya PDFs), Yahoo, SEC XBRL, checks
+│   │   ├── company_profile.py         # company profiles: identity, market, statements, private markets
+│   │   ├── country_risk.py            # 54-country risk scores from World Bank indicators
+│   │   ├── market_risk.py             # currency risk, sector risk, valuation view
+│   │   ├── research.py                # source-grounded research and reports
+│   │   ├── watch.py                   # watchlist matching, RSS, webhooks
+│   │   ├── coverage.py                # coverage and verification tier per country
+│   │   └── historical_backtest.py     # walk-forward historical backtest
 │   ├── tools/
 │   │   ├── edgar_tool.py              # SEC EDGAR API
 │   │   ├── africa_tool.py             # 49 feeds + 48 PE/institutional sources
@@ -272,7 +325,8 @@ deal-intelligence-agent/
 │   └── alerts.json                    # Alert history
 └── tests/
     ├── conftest.py                    # Redirects every data store to a per-test temp dir
-    └── test_all.py                    # 373 tests across all layers
+    ├── test_all.py                    # pipeline, engines, API
+    └── test_africa_data.py            # countries, risk, deals, investors, financials, research, alerts
 ```
 
 ---
@@ -281,10 +335,10 @@ deal-intelligence-agent/
 
 ```bash
 pip install -r requirements-dev.txt
-pytest tests/test_all.py -v
+pytest -q
 ```
 
-**373 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration, automatic outcome labelling (benchmark-adjusted returns, SEC ground truth, recall), French-language detection, the hosted API.
+**520 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration, automatic outcome labelling (benchmark-adjusted returns, SEC ground truth, recall), French-language detection, the hosted API, the 54-country registry, country and currency risk formulas, deal extraction (amounts, roles, stages, rejection of non-deals) in three languages, investor roles, statement parsing and accounting checks, citation validation, watchlist matching and webhook safety, coverage tiers.
 
 ---
 

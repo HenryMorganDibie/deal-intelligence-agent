@@ -85,7 +85,11 @@ def parse_question(q: str, today: Optional[date] = None) -> dict:
         if countries_in_text(phrase) or inv.canonical(phrase) in investors or phrase.lower() in _STOP:
             continue
         companies.append(phrase)
-    return {"countries": countries, "deal_types": types, "sectors": sectors, "investors": investors,
+    kinds = [k for k, rx in (("dfi", r"\b(dfis?|development\s+finance)\b"), ("multilateral", r"\bmultilateral"),
+                             ("private_equity", r"\bprivate\s+equity\b|\bpe\s+firms?\b"),
+                             ("venture_capital", r"\bventure\s+capital|\bvcs?\b"), ("sovereign", r"\bsovereign\s+wealth"))
+             if re.search(rx, q, re.IGNORECASE)]
+    return {"countries": countries, "deal_types": types, "sectors": sectors, "investors": investors, "investor_kinds": kinds,
             "companies": companies[:4], "since": since.isoformat() if since else None,
             "until": until.isoformat() if until else None, "terms": _terms(q)}
 
@@ -104,12 +108,23 @@ def _fmt_usd(v: Optional[float]) -> str:
     return f"${v:,.0f}"
 
 
+_KIND_LABEL = {"dfi": "development finance institution", "multilateral": "multilateral development bank",
+               "private_equity": "private equity firm", "venture_capital": "venture capital firm", "growth": "growth investor",
+               "sovereign": "sovereign wealth fund", "pension": "pension fund", "accelerator": "accelerator"}
+
+
+def _who(name: str) -> str:
+    """Name with its registry type, so the model need not know who a DFI is."""
+    entry = inv.registry_entry(name)
+    return f"{name} ({_KIND_LABEL.get(entry.kind, entry.kind)})" if entry else name
+
+
 def _deal_text(d: dict) -> str:
     parts = [f"{d['deal_type'].replace('_', ' ')} ({d.get('stage')})", f"target: {d.get('target') or 'n/a'}"]
     if d.get("buyer"):
-        parts.append(f"buyer/lead/lender: {d['buyer']}")
+        parts.append(f"buyer/lead/lender: {_who(d['buyer'])}")
     if d.get("investors"):
-        parts.append(f"investors: {', '.join(d['investors'][:6])}")
+        parts.append(f"investors: {', '.join(_who(n) for n in d['investors'][:6])}")
     parts.append(f"amount: {_fmt_usd(d.get('amount_usd'))}")
     if d.get("round"):
         parts.append(f"round: {d['round']}")
@@ -163,6 +178,10 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             continue
         if p["investors"] and not set(p["investors"]) & {n for n, _ in inv.parties(d)}:
             continue
+        if p["investor_kinds"]:
+            kinds = set(p["investor_kinds"]) | ({"multilateral"} if "dfi" in p["investor_kinds"] else set())
+            if not any((inv.registry_entry(n) or inv.Investor("", "", "")).kind in kinds for n, _ in inv.parties(d)):
+                continue
         if p["companies"] and not any(deals_mod.normalise_name(c) in deals_mod.normalise_name(_deal_text(d))
                                       for c in p["companies"]):
             if not (p["countries"] or p["sectors"] or p["deal_types"] or p["investors"]):

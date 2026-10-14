@@ -164,10 +164,14 @@ observed precision for the company's own market once a signal type has 10 outcom
 so African severities calibrate on African results rather than US base rates. JSE outcomes
 are benchmark-adjusted.
 
-**Remains.** There is no African equivalent of SEC filing-based confirmation, so African
-outcomes are labelled from price reaction (and analyst feedback) only, and NGX / NSE Kenya
-returns are raw because Yahoo carries no reliable index for them. Until 10 African outcomes
-accumulate per signal type, treat African severities with the static tables' caution.
+**Since done.** African outcomes are also confirmed by NGX and NSE Kenya disclosures and by
+credible news (credibility 0.70 or more, completion language, company as subject), and NGX
+and NSE Kenya prices come from the exchanges themselves (benchmarked to the NGX ASI and
+NSE NASI) with a daily snapshot building their history.
+
+**Remains.** Until 10 African outcomes accumulate per signal type, treat African severities
+with the static tables' caution. The historical backtest's African sample is small (see
+docs/BACKTEST.md).
 
 ### 3. LLM non-determinism
 **Done.** Identical LLM requests (same provider, model, effort, prompts and token budget)
@@ -201,9 +205,11 @@ résultats, démission du directeur général, franchissement de seuil, sanction
 CREPMF, AMF-UMOA, AMMC, COBAC and others), French clause splitting and pronouns for
 attribution, FCFA/XOF/MAD/TND amounts, and French news search for francophone Africa.
 
+**Since done.** Portuguese and Arabic rules and news search; every national regulator and
+central bank of the 54 countries is matched by the regulatory-action rules.
+
 **Remains.** Detection is still patterns, not a trained model: unusual phrasings can be
-missed, and Arabic (EGX, parts of the Maghreb) and Portuguese (Mozambique, Angola) are not
-covered. A FinBERT-style model would raise recall but does not fit the hosted function's
+missed. A FinBERT-style model would raise recall but does not fit the hosted function's
 size limit, so it belongs in a separate service.
 
 ---
@@ -248,13 +254,53 @@ A news item must name the company, and the triggering phrase must be about it:
 It remains a heuristic: a back-reference after a clause the company did not lead is not
 followed, trading a little recall for precision.
 
+### 12. Deals database: extracted from reporting
+Deals are extracted by rules from headlines (English, French, Portuguese), with every
+source linked. Audits of random samples of 40 found about 75 to 80% fully correct and
+about 90% genuine transactions; the errors are mostly a wrong deal type or a generic
+counterparty name. Amounts are as reported, converted at the deal year's average official
+rate. Undisclosed deals that no one reports cannot appear, and a headline that names no
+African country or Africa is not placed. Raw headlines are kept, so an improved extractor
+is re-applied with `deals --reextract`.
+
+### 13. Financial statements: parsed, then checked
+NGX and NSE Kenya statements are parsed from the filed PDFs: each line item's first two
+figure columns are taken as the Group's current and prior year. Layouts vary, so every
+figure carries a status from accounting identities (verified, inconsistent, unchecked) and
+a statement is marked verified only when every check passes. Interim statements are listed
+but not parsed (their column order varies). Other exchanges have no machine-readable
+filings; Yahoo Finance covers JSE, EGX, Casablanca and foreign listings.
+
+### 14. Country risk: public, annual data
+Scores use World Bank indicators (annual, often a year old) and live spot FX; there is no
+sovereign rating or bond-spread input, which are licensed. Components without data are
+dropped and the weights re-normalised; the coverage figure says how much was available.
+
+### 15. Research answers: grounded, not infallible
+The LLM writes only from numbered evidence, invalid citations are removed and uncited
+sentences are reported, but a cited sentence can still paraphrase its source loosely.
+Every answer lists its evidence so a reader can check.
+
+### 16. Coverage is uneven across the 54 countries
+Every country gets news search in its languages, deals, events, regulators and country
+risk. Machine-readable filings and prices exist for NGX and NSE Kenya (tier A), vendor data
+for JSE, EGX and Casablanca (tier B); the other 49 are news-only (tier C). The coverage
+page states this per country.
+
 ---
 
 ## CLI Command Reference
 
 ```bash
 # Analysis
-python main.py analyse --company "GTBank" --ticker GTCO [--compliance] [--output json|markdown]
+python main.py analyse --company "GTBank" --ticker GTCO [--country NG] [--compliance] [--output json|markdown]
+
+# Deals, countries, research, companies
+python main.py deals --ingest | --backfill 24 | --reextract | --upload | --search TEXT [--country NG]
+python main.py countries [--country SN] [--refresh]
+python main.py research "QUESTION" [--no-news]
+python main.py profile --company "Dangote Cement" --ticker DANGCEM.LG
+python main.py backtest --historical --start 2024-01-15 --end 2025-06-15
 
 # Backtesting
 python main.py backtest --synthetic          # framework demo
@@ -340,6 +386,14 @@ python main.py registry --show credit_risk
 | ML severity model | Trained outcome model replacing base rate tables | Next |
 | Live market data (pro) | Bloomberg/Refinitiv for full coverage | Next |
 | Hosted app | Open-access web app with shareable briefs (Next.js + Vercel) | ✅ Done |
+| All 54 African countries | Registry, national news editions and languages, regulators, coverage tiers | ✅ Done |
+| Deals database | PE, VC, debt, M&A, fund closes, exits, IPOs from 54-country feeds, two-year backfill | ✅ Done |
+| Investors and funds | Roles, registry, profiles, LPs and GP activity | ✅ Done |
+| Company financials | Verified NGX / NSE Kenya statements, Yahoo, SEC cross-check | ✅ Done |
+| Country, currency, sector risk | World Bank-based scores, currency regimes, sector event balance | ✅ Done |
+| Grounded research | Cited answers, checked citations, country and sector reports | ✅ Done |
+| Monitoring and alerts | Daily event feed, watchlists, RSS, webhooks | ✅ Done |
+| Historical backtest | Walk-forward replay, lift vs base rate, severity breakdown | ✅ Done |
 | Research dashboard | Risk timelines, heatmaps, replay UI | Next |
 | Multi-user team mode | Shared watchlists, portfolio briefs, role-based access | Planned |
 | Proprietary dataset | Structured event intelligence dataset for model training | Long-term |

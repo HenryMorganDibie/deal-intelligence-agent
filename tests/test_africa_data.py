@@ -537,3 +537,12 @@ def test_lender_borrower_and_fund_purpose(title, expected):
 ])
 def test_rights_capex_and_sovereign_finance_are_not_deals(title):
     assert _deal(title) is None
+
+
+def test_research_filters_and_labels_investor_types():
+    deals = [_deal("Kenya's ARC Ride raises $5m from Proparco"),
+             _deal("Kenyan neobank Cloud9 raises $500,000 from crypto accelerator Alliance")]
+    p, items = rs.retrieve("Which development finance institutions invested in Kenya?", deals, [], live_news=False)
+    assert p["investor_kinds"] == ["dfi"]
+    texts = [i["text"] for i in items if i["kind"] == "deal"]
+    assert len(texts) == 1 and "Proparco (development finance institution)" in texts[0]
