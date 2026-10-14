@@ -19,7 +19,7 @@ const limits = (q: Quality | null) => [
   },
   {
     title: "Some signals beat chance, some do not",
-    body: "In the backtest only leadership-change flags clearly beat their base rate; regulatory and distress flags look better than chance but on samples too small to be sure, and M&A and credit flags do not. Confirming an event is not the same as a profitable price move, which is measured separately.",
+    body: "Across about 1,300 companies every confirmable type beats its base rate, but rare events (credit, distress, regulatory) still confirm under one time in ten, and common ones (leadership changes) beat chance only modestly. Confirming an event is not a profitable price move: measured market reactions are indistinguishable from zero.",
   },
   {
     title: "Country risk uses public data",

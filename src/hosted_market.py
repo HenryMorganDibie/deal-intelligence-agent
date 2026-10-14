@@ -519,6 +519,7 @@ def _backtest_freshness() -> Optional[dict]:
         return None
     return {"generated_at": r.get("generated_at"), "start": d.get("start"), "end": d.get("end"),
             "companies": d.get("companies"), "universe_size": d.get("universe_size"),
+            "not_yet_run": d.get("not_yet_run", 0),
             "schedule": (r.get("refresh") or {}).get("schedule", "monthly, on the 2nd (UTC)"),
             "next": next_refresh(datetime.now(timezone.utc).date()).isoformat()}
 

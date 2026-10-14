@@ -195,6 +195,7 @@ def build(result: dict) -> dict:
         "design": {"start": result["start"], "end": result["end"], "as_of_dates": result["as_of_dates"],
                    "companies": {"us": by_market.get("us", 0), "africa": by_market.get("africa", 0)},
                    "universe_size": result.get("universe_size"), "uncovered_companies": result.get("uncovered_companies"),
+                   "not_yet_run": result.get("missing_companies", 0),
                    "company_months": months, "lookback_days": LOOKBACK_DAYS, "horizon_days": HORIZON_DAYS,
                    "reproduce": "python main.py backtest --historical (network; responses cached in data/hist_cache), "
                                 "then python main.py backtest --evaluation. Data-quality and attribution sets: "
@@ -208,12 +209,26 @@ def build(result: dict) -> dict:
             "spearman_alpha_vs_confirmed": av.get("spearman_alpha_vs_confirmed"),
             "bands": bands,
             "by_type": av.get("by_type"),
-            "reading": "A rising confirmation rate across alpha thirds shows the ranking orders flags by how often the "
-                       "event happened. It does not show that acting on high-alpha flags earns returns: see the market "
-                       "reaction columns, which are measured separately and include no costs.",
+            "reading": _alpha_reading(bands),
         },
         "rules": RULES,
     }
+
+
+def _alpha_reading(bands: dict) -> str:
+    """Say what the alpha thirds actually show in this run, not what they would show if they rose."""
+    rate = {k: ((bands.get(k) or {}).get("event_confirmation") or {}).get("value") for k in ("low", "middle", "high")}
+    if None in rate.values():
+        shape = "Too few labelled flags in some third to read a trend."
+    elif rate["low"] < rate["middle"] < rate["high"]:
+        shape = "Confirmation rises from the lowest to the highest third, so the ranking orders flags by how often the event happened."
+    elif rate["high"] > rate["low"] and rate["middle"] > rate["low"]:
+        shape = ("The top two thirds confirm far more often than the lowest third, but the highest third does not beat the "
+                 "middle one: the score separates weak flags from the rest, not the best from the good.")
+    else:
+        shape = "Confirmation does not rise with alpha in this run, so the ranking does not order flags by outcome."
+    return (shape + " None of this shows that acting on high-alpha flags earns returns: see the market reaction columns, "
+            "which are measured separately and include no costs.")
 
 
 def predictions_csv(result: dict) -> str:

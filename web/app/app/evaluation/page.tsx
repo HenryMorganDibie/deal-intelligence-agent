@@ -36,6 +36,8 @@ type SignalReport = {
     horizon_days: number;
     reproduce: string;
     universe_size?: number | null;
+    uncovered_companies?: Record<string, number> | null;
+    not_yet_run?: number | null;
   };
   funnel: Record<string, number | string>;
   by_type: Record<string, { price_only: boolean } & Record<Market, TypeRow>>;
@@ -186,6 +188,17 @@ function Freshness({ r, live }: { r: SignalReport; live: number }) {
           {r.design.companies.us.toLocaleString("en-US")} US, {r.design.companies.africa.toLocaleString("en-US")} African), replaying{" "}
           {day(r.design.start)} to {day(r.design.end)}.
         </p>
+        {r.design.universe_size ? (
+          <p className="mt-1.5 leading-relaxed">
+            Universe: {r.design.universe_size.toLocaleString("en-US")} companies.
+            {Object.values(r.design.uncovered_companies ?? {}).reduce((a, b) => a + b, 0) > 0 && (
+              <> {Object.values(r.design.uncovered_companies ?? {}).reduce((a, b) => a + b, 0).toLocaleString("en-US")} had no usable price or news history and are excluded.</>
+            )}
+            {(r.design.not_yet_run ?? 0) > 0 && (
+              <> {(r.design.not_yet_run ?? 0).toLocaleString("en-US")} have not been replayed yet and join in the next monthly run.</>
+            )}
+          </p>
+        ) : null}
         <p className="mt-1.5 text-[color:var(--muted)]">Re-run monthly on the 2nd. Next: {day(r.refresh?.next ?? nextRefresh())}.</p>
       </div>
       <div className="panel p-4">

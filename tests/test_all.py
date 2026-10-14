@@ -388,13 +388,18 @@ class TestCalibration:
         sev2, _, _ = calibrate(c2)
         assert sev2 == Severity.CRITICAL
 
-    def test_corroboration_raises_confidence(self):
-        from src.engines.calibration import calibrate
+    def test_corroboration_raises_severity_and_confidence_is_measured(self):
+        # Corroboration raises the severity band; confidence is whatever the backtest measured for that
+        # band, which need not rise with it (higher bands can confirm less often on small samples).
+        from src.engines.calibration import calibrate, measured_rate
+        order = [Severity.LOW, Severity.MEDIUM, Severity.HIGH, Severity.CRITICAL]
         c1 = self._cand(SignalType.CREDIT_RISK, 0.75, corroboration=1)
         c3 = self._cand(SignalType.CREDIT_RISK, 0.75, corroboration=3)
-        _, conf1, _ = calibrate(c1)
-        _, conf3, _ = calibrate(c3)
-        assert conf3 >= conf1
+        sev1, conf1, _ = calibrate(c1)
+        sev3, conf3, _ = calibrate(c3)
+        assert order.index(sev3) >= order.index(sev1)
+        assert conf1 == round(measured_rate(SignalType.CREDIT_RISK, sev1), 3)
+        assert conf3 == round(measured_rate(SignalType.CREDIT_RISK, sev3), 3)
 
     def test_calibrate_all(self):
         from src.engines.calibration import calibrate_all

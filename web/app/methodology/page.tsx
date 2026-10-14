@@ -160,7 +160,7 @@ export default async function MethodologyPage() {
             <p>
               Whether the weights are useful is tested <Label kind="measured" />: the backtest splits predictions into thirds by
               alpha and reports each third&apos;s confirmation rate, with the rank correlation. The evaluation page shows the
-              result. A rising confirmation rate shows the score orders flags by how often the event happened; it does not show
+              result. The evaluation page states what the thirds show in the latest run. Even a rising confirmation rate would not show
               that high-alpha flags earn returns, which the evaluation page measures separately and finds indistinguishable from
               zero at the current sample size. Alpha is not a recommendation to buy or sell.
             </p>
@@ -295,7 +295,7 @@ export default async function MethodologyPage() {
                 {pulse ? `, plus ${count(pulse.measured.live_observations)} live outcomes so far` : ""}; several signal types
                 have small samples, shown with every figure.
               </li>
-              <li>Only leadership-change flags clearly beat their base rate in the backtest; M&amp;A and credit flags do not, and other types have samples too small to tell. The evaluation page shows each with its interval.</li>
+              <li>Every confirmable type beats its base rate in the backtest, but rare events (credit, distress, regulatory) still confirm under one time in ten and leadership changes beat chance only modestly. Market reactions are indistinguishable from zero. The evaluation page shows each figure with its interval.</li>
               <li>
                 Deals come from public reporting: undisclosed private deals cannot appear.
                 {quality?.dealComplete ? ` On the held-out set ${ciText(quality.dealComplete)} of records have every field right, so individual fields marked single-source or uncertain should be checked against the linked sources.` : " Fields marked single-source or uncertain should be checked against the linked sources."}
