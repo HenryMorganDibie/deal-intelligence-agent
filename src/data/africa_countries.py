@@ -80,7 +80,7 @@ COUNTRIES: tuple[Country, ...] = (
 
     # ── Western Africa ───────────────────────────────────────────────────────
     Country("BJ", "BEN", "Benin", "Western Africa", ("fr",), aliases=("Beninese", "Bénin"), **_UMOA),
-    Country("BF", "BFA", "Burkina Faso", "Western Africa", ("fr",), aliases=("Burkinabe", "Burkinabè"), **_UMOA),
+    Country("BF", "BFA", "Burkina Faso", "Western Africa", ("fr",), aliases=("Burkinabe", "Burkinabè", "Burkina"), **_UMOA),
     Country("CV", "CPV", "Cabo Verde", "Western Africa", ("pt",), "CVE", "Banco de Cabo Verde",
             exchange="Bolsa de Valores de Cabo Verde", securities_regulator="AGMVM", regulator_acronyms=("AGMVM",),
             aliases=("Cape Verde", "Cape Verdean", "Cap-Vert")),
@@ -95,7 +95,7 @@ COUNTRIES: tuple[Country, ...] = (
     Country("GN", "GIN", "Guinea", "Western Africa", ("fr",), "GNF", "Banque Centrale de la République de Guinée",
             aliases=("Guinée", "Guinea-Conakry", "Guinean", "Guiné")),
     Country("GW", "GNB", "Guinea-Bissau", "Western Africa", ("pt", "fr"),
-            aliases=("Guiné-Bissau", "Bissau-Guinean", "Guinée-Bissau"), **_UMOA),
+            aliases=("Guiné-Bissau", "Bissau-Guinean", "Guinée-Bissau", "Guinée Bissau", "Guinea Bissau"), **_UMOA),
     Country("LR", "LBR", "Liberia", "Western Africa", ("en",), "LRD", "Central Bank of Liberia",
             aliases=("Liberian", "Libéria")),
     Country("ML", "MLI", "Mali", "Western Africa", ("fr",), aliases=("Malian",), **_UMOA),

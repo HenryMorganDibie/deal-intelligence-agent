@@ -47,6 +47,11 @@ CONFIRMATION_PATTERNS: dict[SignalType, list[str]] = {
         r"\b(acquisition|merger|takeover|scheme\s+of\s+arrangement)\b.{0,30}\b(completed|closed|effective|sanctioned|approved\s+by\s+(the\s+)?(court|shareholders))\b",
         r"\b(finalise|finalis[eé]e?|a\s+finalis[eé]|conclut|a\s+conclu)\b.{0,40}\b(acquisition|fusion|cession|rachat)\b",
         r"\b(fusion|acquisition|rachat)\b.{0,30}\b(finalis[eé]e?|effective|approuv[eé]e)\b",
+        # Milestones of a live deal: definitive agreement, shareholder and regulatory approval.
+        r"\b(signs?|signed|enters?\s+into|entered\s+into)\s+(a\s+)?definitive\s+(merger\s+)?agreement\b",
+        r"\bshareholders?\s+(approve[sd]?|back(s|ed)?|vote\s+(for|in\s+favou?r\s+of))\b.{0,40}\b(merger|acquisition|takeover|scheme|deal|sale)\b",
+        r"\b(approves?|approved|clears?|cleared|green[-\s]?lights?)\b.{0,40}\b(merger|acquisition|takeover|deal)\b",
+        r"\b(merger|acquisition|takeover|deal)\b.{0,30}\b(wins?|receives?|gets?|secures?)\s+(regulatory\s+|antitrust\s+|competition\s+|shareholder\s+)?(approval|clearance)\b",
     ],
     SignalType.LEADERSHIP_CHANGE: [
         r"\b(nomeia|nomeou|nomeado|nomeada|renuncia|renunciou|demite|demitiu)\b.{0,40}\b(presidente|ceo|director[a]?\s+geral|administrador)\b",

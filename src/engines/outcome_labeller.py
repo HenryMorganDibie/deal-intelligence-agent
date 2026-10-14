@@ -69,7 +69,10 @@ CONFIRMING_8K_ITEMS: dict[SignalType, set[str]] = {
     SignalType.EARNINGS_SURPRISE: {"4.02"},
 }
 CONFIRMING_FORMS: dict[SignalType, set[str]] = {
-    SignalType.MA_ACTIVITY:      {"SC TO-T", "SC TO-C", "SC 14D9", "DEFM14A", "PREM14A", "S-4", "SCHEDULE TO"},
+    # A live transaction's regulated milestones, not only its completion: large deals take longer than
+    # the 90-day horizon to close, but file merger proxies and Form 425 communications throughout.
+    SignalType.MA_ACTIVITY:      {"SC TO-T", "SC TO-C", "SC 14D9", "DEFM14A", "PREM14A", "DEFM14C", "S-4", "SCHEDULE TO",
+                                  "425", "SC 13E3"},
     SignalType.DISTRESSED_ASSET: {"25-NSE", "15-12B", "15-12G"},
     SignalType.INSIDER_ACTIVITY: {"SC 13D", "SCHEDULE 13D", "SC 13D/A"},
 }

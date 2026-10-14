@@ -466,3 +466,23 @@ def test_coverage_matrix_covers_54_countries_with_tiers():
     rows = {r["iso2"]: r for r in m["countries"]}
     assert rows["NG"]["tier"] == "A" and rows["ZA"]["tier"] == "B" and rows["TD"]["tier"] == "C"
     assert rows["SN"]["deals"] == 1 and rows["SN"]["news"]["national_edition"]
+
+
+@pytest.mark.parametrize("title", [
+    "La Côte d’Ivoire lève 454,205 milliards de FCFA sur le marché financier de l’UMOA",
+    "Le Burkina lève 49,500 milliards de FCFA sur le marché financier de l’UMOA",
+    "Airtel Money gets $7 billion price tag as investors prepare to sell shares in African fintech",
+    "Afreximbank raises CARICOM financing cap to $5 billion",
+    "Tinubu Backs Flutterwave's Nigeria Listing as $3B Fintech Giant",
+])
+def test_sovereigns_valuations_and_endorsements_are_not_deals(title):
+    assert _deal(title) is None
+
+
+def test_french_decimal_comma_and_ipo_offer_size():
+    assert dl.parse_amounts("454,205 milliards de FCFA") == [(pytest.approx(454.205e9), "XOF")]
+    assert dl.parse_amounts("$1,200 million") == [(pytest.approx(1.2e9), "USD")]
+    d = _deal("Air Côte d’Ivoire obtient un financement de 47,913 milliards FCFA de la BADEA")
+    assert d["deal_type"] == "debt_financing" and d["amount"] == pytest.approx(47.913e9)
+    assert _deal("Dangote Plans Landmark Multi-Exchange Listing Of $20bn Refinery Across Africa")["amount_usd"] is None
+    assert _deal("MTN Nigeria plans $1bn IPO on NGX")["amount_usd"] == 1e9

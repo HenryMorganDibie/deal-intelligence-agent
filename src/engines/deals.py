@@ -71,6 +71,9 @@ def _to_float(num: str) -> Optional[float]:
         return None
 
 
+_FRENCH_CONTEXT = re.compile(r"(?i)\b(milliards?|millions?\s+de|milliards?\s+de)\b|FCFA|CFA|\bd['’]euros\b|\bde\s+dollars\b")
+
+
 def parse_amounts(text: str) -> list[tuple[float, str]]:
     """Every money amount in the text as (value, ISO currency), in order."""
     out = []
@@ -81,7 +84,11 @@ def parse_amounts(text: str) -> list[tuple[float, str]]:
             continue
         last_end = m.end()
         g = m.groupdict()
-        value = _to_float(g["num"] or "")
+        raw_num = g["num"] or ""
+        # "454,205 milliards de FCFA" is 454.205 billion: a comma before a French multiplier is a decimal mark.
+        if "," in raw_num and "." not in raw_num and _FRENCH_CONTEXT.search(text[m.start(): m.end() + 12]):
+            raw_num = raw_num.replace(" ", "").replace(",", ".")
+        value = _to_float(raw_num)
         if value is None:
             continue
         mult = (g.get("mult") or "").lower()
@@ -164,7 +171,8 @@ _GENERIC = {"africa", "african", "african startups", "startups", "firm", "abu dh
             "police", "state", "shareholders", "residents", "students", "fans", "president", "governor", "accord",
             "world bank", "imf", "treasury", "central bank", "board", "union", "unions", "pdp", "apc", "anc",
             "fitch", "moody's", "moodys", "s&p global ratings", "gcr", "agusto", "now", "today", "trésor", "tresor",
-            "trésor public", "ministry of finance", "debt management office", "dmo", "nigeria", "kenya", "egypt", "ghana", "startup", "startups", "report", "exclusive",
+            "trésor public", "ministry of finance", "debt management office", "dmo", "dgtcp", "dgtcp du mali", "etat",
+            "l'etat", "l’etat", "state government", "nigeria", "kenya", "egypt", "ghana", "startup", "startups", "report", "exclusive",
             "breaking", "update", "news", "deal", "deals", "how", "why", "what", "watch", "opinion", "analysis",
             "weekly", "the big deal", "funding", "investors", "series", "seed", "ceo", "it", "this"}
 
@@ -245,7 +253,7 @@ def _clean_name(name: Optional[str]) -> Optional[str]:
 def normalise_name(name: Optional[str]) -> str:
     if not name:
         return ""
-    s = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode().lower()
+    s = unicodedata.normalize("NFKD", name.replace("’", "'")).encode("ascii", "ignore").decode().lower()
     s = _STOP_TAIL.sub("", s)
     s = re.sub(r"\b(ltd|limited|plc|inc|sa|holdings?|group|company|corp(oration)?)\b\.?", "", s)
     return re.sub(r"[^a-z0-9]+", " ", s).strip()
@@ -253,7 +261,8 @@ def normalise_name(name: Optional[str]) -> str:
 
 # ── Deal patterns ─────────────────────────────────────────────────────────────
 # Each: (deal_type, compiled pattern). Named groups: subj (the actor), obj (the counterparty).
-_AUX = r"(?:\s+(?:has|have|will|is|are|to|set\s+to|agrees?\s+to|agreed\s+to|moves?\s+to|plans?\s+to|in\s+talks\s+to))*"
+_AUX = (r"(?:\s+(?:has|have|will|is|are|to|set\s+to|agrees?\s+to|agreed\s+to|moves?\s+to|plans?\s+to|in\s+talks\s+to|"
+        r"aims?\s+to|looks?\s+to|hopes?\s+to|wants?\s+to|seeks?\s+to|targets?\s+to))*")
 _STAKE_IN = (r"(?:(?:an?\s+|the\s+)?(?:\S+\s+){0,3}?(?:stake|interest|shareholding|holding)\s+in\s+"
              r"|\d{1,3}(?:[.,]\d+)?\s?%\s+(?:of\s+|da\s+|do\s+|de\s+|du\s+|des\s+|in\s+))")
 
@@ -274,7 +283,7 @@ reach reaches reached holds hits forms create creates increases ups enters agree
 has have will is are was were to of in into for from with by on at as after a an its their stake stakes interest
 shareholding majority minority controlling significant strategic acquisition purchase takeover buyout round
 funding financing loan facility close up over talks discloses proposed enters seeks seek exiting
-calls call urges says wants targets eyes launched
+calls call urges says wants targets eyes launched aims aim looks hopes
 investit acquiert rachète cède lève obtient finance dans investe adquire compra vende capta obtém em
 """.split())
 _WORD = re.compile(r"\b[A-Za-z][\w'’-]*\b(?!\.)")
@@ -313,9 +322,11 @@ _NOT_A_DEAL = re.compile(r"\b(FC|forward|striker|midfielder|defender|goalkeeper|
                          r"fighter\s+jets?|warplanes?|helicopters?|weapons?|missiles?|calls?\s+for|urges?|"
                          r"to\s+buy\s+now|stocks?\s+to\s+buy|shares\s+to\s+buy|altcoins?|price\s+prediction|"
                          r"raises?\s+(?:its\s+|the\s+)?(?:\S+\s+)?(?:outlook|forecast|rating|alarm|concerns?|awareness|"
-                         r"questions?|prices?|tariffs?|rates?|fears?|hopes?|the\s+bar|bursary|igr|revenue\s+target))\b",
+                         r"questions?|prices?|tariffs?|rates?|fears?|hopes?|the\s+bar|bursary|igr|revenue\s+target))\b"
+                         r"|\braise[sd]?\s+(?:\S+\s+){0,3}(cap|ceiling|limit|investment|budget|allocation|target|commitment)\s+to\b",
                          re.IGNORECASE)
 _VALUATION = re.compile(r"(?i)(?:at\s+(?:an?\s+)?(?P<a>[^,;]{2,25}?)\s+(?:(?:post|pre)-money\s+)?(?:valuation|valorisation)"
+                        r"|(?P<d>\S*\d[\d.,]*\s?(?:billion|million|bn|m|b)?)\s+(?:price\s+tag|valuation)"
                         r"|valued\s+at\s+(?P<b>[^,;]{2,25}?)(?=$|[,;.]|\s+(?:in|after|as|following)\b)"
                         r"|valuation\s+of\s+(?P<c>[^,;]{2,25}?)(?=$|[,;.]|\s))")
 _CAPEX_AFTER = re.compile(r"^\s*(?:'s\s+)?(?:\S+\s+)?(plant|factory|facility|facilities|project|expansion|hub|office|"
@@ -324,7 +335,8 @@ _CAPEX_AFTER = re.compile(r"^\s*(?:'s\s+)?(?:\S+\s+)?(plant|factory|facility|fac
 _EQUITY_EVIDENCE = re.compile(r"\b(invest\w*|funding|capital|stake|equity|round|seed|series|raise[sd]?|"
                               r"lève|levée|investit|investe|capta|financing|financement|investimento)\b", re.IGNORECASE)
 _PUBLIC_SECTOR = re.compile(r"(?i)\b(government|ministry|treasury|trésor|state|federal|senate|house|parliament|court|"
-                            r"police|army|military|council|municipality|county)\b")
+                            r"police|army|military|council|municipality|county|dgtcp|gouvernement|minist[eè]re|tinubu|"
+                            r"president|governor|minister)\b")
 _FUND_FOR = re.compile(r"(?i)\bfor\s+(?:its\s+|a\s+|an\s+|the\s+|new\s+)?(?:\S+\s+){0,4}?fund\b")
 _FUND_PURPOSE = re.compile(r"\bto\s+(?:back|invest\s+in|support|finance)\s+(?:\S+\s+){0,3}?"
                            r"(businesses|startups|start-ups|companies|smes|entrepreneurs|founders|ventures)\b", re.IGNORECASE)
@@ -426,14 +438,24 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
                 or re.search(r"(?i)^\W*(?:\S+\s+){0,3}?(funding|capital|round|seed|series|investment|"
                              r"financing|fonds|financement|investimento|pre-seed)", after)):
             return None
+    # "X backs Y" is an endorsement unless money is attached ("backs Y with $5m").
+    if deal_type == "equity_funding" and re.search(r"(?i)(?<!-)\b(backs|backed)\b", m.group(0)) \
+            and not re.search(r"(?i)\bwith\s+(?:a\s+)?(?:US\$|\$|€|£|₦|N\d|R\d|KSh|USD|EUR)", title):
+        return None
     # Capital spending on a plant or project is not a transaction.
     if deal_type == "equity_funding" and m.groupdict().get("obj") and _CAPEX_AFTER.match(norm[m.end():]):
         return None
     vm = _VALUATION.search(title)
-    valuation_amounts = parse_amounts(vm.group("a") or vm.group("b") or vm.group("c") or "") if vm else []
+    valuation_amounts = parse_amounts(vm.group("a") or vm.group("b") or vm.group("c") or vm.group("d") or "") if vm else []
     deal_title = title[:vm.start()] + title[vm.end():] if vm else title
-    amounts = parse_amounts(deal_title) or ([] if vm else parse_amounts(snippet or ""))
+    # Amounts come from the headline only: a description's figures often refer to something else.
+    amounts = parse_amounts(deal_title)
     amount, currency = amounts[0] if amounts else (None, None)
+    if deal_type == "ipo" and amount and not re.search(
+            r"(?i)\b(?:(?:rais\w*|offer\w*|ipo)\s+(?:of\s+|worth\s+|up\s+to\s+)?|(?:listing|float)\s+(?:to\s+raise\s+)?)"
+            r"(?:US\$|\$|€|£|₦|N\d|R\d|KSh|USD)"
+            r"|(?:billion|million|bn|m)\s+(?:ipo|offer\w*|listing|float)\b", deal_title):
+        amount = currency = None                 # the figure is a company or asset value, not the offer size
 
     # Funding wording that is really debt or a fund close.
     backed = _BACKED.match(m.group("subj")) if m.groupdict().get("subj") else None

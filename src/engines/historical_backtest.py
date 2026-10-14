@@ -342,13 +342,15 @@ def run(
     metrics = compute_metrics(predictions, truth, base, company_months_by_market(universe, len(dates)))
     result = {"start": start.isoformat(), "end": end.isoformat(), "as_of_dates": len(dates),
               "companies": len(universe), "lookback_days": LOOKBACK_DAYS, "horizon_days": HORIZON_DAYS,
-              "predictions": predictions, "ground_truth_events": truth, "metrics": metrics}
+              "predictions": predictions, "ground_truth_events": truth, "metrics": metrics,
+              "by_severity": by_severity(predictions)}
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
     RESULTS_PATH.write_text(json.dumps(result, indent=1, default=str))
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(render_report(result))
     SUMMARY_PATH.write_text(json.dumps({k: result[k] for k in ("start", "end", "as_of_dates", "companies",
-                                                                "lookback_days", "horizon_days", "metrics")},
+                                                                "lookback_days", "horizon_days", "metrics",
+                                                                "by_severity")},
                                        indent=1, default=str))
     return result
 
@@ -413,6 +415,18 @@ def compute_metrics(predictions: list[dict], truth: list[dict], base: dict, mont
     return out
 
 
+def by_severity(predictions: list[dict]) -> dict:
+    """Precision for low-severity flags versus medium and above, per signal type (confirmable types only)."""
+    out: dict[str, dict] = {}
+    for st in sorted({p["signal_type"] for p in predictions} - PRICE_ONLY):
+        row = {}
+        for band, sevs in (("medium_plus", {"medium", "high", "critical"}), ("low", {"low"})):
+            ps = [p for p in predictions if p["signal_type"] == st and p["severity"] in sevs and p["event_confirmed"] is not None]
+            row[band] = {"labelled": len(ps), "precision": _rate(sum(p["event_confirmed"] for p in ps), len(ps))}
+        out[st] = row
+    return out
+
+
 def _market_of_company(company: str, predictions: list[dict], truth: list[dict]) -> Optional[str]:
     from src.engines.outcome_labeller import market_for_ticker
     for entry in UNIVERSE:
@@ -457,7 +471,18 @@ def render_report(result: dict) -> str:
             f"{a['lift'] if a['lift'] is not None else '–'}x | {_fmt(a['recall'])} ({a['events']}) | "
             f"{_fmt(a['hit_rate'])} ({a['directional_n']}) | "
             f"{(str(a['mean_abnormal_return_10d_pct']) + '%') if a['mean_abnormal_return_10d_pct'] is not None else '–'} |")
-    lines += ["", "Counts in brackets are the sample behind each figure.", "", "## By market", ""]
+    lines += ["", "Counts in brackets are the sample behind each figure.", ""]
+    sev = result.get("by_severity") or by_severity(result.get("predictions", []))
+    if sev:
+        lines += ["## By severity", "",
+                  "Low-severity flags are the noisy tail; medium and above is the operating point for action.", "",
+                  "| Signal type | Precision, medium and above | Precision, low |", "|---|---:|---:|"]
+        for st, row in sev.items():
+            mp, lo = row["medium_plus"], row["low"]
+            lines.append(f"| {st.replace('_', ' ')} | {_fmt(mp['precision'])} ({mp['labelled']}) | "
+                         f"{_fmt(lo['precision'])} ({lo['labelled']}) |")
+        lines.append("")
+    lines += ["## By market", ""]
     for mk in ("us", "africa"):
         lines += [f"### {'United States' if mk == 'us' else 'Africa (JSE, NGX, NSE Kenya)'}", "",
                   "| Signal type | Predictions | Precision | Base rate | Lift | Recall | Hit rate |",
@@ -480,6 +505,9 @@ def render_report(result: dict) -> str:
         "credibility bar counts as not confirmed, which biases precision down, not up.",
         "- NGX and NSE Kenya have no free per-stock price history, so African hit rates cover JSE names only; "
         "NGX/NSE price outcomes accumulate from the daily snapshot going forward.",
+        "- M&A is confirmed by completion or by a live deal's regulated milestones (merger proxy, Form 425 "
+        "business-combination communications, tender offer filings, shareholder or regulatory approval, definitive "
+        "agreement), since large deals rarely close within the 90-day horizon. Base rates use the same events.",
         "- Static calibration only: adaptive calibration, which learns from outcomes, is off so that later "
         "results cannot leak into earlier predictions.",
         "",
