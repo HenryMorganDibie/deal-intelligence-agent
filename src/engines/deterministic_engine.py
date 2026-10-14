@@ -274,6 +274,7 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\b(sec|fsca|cma|cbn|sarb|cbk)\b.{0,30}\b(invest(igat\w*|ment)|probe|enforcement|sanction|fine|penalty|subpoena)\b",
         r"\b(doj|ftc|competition\s+commission)\b.{0,30}\b(invest\w*|antitrust|charge|fine)\b",
         rf"\b({_AFRICAN_REGULATORS})\b.{{0,40}}\b(invest(igat\w*)|probe|sanction\w*|fine[sd]?|penalt\w*|suspend\w*|revok\w*)\b",
+        rf"\b(fined|sanctioned|penali[sz]ed|suspended|censured|investigated|probed)\s+by\s+(the\s+)?({_AFRICAN_REGULATORS})\b",
         r"\blicen(c|s)e\s+(revoked?|suspended?|cancelled?)\b",
         r"\bconsent\s+(order|decree|agreement)\b.{0,30}\b(regulat\w*|enforce\w*|penalt\w*)\b",
         r"\bcriminal\s+(charge|referral|indictment)\b.{0,30}\b(fraud|financ|securi)\b",
