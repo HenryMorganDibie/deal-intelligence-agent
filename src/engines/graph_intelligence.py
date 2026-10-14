@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from src.utils.storage import load_json, save_json
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -201,6 +202,94 @@ class EntityGraphEngine:
         }
 
 
+# ── Relationship extraction from a brief's own sources ───────────────────────
+# Deterministic, conservative: a relationship is recorded only when one party is
+# the analysed company and the other is a capitalised name in a fixed phrase.
+
+_NAME = r"((?:[A-Z]|[a-z][A-Z])[\w&'.\-]*(?:\s+(?:[A-Z][\w&'.\-]*|of|and|&|de|du|la)){0,5})"   # eMAG, iHeart too
+_STOP = {"The", "A", "An", "Its", "Their", "This", "That", "New", "Shares", "Stock", "Plans", "Deal"}
+
+_ACQUIRER_FIRST = [
+    re.compile(_NAME + r"\s+(?:to\s+)?(?:acquires?|acquired|buys|bought|agrees\s+to\s+(?:buy|acquire)|completes\s+(?:the\s+)?acquisition\s+of|takes\s+over)\s+" + _NAME),
+]
+_TARGET_FIRST = [
+    re.compile(r"(?:acquisition|takeover|purchase)\s+of\s+" + _NAME + r"\s+by\s+" + _NAME),
+]
+_MERGER = re.compile(_NAME + r"\s+(?:to\s+)?merges?\s+with\s+" + _NAME)
+_LENDER = [
+    re.compile(r"(?:loan|facility|financing|credit\s+line|term\s+loan)\s+from\s+" + _NAME),
+    re.compile(_NAME + r"\s+(?:lends|extends|provides|grants|arranges)\s+(?:a\s+)?(?:[$€£₦]?[\d.,]+\s*(?:m|bn|million|billion)?\s+)?(?:loan|facility|financing|credit)"),
+]
+_LENDS_TO = re.compile(r"(?:lends|extends|provides|grants|arranges)\s+(?:a\s+)?(?:[$€£₦]?[\d.,]+\s*(?:m|bn|million|billion)?\s+)?(?:loan|facility|financing|credit(?:\s+line)?)\s+to\s+" + _NAME)
+_NGX_DEALING = re.compile(r"(?:share|director'?s?|insider)\s+dealings?\s*-\s*([A-Z][A-Za-z.'\-]+(?:\s+[A-Z][A-Za-z.'\-]+){1,3})\s*$", re.IGNORECASE)
+
+
+def _clean(name: str) -> Optional[str]:
+    words = name.strip(" .,-").split()
+    while words and words[0] in _STOP:
+        words.pop(0)
+    while words and words[-1] in ("of", "and", "&", "de", "du", "la"):
+        words.pop()
+    name = " ".join(words)
+    return name if len(name) >= 3 and name not in _STOP else None
+
+
+def extract_relationships(text: str, company_matchers: list) -> list[tuple[str, str, str]]:
+    """
+    (kind, other_party, role_of_company) found in one headline or evidence line,
+    where one side is the analysed company. kind: 'acquisition' | 'merger' | 'lender'.
+    role_of_company: 'acquirer' | 'target' | 'party' | 'borrower'.
+    """
+    def is_company(name: str) -> bool:
+        return any(m.search(name) for m in company_matchers)
+
+    out: list[tuple[str, str, str]] = []
+    for rx in _ACQUIRER_FIRST:
+        for m in rx.finditer(text):
+            a, t = _clean(m.group(1)), _clean(m.group(2))
+            if a and t and is_company(a) and not is_company(t):
+                out.append(("acquisition", t, "acquirer"))
+            elif a and t and is_company(t) and not is_company(a):
+                out.append(("acquisition", a, "target"))
+    for rx in _TARGET_FIRST:
+        for m in rx.finditer(text):
+            t, a = _clean(m.group(1)), _clean(m.group(2))
+            if a and t and is_company(a) and not is_company(t):
+                out.append(("acquisition", t, "acquirer"))
+            elif a and t and is_company(t) and not is_company(a):
+                out.append(("acquisition", a, "target"))
+    for m in _MERGER.finditer(text):
+        x, y = _clean(m.group(1)), _clean(m.group(2))
+        if x and y and is_company(x) != is_company(y):
+            out.append(("merger", y if is_company(x) else x, "party"))
+    for m in _LENDS_TO.finditer(text):
+        borrower = _clean(m.group(1))
+        lender_is_company = any(cm.search(text[: m.start()]) for cm in company_matchers)
+        if borrower and lender_is_company and not is_company(borrower):
+            out.append(("lender", borrower, "lender"))
+    if any(m.search(text) for m in company_matchers):
+        for rx in _LENDER:
+            for m in rx.finditer(text):
+                lender = _clean(m.group(1))
+                if lender and not is_company(lender):
+                    out.append(("lender", lender, "borrower"))
+    return out
+
+
+def ngx_dealing_insiders(filings: list) -> list[dict]:
+    """Directors named in NGX dealing notices ('Notification of Share Dealing - Chima Nwuta')."""
+    people = {}
+    for f in filings:
+        if getattr(f, "form_type", "") != "NGX Disclosure":
+            continue
+        title = (getattr(f, "description", "") or "").split(":")[-1].strip()
+        m = _NGX_DEALING.search(title)
+        if m:
+            name = " ".join(m.group(1).split()).title()
+            people[name.lower()] = {"name": name, "role": "Director / insider (NGX dealing notice)", "cik": ""}
+    return list(people.values())
+
+
 def update_graph_from_brief(brief: Any, insiders: Optional[list[dict]] = None) -> None:
     """
     Auto-update the entity graph from a completed analyst brief: the company
@@ -216,8 +305,28 @@ def update_graph_from_brief(brief: Any, insiders: Optional[list[dict]] = None) -
         last_alpha=brief.top_alpha_score or 0,
         last_analysed=utcnow().isoformat(),
     )
-    for person in insiders or []:
+    people = list(insiders or []) + ngx_dealing_insiders(getattr(brief, "filings_reviewed", []) or [])
+    for person in people:
         if person.get("name"):
             engine.add_executive(person["name"], brief.company_name, person.get("role", "Insider"),
                                  person_id=person.get("cik") or None)
+
+    # Acquisition, merger and lender links named in the brief's own sources.
+    from src.engines.deterministic_engine import _company_matchers
+    matchers = _company_matchers(brief.company_name, ticker=getattr(brief, "ticker", None))
+    texts = [n.title for n in getattr(brief, "news_reviewed", []) or []]
+    texts += [line for s in getattr(brief, "detected_signals", []) or [] for line in [s.headline, *s.evidence]]
+    for text in texts:
+        for kind, other, role in extract_relationships(text, matchers):
+            if other not in engine.G:
+                engine.add_company(other, source="extracted")
+            if kind == "acquisition":
+                acquirer, target = (brief.company_name, other) if role == "acquirer" else (other, brief.company_name)
+                engine.add_acquisition(acquirer, target, status="reported")
+            elif kind == "merger":
+                engine.G.add_edge(brief.company_name, other, edge_type="merger", added_at=utcnow().isoformat())
+            elif kind == "lender" and role == "borrower":
+                engine.add_lender_relationship(other, brief.company_name, facility_type="reported")
+            elif kind == "lender":
+                engine.add_lender_relationship(brief.company_name, other, facility_type="reported")
     engine.save()

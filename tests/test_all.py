@@ -3836,3 +3836,33 @@ def test_historical_metrics_precision_base_rate_lift():
     assert (m["precision"], m["base_rate"], m["lift"]) == (0.5, 0.1, 5.0)
     assert (m["recall"], m["events"]) == (0.5, 2)          # A's event was preceded by a prediction, C's was not
     assert m["hit_rate"] == 0.5 and m["mean_abnormal_return_10d_pct"] == 1.0
+
+
+class TestRelationshipExtraction:
+    @pytest.mark.parametrize("company,text,expected", [
+        ("Seplat Energy", "Seplat Energy completes acquisition of Mobil Producing Nigeria",
+         [("acquisition", "Mobil Producing Nigeria", "acquirer")]),
+        ("Naspers", "EU clears acquisition of eMAG by Naspers", [("acquisition", "eMAG", "acquirer")]),
+        ("Dangote Cement", "Dangote Cement secures $300m loan from Afreximbank", [("lender", "Afreximbank", "borrower")]),
+        ("Afreximbank", "Afreximbank extends $500m facility to Dangote Refinery", [("lender", "Dangote Refinery", "lender")]),
+        ("Capital One", "Capital One to merge with Discover Financial", [("merger", "Discover Financial", "party")]),
+        ("Acme", "Rival acquires Beta", []),            # the company is not a party
+    ])
+    def test_extract(self, company, text, expected):
+        from src.engines.graph_intelligence import extract_relationships
+        from src.engines.deterministic_engine import _company_matchers
+        assert extract_relationships(text, _company_matchers(company)) == expected
+
+    def test_brief_updates_graph_with_parties_and_ngx_directors(self):
+        from types import SimpleNamespace as N
+        from src.engines.graph_intelligence import EntityGraphEngine, update_graph_from_brief
+        brief = N(company_name="Seplat Energy", ticker="SEPLAT.LG", overall_severity=Severity.HIGH, top_alpha_score=70,
+                  news_reviewed=[N(title="Seplat Energy secures $300m loan from Afreximbank")],
+                  detected_signals=[N(headline="Seplat Energy completes acquisition of Mobil Producing Nigeria", evidence=[])],
+                  filings_reviewed=[N(form_type="NGX Disclosure",
+                                      description="SEPLAT: DirectorsDealings: Notification of Share Dealing - Roger Brown")])
+        update_graph_from_brief(brief)
+        g = EntityGraphEngine().G
+        assert g["Seplat Energy"]["Mobil Producing Nigeria"]["edge_type"] == "acquired"
+        assert g["Afreximbank"]["Seplat Energy"]["edge_type"] == "lends_to"
+        assert g.has_edge("exec:Roger Brown", "Seplat Energy")
