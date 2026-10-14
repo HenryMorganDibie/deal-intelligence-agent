@@ -12,8 +12,8 @@ page renders them.
 
 ## When the numbers change
 
-The signal backtest re-runs every quarter (`.github/workflows/backtest.yml`, 2 January, April, July
-and October): it replays the latest 18 monthly dates whose 90-day outcome windows have closed, over
+The signal backtest re-runs every month (`.github/workflows/backtest.yml`, on the 2nd): it replays
+the latest 18 monthly dates (the 15th) whose 90-day outcome windows have closed, over
 the universe in `docs/backtest_universe.csv`, and commits the regenerated report, measured tables and
 prediction file, which redeploys the site. Live outcomes from hosted briefs update hourly. The deal
 and attribution sets change only when new labelled samples are drawn.

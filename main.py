@@ -678,6 +678,7 @@ def _run_backtest(args: argparse.Namespace) -> None:
         console.print(f"[cyan]Walk-forward backtest {args.start} → {args.end} over {len(universe)} companies, "
                       f"{args.workers} in parallel (responses and per-company results are cached; a rerun resumes)…[/cyan]")
         result = hb.run(_date.fromisoformat(args.start), _date.fromisoformat(args.end), universe=universe,
+                        step_days=0 if args.period == "rolling" else 30,
                         workers=args.workers, deadline_minutes=args.deadline_minutes,
                         progress=lambda m: console.print(f"[dim]{m}[/dim]"))
         if result is None:

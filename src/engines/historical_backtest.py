@@ -222,6 +222,14 @@ def _french(ticker: str) -> bool:
 
 
 def _as_of_dates(start: date, end: date, step_days: int) -> list[date]:
+    """Every step_days from start; step_days=0 means the same day of each calendar month, so consecutive
+    monthly replays share their windows and reuse cached news and filings."""
+    if step_days == 0:
+        out, y, m = [], start.year, start.month
+        while (d := date(y, m, min(start.day, 28))) <= end:
+            out.append(d)
+            y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+        return out
     out, d = [], start
     while d <= end:
         out.append(d)

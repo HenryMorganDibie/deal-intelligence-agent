@@ -1,14 +1,15 @@
-# Quarterly walk-forward backtest over the ~2,000-company universe.
+# Monthly walk-forward backtest over the ~2,000-company universe.
 #
-# Each quarter replays the latest 18 monthly dates whose 90-day outcome windows have closed, then
+# Each month replays the latest 18 monthly dates (the 15th) whose 90-day outcome windows have closed;
+# consecutive runs share 17 of those windows, so most news and filings come from the cache. It then
 # commits the regenerated evaluation report, measured tables and prediction file; the push deploys
 # the site. A full run takes longer than one job may (6 hours), so each job works to a deadline,
 # keeps every finished company in the Actions cache, and starts the next job until the run is done.
-name: Quarterly backtest
+name: Monthly backtest
 
 on:
   schedule:
-    - cron: "17 3 2 1,4,7,10 *"     # 03:17 UTC on 2 January, April, July and October
+    - cron: "17 3 2 * *"            # 03:17 UTC on the 2nd of every month
   workflow_dispatch:
 
 permissions:
@@ -99,6 +100,6 @@ jobs:
           git add docs/evaluation_report.json docs/backtest_predictions.csv docs/backtest_summary.json \
                   docs/BACKTEST.md docs/backtest_universe.csv src/data/measured_outcomes.json
           if git diff --cached --quiet; then echo "No changes."; exit 0; fi
-          git commit -m "backtest: quarterly replay ${{ steps.period.outputs.start }} to ${{ steps.period.outputs.end }}"
+          git commit -m "backtest: monthly replay ${{ steps.period.outputs.start }} to ${{ steps.period.outputs.end }}"
           git pull --rebase origin "${{ github.ref_name }}"
           git push origin "HEAD:${{ github.ref_name }}"
