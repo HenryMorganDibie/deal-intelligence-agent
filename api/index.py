@@ -192,6 +192,82 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
     }
 
 
+# ── Showcase: daily briefs on a fixed company list, for the public site ─────────
+
+async def _showcase_one(company: str, ticker: str, market: str) -> dict:
+    from src.agents.graph import run_analysis
+    from src.engines import showcase
+    from src.schemas.models import AnalysisRequest
+    from src.utils.formatter import brief_to_markdown
+
+    brief = await run_analysis(AnalysisRequest(company_name=company, ticker=ticker,
+                                               lookback_days=showcase.LOOKBACK_DAYS))
+    brief_json = json.loads(brief.model_dump_json())
+    summary = showcase.summarise(brief_json, market=market)
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await _rpc(client, "save_showcase", {
+            "secret": API_SECRET, "p_company": company, "p_ticker": ticker, "p_market": market,
+            "p_summary": summary, "p_brief": brief_json, "p_markdown": brief_to_markdown(brief),
+        })
+    if r.status_code != 200:
+        raise RuntimeError(f"save_showcase failed: {r.status_code} {r.text[:200]}")
+    return {"company": company, "signals": summary["signal_count"], "severity": summary["severity"]}
+
+
+@app.get("/api/cron/showcase")
+async def cron_showcase(request: Request, shift: int = 0) -> dict:
+    """Daily: run the pipeline on today's showcase companies (half the list, rotating)."""
+    if not CRON_SECRET or request.headers.get("authorization") != f"Bearer {CRON_SECRET}":
+        raise HTTPException(401, "Unauthorized")
+    if not _configured():
+        raise HTTPException(503, "The API is not configured.")
+    import asyncio
+    from src.engines import showcase
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        await _refresh_outcome_stats(client)
+    day = datetime.now(timezone.utc).date() + timedelta(days=shift)
+    batch = showcase.todays_batch(day)
+    sem = asyncio.Semaphore(2)
+
+    async def run(c: tuple[str, str, str]) -> dict:
+        async with sem:
+            try:
+                return await asyncio.wait_for(_showcase_one(*c), timeout=130)
+            except Exception as e:
+                log.warning("showcase run for %s failed: %r", c[0], e)
+                return {"company": c[0], "error": type(e).__name__}
+
+    return {"runs": await asyncio.gather(*(run(c) for c in batch))}
+
+
+_showcase_cache: tuple[float, dict] | None = None
+
+
+@app.get("/api/showcase")
+async def get_showcase() -> dict:
+    """The strongest recent showcase brief (hero) and the strongest from another company (example)."""
+    global _showcase_cache
+    if _showcase_cache and time.monotonic() - _showcase_cache[0] < 300:
+        return _showcase_cache[1]
+    if not _configured():
+        raise HTTPException(503, "The API is not configured.")
+    from src.engines import showcase
+    async with httpx.AsyncClient(timeout=15) as client:
+        recent = []
+        for days in (3, 14, 60):
+            r = await _rpc(client, "recent_showcase", {"p_days": days})
+            recent = r.json() if r.status_code == 200 else []
+            if any(s.get("signal_count") for s in recent):
+                break
+    hero = showcase.pick(recent)
+    others = [s for s in recent if hero and s.get("company") != hero.get("company")]
+    out = {"hero": hero, "example": showcase.pick(others),
+           "companies": [{"company": c, "ticker": t, "market": m} for c, t, m in showcase.COMPANIES]}
+    _showcase_cache = (time.monotonic(), out)
+    return out
+
+
 @app.get("/api/briefs/{brief_id}")
 async def get_brief(brief_id: str) -> dict:
     try:

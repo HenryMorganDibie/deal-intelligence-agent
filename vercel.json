@@ -21,6 +21,10 @@
     {
       "path": "/api/cron/ingest",
       "schedule": "41 5 * * *"
+    },
+    {
+      "path": "/api/cron/showcase",
+      "schedule": "53 6 * * *"
     }
   ]
 }

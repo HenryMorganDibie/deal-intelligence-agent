@@ -134,3 +134,62 @@ export function label(map: Record<string, string>, key: string | null | undefine
   if (!key) return "Other";
   return map[key] ?? key.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 }
+
+/** A showcase brief: the pipeline run daily on a fixed company list (never visitors' searches). */
+export type ShowcaseSignal = {
+  signal_type: string | null;
+  severity: string | null;
+  headline: string | null;
+  evidence: string;
+  source: string;
+  alpha: number | null;
+  move_low: number | null;
+  move_high: number | null;
+  move_median: number | null;
+  move_n: number | null;
+  confidence: number | null;
+};
+
+export type ShowcaseBrief = {
+  id: string;
+  created_at: string;
+  company: string;
+  ticker: string | null;
+  market: string | null;
+  severity: string | null;
+  top_alpha: number | null;
+  systemic_risk: string | null;
+  liquidity: string | null;
+  requires_human_review: boolean | null;
+  llm_used: boolean;
+  executive_summary: string | null;
+  filings: number;
+  news: number;
+  total_sources: number | null;
+  candidates: number;
+  off_target: number | null;
+  unattributed: number | null;
+  unattributed_title: string | null;
+  signal_count: number;
+  signals: ShowcaseSignal[];
+};
+
+export type Showcase = { hero: ShowcaseBrief | null; example: ShowcaseBrief | null };
+
+export async function getShowcase(): Promise<Showcase | null> {
+  if (!API_URL) return null;
+  try {
+    const resp = await fetch(`${API_URL}/api/showcase`, { next: { revalidate: REVALIDATE } });
+    if (!resp.ok) return null;
+    return (await resp.json()) as Showcase;
+  } catch {
+    return null;
+  }
+}
+
+/** "-2.6% to +1.4%" from a measured interquartile range. */
+export function moveRange(lo: number | null, hi: number | null): string | null {
+  if (lo == null || hi == null) return null;
+  const f = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
+  return `${f(lo)} to ${f(hi)}`;
+}

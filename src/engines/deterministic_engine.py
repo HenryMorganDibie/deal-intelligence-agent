@@ -820,6 +820,7 @@ class DeterministicSignalEngine:
         off_target = 0
         stale = 0
         unattributed = 0
+        unattributed_titles: list[str] = []
         # Every source must fall inside the requested lookback window, whatever tool
         # produced it (undated sources are kept).
         window_end = _source_date(state.request.as_of_date) or utcnow()
@@ -882,6 +883,8 @@ class DeterministicSignalEngine:
             hits = match_rules_for_target(text, matchers)
             if not hits and _match_rules(text):
                 unattributed += 1      # names the company, but the event is someone else's
+                if len(unattributed_titles) < 3:
+                    unattributed_titles.append(news.title)
                 continue
             credibility = _source_credibility(news.source)
 
@@ -953,7 +956,9 @@ class DeterministicSignalEngine:
                     {"type": c.signal_type.value, "score": round(c.raw_score, 3),
                      "corroboration": c.corroboration_count, "patterns": c.matched_patterns[:2]}
                     for c in final_candidates
-                ]
+                ],
+                "off_target": off_target, "stale": stale, "unattributed": unattributed,
+                "unattributed_titles": unattributed_titles,
             }
         )
 

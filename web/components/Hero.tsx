@@ -1,4 +1,4 @@
-import { count, type Pulse } from "../lib/pulse";
+import { count, type Pulse, type ShowcaseBrief } from "../lib/pulse";
 import { LINKS } from "../lib/site";
 import { HeroBrief } from "./HeroBrief";
 import { ArrowRight, Container, Reveal } from "./primitives";
@@ -19,7 +19,7 @@ function facts(pulse: Pulse | null) {
   ];
 }
 
-export function Hero({ pulse = null }: { pulse?: Pulse | null }) {
+export function Hero({ pulse = null, brief = null }: { pulse?: Pulse | null; brief?: ShowcaseBrief | null }) {
   const FACTS = facts(pulse);
   return (
     <section id="top" aria-labelledby="hero-title" className="noise relative overflow-hidden pb-20 pt-32 sm:pb-28 sm:pt-40">
@@ -90,7 +90,7 @@ export function Hero({ pulse = null }: { pulse?: Pulse | null }) {
             className="absolute -inset-6 -z-10 rounded-[28px] opacity-70 blur-2xl"
             style={{ background: "radial-gradient(closest-side, rgba(110,231,200,0.10), transparent)" }}
           />
-          <HeroBrief />
+          <HeroBrief brief={brief} />
         </Reveal>
       </Container>
     </section>

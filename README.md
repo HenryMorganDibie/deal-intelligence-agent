@@ -207,7 +207,7 @@ function that reuses this repository's code unchanged.
 | Web | Vercel project, root directory `web/` | `NEXT_PUBLIC_API_URL`, optional `NEXT_PUBLIC_SITE_URL` |
 | API | Vercel project, repository root (`vercel.json`) | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `DEAL_INTEL_API_SECRET`, `ALLOWED_ORIGINS`, `CRON_SECRET`, `DEAL_INTEL_APP_URL`, `ANTHROPIC_API_KEY` and/or `GROQ_API_KEY`, `DEAL_INTEL_PER_VISITOR_DAILY` (10), `DEAL_INTEL_GLOBAL_DAILY` (300) |
 | Storage | Supabase | briefs, runs, outcomes, prices, LLM cache, deals, events and watchlists behind functions (`supabase/migrations/`) |
-| Crons | Vercel (daily) | `/api/cron/ingest` reads every feed into deals and events and delivers webhooks; `/api/cron/label` labels brief outcomes and snapshots NGX/NSE prices |
+| Crons | Vercel (daily) | `/api/cron/ingest` reads every feed into deals and events and delivers webhooks; `/api/cron/label` labels brief outcomes and snapshots NGX/NSE prices; `/api/cron/showcase` runs the pipeline on a fixed list of US and African companies (`engines/showcase.py`) for the landing page, stored apart from visitors' briefs |
 
 App pages: Briefs, Research, Deals, Investors, Companies, Countries, Alerts, Coverage, Evaluation. The API routes are listed at the top of `src/hosted_market.py`.
 

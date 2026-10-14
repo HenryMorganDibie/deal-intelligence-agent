@@ -628,7 +628,7 @@ def test_committed_tables_keep_their_observations():
     assert len(t.get("observations", [])) == t["backtest_observations"] > 0
 
 
-from datetime import date  # noqa: E402
+from datetime import date, timedelta  # noqa: E402
 
 from src.engines import pulse  # noqa: E402
 
@@ -653,3 +653,41 @@ def test_pulse_counts_only_stored_records():
     assert p["deals"]["top_countries"][0]["name"] in {"Kenya", "Nigeria"}
     assert p["events"]["recent"] == 1 and p["events"]["latest"][0]["country"]["name"] == "Ghana"
     assert p["latest_record"] == "2026-10-12"
+
+
+from src.engines import showcase  # noqa: E402
+
+
+def test_showcase_rotates_through_every_company():
+    seen = set()
+    for k in range(2):
+        seen.update(c[0] for c in showcase.todays_batch(date(2026, 10, 14) + timedelta(days=k)))
+    assert seen == {c[0] for c in showcase.COMPANIES}
+
+
+def test_showcase_summary_uses_the_reviewed_sources():
+    brief = {
+        "company_name": "Safaricom", "ticker": "SCOM.NR", "overall_severity": "high", "top_alpha_score": 71.2,
+        "analyst_model": "openai/gpt-oss-120b", "requires_human_review": True,
+        "filings_reviewed": [], "news_reviewed": [{"title": "Safaricom CEO resigns - Business Daily", "source": "Business Daily",
+                                                   "url": "u1", "published_date": "2026-10-10"}],
+        "signal_candidates_count": 2,
+        "detected_signals": [
+            {"signal_type": "leadership_change", "severity": "high", "source_urls": ["u1"], "evidence": ["raw text"],
+             "alpha_score": {"score": 71.2, "source_credibility": 0.7, "expected_magnitude_pct_low": -3.0,
+                             "expected_magnitude_pct_high": 1.0, "comparable_events_n": 40}},
+            {"signal_type": "m_and_a_activity", "severity": "low", "source_urls": [], "evidence": ["x"], "alpha_score": {"score": 30}},
+        ],
+        "reasoning_trace": [{"step": "deterministic_engine", "data": {"off_target": 9, "unattributed": 1,
+                                                                       "unattributed_titles": ["Airtel raises prices"]}}],
+    }
+    s = showcase.summarise(brief, brief_id="b1")
+    assert s["market"] == "NSE Kenya" and s["llm_used"] and s["off_target"] == 9
+    assert s["unattributed_title"] == "Airtel raises prices"
+    top = s["signals"][0]
+    assert top["signal_type"] == "leadership_change"
+    assert top["evidence"] == "Safaricom CEO resigns" and top["source"] == "Business Daily · 0.70 credibility"
+    quiet = showcase.summarise({"company_name": "Boeing", "detected_signals": []}, brief_id="b2")
+    assert showcase.pick([quiet, s])["id"] == "b1"
+    assert showcase.pick([quiet])["id"] == "b2"
+    assert showcase.pick([]) is None
