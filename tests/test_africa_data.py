@@ -344,3 +344,40 @@ def test_private_market_summary_from_deals():
     assert s["deal_count"] == 2 and s["as_target"] == 1
     assert s["equity_raised_usd"] == 110e6 and s["last_round"] == "series c"
     assert s["valuations"][0]["usd"] == 1e9 and s["investors_and_lenders"] == ["Development Partners International"]
+
+
+# ── Currency and sector risk, valuation view ──────────────────────────────────
+
+from src.engines import market_risk as mr  # noqa: E402
+
+
+def test_currency_risk_formula_and_peg_factor():
+    snap = _snapshot(**{"PA.NUS.FCRF": {"NGA": {"2020": 100.0, "2025": 200.0, "2024": 150.0},
+                                        "SEN": {"2024": 600.0, "2025": 660.0}}})
+    ngn = mr.currency_risk("NGN", snap, fx=lambda _: 220.0)
+    assert ngn["last_year_depreciation_pct"] == pytest.approx(33.33, abs=0.01)
+    assert ngn["spot_vs_official_pct"] == 10.0 and ngn["regime"] == "floating or managed float"
+    xof = mr.currency_risk("XOF", snap, fx=lambda _: None)
+    assert xof["regime"] == "hard peg" and xof["last_year_depreciation_pct"] == 10.0
+    raw = 0.4 * 20 + 0.35 * mr._clamp(10 / 30 * 100)                       # one change: no volatility
+    assert xof["score"] == pytest.approx(round(raw / 0.75 * 0.4, 1), abs=0.1)
+    assert len(mr.all_currencies()) == len({c.currency for c in ac.COUNTRIES})
+
+
+def test_sector_risk_is_smoothed_adverse_share():
+    from datetime import date
+    events = [{"sector": "banking", "day": "2026-10-01", "signal_type": "credit_risk", "countries": ["NG"], "headline": "x"},
+              {"sector": "banking", "day": "2026-10-02", "signal_type": "m_and_a_activity", "countries": ["NG"], "headline": "y"},
+              {"sector": "banking", "day": "2025-01-01", "signal_type": "credit_risk", "countries": ["NG"], "headline": "old"}]
+    deals = [{"sector": "banking", "announced": "2026-10-03", "countries": ["NG"], "amount_usd": 5e6}]
+    r = mr.sector_risk("banking", events, deals, country="NG", today=date(2026, 10, 14))
+    assert (r["adverse_events"], r["other_events"], r["deals"]) == (1, 1, 1)
+    assert r["score"] == pytest.approx((1 + 2.5) / (3 + 5) * 100, abs=0.1) and r["low_sample"]
+
+
+def test_valuation_view_uses_own_marks_and_comparables():
+    deals = [_deal("Nigeria’s Moniepoint raises $110m Series C at a $1bn valuation"),
+             _deal("Nigeria’s Paystack raises $100m Series C at a $900m valuation", published="2026-08-01")]
+    v = mr.valuation_view("Moniepoint", deals)
+    assert v["latest_mark"]["valuation_usd"] == 1e9 and v["latest_mark"]["basis"] == "reported"
+    assert [d["target"] for d in v["comparables"]["deals"]] == ["Paystack"]
