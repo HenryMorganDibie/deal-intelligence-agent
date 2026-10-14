@@ -32,9 +32,7 @@ export function Example({ brief = null }: { brief?: ShowcaseBrief | null }) {
   const date = live ? shortDate(live.created_at) : "13 Oct 2026";
   const lede = !live
     ? "An excerpt from a live run, with no LLM configured. The brief still arrives: the narrative falls back to the deterministic findings, says so, and asks for human review."
-    : live.llm_used
-      ? "An excerpt from this week's runs, regenerated every day on a fixed list of US and African companies. The model writes the narrative; the rule engine decided every signal in it."
-      : "An excerpt from this week's runs, regenerated every day on a fixed list of US and African companies. The model step was unavailable for this run, so the narrative falls back to the deterministic findings and says so.";
+    : "An excerpt from this week's runs, regenerated every day on a fixed list of US and African companies. Every signal, source and review flag below was decided by the rule engine; the full brief adds the model-written narrative.";
   return (
     <Section id="example" labelledBy="example-title">
       <Container>
@@ -77,18 +75,25 @@ export function Example({ brief = null }: { brief?: ShowcaseBrief | null }) {
                     </p>
                     <p className="mt-3 text-[1rem] leading-relaxed">{sig.evidence}</p>
                     <p className="kbd mt-1 text-[0.75rem] text-[color:var(--dim)]">{sig.source}</p>
-                    {live.executive_summary && (
-                      <div
-                        className={`mt-5 rounded-[10px] border p-4 ${
-                          live.requires_human_review ? "border-risk/25 bg-risk/[0.05]" : "hairline bg-white/[0.02]"
-                        }`}
-                      >
-                        {live.requires_human_review && (
-                          <p className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-risk">
-                            ⚑ Human review required before acting
-                          </p>
+                    {live.signals[1] && (
+                      <div className="mt-5 border-t hairline pt-4">
+                        <p className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-verified">
+                          Signal 2 · {label(SIGNAL_TYPE, live.signals[1].signal_type)} · {words(live.signals[1].severity)}
+                        </p>
+                        <p className="mt-2 text-[0.9375rem] leading-relaxed">{live.signals[1].evidence}</p>
+                        <p className="kbd mt-1 text-[0.75rem] text-[color:var(--dim)]">{live.signals[1].source}</p>
+                      </div>
+                    )}
+                    {live.requires_human_review && (
+                      <div className="mt-5 rounded-[10px] border border-risk/25 bg-risk/[0.05] p-4">
+                        <p className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-risk">⚑ Human review required before acting</p>
+                        {(live.review_reasons ?? []).length > 0 && (
+                          <ul className="mt-2 space-y-1 text-[0.875rem] text-[color:var(--muted)]">
+                            {(live.review_reasons ?? []).map((r) => (
+                              <li key={r}>{r}</li>
+                            ))}
+                          </ul>
                         )}
-                        <p className="mt-2 line-clamp-5 text-[0.875rem] text-[color:var(--muted)]">{live.executive_summary}</p>
                       </div>
                     )}
                     <a href={`/app/briefs/${live.id}`} className="kbd mt-5 inline-block text-[0.8125rem] text-verified hover:underline">

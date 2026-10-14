@@ -170,6 +170,7 @@ export type ShowcaseBrief = {
   off_target: number | null;
   unattributed: number | null;
   unattributed_title: string | null;
+  review_reasons?: string[];
   signal_count: number;
   signals: ShowcaseSignal[];
 };

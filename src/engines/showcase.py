@@ -67,6 +67,14 @@ def _origin(sig: dict, brief: dict) -> tuple[str, str]:
     return ev, f"Source{tail}"
 
 
+def _strip_publisher(title: Optional[str]) -> Optional[str]:
+    """'Headline - Investing.com' -> 'Headline' (news titles carry their publisher)."""
+    if not title:
+        return title
+    head, sep, tail = title.rpartition(" - ")
+    return head if sep and head and len(tail) <= 40 and len(tail.split()) <= 4 else title
+
+
 def summarise(brief: dict, *, brief_id: Optional[str] = None, created_at: Optional[str] = None,
               market: Optional[str] = None) -> dict:
     """What the landing page shows: pipeline counts, top signals and one story dropped as off-target."""
@@ -98,7 +106,8 @@ def summarise(brief: dict, *, brief_id: Optional[str] = None, created_at: Option
         "total_sources": brief.get("total_sources"),
         "candidates": brief.get("signal_candidates_count", 0),
         "off_target": trace.get("off_target"), "unattributed": trace.get("unattributed"),
-        "unattributed_title": (trace.get("unattributed_titles") or [None])[0],
+        "unattributed_title": _strip_publisher((trace.get("unattributed_titles") or [None])[0]),
+        "review_reasons": (brief.get("human_review_reasons") or [])[:3],
         "signal_count": len(brief.get("detected_signals") or []),
         "signals": signals,
     }
