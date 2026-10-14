@@ -227,6 +227,7 @@ def _news_throttled() -> None:
         _NEWS_STATE["strikes"] = min(_NEWS_STATE["strikes"] + 1, 6)
         pause = 15 * 2 ** (_NEWS_STATE["strikes"] - 1)            # 15 s, 30 s, ... up to 8 minutes
         _NEWS_STATE["cooldown_until"] = max(_NEWS_STATE["cooldown_until"], time.monotonic() + pause)
+    log.info("news throttled: pausing all searches for %ss", pause)
 
 
 def _news_ok() -> None:
@@ -241,7 +242,9 @@ def _news_get(client: httpx.Client, url: str, attempts: int = 6) -> Optional[htt
         try:
             r = client.get(url)
         except httpx.HTTPError:
-            _news_throttled()
+            # A dropped connection (a proxy or tunnel closing) is not throttling: retry at once on a
+            # fresh connection rather than pausing every thread.
+            time.sleep(1)
             continue
         if r.status_code == 200:
             _news_ok()
