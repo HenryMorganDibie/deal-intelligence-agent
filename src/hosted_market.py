@@ -30,6 +30,7 @@ import ipaddress
 import json
 import logging
 import os
+import re
 import socket
 import time
 import uuid
@@ -525,6 +526,46 @@ def _backtest_freshness() -> Optional[dict]:
 
 
 # ── Market pulse (public site) ───────────────────────────────────────────────
+
+# ── Owner-only usage counts ──────────────────────────────────────────────────
+
+ADMIN_KEY = os.environ.get("DEAL_INTEL_ADMIN_KEY", "")
+_VISITOR = re.compile(r"^[a-z0-9]{8,40}$")
+
+
+@router.post("/api/track")
+async def track_visit(request: Request) -> dict:
+    """One page view from the site's beacon (text/plain JSON: {"v": visitor id, "p": path}). Never fails loudly."""
+    try:
+        body = json.loads((await request.body())[:1000] or b"{}")
+        visitor, path = str(body.get("v", "")), str(body.get("p", ""))
+    except (ValueError, AttributeError):
+        return {"ok": False}
+    if not (_configured() and _VISITOR.match(visitor) and path.startswith("/") and len(path) <= 200):
+        return {"ok": False}
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await _rpc(client, "log_visit", {"p_visitor": visitor, "p_path": path.split("?")[0]})
+    return {"ok": r.is_success}
+
+
+@router.post("/api/admin/stats")
+async def admin_stats(request: Request) -> dict:
+    """Visits and product users for the owner's page; needs DEAL_INTEL_ADMIN_KEY in the JSON body."""
+    import hmac
+    try:
+        body = await request.json()
+    except ValueError:
+        body = {}
+    key = str(body.get("key", ""))
+    if not (ADMIN_KEY and _configured() and hmac.compare_digest(key, ADMIN_KEY)):
+        raise HTTPException(status_code=401, detail="Wrong key")
+    days = max(1, min(int(body.get("days", 30) or 30), 365))
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "visit_stats", {"p_days": days})
+    if not r.is_success:
+        raise HTTPException(status_code=502, detail="Stats unavailable")
+    return r.json()
+
 
 @router.get("/api/pulse")
 async def market_pulse() -> dict:
