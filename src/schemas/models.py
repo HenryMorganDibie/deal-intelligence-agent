@@ -173,6 +173,10 @@ class AlphaScore(BaseModel):
     corroboration_weight: float = Field(..., ge=0.0, le=1.0)
     recency_weight: float = Field(..., ge=0.0, le=1.0)
     liquidity_tier: LiquidityTier = LiquidityTier.PRIVATE
+    learned_confirmation_probability: Optional[float] = Field(
+        None, ge=0.0, le=1.0,
+        description="Experimental probability from a promoted, time-split learned ranker; separate from alpha and not a buy recommendation",
+    )
 
     # Expected move: measured market-adjusted 10-day returns after the same kind of flag
     # (signed interquartile range and median), or None with confidence "insufficient".

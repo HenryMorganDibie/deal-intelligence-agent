@@ -1,0 +1,51 @@
+{
+  "nodes": {
+    "finnfund": {
+      "name": "Finnfund",
+      "kind": "organization"
+    },
+    "bisedge": {
+      "name": "Bisedge",
+      "kind": "organization"
+    },
+    "amethis": {
+      "name": "Amethis",
+      "kind": "organization"
+    },
+    "ati industries": {
+      "name": "ATI Industries",
+      "kind": "organization"
+    }
+  },
+  "edges": {
+    "1cb847318bceabb3b422": {
+      "id": "1cb847318bceabb3b422",
+      "from": "finnfund",
+      "to": "bisedge",
+      "type": "debt_financing",
+      "first_seen": "2026-10-15",
+      "sources": [
+        {
+          "title": "Bisedge Secures $11.2 Million Debt Financing from Finnfund to Expand Electric Logistics Across Africa",
+          "publisher": "Tech In Africa",
+          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxPM1VEbjZ1SVBJRTdYR1VFMzNfV0xVWmxpc2lsSlEzWmVWbUVFd2JMRFZYeEpSRnYxSUVIT0V1bmU5WlpUeTk2SWJoaV9Ec0lfRW0yYTVnR1VaaTlYZGRINWNSX1ROQ0tra1pKdzBHOC00VW1kdTNJWnRBUHNRd3Rua2I2X3diWVlDZTBveWFFa2M0TTRpZFNqN2RNVjJEVkdfM3h0OER4ekRmcnpNUEZibm1mQTJqOFBDZGZPb2ZHRTQtN1JzMjZOSDlB?oc=5"
+        }
+      ]
+    },
+    "7f0be1002961e4ef858f": {
+      "id": "7f0be1002961e4ef858f",
+      "from": "amethis",
+      "to": "ati industries",
+      "type": "acquisition",
+      "first_seen": "2026-10-15",
+      "sources": [
+        {
+          "title": "Amethis takes stake in ATI Industries",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNVURCSEFScjI0TUkwWUgtNzVaTjJyZWk0Yk8wcVBGU0NHUlZZNUJxNFlITmtnVFJ2S3FybEZEOXJTN0ZrMHpTMTVhYnVUMjZqaUpzNkh6VU11alJ6b0l6UzdmQ1NFWWsyWkRRVEZZejVMVWRHdjlyM0VPNnBVZ1IwcjVwdzZKUQ?oc=5"
+        }
+      ]
+    }
+  },
+  "updated_at": "2026-10-15T22:39:02.448285+00:00"
+}

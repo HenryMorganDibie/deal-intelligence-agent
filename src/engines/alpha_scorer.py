@@ -23,9 +23,13 @@ The alpha score is NOT a buy/sell recommendation.
 """
 from __future__ import annotations
 
+import json
+import logging
+import math
 import re
-
 from datetime import datetime, timedelta
+from functools import lru_cache
+from pathlib import Path
 from typing import Optional
 
 from src.schemas.models import (
@@ -34,6 +38,9 @@ from src.schemas.models import (
 )
 from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY, candidate_credibility
 from src.utils.clock import utcnow
+
+log = logging.getLogger(__name__)
+_RANKER_PATH = Path(__file__).resolve().parents[2] / "docs" / "automation" / "learned_ranker.json"
 
 # ─── Component weights (design choices; see the module docstring) ─────────────
 WEIGHTS = {"severity": 0.35, "source_credibility": 0.25, "corroboration": 0.20, "recency": 0.10, "liquidity": 0.10}
@@ -274,6 +281,66 @@ def expected_move_for(signal_type: SignalType, severity: Severity, source_text: 
                      + ("; direction stated by the source" if stated else "")}
 
 
+@lru_cache(maxsize=1)
+def _load_learned_ranker() -> Optional[dict]:
+    if not _RANKER_PATH.exists():
+        return None
+    try:
+        model = json.loads(_RANKER_PATH.read_text(encoding="utf-8"))
+        if (
+            not isinstance(model, dict)
+            or model.get("model") != "logistic_regression"
+            or not isinstance(model.get("weights"), list)
+            or not isinstance(model.get("feature_names"), list)
+            or len(model["weights"]) != len(model["feature_names"]) + 1
+        ):
+            raise ValueError("ranker has an unsupported model type or incompatible weights")
+        return model
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        log.error("Learned confirmation ranker could not be loaded from %s: %s", _RANKER_PATH, exc)
+        return None
+
+
+def _learned_confirmation_probability(
+    signal: DetectedSignal,
+    candidate: SignalCandidate,
+    alpha_score: float,
+    ticker: Optional[str],
+    direction: Optional[str],
+) -> Optional[float]:
+    model = _load_learned_ranker()
+    if model is None:
+        return None
+
+    try:
+        from src.data.africa_countries import from_ticker
+        market = "africa" if from_ticker(ticker) else "us"
+    except (ImportError, AttributeError):
+        log.exception("Cannot resolve the market for the learned confirmation ranker")
+        return None
+    values = {
+        "alpha": alpha_score / 100.0,
+        "severity": {
+            Severity.LOW: 0.0,
+            Severity.MEDIUM: 1.0 / 3.0,
+            Severity.HIGH: 2.0 / 3.0,
+            Severity.CRITICAL: 1.0,
+        }[signal.severity],
+        f"signal_type={signal.signal_type.value}": 1.0,
+        f"source_kind={candidate.source_type.strip().lower()}": 1.0,
+        f"market={market}": 1.0,
+    }
+    if direction:
+        values[f"direction={direction.strip().lower()}"] = 1.0
+    weights = model["weights"]
+    logit = weights[0] + sum(
+        weights[index + 1] * values.get(name, 0.0)
+        for index, name in enumerate(model["feature_names"])
+    )
+    probability = 1.0 / (1.0 + math.exp(-max(min(logit, 35.0), -35.0)))
+    return round(probability, 4)
+
+
 def compute_alpha_score(
     signal: DetectedSignal,
     candidate: SignalCandidate,
@@ -327,6 +394,9 @@ def compute_alpha_score(
         comparable_events_n=move["n"],
         move_confidence=move["confidence"],
         move_basis=move["basis"],
+        learned_confirmation_probability=_learned_confirmation_probability(
+            signal, candidate, alpha_score, ticker, move["direction"]
+        ),
         requires_human_review=requires_review,
         review_reason=review_reason,
     )

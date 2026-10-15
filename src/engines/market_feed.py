@@ -232,7 +232,7 @@ def to_events(items: Iterable[dict], min_score: float = 0.7) -> list[dict]:
             continue
         signal_type, score = max(hits, key=lambda h: h[1])
         countries = [c.iso2 for c in countries_in_text(f"{title} {it.get('snippet', '')}")]
-        if it.get("country_hint") and it["country_hint"] not in countries:
+        if not countries and it.get("country_hint"):
             countries.append(it["country_hint"])
         out.append({
             "id": event_id(title),

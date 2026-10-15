@@ -1,0 +1,46 @@
+{
+  "model": "logistic_regression",
+  "feature_names": [
+    "alpha",
+    "direction=negative",
+    "direction=positive",
+    "market=africa",
+    "market=us",
+    "severity",
+    "signal_type=credit_risk",
+    "signal_type=debt_restructuring",
+    "signal_type=distressed_asset",
+    "signal_type=leadership_change",
+    "signal_type=m_and_a_activity",
+    "signal_type=regulatory_action",
+    "source_kind=filing",
+    "source_kind=news"
+  ],
+  "weights": [
+    -1.362576065052729,
+    0.04579204253077216,
+    0.12785251395261063,
+    -0.24862569010176733,
+    -0.21856824383279153,
+    0.0977950676836346,
+    0.1314745115006483,
+    -0.12996391075408376,
+    -0.023513913509411122,
+    -0.07558241236790587,
+    0.5680151218202201,
+    -0.24862569010176733,
+    -0.211102371236209,
+    0.25046965235440105,
+    -0.3712428285035579
+  ],
+  "trained_through": "2025-02-08",
+  "holdout_from": "2025-03-10",
+  "holdout_metrics": {
+    "n": 981,
+    "positives": 264,
+    "base_rate": 0.269113,
+    "precision_at_20pct": 0.411168,
+    "brier": 0.173038
+  },
+  "created_at": "2026-10-15T22:39:05.650183+00:00"
+}

@@ -32,6 +32,7 @@ _STORES = [
     ("src.engines.historical_backtest", "RUNS_DIR",            "backtest_runs"),
     ("src.engines.backtest_universe",   "UNIVERSE_PATH",       "backtest_universe.csv"),
     ("src.engines.deals",              "DEALS_PATH",           "deals.json"),
+    ("src.engines.alpha_scorer",       "_RANKER_PATH",         "learned_ranker.json"),
 ]
 
 
@@ -47,7 +48,10 @@ def isolated_data_dir(tmp_path, monkeypatch):
     for key in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "GROQ_API_KEY"):
         monkeypatch.delenv(key, raising=False)
     # Keep tests offline and deterministic: no live market-cap lookups.
-    monkeypatch.setattr(importlib.import_module("src.engines.alpha_scorer"), "_market_cap_usd", lambda ticker: None)
+    alpha_scorer = importlib.import_module("src.engines.alpha_scorer")
+    monkeypatch.setattr(alpha_scorer, "_market_cap_usd", lambda ticker: None)
+    alpha_scorer._load_learned_ranker.cache_clear()
     # Cached singletons hold data loaded from the previous test's store.
     monkeypatch.setattr(importlib.import_module("src.engines.entity_resolver"), "_resolver", None)
     yield data_dir
+    alpha_scorer._load_learned_ranker.cache_clear()

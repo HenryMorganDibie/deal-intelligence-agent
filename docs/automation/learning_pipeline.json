@@ -1,0 +1,88 @@
+{
+  "updated_at": "2026-10-15T22:39:05.668683+00:00",
+  "summary": {
+    "total_phases": 5,
+    "active_phases": 4,
+    "message": "Daily GitHub Actions collects new review data, incrementally builds financial and deal graphs, and publishes learned ranking only when holdout validation improves."
+  },
+  "stages": [
+    {
+      "id": "event_classifier",
+      "name": "Event classifier",
+      "status": "collecting_labels",
+      "labels_collected": 0,
+      "labels_target": 1500,
+      "new_review_items_today": 0,
+      "evaluation": {
+        "status": "collecting_labels",
+        "training_labels": 0,
+        "heldout_items": 680,
+        "reason": "Requires at least 1,000 reviewed training headlines and the locked 680-item attribution evaluation set."
+      },
+      "notes": "The current 680-headline attribution set is held out from event-type training; this model uses only reviewed event labels."
+    },
+    {
+      "id": "entity_resolution",
+      "name": "Entity resolution",
+      "status": "collecting_labels",
+      "labels_collected": 0,
+      "labels_target": 2000,
+      "new_review_items_today": 0,
+      "evaluation": {
+        "status": "collecting_labels",
+        "training_labels": 0,
+        "holdout_labels": 0,
+        "reason": "Requires at least 500 reviewed training pairs and 100 separately held-out pairs."
+      },
+      "notes": "Fuzzy candidate pairs are queued for human review; ambiguous entities are not merged automatically."
+    },
+    {
+      "id": "financial_anomalies",
+      "name": "Financial anomalies",
+      "status": "collecting_data",
+      "observations_collected": 2,
+      "new_observations_today": 0,
+      "unreviewed_flagged_observations": 0,
+      "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
+    },
+    {
+      "id": "graph_intelligence",
+      "name": "Graph intelligence",
+      "status": "collecting_relationships",
+      "relationships": 2,
+      "entities": 4,
+      "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
+    },
+    {
+      "id": "learned_ranking",
+      "name": "Learned ranking",
+      "status": "promoted",
+      "eligible_backtest_rows": 4108,
+      "holdout_metrics": {
+        "learned_ranker": {
+          "n": 981,
+          "positives": 264,
+          "base_rate": 0.269113,
+          "precision_at_20pct": 0.411168,
+          "brier": 0.173038
+        },
+        "alpha_baseline": {
+          "n": 981,
+          "positives": 264,
+          "base_rate": 0.269113,
+          "precision_at_20pct": 0.243655,
+          "brier": 0.302027
+        },
+        "prevalence_baseline": {
+          "n": 981,
+          "positives": 264,
+          "base_rate": 0.269113,
+          "precision_at_20pct": 0.269113,
+          "brier": 0.197143
+        }
+      },
+      "promoted": true,
+      "notes": "A time-ordered holdout gates promotion; the deployed model is not overwritten when the candidate fails validation."
+    }
+  ]
+}

@@ -43,6 +43,14 @@ function SignalCard({ s }: { s: Signal }) {
             alpha {s.alpha_score.score.toFixed(0)}
           </span>
         )}
+        {s.alpha_score?.learned_confirmation_probability != null && (
+          <span
+            className="kbd text-[0.75rem] text-[color:var(--muted)]"
+            title="Experimental learned probability of historical event confirmation. Separate from alpha; not a buy/sell recommendation."
+          >
+            learned confirmation {Math.round(s.alpha_score.learned_confirmation_probability * 100)}%
+          </span>
+        )}
         {move && (
           <span
             title={s.alpha_score?.move_basis ?? "Measured market-adjusted 10-day move after similar flags"}

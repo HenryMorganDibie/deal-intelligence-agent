@@ -4,6 +4,7 @@ export type Severity = "low" | "medium" | "high" | "critical";
 
 export type AlphaScore = {
   score: number;
+  learned_confirmation_probability?: number | null;
   expected_direction?: "positive" | "negative" | "mixed" | "neutral" | null;
   expected_magnitude_pct_low?: number | null;
   expected_magnitude_pct_high?: number | null;

@@ -1,0 +1,53 @@
+name: Daily learning pipeline
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: daily-learning-pipeline
+  cancel-in-progress: false
+
+jobs:
+  collect-train-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: requirements-backtest.txt
+
+      - name: Install pipeline dependencies
+        run: pip install -r requirements-backtest.txt
+
+      - name: Collect review data, gather financials, build graph and evaluate models
+        run: python scripts/daily_pipeline.py
+
+      - name: Propose validated datasets and site data
+        uses: peter-evans/create-pull-request@v7
+        with:
+          add-paths: |
+            docs/automation
+            web/data/investment_ideas.json
+          branch: automation/daily-learning-pipeline
+          delete-branch: true
+          title: Refresh daily research and model evaluation data
+          commit-message: Refresh daily research and model evaluation data
+          body: |
+            Daily research pipeline results and validated model artifacts.
+
+            Review the generated queues, data provenance, and evaluation gates before merging.
+            Merging this pull request publishes the updated site data through the normal deployment integration.

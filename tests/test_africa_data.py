@@ -243,6 +243,17 @@ def test_parse_feed_and_extract_deals_and_events():
     assert [(e["signal_type"], e["country"]) for e in events] == [("regulatory_action", "GH")]
 
 
+def test_event_country_uses_story_location_over_search_hint():
+    items = [{"title": "IEBC officials face Sh2 million fine, five years in jail over ungazetted polling stations",
+              "country_hint": "ET"}]
+
+    events = mf.to_events(items)
+
+    assert len(events) == 1
+    assert events[0]["country"] == "KE"
+    assert events[0]["countries"] == ["KE"]
+
+
 def test_country_queries_cover_every_country():
     labels = {c.iso2 for _, _, c in mf.country_queries()}
     assert labels == {c.iso2 for c in ac.COUNTRIES}
