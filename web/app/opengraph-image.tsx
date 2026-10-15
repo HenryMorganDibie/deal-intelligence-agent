@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
 
 /* The link-preview card (X, LinkedIn, WhatsApp, Slack): the headline beside the latest deals that
- * several independent sources report, with live counts. Rebuilt hourly from the hosted API. */
+ * several independent sources report, with live counts. Rebuilt hourly from the hosted API. Every fetch
+ * has a short timeout so a crawler always gets an image quickly, with fallbacks if data is slow. */
 
 export const runtime = "edge";
 export const revalidate = 3600;
@@ -53,7 +54,7 @@ const count = (v: number) => v.toLocaleString("en-US");
 async function json<T>(path: string): Promise<T | null> {
   if (!API_URL) return null;
   try {
-    const r = await fetch(`${API_URL}${path}`, { next: { revalidate } });
+    const r = await fetch(`${API_URL}${path}`, { next: { revalidate }, signal: AbortSignal.timeout(2500) });
     return r.ok ? ((await r.json()) as T) : null;
   } catch {
     return null;
@@ -62,9 +63,9 @@ async function json<T>(path: string): Promise<T | null> {
 
 async function font(family: string, weight: number): Promise<ArrayBuffer | null> {
   try {
-    const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${family}:wght@${weight}`)).text();
+    const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${family}:wght@${weight}`, { signal: AbortSignal.timeout(1500) })).text();
     const src = css.match(/src: url\((.+?)\) format\('(opentype|truetype)'\)/)?.[1];
-    return src ? await (await fetch(src)).arrayBuffer() : null;
+    return src ? await (await fetch(src, { signal: AbortSignal.timeout(1500) })).arrayBuffer() : null;
   } catch {
     return null;
   }
