@@ -372,6 +372,45 @@ def _checkpoint(run_dir: Path, ticker: str) -> Path:
     return run_dir / (re.sub(r"[^A-Za-z0-9.]+", "_", ticker) + ".json")
 
 
+def current_period(today: date) -> tuple[date, date, int]:
+    """(start, end, step_days) the monthly run works on: the published period while some of its companies
+    are still to run, so each month adds to it; once it is complete, the latest rolling period."""
+    try:
+        pub = json.loads(SUMMARY_PATH.read_text())
+    except (OSError, ValueError):
+        pub = {}
+    if pub.get("missing_companies") and pub.get("start") and pub.get("end"):
+        return date.fromisoformat(pub["start"]), date.fromisoformat(pub["end"]), int(pub.get("step_days", 30))
+    start, end = rolling_period(today)
+    return start, end, 0
+
+
+def publish_decision(start: date, end: date, universe: list[tuple]) -> tuple[bool, str]:
+    """Whether the finished companies of [start, end] should replace the published results: always when
+    every company is done; for an unfinished run only when it is the published period and covers more
+    companies than are published now, so a partial month never replaces a fuller result."""
+    run_dir = RUNS_DIR / f"{start}_{end}"
+    covered = missing = 0
+    for e in universe:
+        path = _checkpoint(run_dir, e[1])
+        if not path.exists():
+            missing += 1
+        elif json.loads(path.read_text()).get("covered", True):
+            covered += 1
+    if not missing:
+        return True, f"all {len(universe)} companies done ({covered} with usable history)"
+    try:
+        pub = json.loads(SUMMARY_PATH.read_text())
+    except (OSError, ValueError):
+        pub = {}
+    same = pub.get("start") == start.isoformat() and pub.get("end") == end.isoformat()
+    published = int(pub.get("companies") or 0)
+    if same and covered > published:
+        return True, f"{covered} companies now, {published} published; {missing} still to run"
+    return False, (f"{covered} companies done, {published} published"
+                   f"{'' if same else ' for another period'}; {missing} still to run, keeping the published results")
+
+
 def plan_shards(start: date, end: date, universe: list[tuple], shards: int) -> dict:
     """Split the companies of [start, end] that have no checkpoint yet into `shards` interleaved groups,
     one per machine, so each runner (with its own address) searches news for a different set."""
@@ -432,10 +471,11 @@ def run(
     if remaining:
         progress(f"{len(remaining)} companies still to run; resume to finish")
         return None
-    return aggregate(start, end, universe, dates, run_dir)
+    return aggregate(start, end, universe, dates, run_dir, step_days)
 
 
-def aggregate(start: date, end: date, universe: list[tuple], dates: list[date], run_dir: Path) -> dict:
+def aggregate(start: date, end: date, universe: list[tuple], dates: list[date], run_dir: Path,
+              step_days: Optional[int] = None) -> dict:
     """Combine per-company checkpoints into metrics, tables and reports. Companies with no news and no
     filings in the whole period (delisted, or never covered) are left out of every denominator."""
     predictions: list[dict] = []
@@ -465,7 +505,9 @@ def aggregate(start: date, end: date, universe: list[tuple], dates: list[date], 
             base.setdefault(st, {}).setdefault(mk, 0)
             base[st][mk] += n
     metrics = compute_metrics(predictions, truth, base, months, market_of)
-    result = {"start": start.isoformat(), "end": end.isoformat(), "as_of_dates": len(dates),
+    if step_days is None:                  # monthly on the start's day of month, or a fixed spacing
+        step_days = 0 if all(d.day == start.day for d in dates) else (dates[1] - dates[0]).days if len(dates) > 1 else 0
+    result = {"start": start.isoformat(), "end": end.isoformat(), "step_days": step_days, "as_of_dates": len(dates),
               "companies": sum(companies.values()), "companies_by_market": companies, "company_months": months,
               "uncovered_companies": uncovered, "missing_companies": missing, "universe_size": len(universe),
               "lookback_days": LOOKBACK_DAYS, "horizon_days": HORIZON_DAYS,
@@ -478,7 +520,7 @@ def aggregate(start: date, end: date, universe: list[tuple], dates: list[date], 
     write_tables(result)
     from src.engines import evaluation_report
     evaluation_report.write(result)
-    SUMMARY_PATH.write_text(json.dumps({k: result[k] for k in ("start", "end", "as_of_dates", "companies",
+    SUMMARY_PATH.write_text(json.dumps({k: result[k] for k in ("start", "end", "step_days", "as_of_dates", "companies",
                                                                 "companies_by_market", "company_months",
                                                                 "uncovered_companies", "missing_companies", "universe_size",
                                                                 "lookback_days", "horizon_days", "metrics",

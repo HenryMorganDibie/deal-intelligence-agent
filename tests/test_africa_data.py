@@ -837,3 +837,30 @@ def test_shard_plan_splits_only_unfinished_companies():
     assert sorted(t for s in shards for t in s) == [f"FIC{i}" for i in range(1, 7)]
     assert len(shards) == 4 and max(map(len, shards)) - min(map(len, shards)) <= 1
     assert hb.plan_shards(date(2024, 1, 15), date(2025, 6, 15), universe[:1], 4)["shards"] == []
+
+
+def test_monthly_run_continues_the_unfinished_period_and_publishes_only_improvements():
+    import json
+    from datetime import date
+    from src.engines import historical_backtest as hb
+    universe = [(f"Fictional Co {i}", f"FIC{i}", "us") for i in range(4)]
+    start, end = date(2024, 1, 15), date(2025, 6, 15)
+    run_dir = hb.RUNS_DIR / f"{start}_{end}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    hb.SUMMARY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    hb.SUMMARY_PATH.write_text(json.dumps({"start": "2024-01-15", "end": "2025-06-15", "companies": 2,
+                                           "missing_companies": 2}))
+    assert hb.current_period(date(2026, 11, 2)) == (start, end, 30)
+
+    for t in ("FIC0", "FIC1"):
+        hb._checkpoint(run_dir, t).write_text(json.dumps({"covered": True}))
+    assert hb.publish_decision(start, end, universe)[0] is False          # no more than is published
+    hb._checkpoint(run_dir, "FIC2").write_text(json.dumps({"covered": True}))
+    assert hb.publish_decision(start, end, universe)[0] is True           # more companies than published
+    other = date(2024, 2, 15), date(2025, 7, 15)
+    assert hb.publish_decision(*other, universe)[0] is False               # a partial new period never replaces
+    hb._checkpoint(run_dir, "FIC3").write_text(json.dumps({"covered": False}))
+    assert hb.publish_decision(start, end, universe)[0] is True           # complete
+
+    hb.SUMMARY_PATH.write_text(json.dumps({"start": "2024-01-15", "end": "2025-06-15", "missing_companies": 0}))
+    assert hb.current_period(date(2026, 11, 2)) == (*hb.rolling_period(date(2026, 11, 2)), 0)

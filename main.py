@@ -130,8 +130,11 @@ def build_parser() -> argparse.ArgumentParser:
                     help="Stop starting new companies after this long; exit code 75 if the run is incomplete")
     bt.add_argument("--plan-shards", type=int, default=None, metavar="N",
                     help="Print, as JSON, the companies still to run split into N shards (one per machine)")
-    bt.add_argument("--period", choices=["fixed", "rolling"], default="fixed",
-                    help="rolling: the latest 18 monthly as-of dates whose 90-day horizon has closed")
+    bt.add_argument("--period", choices=["fixed", "rolling", "continue"], default="fixed",
+                    help="rolling: the latest 18 monthly as-of dates whose 90-day horizon has closed; "
+                         "continue: the published period while it is unfinished, else rolling")
+    bt.add_argument("--publish", action="store_true",
+                    help="Aggregate the finished companies and publish them if they improve on the published results")
     bt.add_argument("--start", default="2024-01-15", help="First as-of date for --historical")
     bt.add_argument("--end",   default="2025-06-15", help="Last as-of date for --historical")
 
@@ -649,6 +652,18 @@ def _run_calibration(args: argparse.Namespace) -> None:
 
 # ─── backtest ─────────────────────────────────────────────────────────────────
 
+def _backtest_period(args: argparse.Namespace):
+    """(start, end, step_days) for --period: fixed uses --start/--end every 30 days; rolling and continue
+    use monthly as-of dates (see historical_backtest.current_period)."""
+    from datetime import date as _date
+    from src.engines import historical_backtest as hb
+    if args.period == "rolling":
+        return (*hb.rolling_period(_date.today()), 0)
+    if args.period == "continue":
+        return hb.current_period(_date.today())
+    return _date.fromisoformat(args.start), _date.fromisoformat(args.end), 30
+
+
 def _run_backtest(args: argparse.Namespace) -> None:
     from src.engines.backtest import BacktestEngine, get_latest_backtest
 
@@ -676,14 +691,24 @@ def _run_backtest(args: argparse.Namespace) -> None:
 
     if getattr(args, "plan_shards", None):
         import json as _json
-        from datetime import date as _date
         from src.engines import backtest_universe
         from src.engines import historical_backtest as hb
-        if args.period == "rolling":
-            args.start, args.end = (d.isoformat() for d in hb.rolling_period(_date.today()))
-        plan = hb.plan_shards(_date.fromisoformat(args.start), _date.fromisoformat(args.end),
-                              backtest_universe.load(), args.plan_shards)
+        start, end, _ = _backtest_period(args)
+        plan = hb.plan_shards(start, end, backtest_universe.load(), args.plan_shards)
         print(_json.dumps(plan))
+        return
+
+    if getattr(args, "publish", False):
+        from src.engines import backtest_universe
+        from src.engines import historical_backtest as hb
+        start, end, step = _backtest_period(args)
+        universe = backtest_universe.load()
+        ok, why = hb.publish_decision(start, end, universe)
+        if not ok:
+            console.print(f"[yellow]Not published:[/yellow] {why}")
+            return
+        hb.aggregate(start, end, universe, hb._as_of_dates(start, end, step), hb.RUNS_DIR / f"{start}_{end}", step)
+        console.print(f"[green]✓[/green] Published {start} to {end}: {why}")
         return
 
     if getattr(args, "historical", False):
@@ -695,12 +720,10 @@ def _run_backtest(args: argparse.Namespace) -> None:
             raw = Path(args.tickers[1:]).read_text() if args.tickers.startswith("@") else args.tickers
             wanted = {t.strip() for t in raw.replace("\n", ",").split(",") if t.strip()}
             universe = [e for e in universe if e[1] in wanted]
-        if args.period == "rolling":
-            args.start, args.end = (d.isoformat() for d in hb.rolling_period(_date.today()))
-        console.print(f"[cyan]Walk-forward backtest {args.start} → {args.end} over {len(universe)} companies, "
+        start, end, step = _backtest_period(args)
+        console.print(f"[cyan]Walk-forward backtest {start} → {end} over {len(universe)} companies, "
                       f"{args.workers} in parallel (responses and per-company results are cached; a rerun resumes)…[/cyan]")
-        result = hb.run(_date.fromisoformat(args.start), _date.fromisoformat(args.end), universe=universe,
-                        step_days=0 if args.period == "rolling" else 30,
+        result = hb.run(start, end, universe=universe, step_days=step,
                         workers=args.workers, deadline_minutes=args.deadline_minutes,
                         aggregate_results=not args.no_aggregate,
                         progress=lambda m: console.print(f"[dim]{m}[/dim]"))

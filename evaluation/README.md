@@ -15,8 +15,9 @@ page renders them.
 The signal backtest re-runs every month (`.github/workflows/backtest.yml`, on the 2nd): it replays
 the latest 18 monthly dates (the 15th) whose 90-day outcome windows have closed, over
 the universe in `docs/backtest_universe.csv`. The companies are split across four machines, each
-searching news from its own address; rounds repeat until every company is done, and the last one
-commits the regenerated report, measured tables and prediction file, which redeploys the site. Live outcomes from hosted briefs update hourly. The deal
+searching news from its own address, within the free GitHub Actions allowance (one capped run a month).
+While a period is unfinished, each month continues it and republishes once it covers more companies;
+the committed results, measured tables and prediction file redeploy the site. Live outcomes from hosted briefs update hourly. The deal
 and attribution sets change only when new labelled samples are drawn.
 
 ## How the labels were made
