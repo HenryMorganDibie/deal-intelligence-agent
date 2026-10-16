@@ -15,6 +15,14 @@
     "ati industries": {
       "name": "ATI Industries",
       "kind": "organization"
+    },
+    "renaissance": {
+      "name": "Renaissance",
+      "kind": "organization"
+    },
+    "local oil contractors": {
+      "name": "Local Oil Contractors",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -45,7 +53,21 @@
           "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNVURCSEFScjI0TUkwWUgtNzVaTjJyZWk0Yk8wcVBGU0NHUlZZNUJxNFlITmtnVFJ2S3FybEZEOXJTN0ZrMHpTMTVhYnVUMjZqaUpzNkh6VU11alJ6b0l6UzdmQ1NFWWsyWkRRVEZZejVMVWRHdjlyM0VPNnBVZ1IwcjVwdzZKUQ?oc=5"
         }
       ]
+    },
+    "da6b27eb208706cad253": {
+      "id": "da6b27eb208706cad253",
+      "from": "renaissance",
+      "to": "local oil contractors",
+      "type": "equity_funding",
+      "first_seen": "2026-10-16",
+      "sources": [
+        {
+          "title": "Renaissance Backs Local Oil Contractors with $4.1bn, N435bn Fund, Partners 13 Banks",
+          "publisher": "ThisDay Nigeria",
+          "url": "https://www.thisdaylive.com/2026/10/16/renaissance-backs-local-oil-contractors-with-4-1bn-n435bn-fund-partners-13-banks/"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-15T22:39:02.448285+00:00"
+  "updated_at": "2026-10-16T08:42:28.045605+00:00"
 }
