@@ -92,9 +92,9 @@ export default function Admin() {
         <>
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              [t.visitors, "visitors"],
-              [t.users, "used the product"],
-              [t.returning_users, "came back to use it"],
+              [t.visitors, "unique browsers"],
+              [t.users, "browsers that used the product"],
+              [t.returning_users, "browsers that came back"],
               [t.views, "page views"],
             ].map(([n, label]) => (
               <div key={label as string} className="panel p-4">
@@ -104,13 +104,13 @@ export default function Admin() {
             ))}
           </div>
           <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
-            Since {stats.since}. A visitor is one browser; &ldquo;used the product&rdquo; means it opened a page under /app.
+            Since {stats.since}. These are unique browser IDs, not verified people; the same person may count more than once across browsers or devices. &ldquo;Used the product&rdquo; means the browser opened a page under /app.
           </p>
 
           <h2 className="mt-8 font-semibold">By day</h2>
           <table className="mt-2 w-full text-left">
             <thead className="text-[color:var(--muted)]">
-              <tr><th className="py-1 font-normal">Day</th><th className="font-normal">Visitors</th><th className="font-normal">Used it</th><th className="font-normal">Views</th></tr>
+              <tr><th className="py-1 font-normal">Day</th><th className="font-normal">Unique browsers</th><th className="font-normal">Used product</th><th className="font-normal">Views</th></tr>
             </thead>
             <tbody>
               {stats.days.map((d) => (
@@ -123,7 +123,7 @@ export default function Admin() {
           <table className="mt-2 w-full text-left">
             <tbody>
               {stats.pages.map((p) => (
-                <tr key={p.path} className="border-t hairline"><td className="py-1.5 kbd">{p.path}</td><td>{p.visitors} visitors</td><td>{p.views} views</td></tr>
+                <tr key={p.path} className="border-t hairline"><td className="py-1.5 kbd">{p.path}</td><td>{p.visitors} browsers</td><td>{p.views} views</td></tr>
               ))}
             </tbody>
           </table>
