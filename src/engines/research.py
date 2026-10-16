@@ -27,7 +27,7 @@ import re
 from collections import Counter
 from datetime import date, timedelta
 from typing import Callable, Iterable, Optional
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 import httpx
 
@@ -38,6 +38,7 @@ from src.engines import investors as inv
 from src.engines import market_risk as mr
 
 log = logging.getLogger(__name__)
+_NEWS_EVIDENCE_LIMIT = 8
 
 _TYPE_WORDS = {
     "acquisition": r"acqui\w*|buyout|takeover|m&a|mergers?",
@@ -49,9 +50,68 @@ _TYPE_WORDS = {
 }
 _SECTOR_WORDS = {name: rx for name, rx in deals_mod._SECTOR_RE}
 _STOP = set("""a an and are as at be by for from has have how in is it its of on or that the this to was were what which
-who will with about across between during over into than then there these those why when where most more many much
+who when will with about across between during over into than then there these those why where most more many much
 any all show list give tell me us our latest recent top biggest largest deals deal companies company africa african
-dfi dfis series seed private markets market risk investment investments development finance""".split())
+dfi dfis series seed private markets market risk investment investments development finance url urls source sources
+evidence cite citations link links provide include distinguish confirmed facts figures publicly disclosed reported
+transaction value did last past month months day days year years audit separate amount raised valuation cite each
+field""".split())
+_NUMBER_WORDS = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+    "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12,
+    "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60,
+    "seventy": 70, "eighty": 80, "ninety": 90,
+}
+_NEWS_ACTIONS = {
+    "acquisition": re.compile(
+        r"\b(?:acquir\w*|buy|buys|bought|takeover|rachat\w*|acquisition\w*|adquir\w*|"
+        r"compra\w*|comprou|aquisiç\w*|استحواذ\w*|اشتر\w*)\b", re.IGNORECASE),
+    "funding": re.compile(
+        r"\b(?:fund\w*|rais\w*|invest\w*|financ\w*|lèv\w*|lev\w*|finance\w*|investit\w*|"
+        r"capta\w*|arrecad\w*|levant\w*|receb\w*|investimento\w*|financiamento\w*|"
+        r"تمويل\w*|استثمار\w*|جمع\w*)\b", re.IGNORECASE),
+}
+_FUNDING_ANNOUNCEMENT = re.compile(
+    r"\b(?:raises?|raised|secures?|secured|closes?|closed|lands?|announces?|announced|receives?|received)\b"
+    r".{0,100}\b(?:funding|investment|round|series|capital|financing|million|billion)\b"
+    r"|\b(?:funding|investment)\s+round\b|\bseries\s+[a-g]\b"
+    r"|\b(?:lève|levée|lever|lanc\w*|obtient|sécurise|annonce)\b.{0,100}"
+    r"\b(?:fonds?|financement|investissement|millions?|milliards?|série|tour)\b"
+    r"|\b(?:capta|arrecada|levanta|recebe|anuncia|fecha)\w*\b.{0,100}"
+    r"\b(?:fundos?|financiamento|investimento|milhões?|bilhões?|série|rodada|capital)\b"
+    r"|\b(?:تمويل|استثمار|جمع|أعلن)\b",
+    re.IGNORECASE,
+)
+_LOCAL_SEARCH_TERMS = {
+    "fr": {
+        "acquisition": "rachat acquisition",
+        "equity_funding": "lève levée de fonds financement investissement série",
+        "debt_financing": "prêt dette financement crédit",
+        "fund_raise": "clôture fonds levée de fonds",
+        "corporate": "entreprise actualités événement",
+    },
+    "pt": {
+        "acquisition": "aquisição adquire compra",
+        "equity_funding": "capta rodada financiamento investimento série",
+        "debt_financing": "empréstimo dívida financiamento crédito",
+        "fund_raise": "fechamento fundo captação",
+        "corporate": "empresa notícias evento",
+    },
+    "ar": {
+        "acquisition": "استحواذ شراء",
+        "equity_funding": "تمويل استثمار جولة تمويل",
+        "debt_financing": "قرض ديون تمويل ائتمان",
+        "fund_raise": "إغلاق صندوق جمع التمويل",
+        "corporate": "شركة أخبار أحداث",
+    },
+    "es": {
+        "acquisition": "adquisición compra adquiere",
+        "equity_funding": "financiación inversión ronda capta",
+        "debt_financing": "préstamo deuda financiación crédito",
+        "fund_raise": "cierre fondo captación",
+        "corporate": "empresa noticias evento",
+    },
+}
 _REGION_ALIASES = {
     "Northern Africa": r"\b(?:north|northern)\s+africa\b",
     "Western Africa": r"\b(?:west|western)\s+africa\b",
@@ -79,25 +139,41 @@ def parse_question(q: str, today: Optional[date] = None) -> dict:
                 investors.append(entry.name)
                 break
     since = until = None
-    m = re.search(r"\b(?:last|past)\s+(\d+)\s+(day|week|month|year)s?\b", q, re.IGNORECASE)
-    if m:
-        n, unit = int(m.group(1)), m.group(2).lower()
-        since = today - timedelta(days=n * {"day": 1, "week": 7, "month": 30, "year": 365}[unit])
-    elif re.search(r"\bthis\s+year\b", q, re.IGNORECASE):
-        since, until = date(today.year, 1, 1), today
-    elif re.search(r"\blast\s+year\b", q, re.IGNORECASE):
-        since, until = date(today.year - 1, 1, 1), date(today.year - 1, 12, 31)
-    elif re.search(r"\bpast\s+year\b", q, re.IGNORECASE):
-        since = today - timedelta(days=365)
     years = re.findall(r"\b(20\d{2})\b", q)
-    if years and not since:
+    if years:
         since, until = date(int(min(years)), 1, 1), date(int(max(years)), 12, 31)
+    else:
+        number_pattern = r"(\d+|" + "|".join(_NUMBER_WORDS) + r")"
+        m = re.search(rf"\b(?:last|past)\s+{number_pattern}\s+(day|week|month|year)s?\b", q, re.IGNORECASE)
+        if m:
+            count = m.group(1).lower()
+            n = int(count) if count.isdigit() else _NUMBER_WORDS[count]
+            unit = m.group(2).lower()
+            since = today - timedelta(days=n * {"day": 1, "week": 7, "month": 30, "year": 365}[unit])
+        elif re.search(r"\bthis\s+year\b", q, re.IGNORECASE):
+            since, until = date(today.year, 1, 1), today
+        elif re.search(r"\blast\s+year\b", q, re.IGNORECASE):
+            since, until = date(today.year - 1, 1, 1), date(today.year - 1, 12, 31)
+        elif re.search(r"\bpast\s+year\b", q, re.IGNORECASE):
+            since = today - timedelta(days=365)
     # Keep explicit company names even at the start of a question, while ignoring
     # interrogatives and generic market vocabulary that is capitalised by title case.
     companies = []
     for phrase in re.findall(r"(?<![.?!]\s)\b([A-Z][\w&'-]+(?:\s+[A-Z][\w&'-]+){0,3})", q):
+        phrase = re.sub(r"'s$", "", phrase)
+        matched_countries = countries_in_text(phrase)
+        for country in matched_countries:
+            for country_name in (country.name, *country.aliases):
+                phrase = re.sub(rf"(?<![\w]){re.escape(country_name)}(?![\w])", " ", phrase,
+                                flags=re.IGNORECASE)
+        phrase_words = phrase.split()
+        while phrase_words and phrase_words[0].lower() in _STOP:
+            phrase_words.pop(0)
+        phrase = " ".join(phrase_words)
+        if not phrase:
+            continue
         words = re.findall(r"[a-z0-9]+", phrase.lower())
-        if (countries_in_text(phrase) or inv.canonical(phrase) in investors or not words
+        if (inv.canonical(phrase) in investors or not words
                 or all(word in _STOP for word in words)
                 or any(pattern.search(phrase) for pattern in _SECTOR_WORDS.values())
                 or any(re.fullmatch(pattern, phrase, re.IGNORECASE) for pattern in _REGION_ALIASES.values())):
@@ -181,26 +257,185 @@ def _deal_text(d: dict) -> str:
 def _news_items(query: str, country: Optional[str], limit: int = 8, client: Optional[httpx.Client] = None,
                 since: Optional[str] = None, until: Optional[str] = None) -> list[dict]:
     c = get_country(country) if country else None
-    date_scope = " ".join(filter(None, [
+    search_terms = [query]
+    if c:
+        if c.name.lower() not in query.lower():
+            search_terms.append(c.name)
+        language_terms = _LOCAL_SEARCH_TERMS.get(c.languages[0], {})
+        action = next((kind for kind, pattern in _NEWS_ACTIONS.items() if pattern.search(query)), None)
+        search_terms.append(language_terms.get(
+            "equity_funding" if action == "funding" else action or "corporate", ""))
+
+    def search_url(date_scope: Optional[str]) -> str:
+        search_query = " ".join(filter(None, (*search_terms, date_scope)))
+        return (c.news_url(search_query) if c else
+                f"https://news.google.com/rss/search?q={quote(search_query + ' Africa')}&hl=en-GB&gl=GB&ceid=GB:en")
+
+    from src.engines.market_feed import parse_feed
+    request_client = client or httpx.Client(timeout=15, follow_redirects=True)
+
+    def fetch(url: str) -> list[dict]:
+        r = request_client.get(url)
+        r.raise_for_status()
+        return parse_feed(r.text)
+
+    def resolve_article(item: dict) -> dict:
+        item_url = item.get("url") or ""
+        publisher_url = item.get("publisher_url") or ""
+        publisher_host = (urlparse(publisher_url).hostname or "").lower()
+        article_host = (urlparse(item_url).hostname or "").lower()
+        if not item_url or not publisher_host or article_host != "news.google.com":
+            return item
+        try:
+            response = request_client.get(item_url)
+            response.raise_for_status()
+            destination = str(response.url)
+        except httpx.HTTPError as e:
+            log.info("could not resolve Google News article link for %s: %s", item.get("title"), e)
+            return item
+        parsed = urlparse(destination)
+        destination_host = (parsed.hostname or "").lower()
+        normalized_publisher_host = publisher_host.removeprefix("www.")
+        normalized_destination_host = destination_host.removeprefix("www.")
+        same_publisher = normalized_destination_host == normalized_publisher_host
+        if (parsed.scheme == "https" and same_publisher and parsed.path not in {"", "/", "/home", "/homepage"}
+                and destination_host not in {"news.google.com", "consent.google.com"}):
+            item["url"] = destination
+        else:
+            log.info("Google News article link did not resolve to a publisher article for %s; retaining RSS URL",
+                     item.get("title"))
+        return item
+
+    def resolve_articles(items: list[dict]) -> list[dict]:
+        return [resolve_article(item) for item in items[:limit]]
+
+    date_scope = " ".join(filter(None, (
         f"after:{since}" if since else None,
         f"before:{until}" if until else None,
-    ])) or "when:90d"
-    search_query = f"{query} {date_scope}"
-    url = (c.news_url(search_query) if c else
-           f"https://news.google.com/rss/search?q={quote(search_query + ' Africa')}&hl=en-GB&gl=GB&ceid=GB:en")
-    from src.engines.market_feed import parse_feed
+    )))
     try:
-        r = (client or httpx.Client(timeout=15, follow_redirects=True)).get(url)
-        return parse_feed(r.text)[:limit]
+        recent = fetch(search_url(date_scope or "when:90d"))
     except Exception as e:
-        log.warning("research news search failed: %s", e)
-        return []
+        log.error("research news RSS fetch or parse failed: %s", e)
+        if since or until:
+            return []
+        recent = []
+    if not recent:
+        log.info("research news RSS search completed with no feed items")
+    if since or until or _has_relevant_news(query, recent):
+        return resolve_articles(recent)
+    log.info("recent research news did not match the question well; retrying without a date restriction")
+    try:
+        broader = fetch(search_url(date_scope or None))
+    except Exception as e:
+        log.warning("broader research news RSS search failed; retaining recent results: %s", e)
+        broader = []
+    items = _rank_news(query, recent + broader)
+    if not items:
+        log.info("research broad news RSS search completed with no feed items")
+    return resolve_articles(items)
+
+
+def _news_tokens(text: str) -> set[str]:
+    tokens = set(re.findall(r"[a-z0-9]+", text.lower()))
+    folded = re.sub(r"\s+", " ", text.lower())
+    if (tokens & {"acquire", "acquires", "acquired", "acquiring", "acquisition", "buy", "buys", "bought"}
+            or re.search(r"\b(?:rachat|acquisition|acquiert|acheté|aquisição|adquire|comprou)\b", folded)
+            or re.search(r"(?:استحواذ|اشتر)", folded)):
+        tokens.add("acquisition")
+    if (tokens & {"fund", "funds", "funded", "funding", "raise", "raises", "raised", "investment", "invests"}
+            or re.search(r"\b(?:lève|levée|lever|financement|investissement|capta|arrecada|"
+                         r"levanta|recebe|financiamento|investimento|ronda|rodada)\b", folded)
+            or re.search(r"(?:تمويل|استثمار|جمع)", folded)):
+        tokens.add("funding")
+    for country in countries_in_text(text):
+        tokens.add(country.name.lower())
+        tokens.add(country.iso2.lower())
+    return tokens
+
+
+def _news_matches_country(item: dict, code: str) -> bool:
+    country = get_country(code)
+    if not country:
+        return False
+    text = f"{item.get('title', '')} {item.get('snippet', '')}"
+    if any(found.iso2 == code for found in countries_in_text(text)):
+        return True
+    for name in (country.name, *country.aliases):
+        if re.search(rf"(?<![\w]){re.escape(name)}(?![\w])", text, re.IGNORECASE):
+            return True
+    return False
+
+
+def _has_relevant_news(query: str, items: list[dict]) -> bool:
+    query_tokens = _news_tokens(query) - _STOP
+    if not query_tokens or not items:
+        return False
+    requested_series = re.search(r"\bseries\s+([a-g])\b", query, re.IGNORECASE)
+    action_groups = [kind for kind, pattern in _NEWS_ACTIONS.items() if pattern.search(query)]
+    for item in items:
+        title = item.get("title", "")
+        title_tokens = _news_tokens(f"{title} {item.get('snippet', '')}")
+        if requested_series and not re.search(
+                rf"\bseries\s+{requested_series.group(1)}\b", f"{title} {item.get('snippet', '')}", re.IGNORECASE):
+            continue
+        if requested_series and len((query_tokens - {"funding", "acquisition"}) & title_tokens) >= 1:
+            return True
+        if action_groups:
+            other_terms = query_tokens - {"acquisition", "funding"}
+            if len(other_terms & title_tokens) < 1:
+                continue
+            if "funding" in action_groups and _FUNDING_ANNOUNCEMENT.search(
+                    f"{title} {item.get('snippet', '')}"):
+                return True
+            if "acquisition" in action_groups:
+                words = re.findall(r"[a-z0-9]+", title.lower())
+                target_terms = other_terms
+                passive = re.search(r"\bacquired\s+by\b", title, re.IGNORECASE)
+                if passive:
+                    before_action = set(words[:len(re.findall(r"[a-z0-9]+", title[:passive.start()].lower()))])
+                    if target_terms & before_action:
+                        return True
+                    tail = title[passive.end():]
+                    buyer_end = re.search(r",", tail)
+                    if buyer_end and target_terms & _news_tokens(tail[buyer_end.end():]):
+                        return True
+                else:
+                    active = re.search(r"\b(?:acquir\w*|buys|bought)\b", title, re.IGNORECASE)
+                    if active:
+                        action_position = len(re.findall(r"[a-z0-9]+", title[:active.start()].lower()))
+                        if any(term in words[action_position + 1:] for term in target_terms):
+                            return True
+                if re.search(r"\bacquisition\s+of\s+", title, re.IGNORECASE):
+                    acquisition = re.search(r"\bacquisition\s+of\s+", title, re.IGNORECASE)
+                    if acquisition and target_terms & _news_tokens(title[acquisition.end():]):
+                        return True
+        elif len(query_tokens & title_tokens) >= min(2, len(query_tokens)):
+            return True
+    return False
+
+
+def _rank_news(query: str, items: list[dict]) -> list[dict]:
+    query_tokens = _news_tokens(query) - _STOP
+    series = re.search(r"\bseries\s+([a-g])\b", query, re.IGNORECASE)
+    unique = {}
+    for item in items:
+        key = item.get("url") or item.get("title")
+        if key and key not in unique:
+            unique[key] = item
+    return sorted(unique.values(), key=lambda item: (
+        bool(series and re.search(
+            rf"\bseries\s+{series.group(1)}\b", f"{item.get('title', '')} {item.get('snippet', '')}", re.IGNORECASE)),
+        len(query_tokens & _news_tokens(f"{item.get('title', '')} {item.get('snippet', '')}")),
+        item.get("date") or "",
+    ), reverse=True)
 
 
 def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] = (), briefs: Iterable[dict] = (),
              live_news: bool = True, news: Optional[Callable[[str, Optional[str]], list[dict]]] = None,
              today: Optional[date] = None, max_items: int = 30) -> tuple[dict, list[dict]]:
     """(parsed question, numbered evidence items)."""
+    max_items = max(0, max_items)
     p = parse_question(question, today)
     deals, events = list(deals), list(events)
     items: list[dict] = []
@@ -294,18 +529,68 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
                 + "; ".join(f"{s.get('signal_type')} ({s.get('severity')})" for s in sigs[:6]),
                 None, (b.get("created_at") or "")[:10], "Deal Intelligence brief")
 
-    # Live news.
-    if live_news and len(items) < max_items:
-        query_terms = p["companies"][:2] or p["terms"][:5]
-        query = " ".join([*p["regions"][:1], *query_terms]) or question[:80]
+    # Live news is attempted even when local evidence is full; valid results displace
+    # the least-prioritised local items so they survive the final evidence cap.
+    if live_news:
+        company_terms = p["companies"][:2]
+        company_tokens = {token.lower() for name in company_terms
+                          for token in re.findall(r"[a-z0-9]+", name, re.IGNORECASE)}
+        query_terms = company_terms + [
+            term for term in p["terms"]
+            if not set(re.findall(r"[a-z0-9]+", term.lower())).issubset(company_tokens)
+            and not re.fullmatch(r"20\d{2}", term)
+        ][:3]
+        series = re.search(r"\bseries\s+([a-g])\b", question, re.IGNORECASE)
+        if series:
+            query_terms.append(f"Series {series.group(1).upper()}")
+        amount = re.search(r"(?<!\w)(?:[$€£]\s*)?\d+(?:\.\d+)?\s*(?:million|billion|m|bn)(?!\w)",
+                           question, re.IGNORECASE)
+        if amount:
+            query_terms.append(amount.group(0))
+        country_context = [get_country(code).name for code in p["countries"][:1] if get_country(code)]
+        query = " ".join([*p["regions"][:1], *country_context, *query_terms]) or question[:80]
         news_country = p["countries"][0] if len(p["countries"]) == 1 and not p["regions"] else None
         news_search = news or (lambda q, c: _news_items(q, c, since=p["since"], until=p["until"]))
-        for it in news_search(query, news_country):
-            if len(items) >= max_items:
-                break
-            if not _date_in_scope(it.get("date"), p):
-                continue
-            add("news", it["title"], it.get("snippet") or it["title"], it.get("url"), it.get("date"), it.get("publisher"))
+        try:
+            fetched_news = news_search(query, news_country)
+        except Exception as e:
+            log.error("research news search failed: %s", e)
+            fetched_news = []
+        if len(p["countries"]) == 1 and not p["regions"]:
+            code = p["countries"][0]
+            company_tokens = [deals_mod.normalise_name(name) for name in p["companies"]]
+            fetched_news = [
+                item for item in fetched_news
+                if (_news_matches_country(item, code)
+                    or any(token and token in deals_mod.normalise_name(
+                        f"{item.get('title', '')} {item.get('snippet', '')}") for token in company_tokens))
+            ]
+        if "acquisition" in p["deal_types"] and p["companies"]:
+            fetched_news = [it for it in fetched_news if _has_relevant_news(query, [it])]
+        elif "equity_funding" in p["deal_types"]:
+            requested_series = re.search(r"\bseries\s+([a-g])\b", question, re.IGNORECASE)
+            fetched_news = [it for it in fetched_news
+                            if (_has_relevant_news(query, [it]) if requested_series else
+                                _FUNDING_ANNOUNCEMENT.search(
+                                    f"{it.get('title', '')} {it.get('snippet', '')}"))]
+        valid_news = []
+        news_limit = min(_NEWS_EVIDENCE_LIMIT, max_items)
+        if news_limit:
+            for it in fetched_news:
+                if not _date_in_scope(it.get("date"), p):
+                    continue
+                valid_news.append(it)
+                if len(valid_news) >= news_limit:
+                    break
+        if fetched_news and not valid_news:
+            log.info("research news RSS search returned no date-valid results (%d fetched)", len(fetched_news))
+        elif valid_news:
+            log.debug("research news RSS search returned %d date-valid results", len(valid_news))
+            items = items[:max_items - len(valid_news)]
+            for it in valid_news:
+                add("news", it["title"], it.get("snippet") or it["title"],
+                    it.get("url"),
+                    it.get("date"), it.get("publisher"))
     return p, items[:max_items]
 
 
@@ -370,15 +655,173 @@ def validate_citations(text: str, n_items: int) -> dict:
             "grounded_share": round(1 - len(uncited) / len(factual), 2) if factual else 1.0}
 
 
+def _acquisition_summary(parsed: dict, items: list[dict], question: str) -> Optional[str]:
+    if "acquisition" not in parsed["deal_types"] or not parsed["companies"]:
+        return None
+    target = parsed["companies"][0]
+    target_tokens = set(re.findall(r"[a-z0-9]+", deals_mod.normalise_name(target)))
+    descriptors = {"us", "silicon", "valley", "payments", "payment", "giant", "nigerian", "nigeria",
+                   "startup", "african", "fintech", "online", "commerce", "processor", "firm", "company"}
+    matches = []
+
+    def buyer_name(segment: str) -> str:
+        capitalized = re.findall(r"\b[A-Z][A-Za-z0-9&.'’-]*\b", segment)
+        buyer_parts = [part for part in capitalized
+                       if part.lower() not in descriptors
+                       and not target_tokens.intersection(re.findall(r"[a-z0-9]+", part.lower()))]
+        return " ".join(buyer_parts[-2:])
+
+    for item in items:
+        if item["kind"] not in {"news", "deal"}:
+            continue
+        title = item["title"]
+        words = re.findall(r"[a-z0-9]+", title.lower())
+        if not target_tokens or not target_tokens.issubset(set(words)):
+            continue
+        passive = re.search(r"\bacquired\s+by\s+(.+?)(?:,|\s+(?:for|in|as)\b|$)", title, re.IGNORECASE)
+        active = re.search(r"\b(?:acquir\w*|buys|bought)\b", title, re.IGNORECASE)
+        nominal = re.search(r"\bacquisition\s+of\s+", title, re.IGNORECASE)
+        if passive:
+            buyer = buyer_name(passive.group(1))
+        elif active:
+            action_word = active.group(0).lower()
+            target_positions = [index for index, word in enumerate(words) if word in target_tokens]
+            action_position = next((index for index, word in enumerate(words)
+                                    if word in {action_word, "acquire", "acquires", "acquired",
+                                                "acquiring", "buys", "bought"}), -1)
+            buyer = buyer_name(title[:active.start()]) if any(pos > action_position for pos in target_positions) else ""
+        elif nominal:
+            buyer = buyer_name(title[:nominal.start()])
+        else:
+            buyer = ""
+        if buyer:
+            matches.append((buyer, item))
+    if not matches:
+        return None
+    buyers = Counter(buyer for buyer, _ in matches)
+    buyer = buyers.most_common(1)[0][0]
+    corroborating = [item for candidate, item in matches if candidate == buyer]
+    dates = sorted({item["date"] for item in corroborating if item.get("date")})
+    if dates:
+        earliest = dates[0]
+        corroborating = [item for item in corroborating if item.get("date") == earliest]
+    corroborating = corroborating[:4]
+    citations = "".join(f"[{item['n']}]" for item in corroborating)
+    dates = sorted({item["date"] for item in corroborating if item.get("date")})
+    date_text = f" in reports dated {', '.join(dates)}" if dates else ""
+    summary = f"Reports identify {buyer} as the acquirer of {target}{date_text} {citations}."
+    if re.search(r"\b(?:value|amount|price|transaction)\b", question, re.IGNORECASE):
+        amount_reports = [
+            item for _, item in matches
+            if re.search(r"(?:\$|€|£|USD|EUR|GBP)\s?[\d,.]+\s?(?:million|billion|m|bn)?\+?"
+                         r"|\b[\d,.]+\s?(?:million|billion|m|bn)\b",
+                         f"{item['title']} {item['text']}", re.IGNORECASE)
+        ]
+        if amount_reports:
+            report = amount_reports[0]
+            figure = re.search(r"(?:\$|€|£|USD|EUR|GBP)\s?[\d,.]+\s?(?:million|billion|m|bn)?\+?"
+                               r"|\b[\d,.]+\s?(?:million|billion|m|bn)\b",
+                               report["title"], re.IGNORECASE)
+            reported = figure.group(0) if figure else "an amount"
+            summary += (f" A separate headline reports {reported}, but the retrieved evidence does not confirm "
+                        f"it as the publicly disclosed deal value [{report['n']}].")
+        else:
+            summary += (" The transaction value and whether it was publicly disclosed are not established "
+                        f"by the retrieved evidence {citations}.")
+    return summary
+
+
+def _funding_summary(parsed: dict, items: list[dict]) -> Optional[str]:
+    if "equity_funding" not in parsed["deal_types"]:
+        return None
+    reports = [item for item in items if item["kind"] in {"news", "deal"}
+               and _FUNDING_ANNOUNCEMENT.search(f"{item['title']} {item['text']}")]
+    if not reports:
+        return ("The retrieved evidence does not identify a specific funding announcement or disclosed amount "
+                "in the requested period.")
+    citations = "".join(f"[{item['n']}]" for item in reports[:6])
+    return f"Funding-related reports in the requested period include the announcements listed below {citations}."
+
+
+def _funding_audit_summary(parsed: dict, items: list[dict], question: str) -> Optional[str]:
+    if not parsed["companies"] or not re.search(
+            r"\b(?:audit|separate|amount raised|valuation|series\s+[a-g])\b", question, re.IGNORECASE):
+        return None
+    company = parsed["companies"][0]
+    company_tokens = set(re.findall(r"[a-z0-9]+", deals_mod.normalise_name(company)))
+    evidence = []
+    for item in items:
+        if item["kind"] not in {"news", "deal"}:
+            continue
+        title, body = item.get("title", ""), item.get("text", "")
+        text = title if body == title else f"{title} {body}"
+        text_tokens = set(re.findall(r"[a-z0-9]+", deals_mod.normalise_name(text)))
+        if company_tokens and company_tokens.issubset(text_tokens):
+            evidence.append((item, text))
+    if not evidence:
+        return ("Amount raised: unknown; valuation: unknown. The retrieved evidence does not establish either "
+                "field.")
+
+    def amount(pattern: str, exclude_valuation_context: bool = False) -> list[tuple[str, dict]]:
+        found = []
+        seen: set[tuple[str, int]] = set()
+        for item, text in evidence:
+            for match in re.finditer(pattern, text, re.IGNORECASE):
+                value = match.group(1).strip()
+                key = (value.lower(), item["n"])
+                if key in seen:
+                    continue
+                nearby = text[max(0, match.start() - 32):match.end() + 32]
+                if exclude_valuation_context and re.search(r"\b(?:valuation|valued)\b", nearby, re.IGNORECASE):
+                    continue
+                seen.add(key)
+                found.append((value, item))
+        return found
+
+    amount_raised = amount(
+        r"\b(?:raised|raises|secured|secures|received|receives|closed|closes)\b"
+        r".{0,80}?((?:\$|€|£|USD|EUR|GBP)\s?[\d,.]+\s?(?:million|billion|m|bn)?\+?)",
+        exclude_valuation_context=True,
+    )
+    valuation = amount(
+        r"\b(?:valuation|valued)\b.{0,50}?"
+        r"((?:\$|€|£|USD|EUR|GBP)\s?[\d,.]+\s?(?:million|billion|m|bn)?\+?)"
+    )
+    if not valuation:
+        valuation = amount(
+            r"((?:\$|€|£|USD|EUR|GBP)\s?[\d,.]+\s?(?:million|billion|m|bn)?\+?)"
+            r".{0,15}\b(?:valuation|valued)\b"
+        )
+    citations_by_type = {
+        "amount": "".join(f"[{item['n']}]" for _, item in amount_raised[:4]),
+        "valuation": "".join(f"[{item['n']}]" for _, item in valuation[:4]),
+    }
+    cited = "".join(f"[{item['n']}]" for item, _ in evidence[:4])
+    raised_text = (f"{amount_raised[0][0]} {citations_by_type['amount']}" if amount_raised else
+                   f"unknown (not explicitly established by these reports) {cited}")
+    valuation_text = (f"{valuation[0][0]} {citations_by_type['valuation']}" if valuation else
+                      f"unknown (not explicitly established by these reports) {cited}")
+    return f"Amount raised: {raised_text}. Valuation: {valuation_text}."
+
+
 def deterministic_answer(question: str, parsed: dict, items: list[dict]) -> str:
     if not items:
         return "No evidence in the deals database, event feed or news matched this question."
     lines = []
+    acquisition_summary = _acquisition_summary(parsed, items, question)
+    if acquisition_summary:
+        lines.append(acquisition_summary)
+    audit_summary = _funding_audit_summary(parsed, items, question)
+    if audit_summary:
+        lines.append(audit_summary)
+    funding_summary = _funding_summary(parsed, items) if not audit_summary else None
+    if funding_summary:
+        lines.append(funding_summary)
     stats = next((i for i in items if i["kind"] == "statistics"), None)
     if stats:
         lines.append(f"{stats['text']} [{stats['n']}]")
     for kind, label in (("deal", "Relevant deals"), ("investor", "Investors"), ("country_risk", "Country risk"),
-                        ("currency_risk", "Currency risk"), ("event", "Corporate events"), ("news", "Recent news")):
+                        ("currency_risk", "Currency risk"), ("event", "Corporate events"), ("news", "News reports")):
         rows = [i for i in items if i["kind"] == kind]
         if rows:
             lines.append(f"\n{label}:")

@@ -1,6 +1,9 @@
 """Countries, country risk, deals extraction and the market feed."""
 from __future__ import annotations
 
+from datetime import date
+from urllib.parse import unquote
+
 import pytest
 
 from src.data import africa_countries as ac
@@ -236,6 +239,7 @@ def test_parse_feed_and_extract_deals_and_events():
     items = mf.parse_feed(RSS, default_publisher="Feed")
     assert items[0]["title"] == "Egypt's MoneyHash raises $5.2 million in pre-Series A"
     assert items[0]["publisher"] == "TechCabal" and items[0]["date"] == "2026-10-13"
+    assert items[0]["publisher_url"] == "https://techcabal.com"
     assert items[1]["publisher"] == "Feed" and items[1]["snippet"] == ""
     deals = mf.to_deals(items)
     assert [d["target"] for d in deals] == ["MoneyHash"]
@@ -425,6 +429,167 @@ def test_parse_question_company_region_and_calendar_dates():
     assert (last_year["since"], last_year["until"]) == ("2025-01-01", "2025-12-31")
 
 
+def test_parse_question_ignores_instruction_words_and_prefers_explicit_year():
+    question = ("Who acquired Paystack, when was the acquisition announced in 2020? "
+                "Provide source URLs and distinguish confirmed facts from evidence.")
+    parsed = rs.parse_question(question, date(2026, 10, 16))
+
+    assert parsed["companies"] == ["Paystack"]
+    assert not {"url", "urls", "source", "sources", "evidence"} & set(parsed["terms"])
+    assert (parsed["since"], parsed["until"]) == ("2020-01-01", "2020-12-31")
+
+
+def test_parse_question_keeps_company_name_before_trailing_country_name():
+    parsed = rs.parse_question("Who acquired AON Holdings Botswana in 2020?", date(2026, 10, 16))
+
+    assert parsed["countries"] == ["BW"]
+    assert parsed["companies"] == ["AON Holdings"]
+    assert parsed["since"] == "2020-01-01"
+
+
+def test_parse_question_understands_spelled_out_relative_periods():
+    today = date(2026, 10, 16)
+    six_months = rs.parse_question("What funding was announced in the last six months?", today)
+    ninety_days = rs.parse_question("What changed in the past 90 days?", today)
+    last_year = rs.parse_question("What acquisitions happened last year?", today)
+
+    assert six_months["since"] == "2026-04-19" and six_months["until"] is None
+    assert ninety_days["since"] == "2026-07-18" and ninety_days["until"] is None
+    assert (last_year["since"], last_year["until"]) == ("2025-01-01", "2025-12-31")
+
+
+def test_research_broadens_undated_search_when_recent_results_miss_intent():
+    class Client:
+        urls = []
+
+        def get(self, url):
+            self.urls.append(url)
+            if len(self.urls) == 1:
+                body = ("<rss><channel><item><title>Paystack launches new checkout</title>"
+                        "<link>https://news.google.com/rss/articles/recent</link>"
+                        "<pubDate>Fri, 25 Sep 2026 08:00:00 GMT</pubDate></item></channel></rss>")
+            else:
+                body = ("<rss><channel><item><title>Stripe buys Nigeria's Paystack</title>"
+                        "<link>https://news.google.com/rss/articles/acquisition</link>"
+                        "<pubDate>Thu, 15 Oct 2020 08:00:00 GMT</pubDate></item></channel></rss>")
+            return type("Response", (), {"text": body, "raise_for_status": lambda self: None})()
+
+    client = Client()
+    items = rs._news_items("Paystack acquired", None, client=client)
+
+    assert len(client.urls) == 2
+    assert "when%3A90d" in client.urls[0]
+    assert "when%3A90d" not in client.urls[1]
+    assert items[0]["title"] == "Stripe buys Nigeria's Paystack"
+    assert items[0]["date"] == "2020-10-15"
+
+
+def test_research_prompt_who_acquired_paystack_and_when_synthesizes_evidence():
+    question = "Who acquired Paystack, and when?"
+    evidence = [
+        {"title": "Nigerian fintech startup Brass acquired by Paystack-led consortium",
+         "date": "2024-05-29", "url": "https://example.com/brass"},
+        {"title": "Nigerian fintech startup Paystack acquired by Stripe in landmark moment",
+         "snippet": "Paystack acquired by Stripe.", "date": "2020-10-15", "publisher": "Reuters",
+         "url": "https://www.reuters.com/world/africa/stripe-buys-paystack-2020-10-15/"},
+    ]
+
+    result = rs.research(question, news=lambda *_: evidence, today=date(2026, 10, 16))
+
+    assert result["parsed"]["companies"] == ["Paystack"]
+    assert "Reports identify Stripe as the acquirer of Paystack" in result["answer"]
+    assert "2020-10-15" in result["answer"] and "[1]" in result["answer"]
+    assert "Reports identify Paystack as the acquirer" not in result["answer"]
+    assert all("Brass" not in item["title"] for item in result["evidence"])
+
+
+def test_research_prompt_paystack_2020_uses_article_url_and_synthesizes():
+    question = "Who acquired Paystack in 2020? Provide source URLs."
+    evidence = [{
+        "title": "Stripe buys Nigeria's Paystack",
+        "snippet": "Stripe announced its acquisition of Paystack.",
+        "date": "2020-10-15",
+        "publisher": "Reuters",
+        "url": "https://www.reuters.com/world/africa/stripe-buys-paystack-2020-10-15/",
+        "publisher_url": "https://www.reuters.com",
+    }]
+
+    result = rs.research(question, news=lambda *_: evidence, today=date(2026, 10, 16))
+
+    assert result["parsed"]["companies"] == ["Paystack"]
+    assert (result["parsed"]["since"], result["parsed"]["until"]) == ("2020-01-01", "2020-12-31")
+    assert "Reports identify Stripe as the acquirer of Paystack" in result["answer"]
+    assert result["evidence"][0]["url"] == evidence[0]["url"]
+    assert evidence[0]["publisher_url"] not in result["answer"]
+
+
+def test_research_marks_reported_acquisition_value_unconfirmed():
+    question = "Who acquired Paystack in 2020, and what was the transaction value?"
+    evidence = [{
+        "title": "Paystack acquired by Stripe for a reported $200 million",
+        "date": "2020-10-15",
+        "url": "https://example.com/paystack-acquisition",
+    }]
+
+    result = rs.research(question, news=lambda *_: evidence, today=date(2026, 10, 16))
+
+    assert "Stripe" in result["answer"]
+    assert "reports $200 million" in result["answer"]
+    assert "does not confirm it as the publicly disclosed deal value" in result["answer"]
+
+
+def test_research_prompt_nigerian_fintech_last_six_months_filters_and_summarizes():
+    question = "What funding did Nigerian fintech companies announce in the last six months?"
+    evidence = [
+        {"title": "Nigerian fintech raises $20 million", "date": "2026-05-01", "url": "https://example.com/new"},
+        {"title": "Nigerian fintech raises $10 million", "date": "2026-01-01", "url": "https://example.com/old"},
+    ]
+
+    result = rs.research(question, news=lambda *_: evidence, today=date(2026, 10, 16))
+    news_titles = [item["title"] for item in result["evidence"] if item["kind"] == "news"]
+
+    assert result["parsed"]["countries"] == ["NG"] and result["parsed"]["sectors"] == ["fintech"]
+    assert result["parsed"]["since"] == "2026-04-19"
+    assert news_titles == ["Nigerian fintech raises $20 million"]
+    assert "Funding-related reports in the requested period" in result["answer"]
+    assert "[1]" in result["answer"]
+
+
+def test_research_flutterwave_series_e_audit_does_not_call_valuation_amount_raised():
+    question = ("Audit Flutterwave's reported $3.2 billion Series E. Separate amount raised from "
+                "valuation and cite evidence for each field.")
+    parsed = rs.parse_question(question, date(2026, 10, 16))
+    evidence = [
+        {"title": "Flutterwave lands Series E, pushes valuation to $3.2 billion",
+         "date": "2026-06-17", "url": "https://news.google.com/rss/articles/techpoint-series-e"},
+        {"title": "Flutterwave raises Series E funding at $3.2bn valuation; Ripple participates",
+         "date": "2026-06-17", "url": "https://news.google.com/rss/articles/disrupt-series-e"},
+    ]
+
+    result = rs.research(question, news=lambda *_: evidence, today=date(2026, 10, 16))
+
+    assert parsed["companies"] == ["Flutterwave"]
+    assert "Amount raised: unknown" in result["answer"]
+    assert "Valuation: $3.2" in result["answer"]
+    assert "[1]" in result["answer"] and "[2]" in result["answer"]
+    assert all("news.google.com/rss/articles/" in item["url"] for item in result["evidence"]
+               if item["kind"] == "news")
+
+
+def test_research_flutterwave_series_e_audit_separates_explicit_amount_and_valuation():
+    question = "Audit Flutterwave Series E: separate amount raised from valuation."
+    evidence = [{
+        "title": "Flutterwave raised $250 million in Series E at a $3.2 billion valuation",
+        "date": "2026-06-17",
+        "url": "https://news.google.com/rss/articles/flutterwave-series-e",
+    }]
+
+    result = rs.research(question, news=lambda *_: evidence, today=date(2026, 10, 16))
+
+    assert "Amount raised: $250 million [1]" in result["answer"]
+    assert "Valuation: $3.2 billion [1]" in result["answer"]
+
+
 def test_research_keeps_explicit_company_and_event_date_scope():
     deals = [
         _deal("Nigeria’s Moniepoint raises $110m Series C", published="2025-04-01"),
@@ -456,13 +621,260 @@ def test_research_live_news_uses_requested_date_scope():
 
         def get(self, url):
             self.url = url
-            return type("Response", (), {"text": "<rss/>"})()
+            return type("Response", (), {"text": "<rss/>", "raise_for_status": lambda self: None})()
 
     client = Client()
     rs._news_items("fintech", "NG", client=client, since="2025-01-01", until="2025-12-31")
     assert "after%3A2025-01-01" in client.url
     assert "before%3A2025-12-31" in client.url
     assert "when%3A90d" not in client.url
+
+
+def test_research_live_news_runs_when_local_evidence_exceeds_limit_and_is_preserved():
+    briefs = [{"company": "Moniepoint", "severity": "medium", "brief": {"detected_signals": []}}
+              for _ in range(35)]
+    news_items = [{"title": f"Moniepoint update {i}", "snippet": "A relevant company update.",
+                   "date": "2026-10-10", "url": f"https://example.com/{i}", "publisher": "Example"}
+                  for i in range(8)]
+    calls = []
+
+    def search(query, country):
+        calls.append((query, country))
+        return news_items
+
+    _, evidence = rs.retrieve("Moniepoint", briefs=briefs, news=search)
+
+    assert len(briefs) >= 30
+    assert calls and calls[0][0] == "Moniepoint"
+    assert len(evidence) == 30
+    assert sum(item["kind"] == "news" for item in evidence) == 8
+    assert sum(item["kind"] == "brief" for item in evidence) == 22
+    assert [item["n"] for item in evidence] == list(range(1, 31))
+
+
+def test_research_live_news_keeps_only_date_valid_results():
+    news_items = [
+        {"title": "Old Moniepoint update", "date": "2024-12-31"},
+        {"title": "Undated Moniepoint update", "date": None},
+        {"title": "In-scope Moniepoint update", "date": "2025-06-01"},
+    ]
+
+    _, evidence = rs.retrieve("What happened to Moniepoint in 2025?", news=lambda *_: news_items,
+                              today=date(2026, 10, 16))
+
+    assert [item["title"] for item in evidence if item["kind"] == "news"] == [
+        "In-scope Moniepoint update"
+    ]
+
+
+def test_research_queries_include_country_for_all_54_countries():
+    for country in ac.COUNTRIES:
+        question = f"What funding rounds were announced in {country.name} in 2024?"
+        captured = []
+        parsed, _ = rs.retrieve(
+            question,
+            today=date(2026, 10, 16),
+            news=lambda query, code: captured.append((query, code)) or [],
+        )
+
+        assert country.iso2 in parsed["countries"], country.name
+        assert captured[0][1] == country.iso2, country.name
+        assert country.name.lower() in captured[0][0].lower(), country.name
+
+
+@pytest.mark.parametrize(("code", "expected_term"), [
+    ("SN", "lève levée de fonds"),
+    ("AO", "capta rodada financiamento"),
+    ("DZ", "تمويل استثمار"),
+    ("GQ", "financiación inversión"),
+])
+def test_research_news_query_adds_country_language_terms(code, expected_term):
+    class Client:
+        url = None
+
+        def get(self, url):
+            self.url = url
+            return type("Response", (), {"text": "<rss/>", "raise_for_status": lambda self: None})()
+
+    client = Client()
+    rs._news_items("funding rounds announced", code, client=client, since="2024-01-01", until="2024-12-31")
+    query = unquote(client.url)
+
+    assert ac.get(code).name in query
+    assert expected_term in query
+
+
+@pytest.mark.parametrize("headline", [
+    "Une entreprise au Sénégal lève des fonds pour son expansion",
+    "Empresa em Angola capta fundos para expansão",
+    "تعلن شركة في الجزائر عن تمويل جديد",
+])
+def test_research_recognizes_non_english_funding_announcements(headline):
+    assert rs._FUNDING_ANNOUNCEMENT.search(headline)
+
+
+def test_research_country_filter_excludes_other_country_results_and_keeps_localized_match():
+    evidence = [
+        {"title": "Ghana fintech raises funding for regional expansion", "date": "2024-05-01",
+         "url": "https://example.com/ghana"},
+        {"title": "Une entreprise au Sénégal lève des fonds pour son expansion", "date": "2024-06-01",
+         "url": "https://example.com/senegal"},
+    ]
+
+    result = rs.research(
+        "What funding did companies announce in Senegal in 2024?",
+        news=lambda *_: evidence,
+        today=date(2026, 10, 16),
+    )
+
+    news_titles = [item["title"] for item in result["evidence"] if item["kind"] == "news"]
+    assert news_titles == ["Une entreprise au Sénégal lève des fonds pour son expansion"]
+
+
+def test_research_country_filter_applies_to_generic_corporate_events():
+    evidence = [
+        {"title": "Corporate conference held in the United States", "date": "2024-05-01",
+         "url": "https://example.com/us"},
+        {"title": "Tanzanian company announces a board change", "date": "2024-06-01",
+         "url": "https://example.com/tanzania"},
+    ]
+
+    result = rs.research(
+        "What major corporate events affected companies in Tanzania in 2024?",
+        news=lambda *_: evidence,
+        today=date(2026, 10, 16),
+    )
+
+    news_titles = [item["title"] for item in result["evidence"] if item["kind"] == "news"]
+    assert news_titles == ["Tanzanian company announces a board change"]
+
+
+def test_research_uses_article_url_instead_of_publisher_homepage():
+    news_items = [{
+        "title": "Stripe buys Paystack",
+        "snippet": "Stripe announced the acquisition.",
+        "date": "2020-10-15",
+        "publisher": "Reuters",
+        "publisher_url": "https://www.reuters.com/",
+        "url": "https://news.google.com/rss/articles/example",
+    }]
+
+    _, evidence = rs.retrieve("When did Stripe acquire Paystack in 2020?", news=lambda *_: news_items,
+                              today=date(2026, 10, 16))
+
+    news = next(item for item in evidence if item["kind"] == "news")
+    assert news["url"] == "https://news.google.com/rss/articles/example"
+
+
+def test_research_resolves_google_news_link_to_verified_publisher_article():
+    class Client:
+        def get(self, url):
+            if "rss/search" in url:
+                body = (
+                    "<rss><channel><item><title>Stripe buys Paystack</title>"
+                    "<link>https://news.google.com/rss/articles/example</link>"
+                    "<source url=\"https://www.reuters.com\">Reuters</source>"
+                    "<pubDate>Thu, 15 Oct 2020 08:00:00 GMT</pubDate></item></channel></rss>"
+                )
+                return type("Response", (), {
+                    "text": body,
+                    "raise_for_status": lambda self: None,
+                })()
+            assert url == "https://news.google.com/rss/articles/example"
+            return type("Response", (), {
+                "url": "https://www.reuters.com/world/africa/stripe-buys-paystack/",
+                "raise_for_status": lambda self: None,
+            })()
+
+    items = rs._news_items("Paystack acquisition", None, client=Client(),
+                           since="2020-01-01", until="2020-12-31")
+
+    assert items[0]["url"] == "https://www.reuters.com/world/africa/stripe-buys-paystack/"
+    assert items[0]["publisher_url"] == "https://www.reuters.com"
+
+
+@pytest.mark.parametrize("destination", [
+    "https://consent.google.com/ml",
+    "https://www.reuters.com/",
+    "https://unrelated.example.com/article",
+])
+def test_research_keeps_google_news_url_when_publisher_article_is_unverified(destination):
+    google_url = "https://news.google.com/rss/articles/example"
+
+    class Client:
+        def get(self, url):
+            if "rss/search" in url:
+                body = (
+                    "<rss><channel><item><title>Stripe buys Paystack</title>"
+                    f"<link>{google_url}</link>"
+                    "<source url=\"https://www.reuters.com\">Reuters</source>"
+                    "<pubDate>Thu, 15 Oct 2020 08:00:00 GMT</pubDate></item></channel></rss>"
+                )
+                return type("Response", (), {
+                    "text": body,
+                    "raise_for_status": lambda self: None,
+                })()
+            return type("Response", (), {
+                "url": destination,
+                "raise_for_status": lambda self: None,
+            })()
+
+    items = rs._news_items("Paystack acquisition", None, client=Client(),
+                           since="2020-01-01", until="2020-12-31")
+
+    assert items[0]["url"] == google_url
+
+
+def test_research_keeps_google_news_url_when_article_resolution_fails():
+    google_url = "https://news.google.com/rss/articles/example"
+
+    class Client:
+        def get(self, url):
+            if "rss/search" in url:
+                body = (
+                    "<rss><channel><item><title>Stripe buys Paystack</title>"
+                    f"<link>{google_url}</link>"
+                    "<source url=\"https://www.reuters.com\">Reuters</source>"
+                    "<pubDate>Thu, 15 Oct 2020 08:00:00 GMT</pubDate></item></channel></rss>"
+                )
+                return type("Response", (), {
+                    "text": body,
+                    "raise_for_status": lambda self: None,
+                })()
+            raise rs.httpx.ConnectError("Google News resolution unavailable")
+
+    items = rs._news_items("Paystack acquisition", None, client=Client(),
+                           since="2020-01-01", until="2020-12-31")
+
+    assert items[0]["url"] == google_url
+
+
+def test_research_rss_failure_is_logged_and_does_not_crash(monkeypatch, caplog):
+    class FailingClient:
+        def __init__(self, **kwargs):
+            pass
+
+        def get(self, url):
+            raise TimeoutError("RSS request timed out")
+
+    monkeypatch.setattr(rs.httpx, "Client", FailingClient)
+    with caplog.at_level("ERROR"):
+        result = rs.research("Recent Moniepoint updates")
+
+    assert result["mode"] == "deterministic"
+    assert result["evidence"] == []
+    assert "research news RSS fetch or parse failed" in caplog.text
+
+
+def test_research_rss_success_with_no_feed_items_is_distinguished(caplog):
+    class Client:
+        def get(self, url):
+            return type("Response", (), {"text": "<rss/>", "raise_for_status": lambda self: None})()
+
+    with caplog.at_level("INFO"):
+        assert rs._news_items("Moniepoint", None, client=Client()) == []
+
+    assert "research news RSS search completed with no feed items" in caplog.text
 
 
 def test_research_evidence_coverage_reports_counts_and_latest_source_dates():

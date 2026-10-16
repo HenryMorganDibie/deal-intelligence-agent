@@ -80,6 +80,12 @@ def parse_feed(text: str, default_publisher: str = "") -> list[dict]:
         publisher = _strip_html(_tag(block, "source")) or default_publisher
         if publisher and title.endswith(" - " + publisher):
             title = title[: -len(publisher) - 3]
+        source_tag = re.search(r"<source\b[^>]*>", block, re.IGNORECASE)
+        source_url = ""
+        if source_tag:
+            url_attribute = re.search(r"\burl\s*=\s*(['\"])(.*?)\1", source_tag.group(0), re.IGNORECASE)
+            if url_attribute:
+                source_url = html.unescape(url_attribute.group(2)).strip()
         link = _tag(block, "link") or (re.search(r'<link[^>]+href="([^"]+)"', block) or [None, ""])[1]
         raw_date = _tag(block, "pubDate") or _tag(block, "published") or _tag(block, "updated") or _tag(block, "dc:date")
         day = None
@@ -88,8 +94,8 @@ def parse_feed(text: str, default_publisher: str = "") -> list[dict]:
         except (TypeError, ValueError):
             m = re.match(r"\d{4}-\d{2}-\d{2}", raw_date)
             day = m.group(0) if m else None
-        out.append({"title": title, "publisher": publisher, "url": link.strip(), "date": day,
-                    "snippet": _strip_html(_tag(block, "description"))[:400]})
+        out.append({"title": title, "publisher": publisher, "url": link.strip(), "publisher_url": source_url,
+                    "date": day, "snippet": _strip_html(_tag(block, "description"))[:400]})
     return out
 
 
