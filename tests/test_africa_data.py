@@ -771,6 +771,12 @@ def test_research_accepts_company_equity_announcements_in_local_languages(headli
 
 @pytest.mark.parametrize("headline", [
     "L’État du Sénégal lève des obligations sur le marché régional",
+    "L’Etat du Sénégal lève 300 millions de dollars à l’international via JP Morgan",
+    "Le Sénégal lève 300 millions de dollars après que le FMI a suspendu ses versements",
+    "Sénégal : lancement des travaux du port de Ndayane, 1 milliard de dollars d’investissement",
+    "Le Sénégal lève 44 milliards de FCFA sur le marché financier de l’UMOA",
+    "Algeria Lands $455 Million Deal With Italy’s BF for Regenerative Ag Development",
+    "الجزائر ستعزز تمويل القطاع الزراعي في العام 2025",
     "Sénégal : démenti d’une levée de fonds infructueuse",
     "Financiamento islâmico para compra de carros",
     "Afreximbank anuncia mais financiamento alocado à indústria criativa",

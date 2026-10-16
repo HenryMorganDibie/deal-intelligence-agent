@@ -91,11 +91,15 @@ _FUNDING_NEGATION = re.compile(
 _NON_EQUITY_FUNDING = re.compile(
     r"\b(?:eurobonds?|bonds?|bond\s+issuance|treasury|government|sovereign|state\s+budget|"
     r"political\s+part(?:y|ies)|loan|loans|car\s+finance|auto\s+loan|public\s+debt|"
-    r"obligations?|emprunt(?:s)?|emprunt\s+obligataire|trésor|budget|état|parti\s+politique|prêt|"
+    r"obligations?|emprunt(?:s)?|emprunt\s+obligataire|trésor|budget|état|etat|"
+    r"l['’](?:é)?tat|fmi|imf|parti\s+politique|prêt|"
     r"títulos?|tesouro|orçamento|partido\s+político|empréstimo|"
     r"allocat\w*|alocad\w*|allou\w*|allocation|"
     r"projets?|project(?:s)?|projetos?|projeto|power\s+plant|centrale|micro[-\s]?projects?|"
-    r"سندات|خزينة|حكومة|ميزانية|الأحزاب|أحزاب|حزب|سيارات|شراء سيارات)\b",
+    r"travaux|infrastructure|port|marché\s+(?:financier|régional|international)|"
+    r"agricultur\w*|ag\s+development|sector\s+agricole|secteur\s+agricole|"
+    r"سندات|خزينة|حكومة|ميزانية|الأحزاب|أحزاب|حزب|سيارات|شراء سيارات|"
+    r"القطاع الزراعي|زراعي|الزراعة)\b",
     re.IGNORECASE,
 )
 _EQUITY_FUNDING_MARKER = re.compile(
