@@ -42,6 +42,37 @@ those changes and have never been used for tuning. They are the numbers to rely 
 set's errors are used to change the system, it becomes a development set and a new held-out set must
 be drawn (`python -m evaluation.deals.build_sets --heldout` with a new seed).
 
+### Fresh independent attribution review
+
+The original attribution labels are AI-annotated and have not had independent human review. To
+prepare a new blind review set from unlabelled, holdout-split headlines in the daily African business
+feed, run:
+
+```bash
+python -m evaluation.attribution.independent_review build
+```
+
+This writes `attribution/independent_items.jsonl` and separate templates for two reviewers.
+The packet omits detector candidates and excludes headlines already in the original attribution
+sets. Its source review IDs are also excluded from event-classifier training, even if a copy of a
+review label is later added to the daily queue. Each reviewer independently fills `target_company`, optional `ticker`, `expected` (a list of
+signal type names, or an empty list), `confidence` (`high`, `medium` or `low`), reviewer identity,
+and any note. Reviewers should use the headline text only and must not see detector output or one
+another's labels. A third person resolves disagreements in
+`attribution/independent_adjudicated_labels.jsonl`, retaining both reviewer identities and setting
+`adjudicated_by`. Use `target_company: "__no_target__"` with `expected: []` when no company is
+identified as the event subject. The adjudicated row also contains `reviewer_a` and `reviewer_b`,
+matching the identities in the separate review files. The scorer refuses incomplete labels,
+same-person reviews, or adjudication by either annotator:
+
+```bash
+python -m evaluation.attribution.independent_review score
+```
+
+The generated sample is Africa-feed-only and may be small; it is not a replacement for a balanced
+US/Africa sample. Do not tune against it. If its labels or errors are used to change rules, it becomes
+a development set and a new independent sample is needed for an unbiased estimate.
+
 ## Results (14 Oct 2026)
 
 Deal extraction, raw headline to record (`python -m evaluation.deals.score`):

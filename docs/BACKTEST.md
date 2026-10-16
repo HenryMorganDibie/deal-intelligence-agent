@@ -42,6 +42,36 @@ Confirmable predictions split into thirds by alpha (computed as of each replay d
 
 Rank correlation between alpha and confirmation: 0.19. Verdict: the lowest alpha third confirmed least; the top third did not beat the middle.
 
+## Is there a reliable 10-day return forecast?
+
+Not yet. We evaluated a separate, deliberately simple candidate: the median
+market-adjusted return for earlier flags with the same market, signal type and
+severity, falling back to broader earlier groups when fewer than 30 examples
+were available. The holdout is the last six as-of dates; every forecast uses
+only outcomes from earlier dates. Acceptance requires at least 100 holdout
+outcomes, at least 5% lower mean absolute error (MAE) than predicting zero, and
+a positive 95% date-clustered lower confidence bound. The overall model must
+also pass separately in the US and Africa before any forecast is released.
+
+| Holdout | n | Candidate MAE | Zero-return MAE | MAE improvement | Direction accuracy | Passed |
+|---|---:|---:|---:|---:|---:|---|
+| All markets | 2210 | 4.106% | 4.103% | -0.074% relative | 51.0% | No |
+| US | 2155 | 4.112% | 4.110% | -0.059% relative | 51.0% | No |
+| Africa | 55 | 3.868% | 3.841% | -0.705% relative | 50.9% | No |
+
+The candidate does not beat the zero-return baseline, and Africa has too few
+holdout cases to meet the minimum sample requirement. Therefore the system does
+not issue a 10-day return forecast. The existing “measured move after similar
+flags” remains descriptive historical context, not an estimate of a future
+return. Reproduce the validation with
+`python -m src.engines.return_forecast`.
+
+The latest labelled as-of date in this dataset is 2025-06-08, so this evaluation
+is also stale for use as a live 2026 forecast. The validator requires labelled
+data no more than 180 days old before a model can qualify. New market outcomes
+must be collected and evaluated on a later holdout; until then, no return
+estimate is advertised as reliable.
+
 Within signal types (30 or more labelled predictions), so the result is not just signal-type mix:
 
 | Signal type | Labelled | Low third | Middle third | High third | Rank correlation |

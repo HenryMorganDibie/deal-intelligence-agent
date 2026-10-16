@@ -238,14 +238,20 @@ class TestDeterministicEngine:
 
     def test_corroboration_merged(self):
         from src.engines.deterministic_engine import DeterministicSignalEngine
-        s = self._state(
-            filings=[self._filing("Definitive merger agreement signed")],
-            news=[self._news("Acme merger confirmed", "acquisition deal announced", 0.9)]
+        filing = self._filing("Definitive merger agreement signed").model_copy(
+            update={"document_url": "https://sec.gov/filing"}
         )
+        news = self._news("Acme merger confirmed", "acquisition deal announced", 0.9).model_copy(
+            update={"url": "https://reuters.com/story"}
+        )
+        s = self._state(filings=[filing], news=[news])
         result = DeterministicSignalEngine().run(s)
         ma = next((c for c in result.signal_candidates if c.signal_type == SignalType.MA_ACTIVITY), None)
         assert ma is not None
         assert ma.corroboration_count >= 2
+        assert set(ma.corroborating_source_urls) == {
+            "https://sec.gov/filing", "https://reuters.com/story"
+        }
 
     def test_deduplication_same_signal_type(self):
         from src.engines.deterministic_engine import DeterministicSignalEngine
@@ -863,6 +869,32 @@ class TestSignalParsing:
         signals = _parse_explanations(payload, state.signal_candidates, calibrated, state)
         assert len(signals) == 1
         assert signals[0].signal_type == SignalType.MA_ACTIVITY
+        assert signals[0].evidence == ["merger deal"]
+        assert any("unsupported evidence" in error for error in state.errors)
+
+    def test_only_source_supported_evidence_is_retained(self):
+        from src.agents.signal_agent import _parse_explanations
+        from src.engines.calibration import calibrate_all
+        state = self._state()
+        state.signal_candidates[0] = state.signal_candidates[0].model_copy(update={
+            "source_url": "https://example.com/primary",
+            "corroborating_source_urls": ["https://example.com/secondary"],
+            "filing_reference": "filing-primary",
+            "corroborating_filing_references": ["filing-secondary"],
+        })
+        calibrated = calibrate_all(state.signal_candidates)
+        payload = json.dumps([{
+            "signal_type": "m_and_a_activity",
+            "evidence": ["Merger deal", "Acme signed a binding agreement yesterday"]
+        }])
+        signals = _parse_explanations(payload, state.signal_candidates, calibrated, state)
+        assert len(signals) == 1
+        assert signals[0].evidence == ["Merger deal"]
+        assert signals[0].source_urls == [
+            "https://example.com/secondary", "https://example.com/primary"
+        ]
+        assert signals[0].filing_references == ["filing-secondary", "filing-primary"]
+        assert state.errors
 
     def test_llm_cannot_invent_signal_not_in_candidates(self):
         from src.agents.signal_agent import _parse_explanations
@@ -1133,6 +1165,7 @@ class TestFormatter:
             alpha_score=AlphaScore(score=74.5, severity_component=0.78,
                                    source_credibility=0.95, corroboration_weight=0.68,
                                    recency_weight=0.99, liquidity_tier=LiquidityTier.MID_CAP,
+                                   learned_confirmation_probability=0.411,
                                    expected_direction="positive",
                                    expected_magnitude_pct_low=8.0, expected_magnitude_pct_high=20.0,
                                    comparable_events_n=62, move_confidence="medium")
@@ -1164,8 +1197,12 @@ class TestFormatter:
         md = brief_to_markdown(self._brief())
         for section in ["# Deal Intelligence Brief","## Executive Summary",
                          "## Confirmed Signals","## Key Metrics","## Risk Factors",
-                         "Alpha Score","Measured move after similar flags","Patterns Fired"]:
+                         "Alpha Score","Estimated event confirmation",
+                         "experimental learned estimate; separate from alpha",
+                         "Measured move after similar flags","Patterns Fired"]:
             assert section in md, f"Missing: {section}"
+        assert "41.1%" in md
+        assert "74.5/100" in md
 
     def test_markdown_compliance_banner(self):
         from src.utils.formatter import brief_to_markdown
@@ -1698,15 +1735,32 @@ class TestConfidenceDecomposition:
         high = decompose(self._cand(corr=5))
         assert high.corroboration_score > low.corroboration_score
 
-    def test_more_entities_higher_match_score(self):
+    def test_only_verified_target_match_increases_entity_score(self):
         from src.engines.confidence import _entity_match_score, decompose
-        no_entities = self._cand()
-        no_entities.entity_mentions = []
-        many_entities = self._cand()
-        many_entities.entity_mentions = ["Acme Corp","Target Ltd","$2.1B","35%","merger"]
-        d_none = decompose(no_entities)
-        d_many = decompose(many_entities)
-        assert d_many.entity_match_confidence > d_none.entity_match_confidence
+        unverified = self._cand()
+        unverified.entity_mentions = ["Acme Corp", "Target Ltd", "$2.1B", "35%"]
+        verified = unverified.model_copy(update={"target_entity_matched": True})
+        rejected = unverified.model_copy(update={"target_entity_matched": False})
+        assert _entity_match_score(verified) > _entity_match_score(unverified)
+        assert _entity_match_score(rejected) < _entity_match_score(unverified)
+
+    def test_extraction_confidence_uses_distinct_source_clauses(self):
+        from src.engines.confidence import _extraction_confidence
+        one_clause = self._cand()
+        one_clause.matched_patterns = [r"\bmerger\b", r"\bacquisition\b"]
+        one_clause.source_text = "Merger confirmed and acquisition plan approved"
+        two_clauses = one_clause.model_copy(update={
+            "source_text": "Merger confirmed. Acquisition plan approved."
+        })
+        unsupported = one_clause.model_copy(update={"source_text": "Quarterly results released"})
+        assert _extraction_confidence(one_clause) == 0.65
+        assert _extraction_confidence(two_clauses) == 0.80
+        assert _extraction_confidence(unsupported) == 0.40
+        item_reference = one_clause.model_copy(update={
+            "matched_patterns": [r"\bitem\s+2\.01\b"],
+            "source_text": "Form 8-K, Item 2.01. Merger completed."
+        })
+        assert _extraction_confidence(item_reference) == 0.65
 
     def test_decompose_all_returns_dict(self):
         from src.engines.confidence import decompose_all
@@ -2806,7 +2860,8 @@ class TestReportIntegrity:
         state.signal_candidates = [_cand(SignalType.CREDIT_RISK)]
         out = await sa.LLMExplanationNode().run(state)
         assert len(out.detected_signals) == 1
-        assert out.detected_signals[0].evidence == ["single string"]
+        assert out.detected_signals[0].evidence == ["text"]
+        assert any("unsupported evidence" in error for error in out.errors)
 
     async def test_fallback_respects_compliance_suppression(self, monkeypatch):
         import src.agents.signal_agent as sa
@@ -3918,12 +3973,82 @@ class TestEventSources:
         from src.engines.event_sources import classify
         assert classify(text) == set()
 
+    @pytest.mark.parametrize("text,expected", [
+        ("Acme considers a takeover, but appoints a new CFO", {"leadership_change"}),
+        ("Acme could acquire Beta. Acme appoints a new CFO", {"leadership_change"}),
+        ("Acme weighs a sale; Acme completes acquisition of Beta", {"m_and_a_activity"}),
+    ])
+    def test_speculation_in_one_clause_does_not_hide_a_completed_event(self, text, expected):
+        from src.engines.event_sources import classify
+        assert {t.value for t in classify(text)} == expected
+
     def test_company_must_be_the_subject(self):
         from src.engines.event_sources import classify
         from src.engines.deterministic_engine import _company_matchers
         m = _company_matchers("Acme")
         assert classify("Acme completes acquisition of Beta", m)
         assert not classify("Rival completes acquisition after Acme deal collapsed", m)
+
+    def test_company_mention_does_not_attribute_events_in_a_later_sentence(self):
+        from src.engines.event_sources import classify
+        from src.engines.deterministic_engine import _company_matchers
+        matchers = _company_matchers("Acme")
+        assert classify("Acme appoints a new CFO. Rival completes acquisition of Beta", matchers) \
+            == {SignalType.LEADERSHIP_CHANGE}
+
+    def test_target_subject_can_carry_over_in_coordinated_event_clause(self):
+        from src.engines.event_sources import classify
+        from src.engines.deterministic_engine import _company_matchers
+        matchers = _company_matchers("Acme")
+        assert classify("Acme considers a takeover, but appoints a new CFO", matchers) \
+            == {SignalType.LEADERSHIP_CHANGE}
+
+    def test_news_events_use_uppercase_ticker_for_attribution(self):
+        from datetime import date
+        from src.engines.event_sources import news_events
+
+        day = date(2026, 10, 15)
+        headlines = [{
+            "title": "ACME appoints a new chief executive",
+            "publisher": "Reuters",
+            "date": day.isoformat(),
+        }]
+        events = news_events(None, "Acme Telecom Ltd", day, day, headlines=headlines, ticker="ACME.NR")
+        assert events is not None
+        assert [event["signal_types"] for event in events] == [{"leadership_change"}]
+
+        headlines[0]["title"] = "Acme appoints a new chief executive"
+        assert news_events(None, "Acme Telecom Ltd", day, day, headlines=headlines, ticker="ACME.NR") == []
+
+    def test_historical_news_searches_for_unambiguous_ticker(self, monkeypatch):
+        from datetime import date
+        from urllib.parse import parse_qs, urlparse
+        from types import SimpleNamespace
+        from src.engines import event_sources
+
+        queries = []
+        rss = (
+            "<rss><channel><item><title>ACME appoints a new chief executive</title>"
+            "<source>Reuters</source><pubDate>Thu, 15 Oct 2026 12:00:00 GMT</pubDate>"
+            "<link>https://example.test/story</link></item></channel></rss>"
+        )
+
+        def fake_news_get(_client, url):
+            query = parse_qs(urlparse(url).query)["q"][0]
+            queries.append(query)
+            return SimpleNamespace(text=rss if '"ACME" after:' in query else "<rss></rss>")
+
+        monkeypatch.setattr(event_sources, "_news_get", fake_news_get)
+        day = date(2026, 10, 15)
+        items = event_sources.historical_news(
+            None, "Acme Telecom Ltd", day, day, ticker="ACME.NR"
+        )
+        assert items and items[0]["title"] == "ACME appoints a new chief executive"
+        assert any(query.startswith('"ACME" after:') for query in queries)
+
+        queries.clear()
+        event_sources.historical_news(None, "Acme Telecom Ltd", day, day, ticker="AB.NR")
+        assert not any(query.startswith('"AB" after:') for query in queries)
 
 
 def test_historical_metrics_precision_base_rate_lift():

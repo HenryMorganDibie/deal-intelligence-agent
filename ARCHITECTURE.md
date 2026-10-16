@@ -43,14 +43,31 @@ Node 3 — LLMExplanationNode                            ← LLM (explanation on
   hourly (outcome_rows RPC, measured.set_live), so rates and move ranges follow the
   market; a market's own live rate is used once it has 10 outcomes. Each signal also carries a
   7-component evidence-quality rubric (engines/confidence.py), shown in briefs.
-  LLM writes: headline, evidence list, 2-3 sentence reasoning. Cannot change signal_type or severity.
+  Entity-match and extraction components use deterministic target attribution and
+  source clauses that reproduce the fired rules, not entity or regex counts. LLM
+  evidence snippets are retained only when their text is supported by the source
+  excerpt; unsupported snippets are removed, and corroborating source links are
+  carried through to the report. LLM writes: headline, evidence list, 2-3 sentence
+  reasoning. Cannot change signal_type or severity.
   Fallback: if LLM API fails, deterministic output used directly (no crash).
       │
       ▼
 Node 4 — AlphaScoringNode                              ← ZERO LLM
   0–100 composite score: severity×0.35 + credibility×0.25 + corroboration×0.20 + recency×0.10 + liquidity×0.10
-  Weights are design choices, tested in the backtest: confirmation rate by alpha third
-  13% / 25% / 40%, and within leadership (30% -> 62%) and M&A (4% -> 14%).
+  Weights are design choices, not fitted. In the latest 4,108-labelled walk-forward
+  evaluation, confirmation rates by score third were 9.9% / 41.4% / 34.3%
+  (low / middle / high; Spearman correlation 0.19): the score separates the lowest
+  third, but the highest third does not beat the middle. It is not a validated
+  return-ranking score.
+  A separate experimental learned event-confirmation estimate is reported when
+  available (holdout n=981, 26.9% base rate, 41.1% precision in the top 20%,
+  Brier score 0.173). Historical market-adjusted moves are also shown separately;
+  they describe similar past flags and are not a forecast for the individual company.
+  A distinct 10-day return forecast is withheld unless a chronological holdout
+  beats the zero-return baseline by at least 5% MAE overall and in both US and
+  African samples, has a positive date-clustered 95% lower bound, and uses
+  labelled outcomes no more than 180 days old; the current candidate does not
+  pass (BACKTEST.md).
   Expected move: the measured market-adjusted 10-day return after the same kind of flag
   (interquartile range, median, n), or "insufficient history" below 10 observations.
   SHAP-style explainer: every point attributed to a specific component.
@@ -247,6 +264,9 @@ Kenya names) fall back to a static list and exchange heuristics.
 ### 10. News Scoring and the Lookback Window
 A news item's score is rule strength × publisher credibility. Every source must fall inside
 the lookback window, measured from the as-of date for replays and from now otherwise.
+Historical event collection searches both the company name and, when it has at least three
+characters, the uppercase ticker in the same date window. Ticker-only results still pass
+the ordinary company-attribution and publisher-credibility checks before they count.
 
 ### 11. Subject Attribution
 A news item must name the company, and the triggering phrase must be about it:

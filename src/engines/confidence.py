@@ -13,6 +13,7 @@ is the separate, measured `confidence` on the signal.
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+import re
 from typing import Optional
 
 from src.schemas.models import (
@@ -88,16 +89,11 @@ def _historical_precision_score(signal_type: SignalType) -> float:
 
 
 def _entity_match_score(candidate: SignalCandidate) -> float:
-    """Score based on quality and quantity of named entity matches."""
-    n = len(candidate.entity_mentions)
-    if n == 0:
-        return 0.30
-    if n == 1:
-        return 0.55
-    if n == 2:
-        return 0.72
-    if n >= 3:
-        return 0.88
+    """Score verified target attribution; unverified candidates receive a neutral score."""
+    if candidate.target_entity_matched is True:
+        return 0.95
+    if candidate.target_entity_matched is False:
+        return 0.10
     return 0.50
 
 
@@ -109,14 +105,25 @@ def _temporal_relevance_score(candidate: SignalCandidate) -> float:
 
 
 def _extraction_confidence(candidate: SignalCandidate) -> float:
-    """Confidence in the extraction quality based on pattern specificity."""
-    n_patterns = len(candidate.matched_patterns)
-    # More patterns firing = higher extraction confidence
-    if n_patterns >= 3:
-        return 0.92
-    if n_patterns == 2:
+    """Measure how many distinct source clauses reproduce a fired extraction rule."""
+    text = candidate.source_text.strip()
+    if not text:
+        return 0.25
+    if not candidate.matched_patterns:
+        return 0.35
+
+    matched_clauses = 0
+    for clause in re.split(r"(?<=[.!?;])\s+|\n+", text):
+        if any(re.search(pattern, clause, re.IGNORECASE) for pattern in candidate.matched_patterns):
+            matched_clauses += 1
+
+    if matched_clauses == 0:
+        return 0.40
+    if matched_clauses == 1:
+        return 0.65
+    if matched_clauses == 2:
         return 0.80
-    return 0.65
+    return 0.90
 
 
 def decompose(candidate: SignalCandidate, calibration_adjustment: float = 1.0) -> ConfidenceDecomposition:

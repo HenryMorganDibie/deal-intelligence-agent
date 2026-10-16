@@ -379,7 +379,33 @@ def _parse_explanations(
             evidence = item.get("evidence") or []
             if isinstance(evidence, str):
                 evidence = [evidence]
-            evidence = [str(e) for e in evidence if e]
+            evidence = [str(e).strip() for e in evidence if e]
+            source_tokens = re.findall(r"\w+", cand.source_text.casefold())
+
+            def is_source_supported(quote: str) -> bool:
+                quote_tokens = re.findall(r"\w+", quote.casefold())
+                if not quote_tokens:
+                    return False
+                width = len(quote_tokens)
+                return any(
+                    source_tokens[index:index + width] == quote_tokens
+                    for index in range(len(source_tokens) - width + 1)
+                )
+
+            supported_evidence = [quote for quote in evidence if is_source_supported(quote)]
+            if len(supported_evidence) != len(evidence):
+                state.errors.append(
+                    f"LLM supplied unsupported evidence for {sig_type.value}; "
+                    "unsupported text was removed"
+                )
+            evidence = supported_evidence or [cand.source_text[:200]]
+            source_urls = list(dict.fromkeys(
+                cand.corroborating_source_urls + ([cand.source_url] if cand.source_url else [])
+            ))
+            filing_references = list(dict.fromkeys(
+                cand.corroborating_filing_references
+                + ([cand.filing_reference] if cand.filing_reference else [])
+            ))
 
             sev, conf, _ = cal_map.get(sig_type, (Severity.LOW, 0.5, 0.1))
 
@@ -387,9 +413,9 @@ def _parse_explanations(
                 signal_type=sig_type,
                 severity=sev,
                 headline=str(item.get("headline") or f"{sig_type.value.replace('_',' ').title()} detected"),
-                evidence=evidence or [cand.source_text[:200]],
-                source_urls=[cand.source_url] if cand.source_url else [],
-                filing_references=[cand.filing_reference] if cand.filing_reference else [],
+                evidence=evidence,
+                source_urls=source_urls,
+                filing_references=filing_references,
                 confidence=conf,
                 reasoning=str(item.get("reasoning") or ""),
                 attribution_doubt=(
@@ -414,8 +440,13 @@ def _fallback_signals(calibrated: list[tuple]) -> list[DetectedSignal]:
             severity=sev,
             headline=f"{cand.signal_type.value.replace('_', ' ').title()} -- deterministic detection",
             evidence=[cand.source_text[:200]],
-            source_urls=[cand.source_url] if cand.source_url else [],
-            filing_references=[cand.filing_reference] if cand.filing_reference else [],
+            source_urls=list(dict.fromkeys(
+                cand.corroborating_source_urls + ([cand.source_url] if cand.source_url else [])
+            )),
+            filing_references=list(dict.fromkeys(
+                cand.corroborating_filing_references
+                + ([cand.filing_reference] if cand.filing_reference else [])
+            )),
             confidence=conf,
             reasoning="LLM explanation unavailable -- deterministic engine output used directly.",
             candidate_patterns=cand.matched_patterns,

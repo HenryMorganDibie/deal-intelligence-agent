@@ -136,10 +136,17 @@ class SignalCandidate(BaseModel):
     matched_patterns: list[str] = Field(..., description="Exact patterns/keywords that fired")
     source_text: str = Field(..., description="Raw text excerpt that triggered the signal")
     source_url: str = ""
+    corroborating_source_urls: list[str] = Field(
+        default_factory=list, description="URLs of independent sources confirming this candidate"
+    )
     source_type: str = Field(..., description="filing | news | pe_source")
     source_name: str = ""
     filing_reference: str = ""
+    corroborating_filing_references: list[str] = Field(default_factory=list)
     entity_mentions: list[str] = Field(default_factory=list, description="Named entities found")
+    target_entity_matched: Optional[bool] = Field(
+        default=None, description="Whether deterministic source attribution verified the target entity"
+    )
     corroboration_count: int = Field(default=1, description="Number of independent sources confirming")
     raw_score: float = Field(..., ge=0.0, le=1.0, description="Pre-calibration score")
     detected_at: datetime = Field(default_factory=utcnow)

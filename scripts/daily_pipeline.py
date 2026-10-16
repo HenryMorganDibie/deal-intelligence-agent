@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 AUTOMATION_DIR = ROOT / "docs" / "automation"
 EVENT_QUEUE = AUTOMATION_DIR / "event_label_queue.jsonl"
+INDEPENDENT_EVENT_ITEMS = ROOT / "evaluation" / "attribution" / "independent_items.jsonl"
 ENTITY_QUEUE = AUTOMATION_DIR / "entity_match_queue.jsonl"
 FINANCIAL_DATA = AUTOMATION_DIR / "financial_observations.jsonl"
 FINANCIAL_ATTEMPTS = AUTOMATION_DIR / "financial_collection_attempts.jsonl"
@@ -381,9 +382,15 @@ def _multilabel_metrics(
 
 def train_event_classifier() -> dict[str, Any]:
     AUTOMATION_DIR.mkdir(parents=True, exist_ok=True)
+    independent_ids = {
+        row.get("source_review_id")
+        for row in _read_jsonl(INDEPENDENT_EVENT_ITEMS)
+        if row.get("source_review_id")
+    }
     reviewed = [
         row for row in _read_jsonl(EVENT_QUEUE)
-        if isinstance(row.get("label"), dict)
+        if row.get("id") not in independent_ids
+        and isinstance(row.get("label"), dict)
         and row["label"].get("confidence", "high") != "low"
         and isinstance(row["label"].get("expected"), list)
         and isinstance(row["label"].get("about_target"), bool)

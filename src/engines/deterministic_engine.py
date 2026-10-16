@@ -563,12 +563,17 @@ _MONEY = r"(\$|us\$|€|£|₦|n\d|r\d|ksh|egp|usd|eur|naira|rand|dirhams?|euros
 # Patterns whose company is the object ("S&P downgrades Acme"): exempt from the subject-first rule.
 _OBJECT_PATTERNS = {
     rf"\b{_AGENCY}\b.{{0,40}}\b(downgrades?|downgraded|cuts?|lowers?|lowered|slashes|slashed)\b",
+    r"\bjoins?\b.{0,35}\bboard\b",
+    r"\b(elected|named|appointed)\b.{0,50}\b(president\s+and\s+ceo|ceo|cfo|coo|chairman|president)\b",
 }
 HEADLINE_RULES: list[tuple[SignalType, list[str], float]] = [
     (SignalType.LEADERSHIP_CHANGE, [
         rf"\b{_ROLE}\b.{{0,30}}\b(resign\w*|quits?|quit|exits?|exited|steps?\s+down|stepped\s+down|step\s+down|retires?|retired|"
         rf"departs?|departed|ousted|fired|sacked|leaves|leaving|to\s+leave|will\s+leave)\b",
         rf"\b(resigns?|resigned|quits?|exits?|steps?\s+down|retires?)\s+as\s+(its\s+)?(group\s+)?{_ROLE}\b",
+        r"\b(board\s+members?|directors?)\b.{0,35}\b(exit|exits|to\s+exit|step\s+down|steps\s+down|to\s+step\s+down|resign|resigns|resigned|depart|departed)\b",
+        r"\bjoins?\b.{0,35}\bboard\b",
+        r"\b(elected|named|appointed)\b.{0,50}\b(president\s+and\s+ceo|ceo|cfo|coo|chairman|president)\b",
     ], 0.90),
     (SignalType.LEADERSHIP_CHANGE, [
         rf"\b(names?|named|appoints?|appointed|picks?|taps?|hires?|promotes?)\b.{{0,40}}\bas\s+(its\s+)?(new\s+|next\s+|interim\s+|acting\s+|permanent\s+)?(group\s+)?{_ROLE}\b",
@@ -610,6 +615,7 @@ HEADLINE_RULES: list[tuple[SignalType, list[str], float]] = [
         r"scoops?\s+up|scooped\s+up|offloads?|offloaded|dumps?|dumped|acquires?|acquired)\b.{0,40}\b(shares|stock|stake)\b",
         r"\bactivist\b.{0,40}\b(stake|builds|built|takes|took|discloses|disclosed)\b",
         r"\bdisclosed\s+a\s+stake\b",
+        r"\b(increases?|increased|raises?|raised|boosts?|boosted)\s+(its\s+)?stake\b.{0,50}\b(in|to)\b",
     ], 0.85),
     (SignalType.DEBT_RESTRUCTURE, [
         r"\b(exchange\s+offer|consent\s+solicitation|tender\s+offer)\b.{0,40}\b(bonds?|notes?|debt|eurobonds?)\b",
@@ -621,6 +627,7 @@ HEADLINE_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\b(agrees?|agreed|to|plans?\s+to|moves?\s+to|set\s+to)\s+(buy|acquire|sell|merge|take\s+over)\b",
         r"\b(buys?|bought|sells?|sold|acquires?|acquired|takes?|took)\s+(a\s+)?(\d+(\.\d+)?\s*(%|percent|per\s+cent|pc)\s+(stake\s+)?(of|in))",
         r"\b(sells?|sold|to\s+sell)\s+(its\s+|a\s+)?(stake|unit|subsidiary|division|business|operations?)\b",
+        r"\b(sells?|sold|divests?|divested|disposes?\s+of)\b.{0,50}\b(asset|property|mall|real\s+estate|unit|subsidiary|division|business|operations?|brand|plant|mine|shaft)\b",
         r"\breceives?\s+(a\s+|an\s+)?(takeover\s+|buyout\s+|acquisition\s+)?(offer|bid|approach)\b",
         r"\bbuy\s+out\s+(the\s+)?minorit",
         r"\b(weighs|explores|exploring|considers|considering)\s+(a\s+)?(bid|sale|offer|takeover)\b",
@@ -1050,6 +1057,7 @@ class DeterministicSignalEngine:
                     filing_reference=filing.accession_number,
                     source_date=_source_date(filing.filing_date),
                     entity_mentions=_extract_entities(text),
+                    target_entity_matched=True,
                     corroboration_count=1,
                     raw_score=raw_score,
                 ))
@@ -1087,6 +1095,7 @@ class DeterministicSignalEngine:
                     source_name=news.source,
                     source_date=_source_date(news.published_date),
                     entity_mentions=_extract_entities(text),
+                    target_entity_matched=True,
                     corroboration_count=1,
                     raw_score=raw_score,
                 ))
@@ -1104,26 +1113,53 @@ class DeterministicSignalEngine:
                 merged[c.signal_type] = c
                 corroboration_tracker[c.signal_type] = {key}
             else:
+                is_new_story = key not in corroboration_tracker[c.signal_type]
                 corroboration_tracker[c.signal_type].add(key)
                 # Take higher raw_score, merge patterns
                 existing = merged[c.signal_type]
                 merged_patterns = list(dict.fromkeys(existing.matched_patterns + c.matched_patterns))
+                source_urls = list(dict.fromkeys(
+                    existing.corroborating_source_urls
+                    + ([existing.source_url] if existing.source_url else [])
+                    + (c.corroborating_source_urls if is_new_story else [])
+                    + ([c.source_url] if is_new_story and c.source_url else [])
+                ))
+                filing_references = list(dict.fromkeys(
+                    existing.corroborating_filing_references
+                    + ([existing.filing_reference] if existing.filing_reference else [])
+                    + (c.corroborating_filing_references if is_new_story else [])
+                    + ([c.filing_reference] if is_new_story and c.filing_reference else [])
+                ))
                 if c.raw_score > existing.raw_score:
                     merged[c.signal_type] = c.model_copy(update={
                         "matched_patterns": merged_patterns,
+                        "corroborating_source_urls": source_urls,
+                        "corroborating_filing_references": filing_references,
                         "corroboration_count": len(corroboration_tracker[c.signal_type]),
                     })
                 else:
                     merged[c.signal_type] = existing.model_copy(update={
                         "matched_patterns": merged_patterns,
+                        "corroborating_source_urls": source_urls,
+                        "corroborating_filing_references": filing_references,
                         "corroboration_count": len(corroboration_tracker[c.signal_type]),
                     })
 
         # Update corroboration counts
         final_candidates = []
         for sig_type, candidate in merged.items():
+            source_urls = list(dict.fromkeys(
+                candidate.corroborating_source_urls
+                + ([candidate.source_url] if candidate.source_url else [])
+            ))
+            filing_references = list(dict.fromkeys(
+                candidate.corroborating_filing_references
+                + ([candidate.filing_reference] if candidate.filing_reference else [])
+            ))
             final_candidates.append(candidate.model_copy(update={
-                "corroboration_count": len(corroboration_tracker[sig_type])
+                "corroboration_count": len(corroboration_tracker[sig_type]),
+                "corroborating_source_urls": source_urls,
+                "corroborating_filing_references": filing_references,
             }))
 
         # Sort by raw_score descending

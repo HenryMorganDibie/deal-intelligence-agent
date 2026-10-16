@@ -181,12 +181,15 @@ class Sources:
             return out
         return _cached(f"ngx:{code}:{since}:{until}", fetch) or []
 
-    def news(self, company: str, since: date, until: date, french: bool) -> list[dict]:
+    def news(
+        self, company: str, since: date, until: date, french: bool, ticker: Optional[str] = None
+    ) -> list[dict]:
         from src.engines.event_sources import historical_news
         # Strict: a window that cannot be fetched completely raises, so it is neither cached nor used,
         # and the company is retried rather than scored on partial news.
-        return _cached(f"news:{company}:{since}:{until}:{french}",
-                       lambda: historical_news(self.http, company, since, until, french, strict=True)) or []
+        return _cached(f"news:{company}:{ticker or ''}:{since}:{until}:{french}",
+                       lambda: historical_news(self.http, company, since, until, french,
+                                               strict=True, ticker=ticker)) or []
 
     def ngx_events(self, ticker: str, company: str, since: date, until: date) -> list[dict]:
         from src.engines.event_sources import NGX_TYPE_EVENTS, _event, classify
@@ -270,7 +273,7 @@ def detect(src: Sources, company: str, ticker: str, as_of: date, sec_rows: list[
                                      document_url=d["url"], description=f"{ticker.split('.')[0]}: {d['type']}: {d['title']}"))
     news = [NewsItem(title=n["title"], source=n["publisher"] or "Google News", published_date=n["date"],
                      url=n["url"], snippet="")
-            for n in src.news(company, since, as_of, french=_french(ticker))]
+            for n in src.news(company, since, as_of, french=_french(ticker), ticker=ticker)]
 
     cik = cik or (sec_rows[0]["cik"] if sec_rows else None)
     state = AgentState(request=AnalysisRequest(company_name=company, ticker=ticker, cik=cik,
@@ -319,9 +322,10 @@ def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_
         events += src.ngx_events(ticker, company, start, horizon_end)
     headlines = 0
     for d in truth_dates:
-        window = src.news(company, d - timedelta(days=LOOKBACK_DAYS), d, french=_french(ticker))
+        window = src.news(company, d - timedelta(days=LOOKBACK_DAYS), d, french=_french(ticker), ticker=ticker)
         headlines += len(window)
-        events += news_events(src.http, company, d - timedelta(days=LOOKBACK_DAYS), d, headlines=window) or []
+        events += news_events(src.http, company, d - timedelta(days=LOOKBACK_DAYS), d,
+                              headlines=window, ticker=ticker) or []
     truth = ground_truth(company, events, start, horizon_end)
 
     base: dict[str, int] = {}

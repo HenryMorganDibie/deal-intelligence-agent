@@ -835,6 +835,27 @@ def test_headline_attribution(company, title, expected):
     assert got == expected
 
 
+@pytest.mark.parametrize("company,title,expected", [
+    ("Paramount Global", "Four Paramount Global board members to exit amid merger talks", {"leadership_change"}),
+    ("Naspers", "Phuthi Mahanyele-Dabengwa joins Naspers board", {"leadership_change"}),
+    ("Atlas Group", "Shailesh Jejurikar elected Atlas Group president and CEO", {"leadership_change"}),
+    ("UBA", "Tony Elumelu increases stake in UBA to 10.63%", {"insider_activity"}),
+    ("Shoprite", "Shoprite sells major shopping mall in South Africa", {"m_and_a_activity"}),
+])
+def test_headline_event_patterns_cover_board_changes_stakes_and_asset_sales(company, title, expected):
+    from src.engines.deterministic_engine import _company_matchers, match_rules_for_target
+    matchers = _company_matchers(company)
+    got = {signal_type.value for signal_type, _, _ in match_rules_for_target(title, matchers)}
+    assert got == expected
+
+
+def test_headline_event_patterns_do_not_transfer_other_companies_events():
+    from src.engines.deterministic_engine import _company_matchers, match_rules_for_target
+    matchers = _company_matchers("Acme")
+    title = "Rival board members exit after Acme deal collapses"
+    assert match_rules_for_target(title, matchers) == []
+
+
 def test_shard_plan_splits_only_unfinished_companies():
     from datetime import date
     from src.engines import historical_backtest as hb

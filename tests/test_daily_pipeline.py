@@ -76,6 +76,24 @@ def test_event_classifier_evaluates_manual_labels_against_locked_set(tmp_path, m
     assert (tmp_path / "event_classifier_evaluation.json").exists()
 
 
+def test_event_classifier_excludes_independent_attribution_items(tmp_path, monkeypatch):
+    monkeypatch.setattr(pipeline, "AUTOMATION_DIR", tmp_path)
+    monkeypatch.setattr(pipeline, "EVENT_QUEUE", tmp_path / "event_queue.jsonl")
+    monkeypatch.setattr(pipeline, "INDEPENDENT_EVENT_ITEMS", tmp_path / "independent_items.jsonl")
+    pipeline.INDEPENDENT_EVENT_ITEMS.write_text(
+        json.dumps({"source_review_id": "locked-story"}) + "\n", encoding="utf-8"
+    )
+    pipeline.EVENT_QUEUE.write_text("".join(json.dumps({
+        "id": item_id,
+        "title": "Example company reports event",
+        "label": {"about_target": True, "expected": [], "confidence": "high"},
+    }) + "\n" for item_id in ("locked-story", "train-story")), encoding="utf-8")
+
+    result = pipeline.train_event_classifier()
+
+    assert result["training_labels"] == 1
+
+
 def test_entity_matcher_evaluates_only_its_separate_holdout(tmp_path, monkeypatch):
     monkeypatch.setattr(pipeline, "AUTOMATION_DIR", tmp_path)
     monkeypatch.setattr(pipeline, "ENTITY_QUEUE", tmp_path / "entity_queue.jsonl")

@@ -116,6 +116,18 @@ _SPECULATIVE = re.compile(
     r"|(مفاوضات|تدرس|تعتزم|قد\s|محتمل|تخطط)",
     re.IGNORECASE,
 )
+_CLAUSE_BOUNDARY = re.compile(
+    r"(?<=[.!?;])\s+|(?:,\s*|\s+)(?P<connector>but|however|while|although|whereas|yet)(?:,\s*|\s+)",
+    re.IGNORECASE,
+)
+_COORDINATED_EVENT_START = re.compile(
+    r"^\s*(?:also\s+|then\s+)?"
+    r"(?:appoint\w*|name\w*|confirm\w*|resign\w*|retir\w*|step\w*|"
+    r"complet\w*|clos\w*|finali[sz]\w*|acquir\w*|merg\w*|"
+    r"fin\w*|sanction\w*|downgrad\w*|default\w*|"
+    r"conclu\w*|finalis\w*|nomm\w*|renonc\w*|mult\w*)\b",
+    re.IGNORECASE,
+)
 # NGX submission types that are the event itself.
 NGX_TYPE_EVENTS = {"directorsdealings": {SignalType.INSIDER_ACTIVITY}}
 
@@ -123,21 +135,58 @@ NGX_TYPE_EVENTS = {"directorsdealings": {SignalType.INSIDER_ACTIVITY}}
 def classify(text: str, matchers: Optional[list[re.Pattern]] = None) -> set[SignalType]:
     """Signal types whose completed event the text reports (about the company, if matchers given)."""
     text = " ".join(html.unescape(text or "").replace("_", " ").split())
-    if not text or _SPECULATIVE.search(text):
+    if not text:
         return set()
-    mention = None
-    if matchers:
-        starts = [m.start() for p in matchers for m in [p.search(text)] if m]
-        if not starts:
-            return set()
-        mention = min(starts)
     found = set()
-    for sig_type, patterns in _COMPILED.items():
-        for p in patterns:
-            m = p.search(text)
-            if m and (mention is None or mention <= m.start() + 5):
+    clauses: list[tuple[int, str, Optional[str]]] = []
+    start = 0
+    connector = None
+    for boundary in _CLAUSE_BOUNDARY.finditer(text):
+        clauses.append((start, text[start:boundary.start()], connector))
+        start = boundary.end()
+        connector = boundary.group("connector")
+    clauses.append((start, text[start:], connector))
+    previous_target_led = False
+    for offset, clause, preceding_connector in clauses:
+        if _SPECULATIVE.search(clause):
+            local_starts = (
+                [m.start() for pattern in matchers for m in [pattern.search(clause)] if m]
+                if matchers else []
+            )
+            previous_target_led = False
+            if local_starts:
+                prefix = clause[:min(local_starts)].strip()
+                previous_target_led = not prefix or bool(re.fullmatch(
+                    r"(?i)(shares?|stocks?)\s+(of|in)", prefix
+                ))
+            continue
+        mention = None
+        target_led = False
+        if matchers:
+            starts = [m.start() for pattern in matchers for m in [pattern.search(clause)] if m]
+            if starts:
+                mention = min(starts)
+                prefix = clause[:mention].strip()
+                target_led = not prefix or bool(re.fullmatch(
+                    r"(?i)(shares?|stocks?)\s+(of|in)", prefix
+                ))
+            elif (
+                preceding_connector in {"but", "however", "yet"}
+                and previous_target_led
+                and _COORDINATED_EVENT_START.search(clause)
+            ):
+                mention = 0
+            else:
+                previous_target_led = False
+                continue
+        for sig_type, patterns in _COMPILED.items():
+            if any(
+                (match := pattern.search(clause))
+                and (mention is None or mention <= match.start() + 5)
+                for pattern in patterns
+            ):
                 found.add(sig_type)
-                break
+        previous_target_led = target_led
     return found
 
 
@@ -259,6 +308,7 @@ def _news_get(client: httpx.Client, url: str, attempts: int = 6) -> Optional[htt
 def historical_news(
     client: httpx.Client, company: str, since: date, until: date, french: bool = False,
     arabic: bool = False, portuguese: bool = False, strict: bool = False,
+    ticker: Optional[str] = None,
 ) -> Optional[list[dict]]:
     """
     Dated headlines about the company published in [since, until], from Google
@@ -274,6 +324,19 @@ def historical_news(
         queries += [(f'"{company}" {t} {window}'.replace("  ", " "), ("ar", "EG", "ar")) for t in ARABIC_TOPICS]
     if portuguese:
         queries += [(f'"{company}" {t} {window}'.replace("  ", " "), ("pt-PT", "PT", "pt-150")) for t in PORTUGUESE_TOPICS]
+    ticker_base = (ticker or "").upper().split(".", 1)[0]
+    if len(ticker_base) >= 3:
+        editions = [("en-US", "US", "en")]
+        if french:
+            editions.append(("fr", "CI", "fr"))
+        if arabic:
+            editions.append(("ar", "EG", "ar"))
+        if portuguese:
+            editions.append(("pt-PT", "PT", "pt-150"))
+        queries.extend(
+            (f'"{ticker_base}" {window}', edition)
+            for edition in editions
+        )
     out, seen, ok = [], set(), False
     for q, (hl, gl, lang) in queries:
         r = _news_get(client, GOOGLE_NEWS.format(q=quote(q), hl=hl, gl=gl, lang=lang))
@@ -305,6 +368,7 @@ def historical_news(
 def news_events(
     client: httpx.Client, company: str, since: date, until: date, french: bool = False,
     headlines: Optional[list[dict]] = None,
+    ticker: Optional[str] = None,
 ) -> Optional[list[dict]]:
     """
     Completed events about the company in credible outlets (credibility >= 0.70)
@@ -312,10 +376,10 @@ def news_events(
     coverage: unknown, not 'no event').
     """
     from src.engines.deterministic_engine import _company_matchers, _source_credibility
-    items = headlines if headlines is not None else historical_news(client, company, since, until, french)
+    items = headlines if headlines is not None else historical_news(client, company, since, until, french, ticker=ticker)
     if not items:
         return None
-    matchers = _company_matchers(company)
+    matchers = _company_matchers(company, ticker=ticker)
     out = []
     for it in items:
         if _source_credibility(it["publisher"]) < MIN_NEWS_CREDIBILITY:
@@ -346,8 +410,8 @@ def collect_events(
             results.append(nse_events(client, company, since, until))
         french = t.endswith((".BV", ".CS", ".TN")) or market == "africa"
         items = historical_news(client, company, since, until, french=french,
-                                arabic=t.endswith(".CA"), portuguese=t.endswith((".MZ", ".AO")))
-        results.append(news_events(client, company, since, until, headlines=items) if items is not None else None)
+                                arabic=t.endswith(".CA"), portuguese=t.endswith((".MZ", ".AO")), ticker=t)
+        results.append(news_events(client, company, since, until, headlines=items, ticker=t) if items is not None else None)
         got = [r for r in results if r is not None]
         return [e for r in got for e in r] if got else None
     finally:

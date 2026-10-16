@@ -170,11 +170,18 @@ def print_brief(brief: AnalystBrief) -> None:
                     f"Corroboration:{a.corroboration_weight:.2f}  "
                     f"Recency:{a.recency_weight:.2f}[/dim]"
                 )
+                if a.learned_confirmation_probability is not None:
+                    alpha_line += (
+                        f"\n[bold]Estimated event confirmation:[/bold] "
+                        f"{a.learned_confirmation_probability:.1%} "
+                        "[dim](experimental learned estimate; separate from alpha)[/dim]"
+                    )
                 move = _expected_move(a)
                 if move:
                     alpha_line += (
                         f"\n[bold]Measured move after similar flags:[/bold] [{color}]{move}[/{color}]"
-                        f"  [dim](market-adjusted, 10 calendar days; {a.move_confidence} confidence)[/dim]"
+                        f"  [dim](historical reference only; market-adjusted over 10 calendar days; "
+                        f"{a.move_confidence} confidence; not a validated return forecast)[/dim]"
                     )
                 if a.requires_human_review:
                     alpha_line += f"\n[bold red]⚑ HUMAN REVIEW: {_e(a.review_reason)}[/bold red]"
@@ -323,10 +330,16 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
             compound = (f" (compound-adjusted {a.compound_adjusted_score:.1f}, untested)"
                         if getattr(a, "compound_adjusted_score", None) is not None else "")
             lines.append(f"**Alpha Score:** {a.score:.1f}/100{compound}  ")
+            if a.learned_confirmation_probability is not None:
+                lines.append(
+                    f"**Estimated event confirmation:** {a.learned_confirmation_probability:.1%} "
+                    "(experimental learned estimate; separate from alpha)  "
+                )
             move = _expected_move(a)
             if move:
                 lines.append(f"**Measured move after similar flags:** {move}, market-adjusted over 10 trading "
-                             f"days ({a.move_confidence} confidence)  ")
+                             f"days ({a.move_confidence} confidence; historical reference only, not a validated "
+                             f"return forecast)  ")
             if a.requires_human_review:
                 lines.append(f"\n> ⚑ **Human Review Required:** {a.review_reason}")
         if sig.attribution_doubt:
