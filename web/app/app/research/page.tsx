@@ -50,6 +50,13 @@ function FormattedAnswer({ text }: { text: string }) {
   const blocks: ReactNode[] = [];
   let list: { ordered: boolean; items: string[] } | null = null;
   let paragraph: string[] = [];
+  const lines = text.split(/\r?\n/);
+
+  const tableCells = (line: string) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+  const isTableSeparator = (line: string) => {
+    const cells = tableCells(line);
+    return cells.length > 1 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+  };
 
   const flushList = () => {
     if (!list) return;
@@ -67,8 +74,40 @@ function FormattedAnswer({ text }: { text: string }) {
     paragraph = [];
   };
 
-  for (const line of text.split(/\r?\n/)) {
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
     const trimmed = line.trim();
+    if (trimmed.includes("|") && lines[i + 1] && isTableSeparator(lines[i + 1])) {
+      flushParagraph();
+      flushList();
+      const headers = tableCells(line);
+      const rows: string[][] = [];
+      i += 2;
+      while (i < lines.length && lines[i].trim().includes("|")) {
+        rows.push(tableCells(lines[i]));
+        i += 1;
+      }
+      i -= 1;
+      blocks.push(
+        <div key={`table-${blocks.length}`} className="overflow-x-auto">
+          <table className="w-full border-collapse text-left text-[0.8125rem]">
+            <thead>
+              <tr className="border-b hairline">
+                {headers.map((cell, index) => <th key={`${index}-${cell}`} className="px-3 py-2 font-semibold"><AnswerText text={cell} /></th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, rowIndex) => (
+                <tr key={rowIndex} className="border-b hairline last:border-0">
+                  {headers.map((_, index) => <td key={index} className="px-3 py-2 align-top"><AnswerText text={row[index] ?? ""} /></td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
+      );
+      continue;
+    }
     const heading = /^(#{1,3})\s+(.+)$/.exec(trimmed);
     const bullet = /^\s*[-*+]\s+(.+)$/.exec(line);
     const numbered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
