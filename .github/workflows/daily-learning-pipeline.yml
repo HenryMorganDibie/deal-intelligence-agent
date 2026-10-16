@@ -39,7 +39,6 @@ jobs:
       - name: Propose validated datasets and site data
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.DAILY_PIPELINE_PAT }}
           add-paths: |
             docs/automation
             web/data/investment_ideas.json
