@@ -10,10 +10,9 @@ export type ProductAction =
   | "brief_opened"
   | "performance_data_loaded";
 
-function visitorId(): string | null {
+export function browserVisitorId(): string | null {
   if (typeof window === "undefined") return null;
   try {
-    if (localStorage.getItem("di_owner")) return null;
     let id = localStorage.getItem("di_v");
     if (!id) {
       id = (crypto.randomUUID?.() ?? `${Date.now()}${Math.random()}`)
@@ -23,6 +22,15 @@ function visitorId(): string | null {
       localStorage.setItem("di_v", id);
     }
     return id;
+  } catch {
+    return null;
+  }
+}
+
+function visitorId(): string | null {
+  try {
+    if (typeof window === "undefined" || localStorage.getItem("di_owner")) return null;
+    return browserVisitorId();
   } catch {
     return null;
   }

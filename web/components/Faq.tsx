@@ -23,7 +23,7 @@ const FAQ = [
   },
   {
     q: "Is the hosted app free?",
-    a: "Yes, and there is no account to create. Click Run your first brief and go: up to 10 analyses a day per visitor. Each brief gets its own link you can share, and your list of briefs is kept in your browser.",
+    a: "Yes, and there is no account to create. Click Run your first brief and go: up to 1,000 analyses a day per visitor, subject to service capacity. Each brief gets its own link you can share, and your list of briefs is kept in your browser.",
   },
   {
     q: "How do I know the numbers are right?",

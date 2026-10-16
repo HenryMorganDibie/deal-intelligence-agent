@@ -27,9 +27,9 @@ function SignalCard({ s }: { s: Signal }) {
         <SeverityBadge severity={s.severity} />
         <span
           className="kbd text-[0.75rem] text-[color:var(--muted)]"
-          title="Share of past flags of this type and severity that were confirmed (walk-forward backtest)"
+          title="Calibrated probability that this signal's event materialises"
         >
-          {Math.round(s.confidence * 100)}% historical hit rate
+          {Math.round(s.confidence * 100)}% event probability
         </span>
         {s.alpha_score && (
           <span
@@ -103,15 +103,24 @@ function SignalCard({ s }: { s: Signal }) {
 
 export function BriefView({ brief }: { brief: Brief }) {
   const signals = brief.detected_signals ?? [];
+  const keyMetrics = brief.key_metrics ?? [];
+  const recentDevelopments = brief.recent_developments ?? [];
+  const filings = brief.filings_reviewed ?? [];
+  const news = brief.news_reviewed ?? [];
   const deterministicOnly = /LLM unavailable/i.test(brief.analyst_model ?? "");
   return (
     <div className="space-y-10">
       <header>
         <div className="flex flex-wrap items-center gap-3">
           <SeverityBadge severity={brief.overall_severity} />
-          <span className="kbd text-[0.75rem] text-[color:var(--muted)]">
-            {Math.round(brief.confidence_score * 100)}% confidence
-          </span>
+          {signals.length > 0 && (
+            <span
+              className="kbd text-[0.75rem] text-[color:var(--muted)]"
+              title="Mean calibrated probability that the confirmed signal events materialise"
+            >
+              {Math.round(brief.confidence_score * 100)}% mean event probability
+            </span>
+          )}
           <span className="kbd text-[0.75rem] text-[color:var(--dim)]">{formatDate(brief.brief_date)}</span>
           {brief.compliance_mode && <span className="tag">Compliance mode</span>}
         </div>
@@ -146,6 +155,35 @@ export function BriefView({ brief }: { brief: Brief }) {
           <p className="mt-3 text-[0.9375rem] leading-relaxed">{brief.recommendation}</p>
         </div>
       </section>
+
+      {keyMetrics.length > 0 && (
+        <section aria-labelledby="metrics-title">
+          <h2 id="metrics-title" className="eyebrow">Key metrics</h2>
+          <ul className="mt-3 divide-y divide-white/[0.07] border-y hairline">
+            {keyMetrics.map((metric, i) => (
+              <li key={`${metric.name}-${i}`} className="grid gap-1 py-3 sm:grid-cols-[minmax(8rem,0.6fr)_minmax(0,1.4fr)]">
+                <div>
+                  <p className="font-medium">{metric.name}</p>
+                  <p className="kbd text-[0.75rem] text-[color:var(--dim)]">{metric.value}{metric.period ? ` · ${metric.period}` : ""}</p>
+                </div>
+                <p className="text-[0.875rem] leading-relaxed text-[color:var(--muted)]">{metric.interpretation}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {(brief.competitive_context || recentDevelopments.length > 0) && (
+        <section aria-labelledby="context-title" className="space-y-5">
+          <h2 id="context-title" className="eyebrow">Company context</h2>
+          {brief.competitive_context && <p className="text-[0.9375rem] leading-relaxed">{brief.competitive_context}</p>}
+          {recentDevelopments.length > 0 && (
+            <ul className="list-disc space-y-1.5 pl-5 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
+              {recentDevelopments.map((development, i) => <li key={`${development}-${i}`}>{development}</li>)}
+            </ul>
+          )}
+        </section>
+      )}
 
       <section aria-labelledby="signals-title">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -228,9 +266,9 @@ export function BriefView({ brief }: { brief: Brief }) {
         </h2>
         <div className="mt-3 grid gap-6 md:grid-cols-2">
           <div className="min-w-0">
-            <p className="text-[0.8125rem] text-[color:var(--dim)]">Filings ({brief.filings_reviewed.length})</p>
+            <p className="text-[0.8125rem] text-[color:var(--dim)]">Filings ({filings.length})</p>
             <ul className="mt-2 space-y-1.5">
-              {brief.filings_reviewed.slice(0, 25).map((f, i) => (
+              {filings.slice(0, 25).map((f, i) => (
                 <li key={`${f.document_url}-${i}`} className="truncate text-[0.875rem]">
                   <a href={f.document_url} target="_blank" rel="noreferrer noopener" className="hover:underline">
                     <span className="kbd text-[0.75rem] text-verified">{f.form_type}</span>{" "}
@@ -241,9 +279,9 @@ export function BriefView({ brief }: { brief: Brief }) {
             </ul>
           </div>
           <div className="min-w-0">
-            <p className="text-[0.8125rem] text-[color:var(--dim)]">News ({brief.news_reviewed.length})</p>
+            <p className="text-[0.8125rem] text-[color:var(--dim)]">News ({news.length})</p>
             <ul className="mt-2 space-y-1.5">
-              {brief.news_reviewed.slice(0, 25).map((n, i) => (
+              {news.slice(0, 25).map((n, i) => (
                 <li key={`${n.url}-${i}`} className="truncate text-[0.875rem]">
                   <a href={n.url} target="_blank" rel="noreferrer noopener" className="hover:underline">
                     <span className="text-[color:var(--muted)]">{n.source}</span> {n.title}

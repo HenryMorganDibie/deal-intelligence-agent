@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { browserVisitorId } from "../../lib/tracking";
 
 type Row = { views: number; visitors: number; users: number };
 type ActionRow = { action: string; completions: number; clients: number };
@@ -29,7 +30,7 @@ export default function Admin() {
       const r = await fetch(`${API}/api/admin/stats`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: k, days: d }),
+        body: JSON.stringify({ key: k, days: d, visitor: browserVisitorId() }),
       });
       if (!r.ok) throw new Error(r.status === 401 ? "Wrong key" : "Stats unavailable");
       setStats(await r.json());
@@ -132,7 +133,7 @@ export default function Admin() {
             ))}
           </div>
           <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
-            Since {stats.since}. Unique browsers are anonymous browser IDs, not verified people. Brief and research totals include successful historical runs; other feature uses are tracked from this release onward.
+            Since {stats.since}. Unique browsers are anonymous browser IDs, not verified people. This dashboard excludes this browser. Analysis and research runs are keyed by a salted IP hash, so runs from this network are also excluded; that can include other people using the same network.
           </p>
 
           <h2 className="mt-8 font-semibold">Successful app actions</h2>

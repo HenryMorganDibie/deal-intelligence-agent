@@ -40,6 +40,7 @@ export type CompoundSignal = {
 };
 
 export type RiskFactor = { factor: string; impact: string; likelihood: Severity; mitigation?: string | null };
+export type KeyMetric = { name: string; value: string; period: string; interpretation: string };
 
 export type Brief = {
   company_name: string;
@@ -51,12 +52,14 @@ export type Brief = {
   recommendation: string;
   confidence_score: number;
   detected_signals: Signal[];
+  key_metrics?: KeyMetric[];
+  competitive_context?: string | null;
   signal_candidates_count: number;
   top_alpha_score?: number | null;
   requires_human_review: boolean;
   human_review_reasons: string[];
   risk_factors: RiskFactor[];
-  recent_developments: string[];
+  recent_developments?: string[];
   filings_reviewed: { form_type: string; filing_date: string; document_url: string; description?: string | null }[];
   news_reviewed: { title: string; source: string; published_date: string; url: string }[];
   total_sources: number;

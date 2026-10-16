@@ -318,7 +318,10 @@ class AnalystBrief(BaseModel):
     executive_summary: str
     overall_severity: Severity
     recommendation: str = Field(..., description="Actionable recommendation for the analyst")
-    confidence_score: float = Field(..., ge=0.0, le=1.0)
+    confidence_score: float = Field(
+        ..., ge=0.0, le=1.0,
+        description="Mean calibrated event probability across confirmed signals; 0 when there are no signals",
+    )
 
     # Signals — always from deterministic engine, explained by LLM
     detected_signals: list[DetectedSignal]

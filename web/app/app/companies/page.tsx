@@ -105,6 +105,11 @@ export default function CompaniesPage() {
 
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value });
   const fin = p?.financials;
+  const financialsStatus = fin?.verified
+    ? "verified"
+    : fin?.checks.some((check) => !check.passed)
+      ? "inconsistent"
+      : "unchecked";
   return (
     <Container className="py-10 lg:py-14">
       <PageHeader eyebrow="Companies" title="Profiles and financial statements.">
@@ -166,7 +171,7 @@ export default function CompaniesPage() {
             <section>
               <div className="flex flex-wrap items-center gap-3">
                 <h3 className="eyebrow">Financial statements</h3>
-                <Pill value={fin.verified ? "verified" : "inconsistent"} title="All identity checks passed?" />
+                <Pill value={financialsStatus} title="Accounting identity checks" />
               </div>
               <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
                 {fin.source_url ? (

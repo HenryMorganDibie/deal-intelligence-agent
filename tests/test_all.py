@@ -2893,7 +2893,7 @@ class TestReportIntegrity:
         b = out.brief
         assert b is not None, out.errors
         assert b.overall_severity == Severity.CRITICAL          # floored at max signal severity
-        assert b.confidence_score == 0.5                        # non-numeric coerced
+        assert b.confidence_score == 0.85                       # mean calibrated signal probability, not LLM output
         assert b.executive_summary == "Analysis complete."
         assert b.recent_developments == ["one item"]
         assert b.top_alpha_score == 60.0                        # max, not list position
@@ -3836,8 +3836,12 @@ class TestHostedApi:
         return TestClient(api.app), api
 
     def test_health(self, monkeypatch):
-        client, _ = self._client(monkeypatch)
-        assert client.get("/api/health").json()["ok"] is True
+        client, api = self._client(monkeypatch)
+        monkeypatch.setattr(api, "PER_VISITOR_DAILY", 1000)
+        monkeypatch.setattr(api, "GLOBAL_DAILY", 1000)
+        payload = client.get("/api/health").json()
+        assert payload["ok"] is True
+        assert payload["daily_limit"] == payload["global_daily_limit"] == 1000
 
     def test_evaluation_includes_published_return_forecast_validation(self, monkeypatch, tmp_path):
         client, _ = self._client(monkeypatch)
@@ -3866,6 +3870,30 @@ class TestHostedApi:
         client, _ = self._client(monkeypatch)
         assert client.get("/api/briefs/not-a-uuid").status_code == 404
 
+    def test_market_filters_reject_unknown_countries_instead_of_returning_unfiltered_data(self, monkeypatch):
+        client, _ = self._client(monkeypatch)
+        urls = (
+            "/api/deals?country=ZZ",
+            "/api/events?country=ZZ",
+            "/api/comparables?country=ZZ",
+            "/api/sectors/banking/risk?country=ZZ",
+            "/api/companies/profile?name=Example&country=ZZ",
+        )
+        for url in urls:
+            assert client.get(url).status_code == 404, url
+        assert client.post("/api/reports/sector/fintech?country=ZZ").status_code == 404
+
+    def test_watchlist_storage_errors_are_not_reported_as_missing(self, monkeypatch):
+        import src.hosted_market as hm
+        client, _ = self._client(monkeypatch)
+        monkeypatch.setattr(hm, "_configured", lambda: True)
+        monkeypatch.setattr(hm, "_rpc", AsyncMock(return_value=MagicMock(
+            is_success=False, status_code=503, text="database unavailable"
+        )))
+        response = client.get("/api/watchlists/00000000-0000-0000-0000-000000000001")
+        assert response.status_code == 502
+        assert response.json()["detail"] == "The watchlist could not be loaded."
+
     def test_tracking_records_only_allowlisted_product_actions(self, monkeypatch):
         import src.hosted_market as hm
         client, _ = self._client(monkeypatch)
@@ -3891,6 +3919,47 @@ class TestHostedApi:
                                headers={"content-type": "text/plain"})
 
         assert response.json() == {"ok": False}
+        rpc.assert_not_awaited()
+
+    def test_admin_stats_excludes_owner_browser_and_current_network(self, monkeypatch):
+        import hashlib
+        import src.hosted_market as hm
+        client, _ = self._client(monkeypatch)
+        monkeypatch.setattr(hm, "ADMIN_KEY", "admin-secret")
+        monkeypatch.setattr(hm, "API_SECRET", "api-secret")
+        monkeypatch.setattr(hm, "_configured", lambda: True)
+        rpc = AsyncMock(return_value=MagicMock(is_success=True, json=lambda: {"ok": True}))
+        monkeypatch.setattr(hm, "_rpc", rpc)
+
+        response = client.post(
+            "/api/admin/stats",
+            json={"key": "admin-secret", "days": 7, "visitor": "a" * 32},
+            headers={"x-forwarded-for": "203.0.113.7"},
+        )
+
+        assert response.json() == {"ok": True}
+        rpc.assert_awaited_once()
+        assert rpc.await_args.args[1] == "visit_stats"
+        assert rpc.await_args.args[2] == {
+            "p_days": 7,
+            "p_excluded_visitor": "a" * 32,
+            "p_excluded_client_hash": hashlib.sha256(b"api-secret:203.0.113.7").hexdigest()[:32],
+        }
+
+    def test_admin_stats_rejects_malformed_owner_browser_id(self, monkeypatch):
+        import src.hosted_market as hm
+        client, _ = self._client(monkeypatch)
+        monkeypatch.setattr(hm, "ADMIN_KEY", "admin-secret")
+        monkeypatch.setattr(hm, "_configured", lambda: True)
+        rpc = AsyncMock()
+        monkeypatch.setattr(hm, "_rpc", rpc)
+
+        response = client.post(
+            "/api/admin/stats",
+            json={"key": "admin-secret", "visitor": "not-a-browser-id"},
+        )
+
+        assert response.status_code == 422
         rpc.assert_not_awaited()
 
     def test_label_brief_uses_brief_signals(self, monkeypatch):

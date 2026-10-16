@@ -406,6 +406,65 @@ def test_parse_question_scope():
     assert (p["since"], p["until"]) == ("2025-01-01", "2025-12-31")
 
 
+def test_parse_question_company_region_and_calendar_dates():
+    today = date(2026, 10, 16)
+    company = rs.parse_question("Moniepoint raised money in Nigeria in 2025", today)
+    assert company["companies"] == ["Moniepoint"]
+    assert company["countries"] == ["NG"]
+    assert (company["since"], company["until"]) == ("2025-01-01", "2025-12-31")
+
+    region = rs.parse_question("Which DFIs are most active in West Africa?", today)
+    west_africa = [c.iso2 for c in ac.COUNTRIES if c.region == "Western Africa"]
+    assert region["countries"] == west_africa
+    assert region["investor_kinds"] == ["dfi"]
+    assert region["companies"] == []
+
+    ytd = rs.parse_question("What acquisitions happened in Kenyan banking this year?", today)
+    assert (ytd["since"], ytd["until"]) == ("2026-01-01", "2026-10-16")
+    last_year = rs.parse_question("What happened in Ghana last year?", today)
+    assert (last_year["since"], last_year["until"]) == ("2025-01-01", "2025-12-31")
+
+
+def test_research_keeps_explicit_company_and_event_date_scope():
+    deals = [
+        _deal("Nigeria’s Moniepoint raises $110m Series C", published="2025-04-01"),
+        _deal("Nigeria’s Paystack raises $100m Series C", published="2025-05-01"),
+        _deal("Nigeria’s Moniepoint raises $200m Series D", published="2026-04-01"),
+    ]
+    _, evidence = rs.retrieve("Moniepoint raised money in Nigeria in 2025", deals, live_news=False,
+                              today=date(2026, 10, 16))
+    assert [item["title"] for item in evidence if item["kind"] == "deal"] == [
+        "Nigeria’s Moniepoint raises $110m Series C"
+    ]
+
+    events = [
+        {"headline": "Nigeria bank reports a loss", "signal_type": "earnings_surprise", "day": "2025-06-01",
+         "country": "NG", "countries": ["NG"]},
+        {"headline": "Nigeria bank reports a profit", "signal_type": "earnings_surprise", "day": "2026-06-01",
+         "country": "NG", "countries": ["NG"]},
+    ]
+    _, evidence = rs.retrieve("What happened in Nigeria in 2025?", events=events, live_news=False,
+                              today=date(2026, 10, 16))
+    assert [item["title"] for item in evidence if item["kind"] == "event"] == [
+        "Nigeria bank reports a loss"
+    ]
+
+
+def test_research_live_news_uses_requested_date_scope():
+    class Client:
+        url = ""
+
+        def get(self, url):
+            self.url = url
+            return type("Response", (), {"text": "<rss/>"})()
+
+    client = Client()
+    rs._news_items("fintech", "NG", client=client, since="2025-01-01", until="2025-12-31")
+    assert "after%3A2025-01-01" in client.url
+    assert "before%3A2025-12-31" in client.url
+    assert "when%3A90d" not in client.url
+
+
 def test_citation_normalisation_and_validation():
     text = ("Cloud9 raised $500k in its latest round 【2】. The naira fell sharply last year [3, 4]. "
             "A made up claim cites a missing item [9]. Another claim without a source here.")
@@ -442,6 +501,7 @@ def test_country_report_sections():
     for heading in ("# Kenya", "## Executive summary", "## Country risk", "## Currency", "## Deal activity",
                     "## Most active investors", "## Sources"):
         assert heading in r["markdown"]
+    assert any(item["kind"] == "deal" and "Cloud9" in item["title"] for item in r["evidence"])
 
 
 # ── Monitoring, coverage ──────────────────────────────────────────────────────
@@ -557,6 +617,15 @@ def test_research_filters_and_labels_investor_types():
     assert p["investor_kinds"] == ["dfi"]
     texts = [i["text"] for i in items if i["kind"] == "deal"]
     assert len(texts) == 1 and "Proparco (development finance institution)" in texts[0]
+    assert any(i["kind"] == "investor" and i["title"] == "Proparco activity" for i in items)
+
+    regional = [_deal("Senegal's ARC Ride raises $5m from Proparco"),
+                _deal("Kenya's ARC Ride raises $5m from Proparco")]
+    p, items = rs.retrieve("Which DFIs are most active in West Africa?", regional, [], live_news=False)
+    assert p["countries"] == [c.iso2 for c in ac.COUNTRIES if c.region == "Western Africa"]
+    assert [i["title"] for i in items if i["kind"] == "deal"] == [
+        "Senegal's ARC Ride raises $5m from Proparco"
+    ]
 
 
 # ── Measured outcomes: calibration and expected moves come from data ─────────

@@ -42,6 +42,10 @@ export default function DealsPage() {
 
   const set = (k: keyof Filters) => (e: { target: { value: string } }) => setFilters({ ...filters, [k]: e.target.value });
   const disclosed = (rows ?? []).filter((d) => d.amount_usd);
+  const disclosedAmounts = disclosed.flatMap((d) => (d.amount_usd ? [d.amount_usd] : [])).sort((a, b) => a - b);
+  const medianSize = disclosedAmounts.length
+    ? (disclosedAmounts[Math.floor((disclosedAmounts.length - 1) / 2)] + disclosedAmounts[Math.floor(disclosedAmounts.length / 2)]) / 2
+    : null;
   return (
     <Container className="py-10 lg:py-14">
       <PageHeader eyebrow="Deals" title="Private equity, venture, debt and M&A across Africa.">
@@ -109,7 +113,7 @@ export default function DealsPage() {
             <Stat label="Disclosed value" value={usd(disclosed.reduce((a, d) => a + (d.amount_usd ?? 0), 0))} note={`${disclosed.length} with amounts`} />
             <Stat
               label="Median disclosed size"
-              value={usd(disclosed.length ? [...disclosed].sort((a, b) => (a.amount_usd ?? 0) - (b.amount_usd ?? 0))[Math.floor(disclosed.length / 2)].amount_usd : null)}
+              value={usd(medianSize)}
             />
           </div>
           <div className="mt-6">

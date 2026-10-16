@@ -13,6 +13,7 @@ type Watchlist = { id: string; name: string; companies: string[]; countries: str
 export default function WatchlistPage({ params }: { params: { id: string } }) {
   const [data, setData] = useState<{ watchlist: Watchlist; alerts: Alert[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -23,14 +24,32 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
 
   async function remove() {
     if (!confirm("Delete this watchlist? Its feed and webhook stop working.")) return;
-    await del(`/api/watchlists/${encodeURIComponent(params.id)}`);
     try {
-      const rows = JSON.parse(localStorage.getItem("deal-intel:watchlists") ?? "[]");
-      localStorage.setItem("deal-intel:watchlists", JSON.stringify(rows.filter((r: { id: string }) => r.id !== params.id)));
-    } catch {
-      /* ignore */
+      setActionError(null);
+      await del(`/api/watchlists/${encodeURIComponent(params.id)}`);
+      try {
+        const rows: unknown = JSON.parse(localStorage.getItem("deal-intel:watchlists") ?? "[]");
+        if (Array.isArray(rows)) {
+          localStorage.setItem("deal-intel:watchlists", JSON.stringify(rows.filter((r: { id?: string }) => r.id !== params.id)));
+        }
+      } catch {
+        // The server-side deletion succeeded; local browser cleanup is best-effort.
+      }
+      window.location.href = "/app/watchlists";
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : "Could not delete the watchlist.");
     }
-    window.location.href = "/app/watchlists";
+  }
+
+  async function copyFeed(feed: string) {
+    try {
+      await navigator.clipboard.writeText(feed);
+      setCopied(true);
+      setActionError(null);
+    } catch {
+      setCopied(false);
+      setActionError("Could not copy the RSS link. Copy it from the address field after opening the feed.");
+    }
   }
 
   if (error) return <Container className="py-14"><ErrorNote message={error} /></Container>;
@@ -53,9 +72,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
         <button
           type="button"
           className="btn btn-ghost"
-          onClick={() => {
-            navigator.clipboard.writeText(feed).then(() => setCopied(true));
-          }}
+          onClick={() => copyFeed(feed)}
         >
           {copied ? "RSS link copied" : "Copy RSS feed link"}
         </button>
@@ -66,6 +83,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
           Delete
         </button>
       </div>
+      {actionError && <ErrorNote message={actionError} />}
 
       <h2 className="eyebrow mt-10">Alerts, last 90 days ({alerts.length})</h2>
       <ul className="mt-3 space-y-3">

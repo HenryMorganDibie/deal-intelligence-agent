@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Container } from "../../../../components/primitives";
 import { DealRows, ErrorNote, Loading, PageHeader, Pill, Stat, Table, Td, num, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
@@ -17,6 +17,64 @@ type CountryResponse = {
   investors: InvestorRow[];
 };
 
+function ReportText({ text }: { text: string }) {
+  const parts: ReactNode[] = [];
+  const pattern = /(\*\*[^*]+\*\*|https?:\/\/[^\s)]+)/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text))) {
+    parts.push(text.slice(last, match.index));
+    if (match[0].startsWith("**")) {
+      parts.push(<strong key={match.index}>{match[0].slice(2, -2)}</strong>);
+    } else {
+      const trimmed = match[0].replace(/[.,;:!?]+$/, "");
+      const trailing = match[0].slice(trimmed.length);
+      parts.push(<a key={match.index} href={trimmed} target="_blank" rel="noreferrer noopener" className="text-verified hover:underline">{trimmed}</a>);
+      parts.push(trailing);
+    }
+    last = match.index + match[0].length;
+  }
+  parts.push(text.slice(last));
+  return <>{parts}</>;
+}
+
+function ResearchReport({ markdown }: { markdown: string }) {
+  const blocks: ReactNode[] = [];
+  let bullets: string[] = [];
+  const flushBullets = () => {
+    if (bullets.length) {
+      blocks.push(
+        <ul key={`list-${blocks.length}`} className="list-disc space-y-1 pl-5 text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
+          {bullets.map((line, i) => <li key={`${i}-${line}`}><ReportText text={line} /></li>)}
+        </ul>,
+      );
+      bullets = [];
+    }
+  };
+
+  for (const [i, line] of markdown.split(/\r?\n/).entries()) {
+    const heading = /^(#{1,3})\s+(.+)$/.exec(line);
+    if (heading) {
+      flushBullets();
+      const className = heading[1].length === 1 ? "h3 text-xl" : "eyebrow";
+      blocks.push(
+        heading[1].length === 1
+          ? <h2 key={`heading-${i}`} className={className}><ReportText text={heading[2]} /></h2>
+          : <h3 key={`heading-${i}`} className={className}><ReportText text={heading[2]} /></h3>,
+      );
+    } else if (/^\s*-\s+/.test(line)) {
+      bullets.push(line.replace(/^\s*-\s+/, ""));
+    } else if (line.trim()) {
+      flushBullets();
+      blocks.push(<p key={`paragraph-${i}`} className="text-[0.875rem] leading-relaxed"><ReportText text={line} /></p>);
+    } else {
+      flushBullets();
+    }
+  }
+  flushBullets();
+  return <article className="panel mt-6 space-y-3 p-5">{blocks}</article>;
+}
+
 export default function CountryPage({ params }: { params: { code: string } }) {
   const [d, setD] = useState<CountryResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +89,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
 
   async function makeReport() {
     setBusy(true);
+    setError(null);
     try {
       setReport(await post<{ markdown: string }>(`/api/reports/country/${encodeURIComponent(params.code)}`));
     } catch (err) {
@@ -70,7 +129,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         </Link>
       </div>
       {error && <ErrorNote message={error} />}
-      {report && <pre className="panel mt-6 whitespace-pre-wrap p-5 font-sans text-[0.875rem] leading-relaxed">{report.markdown}</pre>}
+      {report && <ResearchReport markdown={report.markdown} />}
 
       <h2 className="eyebrow mt-12">Country risk components</h2>
       <p className="mt-2 text-[0.8125rem] text-[color:var(--dim)]">{risk.method}</p>

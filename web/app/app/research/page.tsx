@@ -43,6 +43,7 @@ export default function ResearchPage() {
     if (q.trim().length < 5 || busy) return;
     setBusy(true);
     setError(null);
+    setResult(null);
     try {
       setResult(await post<ResearchResult>("/api/research", { question: q.trim() }));
     } catch (err) {
@@ -57,7 +58,8 @@ export default function ResearchPage() {
     <Container className="max-w-4xl py-10 lg:py-14">
       <PageHeader eyebrow="Research" title="Ask about African companies, deals and risk.">
         Answers are written only from numbered evidence: the deals database, corporate events, country and currency
-        risk, investor activity and a live news search. Every claim cites its source, and citations are checked.
+        risk, investor activity and a live news search. Citation numbers are checked against the evidence list; this
+        confirms a source is present, not that it fully supports the claim.
       </PageHeader>
 
       <form onSubmit={ask} className="space-y-3">
@@ -73,7 +75,7 @@ export default function ResearchPage() {
           <button type="submit" disabled={busy} className="btn btn-primary">
             {busy ? "Researching..." : "Ask"}
           </button>
-          <span className="text-[0.8125rem] text-[color:var(--dim)]">Counts toward the 10 free requests a day.</span>
+          <span className="text-[0.8125rem] text-[color:var(--dim)]">Counts toward the 1,000 free requests per visitor each day.</span>
         </div>
       </form>
       <div className="mt-5 flex flex-wrap gap-2">
@@ -97,9 +99,9 @@ export default function ResearchPage() {
       {result && (
         <section className="mt-10" aria-label="Answer">
           <div className="flex flex-wrap items-center gap-2 text-[0.75rem] text-[color:var(--dim)]">
-            <Pill value={result.mode === "llm" ? "verified" : "unchecked"} title="Answer mode" />
+            <Pill value={result.mode === "llm" ? "LLM-written" : "deterministic"} title="Answer mode" />
             <span>{result.mode === "llm" ? `Written by ${result.model ?? "the LLM"} from the evidence below` : "Deterministic summary (no LLM configured)"}</span>
-            {v && <span>· {Math.round(v.grounded_share * 100)}% of sentences cite evidence</span>}
+            {v && <span>· {Math.round(v.grounded_share * 100)}% of factual sentences have valid citations</span>}
             {v && v.invalid_citations_removed.length > 0 && <span>· {v.invalid_citations_removed.length} invalid citation(s) removed</span>}
           </div>
           <div className="panel mt-3 whitespace-pre-wrap p-5 text-[0.9375rem] leading-relaxed">

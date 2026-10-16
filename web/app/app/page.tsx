@@ -191,7 +191,7 @@ export default function Dashboard() {
             ))}
           </div>
           <p className="mt-6 text-[0.8125rem] leading-relaxed text-[color:var(--dim)]">
-            Free to use. Up to 10 analyses a day per visitor. No account needed.
+            Free to use. Up to 1,000 analyses a day per visitor, subject to service capacity. No account needed.
           </p>
         </div>
       </section>

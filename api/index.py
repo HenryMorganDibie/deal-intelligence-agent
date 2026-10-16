@@ -42,8 +42,8 @@ log = logging.getLogger("deal_intel.api")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_KEY = os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")
 API_SECRET = os.environ.get("DEAL_INTEL_API_SECRET", "")
-PER_VISITOR_DAILY = int(os.environ.get("DEAL_INTEL_PER_VISITOR_DAILY", "10"))
-GLOBAL_DAILY = int(os.environ.get("DEAL_INTEL_GLOBAL_DAILY", "300"))
+PER_VISITOR_DAILY = int(os.environ.get("DEAL_INTEL_PER_VISITOR_DAILY", "1000"))
+GLOBAL_DAILY = int(os.environ.get("DEAL_INTEL_GLOBAL_DAILY", "1000"))
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 
@@ -97,6 +97,7 @@ async def health() -> dict:
         "configured": _configured(),
         "llm": bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("GROQ_API_KEY")),
         "daily_limit": PER_VISITOR_DAILY,
+        "global_daily_limit": GLOBAL_DAILY,
     }
 
 

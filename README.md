@@ -32,7 +32,7 @@ Data is what public sources carry: undisclosed private deals that no one reports
 | Severity | LLM opinion | Rule-strength bands (stated thresholds); CRITICAL needs two independent sources |
 | Compound events | None | 14 typed interaction rules (cascading/reinforcing/contradictory) |
 | LLM role | Primary decision maker | Explanation only — cannot invent signals |
-| Confidence | Opaque float | Measured hit rate of past flags of the same type and severity (walk-forward backtest, then live outcomes), with its sample size, plus a 7-component evidence-quality rubric |
+| Confidence | Opaque float | Per-signal calibrated event probability; the brief-level figure is its mean across confirmed signals (not an LLM self-rating). Evidence quality is shown separately as a 7-component rubric. |
 | Evidence | Keyword hits | 9 typed financial clause categories (going concern, covenant breach, etc.) |
 | Alpha score | None | 0–100 composite with stated design weights, validated in the backtest (confirmation rate 13% / 25% / 40% across alpha thirds), SHAP-style breakdown, measured moves after similar flags |
 | Backtesting | None | Precision, recall, F1, hit rate, benchmark-adjusted return and drawdown per signal type, against automatically labelled outcomes |
@@ -106,6 +106,8 @@ python main.py analyse --company Sonatel --country SN
 ```
 
 ### Core Analysis
+
+Brief-level event probability is the mean of the calibrated probabilities for its confirmed signals; it is omitted when no signals are confirmed. It is not an LLM self-assessment.
 
 ```bash
 python main.py analyse --company "GTBank" --ticker GTCO
@@ -205,7 +207,7 @@ function that reuses this repository's code unchanged.
 | Piece | Where | Notes |
 |---|---|---|
 | Web | Vercel project, root directory `web/` | `NEXT_PUBLIC_API_URL`, optional `NEXT_PUBLIC_SITE_URL` |
-| API | Vercel project, repository root (`vercel.json`) | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `DEAL_INTEL_API_SECRET`, `ALLOWED_ORIGINS`, `CRON_SECRET`, `DEAL_INTEL_APP_URL`, `ANTHROPIC_API_KEY` and/or `GROQ_API_KEY`, `DEAL_INTEL_PER_VISITOR_DAILY` (10), `DEAL_INTEL_GLOBAL_DAILY` (300) |
+| API | Vercel project, repository root (`vercel.json`) | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `DEAL_INTEL_API_SECRET`, `ALLOWED_ORIGINS`, `CRON_SECRET`, `DEAL_INTEL_APP_URL`, `ANTHROPIC_API_KEY` and/or `GROQ_API_KEY`, `DEAL_INTEL_PER_VISITOR_DAILY` (1,000), `DEAL_INTEL_GLOBAL_DAILY` (1,000) |
 | Storage | Supabase | briefs, runs, outcomes, prices, LLM cache, deals, events and watchlists behind functions (`supabase/migrations/`) |
 | Crons | Vercel (daily) | `/api/cron/ingest` reads every feed into deals and events and delivers webhooks; `/api/cron/label` labels brief outcomes and snapshots NGX/NSE prices; `/api/cron/showcase` runs the pipeline on a fixed list of US and African companies (`engines/showcase.py`) for the landing page, stored apart from visitors' briefs |
 
@@ -217,6 +219,10 @@ counted by a salted hash of their IP (never the IP itself) for the daily limits.
 usage, run `select * from private.daily_usage;` in the Supabase SQL editor (runs, distinct
 visitors, completed and failed per day); page views are in Vercel Web Analytics. Without
 an LLM key (Claude or Groq) briefs and research answers come from the deterministic engine only and say so.
+The admin usage dashboard excludes the browser viewing it from page views and feature
+actions. Analysis and research runs use a salted IP hash, so the dashboard also omits
+runs from the current network; this may include other people sharing that network.
+Daily rate limits continue to use the same salted IP hash.
 
 Local development:
 

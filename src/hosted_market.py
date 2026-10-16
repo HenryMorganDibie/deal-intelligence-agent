@@ -56,8 +56,8 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_KEY = os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")
 API_SECRET = os.environ.get("DEAL_INTEL_API_SECRET", "")
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
-PER_VISITOR_DAILY = int(os.environ.get("DEAL_INTEL_PER_VISITOR_DAILY", "10"))
-GLOBAL_DAILY = int(os.environ.get("DEAL_INTEL_GLOBAL_DAILY", "300"))
+PER_VISITOR_DAILY = int(os.environ.get("DEAL_INTEL_PER_VISITOR_DAILY", "1000"))
+GLOBAL_DAILY = int(os.environ.get("DEAL_INTEL_GLOBAL_DAILY", "1000"))
 APP_URL = os.environ.get("DEAL_INTEL_APP_URL", "").rstrip("/")
 from src.engines.historical_backtest import SUMMARY_PATH as _BACKTEST_SUMMARY  # noqa: E402
 
@@ -181,6 +181,7 @@ async def deal_search(q: str = "", country: Optional[str] = None, type: Optional
                       sector: Optional[str] = None, investor: Optional[str] = None, since: Optional[str] = None,
                       until: Optional[str] = None, min_usd: Optional[float] = None,
                       limit: int = Query(50, ge=1, le=500)) -> dict:
+    country = _country_or_404(country).iso2 if country else None
     ds = deals()
     rows = deals_mod.search(ds, q=q, country=country, deal_type=type, sector=sector, since=since, until=until,
                             investor=investor, min_usd=min_usd, limit=limit)
@@ -224,6 +225,7 @@ async def deal(deal_id: str) -> dict:
 async def comparables(deal_id: Optional[str] = None, sector: Optional[str] = None, country: Optional[str] = None,
                       type: Optional[str] = None, amount_usd: Optional[float] = None,
                       limit: int = Query(15, ge=1, le=50)) -> dict:
+    country = _country_or_404(country).iso2 if country else None
     ds = deals()
     if deal_id:
         d = next((d for d in ds if d.get("id") == deal_id), None)
@@ -263,7 +265,7 @@ async def funds(limit: int = Query(100, ge=1, le=500)) -> dict:
 async def event_feed(country: Optional[str] = None, type: Optional[str] = None, since: Optional[str] = None,
                      q: str = "", limit: int = Query(100, ge=1, le=500)) -> dict:
     rows = events()
-    c = ac.get(country) if country else None
+    c = _country_or_404(country) if country else None
     out = [e for e in rows
            if (not c or c.iso2 in (e.get("countries") or [e.get("country")]))
            and (not type or e.get("signal_type") == type)
@@ -277,6 +279,7 @@ async def event_feed(country: Optional[str] = None, type: Optional[str] = None, 
 async def sector_risk(sector: str, country: Optional[str] = None, days: int = Query(90, ge=7, le=730)) -> dict:
     if sector not in {s for s, _ in deals_mod.SECTORS}:
         raise HTTPException(404, f"Unknown sector. Choose from: {', '.join(s for s, _ in deals_mod.SECTORS)}.")
+    country = _country_or_404(country).iso2 if country else None
     return market_risk.sector_risk(sector, events(), deals(), country=country, days=days)
 
 
@@ -288,6 +291,7 @@ _profile_cache: dict[tuple, tuple[float, dict]] = {}
 @router.get("/api/companies/profile")
 async def company(name: str = Query(..., min_length=1, max_length=120), ticker: Optional[str] = None,
                   country: Optional[str] = None, cik: Optional[int] = None) -> dict:
+    country = _country_or_404(country).iso2 if country else None
     key = (name.lower(), (ticker or "").upper(), (country or "").upper(), cik)
     hit = _profile_cache.get(key)
     if hit and time.monotonic() - hit[0] < 6 * 3600:
@@ -357,6 +361,7 @@ async def country_report(code: str, request: Request) -> dict:
 async def sector_report(sector: str, request: Request, country: Optional[str] = None) -> dict:
     if sector not in {s for s, _ in deals_mod.SECTORS}:
         raise HTTPException(404, "Unknown sector.")
+    country = _country_or_404(country).iso2 if country else None
     run_id = await _reserve(request, f"[report] sector {sector} {country or ''}")
     result = await run_in_threadpool(research_mod.sector_report, sector, deals(), events(), country)
     await _finish(run_id)
@@ -424,7 +429,10 @@ async def _get_watchlist(wl_id: str) -> dict:
         raise HTTPException(503, "The API is not configured.")
     async with httpx.AsyncClient(timeout=15) as client:
         r = await _rpc(client, "get_watchlist", {"p_id": wl_id})
-    rows = r.json() if r.status_code == 200 else []
+    if not r.is_success:
+        log.error("get_watchlist failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(502, "The watchlist could not be loaded.")
+    rows = r.json()
     if not rows:
         raise HTTPException(404, "Watchlist not found.")
     wl = rows[0]
@@ -452,7 +460,10 @@ async def watchlist_feed(wl_id: str) -> Response:
 async def delete_watchlist(wl_id: str) -> dict:
     await _get_watchlist(wl_id)
     async with httpx.AsyncClient(timeout=15) as client:
-        await _rpc(client, "remove_watchlist", {"p_id": wl_id})
+        r = await _rpc(client, "remove_watchlist", {"p_id": wl_id})
+    if not r.is_success:
+        log.error("remove_watchlist failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(502, "The watchlist could not be deleted.")
     return {"deleted": True}
 
 
@@ -578,9 +589,15 @@ async def admin_stats(request: Request) -> dict:
     key = str(body.get("key", ""))
     if not (ADMIN_KEY and _configured() and hmac.compare_digest(key, ADMIN_KEY)):
         raise HTTPException(status_code=401, detail="Wrong key")
+    visitor = body.get("visitor")
+    if visitor is not None and (not isinstance(visitor, str) or not _VISITOR.fullmatch(visitor)):
+        raise HTTPException(status_code=422, detail="Invalid browser ID")
     days = max(1, min(int(body.get("days", 30) or 30), 365))
     async with httpx.AsyncClient(timeout=15) as client:
-        r = await _rpc(client, "visit_stats", {"p_days": days})
+        r = await _rpc(client, "visit_stats", {
+            "p_days": days, "p_excluded_visitor": visitor,
+            "p_excluded_client_hash": _client_hash(request),
+        })
     if not r.is_success:
         raise HTTPException(status_code=502, detail="Stats unavailable")
     return r.json()

@@ -5,8 +5,8 @@ Retrieval first, generation second:
   1. The question is parsed for countries, sectors, deal types, investors,
      companies and a time window.
   2. Evidence is retrieved from the deals database, the corporate-event feed,
-     country and currency risk, investor profiles, company briefs, and a live
-     news search. Every item gets a number.
+     country and currency risk, investor profiles, and a live news search.
+     Every item gets a number.
   3. The LLM (Claude or Groq) writes the answer using only those items and
      cites them as [n]. Citations are then checked: a number that does not
      match an item is removed, and every sentence without a valid citation is
@@ -14,7 +14,7 @@ Retrieval first, generation second:
   4. With no LLM configured, the answer is a deterministic summary of the
      same evidence.
 
-Research reports (company, country, sector) assemble the same evidence into
+Country and sector research reports assemble the same evidence into
 fixed sections; the LLM only writes the executive summary, under the same
 citation rules.
 """
@@ -50,7 +50,15 @@ _TYPE_WORDS = {
 _SECTOR_WORDS = {name: rx for name, rx in deals_mod._SECTOR_RE}
 _STOP = set("""a an and are as at be by for from has have how in is it its of on or that the this to was were what which
 who will with about across between during over into than then there these those why when where most more many much
-any all show list give tell me us our latest recent top biggest largest deals deal companies company africa african""".split())
+any all show list give tell me us our latest recent top biggest largest deals deal companies company africa african
+dfi dfis series seed private markets market risk investment investments development finance""".split())
+_REGION_ALIASES = {
+    "Northern Africa": r"\b(?:north|northern)\s+africa\b",
+    "Western Africa": r"\b(?:west|western)\s+africa\b",
+    "Middle Africa": r"\b(?:middle|central)\s+africa\b",
+    "Eastern Africa": r"\b(?:east|eastern)\s+africa\b",
+    "Southern Africa": r"\bsouthern\s+africa\b",
+}
 
 
 def _terms(q: str) -> list[str]:
@@ -59,7 +67,9 @@ def _terms(q: str) -> list[str]:
 
 def parse_question(q: str, today: Optional[date] = None) -> dict:
     today = today or date.today()
+    regions = [region for region, pattern in _REGION_ALIASES.items() if re.search(pattern, q, re.IGNORECASE)]
     countries = [c.iso2 for c in countries_in_text(q)]
+    countries.extend(c.iso2 for c in COUNTRIES if c.region in regions and c.iso2 not in countries)
     types = [t for t, rx in _TYPE_WORDS.items() if re.search(rf"\b(?:{rx})\b", q, re.IGNORECASE)]
     sectors = [s for s, rx in _SECTOR_WORDS.items() if rx.search(q)]
     investors = []
@@ -68,28 +78,37 @@ def parse_question(q: str, today: Optional[date] = None) -> dict:
             if re.search(rf"(?<![\w]){re.escape(n)}(?![\w])", q, 0 if n.isupper() else re.IGNORECASE):
                 investors.append(entry.name)
                 break
-    since = None
+    since = until = None
     m = re.search(r"\b(?:last|past)\s+(\d+)\s+(day|week|month|year)s?\b", q, re.IGNORECASE)
     if m:
         n, unit = int(m.group(1)), m.group(2).lower()
         since = today - timedelta(days=n * {"day": 1, "week": 7, "month": 30, "year": 365}[unit])
-    elif re.search(r"\b(this|past|last)\s+year\b", q, re.IGNORECASE):
+    elif re.search(r"\bthis\s+year\b", q, re.IGNORECASE):
+        since, until = date(today.year, 1, 1), today
+    elif re.search(r"\blast\s+year\b", q, re.IGNORECASE):
+        since, until = date(today.year - 1, 1, 1), date(today.year - 1, 12, 31)
+    elif re.search(r"\bpast\s+year\b", q, re.IGNORECASE):
         since = today - timedelta(days=365)
-    years = re.findall(r"\b(20[12]\d)\b", q)
-    until = None
+    years = re.findall(r"\b(20\d{2})\b", q)
     if years and not since:
         since, until = date(int(min(years)), 1, 1), date(int(max(years)), 12, 31)
-    # Capitalised phrases that are not countries, investors or sentence starts: candidate company names.
+    # Keep explicit company names even at the start of a question, while ignoring
+    # interrogatives and generic market vocabulary that is capitalised by title case.
     companies = []
-    for phrase in re.findall(r"(?<![.?!]\s)(?<!^)\b([A-Z][\w&'-]+(?:\s+[A-Z][\w&'-]+){0,3})", q):
-        if countries_in_text(phrase) or inv.canonical(phrase) in investors or phrase.lower() in _STOP:
+    for phrase in re.findall(r"(?<![.?!]\s)\b([A-Z][\w&'-]+(?:\s+[A-Z][\w&'-]+){0,3})", q):
+        words = re.findall(r"[a-z0-9]+", phrase.lower())
+        if (countries_in_text(phrase) or inv.canonical(phrase) in investors or not words
+                or all(word in _STOP for word in words)
+                or any(pattern.search(phrase) for pattern in _SECTOR_WORDS.values())
+                or any(re.fullmatch(pattern, phrase, re.IGNORECASE) for pattern in _REGION_ALIASES.values())):
             continue
         companies.append(phrase)
     kinds = [k for k, rx in (("dfi", r"\b(dfis?|development\s+finance)\b"), ("multilateral", r"\bmultilateral"),
                              ("private_equity", r"\bprivate\s+equity\b|\bpe\s+firms?\b"),
                              ("venture_capital", r"\bventure\s+capital|\bvcs?\b"), ("sovereign", r"\bsovereign\s+wealth"))
              if re.search(rx, q, re.IGNORECASE)]
-    return {"countries": countries, "deal_types": types, "sectors": sectors, "investors": investors, "investor_kinds": kinds,
+    return {"countries": countries, "regions": regions, "deal_types": types, "sectors": sectors,
+            "investors": investors, "investor_kinds": kinds,
             "companies": companies[:4], "since": since.isoformat() if since else None,
             "until": until.isoformat() if until else None, "terms": _terms(q)}
 
@@ -97,6 +116,28 @@ def parse_question(q: str, today: Optional[date] = None) -> dict:
 def _score(text: str, terms: list[str]) -> int:
     t = text.lower()
     return sum(1 for w in terms if w in t)
+
+
+def _date_in_scope(value: Optional[str], parsed: dict) -> bool:
+    if not parsed["since"] and not parsed["until"]:
+        return True
+    try:
+        day = date.fromisoformat(str(value)[:10])
+    except (TypeError, ValueError):
+        return False
+    return (not parsed["since"] or day.isoformat() >= parsed["since"]) and (
+        not parsed["until"] or day.isoformat() <= parsed["until"]
+    )
+
+
+def _matches_company(name: str, deal: dict) -> bool:
+    tokens = deals_mod.normalise_name(name).split()
+    if not tokens:
+        return False
+    fields = [deal.get("target"), deal.get("buyer"), deal.get("seller"), deal.get("headline"),
+              *(deal.get("investors") or [])]
+    return any(all(token in deals_mod.normalise_name(str(field)).split() for token in tokens)
+               for field in fields if field)
 
 
 def _fmt_usd(v: Optional[float]) -> str:
@@ -137,10 +178,16 @@ def _deal_text(d: dict) -> str:
     return "; ".join(parts) + f". Headline: {d.get('headline')}"
 
 
-def _news_items(query: str, country: Optional[str], limit: int = 8, client: Optional[httpx.Client] = None) -> list[dict]:
+def _news_items(query: str, country: Optional[str], limit: int = 8, client: Optional[httpx.Client] = None,
+                since: Optional[str] = None, until: Optional[str] = None) -> list[dict]:
     c = get_country(country) if country else None
-    url = (c.news_url(query + " when:90d") if c else
-           f"https://news.google.com/rss/search?q={quote(query + ' Africa when:90d')}&hl=en-GB&gl=GB&ceid=GB:en")
+    date_scope = " ".join(filter(None, [
+        f"after:{since}" if since else None,
+        f"before:{until}" if until else None,
+    ])) or "when:90d"
+    search_query = f"{query} {date_scope}"
+    url = (c.news_url(search_query) if c else
+           f"https://news.google.com/rss/search?q={quote(search_query + ' Africa')}&hl=en-GB&gl=GB&ceid=GB:en")
     from src.engines.market_feed import parse_feed
     try:
         r = (client or httpx.Client(timeout=15, follow_redirects=True)).get(url)
@@ -172,9 +219,7 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             continue
         if p["sectors"] and d.get("sector") not in p["sectors"]:
             continue
-        if p["since"] and (d.get("announced") or "") < p["since"]:
-            continue
-        if p["until"] and (d.get("announced") or "9999") > p["until"]:
+        if not _date_in_scope(d.get("announced"), p):
             continue
         if p["investors"] and not set(p["investors"]) & {n for n, _ in inv.parties(d)}:
             continue
@@ -182,10 +227,8 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             kinds = set(p["investor_kinds"]) | ({"multilateral"} if "dfi" in p["investor_kinds"] else set())
             if not any((inv.registry_entry(n) or inv.Investor("", "", "")).kind in kinds for n, _ in inv.parties(d)):
                 continue
-        if p["companies"] and not any(deals_mod.normalise_name(c) in deals_mod.normalise_name(_deal_text(d))
-                                      for c in p["companies"]):
-            if not (p["countries"] or p["sectors"] or p["deal_types"] or p["investors"]):
-                continue
+        if p["companies"] and not any(_matches_company(c, d) for c in p["companies"]):
+            continue
         scope.append(d)
     scope.sort(key=lambda d: (_score(_deal_text(d), p["terms"]), d.get("announced") or ""), reverse=True)
     if scope:
@@ -206,7 +249,7 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
     ev = [e for e in events
           if (not p["countries"] or set(p["countries"]) & set(e.get("countries") or [e.get("country")]))
           and (not p["sectors"] or e.get("sector") in p["sectors"])
-          and (not p["since"] or (e.get("day") or "") >= p["since"])]
+          and _date_in_scope(e.get("day"), p)]
     ev.sort(key=lambda e: (_score(e["headline"], p["terms"]), e.get("day") or ""), reverse=True)
     for e in ev[:8]:
         add("event", e["headline"], f"{e['signal_type'].replace('_', ' ')} event"
@@ -214,7 +257,7 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             e.get("url"), e.get("day"), e.get("publisher"))
 
     # Country and currency risk.
-    for code in p["countries"][:3]:
+    for code in ([] if p["regions"] else p["countries"][:3]):
         c = get_country(code)
         risk = cr.assess(c, fx=lambda _: None)
         comps = ", ".join(f"{x['name'].replace('_', ' ')} risk {x['risk']}" for x in risk["components"] if x["risk"] is not None)
@@ -229,12 +272,18 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             f"({cur['tier']}).", None, None, "World Bank official exchange rates")
 
     # Investor profiles.
-    for name in p["investors"][:3]:
-        prof = inv.profile(deals, name)
-        if prof:
-            add("investor", f"{prof['name']} activity", f"{prof['deal_count']} deals; roles {prof['roles']}; disclosed "
-                f"{_fmt_usd(prof['disclosed_usd'])}; countries {prof['countries']}; sectors {prof['sectors']}; "
-                f"last seen {prof['last_seen']}.", source="Deals database")
+    investor_profiles = [inv.profile(scope, name) for name in p["investors"][:3]]
+    kinds = set(p["investor_kinds"])
+    if "dfi" in kinds:
+        kinds.add("multilateral")
+    for kind in sorted(kinds):
+        investor_profiles.extend(inv.leaderboard(scope, kind=kind, limit=6))
+    unique_profiles = {profile["name"]: profile for profile in investor_profiles if profile}
+    ranked_profiles = sorted(unique_profiles.values(), key=lambda profile: profile["deal_count"], reverse=True)
+    for prof in ranked_profiles[:6]:
+        add("investor", f"{prof['name']} activity", f"{prof['deal_count']} deals; roles {prof['roles']}; disclosed "
+            f"{_fmt_usd(prof['disclosed_usd'])}; countries {prof['countries']}; last seen {prof['last_seen']}.",
+            source="Deals database")
 
     # Company briefs (signal analysis) that match the question.
     for b in briefs:
@@ -247,10 +296,15 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
 
     # Live news.
     if live_news and len(items) < max_items:
-        query = " ".join(p["companies"][:2] or p["terms"][:5]) or question[:80]
-        for it in (news or (lambda q, c: _news_items(q, c)))(query, p["countries"][0] if p["countries"] else None):
+        query_terms = p["companies"][:2] or p["terms"][:5]
+        query = " ".join([*p["regions"][:1], *query_terms]) or question[:80]
+        news_country = p["countries"][0] if len(p["countries"]) == 1 and not p["regions"] else None
+        news_search = news or (lambda q, c: _news_items(q, c, since=p["since"], until=p["until"]))
+        for it in news_search(query, news_country):
             if len(items) >= max_items:
                 break
+            if not _date_in_scope(it.get("date"), p):
+                continue
             add("news", it["title"], it.get("snippet") or it["title"], it.get("url"), it.get("date"), it.get("publisher"))
     return p, items[:max_items]
 
