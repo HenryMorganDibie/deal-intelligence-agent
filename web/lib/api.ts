@@ -1,4 +1,5 @@
 import type { Brief, Severity } from "./brief";
+import { trackProductAction } from "./tracking";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
 
@@ -49,6 +50,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
     const detail = typeof body?.detail === "string" ? body.detail : "Something went wrong. Try again in a minute.";
     throw new ApiError(detail, resp.status);
   }
+  if (path.startsWith("/api/briefs/")) trackProductAction("brief_opened");
   return body as T;
 }
 

@@ -531,20 +531,39 @@ def _backtest_freshness() -> Optional[dict]:
 
 ADMIN_KEY = os.environ.get("DEAL_INTEL_ADMIN_KEY", "")
 _VISITOR = re.compile(r"^[a-z0-9]{8,40}$")
+_PRODUCT_ACTIONS = {
+    "deals_loaded", "investors_loaded", "events_loaded", "risk_data_loaded",
+    "company_data_loaded", "watchlists_used", "brief_opened", "performance_data_loaded",
+}
 
 
 @router.post("/api/track")
 async def track_visit(request: Request) -> dict:
-    """One page view from the site's beacon (text/plain JSON: {"v": visitor id, "p": path}). Never fails loudly."""
+    """Record a page view or successful app feature response from the site's beacon."""
     try:
         body = json.loads((await request.body())[:1000] or b"{}")
-        visitor, path = str(body.get("v", "")), str(body.get("p", ""))
+        visitor = str(body.get("v", ""))
+        path = str(body.get("p", ""))
+        action = str(body.get("a", ""))
     except (ValueError, AttributeError):
         return {"ok": False}
-    if not (_configured() and _VISITOR.match(visitor) and path.startswith("/") and len(path) <= 200):
+    if not (_configured() and _VISITOR.fullmatch(visitor)):
+        return {"ok": False}
+    if path and not (path.startswith("/") and len(path) <= 200):
+        return {"ok": False}
+    if action and action not in _PRODUCT_ACTIONS:
+        return {"ok": False}
+    if not path and not action:
         return {"ok": False}
     async with httpx.AsyncClient(timeout=10) as client:
-        r = await _rpc(client, "log_visit", {"p_visitor": visitor, "p_path": path.split("?")[0]})
+        if path:
+            r = await _rpc(client, "log_visit", {"p_visitor": visitor, "p_path": path.split("?")[0]})
+            if not r.is_success:
+                return {"ok": False}
+        if action:
+            r = await _rpc(client, "log_product_action", {"p_visitor": visitor, "p_action": action})
+            if not r.is_success:
+                return {"ok": False}
     return {"ok": r.is_success}
 
 

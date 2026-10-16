@@ -1,4 +1,5 @@
 import { ApiError } from "./api";
+import { trackProductAction, type ProductAction } from "./tracking";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
 
@@ -41,7 +42,33 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const detail = typeof body?.detail === "string" ? body.detail : "Something went wrong. Try again in a minute.";
     throw new ApiError(detail, resp.status);
   }
+  const action = productAction(path);
+  if (action) trackProductAction(action);
   return body as T;
+}
+
+function productAction(path: string): ProductAction | null {
+  const pathname = path.split("?", 1)[0];
+  if (pathname === "/api/deals" || pathname.startsWith("/api/deals/") || pathname === "/api/comparables") {
+    return "deals_loaded";
+  }
+  if (pathname === "/api/investors" || pathname.startsWith("/api/investors/") || pathname === "/api/funds") {
+    return "investors_loaded";
+  }
+  if (pathname === "/api/events") return "events_loaded";
+  if (
+    pathname === "/api/countries" ||
+    pathname.startsWith("/api/countries/") ||
+    pathname === "/api/currencies" ||
+    pathname === "/api/coverage" ||
+    pathname.startsWith("/api/sectors/")
+  ) {
+    return "risk_data_loaded";
+  }
+  if (pathname === "/api/companies/profile" || pathname === "/api/valuation") return "company_data_loaded";
+  if (pathname === "/api/watchlists" || pathname.startsWith("/api/watchlists/")) return "watchlists_used";
+  if (pathname === "/api/evaluation") return "performance_data_loaded";
+  return null;
 }
 
 export type Source = { publisher?: string; url?: string; date?: string; title?: string; stage?: string | null };

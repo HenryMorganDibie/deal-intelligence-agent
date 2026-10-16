@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 
 type Row = { views: number; visitors: number; users: number };
+type ActionRow = { action: string; completions: number; clients: number };
+type PageActivity = { feature: string; browsers: number; page_views: number };
 type Stats = {
   since: string;
   totals: Row & { returning_users: number };
   days: (Row & { day: string })[];
   pages: { path: string; views: number; visitors: number }[];
+  actions?: ActionRow[];
+  app_page_activity?: PageActivity[];
 };
 
 const API = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
@@ -51,6 +55,30 @@ export default function Admin() {
   }, []);
 
   const t = stats?.totals;
+  const actionLabels: Record<string, string> = {
+    brief_completed: "Company briefs completed",
+    research_completed: "Research answers completed",
+    country_report_completed: "Country reports completed",
+    sector_report_completed: "Sector reports completed",
+    deals_loaded: "Deal data loaded",
+    investors_loaded: "Investor and fund data loaded",
+    events_loaded: "Event data loaded",
+    risk_data_loaded: "Country, currency and risk data loaded",
+    company_data_loaded: "Company profiles and valuations loaded",
+    watchlists_used: "Watchlist actions completed",
+    brief_opened: "Saved briefs opened",
+    performance_data_loaded: "Performance data loaded",
+  };
+  const actions = stats?.actions ?? [];
+  const appPageActivity = stats?.app_page_activity ?? [];
+  const actionCounts = Object.fromEntries(actions.map((row) => [row.action, row.completions]));
+  const actionsAvailable = Boolean(stats?.actions && stats.app_page_activity);
+  const completedResearch = (actionCounts.research_completed ?? 0)
+    + (actionCounts.country_report_completed ?? 0)
+    + (actionCounts.sector_report_completed ?? 0);
+  const successfulFeatures = actions
+    .filter((row) => !["brief_completed", "research_completed", "country_report_completed", "sector_report_completed"].includes(row.action))
+    .reduce((sum, row) => sum + row.completions, 0) ?? 0;
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 text-[0.9375rem]">
       <meta name="robots" content="noindex" />
@@ -93,24 +121,64 @@ export default function Admin() {
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
               [t.visitors, "unique browsers"],
-              [t.users, "browsers that used the product"],
-              [t.returning_users, "browsers that came back"],
-              [t.views, "page views"],
+              [actionsAvailable ? actionCounts.brief_completed ?? 0 : null, "company briefs completed"],
+              [actionsAvailable ? completedResearch : null, "research answers & reports completed"],
+              [actionsAvailable ? successfulFeatures : null, "successful app feature uses"],
             ].map(([n, label]) => (
               <div key={label as string} className="panel p-4">
-                <div className="text-2xl font-semibold">{(n as number).toLocaleString("en-US")}</div>
+                <div className="text-2xl font-semibold">{n === null ? "—" : (n as number).toLocaleString("en-US")}</div>
                 <div className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">{label}</div>
               </div>
             ))}
           </div>
           <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
-            Since {stats.since}. These are unique browser IDs, not verified people; the same person may count more than once across browsers or devices. &ldquo;Used the product&rdquo; means the browser opened a page under /app.
+            Since {stats.since}. Unique browsers are anonymous browser IDs, not verified people. Brief and research totals include successful historical runs; other feature uses are tracked from this release onward.
           </p>
+
+          <h2 className="mt-8 font-semibold">Successful app actions</h2>
+          <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+            Briefs and research count each completed run. Other feature uses count at most once per browser and feature per UTC day, so repeated filters do not inflate them. Historical run client IDs are salted IP hashes; newer feature tracking uses anonymous browser IDs, so they cannot be joined across periods. Prompts, filters and company names are not stored with feature usage events.
+            {!actionsAvailable && " These metrics will appear after the product-actions database migration is applied."}
+          </p>
+          <table className="mt-2 w-full text-left">
+            <thead className="text-[color:var(--muted)]">
+              <tr><th className="py-1 font-normal">Action</th><th className="font-normal">Successful uses</th><th className="font-normal">Distinct clients</th></tr>
+            </thead>
+            <tbody>
+              {actionsAvailable ? Object.entries(actionLabels).map(([action, label]) => {
+                const row = actions.find((item) => item.action === action);
+                return (
+                  <tr key={action} className="border-t hairline">
+                    <td className="py-1.5">{label}</td>
+                    <td>{row?.completions ?? 0}</td>
+                    <td>{row?.clients ?? 0}</td>
+                  </tr>
+                );
+              }) : <tr><td className="py-1.5" colSpan={3}>Usage action metrics are not available yet.</td></tr>}
+            </tbody>
+          </table>
+
+          <h2 className="mt-8 font-semibold">App page visits (context only)</h2>
+          <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+            Page views show which area was opened, not whether its request succeeded. Successful-action tracking began with this release.
+          </p>
+          <table className="mt-2 w-full text-left">
+            <thead className="text-[color:var(--muted)]">
+              <tr><th className="py-1 font-normal">Feature</th><th className="font-normal">Browsers</th><th className="font-normal">Page views</th></tr>
+            </thead>
+            <tbody>
+              {appPageActivity.map((row) => (
+                <tr key={row.feature} className="border-t hairline">
+                  <td className="py-1.5">{row.feature}</td><td>{row.browsers}</td><td>{row.page_views}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
           <h2 className="mt-8 font-semibold">By day</h2>
           <table className="mt-2 w-full text-left">
             <thead className="text-[color:var(--muted)]">
-              <tr><th className="py-1 font-normal">Day</th><th className="font-normal">Unique browsers</th><th className="font-normal">Used product</th><th className="font-normal">Views</th></tr>
+              <tr><th className="py-1 font-normal">Day</th><th className="font-normal">Unique browsers</th><th className="font-normal">Opened /app</th><th className="font-normal">Views</th></tr>
             </thead>
             <tbody>
               {stats.days.map((d) => (

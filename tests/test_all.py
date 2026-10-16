@@ -3866,6 +3866,33 @@ class TestHostedApi:
         client, _ = self._client(monkeypatch)
         assert client.get("/api/briefs/not-a-uuid").status_code == 404
 
+    def test_tracking_records_only_allowlisted_product_actions(self, monkeypatch):
+        import src.hosted_market as hm
+        client, _ = self._client(monkeypatch)
+        monkeypatch.setattr(hm, "_configured", lambda: True)
+        rpc = AsyncMock(return_value=MagicMock(is_success=True))
+        monkeypatch.setattr(hm, "_rpc", rpc)
+
+        response = client.post("/api/track", content=json.dumps({"v": "a" * 32, "a": "deals_loaded"}),
+                               headers={"content-type": "text/plain"})
+
+        assert response.json() == {"ok": True}
+        rpc.assert_awaited_once()
+        assert rpc.await_args.args[2] == {"p_visitor": "a" * 32, "p_action": "deals_loaded"}
+
+    def test_tracking_rejects_unknown_product_action(self, monkeypatch):
+        import src.hosted_market as hm
+        client, _ = self._client(monkeypatch)
+        monkeypatch.setattr(hm, "_configured", lambda: True)
+        rpc = AsyncMock(return_value=MagicMock(is_success=True))
+        monkeypatch.setattr(hm, "_rpc", rpc)
+
+        response = client.post("/api/track", content=json.dumps({"v": "a" * 32, "a": "question_text"}),
+                               headers={"content-type": "text/plain"})
+
+        assert response.json() == {"ok": False}
+        rpc.assert_not_awaited()
+
     def test_label_brief_uses_brief_signals(self, monkeypatch):
         import src.engines.outcome_labeller as ol
         client, api = self._client(monkeypatch)
