@@ -64,8 +64,9 @@ _NUMBER_WORDS = {
 }
 _NEWS_ACTIONS = {
     "acquisition": re.compile(
-        r"\b(?:acquir\w*|buy|buys|bought|takeover|rachat\w*|acquisition\w*|adquir\w*|"
-        r"compra\w*|comprou|aquisiç\w*|استحواذ\w*|اشتر\w*)\b", re.IGNORECASE),
+        r"\b(?:acquir\w*|buy|buys|bought|takeover|rachat\w*|rachet\w*|acquisition\w*|adquir\w*|"
+        r"compra\w*|comprou|aquisiç\w*|prise\s+de\s+participation|"
+        r"استحواذ\w*|اشتر\w*)\b|(?:prend|prendre)\s+le\s+contrôle", re.IGNORECASE),
     "funding": re.compile(
         r"\b(?:fund\w*|rais\w*|invest\w*|financ\w*|lèv\w*|lev\w*|finance\w*|investit\w*|"
         r"capta\w*|arrecad\w*|levant\w*|receb\w*|investimento\w*|financiamento\w*|"
@@ -82,35 +83,67 @@ _FUNDING_ANNOUNCEMENT = re.compile(
     r"|\b(?:تمويل|استثمار|جمع|أعلن)\b",
     re.IGNORECASE,
 )
+_FUNDING_NEGATION = re.compile(
+    r"\b(?:denies?|denied|not\s+raised|failed\s+to\s+raise|démenti|infructueuse?|"
+    r"n['’]a\s+pas\s+levé|não\s+conseguiu\s+captar|não\s+captou)\b",
+    re.IGNORECASE,
+)
+_NON_EQUITY_FUNDING = re.compile(
+    r"\b(?:eurobonds?|bonds?|bond\s+issuance|treasury|government|sovereign|state\s+budget|"
+    r"political\s+part(?:y|ies)|loan|loans|car\s+finance|auto\s+loan|public\s+debt|"
+    r"obligations?|emprunt(?:s)?|emprunt\s+obligataire|trésor|budget|état|parti\s+politique|prêt|"
+    r"títulos?|tesouro|orçamento|partido\s+político|empréstimo|"
+    r"allocat\w*|alocad\w*|allou\w*|allocation|"
+    r"projets?|project(?:s)?|projetos?|projeto|power\s+plant|centrale|micro[-\s]?projects?|"
+    r"سندات|خزينة|حكومة|ميزانية|الأحزاب|أحزاب|حزب|سيارات|شراء سيارات)\b",
+    re.IGNORECASE,
+)
+_EQUITY_FUNDING_MARKER = re.compile(
+    r"\b(?:startup|start-up|fintech|venture|seed|series\s+[a-g]|equity|funding\s+round|"
+    r"pre[-\s]?seed|série\s+[a-g]|tour\s+de\s+financement|rodada|ronda)\b",
+    re.IGNORECASE,
+)
+_NON_CORPORATE_ACQUISITION = re.compile(
+    r"\b(?:awards?\s+contender|film\s+rights|movie\s+rights|screen\s+rights)\b",
+    re.IGNORECASE,
+)
 _LOCAL_SEARCH_TERMS = {
     "fr": {
-        "acquisition": "rachat acquisition",
-        "equity_funding": "lève levée de fonds financement investissement série",
-        "debt_financing": "prêt dette financement crédit",
-        "fund_raise": "clôture fonds levée de fonds",
-        "corporate": "entreprise actualités événement",
+        "acquisition": "(rachat OR acquisition OR acquiert)",
+        "equity_funding": "(lève OR levée OR financement OR investissement OR série)",
+        "debt_financing": "(prêt OR dette OR crédit OR financement)",
+        "fund_raise": "(clôture OR fonds OR levée)",
+        "corporate": "(entreprise OR sociétés OR actualités OR événement)",
     },
     "pt": {
-        "acquisition": "aquisição adquire compra",
-        "equity_funding": "capta rodada financiamento investimento série",
-        "debt_financing": "empréstimo dívida financiamento crédito",
-        "fund_raise": "fechamento fundo captação",
-        "corporate": "empresa notícias evento",
+        "acquisition": "(aquisição OR adquire OR compra)",
+        "equity_funding": "(capta OR rodada OR financiamento OR investimento OR série)",
+        "debt_financing": "(empréstimo OR dívida OR financiamento OR crédito)",
+        "fund_raise": "(fechamento OR fundo OR captação)",
+        "corporate": "(empresa OR companhias OR notícias OR evento)",
     },
     "ar": {
-        "acquisition": "استحواذ شراء",
-        "equity_funding": "تمويل استثمار جولة تمويل",
-        "debt_financing": "قرض ديون تمويل ائتمان",
-        "fund_raise": "إغلاق صندوق جمع التمويل",
-        "corporate": "شركة أخبار أحداث",
+        "acquisition": "(استحواذ OR شراء OR استحوذت)",
+        "equity_funding": "(تمويل OR استثمار OR جولة تمويل)",
+        "debt_financing": "(قرض OR ديون OR تمويل OR ائتمان)",
+        "fund_raise": "(إغلاق OR صندوق OR جمع التمويل)",
+        "corporate": "(شركة OR شركات OR أخبار OR أحداث)",
     },
     "es": {
-        "acquisition": "adquisición compra adquiere",
-        "equity_funding": "financiación inversión ronda capta",
-        "debt_financing": "préstamo deuda financiación crédito",
-        "fund_raise": "cierre fondo captación",
-        "corporate": "empresa noticias evento",
+        "acquisition": "(adquisición OR compra OR adquiere)",
+        "equity_funding": "(financiación OR inversión OR ronda OR capta)",
+        "debt_financing": "(préstamo OR deuda OR financiación OR crédito)",
+        "fund_raise": "(cierre OR fondo OR captación)",
+        "corporate": "(empresa OR compañías OR noticias OR evento)",
     },
+}
+_ARABIC_COUNTRY_NAMES = {
+    "DZ": "الجزائر",
+    "EG": "مصر",
+    "LY": "ليبيا",
+    "SD": "السودان",
+    "MA": "المغرب",
+    "TN": "تونس",
 }
 _REGION_ALIASES = {
     "Northern Africa": r"\b(?:north|northern)\s+africa\b",
@@ -158,14 +191,14 @@ def parse_question(q: str, today: Optional[date] = None) -> dict:
             since = today - timedelta(days=365)
     # Keep explicit company names even at the start of a question, while ignoring
     # interrogatives and generic market vocabulary that is capitalised by title case.
+    company_question = q.replace("’", "'")
+    for country in countries_in_text(company_question):
+        for country_name in sorted((country.name, *country.aliases), key=len, reverse=True):
+            company_question = re.sub(rf"(?<![\w]){re.escape(country_name)}(?![\w])", " ",
+                                      company_question, flags=re.IGNORECASE)
     companies = []
-    for phrase in re.findall(r"(?<![.?!]\s)\b([A-Z][\w&'-]+(?:\s+[A-Z][\w&'-]+){0,3})", q):
+    for phrase in re.findall(r"(?<![.?!]\s)\b([A-Z][\w&'-]+(?:\s+[A-Z][\w&'-]+){0,3})", company_question):
         phrase = re.sub(r"'s$", "", phrase)
-        matched_countries = countries_in_text(phrase)
-        for country in matched_countries:
-            for country_name in (country.name, *country.aliases):
-                phrase = re.sub(rf"(?<![\w]){re.escape(country_name)}(?![\w])", " ", phrase,
-                                flags=re.IGNORECASE)
         phrase_words = phrase.split()
         while phrase_words and phrase_words[0].lower() in _STOP:
             phrase_words.pop(0)
@@ -257,19 +290,45 @@ def _deal_text(d: dict) -> str:
 def _news_items(query: str, country: Optional[str], limit: int = 8, client: Optional[httpx.Client] = None,
                 since: Optional[str] = None, until: Optional[str] = None) -> list[dict]:
     c = get_country(country) if country else None
-    search_terms = [query]
+    query_variants: list[tuple[str, Optional[str]]] = [(query, None)]
     if c:
-        if c.name.lower() not in query.lower():
-            search_terms.append(c.name)
-        language_terms = _LOCAL_SEARCH_TERMS.get(c.languages[0], {})
-        action = next((kind for kind, pattern in _NEWS_ACTIONS.items() if pattern.search(query)), None)
-        search_terms.append(language_terms.get(
-            "equity_funding" if action == "funding" else action or "corporate", ""))
+        from src.engines.market_feed import localized_country_name
 
-    def search_url(date_scope: Optional[str]) -> str:
-        search_query = " ".join(filter(None, (*search_terms, date_scope)))
-        return (c.news_url(search_query) if c else
-                f"https://news.google.com/rss/search?q={quote(search_query + ' Africa')}&hl=en-GB&gl=GB&ceid=GB:en")
+        action = next((kind for kind, pattern in _NEWS_ACTIONS.items() if pattern.search(query)), None)
+        if re.search(r"\b(?:fund\s+close|first\s+close|final\s+close|fund\s+raising)\b", query, re.IGNORECASE):
+            action = "fund_raise"
+        elif re.search(r"\b(?:debt|loan|credit|bond|lending|financing)\b", query, re.IGNORECASE):
+            action = "debt_financing"
+        english_terms = {
+            "acquisition": "(acquisition OR acquired OR takeover)",
+            "funding": "(funding OR raises OR financing OR investment OR round)",
+            "debt_financing": "(debt OR loan OR credit OR bond OR financing)",
+            "fund_raise": "(fund close OR fundraise OR closes OR capital)",
+            None: "(company OR business OR corporate OR event)",
+        }.get(action)
+        if action == "funding":
+            english_terms = "(funding OR investment OR round OR series)"
+
+        query_variants = [(query, c.languages[0])]
+        for language in c.languages[:2]:
+            local_label = localized_country_name(c, language)
+            labels = list(dict.fromkeys((local_label, c.name, *c.aliases)))
+            if c.iso2 in _ARABIC_COUNTRY_NAMES:
+                labels.append(_ARABIC_COUNTRY_NAMES[c.iso2])
+            country_query = "(" + " OR ".join(f'"{label}"' for label in dict.fromkeys(labels)) + ")"
+            local_action = "equity_funding" if action == "funding" else action or "corporate"
+            localized_terms = _LOCAL_SEARCH_TERMS.get(language, {}).get(local_action, "")
+            if localized_terms:
+                query_variants.append((f"{country_query} {localized_terms}", language))
+        if c.languages[0] != "en" and english_terms:
+            labels = list(dict.fromkeys((c.name, *c.aliases)))
+            country_query = "(" + " OR ".join(f'"{label}"' for label in labels) + ")"
+            query_variants.append((f"{country_query} {english_terms}", "en"))
+        if not any(label.lower() in query.lower() for label in (c.name, *c.aliases)):
+            labels = list(dict.fromkeys((c.name, *c.aliases)))
+            country_query = "(" + " OR ".join(f'"{label}"' for label in labels) + ")"
+            query_variants[0] = (f"{country_query} {query}", c.languages[0])
+    query_variants = list(dict.fromkeys(query_variants))
 
     from src.engines.market_feed import parse_feed
     request_client = client or httpx.Client(timeout=15, follow_redirects=True)
@@ -278,6 +337,26 @@ def _news_items(query: str, country: Optional[str], limit: int = 8, client: Opti
         r = request_client.get(url)
         r.raise_for_status()
         return parse_feed(r.text)
+
+    def fetch_variants(date_scope: Optional[str]) -> list[dict]:
+        results = []
+        successful_queries = 0
+        errors = []
+        for variant, language in query_variants:
+            try:
+                results.extend(fetch(search_url_for(variant, language, date_scope)))
+                successful_queries += 1
+            except Exception as e:
+                errors.append(e)
+                log.warning("research news RSS query failed for %r: %s", variant, e)
+        if not successful_queries and errors:
+            log.error("research news RSS fetch or parse failed: %s", errors[-1])
+        return _rank_news(query, results)
+
+    def search_url_for(variant: str, language: Optional[str], date_scope: Optional[str]) -> str:
+        search_query = " ".join(filter(None, (variant, date_scope)))
+        return (c.news_url(search_query, language) if c else
+                f"https://news.google.com/rss/search?q={quote(search_query + ' Africa')}&hl=en-GB&gl=GB&ceid=GB:en")
 
     def resolve_article(item: dict) -> dict:
         item_url = item.get("url") or ""
@@ -313,23 +392,16 @@ def _news_items(query: str, country: Optional[str], limit: int = 8, client: Opti
         f"after:{since}" if since else None,
         f"before:{until}" if until else None,
     )))
-    try:
-        recent = fetch(search_url(date_scope or "when:90d"))
-    except Exception as e:
-        log.error("research news RSS fetch or parse failed: %s", e)
-        if since or until:
-            return []
-        recent = []
+    recent = fetch_variants(date_scope or "when:90d")
     if not recent:
         log.info("research news RSS search completed with no feed items")
-    if since or until or _has_relevant_news(query, recent):
+    if (since or until) and not recent:
+        log.info("date-restricted research search returned no items; retrying without RSS date operators")
+        recent = fetch_variants(None)
+    if recent and (since or until or _has_relevant_news(query, recent)):
         return resolve_articles(recent)
     log.info("recent research news did not match the question well; retrying without a date restriction")
-    try:
-        broader = fetch(search_url(date_scope or None))
-    except Exception as e:
-        log.warning("broader research news RSS search failed; retaining recent results: %s", e)
-        broader = []
+    broader = fetch_variants(date_scope or None)
     items = _rank_news(query, recent + broader)
     if not items:
         log.info("research broad news RSS search completed with no feed items")
@@ -359,12 +431,31 @@ def _news_matches_country(item: dict, code: str) -> bool:
     if not country:
         return False
     text = f"{item.get('title', '')} {item.get('snippet', '')}"
-    if any(found.iso2 == code for found in countries_in_text(text)):
-        return True
-    for name in (country.name, *country.aliases):
+    from src.engines.market_feed import localized_country_name
+
+    labels = [country.name, *(localized_country_name(country, language) for language in country.languages[:2])]
+    labels.extend(country.aliases)
+    for name in dict.fromkeys(labels):
+        final_word = name.split()[-1].lower()
+        if name not in {country.name, localized_country_name(country, country.languages[0])} and re.search(
+                r"(?:ian|ean|ese|ish|ien|ienne|ais|aise|ain|aine|ois|oise|an|ano|ana|ense|er)$",
+                final_word, re.IGNORECASE):
+            continue
         if re.search(rf"(?<![\w]){re.escape(name)}(?![\w])", text, re.IGNORECASE):
             return True
-    return False
+    mentioned_countries = {found.iso2 for found in countries_in_text(text)}
+    return code in mentioned_countries and len(mentioned_countries) == 1
+
+
+def _is_equity_funding_announcement(text: str) -> bool:
+    return bool(_FUNDING_ANNOUNCEMENT.search(text)
+                and not _FUNDING_NEGATION.search(text)
+                and (not _NON_EQUITY_FUNDING.search(text) or _EQUITY_FUNDING_MARKER.search(text)))
+
+
+def _is_acquisition_announcement(text: str) -> bool:
+    return bool(_NEWS_ACTIONS["acquisition"].search(text)
+                and not _NON_CORPORATE_ACQUISITION.search(text))
 
 
 def _has_relevant_news(query: str, items: list[dict]) -> bool:
@@ -385,7 +476,7 @@ def _has_relevant_news(query: str, items: list[dict]) -> bool:
             other_terms = query_tokens - {"acquisition", "funding"}
             if len(other_terms & title_tokens) < 1:
                 continue
-            if "funding" in action_groups and _FUNDING_ANNOUNCEMENT.search(
+            if "funding" in action_groups and _is_equity_funding_announcement(
                     f"{title} {item.get('snippet', '')}"):
                 return True
             if "acquisition" in action_groups:
@@ -418,12 +509,19 @@ def _has_relevant_news(query: str, items: list[dict]) -> bool:
 def _rank_news(query: str, items: list[dict]) -> list[dict]:
     query_tokens = _news_tokens(query) - _STOP
     series = re.search(r"\bseries\s+([a-g])\b", query, re.IGNORECASE)
+    requested_actions = [kind for kind, pattern in _NEWS_ACTIONS.items() if pattern.search(query)]
     unique = {}
     for item in items:
         key = item.get("url") or item.get("title")
         if key and key not in unique:
             unique[key] = item
     return sorted(unique.values(), key=lambda item: (
+        any(
+            _is_acquisition_announcement(f"{item.get('title', '')} {item.get('snippet', '')}")
+            if action == "acquisition" else
+            _is_equity_funding_announcement(f"{item.get('title', '')} {item.get('snippet', '')}")
+            for action in requested_actions
+        ),
         bool(series and re.search(
             rf"\bseries\s+{series.group(1)}\b", f"{item.get('title', '')} {item.get('snippet', '')}", re.IGNORECASE)),
         len(query_tokens & _news_tokens(f"{item.get('title', '')} {item.get('snippet', '')}")),
@@ -535,9 +633,13 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
         company_terms = p["companies"][:2]
         company_tokens = {token.lower() for name in company_terms
                           for token in re.findall(r"[a-z0-9]+", name, re.IGNORECASE)}
+        country_tokens = {token.lower() for code in p["countries"]
+                          for name in ((get_country(code).name, *get_country(code).aliases)
+                                       if get_country(code) else ())
+                          for token in re.findall(r"[a-z0-9]+", name, re.IGNORECASE)}
         query_terms = company_terms + [
             term for term in p["terms"]
-            if not set(re.findall(r"[a-z0-9]+", term.lower())).issubset(company_tokens)
+            if not set(re.findall(r"[a-z0-9]+", term.lower())).issubset(company_tokens | country_tokens)
             and not re.fullmatch(r"20\d{2}", term)
         ][:3]
         series = re.search(r"\bseries\s+([a-g])\b", question, re.IGNORECASE)
@@ -565,13 +667,17 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
                     or any(token and token in deals_mod.normalise_name(
                         f"{item.get('title', '')} {item.get('snippet', '')}") for token in company_tokens))
             ]
-        if "acquisition" in p["deal_types"] and p["companies"]:
-            fetched_news = [it for it in fetched_news if _has_relevant_news(query, [it])]
+        if "acquisition" in p["deal_types"]:
+            if p["companies"]:
+                fetched_news = [it for it in fetched_news if _has_relevant_news(query, [it])]
+            else:
+                fetched_news = [it for it in fetched_news if _is_acquisition_announcement(
+                    f"{it.get('title', '')} {it.get('snippet', '')}")]
         elif "equity_funding" in p["deal_types"]:
             requested_series = re.search(r"\bseries\s+([a-g])\b", question, re.IGNORECASE)
             fetched_news = [it for it in fetched_news
                             if (_has_relevant_news(query, [it]) if requested_series else
-                                _FUNDING_ANNOUNCEMENT.search(
+                                _is_equity_funding_announcement(
                                     f"{it.get('title', '')} {it.get('snippet', '')}"))]
         valid_news = []
         news_limit = min(_NEWS_EVIDENCE_LIMIT, max_items)
@@ -735,7 +841,7 @@ def _funding_summary(parsed: dict, items: list[dict]) -> Optional[str]:
     if "equity_funding" not in parsed["deal_types"]:
         return None
     reports = [item for item in items if item["kind"] in {"news", "deal"}
-               and _FUNDING_ANNOUNCEMENT.search(f"{item['title']} {item['text']}")]
+               and _is_equity_funding_announcement(f"{item['title']} {item['text']}")]
     if not reports:
         return ("The retrieved evidence does not identify a specific funding announcement or disclosed amount "
                 "in the requested period.")

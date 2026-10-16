@@ -125,8 +125,13 @@ _LOCAL_NAMES = {"fr": {"Côte d'Ivoire": "Côte d'Ivoire", "Senegal": "Sénégal
                        "Sudan": "السودان", "Mauritania": "موريتانيا"}}
 
 
+def localized_country_name(c: Country, lang: str) -> str:
+    """Country name in a supported search language, when a translation is known."""
+    return _LOCAL_NAMES.get(lang, {}).get(c.name, c.name)
+
+
 def _query_name(c: Country, lang: str) -> str:
-    name = _LOCAL_NAMES.get(lang, {}).get(c.name, c.name)
+    name = localized_country_name(c, lang)
     return f'"{name}"' if " " in name or "'" in name else name
 
 

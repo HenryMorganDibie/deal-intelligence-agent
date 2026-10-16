@@ -447,6 +447,14 @@ def test_parse_question_keeps_company_name_before_trailing_country_name():
     assert parsed["since"] == "2020-01-01"
 
 
+def test_parse_question_does_not_turn_accented_country_name_into_company_names():
+    parsed = rs.parse_question("What acquisitions were announced in Côte d’Ivoire in 2020?",
+                               date(2026, 10, 16))
+
+    assert parsed["countries"] == ["CI"]
+    assert parsed["companies"] == []
+
+
 def test_parse_question_understands_spelled_out_relative_periods():
     today = date(2026, 10, 16)
     six_months = rs.parse_question("What funding was announced in the last six months?", today)
@@ -682,6 +690,18 @@ def test_research_queries_include_country_for_all_54_countries():
         assert country.name.lower() in captured[0][0].lower(), country.name
 
 
+def test_research_query_does_not_duplicate_accented_country_fragments_as_keywords():
+    captured = []
+    rs.retrieve(
+        "What acquisitions were announced in Côte d’Ivoire in 2020?",
+        today=date(2026, 10, 16),
+        news=lambda query, code: captured.append((query, code)) or [],
+    )
+
+    assert captured[0][1] == "CI"
+    assert captured[0][0].count("Ivoire") == 1
+
+
 @pytest.mark.parametrize(("code", "expected_term"), [
     ("SN", "lève levée de fonds"),
     ("AO", "capta rodada financiamento"),
@@ -690,18 +710,44 @@ def test_research_queries_include_country_for_all_54_countries():
 ])
 def test_research_news_query_adds_country_language_terms(code, expected_term):
     class Client:
-        url = None
+        urls = []
 
         def get(self, url):
-            self.url = url
+            self.urls.append(url)
             return type("Response", (), {"text": "<rss/>", "raise_for_status": lambda self: None})()
 
     client = Client()
     rs._news_items("funding rounds announced", code, client=client, since="2024-01-01", until="2024-12-31")
-    query = unquote(client.url)
+    queries = [unquote(url) for url in client.urls]
 
-    assert ac.get(code).name in query
-    assert expected_term in query
+    assert all(ac.get(code).name in query for query in queries)
+    assert any(expected_term.split()[0] in query and " OR " in query for query in queries)
+
+
+def test_research_retries_historical_search_without_date_operators_when_empty():
+    class Client:
+        urls = []
+
+        def get(self, url):
+            decoded_url = unquote(url)
+            self.urls.append(decoded_url)
+            if "after:" in decoded_url:
+                body = "<rss/>"
+            else:
+                body = (
+                    "<rss><channel><item><title>Financement d'une entreprise en Guinée</title>"
+                    "<link>https://news.google.com/rss/articles/historical</link>"
+                    "<pubDate>Mon, 15 Jul 2024 08:00:00 GMT</pubDate>"
+                    "</item></channel></rss>"
+                )
+            return type("Response", (), {"text": body, "raise_for_status": lambda self: None})()
+
+    client = Client()
+    items = rs._news_items("Guinée funding", "GN", client=client, since="2024-01-01", until="2024-12-31")
+
+    assert items and items[0]["date"] == "2024-07-15"
+    assert any("after:2024-01-01" in url for url in client.urls)
+    assert any("after:" not in url and "Guinée" in url for url in client.urls)
 
 
 @pytest.mark.parametrize("headline", [
@@ -711,6 +757,55 @@ def test_research_news_query_adds_country_language_terms(code, expected_term):
 ])
 def test_research_recognizes_non_english_funding_announcements(headline):
     assert rs._FUNDING_ANNOUNCEMENT.search(headline)
+
+
+@pytest.mark.parametrize("headline", [
+    "La startup Eyone lève 1 million de dollars",
+    "Sénégal : Socium lève 3,2 milliards FCFA pour révolutionner la tech",
+    "BHub capta R$ 74 milhões em rodada de financiamento",
+    "Startup raises seed funding for a renewable-energy project",
+])
+def test_research_accepts_company_equity_announcements_in_local_languages(headline):
+    assert rs._is_equity_funding_announcement(headline)
+
+
+@pytest.mark.parametrize("headline", [
+    "L’État du Sénégal lève des obligations sur le marché régional",
+    "Sénégal : démenti d’une levée de fonds infructueuse",
+    "Financiamento islâmico para compra de carros",
+    "Afreximbank anuncia mais financiamento alocado à indústria criativa",
+    "Afreximbank anuncia financiamento alocado a empresas",
+    "تمويل الأحزاب السياسية يعود إلى الواجهة",
+    "Axian Energy obtient un financement de 84 millions d’euros pour un projet solaire",
+])
+def test_research_rejects_denials_and_non_equity_funding_as_equity_rounds(headline):
+    assert not rs._is_equity_funding_announcement(headline)
+
+
+def test_research_country_matching_does_not_confuse_company_nationality_with_deal_location():
+    assert not rs._news_matches_country(
+        {"title": "Ivorian banking group takes control of a Gabonese bank"}, "CI")
+    assert rs._news_matches_country(
+        {"title": "DPO expands through acquisition of licenses in Côte d'Ivoire"}, "CI")
+
+
+def test_research_does_not_treat_film_awards_acquisition_as_corporate_m_and_a():
+    assert not rs._is_acquisition_announcement(
+        "Neon Buys Ivory Coast Awards Contender Night of the Kings")
+
+
+def test_research_ranks_intent_matching_articles_ahead_of_newer_noise():
+    query = "Côte d'Ivoire acquisition announced"
+    items = [
+        {"title": "Côte d'Ivoire opens a new factory", "date": "2020-12-16",
+         "url": "https://example.com/no-acquisition"},
+        {"title": "DPO expands through the acquisition of licenses in Côte d'Ivoire",
+         "date": "2020-01-27", "url": "https://example.com/acquisition"},
+    ]
+
+    ranked = rs._rank_news(query, items)
+
+    assert ranked[0]["url"] == "https://example.com/acquisition"
 
 
 def test_research_country_filter_excludes_other_country_results_and_keeps_localized_match():
@@ -747,6 +842,25 @@ def test_research_country_filter_applies_to_generic_corporate_events():
 
     news_titles = [item["title"] for item in result["evidence"] if item["kind"] == "news"]
     assert news_titles == ["Tanzanian company announces a board change"]
+
+
+def test_research_generic_acquisition_query_keeps_only_acquisition_headlines():
+    evidence = [
+        {"title": "Le Groupe DPO élargit sa présence avec l’acquisition de licences en Côte d'Ivoire",
+         "date": "2020-01-27", "url": "https://example.com/acquisition"},
+        {"title": "Côte d'Ivoire : les entreprises annoncent leurs résultats annuels",
+         "date": "2020-01-28", "url": "https://example.com/results"},
+    ]
+
+    result = rs.research(
+        "What acquisitions were announced in Côte d’Ivoire in 2020?",
+        news=lambda *_: evidence,
+        today=date(2026, 10, 16),
+    )
+
+    news_titles = [item["title"] for item in result["evidence"] if item["kind"] == "news"]
+    assert result["parsed"]["companies"] == []
+    assert news_titles == [evidence[0]["title"]]
 
 
 def test_research_uses_article_url_instead_of_publisher_homepage():
