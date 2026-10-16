@@ -13,23 +13,89 @@ const EXAMPLES = [
   "Which development finance institutions are most active in West Africa?",
 ];
 
-/** Renders an answer with [n] citations as links to the evidence list. */
-function Cited({ text }: { text: string }) {
+/** Renders common Markdown inline formatting and links citations to the evidence list. */
+function AnswerText({ text }: { text: string }) {
   const parts: ReactNode[] = [];
-  const re = /\[(\d{1,3})\]/g;
+  const re = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|\[(\d{1,3})\]|(\*\*[^*]+\*\*|__[^_]+__)|(\*[^*\n]+\*|_[^_\n]+_)|`([^`\n]+)`|(https?:\/\/[^\s)]+)/g;
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
     parts.push(text.slice(last, m.index));
-    parts.push(
-      <a key={m.index} href={`#ev-${m[1]}`} className="mx-0.5 align-super text-[0.6875rem] text-verified hover:underline">
-        {m[1]}
-      </a>,
-    );
+    if (m[1] && m[2]) {
+      parts.push(<a key={m.index} href={m[2]} target="_blank" rel="noreferrer noopener" className="text-verified hover:underline">{m[1]}</a>);
+    } else if (m[3]) {
+      parts.push(
+        <a key={m.index} href={`#ev-${m[3]}`} className="mx-0.5 align-super text-[0.6875rem] text-verified hover:underline">
+          {m[3]}
+        </a>,
+      );
+    } else if (m[4]) {
+      parts.push(<strong key={m.index}>{m[4].slice(2, -2)}</strong>);
+    } else if (m[5]) {
+      parts.push(<em key={m.index}>{m[5].slice(1, -1)}</em>);
+    } else if (m[6]) {
+      parts.push(<code key={m.index} className="rounded bg-white/5 px-1 py-0.5 text-[0.875em]">{m[6]}</code>);
+    } else if (m[7]) {
+      const url = m[7].replace(/[.,;:!?]+$/, "");
+      parts.push(<a key={m.index} href={url} target="_blank" rel="noreferrer noopener" className="break-all text-verified hover:underline">{url}</a>);
+      parts.push(m[7].slice(url.length));
+    }
     last = m.index + m[0].length;
   }
   parts.push(text.slice(last));
   return <>{parts}</>;
+}
+
+function FormattedAnswer({ text }: { text: string }) {
+  const blocks: ReactNode[] = [];
+  let list: { ordered: boolean; items: string[] } | null = null;
+  let paragraph: string[] = [];
+
+  const flushList = () => {
+    if (!list) return;
+    const Tag = list.ordered ? "ol" : "ul";
+    blocks.push(
+      <Tag key={`list-${blocks.length}`} className={`${list.ordered ? "list-decimal" : "list-disc"} space-y-1 pl-5`}>
+        {list.items.map((item, i) => <li key={`${i}-${item}`}><AnswerText text={item} /></li>)}
+      </Tag>,
+    );
+    list = null;
+  };
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    blocks.push(<p key={`paragraph-${blocks.length}`}><AnswerText text={paragraph.join(" ")} /></p>);
+    paragraph = [];
+  };
+
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    const heading = /^(#{1,3})\s+(.+)$/.exec(trimmed);
+    const bullet = /^\s*[-*+]\s+(.+)$/.exec(line);
+    const numbered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
+    if (heading) {
+      flushParagraph();
+      flushList();
+      const content = <AnswerText text={heading[2]} />;
+      blocks.push(heading[1].length === 1
+        ? <h2 key={`heading-${blocks.length}`} className="h3 text-xl">{content}</h2>
+        : <h3 key={`heading-${blocks.length}`} className="eyebrow">{content}</h3>);
+    } else if (bullet || numbered) {
+      flushParagraph();
+      const ordered = Boolean(numbered);
+      if (list && list.ordered !== ordered) flushList();
+      if (!list) list = { ordered, items: [] };
+      list.items.push((bullet ?? numbered)![1]);
+    } else if (trimmed) {
+      flushList();
+      paragraph.push(trimmed);
+    } else {
+      flushParagraph();
+      flushList();
+    }
+  }
+  flushParagraph();
+  flushList();
+  return <article className="panel mt-3 space-y-4 p-5 text-[0.9375rem] leading-relaxed">{blocks}</article>;
 }
 
 export default function ResearchPage() {
@@ -104,9 +170,7 @@ export default function ResearchPage() {
             {v && <span>· {Math.round(v.grounded_share * 100)}% of factual sentences have valid citations</span>}
             {v && v.invalid_citations_removed.length > 0 && <span>· {v.invalid_citations_removed.length} invalid citation(s) removed</span>}
           </div>
-          <div className="panel mt-3 whitespace-pre-wrap p-5 text-[0.9375rem] leading-relaxed">
-            <Cited text={result.answer} />
-          </div>
+          <FormattedAnswer text={result.answer} />
           {v && v.uncited_sentences.length > 0 && (
             <details className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">
               <summary className="cursor-pointer">Sentences without a citation ({v.uncited_sentences.length})</summary>
