@@ -6,6 +6,15 @@ import { browserVisitorId } from "../../lib/tracking";
 type Row = { views: number; visitors: number; users: number };
 type ActionRow = { action: string; completions: number; clients: number };
 type PageActivity = { feature: string; browsers: number; page_views: number };
+type FeedbackItem = {
+  id: string;
+  created_at: string;
+  result_type: string;
+  result_id: string;
+  category: string;
+  note: string;
+  reviewed_at: string | null;
+};
 type Stats = {
   since: string;
   totals: Row & { returning_users: number };
@@ -22,6 +31,7 @@ export default function Admin() {
   const [key, setKey] = useState("");
   const [days, setDays] = useState(30);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [error, setError] = useState("");
 
   async function load(k: string, d: number) {
@@ -35,8 +45,28 @@ export default function Admin() {
       if (!r.ok) throw new Error(r.status === 401 ? "Wrong key" : "Stats unavailable");
       setStats(await r.json());
       localStorage.setItem("di_admin", k);
+      const feedbackResponse = await fetch(`${API}/api/admin/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: k }),
+      });
+      if (!feedbackResponse.ok) throw new Error("Feedback queue unavailable");
+      setFeedback((await feedbackResponse.json()).items);
     } catch (e) {
-      setStats(null);
+      setError((e as Error).message);
+    }
+  }
+
+  async function markFeedbackReviewed(id: string) {
+    try {
+      const response = await fetch(`${API}/api/admin/feedback/${encodeURIComponent(id)}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key }),
+      });
+      if (!response.ok) throw new Error("Could not update feedback status.");
+      setFeedback((rows) => rows.map((row) => row.id === id ? { ...row, reviewed_at: new Date().toISOString() } : row));
+    } catch (e) {
       setError((e as Error).message);
     }
   }
@@ -158,6 +188,35 @@ export default function Admin() {
               }) : <tr><td className="py-1.5" colSpan={3}>Usage action metrics are not available yet.</td></tr>}
             </tbody>
           </table>
+
+          <h2 className="mt-8 font-semibold">Result reports for review</h2>
+          <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+            User reports are leads for analyst review, not verified corrections. Do not use them as accuracy labels until checked against sources.
+          </p>
+          {feedback.length === 0 ? (
+            <p className="mt-2 text-sm text-[color:var(--dim)]">No reports have been submitted.</p>
+          ) : (
+            <ul className="mt-3 space-y-3">
+              {feedback.map((item) => (
+                <li key={item.id} className="panel flex flex-wrap items-start justify-between gap-3 p-4">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">
+                      {item.category.replaceAll("_", " ")} · {item.result_type.replaceAll("_", " ")}
+                      <span className="ml-2 text-xs text-[color:var(--dim)]">{new Date(item.created_at).toLocaleString()}</span>
+                    </p>
+                    <p className="mt-1 break-all text-xs text-[color:var(--dim)]">Result {item.result_id}</p>
+                    {item.note && <p className="mt-2 whitespace-pre-wrap text-sm">{item.note}</p>}
+                    <p className="mt-2 text-xs text-[color:var(--muted)]">{item.reviewed_at ? "Reviewed" : "Awaiting review"}</p>
+                  </div>
+                  {!item.reviewed_at && (
+                    <button type="button" onClick={() => markFeedbackReviewed(item.id)} className="btn btn-ghost h-8 px-3 text-xs">
+                      Mark reviewed
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
 
           <h2 className="mt-8 font-semibold">App page visits (context only)</h2>
           <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">

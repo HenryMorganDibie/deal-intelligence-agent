@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { Container } from "../../../../components/primitives";
 import { DealRows, ErrorNote, Loading, PageHeader, Pill, Stat, Table, Td, num, words } from "../../../../components/app/ui";
+import { ResultFeedback } from "../../../../components/app/ResultFeedback";
 import { ApiError } from "../../../../lib/api";
-import { get, post, type CountryRisk, type CoverageRow, type CurrencyRisk, type Deal, type Event, type InvestorRow } from "../../../../lib/market";
+import { get, post, type CountryRisk, type CoverageRow, type CurrencyRisk, type Deal, type Event, type EvidenceItem, type InvestorRow } from "../../../../lib/market";
 
 type CountryResponse = {
   country: { iso2: string; name: string; region: string; languages: string[]; currency: string; exchange: string | null; central_bank: string; securities_regulator: string | null };
@@ -78,7 +79,7 @@ function ResearchReport({ markdown }: { markdown: string }) {
 export default function CountryPage({ params }: { params: { code: string } }) {
   const [d, setD] = useState<CountryResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [report, setReport] = useState<{ markdown: string } | null>(null);
+  const [report, setReport] = useState<{ markdown: string; result_id: string; evidence: EvidenceItem[] } | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -91,7 +92,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
     setBusy(true);
     setError(null);
     try {
-      setReport(await post<{ markdown: string }>(`/api/reports/country/${encodeURIComponent(params.code)}`));
+      setReport(await post<{ markdown: string; result_id: string; evidence: EvidenceItem[] }>(`/api/reports/country/${encodeURIComponent(params.code)}`));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "The report could not be generated.");
     } finally {
@@ -129,7 +130,15 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         </Link>
       </div>
       {error && <ErrorNote message={error} />}
-      {report && <ResearchReport markdown={report.markdown} />}
+      {report && (
+        <>
+          <p className="mt-3 text-[0.8125rem] text-[color:var(--dim)]">
+            Report evidence: {report.evidence.length} items. Dates shown in the report are source dates, not refresh timestamps.
+          </p>
+          <ResearchReport markdown={report.markdown} />
+          <ResultFeedback resultType="country_report" resultId={report.result_id} />
+        </>
+      )}
 
       <h2 className="eyebrow mt-12">Country risk components</h2>
       <p className="mt-2 text-[0.8125rem] text-[color:var(--dim)]">{risk.method}</p>

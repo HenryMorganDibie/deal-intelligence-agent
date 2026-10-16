@@ -103,7 +103,7 @@ export default function BriefPage({ params }: { params: { id: string } }) {
           <p className="mt-2 text-sm text-[color:var(--muted)]">{error ?? "Check the link and try again."}</p>
         </div>
       ) : (
-        <BriefView brief={row.brief} />
+        <BriefView brief={row.brief} resultId={row.id} />
       )}
     </Container>
   );

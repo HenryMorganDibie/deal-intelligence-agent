@@ -465,6 +465,20 @@ def test_research_live_news_uses_requested_date_scope():
     assert "when%3A90d" not in client.url
 
 
+def test_research_evidence_coverage_reports_counts_and_latest_source_dates():
+    coverage = rs.evidence_coverage([
+        {"kind": "deal", "date": "2025-01-10"},
+        {"kind": "deal", "date": "2025-04-12"},
+        {"kind": "news", "date": "2025-03-01"},
+        {"kind": "news", "date": None},
+    ])
+
+    assert coverage == [
+        {"kind": "deal", "items": 2, "latest_source_date": "2025-04-12"},
+        {"kind": "news", "items": 2, "latest_source_date": "2025-03-01"},
+    ]
+
+
 def test_citation_normalisation_and_validation():
     text = ("Cloud9 raised $500k in its latest round 【2】. The naira fell sharply last year [3, 4]. "
             "A made up claim cites a missing item [9]. Another claim without a source here.")

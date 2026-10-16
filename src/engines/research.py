@@ -386,6 +386,22 @@ def deterministic_answer(question: str, parsed: dict, items: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def evidence_coverage(items: list[dict]) -> list[dict]:
+    """Summarise retrieved evidence and its newest source date without implying completeness."""
+    kinds = sorted({item["kind"] for item in items})
+    return [
+        {
+            "kind": kind,
+            "items": sum(1 for item in items if item["kind"] == kind),
+            "latest_source_date": max(
+                (str(item["date"])[:10] for item in items if item["kind"] == kind and item.get("date")),
+                default=None,
+            ),
+        }
+        for kind in kinds
+    ]
+
+
 def answer(question: str, items: list[dict], parsed: Optional[dict] = None, llm: Optional[Callable] = None) -> dict:
     """Grounded answer. llm(system, user, max_tokens) -> text; None uses the configured router or falls back."""
     parsed = parsed or parse_question(question)
@@ -426,7 +442,8 @@ def research(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
              live_news: bool = True, llm: Optional[Callable] = None, news=None, today: Optional[date] = None) -> dict:
     parsed, items = retrieve(question, deals, events, briefs, live_news=live_news, news=news, today=today)
     result = answer(question, items, parsed, llm)
-    return {"question": question, "parsed": parsed, "evidence": items, **result}
+    return {"question": question, "parsed": parsed, "evidence": items,
+            "evidence_coverage": evidence_coverage(items), **result}
 
 
 # ── Research reports ──────────────────────────────────────────────────────────

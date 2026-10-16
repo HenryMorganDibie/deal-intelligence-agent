@@ -1,4 +1,5 @@
 import { expectedMove, formatDate, label, SEVERITY_STYLE, type Brief, type Severity, type Signal } from "../../lib/brief";
+import { ResultFeedback } from "./ResultFeedback";
 
 export function SeverityBadge({ severity }: { severity: Severity }) {
   return (
@@ -101,12 +102,26 @@ function SignalCard({ s }: { s: Signal }) {
   );
 }
 
-export function BriefView({ brief }: { brief: Brief }) {
+const VERIFICATION_STEPS: Record<string, string> = {
+  m_and_a_activity: "Confirm the transaction parties, announcement date, and whether it is proposed or completed in the original announcement.",
+  credit_risk: "Check the latest financial statements, debt maturities, liquidity position, and any rating-agency update.",
+  distressed_asset: "Verify the legal or restructuring status and distinguish a filing from a report or market rumour.",
+  earnings_surprise: "Compare the reported figures with the original results release and the prior-period basis.",
+  leadership_change: "Confirm the named executive, role, effective date, and whether the departure is confirmed.",
+  regulatory_action: "Read the regulator's notice and verify whether it is an investigation, proposed action, or final decision.",
+  debt_restructuring: "Check the original lender or court notice for affected debt, terms, and current status.",
+  insider_activity: "Verify the original insider disclosure, transaction date, and whether the trade was a purchase or sale.",
+};
+
+export function BriefView({ brief, resultId }: { brief: Brief; resultId?: string }) {
   const signals = brief.detected_signals ?? [];
   const keyMetrics = brief.key_metrics ?? [];
   const recentDevelopments = brief.recent_developments ?? [];
   const filings = brief.filings_reviewed ?? [];
   const news = brief.news_reviewed ?? [];
+  const latestFiling = filings.map((filing) => filing.filing_date).filter(Boolean).sort().at(-1);
+  const latestNews = news.map((item) => item.published_date).filter(Boolean).sort().at(-1);
+  const verificationSteps = [...new Set(signals.map((signal) => VERIFICATION_STEPS[signal.signal_type]).filter(Boolean))];
   const deterministicOnly = /LLM unavailable/i.test(brief.analyst_model ?? "");
   return (
     <div className="space-y-10">
@@ -209,6 +224,15 @@ export function BriefView({ brief }: { brief: Brief }) {
         )}
       </section>
 
+      <section aria-labelledby="verify-next-title" className="rounded-xl border hairline p-5">
+        <h2 id="verify-next-title" className="eyebrow">What to verify next</h2>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
+          {(verificationSteps.length ? verificationSteps : [
+            "No signal was found in the sources retrieved for this run. Check the lookback period and available filings/news before concluding that no relevant event occurred.",
+          ]).map((step) => <li key={step}>{step}</li>)}
+        </ul>
+      </section>
+
       {brief.compound_signals?.length > 0 && (
         <section aria-labelledby="compound-title">
           <h2 id="compound-title" className="eyebrow">
@@ -264,6 +288,12 @@ export function BriefView({ brief }: { brief: Brief }) {
         <h2 id="sources-title" className="eyebrow">
           Sources reviewed
         </h2>
+        <p className="mt-2 text-[0.8125rem] text-[color:var(--dim)]">
+          Retrieved {filings.length} filing(s) and {news.length} news item(s).
+          {latestFiling ? ` Latest filing date: ${latestFiling}.` : " No filing date is available."}
+          {latestNews ? ` Latest news publication date: ${latestNews}.` : " No news publication date is available."}
+          {" "}These are source dates, not source refresh timestamps or proof that all sources were available.
+        </p>
         <div className="mt-3 grid gap-6 md:grid-cols-2">
           <div className="min-w-0">
             <p className="text-[0.8125rem] text-[color:var(--dim)]">Filings ({filings.length})</p>
@@ -298,6 +328,7 @@ export function BriefView({ brief }: { brief: Brief }) {
         {brief.processing_time_seconds != null && ` in ${brief.processing_time_seconds}s`}. Research tooling, not
         investment advice. Verify every signal against its source before acting on it.
       </footer>
+      {resultId && <ResultFeedback resultType="brief" resultId={resultId} />}
     </div>
   );
 }

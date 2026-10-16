@@ -221,11 +221,13 @@ export type EvidenceItem = {
 };
 
 export type ResearchResult = {
+  result_id: string;
   question: string;
   answer: string;
   mode: "llm" | "deterministic";
   model: string | null;
   evidence: EvidenceItem[];
+  evidence_coverage: { kind: string; items: number; latest_source_date: string | null }[];
   validation: { grounded_share: number; uncited_sentences: string[]; invalid_citations_removed: number[]; cited_items: number[] };
 };
 

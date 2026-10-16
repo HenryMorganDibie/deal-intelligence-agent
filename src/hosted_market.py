@@ -36,7 +36,7 @@ import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 from urllib.parse import urlparse
 
 import httpx
@@ -319,6 +319,21 @@ class ResearchBody(BaseModel):
         return v.strip()
 
 
+class ResultFeedbackBody(BaseModel):
+    result_type: Literal["brief", "research", "country_report", "sector_report"]
+    result_id: uuid.UUID
+    category: Literal[
+        "incorrect_signal", "wrong_company", "missed_event",
+        "unsupported_claim", "outdated_data", "other",
+    ]
+    note: str = Field("", max_length=1000)
+
+    @field_validator("note")
+    @classmethod
+    def strip_note(cls, value: str) -> str:
+        return value.strip()
+
+
 async def _reserve(request: Request, label: str) -> int:
     if not _configured():
         raise HTTPException(503, "The API is not configured.")
@@ -345,7 +360,7 @@ async def research(body: ResearchBody, request: Request) -> dict:
     run_id = await _reserve(request, f"[research] {body.question}")
     result = await run_in_threadpool(research_mod.research, body.question, deals(), events())
     await _finish(run_id)
-    return result
+    return {**result, "result_id": str(uuid.uuid4())}
 
 
 @router.post("/api/reports/country/{code}")
@@ -354,7 +369,7 @@ async def country_report(code: str, request: Request) -> dict:
     run_id = await _reserve(request, f"[report] country {c.iso2}")
     result = await run_in_threadpool(research_mod.country_report, c.iso2, deals(), events())
     await _finish(run_id)
-    return result
+    return {**result, "result_id": str(uuid.uuid4())}
 
 
 @router.post("/api/reports/sector/{sector}")
@@ -365,7 +380,67 @@ async def sector_report(sector: str, request: Request, country: Optional[str] = 
     run_id = await _reserve(request, f"[report] sector {sector} {country or ''}")
     result = await run_in_threadpool(research_mod.sector_report, sector, deals(), events(), country)
     await _finish(run_id)
-    return result
+    return {**result, "result_id": str(uuid.uuid4())}
+
+
+@router.post("/api/feedback", status_code=201)
+async def submit_result_feedback(body: ResultFeedbackBody, request: Request) -> dict:
+    if not _configured():
+        raise HTTPException(503, "Feedback is not configured.")
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "submit_result_feedback", {
+            "p_client_hash": _client_hash(request),
+            "p_result_type": body.result_type,
+            "p_result_id": str(body.result_id),
+            "p_category": body.category,
+            "p_note": body.note,
+        })
+    if not r.is_success:
+        if "feedback_limit" in r.text:
+            raise HTTPException(429, "Feedback limit reached. Please try again tomorrow.")
+        log.error("submit_result_feedback failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(502, "Feedback could not be saved.")
+    return {"id": r.json(), "status": "received"}
+
+
+@router.post("/api/admin/feedback")
+async def admin_feedback(request: Request) -> dict:
+    import hmac
+    try:
+        body = await request.json()
+    except ValueError:
+        body = {}
+    key = str(body.get("key", ""))
+    if not (ADMIN_KEY and _configured() and hmac.compare_digest(key, ADMIN_KEY)):
+        raise HTTPException(status_code=401, detail="Wrong key")
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "list_result_feedback", {"p_limit": 100})
+    if not r.is_success:
+        log.error("list_result_feedback failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(502, "Feedback is unavailable.")
+    return {"items": r.json()}
+
+
+@router.post("/api/admin/feedback/{feedback_id}/review")
+async def review_result_feedback(feedback_id: str, request: Request) -> dict:
+    import hmac
+    try:
+        body = await request.json()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid request body.")
+    try:
+        parsed_id = uuid.UUID(feedback_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Feedback not found.")
+    key = str(body.get("key", ""))
+    if not (ADMIN_KEY and _configured() and hmac.compare_digest(key, ADMIN_KEY)):
+        raise HTTPException(status_code=401, detail="Wrong key")
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "review_result_feedback", {"p_feedback_id": str(parsed_id)})
+    if not r.is_success:
+        log.error("review_result_feedback failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(502, "Feedback could not be updated.")
+    return {"reviewed": r.json() is True}
 
 
 # ── Watchlists and alerts ─────────────────────────────────────────────────────

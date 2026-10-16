@@ -3962,6 +3962,76 @@ class TestHostedApi:
         assert response.status_code == 422
         rpc.assert_not_awaited()
 
+    def test_result_feedback_is_stored_without_raw_client_identity(self, monkeypatch):
+        import hashlib
+        import src.hosted_market as hm
+        client, _ = self._client(monkeypatch)
+        monkeypatch.setattr(hm, "API_SECRET", "api-secret")
+        monkeypatch.setattr(hm, "_configured", lambda: True)
+        feedback_id = "c9a48779-1841-47c2-8e21-84fa00cff815"
+        rpc = AsyncMock(return_value=MagicMock(is_success=True, json=lambda: feedback_id))
+        monkeypatch.setattr(hm, "_rpc", rpc)
+
+        response = client.post(
+            "/api/feedback",
+            json={
+                "result_type": "research",
+                "result_id": "0c5d521e-233d-4af4-b93a-f782c5afb7a1",
+                "category": "unsupported_claim",
+                "note": "Citation 3 does not support the statement.",
+            },
+            headers={"x-forwarded-for": "203.0.113.12"},
+        )
+
+        assert response.status_code == 201
+        assert response.json() == {"id": feedback_id, "status": "received"}
+        args = rpc.await_args.args[2]
+        assert args["p_category"] == "unsupported_claim"
+        assert args["p_client_hash"] == hashlib.sha256(b"api-secret:203.0.113.12").hexdigest()[:32]
+        assert "email" not in args and "question" not in args
+
+    def test_result_feedback_rejects_invalid_categories(self, monkeypatch):
+        import src.hosted_market as hm
+        client, _ = self._client(monkeypatch)
+        monkeypatch.setattr(hm, "_configured", lambda: True)
+        rpc = AsyncMock()
+        monkeypatch.setattr(hm, "_rpc", rpc)
+
+        response = client.post(
+            "/api/feedback",
+            json={
+                "result_type": "brief",
+                "result_id": "0c5d521e-233d-4af4-b93a-f782c5afb7a1",
+                "category": "make_me_accurate",
+            },
+        )
+
+        assert response.status_code == 422
+        rpc.assert_not_awaited()
+
+    def test_admin_can_list_and_review_feedback(self, monkeypatch):
+        import src.hosted_market as hm
+        client, _ = self._client(monkeypatch)
+        monkeypatch.setattr(hm, "ADMIN_KEY", "admin-secret")
+        monkeypatch.setattr(hm, "_configured", lambda: True)
+        rpc = AsyncMock(side_effect=[
+            MagicMock(is_success=True, json=lambda: [{"id": "c9a48779-1841-47c2-8e21-84fa00cff815"}]),
+            MagicMock(is_success=True, json=lambda: True),
+        ])
+        monkeypatch.setattr(hm, "_rpc", rpc)
+
+        listed = client.post("/api/admin/feedback", json={"key": "admin-secret"})
+        reviewed = client.post(
+            "/api/admin/feedback/c9a48779-1841-47c2-8e21-84fa00cff815/review",
+            json={"key": "admin-secret"},
+        )
+
+        assert listed.json()["items"][0]["id"] == "c9a48779-1841-47c2-8e21-84fa00cff815"
+        assert reviewed.json() == {"reviewed": True}
+        assert [call.args[1] for call in rpc.await_args_list] == [
+            "list_result_feedback", "review_result_feedback"
+        ]
+
     def test_label_brief_uses_brief_signals(self, monkeypatch):
         import src.engines.outcome_labeller as ol
         client, api = self._client(monkeypatch)

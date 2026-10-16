@@ -3,6 +3,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, PageHeader, Pill, words } from "../../../components/app/ui";
+import { ResultFeedback } from "../../../components/app/ResultFeedback";
 import { ApiError } from "../../../lib/api";
 import { post, type ResearchResult } from "../../../lib/market";
 
@@ -210,6 +211,24 @@ export default function ResearchPage() {
             {v && v.invalid_citations_removed.length > 0 && <span>· {v.invalid_citations_removed.length} invalid citation(s) removed</span>}
           </div>
           <FormattedAnswer text={result.answer} />
+          <section className="mt-4 rounded-xl border hairline p-4" aria-label="Evidence coverage">
+            <h2 className="text-sm font-semibold">Evidence retrieved for this question</h2>
+            {result.evidence_coverage.length ? (
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {result.evidence_coverage.map((source) => (
+                  <li key={source.kind} className="rounded-full border hairline px-3 py-1 text-[0.75rem] text-[color:var(--muted)]">
+                    {words(source.kind)}: {source.items}
+                    {source.latest_source_date ? ` · latest dated ${source.latest_source_date}` : ""}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-sm text-[color:var(--muted)]">No evidence items were retrieved for this question.</p>
+            )}
+            <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">
+              Counts describe the evidence shown below, not all information available in the market. Dates are source dates, not refresh timestamps.
+            </p>
+          </section>
           {v && v.uncited_sentences.length > 0 && (
             <details className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">
               <summary className="cursor-pointer">Sentences without a citation ({v.uncited_sentences.length})</summary>
@@ -246,6 +265,7 @@ export default function ResearchPage() {
               </li>
             ))}
           </ol>
+          <ResultFeedback resultType="research" resultId={result.result_id} />
         </section>
       )}
     </Container>
