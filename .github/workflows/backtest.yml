@@ -227,6 +227,9 @@ jobs:
       - name: Publish if it improves on the site
         run: python main.py backtest --publish --period continue
 
+      - name: Evaluate return forecast candidate
+        run: python -m src.engines.return_forecast > docs/return_forecast_validation.json
+
       - name: Keep fetched data and finished companies
         id: save
         if: always()
@@ -254,7 +257,8 @@ jobs:
           git config user.name "Henry Dibie"
           git config user.email "henrymorgandibie@gmail.com"
           git add docs/evaluation_report.json docs/backtest_predictions.csv docs/backtest_summary.json \
-                  docs/BACKTEST.md docs/backtest_universe.csv src/data/measured_outcomes.json
+                  docs/BACKTEST.md docs/backtest_universe.csv docs/return_forecast_validation.json \
+                  src/data/measured_outcomes.json
           if git diff --cached --quiet; then echo "Nothing new to publish."; exit 0; fi
           git commit -m "backtest: monthly replay ${{ needs.plan.outputs.start }} to ${{ needs.plan.outputs.end }}"
           git pull --rebase origin "${{ github.ref_name }}"

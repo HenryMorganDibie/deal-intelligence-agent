@@ -3,7 +3,7 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 300,
-      "includeFiles": "{src/**,docs/backtest_summary.json,docs/evaluation_report.json,docs/backtest_predictions.csv,docs/automation/learned_ranker.json,evaluation/**/*.json,evaluation/**/*.jsonl}",
+      "includeFiles": "{src/**,docs/backtest_summary.json,docs/evaluation_report.json,docs/backtest_predictions.csv,docs/return_forecast_validation.json,docs/automation/learned_ranker.json,evaluation/**/*.json,evaluation/**/*.jsonl}",
       "excludeFiles": "web/**"
     }
   },

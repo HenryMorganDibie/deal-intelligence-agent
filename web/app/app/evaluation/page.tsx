@@ -84,6 +84,32 @@ type AttrStats = {
 };
 type AttrSet = { overall: AttrStats; high_confidence_labels: AttrStats; by_market?: Record<string, AttrStats>; by_category?: Record<string, AttrStats> };
 type Attribution = { natural: AttrSet | null; hard: AttrSet | null; sets: Record<string, string>; labels: string };
+type ReturnForecastSlice = {
+  holdout_n: number;
+  holdout_dates?: number;
+  candidate_mae_pct?: number;
+  zero_return_baseline_mae_pct?: number;
+  mae_improvement_pct?: number;
+  direction_n?: number;
+  direction_accuracy?: number | null;
+  qualified: boolean;
+  reason: string;
+};
+type ReturnForecastValidation = {
+  horizon: string;
+  candidate: string;
+  train_through?: string;
+  holdout_from?: string;
+  holdout_through?: string;
+  latest_labelled_as_of?: string;
+  data_age_days?: number;
+  freshness_max_age_days?: number;
+  freshness_passed?: boolean;
+  qualified: boolean;
+  reason: string;
+  overall: ReturnForecastSlice;
+  by_market: Record<"us" | "africa", ReturnForecastSlice>;
+};
 
 type Evaluation = {
   signal_report: SignalReport | null;
@@ -91,6 +117,7 @@ type Evaluation = {
   data_quality_baseline: DataQuality | null;
   attribution: Attribution | null;
   attribution_before: Attribution | null;
+  return_forecast_validation: ReturnForecastValidation | null;
   live_outcomes: Record<string, { confirmed: number; refuted: number }> | null;
   measured_now?: { backtest_observations: number; live_observations: number };
 };
@@ -223,6 +250,7 @@ const NAV = [
   ["populations", "What was counted"],
   ["events", "Did the event happen?"],
   ["returns", "Did the price move?"],
+  ["return-forecast", "Return forecast validation"],
   ["alpha", "Alpha score"],
   ["rules", "Labelling rules"],
   ["data-quality", "Deal data quality"],
@@ -289,6 +317,7 @@ export default function EvaluationPage() {
   const dq = e?.data_quality;
   const ho = dq?.heldout_extraction;
   const attrNat = e?.attribution?.natural;
+  const returnForecast = e?.return_forecast_validation;
 
   return (
     <Container className="py-10 lg:py-14">
@@ -526,6 +555,57 @@ export default function EvaluationPage() {
               )}
             </Section>
           )}
+
+          <Section
+            id="return-forecast"
+            title="Return forecast validation"
+            lede="This is a separate evaluation from alpha and event confirmation. A return estimate is eligible for use only after it beats a zero-return baseline on a recent chronological holdout, with enough data overall and in each market."
+          >
+            {!returnForecast ? (
+              <Callout tone="warn">
+                No return-forecast validation report has been published yet. The monthly backtest CI generates this report;
+                until then, the system does not issue a return forecast.
+              </Callout>
+            ) : (
+              <div className="space-y-4">
+                <Callout tone={returnForecast.qualified ? "neutral" : "warn"}>
+                  <strong>{returnForecast.qualified ? "Validation gates passed." : "No validated return forecast."}</strong>{" "}
+                  {returnForecast.reason} Historical move ranges elsewhere on this page are descriptive, not forecasts
+                  for an individual company or trading recommendations.
+                </Callout>
+                <div className="overflow-x-auto">
+                  <Table
+                    head={["Holdout", "Outcomes", "Candidate MAE", "Zero-return MAE", "MAE improvement", "Direction accuracy", "Status"]}
+                    minWidth="58rem"
+                  >
+                    {(["overall", "us", "africa"] as const).map((key) => {
+                      const slice = key === "overall" ? returnForecast.overall : returnForecast.by_market[key];
+                      if (!slice) return null;
+                      return (
+                        <tr key={key}>
+                          <Td>{words(key)}</Td>
+                          <Td className="kbd">{slice.holdout_n}</Td>
+                          <Td className="kbd">{slice.candidate_mae_pct == null ? "n/a" : `${slice.candidate_mae_pct.toFixed(3)}%`}</Td>
+                          <Td className="kbd">{slice.zero_return_baseline_mae_pct == null ? "n/a" : `${slice.zero_return_baseline_mae_pct.toFixed(3)}%`}</Td>
+                          <Td className="kbd">{slice.mae_improvement_pct == null ? "n/a" : `${slice.mae_improvement_pct.toFixed(3)}%`}</Td>
+                          <Td className="kbd">{slice.direction_accuracy == null ? "n/a" : `${(slice.direction_accuracy * 100).toFixed(1)}% (n=${slice.direction_n ?? 0})`}</Td>
+                          <Td>{slice.qualified ? "Passed" : "Not passed"}</Td>
+                        </tr>
+                      );
+                    })}
+                  </Table>
+                </div>
+                <p className="text-[0.75rem] leading-relaxed text-[color:var(--dim)]">
+                  Horizon: {returnForecast.horizon}. Training through {day(returnForecast.train_through) ?? "n/a"};
+                  holdout {day(returnForecast.holdout_from) ?? "n/a"} to {day(returnForecast.holdout_through) ?? "n/a"}.
+                  Latest labelled date: {day(returnForecast.latest_labelled_as_of) ?? "n/a"}
+                  {returnForecast.data_age_days != null ? ` (${returnForecast.data_age_days} days old)` : ""}.
+                  Freshness gate: at most {returnForecast.freshness_max_age_days ?? "n/a"} days.
+                  Even if these retrospective gates pass, individual live return estimates are not issued yet.
+                </p>
+              </div>
+            )}
+          </Section>
 
           {r && (
             <Section id="rules" title="Labelling rules and time windows" lede="The same rules apply to the backtest and to hosted briefs; the differing day counts are buffers, explained below.">

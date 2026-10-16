@@ -3839,6 +3839,20 @@ class TestHostedApi:
         client, _ = self._client(monkeypatch)
         assert client.get("/api/health").json()["ok"] is True
 
+    def test_evaluation_includes_published_return_forecast_validation(self, monkeypatch, tmp_path):
+        client, _ = self._client(monkeypatch)
+        import src.hosted_market as hm
+        (tmp_path / "docs").mkdir()
+        report = {"qualified": False, "reason": "No validated forecast."}
+        (tmp_path / "docs" / "return_forecast_validation.json").write_text(json.dumps(report))
+        monkeypatch.setattr(hm, "_ROOT", tmp_path)
+        monkeypatch.setattr(hm, "_configured", lambda: False)
+
+        response = client.get("/api/evaluation")
+
+        assert response.status_code == 200
+        assert response.json()["return_forecast_validation"] == report
+
     def test_cron_requires_the_cron_secret(self, monkeypatch):
         client, _ = self._client(monkeypatch, CRON_SECRET="s3cret")
         assert client.get("/api/cron/label").status_code == 401

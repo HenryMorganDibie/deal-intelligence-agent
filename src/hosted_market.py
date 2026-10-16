@@ -644,6 +644,9 @@ async def evaluation() -> dict:
             live = await refresh_live(client)
     return {"historical_backtest": backtest, "live_outcomes": live, "measured_now": _measured_summary(),
             "signal_report": _read_json(_ROOT / "docs" / "evaluation_report.json"),
+            "return_forecast_validation": _read_json(
+                _ROOT / "docs" / "return_forecast_validation.json"
+            ),
             "data_quality": _read_json(_ROOT / "evaluation" / "deals" / "results.json"),
             "data_quality_baseline": _read_json(_ROOT / "evaluation" / "deals" / "results_baseline.json"),
             "attribution": _read_json(_ROOT / "evaluation" / "attribution" / "results.json"),
