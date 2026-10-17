@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-16T08:46:07.777552+00:00",
+  "updated_at": "2026-10-17T07:33:09.840358+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 33,
+      "new_review_items_today": 63,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -40,17 +40,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 4,
-      "new_observations_today": 2,
-      "unreviewed_flagged_observations": 0,
+      "observations_collected": 7,
+      "new_observations_today": 3,
+      "unreviewed_flagged_observations": 1,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 3,
-      "entities": 6,
+      "relationships": 4,
+      "entities": 8,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -169,18 +169,17 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 4,
-    "new_rows": 2,
+    "collected_tickers": 7,
+    "new_rows": 3,
     "failures": [
-      "AAI.NR",
-      "AALR.CA"
+      "ABBEYBDS.LG"
     ],
     "retry_after_days": 7
   },
   "relationship_graph": {
-    "nodes": 6,
-    "relationships": 3,
-    "source_links": 3,
+    "nodes": 8,
+    "relationships": 4,
+    "source_links": 4,
     "most_connected": [
       {
         "name": "Finnfund",
@@ -204,6 +203,14 @@
       },
       {
         "name": "Local Oil Contractors",
+        "degree": 1
+      },
+      {
+        "name": "Private",
+        "degree": 1
+      },
+      {
+        "name": "Livestock",
         "degree": 1
       }
     ]
