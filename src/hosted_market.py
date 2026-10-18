@@ -183,7 +183,7 @@ async def countries() -> dict:
 
 
 @router.get("/api/countries/{code}/history")
-async def country_history(code: str, since: int = Query(2018, ge=2000, le=2100),
+async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
                           until: Optional[int] = Query(None, ge=2000, le=2100),
                           snapshots: int = Query(30, ge=1, le=365)) -> dict:
     """Annual reconstructed history plus archived daily snapshots where configured."""
