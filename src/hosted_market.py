@@ -771,13 +771,15 @@ async def evaluation() -> dict:
 
 @router.get("/api/cron/ingest")
 async def cron_ingest(request: Request) -> dict:
-    """Daily: read every feed, extract deals and events, merge, store, deliver webhooks."""
+    """Frequent rolling ingestion: capture fresh and delayed news, upsert idempotently, deliver webhooks."""
     if not CRON_SECRET or request.headers.get("authorization") != f"Bearer {CRON_SECRET}":
         raise HTTPException(401, "Unauthorized")
     if not _configured():
         raise HTTPException(503, "The API is not configured.")
     from src.engines import market_feed
-    items = await market_feed.collect("when:2d")
+    # Re-scan a rolling week every run: Google News and RSS can index stories late.
+    # Stable deal/event IDs and Supabase upserts make overlapping windows safe.
+    items = await market_feed.collect("when:7d")
     new_deals, new_events = market_feed.to_deals(items), market_feed.to_events(items)
     _cache.clear()
     existing = {d["id"]: d for d in await run_in_threadpool(deals)}
