@@ -1,18 +1,36 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, PageHeader, Pill, words } from "../../../components/app/ui";
 import { ResultFeedback } from "../../../components/app/ResultFeedback";
 import { ApiError } from "../../../lib/api";
-import { post, type ResearchResult } from "../../../lib/market";
+import { get, post, type Event as MarketEvent, type ResearchResult } from "../../../lib/market";
 
-const EXAMPLES = [
-  "What did the Federal Reserve decide about interest rates most recently?",
-  "Which major global fintech acquisitions were announced this year?",
-  "Which fintech companies in Nigeria raised money in the last 6 months, and from whom?",
-  "Compare Kenya's banking sector with South Africa's using recent evidence.",
+const FALLBACK_EXAMPLES = [
+  "What major market events have changed the outlook for investors this week?",
+  "Which global acquisitions or funding rounds were recently announced, and what is confirmed?",
+  "What recent regulatory or central-bank decisions could affect financial markets?",
+  "Which African private-market transactions were announced recently, and what evidence supports them?",
 ];
+
+function promptsFromEvents(events: MarketEvent[]): string[] {
+  const seen = new Set<string>();
+  return events
+    .filter((event) => event.headline?.trim())
+    .filter((event) => {
+      const key = event.headline.trim().toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 4)
+    .map((event) => {
+      const scope = [event.country, event.sector].filter(Boolean).join(" / ");
+      const context = scope ? ` (${scope})` : "";
+      return `What should an analyst know about this recent market event${context}: ${event.headline.trim()}? Separate confirmed facts, implications and unknowns.`;
+    });
+}
 
 /** Renders common Markdown inline formatting and links citations to the evidence list. */
 function AnswerText({ text }: { text: string }) {
@@ -143,6 +161,29 @@ export default function ResearchPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ResearchResult | null>(null);
+  const [marketExamples, setMarketExamples] = useState<string[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    const refreshMarketExamples = async () => {
+      try {
+        const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        const response = await get<{ events: MarketEvent[] }>("/api/events", { since, limit: 20 });
+        const suggestions = promptsFromEvents(response.events ?? []);
+        if (active) setMarketExamples(suggestions);
+      } catch {
+        if (active) setMarketExamples([]);
+      }
+    };
+    void refreshMarketExamples();
+    const dailyRefresh = window.setInterval(() => void refreshMarketExamples(), 24 * 60 * 60 * 1000);
+    return () => {
+      active = false;
+      window.clearInterval(dailyRefresh);
+    };
+  }, []);
+
+  const examples = marketExamples.length ? marketExamples : FALLBACK_EXAMPLES;
 
   async function ask(e?: FormEvent, q = question) {
     e?.preventDefault();
@@ -185,8 +226,12 @@ export default function ResearchPage() {
           <span className="text-[0.8125rem] text-[color:var(--dim)]">Counts toward the 1,000 free requests per visitor each day.</span>
         </div>
       </form>
-      <div className="mt-5 flex flex-wrap gap-2">
-        {EXAMPLES.map((q) => (
+      <div className="mt-5">
+        <p className="mb-2 text-[0.75rem] text-[color:var(--dim)]">
+          {marketExamples.length ? "Suggested questions from the latest recorded market events · refreshes daily" : "Suggested analyst questions"}
+        </p>
+        <div className="flex flex-wrap gap-2">
+        {examples.map((q) => (
           <button
             key={q}
             type="button"
@@ -200,6 +245,7 @@ export default function ResearchPage() {
             {q}
           </button>
         ))}
+        </div>
       </div>
       {error && <ErrorNote message={error} />}
 
@@ -211,11 +257,24 @@ export default function ResearchPage() {
             {v && <span>· {Math.round(v.grounded_share * 100)}% of factual sentences have a citation (not a claim-accuracy score)</span>}
             {v && v.invalid_citations_removed.length > 0 && <span>· {v.invalid_citations_removed.length} invalid citation(s) removed</span>}
           </div>
-          {v && (v.uncited_sentences.length > 0 || v.grounded_share < 1) && (
+          {v && (v.uncited_sentences.length > 0 || v.grounded_share < 1 || (v.weakly_supported_sentences?.length ?? 0) > 0) && (
             <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
-              <strong>Evidence review needed.</strong> Some factual statements do not have citations. Citation presence
-              alone is not proof of correctness; verify material claims against the linked source documents before relying on them.
+              <strong>Evidence review needed.</strong> Some factual statements are uncited or have low keyword overlap with their cited sources.
+              This is a triage warning, not a semantic accuracy score. Citation presence alone is not proof of correctness; verify material claims against the linked source documents.
             </div>
+          )}
+          {v?.weakly_supported_sentences && v.weakly_supported_sentences.length > 0 && (
+            <details className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">
+              <summary className="cursor-pointer">Claims whose citations may not support them ({v.weakly_supported_sentences.length})</summary>
+              <ul className="mt-2 list-disc space-y-2 pl-5">
+                {v.weakly_supported_sentences.map((item, index) => (
+                  <li key={`${item.sentence}-${index}`}>
+                    <p>{item.sentence}</p>
+                    <p className="text-[0.75rem] text-[color:var(--dim)]">Cited evidence: {item.cited_items.map((n) => `[${n}]`).join(", ")} · keyword overlap {Math.round(item.overlap * 100)}%</p>
+                  </li>
+                ))}
+              </ul>
+            </details>
           )}
           <FormattedAnswer text={result.answer} />
           <section className="mt-4 rounded-xl border hairline p-4" aria-label="Evidence coverage">
