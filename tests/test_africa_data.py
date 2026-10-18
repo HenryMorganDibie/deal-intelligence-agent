@@ -195,6 +195,25 @@ def test_non_deals_are_rejected(title):
     assert _deal(title) is None
 
 
+def test_undisclosed_minority_investment_is_not_rejected_as_generic_backing():
+    deal = dl.extract_deal(
+        "AfricInvest backs Spoon Consulting",
+        "AfricInvest Small Cap Fund has made a minority equity investment in "
+        "Spoon Consulting, a Mauritius-based AI-first consulting company.",
+        published="2026-09-03",
+        publisher="AVCA",
+        url="https://www.avca.africa/news-insights/member-news/?year=2026",
+    )
+
+    assert deal is not None
+    assert deal["deal_type"] == "equity_funding"
+    assert deal["target"] == "Spoon Consulting"
+    assert deal["buyer"] == "AfricInvest"
+    assert deal["country"] == "MU"
+    assert deal["announced"] == "2026-09-03"
+    assert deal["amount"] is None and deal["amount_usd"] is None
+
+
 def test_reports_of_one_transaction_merge():
     a = _deal("Standard Bank Group announces strategic investment in Nigeria's OPay", publisher="TechCabal", url="u1")
     b = _deal("Standard Bank buys $200M stake in Nigeria's OPay ahead of NYSE listing", publisher="Reuters", url="u2")
