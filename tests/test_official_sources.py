@@ -24,3 +24,44 @@ def test_country_audit_exposes_missing_official_source_coverage():
     assert audit["deal_records"] == 1
     assert audit["registered_country_hosts"] == 0
     assert audit["registry_status"] == "needs_host_review"
+
+
+
+def test_official_source_audit_matches_country_names_and_iso_codes(monkeypatch):
+    from src.engines import official_sources
+
+    monkeypatch.setattr(
+        official_sources,
+        "verify_url",
+        lambda url, country: {
+            "status": "official_host_match" if url and "official.example" in url else "unverified_host",
+            "host": "official.example" if url else None,
+            "matched_registry": "country" if url else None,
+        },
+    )
+    deals = [
+        {"id": "one", "country": "Nigeria", "url": "https://official.example/deal"},
+        {"id": "two", "countries": ["NG"], "url": "https://news.example/deal"},
+        {"id": "three", "country": "Kenya", "url": "https://official.example/other"},
+    ]
+    events = [
+        {"id": "event-one", "countries": ["Nigeria"], "url": "https://official.example/event"},
+        {"id": "event-two", "country": "NG"},
+    ]
+
+    result = official_sources.audit_country("NG", deals, events)
+
+    assert result["deal_records"] == 2
+    assert result["event_records"] == 2
+    assert result["deal_records_with_official_host"] == 1
+    assert result["event_records_with_official_host"] == 1
+    assert result["records_without_source_url"] == 1
+    assert result["unverified_or_invalid_source_urls"] == 1
+
+
+def test_official_registry_covers_all_supported_african_countries():
+    from src.engines import official_sources
+    from src.data.africa_countries import COUNTRIES
+
+    missing = sorted(country.iso2 for country in COUNTRIES if country.iso2 not in official_sources.OFFICIAL_HOSTS_BY_COUNTRY)
+    assert missing == []
