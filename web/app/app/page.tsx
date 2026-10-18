@@ -214,10 +214,10 @@ export default function Dashboard() {
           ) : (
             <ul>
               {rows.map((r) => (
-                <li key={r.id} className="border-b hairline">
+                <li key={r.id} className="flex items-center gap-2 border-b hairline">
                   <Link
                     href={`/app/briefs/${r.id}`}
-                    className="-mx-3 flex items-center gap-4 rounded-lg px-3 py-4 transition-colors hover:bg-white/[0.03]"
+                    className="flex min-w-0 flex-1 items-center gap-4 rounded-lg py-4 pl-1 pr-2 transition-colors hover:bg-white/[0.03]"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">
@@ -230,6 +230,24 @@ export default function Dashboard() {
                     </div>
                     {r.severity && <SeverityBadge severity={r.severity} />}
                   </Link>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${r.company} from your briefs`}
+                    title="Remove from your briefs"
+                    onClick={() => {
+                      const next = rows.filter((item) => item.id !== r.id);
+                      // Persist the removal and update the visible list immediately.
+                      try {
+                        window.localStorage.setItem("deal-intel:briefs", JSON.stringify(next));
+                      } catch {
+                        // Keep the UI responsive if browser storage is unavailable.
+                      }
+                      setRows(next);
+                    }}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[color:var(--dim)] transition-colors hover:bg-white/[0.06] hover:text-[color:var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--text)]"
+                  >
+                    <span aria-hidden="true" className="text-lg leading-none">×</span>
+                  </button>
                 </li>
               ))}
             </ul>
