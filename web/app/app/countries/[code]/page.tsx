@@ -13,7 +13,7 @@ type CountryResponse = {
   risk: CountryRisk;
   currency: CurrencyRisk;
   coverage: CoverageRow;
-  source_quality: { deal_records: number; event_records: number; source_links_checked: number; official_host_matched_links: number; deal_records_with_official_host: number; deal_records_without_official_host: number; missing_source_urls: number; unverified_or_invalid_source_urls: number; registered_country_hosts: number; registry_status: string; verification_scope: string };
+  source_quality: { deal_records: number; event_records: number; source_links_checked: number; official_host_matched_links: number; deal_records_with_official_host: number; deal_records_without_official_host: number; records_without_source_url: number; unverified_or_invalid_source_urls: number; event_records_with_official_host: number; event_records_without_official_host: number; registered_country_hosts: number; registry_status: string; verification_scope: string };
   deals: Deal[];
   deals_total: number;
   events: Event[];
@@ -230,7 +230,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Official host-matched links" value={d.source_quality.official_host_matched_links} note={`of ${d.source_quality.source_links_checked} source links checked`} />
           <Stat label="Deals with official-host evidence" value={d.source_quality.deal_records_with_official_host} note={`of ${d.source_quality.deal_records} recorded deals`} />
-          <Stat label="Missing source URLs" value={d.source_quality.missing_source_urls} note="Cannot be verified by hostname" />
+          <Stat label="Missing source URLs" value={d.source_quality.records_without_source_url} note="Deal/event records without a source URL" />
           <Stat label="Unverified or invalid URLs" value={d.source_quality.unverified_or_invalid_source_urls} note={`${d.source_quality.registered_country_hosts} country hosts registered`} />
         </div>
         <p className="mt-3 text-xs text-[color:var(--dim)]">Registry status: {d.source_quality.registry_status.replaceAll("_", " ")}. A host match verifies the publisher domain against the configured registry, not every claim on the page. Unmatched records remain unverified, not automatically false.</p>
