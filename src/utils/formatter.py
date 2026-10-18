@@ -413,5 +413,5 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
     ]
     if brief.processing_time_seconds:
         lines.append(f"*Processing time: {brief.processing_time_seconds:.1f}s*  ")
-    lines.append("*Output is AI-generated, unverified, not investment advice.*")
+    lines.append("*AI-generated analysis. Inspect linked source evidence and review any flagged attribution or low-confidence signals before acting. Not investment advice.*")
     return "\n".join(lines)
