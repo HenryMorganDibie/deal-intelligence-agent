@@ -92,6 +92,8 @@ export default function CountryPage({ params }: { params: { code: string } }) {
   const [marketTotals, setMarketTotals] = useState({ deals: 0, events: 0 });
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [riskHistory, setRiskHistory] = useState<{ year: number; score: number | null; tier: string | null; coverage: number; input_years: Record<string, number>; indicator_count: number }[]>([]);
+  const [marketHistory, setMarketHistory] = useState<{ year: number; deal_records: number; event_records: number; disclosed_deal_value_usd: number; deals_with_official_host: number; source_links_checked: number; official_host_matched_links: number; dated_records: number }[]>([]);
+  const [marketHistoryNote, setMarketHistoryNote] = useState<string>("");
   const [historyMeta, setHistoryMeta] = useState<{ source: string; source_url: string; retrieved: string | null; method: string; archived_snapshots: { snapshot_date: string; score: number | null; tier: string | null; data_as_of: string | null }[]; snapshot_note: string } | null>(null);
 
   useEffect(() => {
@@ -102,10 +104,12 @@ export default function CountryPage({ params }: { params: { code: string } }) {
 
   useEffect(() => {
     let cancelled = false;
-    get<{ rows: typeof riskHistory; source: string; source_url: string; retrieved: string | null; method: string; archived_snapshots: { snapshot_date: string; score: number | null; tier: string | null; data_as_of: string | null }[]; snapshot_note: string }>(`/api/countries/${encodeURIComponent(params.code)}/history`)
+    get<{ rows: typeof riskHistory; source: string; source_url: string; retrieved: string | null; method: string; archived_snapshots: { snapshot_date: string; score: number | null; tier: string | null; data_as_of: string | null }[]; snapshot_note: string; market_activity: typeof marketHistory; market_activity_note: string }>(`/api/countries/${encodeURIComponent(params.code)}/history`)
       .then((result) => {
         if (cancelled) return;
         setRiskHistory(result.rows);
+        setMarketHistory(result.market_activity ?? []);
+        setMarketHistoryNote(result.market_activity_note ?? "Activity counts reflect records currently held, not a complete census of transactions.");
         setHistoryMeta({ source: result.source, source_url: result.source_url, retrieved: result.retrieved, method: result.method, archived_snapshots: result.archived_snapshots, snapshot_note: result.snapshot_note });
       })
       .catch(() => { if (!cancelled) setHistoryMeta(null); });
@@ -373,6 +377,26 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           </div>
         </div>
       ) : <p className="mt-3 text-sm text-[color:var(--muted)]">Historical risk series is not available for this market yet.</p>}
+
+      <h2 className="eyebrow mt-12">Historical market activity</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
+        The timeline starts with the earliest dated deal or event record currently held for this country. It is not proof that earlier activity did not occur. Official-source counts mean URL hostnames matched the configured registry, not that every transaction claim has been independently confirmed.
+      </p>
+      {marketHistory.length > 0 ? (
+        <div className="panel mt-4 overflow-x-auto p-4 sm:p-5">
+          <Table head={["Year", "Deal records", "Corporate events", "Disclosed deal value", "Official-host deals", "Official links / checked"]} minWidth="54rem">
+            {marketHistory.map((point) => <tr key={point.year}>
+              <Td className="kbd">{point.year}</Td>
+              <Td className="kbd">{point.deal_records.toLocaleString()}</Td>
+              <Td className="kbd">{point.event_records.toLocaleString()}</Td>
+              <Td className="kbd">{point.disclosed_deal_value_usd ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0, notation: "compact" }).format(point.disclosed_deal_value_usd) : "Not disclosed"}</Td>
+              <Td className="kbd">{point.deals_with_official_host.toLocaleString()}</Td>
+              <Td className="kbd">{point.official_host_matched_links} / {point.source_links_checked}</Td>
+            </tr>)}
+          </Table>
+          <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]">{marketHistoryNote}</p>
+        </div>
+      ) : <p className="mt-3 text-sm text-[color:var(--muted)]">No dated deal/event records are currently available for a historical activity timeline.</p>}
 
       <h2 className="eyebrow mt-12">Country risk components</h2>
       <p className="mt-2 text-[0.8125rem] text-[color:var(--dim)]">{risk.method}</p>
