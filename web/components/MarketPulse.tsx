@@ -2,9 +2,64 @@ import { DEAL_TYPE, SIGNAL_TYPE, count, label, shortDate, usd, type Pulse } from
 import { ArrowRight, Container, Heading, Reveal, Section } from "./primitives";
 
 /** The current month of African deal flow and this week's corporate events, re-rendered from the live feed. */
-export function MarketPulse({ pulse }: { pulse: Pulse | null }) {
+export function MarketPulse({ pulse, compact = false }: { pulse: Pulse | null; compact?: boolean }) {
   if (!pulse || !pulse.deals.total) return null;
   const { deals, events } = pulse;
+  if (compact) {
+    const stats = [
+      { value: count(deals.total), label: "reported deals indexed" },
+      { value: count(deals.recent), label: `deals in the last ${deals.window_days} days` },
+      { value: String(deals.recent_countries), label: "countries with recent deal activity" },
+    ];
+    return (
+      <Section id="pulse" labelledBy="pulse-title" className="py-14 sm:py-16">
+        <Container>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="max-w-2xl">
+              <p className="eyebrow">Market pulse · Daily feed</p>
+              <h2 id="pulse-title" className="h2 mt-3">Recent deal activity, from reported records.</h2>
+              <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
+                Counts reflect records currently stored, not every transaction that occurred. The latest record is dated {shortDate(pulse.latest_record) || "not available"}.
+              </p>
+            </div>
+            <a href="/app/deals" className="btn btn-ghost">Browse all deals <ArrowRight /></a>
+          </div>
+          <dl className="mt-7 grid grid-cols-1 gap-px overflow-hidden rounded-[14px] border hairline bg-[color:var(--line)] sm:grid-cols-3">
+            {stats.map((s) => (
+              <div key={s.label} className="bg-[color:var(--bg)] p-5">
+                <dt className="sr-only">{s.label}</dt>
+                <dd>
+                  <span className="block font-display text-2xl font-semibold tracking-tight">{s.value}</span>
+                  <span className="mt-1 block text-[0.8125rem] leading-snug text-[color:var(--muted)]">{s.label}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <div className="panel mt-3 overflow-hidden">
+            <div className="flex items-center justify-between border-b hairline px-5 py-3">
+              <h3 className="h3">Latest reported deals</h3>
+              <a href="/app/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">Full feed <ArrowRight /></a>
+            </div>
+            <ul>
+              {deals.latest.slice(0, 4).map((d, i) => (
+                <li key={d.id} className={i ? "border-t hairline" : ""}>
+                  <a href={`/app/deals/${d.id}`} className="grid gap-2 px-5 py-4 transition-colors hover:bg-white/[0.02] sm:grid-cols-[1fr_auto] sm:items-center sm:gap-6">
+                    <div className="min-w-0">
+                      <p className="text-[0.9375rem] font-medium">{d.headline}</p>
+                      <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+                        {label(DEAL_TYPE, d.deal_type)}{d.country ? ` · ${d.country.name}` : ""}{d.publisher ? ` · ${d.publisher}` : ""}{d.announced ? ` · ${shortDate(d.announced)}` : ""}
+                      </p>
+                    </div>
+                    <span className="kbd text-[0.8125rem] text-verified">{usd(d.amount_usd)}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Container>
+      </Section>
+    );
+  }
   const types = Object.entries(deals.by_type);
   const maxType = Math.max(1, ...types.map(([, n]) => n));
   const stats = [
