@@ -682,7 +682,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     # For fund closes, recover the complete named fund rather than keeping only "Fund II".
     if target and re.fullmatch(r"(?i)(?:gh|q\d|1m|pe|vc|we|be|ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
         if deal_type == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
-            fund_name = re.search(r"(?i)([A-Z][A-Za-z0-9&.,'’ -]{1,90}\bfund\s+(?:II|III|IV|V|VI|VII|VIII|IX|X|\d+))", title)
+            fund_name = re.search(r"(?i)(^.{1,100}?\bfund\s+(?:II|III|IV|V|VI|VII|VIII|IX|X|\d+))", title)
             if fund_name:
                 target = _clean_name(fund_name.group(1))
             else:
