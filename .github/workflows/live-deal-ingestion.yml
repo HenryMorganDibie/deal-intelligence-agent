@@ -46,3 +46,15 @@ jobs:
             -H "Authorization: Bearer ${OIDC_TOKEN}" \
             -H "Accept: application/json" \
             "https://deal-intelligence-api.vercel.app/api/cron/ingest"
+
+      - name: Capture auditable country risk snapshots for all 54 markets
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            --max-time 120 \
+            --retry 2 --retry-delay 5 --retry-all-errors \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H "Accept: application/json" \
+            "https://deal-intelligence-api.vercel.app/api/cron/country-snapshot"
