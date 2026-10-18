@@ -312,8 +312,16 @@ def historical_scores(country: Country, snapshot: Optional[dict] = None, since: 
         for obs_year in years
     ]
     until = until or max(available_years, default=time.gmtime().tm_year)
+    # Use years in which this country has at least one source observation. Years with no
+    # observation are omitted rather than presented as measured annual changes.
+    country_observation_years = sorted({
+        int(obs_year)
+        for by_country in snap.get("series", {}).values()
+        for obs_year in (by_country.get(country.iso3) or {})
+        if since <= int(obs_year) <= until
+    })
     rows = []
-    for year in range(since, until + 1):
+    for year in country_observation_years:
         historical = {
             **{k: v for k, v in snap.items() if k not in ("series", "coverage")},
             "series": {
@@ -327,8 +335,11 @@ def historical_scores(country: Country, snapshot: Optional[dict] = None, since: 
         }
         result = assess(country, historical, fx=lambda _: None)
         indicators = result["indicators"]
+        # Suppress composites based on too few components; retain coverage for transparency.
+        enough_coverage = result["coverage"] >= 0.4
         rows.append({
-            "year": year, "score": result["score"], "tier": result["tier"],
+            "year": year, "score": result["score"] if enough_coverage else None,
+            "tier": result["tier"] if enough_coverage else None,
             "coverage": result["coverage"],
             "input_years": {key: value["year"] for key, value in indicators.items()},
             "indicator_count": len(indicators),
