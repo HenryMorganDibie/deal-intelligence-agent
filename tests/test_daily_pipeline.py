@@ -166,6 +166,41 @@ def test_financial_collection_prioritizes_african_tickers(tmp_path, monkeypatch)
     assert result["retry_after_days"] == 2
 
 
+def test_financial_collection_backfills_yahoo_source_and_flags_stale_period(tmp_path, monkeypatch):
+    universe_path = tmp_path / "universe.csv"
+    with universe_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["company", "ticker", "market"])
+        writer.writeheader()
+        writer.writerow({"company": "Amerigo", "ticker": "AMER.CA", "market": "africa"})
+
+    financial_path = tmp_path / "financials.jsonl"
+    financial_path.write_text(json.dumps({
+        "id": "old-amer-record",
+        "ticker": "AMER.CA",
+        "period": "2022-12-31",
+        "source": "Yahoo Finance",
+        "source_url": None,
+        "screening_flags": ["revenue_decline_25pct"],
+        "review_status": "needs_source_verification",
+        "review_note": "Revenue decline candidate.",
+        "reviewed_by": None,
+        "fields": {"revenue": 100, "profit_after_tax": -1},
+    }) + "\n", encoding="utf-8")
+
+    monkeypatch.setattr(pipeline, "UNIVERSE_DATA", universe_path)
+    monkeypatch.setattr(pipeline, "FINANCIAL_DATA", financial_path)
+    monkeypatch.setattr(pipeline, "FINANCIAL_ATTEMPTS", tmp_path / "attempts.jsonl")
+
+    pipeline._financial_collection()
+
+    [row] = pipeline._read_jsonl(financial_path)
+    assert row["market"] == "africa"
+    assert row["source_url"] == "https://finance.yahoo.com/quote/AMER.CA/financials/"
+    assert "stale_financial_period" in row["data_quality_flags"]
+    assert row["review_status"] == "needs_source_verification"
+    assert "over 24 months old" in row["review_note"]
+
+
 def test_balanced_review_sample_round_robins_african_countries():
     rows = [
         {"id": "gh1", "country_hint": "GH", "market": "africa", "rule_candidates": ["deal"]},
