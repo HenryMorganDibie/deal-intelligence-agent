@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Container } from "../../../../components/primitives";
 import { DealRows, ErrorNote, Loading, PageHeader, Pagination, Pill, Stat, Table, Td, num, words } from "../../../../components/app/ui";
 import { ResultFeedback } from "../../../../components/app/ResultFeedback";
@@ -87,12 +87,69 @@ export default function CountryPage({ params }: { params: { code: string } }) {
   const [dealLimit, setDealLimit] = useState(25);
   const [eventOffset, setEventOffset] = useState(0);
   const [eventLimit, setEventLimit] = useState(25);
+  const [marketDeals, setMarketDeals] = useState<Deal[]>([]);
+  const [marketTotals, setMarketTotals] = useState({ deals: 0, events: 0 });
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
 
   useEffect(() => {
     get<CountryResponse>(`/api/countries/${encodeURIComponent(params.code)}`)
       .then(setD)
       .catch((err) => setError(err instanceof ApiError ? err.message : "Could not load the country."));
   }, [params.code]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setAnalyticsLoading(true);
+    Promise.all([
+      get<{ deals: Deal[]; total_matching: number }>("/api/deals", { country: params.code.toUpperCase(), limit: 500, offset: 0 }),
+      get<{ events: Event[]; count: number }>("/api/events", { country: params.code.toUpperCase(), limit: 500, offset: 0 }),
+    ]).then(([dealResult, eventResult]) => {
+      if (cancelled) return;
+      setMarketDeals(dealResult.deals);
+      setMarketTotals({ deals: dealResult.total_matching, events: eventResult.count });
+    }).catch(() => {
+      // The country page remains usable if the optional aggregate requests fail.
+    }).finally(() => {
+      if (!cancelled) setAnalyticsLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [params.code]);
+
+  const sectorMix = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const deal of marketDeals) {
+      const label = deal.sector?.trim() || "Unclassified";
+      counts.set(label, (counts.get(label) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  }, [marketDeals]);
+
+  const dealTypeMix = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const deal of marketDeals) {
+      const label = deal.deal_type?.trim() || "Unclassified";
+      counts.set(label, (counts.get(label) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  }, [marketDeals]);
+
+  const monthlyDealFlow = useMemo(() => {
+    const now = new Date();
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (11 - i), 1));
+      return { key: date.toISOString().slice(0, 7), label: date.toLocaleDateString("en", { month: "short", timeZone: "UTC" }), count: 0 };
+    });
+    const byMonth = new Map(months.map((month) => [month.key, month]));
+    for (const deal of marketDeals) {
+      if (!deal.announced) continue;
+      const month = byMonth.get(deal.announced.slice(0, 7));
+      if (month) month.count += 1;
+    }
+    return months;
+  }, [marketDeals]);
+
+  const maxMonthlyDeals = Math.max(1, ...monthlyDealFlow.map((month) => month.count));
+  const maxSectorCount = Math.max(1, ...sectorMix.map(([, count]) => count));
 
   async function loadDeals(offset: number, limit: number) {
     setDealOffset(offset);
@@ -171,6 +228,84 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           <ResultFeedback resultType="country_report" resultId={report.result_id} />
         </>
       )}
+
+
+      <h2 className="eyebrow mt-12">Market activity overview</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
+        This view summarizes the country’s currently recorded deal and event dataset. Deal and event totals count available records, not every transaction or announcement in the real economy. The charts use up to 500 retrieved deal records; if more records exist, the distributions may not cover the full dataset. Coverage and disclosure vary by market.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <Stat label="Deals in dataset" value={analyticsLoading ? "Loading…" : marketTotals.deals.toLocaleString()} note="Matching records returned by the API" />
+        <Stat label="Corporate events" value={analyticsLoading ? "Loading…" : marketTotals.events.toLocaleString()} note="Matching event records" />
+        <Stat label="Deals with disclosed value" value={analyticsLoading ? "Loading…" : marketDeals.filter((deal) => deal.amount_usd != null && deal.amount_usd > 0).length.toLocaleString()} note="Among retrieved deal records, not all market transactions" />
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <section className="panel p-4 sm:p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="font-medium">Recorded deal flow</h3>
+            <span className="text-xs text-[color:var(--dim)]">Last 12 months by announcement date</span>
+          </div>
+          {analyticsLoading ? <Loading label="Loading deal activity…" /> : marketDeals.length === 0 ? (
+            <p className="mt-4 text-sm text-[color:var(--muted)]">No deal records were returned for this market. Check coverage before concluding that no deals occurred.</p>
+          ) : (
+            <div className="mt-4">
+              <div className="flex h-36 items-end gap-1.5 border-b hairline pb-1">
+                {monthlyDealFlow.map((month) => (
+                  <div key={month.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1" title={`${month.key}: ${month.count} recorded deals`}>
+                    <span className="text-[10px] text-[color:var(--dim)]">{month.count || ""}</span>
+                    <div className="w-full max-w-7 rounded-t bg-verified/80" style={{ height: `${Math.max(month.count ? 5 : 0, (month.count / maxMonthlyDeals) * 78)}px` }} />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 flex gap-1.5">
+                {monthlyDealFlow.map((month) => <span key={month.key} className="min-w-0 flex-1 truncate text-center text-[10px] text-[color:var(--dim)]">{month.label}</span>)}
+              </div>
+              <p className="mt-3 text-xs text-[color:var(--dim)]">Only records with an announcement date in this window are counted. Undated deals are not plotted.</p>
+            </div>
+          )}
+        </section>
+
+        <section className="panel p-4 sm:p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="font-medium">Sector distribution</h3>
+            <span className="text-xs text-[color:var(--dim)]">{marketDeals.length.toLocaleString()} records analyzed</span>
+          </div>
+          {analyticsLoading ? <Loading label="Loading sector mix…" /> : sectorMix.length === 0 ? (
+            <p className="mt-4 text-sm text-[color:var(--muted)]">Sector distribution is unavailable until deal records are returned.</p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {sectorMix.map(([sector, count]) => (
+                <div key={sector}>
+                  <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+                    <span>{words(sector)}</span>
+                    <span className="kbd text-[color:var(--muted)]">{count.toLocaleString()}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-[color:var(--line)]">
+                    <div className="h-full rounded-full bg-verified/80" style={{ width: `${(count / maxSectorCount) * 100}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="mt-3 text-xs text-[color:var(--dim)]">Distribution is based on classified retrieved deal records; unclassified records are shown separately when present.</p>
+        </section>
+      </div>
+
+      <section className="panel mt-4 p-4 sm:p-5">
+        <h3 className="font-medium">Deal-type mix</h3>
+        {analyticsLoading ? <Loading label="Loading deal types…" /> : dealTypeMix.length === 0 ? (
+          <p className="mt-3 text-sm text-[color:var(--muted)]">No deal-type breakdown is available yet.</p>
+        ) : (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {dealTypeMix.map(([type, count]) => (
+              <span key={type} className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1.5 text-xs">
+                {words(type)} <span className="kbd text-[color:var(--dim)]">{count.toLocaleString()}</span>
+              </span>
+            ))}
+          </div>
+        )}
+      </section>
 
       <h2 className="eyebrow mt-12">Country risk components</h2>
       <p className="mt-2 text-[0.8125rem] text-[color:var(--dim)]">{risk.method}</p>
