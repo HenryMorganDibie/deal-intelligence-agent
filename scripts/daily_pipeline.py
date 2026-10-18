@@ -213,8 +213,13 @@ def _prune_event_queue() -> int:
     relevant = [
         row for row in rows
         if row.get("label") is not None
-        or row.get("rule_candidates")
-        or _BUSINESS_CONTEXT.search(f"{row.get('title', '')} {row.get('snippet', '')}")
+        or (
+            not _is_obvious_non_market_story(row)
+            and (
+                row.get("rule_candidates")
+                or _BUSINESS_CONTEXT.search(f"{row.get('title', '')} {row.get('snippet', '')}")
+            )
+        )
     ]
     if len(relevant) != len(rows):
         EVENT_QUEUE.write_text(
