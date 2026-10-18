@@ -210,7 +210,7 @@ def _balanced_review_sample(rows: list[dict[str, Any]], limit: int) -> list[dict
 
 
 def _event_review_rows(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    from src.engines.market_feed import to_events
+    from src.engines.market_feed import to_events, PAN_AFRICAN_QUERIES
 
     eligible_items = [item for item in items if not _is_obvious_non_market_story(item)]
     event_by_title = {
@@ -234,7 +234,7 @@ def _event_review_rows(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "url": item.get("url", ""),
             "published": item.get("date"),
             "country_hint": item.get("country_hint"),
-            "market": "africa" if item.get("country_hint") or item.get("africa_source") else "unknown",
+            "market": "africa" if item.get("country_hint") or item.get("africa_source") or item.get("feed") in PAN_AFRICAN_QUERIES else "unknown",
             "source_feed": item.get("feed"),
             "rule_candidates": [event["signal_type"]] if event else [],
             "label": None,
