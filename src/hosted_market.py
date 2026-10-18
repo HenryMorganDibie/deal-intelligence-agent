@@ -79,7 +79,15 @@ def _authorized_cron(request: Request) -> bool:
         client = PyJWKClient("https://token.actions.githubusercontent.com/.well-known/jwks")
         key = client.get_signing_key_from_jwt(token).key
         claims = jwt.decode(token, key, algorithms=["RS256"], audience="deal-intelligence-api", issuer="https://token.actions.githubusercontent.com")
-        return claims.get("repository") == "HenryMorganDibie/deal-intelligence-agent" and claims.get("ref") == "refs/heads/main" and claims.get("workflow_ref") == "HenryMorganDibie/deal-intelligence-agent/.github/workflows/near-real-time-ingest.yml@refs/heads/main"
+        allowed_workflows = {
+            "HenryMorganDibie/deal-intelligence-agent/.github/workflows/live-deal-ingestion.yml@refs/heads/main",
+            "HenryMorganDibie/deal-intelligence-agent/.github/workflows/near-real-time-ingest.yml@refs/heads/main",
+        }
+        return (
+            claims.get("repository") == "HenryMorganDibie/deal-intelligence-agent"
+            and claims.get("ref") == "refs/heads/main"
+            and claims.get("workflow_ref") in allowed_workflows
+        )
     except Exception as exc:
         log.info("Cron OIDC token rejected: %s", type(exc).__name__)
         return False
