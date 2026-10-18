@@ -722,6 +722,18 @@ def _financial_collection() -> dict[str, Any]:
         if ticker and not row.get("market"):
             row["market"] = market_by_ticker.get(ticker, "unknown")
             financial_metadata_changed = True
+        if (
+            row.get("source_url")
+            and row.get("source") in ("NGX audited filing", "NSE Kenya audited filing")
+            and "statement_verified" not in row
+            and not row.get("reviewed_by")
+        ):
+            row["review_status"] = "needs_source_verification"
+            row["review_note"] = (
+                "Exchange statement was parsed before accounting-check metadata was retained. "
+                "Confirm the original PDF, fiscal period, and unit scale before relying on the figures."
+            )
+            financial_metadata_changed = True
     if financial_metadata_changed:
         _write_jsonl_by_key(FINANCIAL_DATA, existing, "id")
     collected = {row.get("ticker") for row in existing}
