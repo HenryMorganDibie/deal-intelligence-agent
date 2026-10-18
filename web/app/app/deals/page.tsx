@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { Container } from "../../../components/primitives";
-import { DealRows, ErrorNote, Field, Loading, PageHeader, Stat, usd, words } from "../../../components/app/ui";
+import { DealRows, ErrorNote, Field, Loading, PageHeader, Pagination, Stat, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { DEAL_TYPES, SECTORS, get, type Deal } from "../../../lib/market";
 
@@ -12,16 +12,22 @@ const EMPTY: Filters = { q: "", country: "", type: "", sector: "", investor: "",
 export default function DealsPage() {
   const [filters, setFilters] = useState<Filters>(EMPTY);
   const [rows, setRows] = useState<Deal[] | null>(null);
-  const [total, setTotal] = useState(0);
+  const [totalMatching, setTotalMatching] = useState(0);
+  const [totalInDatabase, setTotalInDatabase] = useState(0);
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(50);
   const [error, setError] = useState<string | null>(null);
 
-  async function load(f: Filters) {
+  async function load(f: Filters, nextOffset = 0, nextLimit = limit) {
+    setOffset(nextOffset);
+    setLimit(nextLimit);
     setRows(null);
     setError(null);
     try {
-      const r = await get<{ total_in_database: number; deals: Deal[] }>("/api/deals", { ...f, limit: 200 });
+      const r = await get<{ total_in_database: number; total_matching: number; deals: Deal[] }>("/api/deals", { ...f, limit: nextLimit, offset: nextOffset });
       setRows(r.deals);
-      setTotal(r.total_in_database);
+      setTotalMatching(r.total_matching);
+      setTotalInDatabase(r.total_in_database);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not load deals.");
       setRows([]);
@@ -37,7 +43,7 @@ export default function DealsPage() {
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    load(filters);
+    load(filters, 0, limit);
   }
 
   const set = (k: keyof Filters) => (e: { target: { value: string } }) => setFilters({ ...filters, [k]: e.target.value });
@@ -95,7 +101,7 @@ export default function DealsPage() {
             className="btn btn-ghost"
             onClick={() => {
               setFilters(EMPTY);
-              load(EMPTY);
+              load(EMPTY, 0, limit);
             }}
           >
             Reset
@@ -109,15 +115,15 @@ export default function DealsPage() {
       ) : (
         <>
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <Stat label="Matching deals" value={rows.length} note={`${total} in the database`} />
-            <Stat label="Disclosed value" value={usd(disclosed.reduce((a, d) => a + (d.amount_usd ?? 0), 0))} note={`${disclosed.length} with amounts`} />
+            <Stat label="Matching deals" value={totalMatching.toLocaleString()} note={`${totalInDatabase.toLocaleString()} total in database`} />
+            <Stat label="Disclosed value on this page" value={usd(disclosed.reduce((a, d) => a + (d.amount_usd ?? 0), 0))} note={`${disclosed.length} with amounts`} />
             <Stat
-              label="Median disclosed size"
+              label="Median size on this page"
               value={usd(medianSize)}
             />
           </div>
           <div className="mt-6">
-            {rows.length ? <DealRows deals={rows} /> : <p className="py-6 text-sm text-[color:var(--muted)]">No deals match these filters.</p>}
+            {rows.length ? <><DealRows deals={rows} /><Pagination total={totalMatching} offset={offset} limit={limit} onPageChange={(next) => load(filters, next, limit)} onPageSizeChange={(next) => load(filters, 0, next)} /></> : <p className="py-6 text-sm text-[color:var(--muted)]">No deals match these filters.</p>}
           </div>
         </>
       )}
