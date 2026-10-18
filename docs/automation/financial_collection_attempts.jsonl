@@ -104,15 +104,27 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AMIA.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "AMOC.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AMPI.CA"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AMS.JO"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ANA.JO"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AND.JO"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ANFI.CA"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ANG.JO"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ANH.JO"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ANINO.LG"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "AOO.JO"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AOTM.CA"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "APF.JO"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "APH.JO"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "APK.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AMS.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ANA.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AND.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ANFI.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ANG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ANH.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ANINO.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "AOO.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AOTM.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "APF.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "APH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "APK.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "APN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "APO.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "APPC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "APSW.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ARA.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ARAB.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47218_ARADEL_HOLDINGS_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_JUNE_2026.pdf", "status": "collected", "ticker": "ARADEL.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ARBICO.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ARCC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ARD.CS"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ARDOVA.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AREH.CA"}

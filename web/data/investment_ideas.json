@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-18T04:06:53.772385+00:00",
+  "updated_at": "2026-10-18T04:09:14.411747+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -48,9 +48,9 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 39,
+      "observations_collected": 44,
       "new_observations_today": 5,
-      "unreviewed_flagged_observations": 3,
+      "unreviewed_flagged_observations": 4,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
@@ -177,16 +177,16 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 39,
+    "collected_tickers": 44,
     "new_rows": 5,
     "failures": [
-      "AMS.JO",
-      "ANA.JO",
-      "AND.JO",
-      "ANFI.CA",
-      "ANINO.LG",
-      "AOTM.CA",
-      "APK.JO"
+      "APPC.CA",
+      "APSW.CA",
+      "ARA.JO",
+      "ARBICO.LG",
+      "ARD.CS",
+      "ARDOVA.LG",
+      "AREH.CA"
     ],
     "retry_after_days": 2
   },
