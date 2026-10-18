@@ -645,6 +645,12 @@ def _financial_collection() -> dict[str, Any]:
             "profit_yoy_change": income_change,
             "screening_flags": flags,
             "anomaly_label": None,
+            "review_status": "needs_source_verification" if flags else "not_flagged",
+            "review_note": (
+                "Screening flags are candidates only; verify ticker identity, fiscal period, reporting scale, "
+                "and source statements before treating them as financial anomalies."
+                if flags else None
+            ),
             "reviewed_by": None,
             "retrieved_at": datetime.now(timezone.utc).isoformat(),
         })
