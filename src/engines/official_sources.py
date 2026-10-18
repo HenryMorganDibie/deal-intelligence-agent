@@ -110,7 +110,7 @@ def verify_url(url: str | None, country_iso2: str | None = None) -> dict:
 
 def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> dict:
     """Count official-host evidence and explicit source gaps across deal/event records."""
-    code = country_iso2.upper()
+    code = _iso2(country_iso2)
     country_deals = [
         d for d in deals
         if code in (([d.get("country")] if d.get("country") else []) + (d.get("countries") or []))
