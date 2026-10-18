@@ -92,7 +92,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
   const [marketTotals, setMarketTotals] = useState({ deals: 0, events: 0 });
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [riskHistory, setRiskHistory] = useState<{ year: number; score: number | null; tier: string | null; coverage: number; input_years: Record<string, number>; indicator_count: number }[]>([]);
-  const [marketHistory, setMarketHistory] = useState<{ year: number; deal_records: number; event_records: number; disclosed_deal_value_usd: number; deals_with_official_host: number; source_links_checked: number; official_host_matched_links: number; dated_records: number }[]>([]);
+  const [marketHistory, setMarketHistory] = useState<{ year: number; deal_records: number; event_records: number; disclosed_deal_value_usd: number; deals_with_official_host: number; events_with_official_host: number; source_links_checked: number; official_host_matched_links: number; dated_records: number }[]>([]);
   const [marketHistoryNote, setMarketHistoryNote] = useState<string>("");
   const [historyMeta, setHistoryMeta] = useState<{ source: string; source_url: string; retrieved: string | null; method: string; archived_snapshots: { snapshot_date: string; score: number | null; tier: string | null; data_as_of: string | null }[]; snapshot_note: string } | null>(null);
 
@@ -367,7 +367,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
             <p className="text-sm font-medium">Archived daily snapshots</p>
             {historyMeta?.archived_snapshots.length ? (
               <div className="mt-2 overflow-x-auto">
-                <Table head={["Capture date", "Risk score", "Tier", "Indicator dataset date"]}>
+                <Table head={["Capture date", "Risk score", "Tier", "Source snapshot retrieved"]}>
                   {historyMeta.archived_snapshots.map((point) => <tr key={point.snapshot_date}>
                     <Td>{point.snapshot_date}</Td><Td className="kbd">{point.score ?? "n/a"}</Td><Td>{point.tier ?? "n/a"}</Td><Td>{point.data_as_of ?? "n/a"}</Td>
                   </tr>)}
@@ -384,13 +384,14 @@ export default function CountryPage({ params }: { params: { code: string } }) {
       </p>
       {marketHistory.length > 0 ? (
         <div className="panel mt-4 overflow-x-auto p-4 sm:p-5">
-          <Table head={["Year", "Deal records", "Corporate events", "Disclosed deal value", "Official-host deals", "Official links / checked"]} minWidth="54rem">
+          <Table head={["Year", "Deal records", "Corporate events", "Disclosed deal value", "Official-host deals", "Official-host events", "Official links / checked"]} minWidth="60rem">
             {marketHistory.map((point) => <tr key={point.year}>
               <Td className="kbd">{point.year}</Td>
               <Td className="kbd">{point.deal_records.toLocaleString()}</Td>
               <Td className="kbd">{point.event_records.toLocaleString()}</Td>
               <Td className="kbd">{point.disclosed_deal_value_usd ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0, notation: "compact" }).format(point.disclosed_deal_value_usd) : "Not disclosed"}</Td>
               <Td className="kbd">{point.deals_with_official_host.toLocaleString()}</Td>
+              <Td className="kbd">{point.events_with_official_host.toLocaleString()}</Td>
               <Td className="kbd">{point.official_host_matched_links} / {point.source_links_checked}</Td>
             </tr>)}
           </Table>
