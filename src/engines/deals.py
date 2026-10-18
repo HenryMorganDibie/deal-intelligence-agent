@@ -510,7 +510,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     # "X backs Y" is an endorsement unless money is attached ("backs Y with $5m").
     if deal_type == "equity_funding" and re.search(r"(?i)(?<!-)\b(backs|backed)\b", m.group(0)) \
             and not re.search(r"(?i)\bwith\s+(?:a\s+)?(?:US\$|\$|€|£|₦|N\d|R\d|KSh|USD|EUR)", text) \
-            and not re.search(r"(?i)\b(?:minority|majority|equity|strategic)?\s*investment\b|\b(?:equity\s+)?stake\b|\bshareholding\b", text):
+            and not re.search(r"(?i)\b(?:(?:minority|majority|equity|strategic)\s+){0,2}investment\b|\b(?:equity\s+)?stake\b|\bshareholding\b", text):
         return None
     # Capital spending on a plant or project is not a transaction.
     if deal_type == "equity_funding" and m.groupdict().get("obj") and _CAPEX_AFTER.match(norm[m.end():]):
