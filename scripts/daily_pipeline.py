@@ -155,7 +155,7 @@ def _collect_headlines() -> list[dict[str, Any]]:
     return asyncio.run(collect(
         window="when:1d",
         include_feeds=True,
-        include_countries=False,
+        include_countries=True,
         concurrency=8,
         timeout=20,
     ))
@@ -198,6 +198,8 @@ def _event_review_rows(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "url": item.get("url", ""),
             "published": item.get("date"),
             "country_hint": item.get("country_hint"),
+            "market": "africa" if item.get("country_hint") or item.get("africa_source") else "unknown",
+            "source_feed": item.get("feed"),
             "rule_candidates": [event["signal_type"]] if event else [],
             "label": None,
             "review_split": "holdout" if int(story_id[:4], 16) % 5 == 0 else "train",
