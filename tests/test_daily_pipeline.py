@@ -356,7 +356,7 @@ def test_prune_event_queue_removes_unreviewed_non_market_false_positives(tmp_pat
         "label": None,
         "rule_candidates": ["regulatory_action"],
     }]
-    path.write_text("".join(json.dumps(row) + "\\n" for row in rows), encoding="utf-8")
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
 
     removed = pipeline._prune_event_queue()
 
