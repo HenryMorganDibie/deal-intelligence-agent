@@ -111,14 +111,16 @@ def verify_url(url: str | None, country_iso2: str | None = None) -> dict:
 def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> dict:
     """Count official-host evidence and explicit source gaps across deal/event records."""
     code = _iso2(country_iso2)
-    country_deals = [
-        d for d in deals
-        if code in (([d.get("country")] if d.get("country") else []) + (d.get("countries") or []))
-    ]
-    country_events = [
-        e for e in events
-        if code in (([e.get("country")] if e.get("country") else []) + (e.get("countries") or []))
-    ]
+    def record_country_codes(record: dict) -> set[str]:
+        raw = ([record.get("country")] if record.get("country") else []) + (record.get("countries") or [])
+        codes: set[str] = set()
+        for value in raw:
+            resolved = resolve_country(country=value)
+            if resolved:
+                codes.add(resolved.iso2)
+        return codes
+    country_deals = [d for d in deals if code in record_country_codes(d)]
+    country_events = [e for e in events if code in record_country_codes(e)]
     source_checks: list[dict] = []
     official_deal_ids: set[str] = set()
     official_event_ids: set[str] = set()
