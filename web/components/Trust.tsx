@@ -8,7 +8,7 @@ const ITEMS = [
   },
   {
     title: "Compliance mode",
-    body: "Suppresses low-confidence signals before the LLM sees them, counts what was suppressed, and stamps the brief as AI-generated and unverified.",
+    body: "Suppresses low-confidence signals before the LLM sees them and records what was suppressed. Evidence remains linked to its source; attribution doubts and signals requiring further review are explicitly flagged.",
     code: "analyse --compliance",
   },
   {
