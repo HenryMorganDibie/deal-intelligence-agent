@@ -283,3 +283,44 @@ def ranking(snapshot: Optional[dict] = None) -> list[dict]:
     """All 54 countries, riskiest first (spot FX omitted to keep it one request-free pass)."""
     rows = [assess(c, snapshot, fx=lambda _: None) for c in COUNTRIES]
     return sorted(rows, key=lambda r: (r["score"] is None, -(r["score"] or 0)))
+
+
+def historical_scores(country: Country, snapshot: Optional[dict] = None, since: int = 2018,
+                     until: Optional[int] = None) -> dict:
+    """Annual risk history reconstructed from current historical source series.
+
+    These are not archived vintage scores: publishers may revise historical observations.
+    Each year uses only observations dated in that year or earlier, and exposes the latest
+    input year per indicator so stale/missing inputs remain visible.
+    """
+    snap = snapshot if snapshot is not None else load_snapshot()
+    until = until or time.gmtime().tm_year
+    rows = []
+    for year in range(since, until + 1):
+        historical = {
+            **{k: v for k, v in snap.items() if k not in ("series", "coverage")},
+            "series": {
+                indicator: {
+                    country_code: {obs_year: value for obs_year, value in years.items() if int(obs_year) <= year}
+                    for country_code, years in by_country.items()
+                    if any(int(obs_year) <= year for obs_year in years)
+                }
+                for indicator, by_country in snap.get("series", {}).items()
+            },
+        }
+        result = assess(country, historical, fx=lambda _: None)
+        indicators = result["indicators"]
+        rows.append({
+            "year": year, "score": result["score"], "tier": result["tier"],
+            "coverage": result["coverage"],
+            "input_years": {key: value["year"] for key, value in indicators.items()},
+            "indicator_count": len(indicators),
+        })
+    return {
+        "country": country.name, "iso2": country.iso2, "iso3": country.iso3,
+        "source": "World Bank World Development Indicators and Worldwide Governance Indicators",
+        "source_url": f"https://api.worldbank.org/v2/country/{country.iso2.lower()}/indicator/FP.CPI.TOTL.ZG?format=json",
+        "retrieved": snap.get("retrieved"),
+        "method": "Historical reconstruction from currently available annual source observations; not a point-in-time archived vintage. Historical source revisions may change prior scores. Each year uses only observations dated in or before that year.",
+        "rows": rows, "available_years": sum(1 for row in rows if row["score"] is not None),
+    }
