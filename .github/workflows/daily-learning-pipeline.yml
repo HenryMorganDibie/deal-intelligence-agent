@@ -37,7 +37,7 @@ jobs:
         run: pip install -r requirements-backtest.txt
 
       - name: Refresh World Bank country indicators monthly
-        if: ${{ github.event_name == 'schedule' && fromJSON(format('{{0}}', 1)) == 1 }}
+        if: github.event_name == 'schedule'
         run: |
           set -euo pipefail
           day="$(date -u +%d)"
