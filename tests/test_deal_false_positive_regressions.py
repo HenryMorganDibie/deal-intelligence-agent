@@ -35,3 +35,20 @@ def test_real_company_acquisition_still_extracts():
     assert deal["deal_type"] == "acquisition"
     assert deal["buyer"] == "CreditChek"
     assert deal["target"] == "Algosys"
+
+
+def test_weekly_funding_roundup_is_not_a_single_deal():
+    assert extract_deal(
+        "Africa & Middle East Startups Raise $532M in Week 36",
+        published="2026-09-04",
+        africa_source=True,
+    ) is None
+
+
+def test_public_skills_program_is_not_private_market_funding():
+    assert extract_deal(
+        "South Korea backs Tanzania’s AI skills push with $170 million",
+        published="2026-08-26",
+        africa_source=True,
+    ) is None
+
