@@ -478,25 +478,34 @@ def train_event_classifier() -> dict[str, Any]:
         and isinstance(row["label"].get("about_target"), bool)
     ]
     heldout = _load_event_test_set()
+    heldout_by_market = {
+        market: sum(1 for _, _, _, item_market in heldout if item_market == market)
+        for market in sorted({item_market for _, _, _, item_market in heldout})
+    }
     if len(reviewed) < 1000 or len(heldout) < 600:
         return {
             "status": "collecting_labels",
             "training_labels": len(reviewed),
+            "training_labels_by_market": {
+                market: sum(1 for row in reviewed if row.get("market") == market)
+                for market in ("africa", "us")
+            },
             "heldout_items": len(heldout),
+            "heldout_items_by_market": heldout_by_market,
             "reason": "Requires at least 1,000 reviewed training headlines and the locked 680-item attribution evaluation set.",
         }
     model = _event_nb_model(reviewed)
     if model["training_docs"] < 1000:
         return {"status": "collecting_labels", "training_labels": model["training_docs"]}
-    labels = [expected for _, expected, _ in heldout]
-    predictions = [_predict_event_nb(model, text) for text, _, _ in heldout]
-    categories = {category for _, expected, _ in heldout for category in expected}
+    labels = [expected for _, expected, _, _ in heldout]
+    predictions = [_predict_event_nb(model, text) for text, _, _, _ in heldout]
+    categories = {category for _, expected, _, _ in heldout for category in expected}
     learned_metrics = _multilabel_metrics(labels, predictions, categories)
 
     from src.engines.deterministic_engine import _match_rules
 
     rule_predictions = []
-    for text, _, _ in heldout:
+    for text, _, _, _ in heldout:
         rule_predictions.append({signal_type.value for signal_type, _, _ in _match_rules(text)})
     rule_metrics = _multilabel_metrics(labels, rule_predictions, categories)
     promoted = learned_metrics["macro_f1"] >= rule_metrics["macro_f1"] + 0.02
