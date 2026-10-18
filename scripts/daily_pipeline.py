@@ -722,6 +722,9 @@ def _financial_collection() -> dict[str, Any]:
         if ticker and not row.get("market"):
             row["market"] = market_by_ticker.get(ticker, "unknown")
             financial_metadata_changed = True
+        if row.get("source") == "Yahoo Finance" and ticker and not row.get("source_url"):
+            row["source_url"] = f"https://finance.yahoo.com/quote/{ticker}/financials/"
+            financial_metadata_changed = True
         if (
             row.get("source_url")
             and row.get("source") in ("NGX audited filing", "NSE Kenya audited filing")
@@ -734,6 +737,25 @@ def _financial_collection() -> dict[str, Any]:
                 "Confirm the original PDF, fiscal period, and unit scale before relying on the figures."
             )
             financial_metadata_changed = True
+        if row.get("period"):
+            try:
+                stale_period = (date.today() - date.fromisoformat(str(row["period"])[:10])).days > 730
+            except ValueError:
+                stale_period = True
+            if stale_period:
+                quality_flags = list(row.get("data_quality_flags") or [])
+                if "stale_financial_period" not in quality_flags:
+                    quality_flags.append("stale_financial_period")
+                    row["data_quality_flags"] = quality_flags
+                    financial_metadata_changed = True
+                if not row.get("reviewed_by"):
+                    note = (
+                        "Financial period is over 24 months old; do not treat its screening flags as a current-period "
+                        "signal without a newer filing."
+                    )
+                    if note not in (row.get("review_note") or ""):
+                        row["review_note"] = f"{row.get('review_note') or ''} {note}".strip()
+                        financial_metadata_changed = True
     if financial_metadata_changed:
         _write_jsonl_by_key(FINANCIAL_DATA, existing, "id")
     collected = {row.get("ticker") for row in existing}
@@ -815,6 +837,11 @@ def _financial_collection() -> dict[str, Any]:
         if latest.get("total_debt") and latest.get("total_equity") and latest["total_equity"] > 0 \
                 and latest["total_debt"] / latest["total_equity"] >= 2:
             flags.append("debt_to_equity_at_least_2")
+        try:
+            stale_period = (today - date.fromisoformat(str(latest_period)[:10])).days > 730
+        except ValueError:
+            stale_period = True
+        data_quality_flags = ["stale_financial_period"] if stale_period else []
         new_rows.append({
             "id": _stable_id(ticker, latest_period),
             "ticker": ticker,
@@ -822,7 +849,7 @@ def _financial_collection() -> dict[str, Any]:
             "period": latest_period,
             "currency": result.get("unit"),
             "source": result.get("source"),
-            "source_url": result.get("source_url"),
+            "source_url": result.get("source_url") or (f"https://finance.yahoo.com/quote/{ticker}/financials/" if result.get("source") == "Yahoo Finance" else None),
             "source_document": result.get("source_document"),
             "statement_checks": result.get("statement_checks"),
             "statement_verified": result.get("statement_verified"),
@@ -841,15 +868,18 @@ def _financial_collection() -> dict[str, Any]:
             "profit_yoy_change": income_change,
             "screening_flags": flags,
             "anomaly_label": None,
+            "data_quality_flags": data_quality_flags,
             "review_status": (
                 "needs_source_verification"
-                if flags or (result.get("source_url") and result.get("statement_verified") is not True)
+                if flags or stale_period or (result.get("source_url") and result.get("statement_verified") is not True)
                 else "not_flagged"
             ),
             "review_note": (
                 "Screening flags are candidates only; verify ticker identity, fiscal period, reporting scale, "
                 "and source statements before treating them as financial anomalies."
                 if flags else
+                "Financial period is over 24 months old; do not treat its screening flags as a current-period signal without a newer filing."
+                if stale_period else
                 "Exchange statement was parsed but its accounting checks did not establish full verification; "
                 "confirm the original PDF, fiscal period, and unit scale before relying on the figures."
                 if result.get("source_url") and result.get("statement_verified") is not True else None
