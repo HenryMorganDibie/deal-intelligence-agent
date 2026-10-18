@@ -478,6 +478,32 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None
     text = f"{title}. {snippet or ''}"
 
+    # A headline may say only that an investor "backs" a company while the source
+    # description confirms a completed minority/majority equity investment. In
+    # that case, normalize the wording for extraction but preserve the real title
+    # and URL in the returned evidence. Do not promote generic endorsements.
+    backing = re.match(r"(?is)^(?P<buyer>.+?)\\s+backs\\s+(?P<target>.+?)\\s*$", title)
+    explicit_equity_evidence = re.search(
+        r"(?i)\\b(?:(?:minority|majority|strategic)\\s+)?(?:equity\\s+)?investment\\b|"
+        r"\\b(?:equity\\s+)?stake\\b|\\bshareholding\\b",
+        snippet or "",
+    )
+    if backing and explicit_equity_evidence:
+        normalized_title = (
+            f"{backing.group('buyer').strip()} makes an equity investment in "
+            f"{backing.group('target').strip()}"
+        )
+        extracted = extract_deal(
+            normalized_title, snippet, published=published, publisher=publisher, url=url,
+            country_hint=country_hint, africa_source=africa_source, rates=rates,
+        )
+        if extracted:
+            extracted["headline"] = title
+            for source in extracted.get("sources", []):
+                source["title"] = title
+            extracted["id"] = deal_id(extracted)
+            return extracted
+
     if sum(ch.isupper() for ch in title) > 0.6 * sum(ch.isalpha() for ch in title):
         return None                               # ALL-CAPS headlines carry no name boundaries
     if _NOT_A_DEAL.search(title):
