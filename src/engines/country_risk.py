@@ -123,26 +123,37 @@ def tier(score: float) -> str:
 # ── Data ──────────────────────────────────────────────────────────────────────
 
 def _fetch_indicator(client: httpx.Client, indicator: str, source: Optional[int], since: int, until: int) -> dict:
-    """{iso3: {year: value}} for all 54 countries, one request (retried: the API is slow)."""
+    """Fetch every World Bank API page into {iso3: {year: value}} for all 54 countries."""
     codes = ";".join(c.iso3 for c in COUNTRIES)
-    params = {"format": "json", "date": f"{since}:{until}", "per_page": 2000}
+    params = {"format": "json", "date": f"{since}:{until}", "per_page": 2000, "page": 1}
     if source:
         params["source"] = source
-    for attempt in range(3):
-        try:
-            data = client.get(WB_API.format(codes=codes, indicator=indicator), params=params).json()
-            break
-        except Exception as e:
-            log.warning("World Bank %s attempt %d failed: %s", indicator, attempt + 1, e)
-            time.sleep(2 ** attempt)
-    else:
-        return {}
     out: dict[str, dict[str, float]] = {}
-    for row in data[1] if isinstance(data, list) and len(data) > 1 and data[1] else []:
-        if row.get("value") is not None:
-            out.setdefault(row["countryiso3code"], {})[row["date"]] = float(row["value"])
+    page = 1
+    page_count = 1
+    while page <= page_count:
+        request_params = {**params, "page": page}
+        for attempt in range(3):
+            try:
+                response = client.get(WB_API.format(codes=codes, indicator=indicator), params=request_params)
+                response.raise_for_status()
+                data = response.json()
+                if not (isinstance(data, list) and len(data) > 1 and isinstance(data[0], dict)):
+                    raise ValueError("Unexpected World Bank API response shape")
+                metadata = data[0]
+                page_count = max(1, int(metadata.get("pages") or 1))
+                rows = data[1] or []
+                for row in rows:
+                    if row.get("value") is not None:
+                        out.setdefault(row["countryiso3code"], {})[row["date"]] = float(row["value"])
+                break
+            except Exception as e:
+                log.warning("World Bank %s page %d attempt %d failed: %s", indicator, page, attempt + 1, e)
+                if attempt == 2:
+                    return {}
+                time.sleep(2 ** attempt)
+        page += 1
     return out
-
 
 def refresh(since: int = 1960, until: Optional[int] = None, path: Path = INDICATORS_PATH) -> dict:
     """Download every indicator for every country and write the committed snapshot."""
