@@ -160,6 +160,9 @@ def test_financial_collection_prioritizes_african_tickers(tmp_path, monkeypatch)
 
     assert called[:3] == ["AAA.JO", "BBB.LG", "CCC.NR"]
     assert len(called) == 12
+    attempts = {row["ticker"]: row for row in pipeline._read_jsonl(tmp_path / "attempts.jsonl")}
+    assert attempts["AAA.JO"]["market"] == "africa"
+    assert attempts["US0"]["market"] == "us"
     assert result["retry_after_days"] == 2
 
 
