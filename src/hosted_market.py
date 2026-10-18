@@ -181,6 +181,27 @@ async def countries() -> dict:
     return {"countries": rows, "data_as_of": country_risk.load_snapshot().get("retrieved")}
 
 
+@router.get("/api/countries/{code}/history")
+async def country_history(code: str, since: int = Query(2018, ge=2000, le=2100),
+                          until: Optional[int] = Query(None, ge=2000, le=2100),
+                          snapshots: int = Query(30, ge=1, le=365)) -> dict:
+    """Annual reconstructed history plus archived daily snapshots where configured."""
+    c = _country_or_404(code)
+    history = country_risk.historical_scores(c, since=since, until=until)
+    archived = []
+    if _configured():
+        try:
+            r = _rpc_sync("list_country_risk_snapshots", {"p_iso2": c.iso2, "p_limit": snapshots})
+            if r.status_code == 200:
+                archived = r.json() or []
+            else:
+                log.warning("country snapshot history unavailable: %s %s", r.status_code, r.text[:200])
+        except (httpx.HTTPError, ValueError) as exc:
+            log.warning("country snapshot history unavailable: %s", type(exc).__name__)
+    return {**history, "archived_snapshots": archived,
+            "snapshot_note": "Archived snapshots begin only after the scheduled capture is deployed and successfully runs; annual rows are reconstructed from current historical data."}
+
+
 @router.get("/api/countries/{code}")
 async def country(code: str) -> dict:
     c = _country_or_404(code)
@@ -818,6 +839,38 @@ async def evaluation() -> dict:
 
 
 # ── Scheduled rolling ingestion ──────────────────────────────────────────────
+
+@router.get("/api/cron/country-snapshot")
+async def cron_country_snapshot(request: Request) -> dict:
+    """Capture an auditable risk-score snapshot for each of the 54 countries."""
+    if not _authorized_cron(request):
+        raise HTTPException(status_code=401, detail="Scheduled workflow authorization required.")
+    captured_at = datetime.now(timezone.utc)
+    data_as_of = country_risk.load_snapshot().get("retrieved")
+    rows = []
+    for c in ac.COUNTRIES:
+        risk = country_risk.assess(c, fx=lambda _: None)
+        history = country_risk.historical_scores(c)
+        rows.append({
+            "iso2": c.iso2, "iso3": c.iso3, "country_name": c.name,
+            "snapshot_date": captured_at.date().isoformat(), "score": risk["score"],
+            "tier": risk["tier"], "coverage": risk["coverage"], "data_as_of": data_as_of,
+            "captured_at": captured_at.isoformat(),
+            "source": "World Bank WDI/WGI; source dataset date recorded separately",
+            "source_url": history["source_url"], "method": risk["method"],
+            "components": risk["components"], "indicators": risk["indicators"],
+            "snapshot_kind": "observed_at_capture",
+        })
+    if not _configured():
+        raise HTTPException(status_code=503, detail="Country snapshot storage is not configured.")
+    r = _rpc_sync("upsert_country_risk_snapshots", {"p_rows": rows}, timeout=45)
+    if not r.is_success:
+        log.error("country risk snapshot write failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(status_code=502, detail="Could not persist country risk snapshots.")
+    return {"status": "ok", "captured_at": captured_at.isoformat(), "countries_submitted": len(rows),
+            "rows_written": r.json(), "data_as_of": data_as_of,
+            "note": "This captures the current score and inputs; it does not imply the underlying annual indicators were published on the capture date."}
+
 
 @router.get("/api/cron/ingest")
 async def cron_ingest(request: Request) -> dict:
