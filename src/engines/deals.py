@@ -299,6 +299,11 @@ def _clean_name(name: Optional[str]) -> Optional[str]:
     while run < len(words) - 1 and (_is_descriptor(words[run]) or _is_place(words[run])
                                     or words[run].lower() in _FOREIGN_DEMONYMS):
         run += 1
+    # A demonym can be incorrectly attached to a short company ticker/name
+    # when the headline says e.g. "Australian gold miner TCMG".
+    if run and words[0].lower() in _FOREIGN_DEMONYMS and words[-1].isupper() and len(words[-1]) >= 2:
+        words = words[run:]
+        run = 0
     if run and any(_is_descriptor(w) for w in words[:run]) and words[run].lower() not in _CORPORATE_WORDS \
             and not re.fullmatch(r"of|de|du|des|and|&|for|da|do", words[run].lower()):
         words = words[run:]
