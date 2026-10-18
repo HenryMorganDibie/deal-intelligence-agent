@@ -344,7 +344,9 @@ def _locked_event_source_ids() -> set[str]:
     }
 
 
-def _load_event_test_set() -> list[tuple[str, set[str], str]]:
+def _load_event_test_set() -> list[tuple[str, set[str], str, str]]:
+    from src.engines.outcome_labeller import market_for_ticker
+
     sets = (
         (ROOT / "evaluation" / "attribution" / "natural_items.jsonl",
          ROOT / "evaluation" / "attribution" / "natural_labels.jsonl"),
@@ -360,7 +362,7 @@ def _load_event_test_set() -> list[tuple[str, set[str], str]]:
                 raise ValueError(f"No matching attribution item for {label.get('item_id')} in {items_path}")
             expected = set(label.get("expected") or [])
             text = " ".join((item.get("title") or "", item.get("company") or ""))
-            output.append((text, expected, label.get("confidence", "")))
+            output.append((text, expected, label.get("confidence", ""), market_for_ticker(item.get("ticker"))))
     return output
 
 
