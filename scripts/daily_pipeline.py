@@ -675,6 +675,11 @@ def _normalise_exchange_statement(statement: dict[str, Any] | None, source: str,
         "source": source,
         "source_url": statement.get("source_url"),
         "source_document": statement.get("document"),
+        "statement_checks": statement.get("checks", []),
+        "statement_verified": statement.get("verified"),
+        "statement_status": statement.get("status"),
+        "statement_basis": statement.get("basis"),
+        "source_multiplier": multiplier,
         "unit": currency,
         "annual": dict(sorted(annual.items(), reverse=True)),
     }
@@ -806,6 +811,11 @@ def _financial_collection() -> dict[str, Any]:
             "source": result.get("source"),
             "source_url": result.get("source_url"),
             "source_document": result.get("source_document"),
+            "statement_checks": result.get("statement_checks"),
+            "statement_verified": result.get("statement_verified"),
+            "statement_status": result.get("statement_status"),
+            "statement_basis": result.get("statement_basis"),
+            "source_multiplier": result.get("source_multiplier"),
             "fields": {name: latest.get(name) for name in (
                 "revenue", "profit_after_tax", "total_assets", "total_debt", "cash",
                 "operating_cash_flow", "free_cash_flow", "total_equity",
@@ -818,11 +828,18 @@ def _financial_collection() -> dict[str, Any]:
             "profit_yoy_change": income_change,
             "screening_flags": flags,
             "anomaly_label": None,
-            "review_status": "needs_source_verification" if flags else "not_flagged",
+            "review_status": (
+                "needs_source_verification"
+                if flags or (result.get("source_url") and result.get("statement_verified") is not True)
+                else "not_flagged"
+            ),
             "review_note": (
                 "Screening flags are candidates only; verify ticker identity, fiscal period, reporting scale, "
                 "and source statements before treating them as financial anomalies."
-                if flags else None
+                if flags else
+                "Exchange statement was parsed but its accounting checks did not establish full verification; "
+                "confirm the original PDF, fiscal period, and unit scale before relying on the figures."
+                if result.get("source_url") and result.get("statement_verified") is not True else None
             ),
             "reviewed_by": None,
             "retrieved_at": datetime.now(timezone.utc).isoformat(),
