@@ -144,7 +144,7 @@ def _fetch_indicator(client: httpx.Client, indicator: str, source: Optional[int]
     return out
 
 
-def refresh(since: int = 2018, until: Optional[int] = None, path: Path = INDICATORS_PATH) -> dict:
+def refresh(since: int = 1960, until: Optional[int] = None, path: Path = INDICATORS_PATH) -> dict:
     """Download every indicator for every country and write the committed snapshot."""
     until = until or time.gmtime().tm_year
     series: dict[str, dict] = {}
