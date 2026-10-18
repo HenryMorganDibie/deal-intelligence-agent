@@ -49,9 +49,9 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 4,
-      "entities": 8,
-      "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
+      "relationships": 3,
+      "entities": 6,
+      "notes": "Edges require named counterparties and source links; generic sectors and policy concepts are excluded."
     },
     {
       "id": "learned_ranking",
