@@ -335,11 +335,12 @@ def historical_scores(country: Country, snapshot: Optional[dict] = None, since: 
         }
         result = assess(country, historical, fx=lambda _: None)
         indicators = result["indicators"]
-        # Suppress composites based on too few components; retain coverage for transparency.
-        enough_coverage = result["coverage"] >= 0.4
+        # Do not publish a composite historical score from a partial component set.
+        # This is a completeness rule, not a statistically validated confidence threshold.
+        complete_components = result["coverage"] == 1.0
         rows.append({
-            "year": year, "score": result["score"] if enough_coverage else None,
-            "tier": result["tier"] if enough_coverage else None,
+            "year": year, "score": result["score"] if complete_components else None,
+            "tier": result["tier"] if complete_components else None,
             "coverage": result["coverage"],
             "input_years": {key: value["year"] for key, value in indicators.items()},
             "indicator_count": len(indicators),
@@ -349,6 +350,6 @@ def historical_scores(country: Country, snapshot: Optional[dict] = None, since: 
         "source": "World Bank World Development Indicators and Worldwide Governance Indicators",
         "source_url": f"https://api.worldbank.org/v2/country/{country.iso2.lower()}/indicator/FP.CPI.TOTL.ZG?format=json",
         "retrieved": snap.get("retrieved"),
-        "method": "Historical reconstruction from currently available annual source observations; not a point-in-time archived vintage. Historical source revisions may change prior scores. Each year uses only observations dated in or before that year.",
+        "method": "Historical reconstruction from currently available annual source observations; not a point-in-time archived vintage. Historical source revisions may change prior scores. Each year uses only observations dated in or before that year. Coverage is the share of the seven weighted risk components with usable inputs; it is an internal component-availability measure, not an official data-quality or confidence metric. A historical composite score/tier is shown only when all seven components are available (100% component coverage); otherwise only coverage and input years are shown. Component observation years can differ and are exposed per row.",
         "rows": rows, "available_years": sum(1 for row in rows if row["score"] is not None),
     }
