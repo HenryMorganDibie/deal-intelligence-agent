@@ -86,3 +86,12 @@ def test_multi_startup_funding_roundup_is_not_a_single_deal():
         africa_source=True,
     ) is None
 
+def test_lender_grants_a_loan_is_still_a_real_debt_deal():
+    deal = extract_deal(
+        "African Development Bank Group grants $100 million loan to Emerging Africa and Asia Infrastructure Fund (EAAIF) to support development of sustainable infrastructure",
+        published="2025-11-12",
+        africa_source=True,
+    )
+    assert deal is not None
+    assert deal["deal_type"] == "debt_financing"
+
