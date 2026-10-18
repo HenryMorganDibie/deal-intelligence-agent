@@ -193,7 +193,7 @@ def test_locked_event_evaluation_set_has_680_items():
     heldout = pipeline._load_event_test_set()
 
     assert len(heldout) == 680
-    assert any(expected for _, expected, _ in heldout)
+    assert any(expected for _, expected, _, _ in heldout)
 
 
 def test_event_classifier_evaluates_manual_labels_against_locked_set(tmp_path, monkeypatch):
@@ -218,6 +218,10 @@ def test_event_classifier_evaluates_manual_labels_against_locked_set(tmp_path, m
 
     assert result["status"] in ("promoted", "evaluated_not_promoted")
     assert result["locked_heldout_items"] == 680
+    assert result["heldout_items_by_market"]["africa"] > 0
+    assert result["heldout_items_by_market"]["us"] > 0
+    assert result["market_evaluation"]["africa"]["n"] > 0
+    assert result["market_evaluation"]["us"]["n"] > 0
     assert (tmp_path / "event_classifier_evaluation.json").exists()
 
 
