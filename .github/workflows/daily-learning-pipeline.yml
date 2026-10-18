@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 concurrency:
   group: daily-learning-pipeline
@@ -36,18 +35,58 @@ jobs:
       - name: Collect review data, gather financials, build graph and evaluate models
         run: python scripts/daily_pipeline.py
 
-      - name: Propose validated datasets and site data
-        uses: peter-evans/create-pull-request@v7
+      - name: Commit generated outputs directly to main
+        uses: actions/github-script@v7
         with:
-          add-paths: |
-            docs/automation
-            web/data/investment_ideas.json
-          branch: automation/daily-learning-pipeline
-          delete-branch: true
-          title: Refresh daily research and model evaluation data
-          commit-message: Refresh daily research and model evaluation data
-          body: |
-            Daily research pipeline results and validated model artifacts.
-
-            Review the generated queues, data provenance, and evaluation gates before merging.
-            Merging this pull request publishes the updated site data through the normal deployment integration.
+          script: |
+            const fs = require('fs');
+            const paths = [
+              'docs/automation/event_label_queue.jsonl',
+              'docs/automation/entity_match_queue.jsonl',
+              'docs/automation/financial_observations.jsonl',
+              'docs/automation/financial_collection_attempts.jsonl',
+              'docs/automation/relationship_graph.json',
+              'docs/automation/ranking_evaluation.json',
+              'docs/automation/learned_ranker.json',
+              'docs/automation/learning_pipeline.json',
+              'docs/automation/event_classifier_evaluation.json',
+              'docs/automation/event_classifier.json',
+              'docs/automation/entity_match_evaluation.json',
+              'docs/automation/entity_matcher.json',
+              'web/data/investment_ideas.json',
+            ];
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const ref = await github.rest.git.getRef({ owner, repo, ref: 'heads/main' });
+            const baseSha = ref.data.object.sha;
+            const baseCommit = await github.rest.git.getCommit({ owner, repo, commit_sha: baseSha });
+            const baseTree = await github.rest.git.getTree({
+              owner, repo, tree_sha: baseCommit.data.tree.sha, recursive: '1',
+            });
+            const existing = new Map((baseTree.data.tree || []).map(entry => [entry.path, entry.sha]));
+            const tree = [];
+            for (const path of paths) {
+              if (!fs.existsSync(path)) continue;
+              const content = fs.readFileSync(path, 'utf8');
+              const blob = await github.rest.git.createBlob({ owner, repo, content, encoding: 'utf-8' });
+              if (existing.get(path) !== blob.data.sha) {
+                tree.push({ path, mode: '100644', type: 'blob', sha: blob.data.sha });
+              }
+            }
+            if (!tree.length) {
+              core.info('No generated output changes to publish.');
+              return;
+            }
+            const nextTree = await github.rest.git.createTree({
+              owner, repo, base_tree: baseCommit.data.tree.sha, tree,
+            });
+            const commit = await github.rest.git.createCommit({
+              owner, repo,
+              message: 'Refresh daily research and model evaluation data',
+              tree: nextTree.data.sha,
+              parents: [baseSha],
+            });
+            await github.rest.git.updateRef({
+              owner, repo, ref: 'heads/main', sha: commit.data.sha, force: false,
+            });
+            core.info(`Published ${tree.length} generated files directly to main at ${commit.data.sha}.`);
