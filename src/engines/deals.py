@@ -482,10 +482,10 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     # description confirms a completed minority/majority equity investment. In
     # that case, normalize the wording for extraction but preserve the real title
     # and URL in the returned evidence. Do not promote generic endorsements.
-    backing = re.match(r"(?is)^(?P<buyer>.+?)\\s+backs\\s+(?P<target>.+?)\\s*$", title)
+    backing = re.match(r"(?is)^(?P<buyer>.+?)\s+backs\s+(?P<target>.+?)\s*$", title)
     explicit_equity_evidence = re.search(
-        r"(?i)\\b(?:(?:minority|majority|strategic)\\s+)?(?:equity\\s+)?investment\\b|"
-        r"\\b(?:equity\\s+)?stake\\b|\\bshareholding\\b",
+        r"(?i)\b(?:(?:minority|majority|strategic)\s+)?(?:equity\s+)?investment\b|"
+        r"\b(?:equity\s+)?stake\b|\bshareholding\b",
         snippet or "",
     )
     if backing and explicit_equity_evidence:
