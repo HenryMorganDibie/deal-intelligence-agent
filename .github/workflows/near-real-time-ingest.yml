@@ -6,8 +6,8 @@ on:
       - ".github/workflows/near-real-time-ingest.yml"
   schedule:
     # GitHub Actions is the scheduler because Vercel Hobby cron is daily-only.
-    # Half-hour cadence keeps runner usage bounded while refreshing the market feed frequently.
-    - cron: "*/30 * * * *"
+    # Poll every 10 minutes for lower-latency discovery without running every 5 minutes.
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 permissions:
