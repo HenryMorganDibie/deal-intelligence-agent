@@ -337,7 +337,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
 
       <h2 className="eyebrow mt-12">Historical country risk</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
-        Annual scores are reconstructed from the available historical World Bank indicator series, using only observations dated in or before each year. They are not archived historical data vintages, and publisher revisions can change prior scores. The input year for each indicator can differ when a newer observation is unavailable.
+        The chart starts with the earliest available annual observations in the source dataset and reconstructs scores using only observations dated in or before each year. They are not archived historical data vintages, and publisher revisions can change prior scores. The input year for each indicator can differ when a newer observation is unavailable.
       </p>
       {riskHistory.length > 0 ? (
         <div className="panel mt-4 p-4 sm:p-5">
