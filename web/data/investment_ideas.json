@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-18T04:05:02.898403+00:00",
+  "updated_at": "2026-10-18T04:06:53.772385+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 1,
+      "new_review_items_today": 0,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 34,
-      "new_observations_today": 3,
+      "observations_collected": 39,
+      "new_observations_today": 5,
       "unreviewed_flagged_observations": 3,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -177,18 +177,16 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 34,
-    "new_rows": 3,
+    "collected_tickers": 39,
+    "new_rows": 5,
     "failures": [
-      "ALRA.CA",
-      "ALUM.CA",
-      "ALUMACO.LG",
-      "ALW.GH",
-      "AMAC.NR",
-      "AMEC.CA",
-      "AMES.CA",
-      "AMIA.CA",
-      "AMPI.CA"
+      "AMS.JO",
+      "ANA.JO",
+      "AND.JO",
+      "ANFI.CA",
+      "ANINO.LG",
+      "AOTM.CA",
+      "APK.JO"
     ],
     "retry_after_days": 2
   },
