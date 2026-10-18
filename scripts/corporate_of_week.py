@@ -189,6 +189,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
                     "title": event.get("headline") or company,
                     "url": url, "date": event.get("day"), "kind": "corporate_event",
                 })
+        sources.sort(key=lambda source: source["kind"] != "deal")
         relevant_counts = []
         for deal in company_deals:
             relevant = len(matching_deal_sources(company, deal))
