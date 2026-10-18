@@ -677,6 +677,19 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
             target = named_asset.group("name")
     if target and re.fullmatch(r"(?i)(?:more than(?: half)?|less than|the|a|an|growth|economy|pickups?|tractors?|shs\d+[a-z]*|n\$\s?\d+|ai)", target.strip()):
         return None
+    # Exclude non-dilutive grants, ordinary procurement contracts, and aggregate reports.
+    if re.search(r"(?i)\\bgrant\\b", title):
+        return None
+    if re.search(r"(?i)\\b(?:lands?|wins?)\\s+\\$[\\d.,]+[mbn]\\b.{0,40}\\b(?:rail|railway|locomotive|equipment|supply|procurement|contract)\\s+deal\\b", title):
+        return None
+    if re.search(r"(?i)\\b(?:acquires?|buys?)\\s+(?:six|five|four|three|\\d+)\\s+(?:new\\s+)?(?:Boeing|Airbus|aircraft|airplanes?|planes?|vehicles?)\\b", title):
+        return None
+    if re.search(r"(?i)\\b(?:report|study|analysis)\\b.*\\b(?:startups?|companies)\\s+(?:raise|raised|secure|secured|receive|received)\\b.*\\b(?:in|during)\\s+20\\d{2}\\b", title) or re.search(r"(?i)\\b(?:six|five|several|multiple)\\s+(?:African|Nigerian|African tech)?\\s*startups?\\s+(?:secure|secured|raise|raised|receive|received)\\b", title):
+        return None
+    if re.search(r"(?i)\\b(?:ministry|government|department)\\b", title) and re.search(r"(?i)\\bbacks? private investment\\b|\\b(?:skills push|public policy|economic reforms)\\b", title):
+        return None
+    if re.search(r"(?i)^cross river secures \\$[\\d.,]+m oil palm investment", title):
+        return None
     # Weekly sector totals and public-sector programmes are not individual company deals.
     if re.search(r"(?i)\braises?\s+.{0,35}\bin week\s+\d+\b", title):
         return None
