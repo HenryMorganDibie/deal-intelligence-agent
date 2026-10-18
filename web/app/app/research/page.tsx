@@ -7,14 +7,42 @@ import { ResultFeedback } from "../../../components/app/ResultFeedback";
 import { ApiError } from "../../../lib/api";
 import { get, post, type Event as MarketEvent, type ResearchResult } from "../../../lib/market";
 
-const FALLBACK_EXAMPLES = [
-  "What major market events have changed the outlook for investors this week?",
-  "Which global acquisitions or funding rounds were recently announced, and what is confirmed?",
-  "What recent regulatory or central-bank decisions could affect financial markets?",
-  "Which African private-market transactions were announced recently, and what evidence supports them?",
+type ResearchSuggestion = {
+  title: string;
+  description: string;
+  question: string;
+  category: string;
+  context?: string;
+};
+
+const FALLBACK_EXAMPLES: ResearchSuggestion[] = [
+  {
+    title: "Track a new funding round",
+    description: "Identify the investors, amount, stage and what is actually confirmed.",
+    question: "Find recently announced funding rounds in African private markets. For each, identify the company, investors, amount, round stage, announcement date and primary evidence. Mark unreported fields as unknown.",
+    category: "Funding",
+  },
+  {
+    title: "Map a sector shift",
+    description: "See what recent deals reveal about where capital is moving.",
+    question: "Which African sectors have seen notable private-market investment activity in the last 90 days? Compare disclosed deal counts and values where available, name the underlying transactions, and distinguish observed evidence from interpretation.",
+    category: "Market trends",
+  },
+  {
+    title: "Check a company's deal history",
+    description: "Build a sourced timeline of raises, acquisitions and exits.",
+    question: "Build a sourced transaction timeline for a company relevant to African private markets, including funding rounds, acquisitions, debt financing and exits. Link each event to evidence and flag conflicts or gaps.",
+    category: "Company research",
+  },
+  {
+    title: "Understand a regulatory change",
+    description: "Connect a policy decision to the businesses and investors it may affect.",
+    question: "Identify recent regulatory or central-bank changes affecting African businesses or investors. Explain the effective date, affected markets and sectors, and likely implications, separating the official rule from analysis.",
+    category: "Policy & risk",
+  },
 ];
 
-function promptsFromEvents(events: MarketEvent[]): string[] {
+function promptsFromEvents(events: MarketEvent[]): ResearchSuggestion[] {
   const seen = new Set<string>();
   return events
     .filter((event) => event.headline?.trim())
@@ -26,9 +54,15 @@ function promptsFromEvents(events: MarketEvent[]): string[] {
     })
     .slice(0, 4)
     .map((event) => {
-      const scope = [event.country, event.sector].filter(Boolean).join(" / ");
-      const context = scope ? ` (${scope})` : "";
-      return `What should an analyst know about this recent market event${context}: ${event.headline.trim()}? Separate confirmed facts, implications and unknowns.`;
+      const headline = event.headline.trim().replace(/\\s+/g, " ");
+      const context = [event.country, event.sector].filter(Boolean).join(" · ");
+      return {
+        title: headline.length > 86 ? `${headline.slice(0, 83).trimEnd()}…` : headline,
+        description: context ? `Recent signal in ${context}. Open a sourced brief and separate facts from implications.` : "Explore the reported event, verify the key details and assess what it could mean.",
+        question: `Investigate this recent market event: "${headline}". Summarize what happened, identify the companies and investors involved, extract dates and disclosed amounts, assess market implications, and separate confirmed facts from inference and unknowns. Cite supporting evidence.`,
+        category: event.sector || "Latest event",
+        ...(context ? { context } : {}),
+      };
     });
 }
 
@@ -183,7 +217,7 @@ export default function ResearchPage() {
     };
   }, []);
 
-  const examples = marketExamples.length ? marketExamples : FALLBACK_EXAMPLES;
+  const examples: ResearchSuggestion[] = marketExamples.length ? marketExamples : FALLBACK_EXAMPLES;
 
   async function ask(e?: FormEvent, q = question) {
     e?.preventDefault();
@@ -226,27 +260,46 @@ export default function ResearchPage() {
           <span className="text-[0.8125rem] text-[color:var(--dim)]">Counts toward the 1,000 free requests per visitor each day.</span>
         </div>
       </form>
-      <div className="mt-5">
-        <p className="mb-2 text-[0.75rem] text-[color:var(--dim)]">
-          {marketExamples.length ? "Suggested questions from the latest recorded market events · refreshes daily" : "Suggested analyst questions"}
-        </p>
-        <div className="flex flex-wrap gap-2">
-        {examples.map((q) => (
-          <button
-            key={q}
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              setQuestion(q);
-              ask(undefined, q);
-            }}
-            className="rounded-full border hairline px-3 py-1.5 text-left text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)] disabled:opacity-40"
-          >
-            {q}
-          </button>
-        ))}
+      <section className="mt-8" aria-label="Research suggestions">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="eyebrow">A place to start</p>
+            <h2 className="mt-1 text-lg font-semibold tracking-tight">Research ideas</h2>
+            <p className="mt-1 max-w-xl text-sm text-[color:var(--muted)]">
+              Choose a lead to turn it into a sourced analyst brief. You can edit the question before running it.
+            </p>
+          </div>
+          <span className="text-[0.75rem] text-[color:var(--dim)]">
+            {marketExamples.length ? "Inspired by recent market events · updates daily" : "Curated analyst starting points"}
+          </span>
         </div>
-      </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {examples.map((suggestion, index) => (
+            <button
+              key={`${suggestion.title}-${index}`}
+              type="button"
+              disabled={busy}
+              onClick={() => setQuestion(suggestion.question)}
+              className="group flex min-h-40 flex-col rounded-xl border hairline bg-[color:var(--panel)] p-4 text-left transition hover:border-[color:var(--verified)]/50 hover:bg-white/[0.025] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <div className="flex w-full items-center justify-between gap-3">
+                <span className="rounded-full border hairline px-2.5 py-1 text-[0.6875rem] font-medium text-[color:var(--muted)]">
+                  {suggestion.category}
+                </span>
+                <span aria-hidden="true" className="text-base text-[color:var(--dim)] transition group-hover:translate-x-0.5 group-hover:text-[color:var(--verified)]">↗</span>
+              </div>
+              <span className="mt-4 text-sm font-semibold leading-snug text-[color:var(--text)]">{suggestion.title}</span>
+              <span className="mt-2 text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">{suggestion.description}</span>
+              {suggestion.context && (
+                <span className="mt-3 text-[0.6875rem] text-[color:var(--dim)]">{suggestion.context}</span>
+              )}
+              <span className="mt-auto pt-4 text-[0.75rem] font-medium text-[color:var(--verified)]">
+                Use this idea <span aria-hidden="true">→</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
       {error && <ErrorNote message={error} />}
 
       {result && (
