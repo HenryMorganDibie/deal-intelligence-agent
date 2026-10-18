@@ -536,6 +536,15 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
 
     if sum(ch.isupper() for ch in title) > 0.6 * sum(ch.isalpha() for ch in title):
         return None                               # ALL-CAPS headlines carry no name boundaries
+    # Public-sector calls for private investment are solicitations, not evidence
+    # that a transaction has occurred. Keep this narrow so genuine company raises
+    # (for example, "X seeks investment") remain eligible for extraction.
+    if re.match(
+        r"(?i)^\s*(?:FG|federal government|government|ministry(?:\s+of\s+[\w&-]+){0,4})"
+        r"\s+seeks?\s+(?:private\s+)?investment\s+in\b",
+        title,
+    ):
+        return None
     if _NOT_A_DEAL.search(title):
         return None
     if title.rstrip().endswith("?") or re.match(r"(?i)(why|how|what|should|could|can|will|is|are|does|do|opinion|analysis|explainer)\b", title):
