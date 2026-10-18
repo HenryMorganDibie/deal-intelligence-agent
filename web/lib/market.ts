@@ -218,6 +218,8 @@ export type EvidenceItem = {
   url: string | null;
   date: string | null;
   source: string | null;
+  source_quality?: "Official / primary" | "Established publisher" | "Database-derived" | "No direct source link" | "Aggregator / unresolved" | "Unrated publisher";
+  source_quality_note?: string;
 };
 
 export type ResearchResult = {
