@@ -10,6 +10,7 @@ import { get } from "../../../lib/market";
 type Row = {
   iso2: string; name: string; region: string; currency: string; exchange: string | null; risk_score: number | null;
   risk_tier: string | null; risk_coverage: number; coverage_tier: string; deals: number; events: number;
+  source_quality?: { source_links_checked: number; official_host_matched_links: number; registered_country_hosts: number; registry_status: string };
 };
 
 const REGIONS = ["Northern Africa", "Western Africa", "Middle Africa", "Eastern Africa", "Southern Africa"];
@@ -196,7 +197,7 @@ export default function CountriesPage() {
             <button type="button" className="btn btn-ghost mt-4" onClick={clearFilters}>Reset filters</button>
           </div>
         ) : (
-          <Table head={["Compare", "Country", "Region", "Risk score", "Risk tier", "Risk-data coverage", "Evidence tier", "Deals", "Events", "Currency"]} minWidth="68rem">
+          <Table head={["Compare", "Country", "Region", "Risk score", "Risk tier", "Risk-data coverage", "Evidence tier", "Official-source links", "Deals", "Events", "Currency"]} minWidth="78rem">
             {shown.map((c) => (
               <tr key={c.iso2}>
                 <Td>
@@ -226,6 +227,10 @@ export default function CountriesPage() {
                   </div>
                 </Td>
                 <Td><Pill value={c.coverage_tier} title="Coverage tier reflects available market data and verification coverage, not country quality." /></Td>
+                <Td>
+                  <span className="kbd">{c.source_quality?.official_host_matched_links ?? 0} / {c.source_quality?.source_links_checked ?? 0}</span>
+                  <span className="mt-1 block text-xs text-[color:var(--dim)]">{c.source_quality?.registry_status === "needs_host_review" ? "Host registry needs review" : "Official host matches"}</span>
+                </Td>
                 <Td className="kbd">{c.deals.toLocaleString()}</Td>
                 <Td className="kbd">{c.events.toLocaleString()}</Td>
                 <Td className="kbd">{c.currency}</Td>
