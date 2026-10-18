@@ -47,6 +47,10 @@
     "egp 12bn": {
       "name": "EGP 12bn",
       "kind": "organization"
+    },
+    "oryx energies tanzania downstream business": {
+      "name": "Oryx Energies Tanzania Downstream Business",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -127,6 +131,11 @@
           "title": "Amsons Group acquires Oryx Energies Tanzania business",
           "publisher": "Kahawatungu",
           "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxOeHF5VVpEbnRxYUtJSGxyb0I5LXFsazNvQkZ4MHMtNzZ3OHRod3pTRk5tdnpiOVZZSTR3RnlsLWlhT3J0THNWUnNHel9iMjhBZE5VYVA5Q2V0NjJpVXRGWGJjYUNBWVVZelE5eGlDZVJiSzBXZ0djbDB3VGxqM1NhSUxFSTnSAYwBQVVfeXFMT1hxWU5yVGJmaGY3ZHV3ZGE1ZW1WWEhuWDMyeVFHaWVQQ19VcHlZVmZCb2oyR1BpNHJNY0lydE93Q2ZxYllObHpJSFlQTXNQVGhpZzQwNko0NE1kTGJFdlA2dmhTUG11YVpOOEpFNnV2RUZha3BhRWdpbUZkbHc0RkloYVcxeFpzR291N3c?oc=5"
+        },
+        {
+          "title": "Amsons Group acquires Oryx Energies’ Tanzania fuel business in $230 million deal",
+          "publisher": "KBC Digital",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQZHRCRWNZZ2xKVjlUS3Bya2dWM3U2SGEwVjBfQnNpWlJBVXRlT3FSZ3EtRkNzRGF1enBhcUNCOTZBWWpiQnRFZGh2dmFIaGVMcjBFT25heHplb3EtUkxadG5FMWRSWTZFN1lKaDBUSmlTUlVaVHJaNHFuaHNGUkxTeHFzMVNTRjVZeHp3dzg3U1lYczJGaXdjNlMxWVowTHpRdFFF?oc=5"
         }
       ]
     },
@@ -143,7 +152,21 @@
           "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNVTBfUHBhTFladlRVZnhGUHJyQmRrbnVGZDZwTjRaZU8yektLaEdBd3FVcVViSWxkeWhncW50NVV6WVU2UjRBY3dKZlBkZklmQmhBT3ZjTDlXYnZtclpVUjhGZFpKVmJYcFJRVWtZYmtwb3VxeUN2OWZaR1FOVHZYZmk3OUVqZnVkQ0Y0SnJVMkJuWURFTElpRHVmQlhabWJBQTNCTExNRHZNMjJKWlNwVHk4alh1SGc?oc=5"
         }
       ]
+    },
+    "84ca9aaa62ce53ed73bf": {
+      "id": "84ca9aaa62ce53ed73bf",
+      "from": "amsons group",
+      "to": "oryx energies tanzania downstream business",
+      "type": "acquisition",
+      "first_seen": "2026-10-18",
+      "sources": [
+        {
+          "title": "Amsons Group Acquires Oryx Energies Tanzania Downstream Business",
+          "publisher": "Business Today Kenya",
+          "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOeHpWZWNDNU9nREdEYzg5bGR3bUxHSUM2bXJkVE82aUtPMWNPV2VadE9ZV0xzVjJUdmpMdXAtNXJuYk55ellILXdCb3NBSl9pWWhZOE9BaDdXYUZQNWM0VGYtOV9xUml3RDFCeTVKT1pRVTBkSHhXcXdYYkNDQ2VtVmszaDNOZGlLSjFPMFR0R3RCWXRwSl9MVw?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-18T04:11:57.778360+00:00"
+  "updated_at": "2026-10-18T07:48:13.199089+00:00"
 }

@@ -140,3 +140,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ASG.GH"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ASHAKACEM.LG"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ASOSAVINGS.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ASPI.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ASR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ATH.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ATI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ATL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ATLC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ATLMA.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ATQA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ATT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ATW.CS"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/45913_AUSTIN_LAZ_AND_COMPANY_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_JANUARY_2026.pdf", "status": "collected", "ticker": "AUSTINLAZ.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AUTO.CA"}

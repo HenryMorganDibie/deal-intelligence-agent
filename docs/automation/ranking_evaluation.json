@@ -2,34 +2,34 @@
   "status": "promoted",
   "promoted": true,
   "source": "docs/backtest_predictions.csv",
-  "eligible_rows": 4108,
-  "training_rows": 3127,
-  "holdout_rows": 981,
-  "training_positive_labels": 908,
+  "eligible_rows": 4136,
+  "training_rows": 3148,
+  "holdout_rows": 988,
+  "training_positive_labels": 909,
   "holdout_positive_labels": 264,
   "train_through": "2025-02-08",
   "holdout_from": "2025-03-10",
   "metrics": {
     "learned_ranker": {
-      "n": 981,
+      "n": 988,
       "positives": 264,
-      "base_rate": 0.269113,
-      "precision_at_20pct": 0.411168,
-      "brier": 0.173038
+      "base_rate": 0.267206,
+      "precision_at_20pct": 0.414141,
+      "brier": 0.171874
     },
     "alpha_baseline": {
-      "n": 981,
+      "n": 988,
       "positives": 264,
-      "base_rate": 0.269113,
-      "precision_at_20pct": 0.243655,
-      "brier": 0.302027
+      "base_rate": 0.267206,
+      "precision_at_20pct": 0.247475,
+      "brier": 0.301404
     },
     "prevalence_baseline": {
-      "n": 981,
+      "n": 988,
       "positives": 264,
-      "base_rate": 0.269113,
-      "precision_at_20pct": 0.269113,
-      "brier": 0.197143
+      "base_rate": 0.267206,
+      "precision_at_20pct": 0.267206,
+      "brier": 0.196272
     }
   },
   "promotion_rule": "Promote only if holdout precision@top-20% beats alpha by at least 2 percentage points and Brier score beats the prevalence baseline."
