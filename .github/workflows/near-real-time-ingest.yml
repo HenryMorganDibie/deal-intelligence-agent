@@ -1,0 +1,40 @@
+name: Near-real-time deal ingestion
+
+on:
+  schedule:
+    # GitHub Actions is the scheduler because Vercel Hobby cron is daily-only.
+    # Half-hour cadence keeps runner usage bounded while refreshing the market feed frequently.
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: near-real-time-deal-ingestion
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require ingestion secret
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Repository Actions secret CRON_SECRET is missing. Add the same value configured as CRON_SECRET in the deal-intelligence-api Vercel project."
+            exit 1
+          fi
+
+      - name: Collect recent deal announcements and deliver watchlist webhooks
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --max-time 240 \
+            --retry 2 --retry-delay 5 --retry-all-errors \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Accept: application/json" \
+            "https://deal-intelligence-api.vercel.app/api/cron/ingest"
