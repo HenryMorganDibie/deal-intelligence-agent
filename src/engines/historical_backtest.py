@@ -28,6 +28,7 @@ HTTP responses are cached under data/hist_cache, so a rerun resumes cheaply.
 """
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 import logging
