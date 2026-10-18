@@ -184,7 +184,7 @@ async def countries() -> dict:
 
 @router.get("/api/countries/{code}/history")
 async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
-                          until: Optional[int] = Query(None, ge=2000, le=2100),
+                          until: Optional[int] = Query(None, ge=1960, le=2100),
                           snapshots: int = Query(30, ge=1, le=365)) -> dict:
     """Annual reconstructed history plus archived daily snapshots where configured."""
     c = _country_or_404(code)
@@ -192,8 +192,15 @@ async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
     # Deal/event history begins with the earliest dated record currently held in the dataset,
     # not a claim that this is the earliest transaction that occurred in the country.
     all_deals, all_events = deals(), events()
-    country_deals = [d for d in all_deals if c.iso2 in (d.get("countries") or [d.get("country")])]
-    country_events = [e for e in all_events if c.iso2 in (e.get("countries") or [e.get("country")])]
+    def belongs_to_country(record: dict) -> bool:
+        raw = ([record.get("country")] if record.get("country") else []) + (record.get("countries") or [])
+        for value in raw:
+            resolved = countries.resolve(country=value)
+            if resolved and resolved.iso2 == c.iso2:
+                return True
+        return False
+    country_deals = [d for d in all_deals if belongs_to_country(d)]
+    country_events = [e for e in all_events if belongs_to_country(e)]
     def _record_year(record: dict, keys: tuple[str, ...]) -> Optional[int]:
         for key in keys:
             value = record.get(key)
