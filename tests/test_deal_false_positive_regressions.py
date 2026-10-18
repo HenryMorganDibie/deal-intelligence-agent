@@ -95,3 +95,32 @@ def test_lender_grants_a_loan_is_still_a_real_debt_deal():
     assert deal is not None
     assert deal["deal_type"] == "debt_financing"
 
+def test_public_infrastructure_capex_is_not_equity_funding():
+    for headline in (
+        "ECG invests GH¢710,965 in infrastructure replacement across Greater Accra",
+        "GoldBod invests GH¢8.4 million in restoring three water treatment plants",
+        "MTN Nigeria invests ₦202bn in Q1 to boost connectivity, service quality",
+        "Govt invests GH¢50bn in road sector in 16 months",
+    ):
+        assert extract_deal(headline, published="2026-10-18", africa_source=True) is None
+
+
+def test_fund_raise_uses_the_named_fund_not_roman_numeral():
+    deal = extract_deal(
+        "Ventures Platform's Pan-African Fund II secures $84mn, targets pre-seeds to Series A investments",
+        published="2026-08-26",
+        africa_source=True,
+    )
+    assert deal is not None
+    assert deal["deal_type"] == "fund_raise"
+    assert deal["target"] == "Ventures Platform's Pan-African Fund II"
+
+
+def test_currency_and_sentence_fragments_are_not_targets():
+    for headline in (
+        "Farmer invests GH¢20,000 Telecel prize in farm",
+        "Maroc : TV5MONDE investit 1M€ dans le secteur de l'animation",
+        "Emmanuel Mwamba says we obtain a loan of about $10million from AfDB",
+    ):
+        assert extract_deal(headline, published="2026-10-18", africa_source=True) is None
+
