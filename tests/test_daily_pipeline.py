@@ -276,12 +276,12 @@ def test_financial_collection_advances_through_universe_and_records_flags(tmp_pa
     result = pipeline._financial_collection()
     rows = pipeline._read_jsonl(pipeline.FINANCIAL_DATA)
 
-    assert result["new_rows"] == 4
-    assert len(rows) == 4
+    assert result["new_rows"] == 6
+    assert len(rows) == 6
     assert rows[0]["screening_flags"] == [
         "revenue_decline_25pct", "profit_to_loss", "debt_to_equity_at_least_2",
     ]
-    assert len(pipeline._read_jsonl(pipeline.FINANCIAL_ATTEMPTS)) == 4
+    assert len(pipeline._read_jsonl(pipeline.FINANCIAL_ATTEMPTS)) == 6
 
 
 def test_graph_relationships_keep_source_provenance(tmp_path, monkeypatch):
