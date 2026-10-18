@@ -79,6 +79,23 @@ def test_financial_collection_prioritizes_african_tickers(tmp_path, monkeypatch)
     assert result["retry_after_days"] == 2
 
 
+def test_balanced_review_sample_round_robins_african_countries():
+    rows = [
+        {"id": "gh1", "country_hint": "GH", "market": "africa", "rule_candidates": ["deal"]},
+        {"id": "gh2", "country_hint": "GH", "market": "africa", "rule_candidates": []},
+        {"id": "gh3", "country_hint": "GH", "market": "africa", "rule_candidates": []},
+        {"id": "ng1", "country_hint": "NG", "market": "africa", "rule_candidates": []},
+        {"id": "ke1", "country_hint": "KE", "market": "africa", "rule_candidates": []},
+        {"id": "global", "market": "unknown", "rule_candidates": ["deal"]},
+    ]
+
+    selected = pipeline._balanced_review_sample(rows, 4)
+
+    assert {row["id"] for row in selected} == {"gh1", "gh2", "ng1", "ke1"}
+    assert len({row.get("country_hint") for row in selected}) == 3
+    assert selected[0]["id"] == "gh1"
+
+
 def test_collect_headlines_includes_country_specific_queries(monkeypatch):
     from src.engines import market_feed
 
