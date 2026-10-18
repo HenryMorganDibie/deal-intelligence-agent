@@ -7,6 +7,7 @@ The registry is deliberately explicit; missing host mappings remain unverified.
 from __future__ import annotations
 
 from urllib.parse import urlparse
+from src.data.africa_countries import resolve as resolve_country
 
 # Domains are allowlisted by institution/country; matching is exact or a true subdomain.
 # The API reports host match, not a guarantee that every page's claims are correct.
@@ -79,6 +80,11 @@ def _host_matches(host: str, allowed: str) -> bool:
     return host == allowed or host.endswith("." + allowed)
 
 
+def _iso2(value: str | None) -> str:
+    country = resolve_country(country=value)
+    return country.iso2 if country else (value or '').upper()
+
+
 def verify_url(url: str | None, country_iso2: str | None = None) -> dict:
     """Return a reasoned official-host match; never infer official status from publisher text."""
     if not url:
@@ -91,7 +97,7 @@ def verify_url(url: str | None, country_iso2: str | None = None) -> dict:
         parsed = None
     if not parsed or parsed.scheme.lower() != "https" or not host or parsed.username or parsed.password:
         return {"status": "invalid_or_non_https_url", "host": host or None, "matched_registry": None}
-    code = (country_iso2 or "").upper()
+    code = _iso2(country_iso2)
     candidates = [(d, "country") for d in OFFICIAL_HOSTS_BY_COUNTRY.get(code, ())]
     candidates += [(d, "regional") for d in REGIONAL_OFFICIAL_HOSTS]
     candidates += [(d, "global") for d in GLOBAL_OFFICIAL_HOSTS]
