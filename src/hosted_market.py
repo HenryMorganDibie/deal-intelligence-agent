@@ -66,6 +66,26 @@ def _configured() -> bool:
     return bool(SUPABASE_URL and SUPABASE_KEY and API_SECRET)
 
 
+def _authorized_cron(request: Request) -> bool:
+    authorization = request.headers.get("authorization", "")
+    if CRON_SECRET and authorization == f"Bearer {CRON_SECRET}":
+        return True
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        return False
+    try:
+        import jwt
+        from jwt import PyJWKClient
+        client = PyJWKClient("https://token.actions.githubusercontent.com/.well-known/jwks")
+        key = client.get_signing_key_from_jwt(token).key
+        claims = jwt.decode(token, key, algorithms=["RS256"], audience="deal-intelligence-api", issuer="https://token.actions.githubusercontent.com")
+        return claims.get("repository") == "HenryMorganDibie/deal-intelligence-agent" and claims.get("ref") == "refs/heads/main" and claims.get("workflow_ref") == "HenryMorganDibie/deal-intelligence-agent/.github/workflows/near-real-time-ingest.yml@refs/heads/main"
+    except Exception as exc:
+        log.info("Cron OIDC token rejected: %s", type(exc).__name__)
+        return False
+
+
+
 def _headers() -> dict[str, str]:
     return {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json"}
 
@@ -772,7 +792,7 @@ async def evaluation() -> dict:
 @router.get("/api/cron/ingest")
 async def cron_ingest(request: Request) -> dict:
     """Frequent rolling ingestion: capture fresh and delayed news, upsert idempotently, deliver webhooks."""
-    if not CRON_SECRET or request.headers.get("authorization") != f"Bearer {CRON_SECRET}":
+    if not _authorized_cron(request):
         raise HTTPException(401, "Unauthorized")
     if not _configured():
         raise HTTPException(503, "The API is not configured.")
