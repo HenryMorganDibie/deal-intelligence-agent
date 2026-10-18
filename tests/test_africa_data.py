@@ -214,6 +214,12 @@ def test_undisclosed_minority_investment_is_not_rejected_as_generic_backing():
     assert deal["amount"] is None and deal["amount_usd"] is None
 
 
+def test_public_sector_investment_solicitation_is_not_a_deal():
+    assert _deal("FG Seeks Private Investment in Livestock, Leather and Fodder Production") is None
+    # A company looking for capital is not the same as a public solicitation.
+    assert _deal("Kuda raises $20m Series B to expand in Nigeria") is not None
+
+
 def test_reports_of_one_transaction_merge():
     a = _deal("Standard Bank Group announces strategic investment in Nigeria's OPay", publisher="TechCabal", url="u1")
     b = _deal("Standard Bank buys $200M stake in Nigeria's OPay ahead of NYSE listing", publisher="Reuters", url="u2")
