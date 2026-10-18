@@ -31,6 +31,14 @@
     "necsa": {
       "name": "Necsa",
       "kind": "organization"
+    },
+    "amsons group": {
+      "name": "Amsons Group",
+      "kind": "organization"
+    },
+    "oryx energies tanzania": {
+      "name": "Oryx Energies Tanzania",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -89,7 +97,26 @@
           "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPVW13eUhmYTZRMU82SzI4eTNReUN1dmVVWGFMaDA0NGZJbkpkZU16Z1JYVHBSc2JxTHhSZHFPUlZmSjlMVUNuUk5wX1BmajFLdVlHdFN3QmdzeHZvZFpjdWs5MzBUOWV0MWp2Q0lmbC1yaUN0bTNBQmFOUzlRU3IxZE5PVGlFTmd2SnlBRlppdzFiQ1Z5WWZ0QmhBMVhCMm9neGUxdkNLeXlIbndFWWk2ZkR6Q19idzJFSlNZUXhWUXdCM0NOcmhBQmpNZXJ5WUl3?oc=5"
         }
       ]
+    },
+    "696c157a2cf1492682a0": {
+      "id": "696c157a2cf1492682a0",
+      "from": "amsons group",
+      "to": "oryx energies tanzania",
+      "type": "acquisition",
+      "first_seen": "2026-10-17",
+      "sources": [
+        {
+          "title": "Amsons Group Agrees to Buy Oryx Energies Tanzania in $230 Million Deal",
+          "publisher": "Uchumi360",
+          "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBtYm1ENklhY2VNbTFyWWJiRVRHSzVzaWtYaHFhMlJYT3B4VlZqZFVWcWN1by1iTF9PNWRvdUxwWEU3U2o1ZjBWYUM1enYyTmxOZzlhaHV3SkI2blpoZ200VWZVNWU1REJpZmpNQ0ktalExbVM4T0pxdzhpcW0?oc=5"
+        },
+        {
+          "title": "Amsons Group acquires Oryx Energies Tanzania business",
+          "publisher": "Kahawatungu",
+          "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxPWHFZTnJUYmZoZjdkdXdkYTVlbVZYSG5YMzJ5UUdpZVBDX1VweVlWZkJvajJHUGk0ck1jSXJ0T3dDZnFiWU5seklIWVBNc1BUaGlnNDA2SjQ0TWRMYkV2UDZ2aFNQbXVhWk44SkU2dXZFRmFrcGFFZ2ltRmRsdzRGSWhhVzF4WnNHb3U3d9IBjAFBVV95cUxPWHFZTnJUYmZoZjdkdXdkYTVlbVZYSG5YMzJ5UUdpZVBDX1VweVlWZkJvajJHUGk0ck1jSXJ0T3dDZnFiWU5seklIWVBNc1BUaGlnNDA2SjQ0TWRMYkV2UDZ2aFNQbXVhWk44SkU2dXZFRmFrcGFFZ2ltRmRsdzRGSWhhVzF4WnNHb3U3dw?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-18T03:51:39.186467+00:00"
+  "updated_at": "2026-10-18T03:54:23.734234+00:00"
 }
