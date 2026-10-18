@@ -214,18 +214,24 @@ async def coverage_matrix() -> dict:
 async def deal_search(q: str = "", country: Optional[str] = None, type: Optional[str] = None,
                       sector: Optional[str] = None, investor: Optional[str] = None, since: Optional[str] = None,
                       until: Optional[str] = None, min_usd: Optional[float] = None,
-                      limit: int = Query(50, ge=1, le=500)) -> dict:
+                      limit: int = Query(50, ge=1, le=100),
+                      offset: int = Query(0, ge=0, le=100000)) -> dict:
     country = _country_or_404(country).iso2 if country else None
     ds = deals()
-    rows = deals_mod.search(ds, q=q, country=country, deal_type=type, sector=sector, since=since, until=until,
-                            investor=investor, min_usd=min_usd, limit=limit)
+    # The store is already cached in memory. Filter before slicing so pagination
+    # covers the complete matching result set rather than only the first page.
+    matching = deals_mod.search(ds, q=q, country=country, deal_type=type, sector=sector, since=since, until=until,
+                                investor=investor, min_usd=min_usd, limit=max(len(ds), 1))
+    total_matching = len(matching)
+    rows = matching[offset:offset + limit]
     from src.engines import provenance
     out = []
     for d in rows:
         n = len(provenance.stories(d.get("sources") or []))
         out.append({**d, "independent_stories": n,
                     "verification": "corroborated" if n >= 2 else "single source"})
-    return {"total_in_database": len(ds), "count": len(out), "deals": out}
+    return {"total_in_database": len(ds), "total_matching": total_matching, "offset": offset,
+            "limit": limit, "count": len(out), "deals": out}
 
 
 _DEAL_EVAL = Path(__file__).resolve().parents[1] / "evaluation" / "deals" / "results.json"
@@ -272,8 +278,12 @@ async def comparables(deal_id: Optional[str] = None, sector: Optional[str] = Non
 
 @router.get("/api/investors")
 async def investor_board(role: Optional[str] = None, kind: Optional[str] = None,
-                         limit: int = Query(50, ge=1, le=200)) -> dict:
-    return {"investors": investors.leaderboard(deals(), role=role, kind=kind, limit=limit),
+                         limit: int = Query(50, ge=1, le=100),
+                         offset: int = Query(0, ge=0, le=100000)) -> dict:
+    matching = investors.leaderboard(deals(), role=role, kind=kind, limit=max(len(deals()) * 2, 1000))
+    total_matching = len(matching)
+    return {"investors": matching[offset:offset + limit], "total_matching": total_matching,
+            "offset": offset, "limit": limit,
             "registry": [{"name": i.name, "type": i.kind, "hq": i.hq, "aliases": list(i.aliases)}
                          for i in investors.REGISTRY]}
 
@@ -291,8 +301,11 @@ async def investor(name: str) -> dict:
 
 
 @router.get("/api/funds")
-async def funds(limit: int = Query(100, ge=1, le=500)) -> dict:
-    return {"funds": investors.funds(deals())[:limit]}
+async def funds(limit: int = Query(50, ge=1, le=100),
+                     offset: int = Query(0, ge=0, le=100000)) -> dict:
+    matching = investors.funds(deals())
+    return {"funds": matching[offset:offset + limit], "total_matching": len(matching),
+            "offset": offset, "limit": limit}
 
 
 @router.get("/api/events")
