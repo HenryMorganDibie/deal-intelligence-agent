@@ -677,6 +677,25 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
             target = named_asset.group("name")
     if target and re.fullmatch(r"(?i)(?:more than(?: half)?|less than|the|a|an|growth|economy|pickups?|tractors?|shs\d+[a-z]*|n\$\s?\d+|ai)", target.strip()):
         return None
+
+    # Reject currency fragments and sentence debris captured as the target (e.g. GH¢, Q1, "We").
+    # For fund closes, recover the complete named fund rather than keeping only "Fund II".
+    if target and re.fullmatch(r"(?i)(?:gh|q\d|1m|pe|vc|we|be|ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
+        if deal_type == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
+            fund_name = re.search(r"(?i)([A-Z][A-Za-z0-9&.,'’ -]{1,90}\bfund\s+(?:II|III|IV|V|VI|VII|VIII|IX|X|\d+))", title)
+            if fund_name:
+                target = _clean_name(fund_name.group(1))
+            else:
+                return None
+        else:
+            return None
+    # Broad corporate/public capital expenditure is not a financing transaction unless equity,
+    # a fund close, a loan, or an explicit external investment instrument is stated.
+    if deal_type == "equity_funding" and re.search(r"(?i)\b(?:invests?|invested|spends?|spent)\b", title):
+        capex = re.search(r"(?i)\b(?:infrastructure replacement|road sector|water treatment plants?|new feeders?|substations?|connectivity|service quality|outgrower|restoring|rehabilitat\w*|replacement across|capital expenditure|capex)\b", title)
+        external_instrument = re.search(r"(?i)\b(?:equity|stake|shares?|venture capital|funding round|series [A-H]|seed round|loan|credit facility|debt financing|fund close|fund raises?)\b", title)
+        if capex and not external_instrument:
+            return None
     # Exclude non-dilutive grants, ordinary procurement contracts, and aggregate reports.
     if re.search(r"(?i)\bgrant\b", title) and not re.search(r"(?i)\b(?:loan|debt financing|credit facility)\b", title):
         return None
