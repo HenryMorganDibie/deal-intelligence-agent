@@ -173,6 +173,42 @@ def _is_obvious_non_market_story(item: dict[str, Any]) -> bool:
     return bool(_NON_MARKET_STORY.search(text))
 
 
+def _balanced_review_sample(rows: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+    """Round-robin review candidates across African countries before taking repeats."""
+    buckets: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        country = str(row.get("country_hint") or "").strip().upper()
+        if country:
+            bucket = f"country:{country}"
+        elif row.get("market") == "africa":
+            bucket = "pan-africa"
+        else:
+            bucket = "global"
+        buckets.setdefault(bucket, []).append(row)
+
+    for bucket_rows in buckets.values():
+        bucket_rows.sort(key=lambda row: (not bool(row.get("rule_candidates")), row.get("id", "")))
+
+    def bucket_order(key: str) -> tuple[int, str]:
+        if key.startswith("country:") or key == "pan-africa":
+            return (0, key)
+        return (1, key)
+
+    ordered_keys = sorted(buckets, key=bucket_order)
+    selected: list[dict[str, Any]] = []
+    while len(selected) < limit:
+        added = False
+        for key in ordered_keys:
+            if buckets[key]:
+                selected.append(buckets[key].pop(0))
+                added = True
+                if len(selected) >= limit:
+                    break
+        if not added:
+            break
+    return selected
+
+
 def _event_review_rows(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     from src.engines.market_feed import to_events
 
@@ -206,8 +242,7 @@ def _event_review_rows(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "reviewed_by": None,
             "reviewed_at": None,
         })
-    rows.sort(key=lambda row: (not bool(row["rule_candidates"]), row["id"]))
-    return rows[:MAX_NEW_EVENT_REVIEWS_PER_RUN]
+    return _balanced_review_sample(rows, MAX_NEW_EVENT_REVIEWS_PER_RUN)
 
 
 def _prune_event_queue() -> int:
