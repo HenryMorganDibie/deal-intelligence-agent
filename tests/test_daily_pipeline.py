@@ -6,8 +6,77 @@ import random
 from unittest.mock import patch
 
 from scripts import daily_pipeline as pipeline
-from src.engines import alpha_scorer
+from src.engines import alpha_scorer, backtest_universe, historical_backtest
 from src.schemas.models import DetectedSignal, Severity, SignalCandidate, SignalType
+
+
+def test_uncovered_historical_checkpoint_is_retried(tmp_path):
+    checkpoint = tmp_path / "checkpoint.json"
+    assert historical_backtest._checkpoint_needs_run(checkpoint)
+
+    checkpoint.write_text(json.dumps({"covered": False}), encoding="utf-8")
+    assert historical_backtest._checkpoint_needs_run(checkpoint)
+
+    checkpoint.write_text(json.dumps({"covered": True}), encoding="utf-8")
+    assert not historical_backtest._checkpoint_needs_run(checkpoint)
+
+
+def test_historical_shards_prioritize_african_and_retry_uncovered(tmp_path, monkeypatch):
+    run_root = tmp_path / "runs"
+    monkeypatch.setattr(historical_backtest, "RUNS_DIR", run_root)
+    universe_path = tmp_path / "universe.csv"
+    with universe_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["company", "ticker", "market"])
+        writer.writeheader()
+        writer.writerows([
+            {"company": "US Co", "ticker": "US", "market": "us"},
+            {"company": "African Co", "ticker": "AF.JO", "market": "africa"},
+        ])
+    monkeypatch.setattr(backtest_universe, "UNIVERSE_PATH", universe_path)
+
+    start = pipeline.date(2025, 1, 1)
+    end = pipeline.date(2025, 6, 1)
+    run_dir = run_root / f"{start}_{end}"
+    run_dir.mkdir(parents=True)
+    (run_dir / "AF.JO.json").write_text(json.dumps({"covered": False}), encoding="utf-8")
+
+    result = historical_backtest.plan_shards(
+        start, end, [("US Co", "US", None), ("African Co", "AF.JO", None)], 1
+    )
+
+    assert result["remaining"] == 2
+    assert result["shards"][0]["tickers"] == "AF.JO,US"
+
+
+def test_financial_collection_prioritizes_african_tickers(tmp_path, monkeypatch):
+    universe_path = tmp_path / "universe.csv"
+    rows = [
+        {"company": f"US {i}", "ticker": f"US{i}", "market": "us"}
+        for i in range(12)
+    ] + [
+        {"company": "African A", "ticker": "AAA.JO", "market": "africa"},
+        {"company": "African B", "ticker": "BBB.LG", "market": "africa"},
+        {"company": "African C", "ticker": "CCC.NR", "market": "africa"},
+    ]
+    with universe_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["company", "ticker", "market"])
+        writer.writeheader()
+        writer.writerows(rows)
+    monkeypatch.setattr(pipeline, "UNIVERSE_DATA", universe_path)
+    monkeypatch.setattr(pipeline, "FINANCIAL_DATA", tmp_path / "financials.jsonl")
+    monkeypatch.setattr(pipeline, "FINANCIAL_ATTEMPTS", tmp_path / "attempts.jsonl")
+    called = []
+
+    def no_data(ticker, years=4):
+        called.append(ticker)
+        return None
+
+    with patch("src.engines.financials.yahoo_financials", side_effect=no_data):
+        result = pipeline._financial_collection()
+
+    assert called[:3] == ["AAA.JO", "BBB.LG", "CCC.NR"]
+    assert len(called) == 12
+    assert result["retry_after_days"] == 2
 
 
 def test_event_review_queue_uses_rules_only_as_candidates():
