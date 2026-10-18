@@ -28,3 +28,38 @@ def test_historical_scores_include_source_and_country_identity():
     assert "World Bank" in result["source"]
     assert result["source_url"].startswith("https://api.worldbank.org/")
     assert len(result["rows"]) == 1
+
+
+class _FakeResponse:
+    def __init__(self, payload):
+        self.payload = payload
+
+    def raise_for_status(self):
+        return None
+
+    def json(self):
+        return self.payload
+
+
+class _PaginatedClient:
+    def __init__(self):
+        self.pages_requested = []
+
+    def get(self, url, params):
+        page = params["page"]
+        self.pages_requested.append(page)
+        rows = [
+            {"countryiso3code": "NGA", "date": "1960", "value": 1.0},
+            {"countryiso3code": "KEN", "date": "1961", "value": 2.0},
+        ] if page == 1 else [
+            {"countryiso3code": "NGA", "date": "2025", "value": 3.0},
+        ]
+        return _FakeResponse([{"pages": 2}, rows])
+
+
+def test_world_bank_indicator_fetch_reads_every_page():
+    client = _PaginatedClient()
+    result = cr._fetch_indicator(client, "FP.CPI.TOTL.ZG", None, 1960, 2025)
+    assert client.pages_requested == [1, 2]
+    assert result["NGA"] == {"1960": 1.0, "2025": 3.0}
+    assert result["KEN"] == {"1961": 2.0}
