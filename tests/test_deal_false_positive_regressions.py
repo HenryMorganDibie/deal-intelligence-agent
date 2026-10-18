@@ -62,3 +62,27 @@ def test_demonym_is_not_attached_to_ticker_like_target():
     assert deal is not None
     assert deal["target"] == "TCMG"
 
+
+def test_grant_is_not_private_market_funding():
+    assert extract_deal(
+        "Solarise Africa secures $1.15M EEP Africa Grant for expansion into Uganda and Zambia",
+        published="2026-10-16",
+        africa_source=True,
+    ) is None
+
+
+def test_commercial_supply_contract_is_not_equity_funding():
+    assert extract_deal(
+        "Wabtec lands $400M South African rail deal to support diesel locomotives",
+        published="2026-10-16",
+        africa_source=True,
+    ) is None
+
+
+def test_multi_startup_funding_roundup_is_not_a_single_deal():
+    assert extract_deal(
+        "Six African Startups Secure $400,000 in FINCA Ventures Funding to Scale Innovative Solutions",
+        published="2026-10-16",
+        africa_source=True,
+    ) is None
+
