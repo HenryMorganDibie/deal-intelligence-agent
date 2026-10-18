@@ -229,7 +229,7 @@ def _event_review_rows(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     rows = []
     for item in items:
         title = item.get("title", "").strip()
-        if not title:
+        if not title or _is_obvious_non_market_story(item):
             continue
         story_id = _stable_id(title)
         event = event_by_title.get(_normalise_name(title))
