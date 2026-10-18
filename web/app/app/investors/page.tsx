@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Container } from "../../../components/primitives";
-import { ErrorNote, Loading, PageHeader, Table, Td, usd, words } from "../../../components/app/ui";
+import { ErrorNote, Loading, PageHeader, Pagination, Table, Td, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { get, type InvestorRow } from "../../../lib/market";
 
@@ -16,6 +16,12 @@ export default function InvestorsPage() {
   const [kind, setKind] = useState("");
   const [rows, setRows] = useState<InvestorRow[] | null>(null);
   const [funds, setFunds] = useState<Fund[] | null>(null);
+  const [investorTotal, setInvestorTotal] = useState(0);
+  const [investorOffset, setInvestorOffset] = useState(0);
+  const [investorLimit, setInvestorLimit] = useState(50);
+  const [fundTotal, setFundTotal] = useState(0);
+  const [fundOffset, setFundOffset] = useState(0);
+  const [fundLimit, setFundLimit] = useState(50);
   const [error, setError] = useState<string | null>(null);
   const [fundsError, setFundsError] = useState<string | null>(null);
 
@@ -23,8 +29,8 @@ export default function InvestorsPage() {
     let active = true;
     const load = () => {
       setError(null);
-      get<{ investors: InvestorRow[] }>("/api/investors", { role, kind, limit: 200 })
-        .then((r) => { if (active) setRows(r.investors); })
+      get<{ investors: InvestorRow[]; total_matching: number }>("/api/investors", { role, kind, limit: investorLimit, offset: investorOffset })
+        .then((r) => { if (active) { setRows(r.investors); setInvestorTotal(r.total_matching); } })
         .catch((err) => {
           if (!active) return;
           setError(err instanceof ApiError ? err.message : "Could not load investors.");
@@ -39,14 +45,14 @@ export default function InvestorsPage() {
       window.clearInterval(interval);
       window.removeEventListener("focus", load);
     };
-  }, [role, kind]);
+  }, [role, kind, investorOffset, investorLimit]);
 
   useEffect(() => {
     let active = true;
     const load = () => {
       setFundsError(null);
-      get<{ funds: Fund[] }>("/api/funds", { limit: 500 })
-        .then((r) => { if (active) setFunds(r.funds); })
+      get<{ funds: Fund[]; total_matching: number }>("/api/funds", { limit: fundLimit, offset: fundOffset })
+        .then((r) => { if (active) { setFunds(r.funds); setFundTotal(r.total_matching); } })
         .catch((err) => {
           if (!active) return;
           setFundsError(err instanceof ApiError ? err.message : "Could not load fund raises.");
@@ -60,7 +66,7 @@ export default function InvestorsPage() {
       window.clearInterval(interval);
       window.removeEventListener("focus", load);
     };
-  }, []);
+  }, [fundOffset, fundLimit]);
 
   return (
     <Container className="py-10 lg:py-14">
@@ -70,14 +76,14 @@ export default function InvestorsPage() {
         variants.
       </PageHeader>
       <div className="flex flex-wrap gap-3">
-        <select value={role} onChange={(e) => setRole(e.target.value)} className="field w-auto" aria-label="Role">
+        <select value={role} onChange={(e) => { setRole(e.target.value); setInvestorOffset(0); }} className="field w-auto" aria-label="Role">
           {ROLES.map((r) => (
             <option key={r} value={r}>
               {r ? `Role: ${r.toUpperCase().length <= 2 ? r.toUpperCase() : words(r)}` : "All roles"}
             </option>
           ))}
         </select>
-        <select value={kind} onChange={(e) => setKind(e.target.value)} className="field w-auto" aria-label="Investor type">
+        <select value={kind} onChange={(e) => { setKind(e.target.value); setInvestorOffset(0); }} className="field w-auto" aria-label="Investor type">
           {KINDS.map((k) => (
             <option key={k} value={k}>
               {k ? words(k) : "All investor types"}
@@ -108,6 +114,7 @@ export default function InvestorsPage() {
               </tr>
             ))}
           </Table>
+          <Pagination total={investorTotal} offset={investorOffset} limit={investorLimit} onPageChange={setInvestorOffset} onPageSizeChange={(n) => { setInvestorLimit(n); setInvestorOffset(0); }} />
         )}
       </div>
 
@@ -134,6 +141,7 @@ export default function InvestorsPage() {
                 </tr>
               ))}
             </Table>
+            <Pagination total={fundTotal} offset={fundOffset} limit={fundLimit} onPageChange={setFundOffset} onPageSizeChange={(n) => { setFundLimit(n); setFundOffset(0); }} />
           ) : <p className="text-sm text-[color:var(--muted)]">No fund raises or closes recorded.</p>
         )}
       </div>
