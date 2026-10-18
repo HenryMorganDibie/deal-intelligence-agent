@@ -244,7 +244,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         <p className="mt-2 text-xs text-[color:var(--dim)]">
           Of the {marketDeals.length.toLocaleString()} retrieved deal records, {(marketDeals.filter((deal) => deal.verification === "single source").length).toLocaleString()} are currently labelled single-source. Multi-source corroboration means multiple independent stories were detected, not necessarily official filing confirmation.
         </p>
-      )
+      )}
 
       <div className="mt-5 grid gap-4 lg:grid-cols-2">
         <section className="panel p-4 sm:p-5">
