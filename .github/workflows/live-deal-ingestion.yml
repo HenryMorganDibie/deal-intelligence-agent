@@ -2,9 +2,9 @@ name: Live deal ingestion
 
 on:
   schedule:
-    # OIDC authentication avoids a repository secret; GitHub schedule is best-effort.
-    # Temporary budget-safe cadence through the Nov 1 billing reset; Vercel also runs its daily cron.
-    - cron: "17 0 * * *"
+    # Run after the main African business-news announcement window; the endpoint scans a rolling 7 days.
+    # Vercel also runs its independent daily cron. Keep this single Actions workflow budget-safe.
+    - cron: "17 18 * * *"
   workflow_dispatch:
 
 permissions:
