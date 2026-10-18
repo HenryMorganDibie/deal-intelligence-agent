@@ -509,7 +509,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
             return None
     # "X backs Y" is an endorsement unless money is attached ("backs Y with $5m").
     if deal_type == "equity_funding" and re.search(r"(?i)(?<!-)\b(backs|backed)\b", m.group(0)) \
-            and not re.search(r"(?i)\bwith\s+(?:a\s+)?(?:US\$|\$|€|£|₦|N\d|R\d|KSh|USD|EUR)", title):
+            and not re.search(r"(?i)\bwith\s+(?:a\s+)?(?:US\$|\$|€|£|₦|N\d|R\d|KSh|USD|EUR)", text) \
+            and not re.search(r"(?i)\b(?:minority|majority|equity|strategic)?\s*investment\b|\b(?:equity\s+)?stake\b|\bshareholding\b", text):
         return None
     # Capital spending on a plant or project is not a transaction.
     if deal_type == "equity_funding" and m.groupdict().get("obj") and _CAPEX_AFTER.match(norm[m.end():]):
@@ -616,7 +617,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         deal_type = "debt_financing"
     # Financing needs evidence beyond a verb: an amount, or a named counterparty plus an investment word.
     if deal_type in ("equity_funding", "debt_financing"):
-        if amount is None and not (_ROUND.search(text) or (obj and _EQUITY_EVIDENCE.search(title))):
+        if amount is None and not (_ROUND.search(text) or (obj and _EQUITY_EVIDENCE.search(text))):
             return None
         if deal_type == "equity_funding" and not target:
             return None                          # "X invests $Ym" with no investee: capital spending
