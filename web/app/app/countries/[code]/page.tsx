@@ -90,6 +90,8 @@ export default function CountryPage({ params }: { params: { code: string } }) {
   const [marketDeals, setMarketDeals] = useState<Deal[]>([]);
   const [marketTotals, setMarketTotals] = useState({ deals: 0, events: 0 });
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [riskHistory, setRiskHistory] = useState<{ year: number; score: number | null; tier: string | null; coverage: number; input_years: Record<string, number>; indicator_count: number }[]>([]);
+  const [historyMeta, setHistoryMeta] = useState<{ source: string; source_url: string; retrieved: string | null; method: string; archived_snapshots: { snapshot_date: string; score: number | null; tier: string | null; data_as_of: string | null }[]; snapshot_note: string } | null>(null);
 
   useEffect(() => {
     get<CountryResponse>(`/api/countries/${encodeURIComponent(params.code)}`)
@@ -99,6 +101,13 @@ export default function CountryPage({ params }: { params: { code: string } }) {
 
   useEffect(() => {
     let cancelled = false;
+    get<{ rows: typeof riskHistory; source: string; source_url: string; retrieved: string | null; method: string; archived_snapshots: { snapshot_date: string; score: number | null; tier: string | null; data_as_of: string | null }[]; snapshot_note: string }>(`/api/countries/${encodeURIComponent(params.code)}/history`)
+      .then((result) => {
+        if (cancelled) return;
+        setRiskHistory(result.rows);
+        setHistoryMeta({ source: result.source, source_url: result.source_url, retrieved: result.retrieved, method: result.method, archived_snapshots: result.archived_snapshots, snapshot_note: result.snapshot_note });
+      })
+      .catch(() => { if (!cancelled) setHistoryMeta(null); });
     setAnalyticsLoading(true);
     Promise.all([
       get<{ deals: Deal[]; total_matching: number }>("/api/deals", { country: params.code.toUpperCase(), limit: 100, offset: 0 }),
@@ -312,6 +321,45 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           </div>
         )}
       </section>
+
+      <h2 className="eyebrow mt-12">Historical country risk</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
+        Annual scores are reconstructed from the available historical World Bank indicator series, using only observations dated in or before each year. They are not archived historical data vintages, and publisher revisions can change prior scores. The input year for each indicator can differ when a newer observation is unavailable.
+      </p>
+      {riskHistory.length > 0 ? (
+        <div className="panel mt-4 p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-[color:var(--muted)]">{riskHistory.filter((r) => r.score !== null).length} annual points · source dataset retrieved {historyMeta?.retrieved ?? "date unavailable"}</p>
+            {historyMeta?.source_url && <a href={historyMeta.source_url} target="_blank" rel="noreferrer noopener" className="text-xs text-verified hover:underline">Open World Bank source API</a>}
+          </div>
+          <div className="mt-5 grid grid-cols-4 gap-3 sm:grid-cols-8">
+            {riskHistory.map((point) => (
+              <div key={point.year} className="min-w-0">
+                <div className="flex h-32 items-end rounded bg-[color:var(--surface)] p-1">
+                  <div title={point.score === null ? "No score available" : `${point.score}/100 · ${point.tier}`}
+                    className="w-full rounded-t bg-[color:var(--accent)]"
+                    style={{ height: `${point.score === null ? 0 : Math.max(3, point.score)}%`, opacity: point.score === null ? 0.15 : 0.85 }} />
+                </div>
+                <p className="mt-2 text-center text-xs font-medium">{point.year}</p>
+                <p className="text-center text-xs text-[color:var(--muted)]">{point.score === null ? "n/a" : point.score}</p>
+              </div>
+            ))}
+          </div>
+          {historyMeta && <p className="mt-4 text-xs leading-relaxed text-[color:var(--dim)]">{historyMeta.method}</p>}
+          <div className="mt-5 border-t hairline pt-4">
+            <p className="text-sm font-medium">Archived daily snapshots</p>
+            {historyMeta?.archived_snapshots.length ? (
+              <div className="mt-2 overflow-x-auto">
+                <Table head={["Capture date", "Risk score", "Tier", "Indicator dataset date"]}>
+                  {historyMeta.archived_snapshots.map((point) => <tr key={point.snapshot_date}>
+                    <Td>{point.snapshot_date}</Td><Td className="kbd">{point.score ?? "n/a"}</Td><Td>{point.tier ?? "n/a"}</Td><Td>{point.data_as_of ?? "n/a"}</Td>
+                  </tr>)}
+                </Table>
+              </div>
+            ) : <p className="mt-1 text-xs text-[color:var(--muted)]">{historyMeta?.snapshot_note ?? "Historical snapshot archive is not currently available."}</p>}
+          </div>
+        </div>
+      ) : <p className="mt-3 text-sm text-[color:var(--muted)]">Historical risk series is not available for this market yet.</p>}
 
       <h2 className="eyebrow mt-12">Country risk components</h2>
       <p className="mt-2 text-[0.8125rem] text-[color:var(--dim)]">{risk.method}</p>
