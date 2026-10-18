@@ -847,6 +847,15 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         "sources": [{"publisher": publisher, "url": url, "date": published, "title": title, "stage": stage}],
     }
     deal["id"] = deal_id(deal)
+    # Last-mile invariant: a series numeral alone is never a valid fund target.
+    if deal["deal_type"] == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", str(deal.get("target") or "").strip()):
+        fund_marker = re.search(r"(?i)fund", str(deal.get("headline") or ""))
+        if fund_marker:
+            headline = str(deal["headline"])
+            deal["target"] = _clean_name(f"{headline[:fund_marker.end()]} {deal['target']}")
+            deal["id"] = deal_id(deal)
+        else:
+            return None
     return deal
 
 
