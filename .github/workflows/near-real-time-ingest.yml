@@ -1,6 +1,9 @@
 name: Near-real-time deal ingestion
 
 on:
+  push:
+    paths:
+      - ".github/workflows/near-real-time-ingest.yml"
   schedule:
     # GitHub Actions is the scheduler because Vercel Hobby cron is daily-only.
     # Half-hour cadence keeps runner usage bounded while refreshing the market feed frequently.
