@@ -101,7 +101,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
     let cancelled = false;
     setAnalyticsLoading(true);
     Promise.all([
-      get<{ deals: Deal[]; total_matching: number }>("/api/deals", { country: params.code.toUpperCase(), limit: 500, offset: 0 }),
+      get<{ deals: Deal[]; total_matching: number }>("/api/deals", { country: params.code.toUpperCase(), limit: 100, offset: 0 }),
       get<{ events: Event[]; count: number }>("/api/events", { country: params.code.toUpperCase(), limit: 500, offset: 0 }),
     ]).then(([dealResult, eventResult]) => {
       if (cancelled) return;
@@ -139,7 +139,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
       const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (11 - i), 1));
       return { key: date.toISOString().slice(0, 7), label: date.toLocaleDateString("en", { month: "short", timeZone: "UTC" }), count: 0 };
     });
-    const byMonth = new Map(months.map((month) => [month.key, month]));
+    const byMonth = new Map(months.map((month) => [month.key, month] as const));
     for (const deal of marketDeals) {
       if (!deal.announced) continue;
       const month = byMonth.get(deal.announced.slice(0, 7));
@@ -232,7 +232,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
 
       <h2 className="eyebrow mt-12">Market activity overview</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
-        This view summarizes the country’s currently recorded deal and event dataset. Deal and event totals count available records, not every transaction or announcement in the real economy. The charts use up to 500 retrieved deal records; if more records exist, the distributions may not cover the full dataset. Coverage and disclosure vary by market.
+        This view summarizes the country’s currently recorded deal and event dataset. Deal and event totals count available records, not every transaction or announcement in the real economy. The charts use up to 100 retrieved deal records; if more records exist, the distributions may not cover the full dataset. Coverage and disclosure vary by market.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <Stat label="Deals in dataset" value={analyticsLoading ? "Loading…" : marketTotals.deals.toLocaleString()} note="Matching records returned by the API" />
