@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-14T22:03:11+00:00",
+ "generated_at": "2026-10-18T07:11:48+00:00",
  "refresh": {
   "schedule": "monthly, on the 2nd (UTC)",
   "next": "2026-11-02"
@@ -10,31 +10,31 @@
   "as_of_dates": 18,
   "companies": {
    "us": 1012,
-   "africa": 278
+   "africa": 304
   },
   "universe_size": 2240,
   "uncovered_companies": {
-   "africa": 130
+   "africa": 109
   },
-  "not_yet_run": 820,
+  "not_yet_run": 815,
   "company_months": {
    "us": 18216,
-   "africa": 5004
+   "africa": 5472
   },
   "lookback_days": 30,
   "horizon_days": 90,
   "reproduce": "python main.py backtest --historical (network; responses cached in data/hist_cache), then python main.py backtest --evaluation. Data-quality and attribution sets: python -m evaluation.deals.score, python -m evaluation.attribution.score"
  },
  "funnel": {
-  "predictions": 6968,
-  "confirmable_predictions": 4108,
-  "confirmation_labelled": 4108,
+  "predictions": 6998,
+  "confirmable_predictions": 4136,
+  "confirmation_labelled": 4136,
   "confirmation_unlabelled": 0,
-  "confirmed": 1172,
-  "price_only_predictions": 2860,
-  "direction_labelled": 6742,
+  "confirmed": 1173,
+  "price_only_predictions": 2862,
+  "direction_labelled": 6749,
   "price_only_direction_labelled": 2809,
-  "with_market_move": 6742,
+  "with_market_move": 6749,
   "explanation": "Every flag in the replay is a prediction. Confirmable types (M&A, credit, distress, leadership, regulatory, restructuring) are judged on whether the event happened; those whose outcome could be checked are 'labelled', and 'confirmed' is the subset where it happened. Earnings surprises and insider trades are the disclosure itself, so they are judged only on the market move. Market moves are measured for every prediction with prices, whatever its type."
  },
  "by_type": {
@@ -63,7 +63,7 @@
      "base_rate": {
       "value": 0.007,
       "hits": 158,
-      "company_months": 23220
+      "company_months": 23688
      },
      "lift": {
       "value": 8.14,
@@ -169,7 +169,7 @@
      "base_rate": {
       "value": 0.0,
       "hits": 2,
-      "company_months": 5004
+      "company_months": 5472
      },
      "lift": null,
      "recall": {
@@ -224,7 +224,7 @@
      "base_rate": {
       "value": 0.001,
       "hits": 20,
-      "company_months": 23220
+      "company_months": 23688
      },
      "lift": {
       "value": 59.0,
@@ -336,7 +336,7 @@
      "base_rate": {
       "value": 0.0,
       "hits": 0,
-      "company_months": 5004
+      "company_months": 5472
      },
      "lift": null,
      "recall": null
@@ -384,8 +384,8 @@
      },
      "base_rate": {
       "value": 0.017,
-      "hits": 401,
-      "company_months": 23220
+      "hits": 404,
+      "company_months": 23688
      },
      "lift": {
       "value": 5.82,
@@ -397,7 +397,7 @@
       "low": 0.034,
       "high": 0.104,
       "k": 11,
-      "n": 183
+      "n": 184
      }
     },
     "market_reaction": {
@@ -495,17 +495,21 @@
       "n": 1
      },
      "base_rate": {
-      "value": 0.0,
-      "hits": 2,
-      "company_months": 5004
+      "value": 0.001,
+      "hits": 5,
+      "company_months": 5472
      },
-     "lift": null,
+     "lift": {
+      "value": 0.0,
+      "low": 0.0,
+      "high": 299.0
+     },
      "recall": {
       "value": 0.0,
       "low": 0.0,
-      "high": 0.793,
+      "high": 0.658,
       "k": 0,
-      "n": 1
+      "n": 2
      }
     },
     "market_reaction": {
@@ -596,7 +600,7 @@
   "insider_activity": {
    "price_only": true,
    "all": {
-    "predictions": 2355,
+    "predictions": 2357,
     "event_confirmation": null,
     "market_reaction": {
      "moves_n": 2318,
@@ -638,7 +642,7 @@
     }
    },
    "africa": {
-    "predictions": 22,
+    "predictions": 24,
     "event_confirmation": null,
     "market_reaction": {
      "moves_n": 7,
@@ -662,17 +666,17 @@
   "leadership_change": {
    "price_only": false,
    "all": {
-    "predictions": 2297,
+    "predictions": 2308,
     "event_confirmation": {
-     "labelled": 2297,
+     "labelled": 2308,
      "unlabelled": 0,
-     "confirmed": 1012,
+     "confirmed": 1013,
      "precision": {
-      "value": 0.441,
-      "low": 0.42,
-      "high": 0.461,
-      "k": 1012,
-      "n": 2297
+      "value": 0.439,
+      "low": 0.419,
+      "high": 0.459,
+      "k": 1013,
+      "n": 2308
      },
      "precision_official_only": {
       "value": 0.443,
@@ -682,37 +686,37 @@
       "n": 2244
      },
      "base_rate": {
-      "value": 0.34,
-      "hits": 7889,
-      "company_months": 23220
+      "value": 0.333,
+      "hits": 7897,
+      "company_months": 23688
      },
      "lift": {
-      "value": 1.3,
-      "low": 1.24,
-      "high": 1.36
+      "value": 1.32,
+      "low": 1.26,
+      "high": 1.38
      },
      "recall": {
       "value": 0.361,
       "low": 0.346,
       "high": 0.375,
-      "k": 1524,
-      "n": 4227
+      "k": 1525,
+      "n": 4230
      }
     },
     "market_reaction": {
-     "moves_n": 2239,
+     "moves_n": 2242,
      "direction_hit_rate": {
       "value": 0.518,
-      "low": 0.497,
+      "low": 0.498,
       "high": 0.539,
-      "k": 1160,
-      "n": 2239
+      "k": 1162,
+      "n": 2242
      },
      "mean_move_in_predicted_direction_pct": {
-      "value": -0.04,
-      "low": -0.27,
-      "high": 0.19,
-      "n": 2239,
+      "value": -0.03,
+      "low": -0.26,
+      "high": 0.2,
+      "n": 2242,
       "median": 0.15
      }
     }
@@ -774,17 +778,17 @@
     }
    },
    "africa": {
-    "predictions": 66,
+    "predictions": 77,
     "event_confirmation": {
-     "labelled": 66,
+     "labelled": 77,
      "unlabelled": 0,
-     "confirmed": 2,
+     "confirmed": 3,
      "precision": {
-      "value": 0.03,
-      "low": 0.008,
-      "high": 0.104,
-      "k": 2,
-      "n": 66
+      "value": 0.039,
+      "low": 0.013,
+      "high": 0.108,
+      "k": 3,
+      "n": 77
      },
      "precision_official_only": {
       "value": 0.0,
@@ -795,37 +799,37 @@
      },
      "base_rate": {
       "value": 0.012,
-      "hits": 59,
-      "company_months": 5004
+      "hits": 67,
+      "company_months": 5472
      },
      "lift": {
-      "value": 2.5,
-      "low": 0.67,
-      "high": 8.67
+      "value": 3.25,
+      "low": 1.08,
+      "high": 9.0
      },
      "recall": {
-      "value": 0.2,
-      "low": 0.1,
-      "high": 0.359,
-      "k": 7,
-      "n": 35
+      "value": 0.211,
+      "low": 0.111,
+      "high": 0.363,
+      "k": 8,
+      "n": 38
      }
     },
     "market_reaction": {
-     "moves_n": 36,
+     "moves_n": 39,
      "direction_hit_rate": {
-      "value": 0.444,
-      "low": 0.295,
-      "high": 0.604,
-      "k": 16,
-      "n": 36
+      "value": 0.462,
+      "low": 0.316,
+      "high": 0.614,
+      "k": 18,
+      "n": 39
      },
      "mean_move_in_predicted_direction_pct": {
-      "value": -0.52,
-      "low": -2.84,
-      "high": 1.81,
-      "n": 36,
-      "median": -0.94
+      "value": -0.16,
+      "low": -2.37,
+      "high": 2.05,
+      "n": 39,
+      "median": -0.69
      }
     }
    }
@@ -833,17 +837,17 @@
   "m_and_a_activity": {
    "price_only": false,
    "all": {
-    "predictions": 1284,
+    "predictions": 1295,
     "event_confirmation": {
-     "labelled": 1284,
+     "labelled": 1295,
      "unlabelled": 0,
      "confirmed": 120,
      "precision": {
       "value": 0.093,
-      "low": 0.079,
-      "high": 0.111,
+      "low": 0.078,
+      "high": 0.11,
       "k": 120,
-      "n": 1284
+      "n": 1295
      },
      "precision_official_only": {
       "value": 0.087,
@@ -853,14 +857,14 @@
       "n": 1175
      },
      "base_rate": {
-      "value": 0.049,
+      "value": 0.048,
       "hits": 1141,
-      "company_months": 23220
+      "company_months": 23688
      },
      "lift": {
-      "value": 1.9,
-      "low": 1.61,
-      "high": 2.27
+      "value": 1.94,
+      "low": 1.62,
+      "high": 2.29
      },
      "recall": {
       "value": 0.258,
@@ -871,20 +875,20 @@
      }
     },
     "market_reaction": {
-     "moves_n": 1205,
+     "moves_n": 1208,
      "direction_hit_rate": {
-      "value": 0.495,
+      "value": 0.494,
       "low": 0.466,
-      "high": 0.523,
-      "k": 596,
-      "n": 1205
+      "high": 0.522,
+      "k": 597,
+      "n": 1208
      },
      "mean_move_in_predicted_direction_pct": {
-      "value": -0.08,
+      "value": -0.09,
       "low": -0.42,
       "high": 0.25,
-      "n": 1205,
-      "median": -0.05
+      "n": 1208,
+      "median": -0.06
      }
     }
    },
@@ -945,17 +949,17 @@
     }
    },
    "africa": {
-    "predictions": 123,
+    "predictions": 134,
     "event_confirmation": {
-     "labelled": 123,
+     "labelled": 134,
      "unlabelled": 0,
      "confirmed": 0,
      "precision": {
       "value": 0.0,
       "low": 0.0,
-      "high": 0.03,
+      "high": 0.028,
       "k": 0,
-      "n": 123
+      "n": 134
      },
      "precision_official_only": {
       "value": 0.0,
@@ -967,12 +971,12 @@
      "base_rate": {
       "value": 0.002,
       "hits": 12,
-      "company_months": 5004
+      "company_months": 5472
      },
      "lift": {
       "value": 0.0,
       "low": 0.0,
-      "high": 15.0
+      "high": 14.0
      },
      "recall": {
       "value": 0.0,
@@ -983,20 +987,20 @@
      }
     },
     "market_reaction": {
-     "moves_n": 76,
+     "moves_n": 79,
      "direction_hit_rate": {
-      "value": 0.447,
-      "low": 0.341,
-      "high": 0.559,
-      "k": 34,
-      "n": 76
+      "value": 0.443,
+      "low": 0.339,
+      "high": 0.553,
+      "k": 35,
+      "n": 79
      },
      "mean_move_in_predicted_direction_pct": {
-      "value": -0.5,
-      "low": -1.38,
-      "high": 0.37,
-      "n": 76,
-      "median": -0.24
+      "value": -0.54,
+      "low": -1.39,
+      "high": 0.3,
+      "n": 79,
+      "median": -0.28
      }
     }
    }
@@ -1004,17 +1008,17 @@
   "regulatory_action": {
    "price_only": false,
    "all": {
-    "predictions": 324,
+    "predictions": 330,
     "event_confirmation": {
-     "labelled": 324,
+     "labelled": 330,
      "unlabelled": 0,
      "confirmed": 25,
      "precision": {
-      "value": 0.077,
-      "low": 0.053,
-      "high": 0.111,
+      "value": 0.076,
+      "low": 0.052,
+      "high": 0.109,
       "k": 25,
-      "n": 324
+      "n": 330
      },
      "precision_official_only": {
       "value": 0.0,
@@ -1024,14 +1028,14 @@
       "n": 301
      },
      "base_rate": {
-      "value": 0.011,
+      "value": 0.01,
       "hits": 245,
-      "company_months": 23220
+      "company_months": 23688
      },
      "lift": {
-      "value": 7.0,
-      "low": 4.82,
-      "high": 10.09
+      "value": 7.6,
+      "low": 5.2,
+      "high": 10.9
      },
      "recall": {
       "value": 0.237,
@@ -1042,19 +1046,19 @@
      }
     },
     "market_reaction": {
-     "moves_n": 304,
+     "moves_n": 305,
      "direction_hit_rate": {
-      "value": 0.497,
-      "low": 0.441,
-      "high": 0.553,
-      "k": 151,
-      "n": 304
+      "value": 0.498,
+      "low": 0.443,
+      "high": 0.554,
+      "k": 152,
+      "n": 305
      },
      "mean_move_in_predicted_direction_pct": {
-      "value": -0.11,
-      "low": -0.7,
-      "high": 0.48,
-      "n": 304,
+      "value": -0.09,
+      "low": -0.68,
+      "high": 0.5,
+      "n": 305,
       "median": -0.02
      }
     }
@@ -1116,17 +1120,17 @@
     }
    },
    "africa": {
-    "predictions": 27,
+    "predictions": 33,
     "event_confirmation": {
-     "labelled": 27,
+     "labelled": 33,
      "unlabelled": 0,
      "confirmed": 2,
      "precision": {
-      "value": 0.074,
-      "low": 0.021,
-      "high": 0.234,
+      "value": 0.061,
+      "low": 0.017,
+      "high": 0.196,
       "k": 2,
-      "n": 27
+      "n": 33
      },
      "precision_official_only": {
       "value": 0.0,
@@ -1136,14 +1140,14 @@
       "n": 4
      },
      "base_rate": {
-      "value": 0.003,
+      "value": 0.002,
       "hits": 13,
-      "company_months": 5004
+      "company_months": 5472
      },
      "lift": {
-      "value": 24.67,
-      "low": 7.0,
-      "high": 78.0
+      "value": 30.5,
+      "low": 8.5,
+      "high": 98.0
      },
      "recall": {
       "value": 0.222,
@@ -1154,20 +1158,20 @@
      }
     },
     "market_reaction": {
-     "moves_n": 13,
+     "moves_n": 14,
      "direction_hit_rate": {
-      "value": 0.462,
-      "low": 0.232,
-      "high": 0.709,
-      "k": 6,
-      "n": 13
+      "value": 0.5,
+      "low": 0.268,
+      "high": 0.732,
+      "k": 7,
+      "n": 14
      },
      "mean_move_in_predicted_direction_pct": {
-      "value": 0.05,
-      "low": -2.24,
-      "high": 2.34,
-      "n": 13,
-      "median": -1.25
+      "value": 0.37,
+      "low": -1.84,
+      "high": 2.58,
+      "n": 14,
+      "median": 0.06
      }
     }
    }
@@ -1175,17 +1179,17 @@
  },
  "pooled_confirmable": {
   "all": {
-   "predictions": 4108,
+   "predictions": 4136,
    "event_confirmation": {
-    "labelled": 4108,
+    "labelled": 4136,
     "unlabelled": 0,
-    "confirmed": 1172,
+    "confirmed": 1173,
     "precision": {
-     "value": 0.285,
-     "low": 0.272,
-     "high": 0.299,
-     "k": 1172,
-     "n": 4108
+     "value": 0.284,
+     "low": 0.27,
+     "high": 0.298,
+     "k": 1173,
+     "n": 4136
     },
     "precision_official_only": {
      "value": 0.284,
@@ -1203,20 +1207,20 @@
     "recall": null
    },
    "market_reaction": {
-    "moves_n": 3933,
+    "moves_n": 3940,
     "direction_hit_rate": {
      "value": 0.51,
-     "low": 0.494,
+     "low": 0.495,
      "high": 0.526,
-     "k": 2006,
-     "n": 3933
+     "k": 2010,
+     "n": 3940
     },
     "mean_move_in_predicted_direction_pct": {
      "value": -0.03,
      "low": -0.21,
      "high": 0.15,
-     "n": 3933,
-     "median": 0.09
+     "n": 3940,
+     "median": 0.1
     }
    }
   },
@@ -1267,17 +1271,17 @@
    }
   },
   "africa": {
-   "predictions": 234,
+   "predictions": 262,
    "event_confirmation": {
-    "labelled": 234,
+    "labelled": 262,
     "unlabelled": 0,
-    "confirmed": 4,
+    "confirmed": 5,
     "precision": {
-     "value": 0.017,
-     "low": 0.007,
-     "high": 0.043,
-     "k": 4,
-     "n": 234
+     "value": 0.019,
+     "low": 0.008,
+     "high": 0.044,
+     "k": 5,
+     "n": 262
     },
     "precision_official_only": {
      "value": 0.0,
@@ -1295,80 +1299,80 @@
     "recall": null
    },
    "market_reaction": {
-    "moves_n": 134,
+    "moves_n": 141,
     "direction_hit_rate": {
-     "value": 0.463,
-     "low": 0.38,
-     "high": 0.547,
-     "k": 62,
-     "n": 134
+     "value": 0.468,
+     "low": 0.388,
+     "high": 0.55,
+     "k": 66,
+     "n": 141
     },
     "mean_move_in_predicted_direction_pct": {
-     "value": -0.36,
-     "low": -1.19,
-     "high": 0.48,
-     "n": 134,
-     "median": -0.27
+     "value": -0.25,
+     "low": -1.07,
+     "high": 0.56,
+     "n": 141,
+     "median": -0.26
     }
    }
   }
  },
  "alpha": {
   "what_it_is": "A ranking from declared weights (severity 35, source credibility 25, corroboration 20, recency 10, liquidity 10). The weights were not fitted to outcomes.",
-  "spearman_alpha_vs_confirmed": 0.19,
+  "spearman_alpha_vs_confirmed": 0.193,
   "bands": {
    "low": {
     "alpha_range": [
      39.7,
-     59.0
+     57.2
     ],
     "event_confirmation": {
-     "value": 0.099,
-     "low": 0.084,
-     "high": 0.116,
+     "value": 0.098,
+     "low": 0.083,
+     "high": 0.115,
      "k": 135,
-     "n": 1365
+     "n": 1378
     },
     "direction_hit_rate": {
      "value": 0.503,
      "low": 0.478,
-     "high": 0.527,
-     "k": 797,
-     "n": 1586
+     "high": 0.528,
+     "k": 790,
+     "n": 1570
     },
     "mean_move_in_predicted_direction_pct": {
-     "value": -0.05,
-     "low": -0.33,
-     "high": 0.23,
-     "n": 1586,
+     "value": -0.04,
+     "low": -0.32,
+     "high": 0.24,
+     "n": 1570,
      "median": 0.04
     }
    },
    "middle": {
     "alpha_range": [
-     59.3,
+     57.5,
      66.7
     ],
     "event_confirmation": {
-     "value": 0.414,
-     "low": 0.388,
-     "high": 0.441,
-     "k": 562,
-     "n": 1357
+     "value": 0.411,
+     "low": 0.385,
+     "high": 0.437,
+     "k": 563,
+     "n": 1370
     },
     "direction_hit_rate": {
-     "value": 0.525,
+     "value": 0.524,
      "low": 0.498,
-     "high": 0.552,
-     "k": 710,
-     "n": 1352
+     "high": 0.55,
+     "k": 720,
+     "n": 1374
     },
     "mean_move_in_predicted_direction_pct": {
-     "value": 0.01,
+     "value": 0.0,
      "low": -0.28,
-     "high": 0.3,
-     "n": 1352,
-     "median": 0.17
+     "high": 0.29,
+     "n": 1374,
+     "median": 0.16
     }
    },
    "high": {
@@ -1377,25 +1381,25 @@
      95.2
     ],
     "event_confirmation": {
-     "value": 0.343,
+     "value": 0.342,
      "low": 0.318,
      "high": 0.368,
      "k": 475,
-     "n": 1386
+     "n": 1388
     },
     "direction_hit_rate": {
      "value": 0.504,
      "low": 0.488,
      "high": 0.52,
-     "k": 1917,
-     "n": 3804
+     "k": 1918,
+     "n": 3805
     },
     "mean_move_in_predicted_direction_pct": {
      "value": 0.06,
      "low": -0.12,
      "high": 0.24,
-     "n": 3804,
-     "median": 0.04
+     "n": 3805,
+     "median": 0.05
     }
    }
   },
@@ -1419,31 +1423,31 @@
     "spearman": 0.241
    },
    "leadership_change": {
-    "labelled": 2297,
+    "labelled": 2308,
     "precision": {
-     "low": 0.406,
+     "low": 0.402,
      "middle": 0.444,
-     "high": 0.47
+     "high": 0.469
     },
-    "spearman": 0.051
+    "spearman": 0.055
    },
    "m_and_a_activity": {
-    "labelled": 1284,
+    "labelled": 1295,
     "precision": {
-     "low": 0.068,
+     "low": 0.067,
      "middle": 0.07,
-     "high": 0.142
+     "high": 0.141
     },
     "spearman": 0.132
    },
    "regulatory_action": {
-    "labelled": 324,
+    "labelled": 330,
     "precision": {
      "low": 0.065,
-     "middle": 0.055,
-     "high": 0.111
+     "middle": 0.053,
+     "high": 0.109
     },
-    "spearman": 0.073
+    "spearman": 0.076
    }
   },
   "reading": "The top two thirds confirm far more often than the lowest third, but the highest third does not beat the middle one: the score separates weak flags from the rest, not the best from the good. None of this shows that acting on high-alpha flags earns returns: see the market reaction columns, which are measured separately and include no costs."

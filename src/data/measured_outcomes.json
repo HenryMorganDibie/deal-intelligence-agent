@@ -1,5 +1,5 @@
 {
- "companies": 1290,
+ "companies": 1316,
  "method": "Confirmation: share of flags followed within 90 days by a confirming filing, disclosure or credible report. Moves: market-adjusted return over 10 calendar days after the flag (first close on or after day 10). Figures with fewer than 10 observations are reported as insufficient history; smaller groups are smoothed toward their parent rate with 5 pseudo-observations.",
  "observations": [
   [
@@ -47715,6 +47715,13 @@
    1.69
   ],
   [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
    "m_and_a_activity",
    "low",
    false,
@@ -47741,6 +47748,13 @@
    false,
    false,
    -6.56
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
   ],
   [
    "m_and_a_activity",
@@ -47876,6 +47890,13 @@
    null
   ],
   [
+   "regulatory_action",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
    "m_and_a_activity",
    "low",
    false,
@@ -47981,6 +48002,27 @@
    null
   ],
   [
+   "m_and_a_activity",
+   "medium",
+   false,
+   true,
+   1.13
+  ],
+  [
+   "regulatory_action",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
    "regulatory_action",
    "critical",
    false,
@@ -48016,6 +48058,13 @@
    5.99
   ],
   [
+   "m_and_a_activity",
+   "medium",
+   false,
+   null,
+   null
+  ],
+  [
    "regulatory_action",
    "low",
    false,
@@ -48035,6 +48084,83 @@
    null,
    true,
    -1.52
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "insider_activity",
+   "low",
+   null,
+   null,
+   null
+  ],
+  [
+   "regulatory_action",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "regulatory_action",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "insider_activity",
+   "low",
+   null,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
   ],
   [
    "m_and_a_activity",
@@ -48060,6 +48186,27 @@
   [
    "m_and_a_activity",
    "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   true,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "high",
    false,
    null,
    null
@@ -48135,6 +48282,27 @@
    null
   ],
   [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "regulatory_action",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
    "distressed_asset",
    "high",
    false,
@@ -48161,6 +48329,20 @@
    false,
    false,
    -2.8
+  ],
+  [
+   "leadership_change",
+   "high",
+   false,
+   true,
+   -8.69
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   false,
+   -1.39
   ],
   [
    "m_and_a_activity",
@@ -48301,6 +48483,34 @@
    false,
    true,
    -3.21
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   true,
+   -5.58
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   false,
+   1.86
+  ],
+  [
+   "regulatory_action",
+   "low",
+   false,
+   true,
+   -4.5
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   false,
+   -4.5
   ],
   [
    "m_and_a_activity",
@@ -48780,9 +48990,9 @@
   ]
  ],
  "overall_confirmation": {
-  "confirmed": 1172,
-  "labelled": 4108,
-  "rate": 0.2853
+  "confirmed": 1173,
+  "labelled": 4136,
+  "rate": 0.2836
  },
  "period": "2024-01-15 to 2025-06-15",
  "signals": {
@@ -49117,7 +49327,7 @@
       "p75": 3.81,
       "share_negative": 0.437
      },
-     "predictions": 105
+     "predictions": 107
     },
     "medium": {
      "direction": {
@@ -49148,7 +49358,7 @@
      "p75": 2.35,
      "share_negative": 0.519
     },
-    "predictions": 2355
+    "predictions": 2357
    }
   },
   "leadership_change": {
@@ -49156,32 +49366,32 @@
     "high": {
      "confirmation": {
       "confirmed": 59,
-      "labelled": 126,
-      "rate": 0.4683
+      "labelled": 127,
+      "rate": 0.4646
      },
      "moves": {
-      "median": -0.65,
-      "n": 123,
-      "p25": -3.44,
-      "p75": 1.63,
-      "share_negative": 0.569
+      "median": -0.69,
+      "n": 124,
+      "p25": -3.57,
+      "p75": 1.55,
+      "share_negative": 0.573
      },
-     "predictions": 126
+     "predictions": 127
     },
     "low": {
      "confirmation": {
-      "confirmed": 60,
-      "labelled": 184,
-      "rate": 0.3261
+      "confirmed": 61,
+      "labelled": 194,
+      "rate": 0.3144
      },
      "moves": {
       "median": -0.12,
-      "n": 158,
-      "p25": -2.55,
-      "p75": 3.53,
+      "n": 160,
+      "p25": -2.56,
+      "p75": 3.44,
       "share_negative": 0.506
      },
-     "predictions": 184
+     "predictions": 194
     },
     "medium": {
      "confirmation": {
@@ -49201,18 +49411,18 @@
    },
    "type": {
     "confirmation": {
-     "confirmed": 1012,
-     "labelled": 2297,
-     "rate": 0.4406
+     "confirmed": 1013,
+     "labelled": 2308,
+     "rate": 0.4389
     },
     "moves": {
      "median": -0.15,
-     "n": 2239,
+     "n": 2242,
      "p25": -2.65,
      "p75": 2.49,
      "share_negative": 0.518
     },
-    "predictions": 2297
+    "predictions": 2308
    }
   },
   "m_and_a_activity": {
@@ -49235,8 +49445,8 @@
     "high": {
      "confirmation": {
       "confirmed": 21,
-      "labelled": 178,
-      "rate": 0.118
+      "labelled": 179,
+      "rate": 0.1173
      },
      "moves": {
       "median": 0.45,
@@ -49245,53 +49455,53 @@
       "p75": 3.63,
       "share_negative": 0.441
      },
-     "predictions": 178
+     "predictions": 179
     },
     "low": {
      "confirmation": {
       "confirmed": 59,
-      "labelled": 865,
-      "rate": 0.0682
+      "labelled": 873,
+      "rate": 0.0676
      },
      "moves": {
-      "median": -0.12,
-      "n": 818,
-      "p25": -2.67,
-      "p75": 2.63,
-      "share_negative": 0.515
+      "median": -0.13,
+      "n": 820,
+      "p25": -2.68,
+      "p75": 2.61,
+      "share_negative": 0.516
      },
-     "predictions": 865
+     "predictions": 873
     },
     "medium": {
      "confirmation": {
       "confirmed": 9,
-      "labelled": 120,
-      "rate": 0.075
+      "labelled": 122,
+      "rate": 0.0738
      },
      "moves": {
       "median": -0.7,
-      "n": 108,
-      "p25": -3.3,
-      "p75": 0.94,
-      "share_negative": 0.583
+      "n": 109,
+      "p25": -3.28,
+      "p75": 0.96,
+      "share_negative": 0.578
      },
-     "predictions": 120
+     "predictions": 122
     }
    },
    "type": {
     "confirmation": {
      "confirmed": 120,
-     "labelled": 1284,
-     "rate": 0.0935
+     "labelled": 1295,
+     "rate": 0.0927
     },
     "moves": {
-     "median": -0.05,
-     "n": 1205,
-     "p25": -2.71,
-     "p75": 2.62,
+     "median": -0.06,
+     "n": 1208,
+     "p25": -2.72,
+     "p75": 2.6,
      "share_negative": 0.505
     },
-    "predictions": 1284
+    "predictions": 1295
    }
   },
   "regulatory_action": {
@@ -49329,17 +49539,17 @@
     "low": {
      "confirmation": {
       "confirmed": 12,
-      "labelled": 194,
-      "rate": 0.0619
+      "labelled": 200,
+      "rate": 0.06
      },
      "moves": {
-      "median": -0.59,
-      "n": 180,
-      "p25": -2.85,
-      "p75": 2.35,
-      "share_negative": 0.539
+      "median": -0.62,
+      "n": 181,
+      "p25": -2.9,
+      "p75": 2.34,
+      "share_negative": 0.541
      },
-     "predictions": 194
+     "predictions": 200
     },
     "medium": {
      "confirmation": {
@@ -49360,17 +49570,17 @@
    "type": {
     "confirmation": {
      "confirmed": 25,
-     "labelled": 324,
-     "rate": 0.0772
+     "labelled": 330,
+     "rate": 0.0758
     },
     "moves": {
      "median": 0.02,
-     "n": 304,
-     "p25": -2.31,
+     "n": 305,
+     "p25": -2.33,
      "p75": 2.56,
-     "share_negative": 0.497
+     "share_negative": 0.498
     },
-    "predictions": 324
+    "predictions": 330
    }
   }
  },
