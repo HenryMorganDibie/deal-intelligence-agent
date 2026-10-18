@@ -39,6 +39,14 @@
     "oryx energies tanzania": {
       "name": "Oryx Energies Tanzania",
       "kind": "organization"
+    },
+    "midyan developments": {
+      "name": "MIDYAN Developments",
+      "kind": "organization"
+    },
+    "egp 12bn": {
+      "name": "EGP 12bn",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -121,7 +129,21 @@
           "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxOeHF5VVpEbnRxYUtJSGxyb0I5LXFsazNvQkZ4MHMtNzZ3OHRod3pTRk5tdnpiOVZZSTR3RnlsLWlhT3J0THNWUnNHel9iMjhBZE5VYVA5Q2V0NjJpVXRGWGJjYUNBWVVZelE5eGlDZVJiSzBXZ0djbDB3VGxqM1NhSUxFSTnSAYwBQVVfeXFMT1hxWU5yVGJmaGY3ZHV3ZGE1ZW1WWEhuWDMyeVFHaWVQQ19VcHlZVmZCb2oyR1BpNHJNY0lydE93Q2ZxYllObHpJSFlQTXNQVGhpZzQwNko0NE1kTGJFdlA2dmhTUG11YVpOOEpFNnV2RUZha3BhRWdpbUZkbHc0RkloYVcxeFpzR291N3c?oc=5"
         }
       ]
+    },
+    "964602be713cd90da645": {
+      "id": "964602be713cd90da645",
+      "from": "midyan developments",
+      "to": "egp 12bn",
+      "type": "equity_funding",
+      "first_seen": "2026-10-17",
+      "sources": [
+        {
+          "title": "MIDYAN Developments invests EGP 12bn across three sectors over four years",
+          "publisher": "Daily News Egypt",
+          "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNVTBfUHBhTFladlRVZnhGUHJyQmRrbnVGZDZwTjRaZU8yektLaEdBd3FVcVViSWxkeWhncW50NVV6WVU2UjRBY3dKZlBkZklmQmhBT3ZjTDlXYnZtclpVUjhGZFpKVmJYcFJRVWtZYmtwb3VxeUN2OWZaR1FOVHZYZmk3OUVqZnVkQ0Y0SnJVMkJuWURFTElpRHVmQlhabWJBQTNCTExNRHZNMjJKWlNwVHk4alh1SGc?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-18T04:09:11.076062+00:00"
+  "updated_at": "2026-10-18T04:11:57.778360+00:00"
 }

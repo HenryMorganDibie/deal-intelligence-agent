@@ -128,3 +128,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ARD.CS"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ARDOVA.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AREH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AREHA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ARH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ARI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ARL.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ARM.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ART.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ARVA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ASC.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ASCM.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ASG.GH"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ASHAKACEM.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ASOSAVINGS.LG"}

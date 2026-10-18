@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-18T04:09:14.411747+00:00",
+  "updated_at": "2026-10-18T04:12:00.904446+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 0,
+      "new_review_items_today": 1,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 44,
-      "new_observations_today": 5,
+      "observations_collected": 48,
+      "new_observations_today": 4,
       "unreviewed_flagged_observations": 4,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 5,
-      "entities": 10,
+      "relationships": 6,
+      "entities": 12,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,23 +177,24 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 44,
-    "new_rows": 5,
+    "collected_tickers": 48,
+    "new_rows": 4,
     "failures": [
-      "APPC.CA",
-      "APSW.CA",
-      "ARA.JO",
-      "ARBICO.LG",
-      "ARD.CS",
-      "ARDOVA.LG",
-      "AREH.CA"
+      "AREHA.CA",
+      "ARH.JO",
+      "ARM.NR",
+      "ARVA.CA",
+      "ASC.JO",
+      "ASG.GH",
+      "ASHAKACEM.LG",
+      "ASOSAVINGS.LG"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 10,
-    "relationships": 5,
-    "source_links": 7,
+    "nodes": 12,
+    "relationships": 6,
+    "source_links": 8,
     "most_connected": [
       {
         "name": "Finnfund",
