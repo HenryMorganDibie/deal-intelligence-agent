@@ -341,7 +341,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
 
       <h2 className="eyebrow mt-12">Historical country risk</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
-        The chart starts with the earliest available annual observations in the source dataset and reconstructs scores using only observations dated in or before each year. They are not archived historical data vintages, and publisher revisions can change prior scores. The input year for each indicator can differ when a newer observation is unavailable.
+        Reconstructed from dated World Bank observations, not archived historical scores. Only years with source observations are shown; scores with less than 40% component coverage are withheld.
       </p>
       {riskHistory.length > 0 ? (
         <div className="panel mt-4 p-4 sm:p-5">
@@ -380,7 +380,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
 
       <h2 className="eyebrow mt-12">Historical market activity</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
-        The timeline starts with the earliest dated deal or event record currently held for this country. It is not proof that earlier activity did not occur. Official-source counts mean URL hostnames matched the configured registry, not that every transaction claim has been independently confirmed.
+        Counts include only dated records currently held. Missing years are omitted because they may reflect missing coverage, not zero activity. Official-host matches verify the publisher domain, not the transaction claim itself.
       </p>
       {marketHistory.length > 0 ? (
         <div className="panel mt-4 overflow-x-auto p-4 sm:p-5">
