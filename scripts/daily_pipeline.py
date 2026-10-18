@@ -161,12 +161,25 @@ def _collect_headlines() -> list[dict[str, Any]]:
     ))
 
 
+_NON_MARKET_STORY = re.compile(
+    r"\b(mayoralty|mayoral candidate|illegal immigration|football team|soccer team|"
+    r"youth tournament|sports tournament|political campaign|election campaign)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_obvious_non_market_story(item: dict[str, Any]) -> bool:
+    text = f"{item.get('title', '')} {item.get('snippet', '')}"
+    return bool(_NON_MARKET_STORY.search(text))
+
+
 def _event_review_rows(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     from src.engines.market_feed import to_events
 
+    eligible_items = [item for item in items if not _is_obvious_non_market_story(item)]
     event_by_title = {
         _normalise_name(event["headline"]): event
-        for event in to_events(items, min_score=0.0)
+        for event in to_events(eligible_items, min_score=0.0)
     }
     rows = []
     for item in items:
@@ -200,8 +213,13 @@ def _prune_event_queue() -> int:
     relevant = [
         row for row in rows
         if row.get("label") is not None
-        or row.get("rule_candidates")
-        or _BUSINESS_CONTEXT.search(f"{row.get('title', '')} {row.get('snippet', '')}")
+        or (
+            not _is_obvious_non_market_story(row)
+            and (
+                row.get("rule_candidates")
+                or _BUSINESS_CONTEXT.search(f"{row.get('title', '')} {row.get('snippet', '')}")
+            )
+        )
     ]
     if len(relevant) != len(rows):
         EVENT_QUEUE.write_text(
@@ -264,6 +282,20 @@ def _entity_review_rows(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _tokens(text: str) -> list[str]:
     words = re.findall(r"[a-z0-9]+", text.lower())
     return words + [f"{left}_{right}" for left, right in zip(words, words[1:])]
+
+
+def _locked_event_source_ids() -> set[str]:
+    """Return stable IDs for all source headlines in the locked evaluation set."""
+    item_paths = (
+        ROOT / "evaluation" / "attribution" / "natural_items.jsonl",
+        ROOT / "evaluation" / "attribution" / "hard_items.jsonl",
+    )
+    return {
+        _stable_id(row.get("title", ""))
+        for path in item_paths
+        for row in _read_jsonl(path)
+        if row.get("title")
+    }
 
 
 def _load_event_test_set() -> list[tuple[str, set[str], str]]:
@@ -387,9 +419,11 @@ def train_event_classifier() -> dict[str, Any]:
         for row in _read_jsonl(INDEPENDENT_EVENT_ITEMS)
         if row.get("source_review_id")
     }
+    locked_source_ids = _locked_event_source_ids()
     reviewed = [
         row for row in _read_jsonl(EVENT_QUEUE)
         if row.get("id") not in independent_ids
+        and row.get("id") not in locked_source_ids
         and isinstance(row.get("label"), dict)
         and row["label"].get("confidence", "high") != "low"
         and isinstance(row["label"].get("expected"), list)
@@ -611,6 +645,12 @@ def _financial_collection() -> dict[str, Any]:
             "profit_yoy_change": income_change,
             "screening_flags": flags,
             "anomaly_label": None,
+            "review_status": "needs_source_verification" if flags else "not_flagged",
+            "review_note": (
+                "Screening flags are candidates only; verify ticker identity, fiscal period, reporting scale, "
+                "and source statements before treating them as financial anomalies."
+                if flags else None
+            ),
             "reviewed_by": None,
             "retrieved_at": datetime.now(timezone.utc).isoformat(),
         })
@@ -636,6 +676,18 @@ def _relative_change(current: Any, previous: Any) -> float | None:
     return round((current - previous) / abs(previous), 6)
 
 
+_GENERIC_GRAPH_PARTIES = {
+    "private", "public", "livestock", "leather", "fodder", "agriculture",
+    "investment", "investments", "government", "federal government", "fg",
+    "business", "businesses", "company", "companies", "industry", "sector",
+    "market", "assets", "asset", "funding", "capital",
+}
+
+
+def _is_generic_graph_party(name: str) -> bool:
+    return _normalise_name(name) in _GENERIC_GRAPH_PARTIES
+
+
 def _update_graph(items: list[dict[str, Any]]) -> dict[str, Any]:
     from src.engines.deals import extract_deal
 
@@ -645,6 +697,19 @@ def _update_graph(items: list[dict[str, Any]]) -> dict[str, Any]:
         graph = {"nodes": {}, "edges": {}}
     edges: dict[str, dict[str, Any]] = graph.setdefault("edges", {})
     nodes: dict[str, dict[str, Any]] = graph.setdefault("nodes", {})
+
+    # Remove previously persisted edges that treat sectors, generic groups or
+    # policy concepts as named counterparties. This is a hard graph-quality gate.
+    invalid_nodes = {
+        key for key, node in nodes.items()
+        if _is_generic_graph_party(str(node.get("name", key)))
+    }
+    for key in invalid_nodes:
+        nodes.pop(key, None)
+    for edge_id, edge in list(edges.items()):
+        if edge.get("from") not in nodes or edge.get("to") not in nodes:
+            edges.pop(edge_id, None)
+
     for item in items:
         deal = extract_deal(item.get("title", ""), item.get("snippet", ""))
         if not deal:
@@ -653,7 +718,8 @@ def _update_graph(items: list[dict[str, Any]]) -> dict[str, Any]:
         if not target or not buyer:
             continue
         left, right = _normalise_name(buyer), _normalise_name(target)
-        if not left or not right or left == right:
+        if (not left or not right or left == right
+                or _is_generic_graph_party(buyer) or _is_generic_graph_party(target)):
             continue
         nodes.setdefault(left, {"name": buyer, "kind": "organization"})
         nodes.setdefault(right, {"name": target, "kind": "organization"})

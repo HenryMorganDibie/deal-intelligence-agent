@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-16T08:46:07.777552+00:00",
+  "updated_at": "2026-10-17T07:33:09.840358+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 33,
+      "new_review_items_today": 63,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -40,9 +40,9 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 4,
-      "new_observations_today": 2,
-      "unreviewed_flagged_observations": 0,
+      "observations_collected": 7,
+      "new_observations_today": 3,
+      "unreviewed_flagged_observations": 1,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
@@ -51,7 +51,7 @@
       "status": "collecting_relationships",
       "relationships": 3,
       "entities": 6,
-      "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
+      "notes": "Edges require named counterparties and source links; generic sectors and policy concepts are excluded."
     },
     {
       "id": "learned_ranking",
