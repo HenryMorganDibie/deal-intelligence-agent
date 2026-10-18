@@ -661,18 +661,18 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     # Reject headline-level statistics and product/asset purchases that match a
     # transaction verb but are not private-market transactions. These checks run
     # after party extraction so they can use the complete headline and parsed type.
-    if re.search(r"(?i)\\b(?:more than|less than|over|under|at least|nearly|almost)\\s+\\d+(?:[.,]\\d+)?\\s?%\\s+(?:of\\s+)?", title) and re.search(r"(?i)\\b(?:exports?|imports?|revenue|sales|market share|production)\\b", title):
+    if re.search(r"(?i)\b(?:more than|less than|over|under|at least|nearly|almost)\s+\d+(?:[.,]\d+)?\s?%\s+(?:of\s+)?", title) and re.search(r"(?i)\b(?:exports?|imports?|revenue|sales|market share|production)\b", title):
         return None
-    if re.search(r"(?i)\\b(?:best places to buy|buys? .*? (?:first-ever|first ever) .*? in .+|acquires? the .{0,50}\\b(?:car|vehicle|lamborghini|ferrari|jet|yacht)\\b)", title):
+    if re.search(r"(?i)\b(?:best places to buy|buys? .*? (?:first-ever|first ever) .*? in .+|acquires? the .{0,50}\b(?:car|vehicle|lamborghini|ferrari|jet|yacht)\b)", title):
         return None
-    if re.search(r"(?i)\\b(?:skills? push|skills? training|educational institutions|sanitary standards|local crafters|refugee empowerment|digital economy|green transition and support small businesses)\\b", title) and re.search(r"(?i)\\b(?:EU|European Union|South Korea|government|Ecobank)\\b", title):
+    if re.search(r"(?i)\b(?:skills? push|skills? training|educational institutions|sanitary standards|local crafters|refugee empowerment|digital economy|green transition and support small businesses)\b", title) and re.search(r"(?i)\b(?:EU|European Union|South Korea|government|Ecobank)\b", title):
         return None
-    if target and re.fullmatch(r"(?i)(?:more than(?: half)?|less than|the|a|an|growth|economy|pickups?|tractors?|shs\\d+[a-z]*|n\\$\\s?\\d+|ai)", target.strip()):
+    if target and re.fullmatch(r"(?i)(?:more than(?: half)?|less than|the|a|an|growth|economy|pickups?|tractors?|shs\d+[a-z]*|n\\$\s?\d+|ai)", target.strip()):
         return None
     # Weekly sector totals and public-sector programmes are not individual company deals.
-    if re.search(r"(?i)\\braises?\\s+.{0,35}\\bin week\\s+\\d+\\b", title):
+    if re.search(r"(?i)\braises?\s+.{0,35}\bin week\s+\d+\b", title):
         return None
-    if re.search(r"(?i)\\b(?:skills? push|skills? training|educational institutions|sanitary standards|local crafters|refugee empowerment|digital economy|green transition and support small businesses|budget support loan|economic and green reforms|governance reforms|urban infrastructure|water security|economic reforms|TVET sector)\\b", title) and re.search(r"(?i)\\b(?:EU|European Union|South Korea|Canada|government|Ecobank|AfDB|African Development Bank|OPEC Fund|New Development Bank|Afreximbank)\\b", title):
+    if re.search(r"(?i)\b(?:skills? push|skills? training|educational institutions|sanitary standards|local crafters|refugee empowerment|digital economy|green transition and support small businesses|budget support loan|economic and green reforms|governance reforms|urban infrastructure|water security|economic reforms|TVET sector)\b", title) and re.search(r"(?i)\b(?:EU|European Union|South Korea|Canada|government|Ecobank|AfDB|African Development Bank|OPEC Fund|New Development Bank|Afreximbank)\b", title):
         return None
     if not target and not buyer:
         return None
