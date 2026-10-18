@@ -106,7 +106,7 @@ export function SiteFooter() {
       </div>
       <div className="mx-auto mt-12 flex w-full max-w-page flex-wrap justify-between gap-3 px-4 text-[0.75rem] text-[color:var(--dim)] sm:px-6 lg:px-8">
         <span>© {new Date().getFullYear()} Henry Dibie</span>
-        <span className="kbd">Briefs are AI-assisted and unverified.</span>
+        <span className="kbd">Source-linked research. Evidence you can inspect. Uncertainty flagged.</span>
       </div>
     </footer>
   );
