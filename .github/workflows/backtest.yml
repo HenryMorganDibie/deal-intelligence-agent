@@ -15,6 +15,7 @@
 #   shard   one machine per shard (each has its own address, so news searches are not throttled
 #           together), working to a deadline; it caches what it fetched and finished.
 #   finish  merges the shards, publishes if the result improves on the site, saves the merged cache.
+# A follow-up push-triggered run resumes any companies left uncovered by the first budgeted pass.
 name: Monthly backtest
 
 on:
