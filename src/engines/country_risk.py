@@ -153,8 +153,42 @@ def refresh(since: int = 2018, until: Optional[int] = None, path: Path = INDICAT
             series[indicator] = _fetch_indicator(client, indicator, 3, since, until)
         for indicator in MACRO:
             series[indicator] = _fetch_indicator(client, indicator, None, since, until)
-    snapshot = {"retrieved": time.strftime("%Y-%m-%d", time.gmtime()), "since": since,
-                "labels": {**GOVERNANCE, **MACRO}, "series": series}
+    # Never replace a known-good snapshot with a partial/empty response. The
+    # World Bank API can return HTTP-200 error payloads or transiently omit a
+    # series; silently publishing that result would erase country risk inputs.
+    missing = [indicator for indicator, values in series.items() if not values]
+    if missing:
+        raise RuntimeError(
+            "World Bank refresh returned no observations for: "
+            + ", ".join(missing)
+            + "; existing snapshot was left unchanged."
+        )
+
+    # Record coverage and actual observation years so downstream audits can
+    # distinguish refresh date from the latest year actually reported.
+    coverage = {}
+    for indicator, by_country in series.items():
+        country_latest = {
+            iso3: max(int(year) for year in years)
+            for iso3, years in by_country.items() if years
+        }
+        coverage[indicator] = {
+            "countries_with_data": len(country_latest),
+            "latest_observation_year": max(country_latest.values()) if country_latest else None,
+            "countries_by_latest_year": {
+                str(year): sum(1 for latest in country_latest.values() if latest == year)
+                for year in sorted(set(country_latest.values()))
+            },
+        }
+
+    snapshot = {
+        "retrieved": time.strftime("%Y-%m-%d", time.gmtime()),
+        "since": since,
+        "source": "World Bank API (WDI and Worldwide Governance Indicators)",
+        "coverage": coverage,
+        "labels": {**GOVERNANCE, **MACRO},
+        "series": series,
+    }
     path.write_text(json.dumps(snapshot, indent=0, sort_keys=True))
     return snapshot
 
