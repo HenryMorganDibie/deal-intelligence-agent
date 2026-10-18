@@ -23,7 +23,7 @@ def test_single_source_is_not_described_as_corroborated():
     }
     score, reasons = score_deal(deal, [], date(2026, 10, 18))
     assert score > 0
-    assert any("Single-source" in reason for reason in reasons)
+    assert any("Only one source link directly matches" in reason for reason in reasons)
     assert not any("Corroborated by" in reason for reason in reasons)
 
 
