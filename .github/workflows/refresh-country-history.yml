@@ -1,6 +1,10 @@
 name: Refresh full historical country indicators
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/refresh-country-history.yml"
   schedule:
     # Refresh the official annual source history monthly; daily score snapshots are separate.
     - cron: "23 5 1 * *"
