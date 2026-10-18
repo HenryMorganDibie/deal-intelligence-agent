@@ -205,7 +205,7 @@ export default function ResearchPage() {
     <Container className="max-w-4xl py-10 lg:py-14">
       <PageHeader eyebrow="Research" title="Ask an analyst question.">
         Search combines the structured deals and events database with live news search. Answers cite numbered evidence,
-        show each source's classification, and should distinguish reported facts from derived analysis. Citation checks
+        show each source&apos;s classification, and should distinguish reported facts from derived analysis. Citation checks
         confirm that a cited item exists; they do not prove that it supports every claim. When evidence is missing,
         conflicting, stale or secondary, treat the answer as provisional and verify the underlying documents.
       </PageHeader>
