@@ -263,3 +263,72 @@ def test_promoted_ranker_probability_is_separate_from_alpha():
 
     assert probability is not None
     assert 0.0 <= probability <= 1.0
+
+
+def test_obvious_non_market_headlines_are_not_queued_as_events():
+    items = [{
+        "title": "OUR CITY NEWS: Herman Mashaba targets illegal immigration in bid for Joburg mayoralty",
+        "snippet": "A mayoral candidate discusses immigration policy.",
+        "publisher": "Daily Maverick Business",
+        "url": "https://example.test/politics",
+        "date": "2026-10-16",
+    }, {
+        "title": "Bank of Ghana revokes licences of three lenders",
+        "snippet": "The regulator said the institutions failed to meet requirements.",
+        "publisher": "Example News",
+        "url": "https://example.test/regulator",
+        "date": "2026-10-16",
+        "country_hint": "GH",
+    }]
+
+    rows = pipeline._event_review_rows(items)
+
+    assert len(rows) == 1
+    assert rows[0]["title"].startswith("Bank of Ghana")
+
+
+def test_locked_evaluation_headlines_are_excluded_from_event_training(tmp_path, monkeypatch):
+    monkeypatch.setattr(pipeline, "AUTOMATION_DIR", tmp_path)
+    monkeypatch.setattr(pipeline, "EVENT_QUEUE", tmp_path / "event_queue.jsonl")
+    locked_items = pipeline._read_jsonl(pipeline.ROOT / "evaluation" / "attribution" / "natural_items.jsonl")
+    locked_title = locked_items[0]["title"]
+    rows = [{
+        "id": pipeline._stable_id(locked_title),
+        "title": locked_title,
+        "label": {"about_target": True, "expected": [], "confidence": "high"},
+    }, {
+        "id": "ordinary-reviewed-story",
+        "title": "An unrelated company event",
+        "label": {"about_target": True, "expected": [], "confidence": "high"},
+    }]
+    pipeline.EVENT_QUEUE.write_text(
+        "".join(json.dumps(row) + "\\n" for row in rows), encoding="utf-8"
+    )
+
+    result = pipeline.train_event_classifier()
+
+    assert result["training_labels"] == 1
+
+
+def test_graph_prunes_generic_policy_concepts_but_keeps_real_counterparties(tmp_path, monkeypatch):
+    graph_path = tmp_path / "relationship_graph.json"
+    monkeypatch.setattr(pipeline, "GRAPH_DATA", graph_path)
+    graph_path.write_text(json.dumps({
+        "nodes": {
+            "private": {"name": "Private", "kind": "organization"},
+            "livestock": {"name": "Livestock", "kind": "organization"},
+            "finnfund": {"name": "Finnfund", "kind": "organization"},
+            "bisedge": {"name": "Bisedge", "kind": "organization"},
+        },
+        "edges": {
+            "bad": {"id": "bad", "from": "private", "to": "livestock", "type": "equity_funding", "sources": []},
+            "good": {"id": "good", "from": "finnfund", "to": "bisedge", "type": "debt_financing", "sources": []},
+        },
+    }), encoding="utf-8")
+
+    result = pipeline._update_graph([])
+
+    persisted = json.loads(graph_path.read_text(encoding="utf-8"))
+    assert result["relationships"] == 1
+    assert "bad" not in persisted["edges"]
+    assert set(persisted["nodes"]) == {"finnfund", "bisedge"}
