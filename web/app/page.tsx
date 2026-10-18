@@ -17,8 +17,8 @@ import { SourceMarquee } from "../components/SourceMarquee";
 import { Trust } from "../components/Trust";
 import { getPulse, getQuality, getShowcase } from "../lib/pulse";
 
-// Re-render from the live feed every 30 minutes (see lib/pulse.ts).
-export const revalidate = 1800;
+// Re-render from the live feed every 5 minutes so displayed counts follow successful ingestion.
+export const revalidate = 300;
 
 export default async function LandingPage() {
   const [pulse, showcase, quality] = await Promise.all([getPulse(), getShowcase(), getQuality()]);
