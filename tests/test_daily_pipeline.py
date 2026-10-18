@@ -79,6 +79,20 @@ def test_financial_collection_prioritizes_african_tickers(tmp_path, monkeypatch)
     assert result["retry_after_days"] == 2
 
 
+def test_collect_headlines_includes_country_specific_queries(monkeypatch):
+    from src.engines import market_feed
+
+    captured = {}
+
+    async def fake_collect(**kwargs):
+        captured.update(kwargs)
+        return []
+
+    monkeypatch.setattr(market_feed, "collect", fake_collect)
+    assert pipeline._collect_headlines() == []
+    assert captured["include_countries"] is True
+
+
 def test_event_review_queue_uses_rules_only_as_candidates():
     items = [{
         "title": "Bank of Ghana revokes licences of three lenders",
@@ -100,6 +114,8 @@ def test_event_review_queue_uses_rules_only_as_candidates():
     assert row["rule_candidates"] == ["regulatory_action"]
     assert row["label"] is None
     assert row["review_split"] in ("train", "holdout")
+    assert row["country_hint"] == "GH"
+    assert row["market"] == "africa"
 
 
 def test_merge_jsonl_keeps_manual_labels_and_deduplicates(tmp_path):
