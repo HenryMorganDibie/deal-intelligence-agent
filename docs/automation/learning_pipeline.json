@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-18T04:00:12.193189+00:00",
+  "updated_at": "2026-10-18T04:02:30.924210+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 2,
+      "new_review_items_today": 0,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 27,
-      "new_observations_today": 2,
+      "observations_collected": 30,
+      "new_observations_today": 3,
       "unreviewed_flagged_observations": 2,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
