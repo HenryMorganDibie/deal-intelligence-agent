@@ -683,7 +683,7 @@ def _financial_collection() -> dict[str, Any]:
         row["ticker"].strip(): row.get("market", "").strip().lower()
         for row in universe if row.get("ticker", "").strip()
     }
-    company_by_ticker = {row["ticker"].strip(): row.get("company", row["ticker"]).strip() for row in universe if row.get("ticker", "").strip()}
+    company_by_ticker = {row["ticker"].strip(): str(row.get("company") or row["ticker"]).strip() for row in universe if row.get("ticker", "").strip()}
     tickers = sorted(market_by_ticker)
     existing = _read_jsonl(FINANCIAL_DATA)
     collected = {row.get("ticker") for row in existing}
