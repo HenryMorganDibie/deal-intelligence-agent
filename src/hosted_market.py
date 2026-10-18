@@ -192,8 +192,10 @@ async def country(code: str) -> dict:
         "currency": await run_in_threadpool(market_risk.currency_risk, c.currency),
         "coverage": coverage.country_row(c, ds, es),
         "deals": deals_mod.search(ds, country=c.iso2, limit=25),
+        "deals_total": len(deals_mod.search(ds, country=c.iso2, limit=max(len(ds), 1))),
         "events": sorted([e for e in es if c.iso2 in (e.get("countries") or [e.get("country")])],
                          key=lambda e: e.get("day") or "", reverse=True)[:25],
+        "events_total": sum(1 for e in es if c.iso2 in (e.get("countries") or [e.get("country")])),
         "investors": investors.leaderboard(deals_mod.search(ds, country=c.iso2, limit=5000), limit=10),
     }
 
@@ -310,7 +312,8 @@ async def funds(limit: int = Query(50, ge=1, le=100),
 
 @router.get("/api/events")
 async def event_feed(country: Optional[str] = None, type: Optional[str] = None, since: Optional[str] = None,
-                     q: str = "", limit: int = Query(100, ge=1, le=500)) -> dict:
+                     q: str = "", limit: int = Query(100, ge=1, le=500),
+                     offset: int = Query(0, ge=0, le=100000)) -> dict:
     rows = events()
     c = _country_or_404(country) if country else None
     out = [e for e in rows
@@ -319,7 +322,7 @@ async def event_feed(country: Optional[str] = None, type: Optional[str] = None, 
            and (not since or (e.get("day") or "") >= since)
            and (not q or q.lower() in e.get("headline", "").lower())]
     out.sort(key=lambda e: e.get("day") or "", reverse=True)
-    return {"count": len(out), "events": out[:limit]}
+    return {"count": len(out), "offset": offset, "limit": limit, "events": out[offset:offset + limit]}
 
 
 @router.get("/api/sectors/{sector}/risk")
