@@ -683,11 +683,11 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if target and re.fullmatch(r"(?i)(?:gh|q\d|1m|pe|vc|we|be|ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
         if deal_type == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
             if subj and re.search(r"(?i)\bfund\b", subj):
-                target = _clean_name(f"{subj} {target}")
+                target = f"{subj} {target}".strip()
             else:
                 fund_name = re.search(r"(?i)(^.{1,100}?\bfund\s+(?:II|III|IV|V|VI|VII|VIII|IX|X|\d+))", title)
                 if fund_name:
-                    target = _clean_name(fund_name.group(1))
+                    target = fund_name.group(1).strip()
                 else:
                     return None
         else:
@@ -820,7 +820,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if target and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
         fund_marker = re.search(r"(?i)fund", title)
         if fund_marker:
-            target = _clean_name(f"{title[:fund_marker.end()]} {target}")
+            target = f"{title[:fund_marker.end()]} {target}".strip()
         elif deal_type == "fund_raise":
             return None
 
@@ -852,7 +852,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         fund_marker = re.search(r"(?i)fund", str(deal.get("headline") or ""))
         if fund_marker:
             headline = str(deal["headline"])
-            deal["target"] = _clean_name(f"{headline[:fund_marker.end()]} {deal['target']}")
+            deal["target"] = f"{headline[:fund_marker.end()]} {deal['target']}".strip()
             deal["id"] = deal_id(deal)
         else:
             return None
@@ -867,7 +867,7 @@ def deal_id(deal: dict) -> str:
     if deal.get("deal_type") == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
         fund_marker = re.search(r"(?i)fund", headline)
         if fund_marker:
-            deal["target"] = _clean_name(f"{headline[:fund_marker.end()]} {target}")
+            deal["target"] = f"{headline[:fund_marker.end()]} {target}".strip()
     who = normalise_name(deal.get("target") or deal.get("buyer"))
     month = (deal.get("announced") or "")[:7]
     # Acquisition, merger, funding, financing and exit reports about one company in one month are
