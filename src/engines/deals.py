@@ -664,6 +664,11 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None
     if target and re.fullmatch(r"(?i)(?:more than(?: half)?|less than|the|a|an|growth|economy|pickups?|tractors?|shs\\d+[a-z]*|n\\$\\s?\\d+|ai)", target.strip()):
         return None
+    # Weekly sector totals and public-sector programmes are not individual company deals.
+    if re.search(r"(?i)\\braises?\\s+.{0,35}\\bin week\\s+\\d+\\b", title):
+        return None
+    if re.search(r"(?i)\\b(?:skills? push|skills? training|educational institutions|sanitary standards|local crafters|refugee empowerment|digital economy|green transition and support small businesses|budget support loan|economic and green reforms|governance reforms|urban infrastructure|water security|economic reforms|TVET sector)\\b", title) and re.search(r"(?i)\\b(?:EU|European Union|South Korea|Canada|government|Ecobank|AfDB|African Development Bank|OPEC Fund|New Development Bank|Afreximbank)\\b", title):
+        return None
     if not target and not buyer:
         return None
     raw_subj = (m.groupdict().get("subj") or "").strip()
