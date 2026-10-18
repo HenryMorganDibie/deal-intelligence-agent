@@ -9,7 +9,25 @@ const ROWS = [
   ["Audit", "None", "SHA-256 hash-chained log that detects edited and deleted entries"],
 ];
 
-export function Problem() {
+export function Problem({ compact = false }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <Section id="problem" labelledBy="problem-title" className="py-14 sm:py-16">
+        <Container className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p className="eyebrow">The problem</p>
+            <h2 id="problem-title" className="h2 mt-3 max-w-3xl">
+              Finding a deal is easy. Verifying what happened is the hard part.
+            </h2>
+            <p className="mt-4 max-w-3xl text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
+              Reports can disagree, key terms may be undisclosed, and a company mentioned in a headline is not always the company the event is about. Deal Intelligence connects records to their sources and makes uncertainty visible.
+            </p>
+          </div>
+          <a href="/how-it-works" className="btn btn-ghost whitespace-nowrap">See how it works <span aria-hidden>→</span></a>
+        </Container>
+      </Section>
+    );
+  }
   return (
     <Section id="problem" labelledBy="problem-title">
       <Container>
