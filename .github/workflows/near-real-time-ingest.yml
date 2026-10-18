@@ -1,12 +1,8 @@
 name: Near-real-time deal ingestion
 
 on:
-  push:
-    paths:
-      - ".github/workflows/near-real-time-ingest.yml"
-  schedule:
-    # GitHub Actions provides short-interval scheduling; no stored API secret is required.
-    - cron: "*/10 * * * *"
+  # Run manually only while the API's OIDC authorization code awaits a production deployment.
+  # The API's existing Vercel Cron schedule continues to run daily without a GitHub secret.
   workflow_dispatch:
 
 permissions:
@@ -34,10 +30,6 @@ jobs:
             -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api")"
           token="$(printf '%s' "$response" | jq -er '.value')"
-          if [ -z "$token" ]; then
-            echo "::error::GitHub did not issue an OIDC token."
-            exit 1
-          fi
           echo "token=$token" >> "$GITHUB_OUTPUT"
 
       - name: Collect recent deal announcements and deliver watchlist webhooks
