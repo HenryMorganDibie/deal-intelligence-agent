@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - ".github/workflows/daily-learning-pipeline.yml"
+      - "scripts/daily_pipeline.py"
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
