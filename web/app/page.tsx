@@ -1,4 +1,3 @@
-import { Attribution } from "../components/Attribution";
 import { FinalCta, SiteFooter } from "../components/Closing";
 import { Example } from "../components/Example";
 import { Hero } from "../components/Hero";
