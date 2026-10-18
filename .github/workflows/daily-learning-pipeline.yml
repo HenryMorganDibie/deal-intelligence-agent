@@ -1,6 +1,9 @@
 name: Daily learning pipeline
 
 on:
+  push:
+    paths:
+      - ".github/workflows/daily-learning-pipeline.yml"
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
