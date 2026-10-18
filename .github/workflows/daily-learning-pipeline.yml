@@ -36,12 +36,12 @@ jobs:
       - name: Install pipeline dependencies
         run: pip install -r requirements-backtest.txt
 
-      - name: Refresh World Bank country indicators monthly
-        if: github.event_name == 'schedule'
+      - name: Refresh World Bank country indicators monthly (or on manual run)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
           set -euo pipefail
           day="$(date -u +%d)"
-          if [ "$((10#$day))" -le 7 ]; then
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$((10#$day))" -le 7 ]; then
             python main.py countries --refresh
           else
             echo "Not the first Sunday of the month; annual country indicators remain unchanged."
