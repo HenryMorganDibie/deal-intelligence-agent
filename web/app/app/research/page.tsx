@@ -162,10 +162,11 @@ export default function ResearchPage() {
   const v = result?.validation;
   return (
     <Container className="max-w-4xl py-10 lg:py-14">
-      <PageHeader eyebrow="Research" title="Ask about African companies, deals and risk.">
-        Answers are written only from numbered evidence: the deals database, corporate events, country and currency
-        risk, investor activity and a live news search. Citation numbers are checked against the evidence list; this
-        confirms a source is present, not that it fully supports the claim.
+      <PageHeader eyebrow="Research" title="Ask an analyst question.">
+        Search combines the structured deals and events database with live news search. Answers cite numbered evidence,
+        show each source's classification, and should distinguish reported facts from derived analysis. Citation checks
+        confirm that a cited item exists; they do not prove that it supports every claim. When evidence is missing,
+        conflicting, stale or secondary, treat the answer as provisional and verify the underlying documents.
       </PageHeader>
 
       <form onSubmit={ask} className="space-y-3">
@@ -207,9 +208,15 @@ export default function ResearchPage() {
           <div className="flex flex-wrap items-center gap-2 text-[0.75rem] text-[color:var(--dim)]">
             <Pill value={result.mode === "llm" ? "LLM-written" : "deterministic"} title="Answer mode" />
             <span>{result.mode === "llm" ? `Written by ${result.model ?? "the LLM"} from the evidence below` : "Deterministic summary (no LLM configured)"}</span>
-            {v && <span>· {Math.round(v.grounded_share * 100)}% of factual sentences have valid citations</span>}
+            {v && <span>· {Math.round(v.grounded_share * 100)}% of factual sentences have a citation (not a claim-accuracy score)</span>}
             {v && v.invalid_citations_removed.length > 0 && <span>· {v.invalid_citations_removed.length} invalid citation(s) removed</span>}
           </div>
+          {v && (v.uncited_sentences.length > 0 || v.grounded_share < 1) && (
+            <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
+              <strong>Evidence review needed.</strong> Some factual statements do not have citations. Citation presence
+              alone is not proof of correctness; verify material claims against the linked source documents before relying on them.
+            </div>
+          )}
           <FormattedAnswer text={result.answer} />
           <section className="mt-4 rounded-xl border hairline p-4" aria-label="Evidence coverage">
             <h2 className="text-sm font-semibold">Evidence retrieved for this question</h2>
@@ -250,6 +257,7 @@ export default function ResearchPage() {
                     {words(i.kind)}
                     {i.source ? ` · ${i.source}` : ""}
                     {i.date ? ` · ${i.date}` : ""}
+                    {i.source_quality ? ` · ${i.source_quality}` : ""}
                   </span>
                 </div>
                 <p className="mt-1">
@@ -262,6 +270,7 @@ export default function ResearchPage() {
                   )}
                 </p>
                 {i.text !== i.title && <p className="mt-1 text-[color:var(--muted)]">{i.text}</p>}
+                {i.source_quality_note && <p className="mt-1 text-[0.75rem] text-[color:var(--dim)]">{i.source_quality_note}</p>}
               </li>
             ))}
           </ol>
