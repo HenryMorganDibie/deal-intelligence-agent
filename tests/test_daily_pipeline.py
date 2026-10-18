@@ -87,6 +87,47 @@ def test_financials_fall_back_to_ngx_when_yahoo_has_no_ticker():
     assert result["annual"]["2024-12-31"]["revenue"] == 100
 
 
+def test_financial_collection_retries_old_exchange_failures_immediately(tmp_path, monkeypatch):
+    universe_path = tmp_path / "universe.csv"
+    rows = [
+        {"company": "Access Holdings", "ticker": "ACCESSCORP.LG", "market": "africa"},
+        {"company": "Safaricom", "ticker": "SCOM.NR", "market": "africa"},
+    ] + [
+        {"company": f"African Co {i}", "ticker": f"AF{i}.JO", "market": "africa"}
+        for i in range(12)
+    ]
+    with universe_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["company", "ticker", "market"])
+        writer.writeheader()
+        writer.writerows(rows)
+    monkeypatch.setattr(pipeline, "UNIVERSE_DATA", universe_path)
+    monkeypatch.setattr(pipeline, "FINANCIAL_DATA", tmp_path / "financials.jsonl")
+    attempts_path = tmp_path / "attempts.jsonl"
+    attempts_path.write_text("".join(json.dumps({
+        "ticker": ticker,
+        "last_attempt": pipeline.date.today().isoformat(),
+        "status": "no_annual_data_returned",
+    }) + "\n" for ticker in ("ACCESSCORP.LG", "SCOM.NR")), encoding="utf-8")
+    monkeypatch.setattr(pipeline, "FINANCIAL_ATTEMPTS", attempts_path)
+    called = []
+
+    def no_data(ticker, years=4):
+        called.append(ticker)
+        return None
+
+    with (
+        patch("src.engines.financials.yahoo_financials", side_effect=no_data),
+        patch("src.engines.financials.ngx_financials", return_value={"annual": None}),
+        patch("src.engines.financials.nse_financials", return_value={"annual": None}),
+    ):
+        pipeline._financial_collection()
+
+    assert called[:2] == ["ACCESSCORP.LG", "SCOM.NR"]
+    updated = {row["ticker"]: row for row in pipeline._read_jsonl(attempts_path)}
+    assert updated["ACCESSCORP.LG"]["exchange_fallback_attempted"] is True
+    assert updated["SCOM.NR"]["exchange_fallback_attempted"] is True
+
+
 def test_financial_collection_prioritizes_african_tickers(tmp_path, monkeypatch):
     universe_path = tmp_path / "universe.csv"
     rows = [
