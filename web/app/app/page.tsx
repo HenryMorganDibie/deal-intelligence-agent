@@ -7,7 +7,7 @@ import { SeverityBadge } from "../../components/app/BriefView";
 import { Container } from "../../components/primitives";
 import { analyse, ApiError } from "../../lib/api";
 import { formatDate } from "../../lib/brief";
-import { addToHistory, readHistory, type HistoryItem } from "../../lib/history";
+import { addToHistory, readHistory, removeFromHistory, type HistoryItem } from "../../lib/history";
 
 const EXAMPLES = [
   { company: "Intel", ticker: "INTC" },
@@ -235,14 +235,8 @@ export default function Dashboard() {
                     aria-label={`Remove ${r.company} from your briefs`}
                     title="Remove from your briefs"
                     onClick={() => {
-                      const next = rows.filter((item) => item.id !== r.id);
-                      // Persist the removal and update the visible list immediately.
-                      try {
-                        window.localStorage.setItem("deal-intel:briefs", JSON.stringify(next));
-                      } catch {
-                        // Keep the UI responsive if browser storage is unavailable.
-                      }
-                      setRows(next);
+                      removeFromHistory(r.id);
+                      setRows(rows.filter((item) => item.id !== r.id));
                     }}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[color:var(--dim)] transition-colors hover:bg-white/[0.06] hover:text-[color:var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--text)]"
                   >
