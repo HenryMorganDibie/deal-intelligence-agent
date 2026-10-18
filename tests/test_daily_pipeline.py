@@ -48,6 +48,45 @@ def test_historical_shards_prioritize_african_and_retry_uncovered(tmp_path, monk
     assert result["shards"][0]["tickers"] == "AF.JO,US"
 
 
+def test_exchange_statement_normalization_preserves_scale_and_prior_year():
+    statement = {
+        "period": {"end": "2025-12-31"},
+        "multiplier": 1_000_000,
+        "items": {
+            "revenue": {"current": 12, "prior": 10},
+            "profit_after_tax": {"current": 2, "prior": 1.5},
+        },
+        "source_url": "https://exchange.example/annual.pdf",
+        "document": "Audited annual results",
+    }
+
+    result = pipeline._normalise_exchange_statement(statement, "NGX audited filing", "NGN")
+
+    assert result["annual"]["2025-12-31"]["revenue"] == 12_000_000
+    assert result["annual"]["2024-12-31"]["revenue"] == 10_000_000
+    assert result["source_url"] == "https://exchange.example/annual.pdf"
+    assert result["unit"] == "NGN"
+
+
+def test_financials_fall_back_to_ngx_when_yahoo_has_no_ticker():
+    statement = {
+        "period": {"end": "2025-12-31"},
+        "multiplier": 1,
+        "items": {"revenue": {"current": 120, "prior": 100}},
+        "source_url": "https://ngx.example/annual.pdf",
+        "document": "Audited annual results",
+    }
+    with (
+        patch("src.engines.financials.yahoo_financials", return_value=None),
+        patch("src.engines.financials.ngx_financials", return_value={"annual": statement}),
+    ):
+        result = pipeline._financials_for_ticker("ACCESS.LG", "Access Holdings")
+
+    assert result["source"] == "NGX audited filing"
+    assert result["annual"]["2025-12-31"]["revenue"] == 120
+    assert result["annual"]["2024-12-31"]["revenue"] == 100
+
+
 def test_financial_collection_prioritizes_african_tickers(tmp_path, monkeypatch):
     universe_path = tmp_path / "universe.csv"
     rows = [
@@ -71,7 +110,11 @@ def test_financial_collection_prioritizes_african_tickers(tmp_path, monkeypatch)
         called.append(ticker)
         return None
 
-    with patch("src.engines.financials.yahoo_financials", side_effect=no_data):
+    with (
+        patch("src.engines.financials.yahoo_financials", side_effect=no_data),
+        patch("src.engines.financials.ngx_financials", return_value={"annual": None}),
+        patch("src.engines.financials.nse_financials", return_value={"annual": None}),
+    ):
         result = pipeline._financial_collection()
 
     assert called[:3] == ["AAA.JO", "BBB.LG", "CCC.NR"]
