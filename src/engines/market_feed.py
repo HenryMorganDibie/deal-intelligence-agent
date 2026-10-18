@@ -141,13 +141,14 @@ def pan_african_queries(window: str = "when:2d") -> list[tuple[str, str, Optiona
 
 
 async def _fetch(client: httpx.AsyncClient, sem: asyncio.Semaphore, url: str, label: str,
-                 country: Optional[Country], africa_source: bool) -> list[dict]:
+                 country: Optional[Country], africa_source: bool, failures: list[str]) -> list[dict]:
     async with sem:
         try:
             r = await client.get(url)
             r.raise_for_status()
         except Exception as e:
-            log.info("feed %s unavailable: %s", label, e)
+            failures.append(label)
+            log.warning("feed %s unavailable: %s", label, e)
             return []
     items = parse_feed(r.text, default_publisher=label if "news.google" not in url else "")
     for it in items:
@@ -178,8 +179,13 @@ async def collect(window: str = "when:2d", include_feeds: bool = True, include_c
         jobs += [(u, label, c, False) for u, label, c in country_queries(window)]
     sem = asyncio.Semaphore(concurrency)
     headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) deal-intelligence-agent/1.0"}
+    failures: list[str] = []
     async with httpx.AsyncClient(timeout=timeout, follow_redirects=True, headers=headers) as client:
-        batches = await asyncio.gather(*(_fetch(client, sem, u, label, c, a) for u, label, c, a in jobs))
+        batches = await asyncio.gather(*(_fetch(client, sem, u, label, c, a, failures) for u, label, c, a in jobs))
+    if jobs and len(failures) == len(jobs):
+        raise RuntimeError(f"All {len(jobs)} market-news feeds failed; refusing to report a successful empty refresh.")
+    if failures:
+        log.warning("Market-news collection completed with %d/%d feeds unavailable", len(failures), len(jobs))
     seen, out = set(), []
     for batch in batches:
         for it in batch:
