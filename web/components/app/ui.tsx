@@ -143,6 +143,54 @@ export function DealRows({ deals, showWhy = false }: { deals: Deal[]; showWhy?: 
   );
 }
 
+
+export function Pagination({
+  total,
+  offset,
+  limit,
+  onPageChange,
+  onPageSizeChange,
+}: {
+  total: number;
+  offset: number;
+  limit: number;
+  onPageChange: (offset: number) => void;
+  onPageSizeChange: (limit: number) => void;
+}) {
+  if (total <= 0) return null;
+  const start = offset + 1;
+  const end = Math.min(offset + limit, total);
+  const canPrevious = offset > 0;
+  const canNext = offset + limit < total;
+  return (
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-[0.8125rem]">
+      <p className="text-[color:var(--muted)]" aria-live="polite">
+        Showing <span className="kbd">{start.toLocaleString()}–{end.toLocaleString()}</span> of{" "}
+        <span className="kbd">{total.toLocaleString()}</span>
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="flex items-center gap-2 text-[color:var(--muted)]">
+          Rows
+          <select
+            value={limit}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+            className="field w-auto py-1.5"
+            aria-label="Rows per page"
+          >
+            {[25, 50, 100].map((n) => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </label>
+        <button type="button" className="btn btn-ghost py-1.5" disabled={!canPrevious} onClick={() => onPageChange(Math.max(0, offset - limit))}>
+          Previous
+        </button>
+        <button type="button" className="btn btn-ghost py-1.5" disabled={!canNext} onClick={() => onPageChange(offset + limit)}>
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
