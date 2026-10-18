@@ -93,7 +93,7 @@ export type Pulse = {
 export async function getPulse(): Promise<Pulse | null> {
   if (!API_URL) return null;
   try {
-    const resp = await fetch(fresh("/api/pulse"), { next: { revalidate: REVALIDATE } });
+    const resp = await fetch(fresh("/api/pulse"), { cache: "no-store" });
     if (!resp.ok) return null;
     return (await resp.json()) as Pulse;
   } catch {
