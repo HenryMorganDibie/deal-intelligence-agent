@@ -711,8 +711,25 @@ def _financial_collection() -> dict[str, Any]:
     company_by_ticker = {row["ticker"].strip(): str(row.get("company") or row["ticker"]).strip() for row in universe if row.get("ticker", "").strip()}
     tickers = sorted(market_by_ticker)
     existing = _read_jsonl(FINANCIAL_DATA)
+    financial_metadata_changed = False
+    for row in existing:
+        ticker = row.get("ticker")
+        if ticker and not row.get("market"):
+            row["market"] = market_by_ticker.get(ticker, "unknown")
+            financial_metadata_changed = True
+    if financial_metadata_changed:
+        _write_jsonl_by_key(FINANCIAL_DATA, existing, "id")
     collected = {row.get("ticker") for row in existing}
-    attempts = {row["ticker"]: row for row in _read_jsonl(FINANCIAL_ATTEMPTS) if row.get("ticker")}
+    attempt_rows_existing = _read_jsonl(FINANCIAL_ATTEMPTS)
+    attempt_metadata_changed = False
+    for row in attempt_rows_existing:
+        ticker = row.get("ticker")
+        if ticker and not row.get("market"):
+            row["market"] = market_by_ticker.get(ticker, "unknown")
+            attempt_metadata_changed = True
+    if attempt_metadata_changed:
+        _write_jsonl_by_key(FINANCIAL_ATTEMPTS, attempt_rows_existing, "ticker")
+    attempts = {row["ticker"]: row for row in attempt_rows_existing if row.get("ticker")}
     today = date.today()
     retry_after_days = 2
 
