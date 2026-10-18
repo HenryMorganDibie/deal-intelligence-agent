@@ -12,7 +12,7 @@ const ROWS = [
 export function Problem({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
-      <Section id="problem" labelledBy="problem-title" className="py-14 sm:py-16">
+      <Section id="problem" labelledBy="problem-title" className="!py-14 sm:!py-16">
         <Container className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <p className="eyebrow">The problem</p>
