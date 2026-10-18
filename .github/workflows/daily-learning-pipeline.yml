@@ -36,6 +36,17 @@ jobs:
       - name: Install pipeline dependencies
         run: pip install -r requirements-backtest.txt
 
+      - name: Refresh World Bank country indicators monthly
+        if: ${{ github.event_name == 'schedule' && fromJSON(format('{{0}}', 1)) == 1 }}
+        run: |
+          set -euo pipefail
+          day="$(date -u +%d)"
+          if [ "$((10#$day))" -le 7 ]; then
+            python main.py countries --refresh
+          else
+            echo "Not the first Sunday of the month; annual country indicators remain unchanged."
+          fi
+
       - name: Collect review data, gather financials, build graph and evaluate models
         run: python scripts/daily_pipeline.py
 
@@ -55,6 +66,7 @@ jobs:
               'docs/automation/learning_pipeline.json',
               'docs/automation/event_classifier_evaluation.json',
               'docs/automation/event_classifier.json',
+              'src/data/country_indicators.json',
               'docs/automation/entity_match_evaluation.json',
               'docs/automation/entity_matcher.json',
               'web/data/investment_ideas.json',
