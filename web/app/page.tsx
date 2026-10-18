@@ -47,6 +47,41 @@ export default async function LandingPage() {
         <SourceMarquee />
         <Problem compact />
         <MarketPulse pulse={pulse} compact />
+        {pulse?.events.latest[0] && (
+          <section aria-labelledby="corporate-week-title" className="border-t hairline py-14 sm:py-16">
+            <Container>
+              <div className="panel overflow-hidden">
+                <div className="grid gap-6 p-6 sm:p-8 md:grid-cols-[0.7fr_1.3fr] md:items-center">
+                  <div>
+                    <p className="eyebrow">Corporate of the Week</p>
+                    <h2 id="corporate-week-title" className="h2 mt-3">A company story worth your attention.</h2>
+                    <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
+                      A current corporate development surfaced by the event feed, with its source available to inspect.
+                    </p>
+                  </div>
+                  <div className="border-t hairline pt-5 md:border-l md:border-t-0 md:pl-7 md:pt-0">
+                    <p className="eyebrow">
+                      {pulse.events.latest[0].country?.name ?? "Corporate event"}
+                      {pulse.events.latest[0].day ? ` · ${pulse.events.latest[0].day}` : ""}
+                    </p>
+                    <h3 className="h3 mt-3">{pulse.events.latest[0].headline}</h3>
+                    {pulse.events.latest[0].publisher && (
+                      <p className="mt-2 text-sm text-[color:var(--muted)]">{pulse.events.latest[0].publisher}</p>
+                    )}
+                    <div className="mt-5 flex flex-wrap gap-3">
+                      {pulse.events.latest[0].url && (
+                        <a href={pulse.events.latest[0].url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                          Read source <ArrowRight />
+                        </a>
+                      )}
+                      <a href="/app/watchlists" className="btn btn-ghost">Track corporate events <ArrowRight /></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </section>
+        )}
         <section aria-labelledby="capabilities-title" className="border-t hairline py-20 sm:py-24">
           <Container>
             <Reveal>
