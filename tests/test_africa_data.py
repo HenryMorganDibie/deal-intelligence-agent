@@ -277,6 +277,19 @@ def test_event_country_uses_story_location_over_search_hint():
     assert events[0]["countries"] == ["KE"]
 
 
+def test_country_deal_queries_include_undisclosed_equity_and_backing_terms():
+    queries = [
+        unquote(url)
+        for url, label, country in mf.country_queries(events=False)
+        if country and country.iso2 == "MU" and "(en)" in label
+    ]
+
+    assert queries
+    assert any("backs" in query and "backed" in query and
+               '"minority stake"' in query and '"equity investment"' in query
+               for query in queries)
+
+
 def test_country_queries_cover_every_country():
     labels = {c.iso2 for _, _, c in mf.country_queries()}
     assert labels == {c.iso2 for c in ac.COUNTRIES}
