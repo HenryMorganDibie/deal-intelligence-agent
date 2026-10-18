@@ -195,7 +195,7 @@ async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
     def belongs_to_country(record: dict) -> bool:
         raw = ([record.get("country")] if record.get("country") else []) + (record.get("countries") or [])
         for value in raw:
-            resolved = countries.resolve(country=value)
+            resolved = ac.resolve(country=value)
             if resolved and resolved.iso2 == c.iso2:
                 return True
         return False
