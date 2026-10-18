@@ -5,10 +5,27 @@ import { MarketPulse } from "../components/MarketPulse";
 import { Problem } from "../components/Problem";
 import { SiteNav } from "../components/SiteNav";
 import { SourceMarquee } from "../components/SourceMarquee";
-import { getPulse, getShowcase } from "../lib/pulse";
+import { getPulse, getShowcase, usd } from "../lib/pulse";
+import corporateOfWeekArchive from "../data/corporate-of-week.json";
 import { ArrowRight, Container, Reveal } from "../components/primitives";
 
 export const revalidate = 60;
+
+type CorporateSource = { publisher: string; title: string; url: string; date: string | null; kind: string };
+type CorporateSelection = {
+  company: string; company_url: string; headline: string; deal_type: string; amount_usd: number | null;
+  country: string | null; sector: string | null; announced: string | null; score: number;
+  independent_stories: number; transaction_records: number; related_events: number; reasons: string[];
+  sources: CorporateSource[]; method: string; period_start: string; period_end: string; selected_at: string;
+  runner_ups: { company: string; score: number; reasons: string[] }[];
+};
+const corporateSelection = (corporateOfWeekArchive as { current: CorporateSelection | null }).current;
+function displayDate(value: string | null | undefined): string {
+  if (!value) return "Date not available";
+  const parsed = new Date(value.slice(0, 10) + "T00:00:00Z");
+  return Number.isNaN(parsed.getTime()) ? "Date not available" :
+    parsed.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+}
 
 const CAPABILITIES = [
   {
@@ -47,41 +64,102 @@ export default async function LandingPage() {
         <SourceMarquee />
         <Problem compact />
         <MarketPulse pulse={pulse} compact />
-        {pulse?.events.latest[0] && (
-          <section aria-labelledby="corporate-week-title" className="border-t hairline py-14 sm:py-16">
-            <Container>
-              <div className="panel overflow-hidden">
-                <div className="grid gap-6 p-6 sm:p-8 md:grid-cols-[0.7fr_1.3fr] md:items-center">
+        <section aria-labelledby="corporate-week-title" className="border-t hairline py-14 sm:py-16">
+          <Container>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="eyebrow">Evidence-led editorial selection</p>
+                <h2 id="corporate-week-title" className="h2 mt-3">Corporate of the Week</h2>
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[color:var(--muted)]">
+                  One company selected from the previous seven days of reported transactions, ranked using disclosed deal
+                  significance, independent reporting, recency, and matching corporate-event evidence.
+                </p>
+              </div>
+              {corporateSelection && <p className="eyebrow">Week ending {displayDate(corporateSelection.period_end)}</p>}
+            </div>
+            {corporateSelection ? (
+              <div className="panel mt-6 overflow-hidden">
+                <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.2fr_0.8fr]">
                   <div>
-                    <p className="eyebrow">Corporate of the Week</p>
-                    <h2 id="corporate-week-title" className="h2 mt-3">A company story worth your attention.</h2>
-                    <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
-                      A current corporate development surfaced by the event feed, with its source available to inspect.
-                    </p>
-                  </div>
-                  <div className="border-t hairline pt-5 md:border-l md:border-t-0 md:pl-7 md:pt-0">
                     <p className="eyebrow">
-                      {pulse.events.latest[0].country?.name ?? "Corporate event"}
-                      {pulse.events.latest[0].day ? ` · ${pulse.events.latest[0].day}` : ""}
+                      {corporateSelection.country || "Market not specified"}
+                      {corporateSelection.sector ? " · " + corporateSelection.sector.replace(/_/g, " ") : ""}
+                      {corporateSelection.announced ? " · Reported " + displayDate(corporateSelection.announced) : ""}
                     </p>
-                    <h3 className="h3 mt-3">{pulse.events.latest[0].headline}</h3>
-                    {pulse.events.latest[0].publisher && (
-                      <p className="mt-2 text-sm text-[color:var(--muted)]">{pulse.events.latest[0].publisher}</p>
-                    )}
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      {pulse.events.latest[0].url && (
-                        <a href={pulse.events.latest[0].url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-                          Read source <ArrowRight />
+                    <h3 className="h2 mt-3">{corporateSelection.company}</h3>
+                    <p className="mt-4 text-base leading-relaxed">{corporateSelection.headline}</p>
+                    <div className="mt-5 flex flex-wrap gap-2 text-sm text-[color:var(--muted)]">
+                      <span className="kbd">{corporateSelection.deal_type.replace(/_/g, " ")}</span>
+                      {corporateSelection.amount_usd != null && <span className="kbd">{usd(corporateSelection.amount_usd)} disclosed</span>}
+                      <span className="kbd">{corporateSelection.independent_stories} independent {corporateSelection.independent_stories === 1 ? "story" : "stories"}</span>
+                      {corporateSelection.related_events > 0 && <span className="kbd">{corporateSelection.related_events} related event signals</span>}
+                    </div>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <a href={corporateSelection.company_url} className="btn btn-primary">Explore company <ArrowRight /></a>
+                      {corporateSelection.sources[0] && (
+                        <a href={corporateSelection.sources[0].url} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
+                          Read original source <ArrowRight />
                         </a>
                       )}
-                      <a href="/app/watchlists" className="btn btn-ghost">Track corporate events <ArrowRight /></a>
                     </div>
                   </div>
+                  <div className="border-t hairline pt-5 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
+                    <h4 className="h3">Why it was selected</h4>
+                    <ul className="mt-4 space-y-3">
+                      {corporateSelection.reasons.map((reason) => (
+                        <li key={reason} className="flex gap-2 text-sm leading-relaxed text-[color:var(--muted)]">
+                          <span aria-hidden="true" className="text-verified">•</span><span>{reason}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-5 border-t hairline pt-4 text-xs leading-relaxed text-[color:var(--dim)]">
+                      Ranking score: {corporateSelection.score.toFixed(2)}. This is a relative selection score, not a
+                      probability, company rating, or investment recommendation.
+                    </p>
+                  </div>
+                </div>
+                <div className="border-t hairline px-6 py-5 sm:px-8">
+                  <h4 className="h3">Evidence trail ({corporateSelection.sources.length} source links)</h4>
+                  <ul className="mt-3 grid gap-3 md:grid-cols-2">
+                    {corporateSelection.sources.slice(0, 4).map((source) => (
+                      <li key={source.url} className="min-w-0">
+                        <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-verified hover:underline">
+                          {source.title}
+                        </a>
+                        <p className="mt-1 text-xs text-[color:var(--muted)]">
+                          {source.publisher}{source.date ? " · " + displayDate(source.date) : ""}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                  {corporateSelection.runner_ups.length > 0 && (
+                    <details className="mt-5 border-t hairline pt-4">
+                      <summary className="cursor-pointer text-sm hover:text-verified">Other companies considered</summary>
+                      <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+                        {corporateSelection.runner_ups.map((candidate) => (
+                          <li key={candidate.company} className="rounded-lg border hairline p-3">
+                            <p className="text-sm font-medium">{candidate.company}</p>
+                            <p className="mt-1 text-xs text-[color:var(--muted)]">Score {candidate.score.toFixed(2)}</p>
+                            <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">{candidate.reasons[0]}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                  <p className="mt-4 text-xs leading-relaxed text-[color:var(--dim)]">{corporateSelection.method}</p>
                 </div>
               </div>
-            </Container>
-          </section>
-        )}
+            ) : (
+              <div className="panel mt-6 p-6 sm:p-8">
+                <h3 className="h3">The weekly selection is being prepared.</h3>
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--muted)]">
+                  This section only features a company when a dated transaction and inspectable source evidence meet the
+                  selection rules. If the evidence is insufficient, it will not invent a winner.
+                </p>
+              </div>
+            )}
+          </Container>
+        </section>
         <section aria-labelledby="capabilities-title" className="border-t hairline py-20 sm:py-24">
           <Container>
             <Reveal>
