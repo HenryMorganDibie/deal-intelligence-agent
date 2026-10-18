@@ -234,11 +234,17 @@ export default function CountryPage({ params }: { params: { code: string } }) {
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
         This view summarizes the country’s currently recorded deal and event dataset. Deal and event totals count available records, not every transaction or announcement in the real economy. The charts use up to 100 retrieved deal records; if more records exist, the distributions may not cover the full dataset. Coverage and disclosure vary by market.
       </p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="Deals in dataset" value={analyticsLoading ? "Loading…" : marketTotals.deals.toLocaleString()} note="Matching records returned by the API" />
         <Stat label="Corporate events" value={analyticsLoading ? "Loading…" : marketTotals.events.toLocaleString()} note="Matching event records" />
+        <Stat label="Multi-source corroborated" value={analyticsLoading ? "Loading…" : marketDeals.filter((deal) => deal.verification === "corroborated").length.toLocaleString()} note="Corroborated records among the retrieved deals" />
         <Stat label="Deals with disclosed value" value={analyticsLoading ? "Loading…" : marketDeals.filter((deal) => deal.amount_usd != null && deal.amount_usd > 0).length.toLocaleString()} note="Among retrieved deal records, not all market transactions" />
       </div>
+      {!analyticsLoading && marketDeals.length > 0 && (
+        <p className="mt-2 text-xs text-[color:var(--dim)]">
+          Of the {marketDeals.length.toLocaleString()} retrieved deal records, {(marketDeals.filter((deal) => deal.verification === "single source").length).toLocaleString()} are currently labelled single-source. Multi-source corroboration means multiple independent stories were detected, not necessarily official filing confirmation.
+        </p>
+      )
 
       <div className="mt-5 grid gap-4 lg:grid-cols-2">
         <section className="panel p-4 sm:p-5">
