@@ -22,7 +22,7 @@ export default function InvestorsPage() {
   useEffect(() => {
     setRows(null);
     setError(null);
-    get<{ investors: InvestorRow[] }>("/api/investors", { role, kind, limit: 100 })
+    get<{ investors: InvestorRow[] }>("/api/investors", { role, kind, limit: 200 })
       .then((r) => setRows(r.investors))
       .catch((err) => {
         setRows([]);
@@ -32,7 +32,7 @@ export default function InvestorsPage() {
 
   useEffect(() => {
     setFundsError(null);
-    get<{ funds: Fund[] }>("/api/funds", { limit: 40 })
+    get<{ funds: Fund[] }>("/api/funds", { limit: 500 })
       .then((r) => setFunds(r.funds))
       .catch((err) => {
         setFunds([]);
