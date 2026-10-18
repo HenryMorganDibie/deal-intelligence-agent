@@ -12,12 +12,23 @@ type Row = {
   risk_tier: string | null; risk_coverage: number; coverage_tier: string; deals: number; events: number;
 };
 
+const REGIONS = ["Northern Africa", "Western Africa", "Middle Africa", "Eastern Africa", "Southern Africa"];
+
+function scoreLabel(score: number | null) {
+  return score == null ? "Not available" : `${score}/100`;
+}
+
 export default function CountriesPage() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [asOf, setAsOf] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sort, setSort] = useState<"risk" | "name" | "deals">("risk");
+  const [sort, setSort] = useState<"risk" | "name" | "deals" | "events" | "coverage">("deals");
   const [region, setRegion] = useState("");
+  const [query, setQuery] = useState("");
+  const [riskTier, setRiskTier] = useState("");
+  const [coverageTier, setCoverageTier] = useState("");
+  const [activeOnly, setActiveOnly] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
 
   useEffect(() => {
     get<{ countries: Row[]; data_as_of: string }>("/api/countries")
@@ -29,63 +40,203 @@ export default function CountriesPage() {
   }, []);
 
   const shown = useMemo(() => {
-    const r = (rows ?? []).filter((c) => !region || c.region === region);
-    return [...r].sort((a, b) =>
-      sort === "name" ? a.name.localeCompare(b.name) : sort === "deals" ? b.deals - a.deals : (b.risk_score ?? 0) - (a.risk_score ?? 0),
+    const q = query.trim().toLocaleLowerCase();
+    const filtered = (rows ?? []).filter((c) =>
+      (!q || [c.name, c.iso2, c.region, c.currency, c.exchange ?? ""].some((v) => v.toLocaleLowerCase().includes(q))) &&
+      (!region || c.region === region) &&
+      (!riskTier || (c.risk_tier ?? "").toLowerCase() === riskTier) &&
+      (!coverageTier || c.coverage_tier.toLowerCase() === coverageTier) &&
+      (!activeOnly || c.deals > 0 || c.events > 0),
     );
-  }, [rows, sort, region]);
+    return [...filtered].sort((a, b) => {
+      if (sort === "name") return a.name.localeCompare(b.name);
+      if (sort === "deals") return b.deals - a.deals || a.name.localeCompare(b.name);
+      if (sort === "events") return b.events - a.events || a.name.localeCompare(b.name);
+      if (sort === "coverage") return b.risk_coverage - a.risk_coverage || a.name.localeCompare(b.name);
+      if (a.risk_score == null) return b.risk_score == null ? a.name.localeCompare(b.name) : 1;
+      if (b.risk_score == null) return -1;
+      return b.risk_score - a.risk_score || a.name.localeCompare(b.name);
+    });
+  }, [rows, sort, region, query, riskTier, coverageTier, activeOnly]);
+
+  const selectedRows = useMemo(() => (rows ?? []).filter((c) => selected.includes(c.iso2)), [rows, selected]);
+  const activeFilters = Number(Boolean(query.trim())) + Number(Boolean(region)) + Number(Boolean(riskTier)) +
+    Number(Boolean(coverageTier)) + Number(activeOnly);
+
+  function toggleCompare(code: string) {
+    setSelected((current) => current.includes(code)
+      ? current.filter((item) => item !== code)
+      : current.length < 4 ? [...current, code] : current);
+  }
+
+  function clearFilters() {
+    setQuery("");
+    setRegion("");
+    setRiskTier("");
+    setCoverageTier("");
+    setActiveOnly(false);
+  }
 
   return (
     <Container className="py-10 lg:py-14">
-      <PageHeader eyebrow="Countries" title="All 54 African countries: risk, currency and coverage.">
-        Country risk is a transparent 0 to 100 score from World Bank governance and macroeconomic indicators
-        {asOf ? ` (retrieved ${asOf})` : ""}; every component and formula is shown on the country page. The coverage tier
-        states how far signals can be verified in that market.
+      <PageHeader eyebrow="Market intelligence · 54 markets" title="Explore African markets with evidence, not guesswork.">
+        Compare country risk, deal and event activity, currencies and data coverage. Risk is a transparent 0–100 analytical score built from available governance and macroeconomic indicators, not a prediction of returns. {asOf ? `Dataset retrieved ${asOf}.` : ""}
       </PageHeader>
-      <div className="flex flex-wrap gap-3">
-        <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="field w-auto" aria-label="Sort">
-          <option value="risk">Sort by risk</option>
-          <option value="name">Sort by name</option>
-          <option value="deals">Sort by deal count</option>
-        </select>
-        <select value={region} onChange={(e) => setRegion(e.target.value)} className="field w-auto" aria-label="Region">
-          <option value="">All regions</option>
-          {["Northern Africa", "Western Africa", "Middle Africa", "Eastern Africa", "Southern Africa"].map((r) => (
-            <option key={r}>{r}</option>
-          ))}
-        </select>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="panel p-4">
+          <p className="text-xs text-[color:var(--dim)]">Markets in directory</p>
+          <p className="mt-1 text-2xl font-medium">{rows?.length ?? "—"}</p>
+          <p className="mt-1 text-xs text-[color:var(--muted)]">Country profiles available</p>
+        </div>
+        <div className="panel p-4">
+          <p className="text-xs text-[color:var(--dim)]">Markets with recorded activity</p>
+          <p className="mt-1 text-2xl font-medium">{rows ? rows.filter((c) => c.deals > 0 || c.events > 0).length : "—"}</p>
+          <p className="mt-1 text-xs text-[color:var(--muted)]">At least one deal or corporate event in the dataset</p>
+        </div>
+        <div className="panel p-4">
+          <p className="text-xs text-[color:var(--dim)]">Selected for comparison</p>
+          <p className="mt-1 text-2xl font-medium">{selected.length} / 4</p>
+          <p className="mt-1 text-xs text-[color:var(--muted)]">Choose up to four markets below</p>
+        </div>
       </div>
+
+      <section className="panel mt-6 p-4 sm:p-5" aria-label="Country filters">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <label className="block">
+            <span className="mb-1.5 block text-xs text-[color:var(--muted)]">Search countries</span>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Country, code, currency or exchange" className="field w-full" />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs text-[color:var(--muted)]">Region</span>
+            <select value={region} onChange={(e) => setRegion(e.target.value)} className="field w-full">
+              <option value="">All regions</option>
+              {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs text-[color:var(--muted)]">Risk tier</span>
+            <select value={riskTier} onChange={(e) => setRiskTier(e.target.value)} className="field w-full">
+              <option value="">All risk tiers</option>
+              {["low", "moderate", "elevated", "high", "severe"].map((r) => <option key={r} value={r}>{r[0].toUpperCase() + r.slice(1)}</option>)}
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs text-[color:var(--muted)]">Evidence coverage</span>
+            <select value={coverageTier} onChange={(e) => setCoverageTier(e.target.value)} className="field w-full">
+              <option value="">All coverage tiers</option>
+              {["a", "b", "c"].map((r) => <option key={r} value={r}>Tier {r.toUpperCase()}</option>)}
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs text-[color:var(--muted)]">Sort markets</span>
+            <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="field w-full">
+              <option value="deals">Most recorded deals</option>
+              <option value="events">Most corporate events</option>
+              <option value="risk">Risk score (high to low)</option>
+              <option value="coverage">Highest risk-data coverage</option>
+              <option value="name">Country name (A–Z)</option>
+            </select>
+          </label>
+          <div className="flex items-end justify-between gap-3">
+            <label className="flex items-center gap-2 pb-2 text-sm text-[color:var(--muted)]">
+              <input type="checkbox" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />
+              Recorded deal or event activity
+            </label>
+            <button type="button" onClick={clearFilters} className="btn btn-ghost shrink-0" disabled={activeFilters === 0}>Reset</button>
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-[color:var(--dim)]" aria-live="polite">
+          Showing {shown.length} of {rows?.length ?? "—"} markets{activeFilters ? ` · ${activeFilters} active filter${activeFilters === 1 ? "" : "s"}` : ""}. A market with no recorded activity may reflect limited source coverage, not proof that no activity occurred.
+        </p>
+      </section>
+
       {error && <ErrorNote message={error} />}
+
+      {selectedRows.length > 0 && (
+        <section className="panel mt-5 p-4 sm:p-5" aria-label="Country comparison">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-medium">Market comparison</h2>
+              <p className="mt-1 text-xs text-[color:var(--muted)]">Side-by-side descriptive indicators. Coverage differs by market, so counts are not automatically like-for-like.</p>
+            </div>
+            <button type="button" className="btn btn-ghost" onClick={() => setSelected([])}>Clear comparison</button>
+          </div>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[38rem] border-collapse text-left text-sm">
+              <thead><tr className="border-b hairline"><th className="py-2 pr-4 font-normal text-[color:var(--dim)]">Indicator</th>{selectedRows.map((c) => <th key={c.iso2} className="py-2 pr-4 font-medium"><Link className="hover:underline" href={`/app/countries/${c.iso2}`}>{c.name}</Link></th>)}</tr></thead>
+              <tbody>
+                {[
+                  ["Region", (c: Row) => c.region],
+                  ["Risk score", (c: Row) => scoreLabel(c.risk_score)],
+                  ["Risk tier", (c: Row) => c.risk_tier ?? "Not available"],
+                  ["Risk-data coverage", (c: Row) => `${Math.round(c.risk_coverage * 100)}%`],
+                  ["Evidence coverage tier", (c: Row) => c.coverage_tier],
+                  ["Recorded deals", (c: Row) => c.deals.toLocaleString()],
+                  ["Corporate events", (c: Row) => c.events.toLocaleString()],
+                  ["Currency", (c: Row) => c.currency],
+                  ["Exchange", (c: Row) => c.exchange ?? "Not listed"],
+                ].map(([label, value]) => (
+                  <tr key={label as string} className="border-b hairline">
+                    <th className="py-2.5 pr-4 font-normal text-[color:var(--muted)]">{label as string}</th>
+                    {selectedRows.map((c) => <td key={c.iso2} className="py-2.5 pr-4 align-top">{(value as (c: Row) => string)(c)}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
       <div className="mt-6">
-        {rows === null ? (
-          <Loading />
+        {rows === null ? <Loading label="Loading country intelligence…" /> : shown.length === 0 ? (
+          <div className="panel p-8 text-center">
+            <h2 className="font-medium">No markets match these filters</h2>
+            <p className="mt-2 text-sm text-[color:var(--muted)]">Try a different search or reset the filters.</p>
+            <button type="button" className="btn btn-ghost mt-4" onClick={clearFilters}>Reset filters</button>
+          </div>
         ) : (
-          <Table head={["Country", "Region", "Risk score", "Risk tier", "Data coverage", "Coverage tier", "Deals", "Events", "Currency"]}>
+          <Table head={["Compare", "Country", "Region", "Risk score", "Risk tier", "Risk-data coverage", "Evidence tier", "Deals", "Events", "Currency"]} minWidth="68rem">
             {shown.map((c) => (
               <tr key={c.iso2}>
                 <Td>
-                  <Link href={`/app/countries/${c.iso2}`} className="hover:underline">
-                    {c.name}
-                  </Link>
-                  <span className="kbd ml-2 text-[0.75rem] text-[color:var(--dim)]">{c.iso2}</span>
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(c.iso2)}
+                    disabled={!selected.includes(c.iso2) && selected.length >= 4}
+                    onChange={() => toggleCompare(c.iso2)}
+                    aria-label={`Compare ${c.name}`}
+                    title={selected.length >= 4 && !selected.includes(c.iso2) ? "Compare up to four countries" : `Compare ${c.name}`}
+                  />
+                </Td>
+                <Td>
+                  <Link href={`/app/countries/${c.iso2}`} className="font-medium hover:underline">{c.name}</Link>
+                  <span className="kbd ml-2 text-xs text-[color:var(--dim)]">{c.iso2}</span>
+                  {c.exchange && <span className="mt-1 block text-xs text-[color:var(--dim)]">{c.exchange}</span>}
                 </Td>
                 <Td className="text-[color:var(--muted)]">{c.region}</Td>
                 <Td className="kbd">{c.risk_score ?? "n/a"}</Td>
+                <Td><Pill value={c.risk_tier} /></Td>
                 <Td>
-                  <Pill value={c.risk_tier} />
+                  <div className="min-w-20">
+                    <div className="kbd">{Math.round(c.risk_coverage * 100)}%</div>
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[color:var(--line)]">
+                      <div className="h-full rounded-full bg-[color:var(--verified)]" style={{ width: `${Math.max(0, Math.min(100, c.risk_coverage * 100))}%` }} />
+                    </div>
+                  </div>
                 </Td>
-                <Td className="text-[color:var(--muted)]">{Math.round(c.risk_coverage * 100)}%</Td>
-                <Td>
-                  <Pill value={c.coverage_tier} />
-                </Td>
-                <Td>{c.deals}</Td>
-                <Td>{c.events}</Td>
+                <Td><Pill value={c.coverage_tier} title="Coverage tier reflects available market data and verification coverage, not country quality." /></Td>
+                <Td className="kbd">{c.deals.toLocaleString()}</Td>
+                <Td className="kbd">{c.events.toLocaleString()}</Td>
                 <Td className="kbd">{c.currency}</Td>
               </tr>
             ))}
           </Table>
         )}
       </div>
+      <p className="mt-4 text-xs leading-relaxed text-[color:var(--dim)]">
+        Interpretation note: risk-data coverage is the share of expected inputs available to the risk model; it is not the probability that the risk score is correct. Evidence coverage tier describes the breadth of available market datasets. Review the country page for component formulas, indicator years, currency methodology and source limitations before comparing markets.
+      </p>
     </Container>
   );
 }
