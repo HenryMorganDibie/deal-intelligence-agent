@@ -296,7 +296,7 @@ def ranking(snapshot: Optional[dict] = None) -> list[dict]:
     return sorted(rows, key=lambda r: (r["score"] is None, -(r["score"] or 0)))
 
 
-def historical_scores(country: Country, snapshot: Optional[dict] = None, since: int = 2018,
+def historical_scores(country: Country, snapshot: Optional[dict] = None, since: int = 1960,
                      until: Optional[int] = None) -> dict:
     """Annual risk history reconstructed from current historical source series.
 
