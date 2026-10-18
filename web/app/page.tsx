@@ -18,7 +18,7 @@ import { Trust } from "../components/Trust";
 import { getPulse, getQuality, getShowcase } from "../lib/pulse";
 
 // Re-render from the live feed every 5 minutes so displayed counts follow successful ingestion.
-export const revalidate = 300;
+export const revalidate = 60;
 
 export default async function LandingPage() {
   const [pulse, showcase, quality] = await Promise.all([getPulse(), getShowcase(), getQuality()]);
