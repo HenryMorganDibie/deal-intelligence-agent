@@ -376,6 +376,16 @@ def _checkpoint(run_dir: Path, ticker: str) -> Path:
     return run_dir / (re.sub(r"[^A-Za-z0-9.]+", "_", ticker) + ".json")
 
 
+def _checkpoint_needs_run(path: Path) -> bool:
+    """Retry companies previously marked uncovered; their missing history may be transient."""
+    if not path.exists():
+        return True
+    try:
+        return not bool(json.loads(path.read_text(encoding="utf-8")).get("covered", True))
+    except (OSError, ValueError, TypeError):
+        return True
+
+
 def current_period(today: date) -> tuple[date, date, int]:
     """(start, end, step_days) the monthly run works on: the published period while some of its companies
     are still to run, so each month adds to it; once it is complete, the latest rolling period."""
@@ -419,7 +429,18 @@ def plan_shards(start: date, end: date, universe: list[tuple], shards: int) -> d
     """Split the companies of [start, end] that have no checkpoint yet into `shards` interleaved groups,
     one per machine, so each runner (with its own address) searches news for a different set."""
     run_dir = RUNS_DIR / f"{start}_{end}"
-    todo = [e[1] for e in universe if not _checkpoint(run_dir, e[1]).exists()]
+    todo_entries = [e for e in universe if _checkpoint_needs_run(_checkpoint(run_dir, e[1]))]
+    # Give African listings first access to each run instead of leaving them behind a
+    # US-heavy alphabetical ticker list. Interleaving then spreads them across runners.
+    from src.engines.backtest_universe import UNIVERSE_PATH
+    market_by_ticker = {}
+    try:
+        with UNIVERSE_PATH.open(newline="", encoding="utf-8") as f:
+            market_by_ticker = {r["ticker"]: r.get("market", "") for r in csv.DictReader(f)}
+    except OSError:
+        pass
+    todo_entries.sort(key=lambda e: (0 if market_by_ticker.get(e[1]) == "africa" else 1, e[1]))
+    todo = [e[1] for e in todo_entries]
     groups = [todo[i::shards] for i in range(max(shards, 1))]
     return {"start": start.isoformat(), "end": end.isoformat(), "remaining": len(todo),
             "shards": [{"shard": i + 1, "tickers": ",".join(g)} for i, g in enumerate(groups) if g]}
@@ -442,7 +463,7 @@ def run(
     truth_dates = _as_of_dates(start, horizon_end, step_days)
     run_dir = RUNS_DIR / f"{start}_{end}"
     run_dir.mkdir(parents=True, exist_ok=True)
-    todo = [e for e in universe if not _checkpoint(run_dir, e[1]).exists()]
+    todo = [e for e in universe if _checkpoint_needs_run(_checkpoint(run_dir, e[1]))]
     progress(f"{len(universe) - len(todo)} of {len(universe)} companies already done; {len(todo)} to run")
     local = threading.local()
     stop_at = time.monotonic() + deadline_minutes * 60 if deadline_minutes else None
