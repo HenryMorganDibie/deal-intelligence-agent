@@ -61,36 +61,48 @@ jobs:
             ];
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const ref = await github.rest.git.getRef({ owner, repo, ref: 'heads/main' });
-            const baseSha = ref.data.object.sha;
-            const baseCommit = await github.rest.git.getCommit({ owner, repo, commit_sha: baseSha });
-            const baseTree = await github.rest.git.getTree({
-              owner, repo, tree_sha: baseCommit.data.tree.sha, recursive: '1',
-            });
-            const existing = new Map((baseTree.data.tree || []).map(entry => [entry.path, entry.sha]));
-            const tree = [];
-            for (const path of paths) {
-              if (!fs.existsSync(path)) continue;
-              const content = fs.readFileSync(path, 'utf8');
-              const blob = await github.rest.git.createBlob({ owner, repo, content, encoding: 'utf-8' });
-              if (existing.get(path) !== blob.data.sha) {
-                tree.push({ path, mode: '100644', type: 'blob', sha: blob.data.sha });
+            for (let attempt = 1; attempt <= 5; attempt++) {
+              const ref = await github.rest.git.getRef({ owner, repo, ref: 'heads/main' });
+              const baseSha = ref.data.object.sha;
+              const baseCommit = await github.rest.git.getCommit({ owner, repo, commit_sha: baseSha });
+              const baseTree = await github.rest.git.getTree({
+                owner, repo, tree_sha: baseCommit.data.tree.sha, recursive: '1',
+              });
+              const existing = new Map((baseTree.data.tree || []).map(entry => [entry.path, entry.sha]));
+              const tree = [];
+              for (const path of paths) {
+                if (!fs.existsSync(path)) continue;
+                const content = fs.readFileSync(path, 'utf8');
+                const blob = await github.rest.git.createBlob({ owner, repo, content, encoding: 'utf-8' });
+                if (existing.get(path) !== blob.data.sha) {
+                  tree.push({ path, mode: '100644', type: 'blob', sha: blob.data.sha });
+                }
+              }
+              if (!tree.length) {
+                core.info('No generated output changes to publish.');
+                return;
+              }
+              const nextTree = await github.rest.git.createTree({
+                owner, repo, base_tree: baseCommit.data.tree.sha, tree,
+              });
+              const commit = await github.rest.git.createCommit({
+                owner, repo,
+                message: 'Refresh daily research and model evaluation data',
+                tree: nextTree.data.sha,
+                parents: [baseSha],
+              });
+              try {
+                await github.rest.git.updateRef({
+                  owner, repo, ref: 'heads/main', sha: commit.data.sha, force: false,
+                });
+                core.info(`Published ${tree.length} generated files directly to main at ${commit.data.sha}.`);
+                return;
+              } catch (error) {
+                if (error.status === 422 && attempt < 5) {
+                  core.warning(`main moved during publish (attempt ${attempt}); rebuilding on latest main.`);
+                  continue;
+                }
+                throw error;
               }
             }
-            if (!tree.length) {
-              core.info('No generated output changes to publish.');
-              return;
-            }
-            const nextTree = await github.rest.git.createTree({
-              owner, repo, base_tree: baseCommit.data.tree.sha, tree,
-            });
-            const commit = await github.rest.git.createCommit({
-              owner, repo,
-              message: 'Refresh daily research and model evaluation data',
-              tree: nextTree.data.sha,
-              parents: [baseSha],
-            });
-            await github.rest.git.updateRef({
-              owner, repo, ref: 'heads/main', sha: commit.data.sha, force: false,
-            });
-            core.info(`Published ${tree.length} generated files directly to main at ${commit.data.sha}.`);
+            throw new Error('Could not publish generated outputs after five concurrent-main retries.');
