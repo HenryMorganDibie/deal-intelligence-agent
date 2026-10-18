@@ -96,6 +96,7 @@ export default function InvestorsPage() {
         {rows === null ? (
           <Loading />
         ) : (
+          <>
           <Table head={["Name", "Type", "Deals", "Roles", "Disclosed value", "Countries", "Last seen"]}>
             {rows.map((r) => (
               <tr key={r.name}>
@@ -115,6 +116,7 @@ export default function InvestorsPage() {
             ))}
           </Table>
           <Pagination total={investorTotal} offset={investorOffset} limit={investorLimit} onPageChange={setInvestorOffset} onPageSizeChange={(n) => { setInvestorLimit(n); setInvestorOffset(0); }} />
+          </>
         )}
       </div>
 
@@ -125,6 +127,7 @@ export default function InvestorsPage() {
           <Loading />
         ) : (
           funds.length ? (
+            <>
             <Table head={["Date", "Fund or manager", "Stage", "Size", "LPs / anchors"]}>
               {funds.map((f) => (
                 <tr key={f.id}>
@@ -142,6 +145,7 @@ export default function InvestorsPage() {
               ))}
             </Table>
             <Pagination total={fundTotal} offset={fundOffset} limit={fundLimit} onPageChange={setFundOffset} onPageSizeChange={(n) => { setFundLimit(n); setFundOffset(0); }} />
+            </>
           ) : <p className="text-sm text-[color:var(--muted)]">No fund raises or closes recorded.</p>
         )}
       </div>
