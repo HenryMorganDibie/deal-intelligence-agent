@@ -20,24 +20,46 @@ export default function InvestorsPage() {
   const [fundsError, setFundsError] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
+    const load = () => {
+      setError(null);
+      get<{ investors: InvestorRow[] }>("/api/investors", { role, kind, limit: 200 })
+        .then((r) => { if (active) setRows(r.investors); })
+        .catch((err) => {
+          if (!active) return;
+          setError(err instanceof ApiError ? err.message : "Could not load investors.");
+        });
+    };
     setRows(null);
-    setError(null);
-    get<{ investors: InvestorRow[] }>("/api/investors", { role, kind, limit: 200 })
-      .then((r) => setRows(r.investors))
-      .catch((err) => {
-        setRows([]);
-        setError(err instanceof ApiError ? err.message : "Could not load investors.");
-      });
+    load();
+    const interval = window.setInterval(load, 5 * 60 * 1000);
+    window.addEventListener("focus", load);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", load);
+    };
   }, [role, kind]);
 
   useEffect(() => {
-    setFundsError(null);
-    get<{ funds: Fund[] }>("/api/funds", { limit: 500 })
-      .then((r) => setFunds(r.funds))
-      .catch((err) => {
-        setFunds([]);
-        setFundsError(err instanceof ApiError ? err.message : "Could not load fund raises.");
-      });
+    let active = true;
+    const load = () => {
+      setFundsError(null);
+      get<{ funds: Fund[] }>("/api/funds", { limit: 500 })
+        .then((r) => { if (active) setFunds(r.funds); })
+        .catch((err) => {
+          if (!active) return;
+          setFundsError(err instanceof ApiError ? err.message : "Could not load fund raises.");
+        });
+    };
+    load();
+    const interval = window.setInterval(load, 5 * 60 * 1000);
+    window.addEventListener("focus", load);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", load);
+    };
   }, []);
 
   return (
