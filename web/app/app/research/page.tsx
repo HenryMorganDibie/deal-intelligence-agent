@@ -8,10 +8,10 @@ import { ApiError } from "../../../lib/api";
 import { post, type ResearchResult } from "../../../lib/market";
 
 const EXAMPLES = [
+  "What did the Federal Reserve decide about interest rates most recently?",
+  "Which major global fintech acquisitions were announced this year?",
   "Which fintech companies in Nigeria raised money in the last 6 months, and from whom?",
-  "What acquisitions happened in Kenyan banking this year?",
-  "How risky is Ghana for a private equity investor right now?",
-  "Which development finance institutions are most active in West Africa?",
+  "Compare Kenya's banking sector with South Africa's using recent evidence.",
 ];
 
 /** Renders common Markdown inline formatting and links citations to the evidence list. */
@@ -175,7 +175,7 @@ export default function ResearchPage() {
           onChange={(e) => setQuestion(e.target.value)}
           maxLength={500}
           rows={3}
-          placeholder="Which fintech companies in Nigeria raised money in the last 6 months?"
+          placeholder="Ask a question about a company, transaction, market, regulation, financial metric or risk..."
           className="field min-h-[5.5rem] resize-y"
         />
         <div className="flex flex-wrap items-center gap-3">
