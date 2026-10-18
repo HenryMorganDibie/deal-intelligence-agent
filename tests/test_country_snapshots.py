@@ -63,3 +63,12 @@ def test_world_bank_indicator_fetch_reads_every_page():
     assert client.pages_requested == [1, 2]
     assert result["NGA"] == {"1960": 1.0, "2025": 3.0}
     assert result["KEN"] == {"1961": 2.0}
+
+
+def test_committed_country_indicator_snapshot_reaches_earliest_source_window():
+    snap = cr.load_snapshot()
+    assert snap["since"] == 1960
+    assert len(snap["series"]) == 13
+    nigeria_fx = snap["series"]["PA.NUS.FCRF"]["NGA"]
+    assert min(int(year) for year in nigeria_fx) == 1960
+    assert max(int(year) for year in nigeria_fx) >= 2024
