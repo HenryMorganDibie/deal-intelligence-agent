@@ -715,19 +715,29 @@ def _financial_collection() -> dict[str, Any]:
     attempts = {row["ticker"]: row for row in _read_jsonl(FINANCIAL_ATTEMPTS) if row.get("ticker")}
     today = date.today()
     retry_after_days = 2
+
+    def needs_exchange_fallback_retry(ticker: str) -> bool:
+        attempt = attempts.get(ticker, {})
+        return (
+            ticker.upper().endswith((".LG", ".NR"))
+            and attempt.get("status") == "no_annual_data_returned"
+            and not attempt.get("exchange_fallback_attempted")
+        )
+
     pending = [
         ticker for ticker in tickers
         if ticker not in collected
         and (
             ticker not in attempts
+            or needs_exchange_fallback_retry(ticker)
             or (today - date.fromisoformat(attempts[ticker]["last_attempt"])).days >= retry_after_days
         )
     ]
-    # African listings first, then never-attempted tickers, then the oldest failed
-    # attempts. A failed US ticker must not starve African historical coverage.
+    # African listings first. Newly enabled exchange fallbacks get first priority,
+    # followed by never-attempted tickers, then normal backoff retries.
     pending.sort(key=lambda ticker: (
         0 if market_by_ticker.get(ticker) == "africa" else 1,
-        0 if ticker not in attempts else 1,
+        0 if needs_exchange_fallback_retry(ticker) else 1 if ticker not in attempts else 2,
         attempts.get(ticker, {}).get("last_attempt", ""),
         ticker,
     ))
@@ -752,6 +762,7 @@ def _financial_collection() -> dict[str, Any]:
                 "ticker": ticker,
                 "last_attempt": today.isoformat(),
                 "status": "no_annual_data_returned",
+                "exchange_fallback_attempted": ticker.upper().endswith((".LG", ".NR")),
             })
             continue
         annual = result["annual"]
