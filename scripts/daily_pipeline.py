@@ -783,6 +783,7 @@ def _financial_collection() -> dict[str, Any]:
         new_rows.append({
             "id": _stable_id(ticker, latest_period),
             "ticker": ticker,
+            "market": market_by_ticker.get(ticker, "unknown"),
             "period": latest_period,
             "currency": result.get("unit"),
             "source": result.get("source"),
@@ -813,6 +814,9 @@ def _financial_collection() -> dict[str, Any]:
             "ticker": ticker,
             "last_attempt": today.isoformat(),
             "status": "collected",
+            "source": result.get("source"),
+            "source_url": result.get("source_url"),
+            "exchange_fallback_attempted": ticker.upper().endswith((".LG", ".NR")),
         })
     inserted = _merge_jsonl(FINANCIAL_DATA, new_rows)
     _write_jsonl_by_key(FINANCIAL_ATTEMPTS, attempt_rows, "ticker")
