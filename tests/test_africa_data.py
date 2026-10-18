@@ -202,7 +202,7 @@ def test_undisclosed_minority_investment_is_not_rejected_as_generic_backing():
         "Spoon Consulting, a Mauritius-based AI-first consulting company.",
         published="2026-09-03",
         publisher="AVCA",
-        url="https://www.avca.africa/news-insights/member-news/?year=2026",
+        url="https://www.avca.africa/news-insights/member-news/africinvest-backs-spoon-consulting/",
     )
 
     assert deal is not None
