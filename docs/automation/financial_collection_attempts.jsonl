@@ -1,94 +1,106 @@
-{"last_attempt": "2026-10-15", "status": "collected", "ticker": "4SI.JO"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "7UP.LG"}
-{"last_attempt": "2026-10-15", "status": "collected", "ticker": "AA"}
-{"last_attempt": "2026-10-15", "status": "no_annual_data_returned", "ticker": "AADS.GH"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AAI.NR"}
-{"last_attempt": "2026-10-16", "status": "collected", "ticker": "AAL"}
-{"last_attempt": "2026-10-16", "status": "no_annual_data_returned", "ticker": "AALR.CA"}
-{"last_attempt": "2026-10-16", "status": "collected", "ticker": "AAON"}
-{"last_attempt": "2026-10-17", "status": "collected", "ticker": "AAPL"}
-{"last_attempt": "2026-10-17", "status": "collected", "ticker": "AB"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ABBEYBDS.LG"}
-{"last_attempt": "2026-10-17", "status": "collected", "ticker": "ABBV"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ABCTRANS.LG"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ABG.GH"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ABGZA.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ABJC.BV"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ABL.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ABRD.CA"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ABSA.NR"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ABSP.JO"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ABUK.CA"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ACADEMY.LG"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ACAMD.CA"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ACAP.CA"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ACCESS.LG"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ACCESSCORP.LG"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ACCS.NR"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ACE.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ACG.JO"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ACGC.CA"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ACI.GH"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ACL.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ACRO.CA"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ACS.JO"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ACT.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ACTF.CA"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ACZ.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ADB.GH"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ADCI.CA"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ADH.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ADHMA.CS"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ADI.JO"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ADIB.CA"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ADIMA.CS"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ADPC.CA"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ADR.JO"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ADSWITCH.LG"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "ADW.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AEA.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AEE.JO"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AEG.JO"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AEL.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AER.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AET.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AEY.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AFDI.CA"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AFE.JO"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AFH.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AFI.CS"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AFM.CS"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AFMC.CA"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AFRIK.LG"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AFRINSURE.LG"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AFRIPRUD.LG"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AFROMEDIA.LG"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AFRPAINTS.LG"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AFT.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AGIN.CA"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AGL.JO"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AGLEVENT.LG"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AGM.CS"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AHA.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AHB.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AHL.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AIA.JO"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AIICO.LG"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AIL.JO"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AIND.CA"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AIP.JO"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AIRSERVICE.LG"}
-{"last_attempt": "2026-10-18", "status": "collected", "ticker": "AIRTELAFRI.LG"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AITG.CA"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AIVC.CA"}
-{"last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AIVCB.CA"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AJWA.CA"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AKT.CS"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ALCN.CA"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALEX.LG"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALEXA.CA"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALH.JO"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALLGH.GH"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALM.CS"}
-{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALP.JO"}
-{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALP.NR"}
+{"last_attempt": "2026-10-15", "market": "africa", "status": "collected", "ticker": "4SI.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "7UP.LG"}
+{"last_attempt": "2026-10-15", "market": "us", "status": "collected", "ticker": "AA"}
+{"last_attempt": "2026-10-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "AADS.GH"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AAI.NR"}
+{"last_attempt": "2026-10-16", "market": "us", "status": "collected", "ticker": "AAL"}
+{"last_attempt": "2026-10-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "AALR.CA"}
+{"last_attempt": "2026-10-16", "market": "us", "status": "collected", "ticker": "AAON"}
+{"last_attempt": "2026-10-17", "market": "us", "status": "collected", "ticker": "AAPL"}
+{"last_attempt": "2026-10-17", "market": "us", "status": "collected", "ticker": "AB"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ABBEYBDS.LG"}
+{"last_attempt": "2026-10-17", "market": "us", "status": "collected", "ticker": "ABBV"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ABCTRANS.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ABG.GH"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ABGZA.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ABJC.BV"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ABL.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ABRD.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ABSA.NR"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ABSP.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ABUK.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ACADEMY.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ACAMD.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ACAP.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ACCESS.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ACCESSCORP.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ACCS.NR"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ACE.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ACG.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ACGC.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ACI.GH"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ACL.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ACRO.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ACS.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ACT.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ACTF.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ACZ.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ADB.GH"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ADCI.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ADH.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ADHMA.CS"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ADI.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ADIB.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ADIMA.CS"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ADPC.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ADR.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ADSWITCH.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "ADW.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AEA.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AEE.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AEG.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AEL.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AER.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AET.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AEY.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AFDI.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AFE.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AFH.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AFI.CS"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AFM.CS"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AFMC.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AFRIK.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AFRINSURE.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AFRIPRUD.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AFROMEDIA.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AFRPAINTS.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AFT.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AGIN.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AGL.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AGLEVENT.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AGM.CS"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AHA.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AHB.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AHL.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AIA.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AIICO.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AIL.JO"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AIND.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AIP.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AIRSERVICE.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "collected", "ticker": "AIRTELAFRI.LG"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AITG.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AIVC.CA"}
+{"last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AIVCB.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AJWA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AKT.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ALCN.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ALEX.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ALEXA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ALH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ALLGH.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ALM.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ALP.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ALP.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALRA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALUM.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALUMACO.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "ALW.GH"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AMAC.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "AME.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AMEC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "AMER.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AMES.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AMIA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "AMOC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "status": "no_annual_data_returned", "ticker": "AMPI.CA"}

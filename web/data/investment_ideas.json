@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-18T04:03:58.543186+00:00",
+  "updated_at": "2026-10-18T04:05:02.898403+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 0,
+      "new_review_items_today": 1,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,9 +48,9 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 31,
-      "new_observations_today": 1,
-      "unreviewed_flagged_observations": 2,
+      "observations_collected": 34,
+      "new_observations_today": 3,
+      "unreviewed_flagged_observations": 3,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
@@ -177,27 +177,25 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 31,
-    "new_rows": 1,
+    "collected_tickers": 34,
+    "new_rows": 3,
     "failures": [
-      "AGLEVENT.LG",
-      "AIRSERVICE.LG",
-      "AJWA.CA",
-      "AKT.CS",
-      "ALEX.LG",
-      "ALEXA.CA",
-      "ALH.JO",
-      "ALLGH.GH",
-      "ALM.CS",
-      "ALP.JO",
-      "ALP.NR"
+      "ALRA.CA",
+      "ALUM.CA",
+      "ALUMACO.LG",
+      "ALW.GH",
+      "AMAC.NR",
+      "AMEC.CA",
+      "AMES.CA",
+      "AMIA.CA",
+      "AMPI.CA"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
     "nodes": 10,
     "relationships": 5,
-    "source_links": 6,
+    "source_links": 7,
     "most_connected": [
       {
         "name": "Finnfund",
