@@ -493,7 +493,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         target = backing.group("target").strip(" ,.;:'’\"-")
         countries = [country.iso2 for country in countries_in_text(text)]
         based = re.search(
-            r"(?i)\\b((?:[A-Z][A-Za-zÀ-ÿ'’.-]*\\s+){0,3}[A-Z][A-Za-zÀ-ÿ'’.-]*)-based\\b",
+            r"(?i)\b((?:[A-Z][A-Za-zÀ-ÿ'’.-]*\s+){0,3}[A-Z][A-Za-zÀ-ÿ'’.-]*)-based\b",
             snippet or "",
         )
         if based:
@@ -502,7 +502,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
                     countries.append(country.iso2)
         if buyer and target and countries:
             stage = "completed" if re.search(
-                r"(?i)\\b(has made|made|completed|has completed|invested|has invested)\\b",
+                r"(?i)\b(has made|made|completed|has completed|invested|has invested)\b",
                 snippet or "",
             ) else "announced"
             control_match = _MAJORITY.search(text)
