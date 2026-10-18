@@ -55,3 +55,59 @@ def test_generic_research_search_is_not_forced_to_africa_and_can_use_primary_sou
     assert "Africa" not in decoded_query
     assert results
     assert results[0]["publisher"] == "Federal Reserve"
+
+
+
+def test_primary_publisher_url_is_used_for_source_ranking():
+    items = [
+        {
+            "title": "Federal Reserve policy update",
+            "snippet": "Interest rate decision",
+            "url": "https://news.google.com/rss/articles/aggregator",
+            "publisher_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary.htm",
+            "publisher": "Federal Reserve",
+            "date": "2026-10-18",
+        },
+        {
+            "title": "Interest rate decision commentary",
+            "snippet": "Analyst view of rates",
+            "url": "https://unknown-example.test/story",
+            "publisher_url": "https://unknown-example.test/story",
+            "publisher": "Unknown Example",
+            "date": "2026-10-18",
+        },
+    ]
+    ranked = research._rank_news("Federal Reserve interest rate decision", items)
+    assert ranked[0]["publisher"] == "Federal Reserve"
+
+
+def test_citation_validator_warns_when_claim_and_source_look_unrelated():
+    items = [
+        {"n": 1, "title": "Federal Reserve holds interest rates", "text": "The central bank published its monetary policy decision."},
+        {"n": 2, "title": "Kenya banking sector outlook", "text": "Banks reported changes in lending and deposits."},
+    ]
+    answer = "The Federal Reserve held interest rates steady after reviewing inflation and employment conditions [2]."
+    result = research.validate_citations(answer, len(items), items=items)
+    assert result["uncited_sentences"] == []
+    assert result["weakly_supported_sentences"]
+    assert result["weakly_supported_sentences"][0]["cited_items"] == [2]
+    assert "text" in result["weakly_supported_sentences"][0]
+
+
+def test_citation_validator_does_not_warn_for_overlapping_evidence():
+    items = [
+        {"n": 1, "title": "Federal Reserve holds interest rates", "text": "The central bank reviewed inflation and employment conditions."},
+    ]
+    answer = "The Federal Reserve held interest rates after reviewing inflation and employment conditions [1]."
+    result = research.validate_citations(answer, len(items), items=items)
+    assert result["weakly_supported_sentences"] == []
+
+
+def test_research_prompt_handles_undated_evidence_and_conflicting_sources():
+    assert "Treat missing publication dates as unknown" in research.SYSTEM
+    assert "credible sources conflict" in research.SYSTEM
+    block = research._evidence_block([
+        {"n": 1, "kind": "news", "source": "Publisher", "date": None,
+         "title": "Company financing", "text": "The company announced financing."}
+    ])
+    assert "undated" in block
