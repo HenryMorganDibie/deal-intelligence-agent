@@ -230,7 +230,13 @@ export type ResearchResult = {
   model: string | null;
   evidence: EvidenceItem[];
   evidence_coverage: { kind: string; items: number; latest_source_date: string | null }[];
-  validation: { grounded_share: number; uncited_sentences: string[]; invalid_citations_removed: number[]; cited_items: number[] };
+  validation: {
+    grounded_share: number;
+    uncited_sentences: string[];
+    invalid_citations_removed: number[];
+    cited_items: number[];
+    weakly_supported_sentences?: { sentence: string; cited_items: number[]; overlap: number }[];
+  };
 };
 
 export const SECTORS = [
