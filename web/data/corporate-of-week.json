@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-18T22:54:24.786590+00:00",
+  "updated_at": "2026-10-18T22:57:23.769435+00:00",
   "current": {
     "company": "Kenya Airways",
     "company_url": "/app/companies?name=Kenya%20Airways",
@@ -10,14 +10,14 @@
     "country": "KE",
     "sector": null,
     "announced": "2026-10-12",
-    "score": 62.78,
-    "independent_stories": 5,
+    "score": 56.78,
+    "independent_stories": 3,
     "transaction_records": 1,
     "related_events": 2,
     "reasons": [
       "Transaction category: debt financing",
       "Disclosed transaction size contributes 12.7/18 significance points",
-      "Corroborated by 5 independent stories",
+      "Corroborated by 3 independent stories matching the transaction headline",
       "Recency: 5 day(s) before the selection period ended",
       "2 related corporate-event signal(s) found in the same period",
       "At least one inspectable source link is available"
@@ -49,37 +49,28 @@
         "title": "Kenya Airways Secures $1.3 Billion State Rescue Through New Funding and Debt Conversion",
         "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbDBxRm8xZ2JiQlM4b1pCNjRwZVlmX1FXcjZUMUtCTGQ4dVh2VUZiOEt2S1dvLTZFQzNBb0R6QXpmZ3l4ZmhCMVl0R0stNjBwY1ROYUIzSXhhWmlzT1NjUEc3NXd2NE9tREdhZ19HU28talZNeU5OQ3ptSFB2WXVmaDNkNWU4ZUpaSlNMck5TSzE3TmtRSVYyMFRpSEh6ZXo1M0p2Q21LcWZjRDFrUVZWOE5KMy1JQUNpQ1JGc0xYeTlNSVhZNlppakUweDJxb1R2Si1pNVlUaw?oc=5",
         "date": "2026-10-15",
-        "kind": "deal"
+        "kind": "related_company_coverage"
       },
       {
         "publisher": "People Daily",
         "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
         "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
         "date": "2026-10-12",
-        "kind": "deal"
+        "kind": "related_company_coverage"
       }
     ],
     "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-11",
     "period_end": "2026-10-17",
-    "selected_at": "2026-10-18T22:54:24.786378+00:00",
+    "selected_at": "2026-10-18T22:57:23.769186+00:00",
     "selection_version": 1,
     "runner_ups": [
-      {
-        "company": "Oryx Energies Tanzania fuel business",
-        "score": 44.82,
-        "reasons": [
-          "Transaction category: acquisition",
-          "Disclosed transaction size contributes 11.8/18 significance points",
-          "Corroborated by 2 independent stories"
-        ]
-      },
       {
         "company": "Portek",
         "score": 42.82,
         "reasons": [
           "Transaction category: acquisition",
-          "Single-source reporting; corroboration is not assumed",
+          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
           "Recency: 1 day(s) before the selection period ended"
         ]
       },
@@ -89,7 +80,16 @@
         "reasons": [
           "Transaction category: equity funding",
           "Disclosed transaction size contributes 18.0/18 significance points",
-          "Single-source reporting; corroboration is not assumed"
+          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
+        ]
+      },
+      {
+        "company": "Portek International",
+        "score": 39.82,
+        "reasons": [
+          "Transaction category: acquisition",
+          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+          "Recency: 1 day(s) before the selection period ended"
         ]
       }
     ]
@@ -104,14 +104,14 @@
       "country": "KE",
       "sector": null,
       "announced": "2026-10-12",
-      "score": 62.78,
-      "independent_stories": 5,
+      "score": 56.78,
+      "independent_stories": 3,
       "transaction_records": 1,
       "related_events": 2,
       "reasons": [
         "Transaction category: debt financing",
         "Disclosed transaction size contributes 12.7/18 significance points",
-        "Corroborated by 5 independent stories",
+        "Corroborated by 3 independent stories matching the transaction headline",
         "Recency: 5 day(s) before the selection period ended",
         "2 related corporate-event signal(s) found in the same period",
         "At least one inspectable source link is available"
@@ -143,37 +143,28 @@
           "title": "Kenya Airways Secures $1.3 Billion State Rescue Through New Funding and Debt Conversion",
           "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbDBxRm8xZ2JiQlM4b1pCNjRwZVlmX1FXcjZUMUtCTGQ4dVh2VUZiOEt2S1dvLTZFQzNBb0R6QXpmZ3l4ZmhCMVl0R0stNjBwY1ROYUIzSXhhWmlzT1NjUEc3NXd2NE9tREdhZ19HU28talZNeU5OQ3ptSFB2WXVmaDNkNWU4ZUpaSlNMck5TSzE3TmtRSVYyMFRpSEh6ZXo1M0p2Q21LcWZjRDFrUVZWOE5KMy1JQUNpQ1JGc0xYeTlNSVhZNlppakUweDJxb1R2Si1pNVlUaw?oc=5",
           "date": "2026-10-15",
-          "kind": "deal"
+          "kind": "related_company_coverage"
         },
         {
           "publisher": "People Daily",
           "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
           "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
           "date": "2026-10-12",
-          "kind": "deal"
+          "kind": "related_company_coverage"
         }
       ],
       "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-11",
       "period_end": "2026-10-17",
-      "selected_at": "2026-10-18T22:54:24.786378+00:00",
+      "selected_at": "2026-10-18T22:57:23.769186+00:00",
       "selection_version": 1,
       "runner_ups": [
-        {
-          "company": "Oryx Energies Tanzania fuel business",
-          "score": 44.82,
-          "reasons": [
-            "Transaction category: acquisition",
-            "Disclosed transaction size contributes 11.8/18 significance points",
-            "Corroborated by 2 independent stories"
-          ]
-        },
         {
           "company": "Portek",
           "score": 42.82,
           "reasons": [
             "Transaction category: acquisition",
-            "Single-source reporting; corroboration is not assumed",
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
             "Recency: 1 day(s) before the selection period ended"
           ]
         },
@@ -183,7 +174,16 @@
           "reasons": [
             "Transaction category: equity funding",
             "Disclosed transaction size contributes 18.0/18 significance points",
-            "Single-source reporting; corroboration is not assumed"
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
+          ]
+        },
+        {
+          "company": "Portek International",
+          "score": 39.82,
+          "reasons": [
+            "Transaction category: acquisition",
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+            "Recency: 1 day(s) before the selection period ended"
           ]
         }
       ]
