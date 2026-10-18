@@ -52,3 +52,13 @@ def test_public_skills_program_is_not_private_market_funding():
         africa_source=True,
     ) is None
 
+
+def test_demonym_is_not_attached_to_ticker_like_target():
+    deal = extract_deal(
+        "Pan African acquires remaining stake in Australian gold miner TCMG",
+        published="2024-11-05",
+        africa_source=True,
+    )
+    assert deal is not None
+    assert deal["target"] == "TCMG"
+
