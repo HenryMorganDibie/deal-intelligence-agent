@@ -3,10 +3,10 @@ name: Daily learning pipeline
 on:
   push:
     paths:
-      - ".github/workflows/daily-learning-pipeline.yml"
       - "scripts/daily_pipeline.py"
   schedule:
-    - cron: "0 3 * * *"
+    # Weekly while Actions allowance is low; the Vercel daily refreshes remain active.
+    - cron: "0 3 * * 0"
   workflow_dispatch:
 
 permissions:

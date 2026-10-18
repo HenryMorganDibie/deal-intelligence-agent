@@ -3,15 +3,35 @@ name: Python quality gates
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "main.py"
+      - "api/**/*.py"
+      - "src/**/*.py"
+      - "scripts/**/*.py"
+      - "tests/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "pytest.ini"
+      - ".github/workflows/python-quality-gates.yml"
   push:
     branches: [main]
+    paths:
+      - "main.py"
+      - "api/**/*.py"
+      - "src/**/*.py"
+      - "scripts/**/*.py"
+      - "tests/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "pytest.ini"
+      - ".github/workflows/python-quality-gates.yml"
 
 permissions:
   contents: read
 
 concurrency:
   group: python-quality-gates-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   tests:
