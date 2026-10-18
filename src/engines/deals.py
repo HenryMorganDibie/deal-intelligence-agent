@@ -678,7 +678,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if target and re.fullmatch(r"(?i)(?:more than(?: half)?|less than|the|a|an|growth|economy|pickups?|tractors?|shs\d+[a-z]*|n\$\s?\d+|ai)", target.strip()):
         return None
     # Exclude non-dilutive grants, ordinary procurement contracts, and aggregate reports.
-    if re.search(r"(?i)\bgrant\b", title):
+    if re.search(r"(?i)\bgrant\b", title) and not re.search(r"(?i)\b(?:loan|debt financing|credit facility)\b", title):
         return None
     if re.search(r"(?i)\b(?:lands?|wins?)\s+\$[\d.,]+[mbn]\b.{0,40}\b(?:rail|railway|locomotive|equipment|supply|procurement|contract)\s+deal\b", title):
         return None
