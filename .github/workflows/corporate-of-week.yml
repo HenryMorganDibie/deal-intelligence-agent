@@ -1,0 +1,55 @@
+name: Corporate of the Week
+
+on:
+  schedule:
+    # Select after weekend ingestion; the feature covers the previous seven complete UTC days.
+    - cron: "30 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: corporate-of-the-week
+  cancel-in-progress: false
+
+jobs:
+  select-and-archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Select company from live, source-linked transaction data
+        run: python scripts/corporate_of_week.py
+
+      - name: Commit weekly selection and archive directly to main
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/data/corporate-of-week.json
+          if git diff --cached --quiet; then
+            echo "Corporate of the Week archive is unchanged."
+            exit 0
+          fi
+          git commit -m "Refresh evidence-backed Corporate of the Week"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "main moved during publish; rebasing generated archive onto latest main (attempt $attempt)"
+            git fetch origin main
+            git rebase origin/main
+          done
+          echo "::error::Could not publish the weekly selection to main after retries."
+          exit 1
