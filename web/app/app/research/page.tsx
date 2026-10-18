@@ -195,7 +195,7 @@ export default function ResearchPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ResearchResult | null>(null);
-  const [marketExamples, setMarketExamples] = useState<string[]>([]);
+  const [marketExamples, setMarketExamples] = useState<ResearchSuggestion[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -266,7 +266,7 @@ export default function ResearchPage() {
             <p className="eyebrow">A place to start</p>
             <h2 className="mt-1 text-lg font-semibold tracking-tight">Research ideas</h2>
             <p className="mt-1 max-w-xl text-sm text-[color:var(--muted)]">
-              Choose a lead to turn it into a sourced analyst brief. You can edit the question before running it.
+              Choose a lead to launch a sourced analyst brief, built around the latest market signals.
             </p>
           </div>
           <span className="text-[0.75rem] text-[color:var(--dim)]">
@@ -279,7 +279,7 @@ export default function ResearchPage() {
               key={`${suggestion.title}-${index}`}
               type="button"
               disabled={busy}
-              onClick={() => setQuestion(suggestion.question)}
+              onClick={() => { setQuestion(suggestion.question); void ask(undefined, suggestion.question); }}
               className="group flex min-h-40 flex-col rounded-xl border hairline bg-[color:var(--panel)] p-4 text-left transition hover:border-[color:var(--verified)]/50 hover:bg-white/[0.025] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <div className="flex w-full items-center justify-between gap-3">
