@@ -22,7 +22,7 @@ Hosted API routes for market data (mounted by api/index.py):
   GET  /api/watchlists/{id}/feed.xml   RSS of matched events and deals
   GET  /api/evaluation                 historical backtest and live outcome statistics
   GET  /api/pulse                      live market summary for the site (deal flow, events, measured rates)
-  GET  /api/cron/ingest                daily (Vercel Cron): feed -> deals and events, webhooks
+  GET  /api/cron/ingest                scheduled rolling feed -> deals and events, webhooks
 """
 from __future__ import annotations
 
@@ -81,7 +81,6 @@ def _authorized_cron(request: Request) -> bool:
         claims = jwt.decode(token, key, algorithms=["RS256"], audience="deal-intelligence-api", issuer="https://token.actions.githubusercontent.com")
         allowed_workflows = {
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/live-deal-ingestion.yml@refs/heads/main",
-            "HenryMorganDibie/deal-intelligence-agent/.github/workflows/near-real-time-ingest.yml@refs/heads/main",
         }
         return (
             claims.get("repository") == "HenryMorganDibie/deal-intelligence-agent"
@@ -802,7 +801,7 @@ async def evaluation() -> dict:
                       "credible news and abnormal price moves."}
 
 
-# ── Daily ingestion ───────────────────────────────────────────────────────────
+# ── Scheduled rolling ingestion ──────────────────────────────────────────────
 
 @router.get("/api/cron/ingest")
 async def cron_ingest(request: Request) -> dict:
