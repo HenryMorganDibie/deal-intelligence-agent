@@ -1,27 +1,39 @@
 import { Attribution } from "../components/Attribution";
-import { Behaviours } from "../components/Behaviours";
 import { FinalCta, SiteFooter } from "../components/Closing";
-import { Coverage } from "../components/Coverage";
 import { Example } from "../components/Example";
-import { Faq } from "../components/Faq";
 import { Hero } from "../components/Hero";
-import { Limits } from "../components/Limits";
 import { MarketPulse } from "../components/MarketPulse";
-import { Pipeline } from "../components/Pipeline";
-import { Platform } from "../components/Platform";
 import { Problem } from "../components/Problem";
-import { Scoring } from "../components/Scoring";
-import { Signals } from "../components/Signals";
 import { SiteNav } from "../components/SiteNav";
 import { SourceMarquee } from "../components/SourceMarquee";
-import { Trust } from "../components/Trust";
-import { getPulse, getQuality, getShowcase } from "../lib/pulse";
+import { getPulse, getShowcase } from "../lib/pulse";
+import { ArrowRight, Container, Reveal } from "../components/primitives";
 
-// Re-render from the live feed every 5 minutes so displayed counts follow successful ingestion.
 export const revalidate = 60;
 
+const CAPABILITIES = [
+  {
+    title: "Discover deals",
+    body: "Search reported PE, VC, debt and M&A transactions with source links and field-level evidence.",
+    href: "/app/deals",
+    label: "Explore the deal feed",
+  },
+  {
+    title: "Track companies",
+    body: "Review financial statements, company events and signals with the underlying evidence in view.",
+    href: "/app/companies",
+    label: "Explore company research",
+  },
+  {
+    title: "Understand markets",
+    body: "Compare country context, investor activity and risk while keeping data coverage and gaps visible.",
+    href: "/app/countries",
+    label: "Explore country coverage",
+  },
+];
+
 export default async function LandingPage() {
-  const [pulse, showcase, quality] = await Promise.all([getPulse(), getShowcase(), getQuality()]);
+  const [pulse, showcase] = await Promise.all([getPulse(), getShowcase()]);
   return (
     <div className="relative">
       <a
@@ -34,22 +46,56 @@ export default async function LandingPage() {
       <main id="main">
         <Hero pulse={pulse} brief={showcase?.hero ?? null} />
         <SourceMarquee />
-        <Platform pulse={pulse} />
-        <MarketPulse pulse={pulse} />
-        <Problem />
-        <Pipeline />
-        <Attribution />
-        <Signals />
-        <Coverage />
-        <Scoring pulse={pulse} />
+        <Problem compact />
+        <MarketPulse pulse={pulse} compact />
+        <section aria-labelledby="capabilities-title" className="border-t hairline py-20 sm:py-24">
+          <Container>
+            <Reveal>
+              <p className="eyebrow">The platform</p>
+              <h2 id="capabilities-title" className="h2 mt-4 max-w-3xl">
+                Find the opportunity. Inspect the evidence. Make your own call.
+              </h2>
+              <p className="lede mt-5 max-w-2xl">
+                One research workflow for African private markets and company intelligence, with the source trail and limitations visible.
+              </p>
+            </Reveal>
+            <div className="mt-10 grid gap-3 md:grid-cols-3">
+              {CAPABILITIES.map((item, i) => (
+                <Reveal key={item.title} delay={i * 70}>
+                  <article className="panel flex h-full flex-col p-6">
+                    <h3 className="h3">{item.title}</h3>
+                    <p className="mt-3 flex-1 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">{item.body}</p>
+                    <a href={item.href} className="mt-6 inline-flex items-center gap-2 text-[0.875rem] text-verified hover:underline">
+                      {item.label}<ArrowRight />
+                    </a>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
+            <div className="mt-6">
+              <a href="/platform" className="btn btn-ghost">Explore the full platform <ArrowRight /></a>
+            </div>
+          </Container>
+        </section>
         <Example brief={showcase?.example ?? showcase?.hero ?? null} />
-        <Trust />
-        <Limits quality={quality} />
-        <Faq />
+        <section className="border-t hairline py-16 sm:py-20">
+          <Container className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div>
+              <p className="eyebrow">Built for scrutiny</p>
+              <h2 className="h2 mt-3 max-w-2xl">Every claim has a trail. Every dataset has limits.</h2>
+              <p className="mt-4 max-w-2xl text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
+                See how detection works, how companies are attributed to events, what each country covers, and where the evidence is incomplete.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <a href="/how-it-works" className="btn btn-ghost">How it works</a>
+              <a href="/limits" className="btn btn-ghost">Known limits</a>
+            </div>
+          </Container>
+        </section>
         <FinalCta />
       </main>
       <SiteFooter />
-      <Behaviours />
     </div>
   );
 }
