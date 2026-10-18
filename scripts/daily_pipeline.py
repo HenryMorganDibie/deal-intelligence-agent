@@ -162,8 +162,8 @@ def _collect_headlines() -> list[dict[str, Any]]:
 
 
 _NON_MARKET_STORY = re.compile(
-    r"\\b(mayoralty|mayoral candidate|illegal immigration|football team|soccer team|"
-    r"youth tournament|sports tournament|political campaign|election campaign)\\b",
+    r"\b(mayoralty|mayoral candidate|illegal immigration|football team|soccer team|"
+    r"youth tournament|sports tournament|political campaign|election campaign)\b",
     re.IGNORECASE,
 )
 
