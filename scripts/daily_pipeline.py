@@ -508,12 +508,26 @@ def train_event_classifier() -> dict[str, Any]:
     for text, _, _, _ in heldout:
         rule_predictions.append({signal_type.value for signal_type, _, _ in _match_rules(text)})
     rule_metrics = _multilabel_metrics(labels, rule_predictions, categories)
+    market_evaluation = {}
+    for market in sorted(heldout_by_market):
+        indices = [i for i, row in enumerate(heldout) if row[3] == market]
+        market_labels = [labels[i] for i in indices]
+        market_predictions = [predictions[i] for i in indices]
+        market_rules = [rule_predictions[i] for i in indices]
+        market_evaluation[market] = {
+            "n": len(indices),
+            "positive_items": sum(bool(expected) for expected in market_labels),
+            "learned_classifier": _multilabel_metrics(market_labels, market_predictions, categories),
+            "rule_baseline": _multilabel_metrics(market_labels, market_rules, categories),
+        }
     promoted = learned_metrics["macro_f1"] >= rule_metrics["macro_f1"] + 0.02
     result = {
         "status": "promoted" if promoted else "evaluated_not_promoted",
         "promoted": promoted,
         "training_labels": len(reviewed),
         "locked_heldout_items": len(heldout),
+        "heldout_items_by_market": heldout_by_market,
+        "market_evaluation": market_evaluation,
         "learned_classifier": learned_metrics,
         "rule_baseline": rule_metrics,
         "promotion_rule": "Promote only when macro-F1 on the locked headline set beats the deterministic rules by at least 2 percentage points.",
