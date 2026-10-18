@@ -1208,7 +1208,7 @@ class TestFormatter:
         from src.utils.formatter import brief_to_markdown
         b = self._brief()
         b.compliance_mode = True
-        b.compliance_flags = ["Output is AI-generated, unverified, not investment advice"]
+        b.compliance_flags = ["AI-generated analysis; inspect linked source evidence and review flagged attribution or low-confidence signals before acting. Not investment advice."]
         md = brief_to_markdown(b)
         assert "Compliance Mode" in md
 
