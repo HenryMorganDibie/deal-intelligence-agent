@@ -302,7 +302,7 @@ def test_locked_evaluation_headlines_are_excluded_from_event_training(tmp_path, 
         "label": {"about_target": True, "expected": [], "confidence": "high"},
     }]
     pipeline.EVENT_QUEUE.write_text(
-        "".join(json.dumps(row) + "\\n" for row in rows), encoding="utf-8"
+        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
     )
 
     result = pipeline.train_event_classifier()
@@ -332,3 +332,34 @@ def test_graph_prunes_generic_policy_concepts_but_keeps_real_counterparties(tmp_
     assert result["relationships"] == 1
     assert "bad" not in persisted["edges"]
     assert set(persisted["nodes"]) == {"finnfund", "bisedge"}
+
+
+def test_prune_event_queue_removes_unreviewed_non_market_false_positives(tmp_path, monkeypatch):
+    path = tmp_path / "event_queue.jsonl"
+    monkeypatch.setattr(pipeline, "EVENT_QUEUE", path)
+    rows = [{
+        "id": "politics",
+        "title": "Herman Mashaba targets illegal immigration in bid for Joburg mayoralty",
+        "snippet": "",
+        "label": None,
+        "rule_candidates": ["m_and_a_activity"],
+    }, {
+        "id": "reviewed-politics",
+        "title": "Herman Mashaba targets illegal immigration in bid for Joburg mayoralty",
+        "snippet": "",
+        "label": {"about_target": True, "expected": []},
+        "rule_candidates": ["m_and_a_activity"],
+    }, {
+        "id": "real-event",
+        "title": "Bank of Ghana revokes licences of three lenders",
+        "snippet": "",
+        "label": None,
+        "rule_candidates": ["regulatory_action"],
+    }]
+    path.write_text("".join(json.dumps(row) + "\\n" for row in rows), encoding="utf-8")
+
+    removed = pipeline._prune_event_queue()
+
+    persisted = pipeline._read_jsonl(path)
+    assert removed == 1
+    assert [row["id"] for row in persisted] == ["reviewed-politics", "real-event"]
