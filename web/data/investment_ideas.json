@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-18T03:58:36.675323+00:00",
+  "updated_at": "2026-10-18T04:00:12.193189+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,11 +12,19 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 9,
+      "new_review_items_today": 2,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
+        "training_labels_by_market": {
+          "africa": 0,
+          "us": 0
+        },
         "heldout_items": 680,
+        "heldout_items_by_market": {
+          "africa": 266,
+          "us": 414
+        },
         "reason": "Requires at least 1,000 reviewed training headlines and the locked 680-item attribution evaluation set."
       },
       "notes": "The current 680-headline attribution set is held out from event-type training; this model uses only reviewed event labels."
@@ -40,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 25,
-      "new_observations_today": 5,
+      "observations_collected": 27,
+      "new_observations_today": 2,
       "unreviewed_flagged_observations": 2,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -169,16 +177,19 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 25,
-    "new_rows": 5,
+    "collected_tickers": 27,
+    "new_rows": 2,
     "failures": [
-      "AFMC.CA",
-      "AFRIK.LG",
-      "AFRPAINTS.LG",
-      "AGIN.CA",
-      "AGLEVENT.LG",
-      "AGM.CS",
-      "AHA.JO"
+      "AHB.JO",
+      "AHL.JO",
+      "AIA.JO",
+      "AIL.JO",
+      "AIND.CA",
+      "AIP.JO",
+      "AIRSERVICE.LG",
+      "AITG.CA",
+      "AIVC.CA",
+      "AIVCB.CA"
     ],
     "retry_after_days": 2
   },
