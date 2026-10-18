@@ -1,0 +1,38 @@
+name: Live deal ingestion
+
+on:
+  schedule:
+    # GitHub Actions is the scheduler because Vercel Hobby cron is daily-only.
+    # Scheduled starts can be delayed by GitHub; this is near-real-time, not a hard SLA.
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-deal-ingestion
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate scheduler secret
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Repository Actions secret CRON_SECRET is missing. Add the same value configured as CRON_SECRET in Vercel."
+            exit 1
+          fi
+      - name: Trigger deal ingestion
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail --show-error --silent \
+            --max-time 240 \
+            --retry 2 --retry-delay 5 --retry-all-errors \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "https://deal-intelligence-api.vercel.app/api/cron/ingest"
