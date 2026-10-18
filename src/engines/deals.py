@@ -852,6 +852,13 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
 
 def deal_id(deal: dict) -> str:
     """Same transaction, same id: type, target (or buyer) and month."""
+    # Some fund-raise patterns capture the trailing series numeral as the target.
+    target = str(deal.get("target") or "")
+    headline = str(deal.get("headline") or "")
+    if deal.get("deal_type") == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
+        fund_marker = re.search(r"(?i)fund", headline)
+        if fund_marker:
+            deal["target"] = _clean_name(f"{headline[:fund_marker.end()]} {target}")
     who = normalise_name(deal.get("target") or deal.get("buyer"))
     month = (deal.get("announced") or "")[:7]
     # Acquisition, merger, funding, financing and exit reports about one company in one month are
