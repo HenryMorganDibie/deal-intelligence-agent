@@ -15,7 +15,7 @@ const FAQ = [
   },
   {
     q: "Is this investment advice?",
-    a: "No. It is research tooling. Briefs are AI-assisted and unverified, and anything above the review threshold says so in the brief itself.",
+    a: "No. It is research tooling, not investment advice. Signals are grounded in linked source material, with evidence and attribution checks; corroboration and source-quality indicators help you assess support. When attribution is doubtful or a signal needs further review, the brief flags it. AI-written summaries are interpretations of that evidence, so inspect the linked sources before acting.",
   },
   {
     q: "How do I know it is not hallucinating sources?",
