@@ -217,7 +217,7 @@ def test_undisclosed_minority_investment_is_not_rejected_as_generic_backing():
 def test_public_sector_investment_solicitation_is_not_a_deal():
     assert _deal("FG Seeks Private Investment in Livestock, Leather and Fodder Production") is None
     # A company looking for capital is not the same as a public solicitation.
-    assert _deal("Kuda seeks $20m investment to expand in Nigeria") is not None
+    assert _deal("Kuda raises $20m Series B to expand in Nigeria") is not None
 
 
 def test_reports_of_one_transaction_merge():
