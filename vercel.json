@@ -20,7 +20,7 @@
     },
     {
       "path": "/api/cron/ingest",
-      "schedule": "41 5 * * *"
+      "schedule": "0 */6 * * *"
     },
     {
       "path": "/api/cron/showcase",
