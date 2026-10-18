@@ -816,6 +816,18 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if not countries and not (africa_source or re.search(r"\bafrica|\bafrique|\báfrica", text, re.IGNORECASE)):
         return None
 
+    # The funding regex can classify the final series numeral as obj; repair the
+    # target after any later deal-type normalization, immediately before serialization.
+    if deal_type == "fund_raise" and target and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
+        if subj and re.search(r"(?i)\bfund\b", subj):
+            target = _clean_name(f"{subj} {target}")
+        else:
+            fund_name = re.search(r"(?i)^(.{1,100}?\bfund\s+(?:II|III|IV|V|VI|VII|VIII|IX|X|\d+))", title)
+            if fund_name:
+                target = _clean_name(fund_name.group(1))
+            else:
+                return None
+
     deal = {
         "deal_type": deal_type,
         "stage": stage,
