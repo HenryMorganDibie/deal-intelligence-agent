@@ -5,12 +5,12 @@ import { LINKS } from "../lib/site";
 import { Container, LogoMark } from "./primitives";
 
 const NAV = [
-  { href: "/#platform", label: "Platform" },
-  { href: "/#pipeline", label: "How it works" },
-  { href: "/#attribution", label: "Attribution" },
-  { href: "/#coverage", label: "Coverage" },
-  { href: "/#example", label: "Example" },
-  { href: "/#limits", label: "Limits" },
+  { href: "/platform", label: "Platform" },
+  { href: "/how-it-works", label: "How it works" },
+  { href: "/attribution", label: "Attribution" },
+  { href: "/coverage", label: "Coverage" },
+  { href: "/example", label: "Example" },
+  { href: "/limits", label: "Limits" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -43,7 +43,7 @@ export function SiteNav() {
           <span>Deal Intelligence</span>
         </a>
 
-        <nav aria-label="Primary" className="hidden items-center gap-7 md:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-5 lg:flex">
           {NAV.map((n) => (
             <a key={n.href} href={n.href} className="text-sm text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]">
               {n.label}
@@ -52,7 +52,7 @@ export function SiteNav() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <a href={LINKS.methodology} className="btn btn-ghost hidden h-9 px-3.5 text-sm sm:inline-flex">
+          <a href={LINKS.methodology} className="btn btn-ghost hidden h-9 px-3.5 text-sm xl:inline-flex">
             Methodology
           </a>
           <a href="/app" className="btn btn-primary hidden h-9 px-3.5 text-sm sm:inline-flex">
@@ -60,7 +60,7 @@ export function SiteNav() {
           </a>
           <button
             type="button"
-            className="btn btn-ghost h-9 w-9 p-0 md:hidden"
+            className="btn btn-ghost h-9 w-9 p-0 lg:hidden"
             aria-expanded={open}
             aria-controls="mobile-nav"
             aria-label={open ? "Close menu" : "Open menu"}
@@ -78,7 +78,7 @@ export function SiteNav() {
       </Container>
 
       {open && (
-        <nav id="mobile-nav" aria-label="Mobile" className="border-t hairline md:hidden">
+        <nav id="mobile-nav" aria-label="Mobile" className="border-t hairline lg:hidden">
           <Container className="flex flex-col py-3">
             {NAV.map((n) => (
               <a
