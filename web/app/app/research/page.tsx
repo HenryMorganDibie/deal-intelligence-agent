@@ -54,7 +54,7 @@ function promptsFromEvents(events: MarketEvent[]): ResearchSuggestion[] {
     })
     .slice(0, 4)
     .map((event) => {
-      const headline = event.headline.trim().replace(/\\s+/g, " ");
+      const headline = event.headline.trim();
       const context = [event.country, event.sector].filter(Boolean).join(" · ");
       return {
         title: headline.length > 86 ? `${headline.slice(0, 83).trimEnd()}…` : headline,
