@@ -478,6 +478,62 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None
     text = f"{title}. {snippet or ''}"
 
+    # A headline may say only that an investor "backs" a company while the source
+    # description confirms a completed minority/majority equity investment. In
+    # that case, normalize the wording for extraction but preserve the real title
+    # and URL in the returned evidence. Do not promote generic endorsements.
+    backing = re.match(r"(?is)^(?P<buyer>.+?)\s+backs\s+(?P<target>.+?)\s*$", title)
+    explicit_equity_evidence = re.search(
+        r"(?i)\b(?:(?:minority|majority|strategic)\s+)?(?:equity\s+)?investment\b|"
+        r"\b(?:equity\s+)?stake\b|\bshareholding\b",
+        snippet or "",
+    )
+    if backing and explicit_equity_evidence:
+        buyer = backing.group("buyer").strip(" ,.;:'’\"-")
+        target = backing.group("target").strip(" ,.;:'’\"-")
+        countries = [country.iso2 for country in countries_in_text(text)]
+        based = re.search(
+            r"(?i)\b((?:[A-Z][A-Za-zÀ-ÿ'’.-]*\s+){0,3}[A-Z][A-Za-zÀ-ÿ'’.-]*)-based\b",
+            snippet or "",
+        )
+        if based:
+            for country in countries_in_text(based.group(1)):
+                if country.iso2 not in countries:
+                    countries.append(country.iso2)
+        if buyer and target and countries:
+            stage = "completed" if re.search(
+                r"(?i)\b(has made|made|completed|has completed|invested|has invested)\b",
+                snippet or "",
+            ) else "announced"
+            control_match = _MAJORITY.search(text)
+            deal = {
+                "deal_type": "equity_funding",
+                "stage": stage,
+                "round": None,
+                "target": target,
+                "buyer": buyer,
+                "seller": None,
+                "investors": [buyer],
+                "amount": None,
+                "currency": None,
+                "amount_usd": None,
+                "stake_pct": None,
+                "control": control_match.group(1).lower() if control_match else None,
+                "implied_valuation_usd": None,
+                "reported_valuation_usd": None,
+                "sector": classify_sector(text),
+                "country": countries[0],
+                "countries": countries,
+                "announced": published,
+                "headline": title,
+                "sources": [{
+                    "publisher": publisher, "url": url, "date": published,
+                    "title": title, "stage": stage,
+                }],
+            }
+            deal["id"] = deal_id(deal)
+            return deal
+
     if sum(ch.isupper() for ch in title) > 0.6 * sum(ch.isalpha() for ch in title):
         return None                               # ALL-CAPS headlines carry no name boundaries
     if _NOT_A_DEAL.search(title):
