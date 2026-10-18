@@ -734,7 +734,7 @@ class BriefSynthesisAgent:
                 compliance_flags.append(f"{suppressed} low-confidence signal(s) suppressed")
             if review_reasons:
                 compliance_flags.append(f"{len(review_reasons)} signal(s) require human review")
-            compliance_flags.append("Output is AI-generated, unverified, not investment advice")
+            compliance_flags.append("AI-generated analysis; inspect linked source evidence and review flagged attribution or low-confidence signals before acting. Not investment advice.")
 
         state.brief = AnalystBrief(
             company_name=company, ticker=ticker,
