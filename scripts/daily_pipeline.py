@@ -195,16 +195,25 @@ def _balanced_review_sample(rows: list[dict[str, Any]], limit: int) -> list[dict
         return (1, key)
 
     ordered_keys = sorted(buckets, key=bucket_order)
+    african_keys = [key for key in ordered_keys
+                    if key.startswith("country:") or key == "pan-africa"]
+    other_keys = [key for key in ordered_keys if key not in african_keys]
     selected: list[dict[str, Any]] = []
-    while len(selected) < limit:
-        added = False
-        for key in ordered_keys:
-            if buckets[key]:
-                selected.append(buckets[key].pop(0))
-                added = True
-                if len(selected) >= limit:
-                    break
-        if not added:
+    # Fill the sample with African country coverage first. Only draw from global
+    # fallback candidates once no African candidates remain, so global news cannot
+    # displace a second Ghana/Nigeria/Kenya item from a small sample.
+    for keys in (african_keys, other_keys):
+        while len(selected) < limit:
+            added = False
+            for key in keys:
+                if buckets[key]:
+                    selected.append(buckets[key].pop(0))
+                    added = True
+                    if len(selected) >= limit:
+                        break
+            if not added:
+                break
+        if len(selected) >= limit:
             break
     return selected
 
