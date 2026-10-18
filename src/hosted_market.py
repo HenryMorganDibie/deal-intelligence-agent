@@ -890,14 +890,13 @@ async def cron_country_snapshot(request: Request) -> dict:
     rows = []
     for c in ac.COUNTRIES:
         risk = country_risk.assess(c, fx=lambda _: None)
-        history = country_risk.historical_scores(c)
         rows.append({
             "iso2": c.iso2, "iso3": c.iso3, "country_name": c.name,
             "snapshot_date": captured_at.date().isoformat(), "score": risk["score"],
             "tier": risk["tier"], "coverage": risk["coverage"], "data_as_of": data_as_of,
             "captured_at": captured_at.isoformat(),
             "source": "World Bank WDI/WGI; source dataset date recorded separately",
-            "source_url": history["source_url"], "method": risk["method"],
+            "source_url": f"https://api.worldbank.org/v2/country/{c.iso2.lower()}/indicator/FP.CPI.TOTL.ZG?format=json", "method": risk["method"],
             "components": risk["components"], "indicators": risk["indicators"],
             "snapshot_kind": "observed_at_capture",
         })
