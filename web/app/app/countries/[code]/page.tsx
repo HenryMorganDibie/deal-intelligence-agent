@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { Container } from "../../../../components/primitives";
-import { DealRows, ErrorNote, Loading, PageHeader, Pill, Stat, Table, Td, num, words } from "../../../../components/app/ui";
+import { DealRows, ErrorNote, Loading, PageHeader, Pagination, Pill, Stat, Table, Td, num, words } from "../../../../components/app/ui";
 import { ResultFeedback } from "../../../../components/app/ResultFeedback";
 import { ApiError } from "../../../../lib/api";
 import { get, post, type CountryRisk, type CoverageRow, type CurrencyRisk, type Deal, type Event, type EvidenceItem, type InvestorRow } from "../../../../lib/market";
@@ -14,7 +14,9 @@ type CountryResponse = {
   currency: CurrencyRisk;
   coverage: CoverageRow;
   deals: Deal[];
+  deals_total: number;
   events: Event[];
+  events_total: number;
   investors: InvestorRow[];
 };
 
@@ -81,12 +83,42 @@ export default function CountryPage({ params }: { params: { code: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<{ markdown: string; result_id: string; evidence: EvidenceItem[] } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [dealOffset, setDealOffset] = useState(0);
+  const [dealLimit, setDealLimit] = useState(25);
+  const [eventOffset, setEventOffset] = useState(0);
+  const [eventLimit, setEventLimit] = useState(25);
 
   useEffect(() => {
     get<CountryResponse>(`/api/countries/${encodeURIComponent(params.code)}`)
       .then(setD)
       .catch((err) => setError(err instanceof ApiError ? err.message : "Could not load the country."));
   }, [params.code]);
+
+  async function loadDeals(offset: number, limit: number) {
+    setDealOffset(offset);
+    setDealLimit(limit);
+    try {
+      const result = await get<{ deals: Deal[]; total_matching: number }>(`/api/deals`, {
+        country: params.code.toUpperCase(), limit, offset,
+      });
+      setD((current) => current ? { ...current, deals: result.deals, deals_total: result.total_matching } : current);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not load country deals.");
+    }
+  }
+
+  async function loadEvents(offset: number, limit: number) {
+    setEventOffset(offset);
+    setEventLimit(limit);
+    try {
+      const result = await get<{ events: Event[]; count: number }>(`/api/events`, {
+        country: params.code.toUpperCase(), limit, offset,
+      });
+      setD((current) => current ? { ...current, events: result.events, events_total: result.count } : current);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not load country events.");
+    }
+  }
 
   async function makeReport() {
     setBusy(true);
@@ -189,7 +221,16 @@ export default function CountryPage({ params }: { params: { code: string } }) {
       </ul>
 
       <h2 className="eyebrow mt-12">Recent deals</h2>
-      <div className="mt-4">{d.deals.length ? <DealRows deals={d.deals} /> : <p className="text-sm text-[color:var(--muted)]">No deals recorded yet.</p>}</div>
+      <div className="mt-4">
+        {d.deals.length ? (
+          <>
+            <DealRows deals={d.deals} />
+            <Pagination total={d.deals_total} offset={dealOffset} limit={dealLimit}
+              onPageChange={(next) => loadDeals(next, dealLimit)}
+              onPageSizeChange={(next) => loadDeals(0, next)} />
+          </>
+        ) : <p className="text-sm text-[color:var(--muted)]">No deals recorded yet.</p>}
+      </div>
 
       <h2 className="eyebrow mt-12">Corporate events</h2>
       <ul className="mt-3 space-y-2 text-[0.8125rem]">
@@ -205,6 +246,11 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           </li>
         ))}
       </ul>
+      {d.events.length > 0 && (
+        <Pagination total={d.events_total} offset={eventOffset} limit={eventLimit}
+          onPageChange={(next) => loadEvents(next, eventLimit)}
+          onPageSizeChange={(next) => loadEvents(0, next)} />
+      )}
 
       {d.investors.length > 0 && (
         <>
