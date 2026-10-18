@@ -77,3 +77,29 @@ def test_committed_country_indicator_snapshot_reaches_earliest_source_window():
     nigeria_fx = snap["series"]["PA.NUS.FCRF"]["NGA"]
     assert min(int(year) for year in nigeria_fx) == 1960
     assert max(int(year) for year in nigeria_fx) >= 2024
+
+
+def test_historical_composite_is_published_only_with_all_weighted_components():
+    snap = {
+        "retrieved": "2026-10-14",
+        "labels": {},
+        "series": {
+            "GOV_WGI_PV.EST": {"NGA": {"2019": 0.1, "2020": 0.2}},
+            "GOV_WGI_GE.EST": {"NGA": {"2020": 0.1}},
+            "GOV_WGI_RQ.EST": {"NGA": {"2020": 0.1}},
+            "GOV_WGI_RL.EST": {"NGA": {"2020": 0.1}},
+            "GOV_WGI_CC.EST": {"NGA": {"2020": 0.1}},
+            "GOV_WGI_VA.EST": {"NGA": {"2020": 0.1}},
+            "FP.CPI.TOTL.ZG": {"NGA": {"2020": 10.0}},
+            "NY.GDP.MKTP.KD.ZG": {"NGA": {"2020": 3.0}},
+            "PA.NUS.FCRF": {"NGA": {"2019": 300.0, "2020": 330.0}},
+            "FI.RES.TOTL.MO": {"NGA": {"2020": 4.0}},
+            "BN.CAB.XOKA.GD.ZS": {"NGA": {"2020": -2.0}},
+            "DT.DOD.DECT.GN.ZS": {"NGA": {"2020": 35.0}},
+        },
+    }
+    result = cr.historical_scores(ac.get("NG"), snap, since=2020, until=2020)
+    row = result["rows"][0]
+    assert row["coverage"] == 1.0
+    assert row["score"] is not None
+    assert row["tier"] is not None
