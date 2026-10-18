@@ -539,7 +539,7 @@ def _rank_news(query: str, items: list[dict]) -> list[dict]:
             rf"\bseries\s+{series.group(1)}\b", f"{item.get('title', '')} {item.get('snippet', '')}", re.IGNORECASE)),
         len(query_tokens & _news_tokens(f"{item.get('title', '')} {item.get('snippet', '')}")),
         {"Official / primary": 3, "Established publisher": 2, "Unrated publisher": 1}.get(
-            _source_assessment("news", item.get("url"), item.get("publisher"))[0], 0),
+            _source_assessment("news", item.get("publisher_url") or item.get("url"), item.get("publisher"))[0], 0),
         item.get("date") or "",
     ), reverse=True)
 
@@ -750,13 +750,16 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
     return p, items[:max_items]
 
 
-SYSTEM = """You are a research analyst covering African companies, private markets and country risk.
+SYSTEM = """You are a global research analyst covering companies, private markets, financial markets and country risk, with particular depth in African markets.
 Answer the question using ONLY the numbered evidence items provided. Rules:
 - Every factual sentence must end with one or more citations like [3] or [2][5] pointing at the items it relies on.
 - Do not use outside knowledge, do not estimate figures that are not in the items, and do not invent names.
 - If the items do not answer the question, say so plainly and state what evidence is missing.
+- Treat missing publication dates as unknown; never imply undated evidence is recent.
+- If credible sources conflict, explicitly describe the disagreement and cite both sides rather than silently choosing one.
+- Distinguish announced, signed, closed and completed transactions; do not treat them as interchangeable.
 - Cite with square brackets only, e.g. [4], never other bracket styles.
-- Be concise: a short direct answer, then the key supporting points. Use US dollars as given in the items."""
+- Be concise: a short direct answer, then the key supporting points. Use currencies as reported and label conversions or derived figures clearly."""
 
 
 def _evidence_block(items: list[dict]) -> str:
@@ -798,16 +801,44 @@ def _segments(text: str) -> list[str]:
     return out
 
 
-def validate_citations(text: str, n_items: int) -> dict:
-    """Remove citations to items that do not exist; report factual sentences without a valid citation."""
+def validate_citations(text: str, n_items: int, items: Optional[list[dict]] = None) -> dict:
+    """Remove invalid citations and flag cited claims with low lexical overlap to their evidence.
+
+    The overlap check is a triage warning, not semantic verification or a truth score.
+    """
     text = normalise_citations(text)
     invalid = sorted({int(n) for n in _CITE.findall(text) if not 1 <= int(n) <= n_items})
     clean = _CITE.sub(lambda m: m.group(0) if 1 <= int(m.group(1)) <= n_items else "", text)
     factual = [s for s in _segments(clean) if not _NO_CLAIM.search(s)]
     uncited = [s for s in factual if not _CITE.search(s)]
     cited = sorted({int(n) for n in _CITE.findall(clean)})
+    weakly_supported = []
+    if items:
+        stop = _STOP | {"according", "reported", "reports", "says", "said", "announced", "announces",
+                        "company", "companies", "million", "billion", "percent", "year", "years"}
+        for sentence in factual:
+            ids = [int(n) for n in _CITE.findall(sentence) if 1 <= int(n) <= n_items]
+            if not ids:
+                continue
+            claim = set(re.findall(r"[a-z0-9]{3,}", _CITE.sub("", sentence).lower())) - stop
+            if len(claim) < 4:
+                continue
+            evidence_terms = set()
+            for item_id in ids:
+                item = next((it for it in items if int(it.get("n", 0) or 0) == item_id), None)
+                if item is None and 1 <= item_id <= len(items):
+                    item = items[item_id - 1]
+                if item:
+                    evidence_terms |= set(re.findall(
+                        r"[a-z0-9]{3,}", f"{item.get('title', '')} {item.get('text', '')}".lower()
+                    )) - stop
+            overlap = len(claim & evidence_terms) / len(claim) if claim else 1.0
+            if overlap < 0.15:
+                weakly_supported.append({"sentence": sentence, "cited_items": ids,
+                                         "overlap": round(overlap, 2)})
     return {"text": clean, "invalid_citations_removed": invalid, "cited_items": cited,
             "sentences": len(factual), "uncited_sentences": uncited,
+            "weakly_supported_sentences": weakly_supported,
             "grounded_share": round(1 - len(uncited) / len(factual), 2) if factual else 1.0}
 
 
@@ -1029,12 +1060,12 @@ def answer(question: str, items: list[dict], parsed: Optional[dict] = None, llm:
         log.warning("research LLM call failed: %s", e)
         text = deterministic_answer(question, parsed, items)
         return {"answer": text, "mode": "deterministic", "model": None, **_validation_summary(text, items)}
-    v = validate_citations(text, len(items))
+    v = validate_citations(text, len(items), items=items)
     return {"answer": v["text"], "mode": "llm", "model": model, "validation": v}
 
 
 def _validation_summary(text: str, items: list[dict]) -> dict:
-    return {"validation": validate_citations(text, len(items))}
+    return {"validation": validate_citations(text, len(items), items=items)}
 
 
 def research(question: str, deals: Iterable[dict] = (), events: Iterable[dict] = (), briefs: Iterable[dict] = (),
