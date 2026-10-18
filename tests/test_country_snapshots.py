@@ -13,11 +13,16 @@ def test_historical_scores_are_ordered_and_use_only_prior_observations():
     }
     result = cr.historical_scores(ac.get("NG"), snap, since=2018, until=2022)
     assert [row["year"] for row in result["rows"]] == [2018, 2019, 2020, 2021, 2022]
-    assert result["rows"][0]["score"] is not None
+    # A partial component set must not be presented as a complete composite score.
+    assert result["rows"][0]["score"] is None
+    assert result["rows"][0]["tier"] is None
+    assert result["rows"][0]["coverage"] < 1.0
     assert result["rows"][0]["input_years"]["FP.CPI.TOTL.ZG"] == 2018
     assert result["rows"][1]["input_years"]["FP.CPI.TOTL.ZG"] == 2018
     assert result["rows"][2]["input_years"]["FP.CPI.TOTL.ZG"] == 2020
     assert "not a point-in-time archived vintage" in result["method"]
+    assert "not an official data-quality or confidence metric" in result["method"]
+    assert "all seven components are available" in result["method"]
 
 
 def test_historical_scores_include_source_and_country_identity():
