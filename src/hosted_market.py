@@ -215,8 +215,10 @@ async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
     activity_start = min(first_years) if first_years else None
     activity_end = max(first_years) if first_years else None
     activity = []
-    if activity_start is not None and activity_end is not None:
-        for year in range(activity_start, activity_end + 1):
+    # Return only years with dated records. An absent year is unknown coverage, not zero activity.
+    activity_years = sorted({y for y in [*deal_years.values(), *event_years.values()] if y is not None})
+    if activity_years:
+        for year in activity_years:
             yd = [d for d in country_deals if deal_years[id(d)] == year]
             ye = [e for e in country_events if event_years[id(e)] == year]
             audit = official_sources.audit_country(c.iso2, yd, ye)
@@ -246,7 +248,7 @@ async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
             "market_activity_start_year": activity_start,
             "market_activity_end_year": activity_end,
             "market_activity_note": "Counts reflect dated records currently present in the product database, not a complete census of transactions. Earlier years with no row may reflect missing historical coverage rather than zero activity. Amounts include disclosed/normalized values only and do not estimate undisclosed deals.",
-            "snapshot_note": "Archived snapshots begin only after the scheduled capture is deployed and successfully runs; annual risk rows are reconstructed from current historical data."}
+            "snapshot_note": "No archived snapshots have been captured yet. The annual series is a reconstruction from currently available historical source observations, not a stored history of what the product knew at each past date."}
 
 
 @router.get("/api/countries/{code}")
