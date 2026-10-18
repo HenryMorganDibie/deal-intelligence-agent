@@ -45,9 +45,11 @@ export function SiteFooter() {
     {
       title: "Product",
       links: [
+        { label: "Platform", href: "/platform" },
         { label: "How it works", href: "/how-it-works" },
         { label: "Attribution", href: "/attribution" },
         { label: "Coverage", href: "/coverage" },
+        { label: "Example brief", href: "/example" },
         { label: "Open the app", href: "/app" },
       ],
     },
@@ -57,7 +59,7 @@ export function SiteFooter() {
         { label: "Methodology", href: LINKS.methodology },
         { label: "Evaluation", href: LINKS.evaluation },
         { label: "Coverage by country", href: "/app/coverage" },
-        { label: "Known limits", href: LINKS.limitations },
+        { label: "Known limits", href: "/limits" },
       ],
     },
     {
