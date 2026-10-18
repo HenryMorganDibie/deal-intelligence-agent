@@ -121,10 +121,17 @@ def _load(kind: str) -> list[dict]:
         since = (date.today() - timedelta(days=3 * 365)).isoformat()
         try:
             r = _rpc_sync("list_deals" if kind == "deals" else "list_events", {"p_since": since})
-            rows = r.json() if r.status_code == 200 else []
-        except httpx.HTTPError as e:
-            log.warning("loading %s failed: %s", kind, e)
-            rows = hit[1] if hit else []
+            if r.status_code != 200:
+                log.error("loading %s failed: status=%s body=%s", kind, r.status_code, r.text[:300])
+                if hit:
+                    return hit[1]
+                raise HTTPException(503, f"Market data store is unavailable for {kind}.")
+            rows = r.json()
+        except (httpx.HTTPError, ValueError) as e:
+            log.error("loading %s failed: %s", kind, e)
+            if hit:
+                return hit[1]
+            raise HTTPException(503, f"Market data store is unavailable for {kind}.")
     else:
         if kind == "deals":
             rows = list(deals_mod.load_deals().values())
