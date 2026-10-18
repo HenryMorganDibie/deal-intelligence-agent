@@ -294,7 +294,13 @@ def historical_scores(country: Country, snapshot: Optional[dict] = None, since: 
     input year per indicator so stale/missing inputs remain visible.
     """
     snap = snapshot if snapshot is not None else load_snapshot()
-    until = until or time.gmtime().tm_year
+    available_years = [
+        int(obs_year)
+        for by_country in snap.get("series", {}).values()
+        for years in by_country.values()
+        for obs_year in years
+    ]
+    until = until or max(available_years, default=time.gmtime().tm_year)
     rows = []
     for year in range(since, until + 1):
         historical = {
