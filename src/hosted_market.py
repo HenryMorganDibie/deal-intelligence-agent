@@ -47,7 +47,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from src.data import africa_countries as ac
 from src.engines import company_profile, coverage, country_risk, deals as deals_mod, investors, market_risk
-from src.engines import research as research_mod, watch
+from src.engines import research as research_mod, watch, official_sources
 
 log = logging.getLogger("deal_intel.market")
 router = APIRouter()
@@ -174,10 +174,11 @@ async def countries() -> dict:
     for c in ac.COUNTRIES:
         risk = country_risk.assess(c, fx=lambda _: None)
         cov = coverage.country_row(c, ds, es)
+        source_quality = official_sources.audit_country(c.iso2, ds, es)
         rows.append({"iso2": c.iso2, "name": c.name, "region": c.region, "currency": c.currency,
                      "exchange": c.exchange, "risk_score": risk["score"], "risk_tier": risk["tier"],
                      "risk_coverage": risk["coverage"], "coverage_tier": cov["tier"], "deals": cov["deals"],
-                     "events": cov["events"]})
+                     "events": cov["events"], "source_quality": source_quality})
     return {"countries": rows, "data_as_of": country_risk.load_snapshot().get("retrieved")}
 
 
@@ -212,6 +213,7 @@ async def country(code: str) -> dict:
         "risk": await run_in_threadpool(country_risk.assess, c),
         "currency": await run_in_threadpool(market_risk.currency_risk, c.currency),
         "coverage": coverage.country_row(c, ds, es),
+        "source_quality": official_sources.audit_country(c.iso2, ds, es),
         "deals": deals_mod.search(ds, country=c.iso2, limit=25),
         "deals_total": len(deals_mod.search(ds, country=c.iso2, limit=max(len(ds), 1))),
         "events": sorted([e for e in es if c.iso2 in (e.get("countries") or [e.get("country")])],
