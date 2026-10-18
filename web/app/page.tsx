@@ -128,6 +128,7 @@ export default async function LandingPage() {
                         </a>
                         <p className="mt-1 text-xs text-[color:var(--muted)]">
                           {source.publisher}{source.date ? " · " + displayDate(source.date) : ""}
+                          {" · "}{source.kind === "related_company_coverage" ? "Related company coverage" : source.kind === "corporate_event" ? "Corporate event" : "Transaction report"}
                         </p>
                       </li>
                     ))}
