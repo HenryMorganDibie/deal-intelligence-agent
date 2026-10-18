@@ -576,29 +576,42 @@ def _financial_collection() -> dict[str, Any]:
 
     with UNIVERSE_DATA.open(newline="", encoding="utf-8") as f:
         universe = list(csv.DictReader(f))
-    tickers = sorted({row["ticker"].strip() for row in universe if row.get("ticker", "").strip()})
+    market_by_ticker = {
+        row["ticker"].strip(): row.get("market", "").strip().lower()
+        for row in universe if row.get("ticker", "").strip()
+    }
+    tickers = sorted(market_by_ticker)
     existing = _read_jsonl(FINANCIAL_DATA)
     collected = {row.get("ticker") for row in existing}
     attempts = {row["ticker"]: row for row in _read_jsonl(FINANCIAL_ATTEMPTS) if row.get("ticker")}
     today = date.today()
+    retry_after_days = 2
     pending = [
         ticker for ticker in tickers
         if ticker not in collected
         and (
             ticker not in attempts
-            or (today - date.fromisoformat(attempts[ticker]["last_attempt"])).days >= 7
+            or (today - date.fromisoformat(attempts[ticker]["last_attempt"])).days >= retry_after_days
         )
     ]
+    # African listings first, then never-attempted tickers, then the oldest failed
+    # attempts. A failed US ticker must not starve African historical coverage.
+    pending.sort(key=lambda ticker: (
+        0 if market_by_ticker.get(ticker) == "africa" else 1,
+        0 if ticker not in attempts else 1,
+        attempts.get(ticker, {}).get("last_attempt", ""),
+        ticker,
+    ))
     if not pending:
         return {
             "universe_tickers": len(tickers),
             "collected_tickers": len(collected),
             "new_rows": 0,
             "failures": [],
-            "retry_after_days": 7,
+            "retry_after_days": retry_after_days,
         }
 
-    selected = pending[:4]
+    selected = pending[:12]
     new_rows = []
     failures = []
     attempt_rows = []
@@ -666,7 +679,7 @@ def _financial_collection() -> dict[str, Any]:
         "collected_tickers": len(collected) + inserted,
         "new_rows": inserted,
         "failures": failures,
-        "retry_after_days": 7,
+        "retry_after_days": retry_after_days,
     }
 
 
