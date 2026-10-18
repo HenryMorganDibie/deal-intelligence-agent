@@ -6,7 +6,7 @@ on:
     paths:
       - ".github/workflows/corporate-of-week.yml"
       - "scripts/corporate_of_week.py"
-      - "tests/test_corporate_of_week.py"
+      - "scripts/test_corporate_of_week.py"
   schedule:
     # Select after weekend ingestion; the feature covers the previous seven complete UTC days.
     - cron: "30 7 * * 1"
@@ -39,7 +39,7 @@ jobs:
         run: python -m pip install --disable-pip-version-check pytest
 
       - name: Test ranking and evidence rationale
-        run: python -m pytest tests/test_corporate_of_week.py -q
+        run: python -m pytest scripts/test_corporate_of_week.py -q
 
       - name: Select company from live, source-linked transaction data
         run: python scripts/corporate_of_week.py
