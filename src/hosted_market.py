@@ -189,6 +189,40 @@ async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
     """Annual reconstructed history plus archived daily snapshots where configured."""
     c = _country_or_404(code)
     history = country_risk.historical_scores(c, since=since, until=until)
+    # Deal/event history begins with the earliest dated record currently held in the dataset,
+    # not a claim that this is the earliest transaction that occurred in the country.
+    all_deals, all_events = deals(), events()
+    country_deals = [d for d in all_deals if c.iso2 in (d.get("countries") or [d.get("country")])]
+    country_events = [e for e in all_events if c.iso2 in (e.get("countries") or [e.get("country")])]
+    def _record_year(record: dict, keys: tuple[str, ...]) -> Optional[int]:
+        for key in keys:
+            value = record.get(key)
+            if isinstance(value, str) and len(value) >= 4 and value[:4].isdigit():
+                year = int(value[:4])
+                if 1900 <= year <= 2100:
+                    return year
+        return None
+    deal_years = {id(d): _record_year(d, ("announced", "date", "published")) for d in country_deals}
+    event_years = {id(e): _record_year(e, ("date", "announced", "published", "timestamp")) for e in country_events}
+    first_years = [y for y in [*deal_years.values(), *event_years.values()] if y is not None]
+    activity_start = min(first_years) if first_years else None
+    activity_end = max(first_years) if first_years else None
+    activity = []
+    if activity_start is not None and activity_end is not None:
+        for year in range(activity_start, activity_end + 1):
+            yd = [d for d in country_deals if deal_years[id(d)] == year]
+            ye = [e for e in country_events if event_years[id(e)] == year]
+            audit = official_sources.audit_country(c.iso2, yd, ye)
+            activity.append({
+                "year": year,
+                "deal_records": len(yd),
+                "event_records": len(ye),
+                "disclosed_deal_value_usd": round(sum(float(d.get("amount_usd") or 0) for d in yd)),
+                "deals_with_official_host": audit["deal_records_with_official_host"],
+                "source_links_checked": audit["source_links_checked"],
+                "official_host_matched_links": audit["official_host_matched_links"],
+                "dated_records": len(yd) + len(ye),
+            })
     archived = []
     if _configured():
         try:
@@ -200,7 +234,11 @@ async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
         except (httpx.HTTPError, ValueError) as exc:
             log.warning("country snapshot history unavailable: %s", type(exc).__name__)
     return {**history, "archived_snapshots": archived,
-            "snapshot_note": "Archived snapshots begin only after the scheduled capture is deployed and successfully runs; annual rows are reconstructed from current historical data."}
+            "market_activity": activity,
+            "market_activity_start_year": activity_start,
+            "market_activity_end_year": activity_end,
+            "market_activity_note": "Counts reflect dated records currently present in the product database, not a complete census of transactions. Earlier years with no row may reflect missing historical coverage rather than zero activity. Amounts include disclosed/normalized values only and do not estimate undisclosed deals.",
+            "snapshot_note": "Archived snapshots begin only after the scheduled capture is deployed and successfully runs; annual risk rows are reconstructed from current historical data."}
 
 
 @router.get("/api/countries/{code}")
