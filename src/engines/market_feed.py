@@ -37,7 +37,7 @@ log = logging.getLogger(__name__)
 
 # Query words per language: any of them makes a headline worth reading.
 DEAL_TERMS = {
-    "en": '(acquires OR acquisition OR raises OR invests OR "stake in" OR loan OR "fund close" OR merger)',
+    "en": '(acquires OR acquisition OR raises OR invests OR backs OR backed OR "stake in" OR "minority stake" OR "equity investment" OR loan OR "fund close" OR merger)',
     "fr": '(rachat OR acquisition OR "lève" OR "levée de fonds" OR investit OR "prise de participation" OR "prêt")',
     "pt": '(aquisição OR adquire OR investimento OR financiamento OR "capta")',
     "ar": '(استحواذ OR تمويل OR صفقة OR اندماج)',

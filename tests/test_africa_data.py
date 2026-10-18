@@ -195,6 +195,25 @@ def test_non_deals_are_rejected(title):
     assert _deal(title) is None
 
 
+def test_undisclosed_minority_investment_is_not_rejected_as_generic_backing():
+    deal = dl.extract_deal(
+        "AfricInvest backs Spoon Consulting",
+        "AfricInvest Small Cap Fund has made a minority equity investment in "
+        "Spoon Consulting, a Mauritius-based AI-first consulting company.",
+        published="2026-09-03",
+        publisher="AVCA",
+        url="https://www.avca.africa/news-insights/member-news/africinvest-backs-spoon-consulting/",
+    )
+
+    assert deal is not None
+    assert deal["deal_type"] == "equity_funding"
+    assert deal["target"] == "Spoon Consulting"
+    assert deal["buyer"] == "AfricInvest"
+    assert deal["country"] == "MU"
+    assert deal["announced"] == "2026-09-03"
+    assert deal["amount"] is None and deal["amount_usd"] is None
+
+
 def test_reports_of_one_transaction_merge():
     a = _deal("Standard Bank Group announces strategic investment in Nigeria's OPay", publisher="TechCabal", url="u1")
     b = _deal("Standard Bank buys $200M stake in Nigeria's OPay ahead of NYSE listing", publisher="Reuters", url="u2")
@@ -256,6 +275,19 @@ def test_event_country_uses_story_location_over_search_hint():
     assert len(events) == 1
     assert events[0]["country"] == "KE"
     assert events[0]["countries"] == ["KE"]
+
+
+def test_country_deal_queries_include_undisclosed_equity_and_backing_terms():
+    queries = [
+        unquote(url)
+        for url, label, country in mf.country_queries(events=False)
+        if country and country.iso2 == "MU" and "(en)" in label
+    ]
+
+    assert queries
+    assert any("backs" in query and "backed" in query and
+               '"minority stake"' in query and '"equity investment"' in query
+               for query in queries)
 
 
 def test_country_queries_cover_every_country():
