@@ -667,6 +667,14 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None
     if re.search(r"(?i)\b(?:skills? push|skills? training|educational institutions|sanitary standards|local crafters|refugee empowerment|digital economy|green transition and support small businesses)\b", title) and re.search(r"(?i)\b(?:EU|European Union|South Korea|government|Ecobank)\b", title):
         return None
+    if target and target.lower() in _FOREIGN_DEMONYMS:
+        named_asset = re.search(
+            r"(?i)\b(?:gold|copper|lithium|platinum|iron ore|rare earth|diamond)\s+"
+            r"(?:miner|producer|company|developer)\s+(?P<name>[A-Z][A-Z0-9&.-]{1,15})\b",
+            title,
+        )
+        if named_asset:
+            target = named_asset.group("name")
     if target and re.fullmatch(r"(?i)(?:more than(?: half)?|less than|the|a|an|growth|economy|pickups?|tractors?|shs\d+[a-z]*|n\$\s?\d+|ai)", target.strip()):
         return None
     # Weekly sector totals and public-sector programmes are not individual company deals.
