@@ -23,14 +23,6 @@
     "local oil contractors": {
       "name": "Local Oil Contractors",
       "kind": "organization"
-    },
-    "private": {
-      "name": "Private",
-      "kind": "organization"
-    },
-    "livestock": {
-      "name": "Livestock",
-      "kind": "organization"
     }
   },
   "edges": {
@@ -75,21 +67,7 @@
           "url": "https://www.thisdaylive.com/2026/10/16/renaissance-backs-local-oil-contractors-with-4-1bn-n435bn-fund-partners-13-banks/"
         }
       ]
-    },
-    "437b919dfdd706fb7d17": {
-      "id": "437b919dfdd706fb7d17",
-      "from": "private",
-      "to": "livestock",
-      "type": "equity_funding",
-      "first_seen": "2026-10-17",
-      "sources": [
-        {
-          "title": "FG Seeks Private Investment in Livestock, Leather and Fodder Production -",
-          "publisher": "MSME Africa",
-          "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPSUZKeHJMVXE0eEZ5SHNrUG80eElFMU9nakhnX0c2WGkyR1NYWDJUVHB5QnhmZGU5cExMcnZIVHZCUlBJZWNuWmNNVjczcFh0VWhtY2ZLSHhIblJiWVZ5VzdtQ3BxRTRIWFV6ZmVtSGxiRnlwSkpQVUV4WEdpUVJWcHlEeXdrR1hWQWtILTVDMFJDMGNWQUtIT1Vkb1h2bl9WY2c?oc=5"
-        }
-      ]
     }
   },
-  "updated_at": "2026-10-17T07:33:06.793116+00:00"
+  "updated_at": "2026-10-18T03:17:42.075Z"
 }
