@@ -210,6 +210,14 @@ def test_event_review_queue_uses_rules_only_as_candidates():
         "date": "2026-10-15",
     }]
 
+    items.append({
+        "title": "Herman Mashaba targets illegal immigration in bid for Joburg mayoralty",
+        "snippet": "Mayoral campaign statement",
+        "publisher": "OUR CITY NEWS",
+        "url": "https://example.test/politics",
+        "date": "2026-10-15",
+    })
+
     [row] = pipeline._event_review_rows(items)
 
     assert row["rule_candidates"] == ["regulatory_action"]
