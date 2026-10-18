@@ -59,6 +59,33 @@ def matched_events(company: str, events: list[dict]) -> list[dict]:
     ]
 
 
+_STOPWORDS = {"the", "a", "an", "and", "or", "to", "of", "for", "in", "on", "as", "by", "with", "its", "from", "after", "new"}
+
+
+def source_matches_deal(company: str, headline: str, source_title: str | None) -> bool:
+    """Only count a source as corroboration when its title substantively matches this transaction."""
+    title = normalise(source_title)
+    company_key = normalise(company)
+    if not title or not company_key or not re.search(r"(?<![a-z0-9])" + re.escape(company_key) + r"(?![a-z0-9])", title):
+        return False
+    headline_tokens = {token for token in normalise(headline).split() if token not in _STOPWORDS and len(token) > 1}
+    source_tokens = {token for token in title.split() if token not in _STOPWORDS and len(token) > 1}
+    if not headline_tokens or not source_tokens:
+        return False
+    similarity = len(headline_tokens & source_tokens) / max(1, len(headline_tokens | source_tokens))
+    return similarity >= 0.30
+
+
+def matching_deal_sources(company: str, deal: dict) -> list[dict]:
+    headline = str(deal.get("headline") or "")
+    matching = []
+    for source in deal.get("sources") or []:
+        title = source.get("title") or headline
+        if source.get("url") and source_matches_deal(company, headline, title):
+            matching.append(source)
+    return matching
+
+
 def score_deal(deal: dict, related_events: list[dict], end: date) -> tuple[float, list[str]]:
     reasons: list[str] = []
     kind = str(deal.get("deal_type") or "other")
@@ -74,16 +101,20 @@ def score_deal(deal: dict, related_events: list[dict], end: date) -> tuple[float
         score += amount_points
         reasons.append(f"Disclosed transaction size contributes {amount_points:.1f}/18 significance points")
 
+    direct_sources = matching_deal_sources(str(deal.get("target") or ""), deal)
     try:
-        stories = max(1, int(deal.get("independent_stories") or len(deal.get("sources") or []) or 1))
+        reported_stories = max(1, int(deal.get("independent_stories") or len(deal.get("sources") or []) or 1))
     except (TypeError, ValueError):
-        stories = 1
+        reported_stories = 1
+    stories = min(reported_stories, len(direct_sources)) if direct_sources else 0
     corroboration_points = min(18.0, max(0.0, (stories - 1) * 6.0))
     score += corroboration_points
-    reasons.append(
-        f"Corroborated by {stories} independent stories" if stories >= 2
-        else "Single-source reporting; corroboration is not assumed"
-    )
+    if stories >= 2:
+        reasons.append(f"Corroborated by {stories} independent stories matching the transaction headline")
+    elif stories == 1:
+        reasons.append("Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration")
+    else:
+        reasons.append("No source title directly corroborates this transaction headline; no corroboration points awarded")
 
     announced = str(deal.get("announced") or "")[:10]
     age = max(0, (end - date.fromisoformat(announced)).days) if announced else 7
@@ -141,10 +172,13 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
                 url = source.get("url")
                 if url and url not in seen_urls:
                     seen_urls.add(url)
+                    title = source.get("title") or deal.get("headline") or company
+                    directly_matches = source_matches_deal(company, str(deal.get("headline") or ""), title)
                     sources.append({
                         "publisher": source.get("publisher") or "Source",
-                        "title": source.get("title") or deal.get("headline") or company,
-                        "url": url, "date": source.get("date") or deal.get("announced"), "kind": "deal",
+                        "title": title,
+                        "url": url, "date": source.get("date") or deal.get("announced"),
+                        "kind": "deal" if directly_matches else "related_company_coverage",
                     })
         for event in related:
             url = event.get("url")
@@ -155,10 +189,15 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
                     "title": event.get("headline") or company,
                     "url": url, "date": event.get("day"), "kind": "corporate_event",
                 })
-        try:
-            stories = max([int(d.get("independent_stories") or len(d.get("sources") or []) or 1) for d in company_deals])
-        except (TypeError, ValueError):
-            stories = 1
+        relevant_counts = []
+        for deal in company_deals:
+            relevant = len(matching_deal_sources(company, deal))
+            try:
+                reported = max(1, int(deal.get("independent_stories") or len(deal.get("sources") or []) or 1))
+            except (TypeError, ValueError):
+                reported = 1
+            relevant_counts.append(min(reported, relevant) if relevant else 0)
+        stories = max(relevant_counts or [0])
         ranked.append({
             "company": company,
             "company_url": "/app/companies?name=" + quote(company),
