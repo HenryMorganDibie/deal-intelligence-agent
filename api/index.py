@@ -339,9 +339,16 @@ async def cron_label(request: Request) -> dict:
             prices_saved = 0
         # 2. Price history for labelling African briefs.
         r = await _rpc(client, "get_prices", {"secret": API_SECRET, "p_since": (today - timedelta(days=140)).isoformat()})
-        set_snapshot(r.json() if r.status_code == 200 else {})
+        if r.status_code != 200:
+            log.error("get_prices failed: %s %s", r.status_code, r.text[:300])
+            raise HTTPException(502, "Could not load price history for daily outcome labelling.")
+        set_snapshot(r.json())
         resp = await _rpc(client, "briefs_to_label", {"secret": API_SECRET, "max_n": 60})
-        rows = resp.json() if resp.status_code == 200 else []
+        if resp.status_code != 200:
+            log.error("briefs_to_label failed: %s %s", resp.status_code, resp.text[:300])
+            raise HTTPException(502, "Could not load briefs due for daily outcome labelling.")
+        rows = resp.json()
+        label_errors = 0
         for row in rows:
             if time.monotonic() > deadline:
                 break
@@ -357,8 +364,14 @@ async def cron_label(request: Request) -> dict:
             if r.status_code == 200:
                 done += 1
                 outcomes_written += len(outcomes)
+            else:
+                label_errors += 1
+                log.error("save_labels failed for brief %s: %s %s", row.get("id"), r.status_code, r.text[:300])
     set_snapshot(None)
     from src.hosted_market import refresh_live
     async with httpx.AsyncClient(timeout=30) as client:
         await refresh_live(client, force=True)
-    return {"prices_saved": prices_saved, "due": len(rows), "labelled": done, "outcomes": outcomes_written}
+    if label_errors:
+        raise HTTPException(502, f"Daily labelling only partially completed: {label_errors} label writes failed. The scheduled run must be retried.")
+    return {"status": "ok", "refreshed_at": datetime.now(timezone.utc).isoformat(),
+            "prices_saved": prices_saved, "due": len(rows), "labelled": done, "outcomes": outcomes_written}
