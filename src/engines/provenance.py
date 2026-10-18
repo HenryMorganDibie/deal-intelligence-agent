@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import re
 from typing import Optional
+from src.engines.official_sources import verify_url
 
 from src.engines import deals as dl
 from src.engines import investors as inv
@@ -138,8 +139,13 @@ def verify(deal: dict) -> dict:
         st = s.get("stage") or (_extract(s) or {}).get("stage")
         if st and st not in stage_dates and s.get("date"):
             stage_dates[st] = s["date"]
-    official = [s for s in sources if re.search(r"\b(sec|edgar|ngx|nse|jse|sens|brvm|bourse|exchange|regulator)\b",
-                                                (s.get("publisher") or ""), re.IGNORECASE)]
+    official = []
+    official_checks = []
+    for source in sources:
+        check = verify_url(source.get("url"), deal.get("country"))
+        official_checks.append({**check, "publisher": source.get("publisher"), "url": source.get("url")})
+        if check["status"] == "official_host_match":
+            official.append(source)
     n_stories = len(groups)
     tier = ("official" if official else "corroborated" if n_stories >= 2 else "single source")
     return {
@@ -148,6 +154,12 @@ def verify(deal: dict) -> dict:
                        "corroborated": f"Corroborated by {n_stories} independent stories",
                        "single source": "Single source: verify before relying on it"}[tier],
         "sources": len(sources), "independent_stories": n_stories,
+        "official_source_verification": {
+            "status": "official_host_match" if official else "no_official_host_verified",
+            "official_host_matched_sources": len(official),
+            "checks": official_checks,
+            "note": "Official status requires an HTTPS URL matching the explicit source-host registry; publisher text alone is insufficient.",
+        },
         "syndicated_copies": len(sources) - n_stories,
         "dates": {"first_reported": min((s.get("date") for s in sources if s.get("date")), default=deal.get("announced")),
                   "announced_or_rumoured": stage_dates.get("announced") or stage_dates.get("rumoured"),
