@@ -1,0 +1,60 @@
+name: Refresh full historical country indicators
+
+on:
+  schedule:
+    # Refresh the official annual source history monthly; daily score snapshots are separate.
+    - cron: "23 5 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: country-history-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install data refresh dependency
+        run: python -m pip install --disable-pip-version-check httpx
+
+      - name: Refresh earliest available World Bank annual observations
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from src.engines.country_risk import refresh
+          snapshot = refresh(since=1960)
+          print("Retrieved:", snapshot.get("retrieved"))
+          print("Requested start year:", snapshot.get("since"))
+          print("Indicators:", len(snapshot.get("series", {})))
+          print("Source:", snapshot.get("source"))
+          for indicator, summary in snapshot.get("coverage", {}).items():
+              print(indicator, summary.get("countries_with_data"), summary.get("latest_observation_year"))
+          PY
+
+      - name: Commit refreshed official-source history when changed
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/country_indicators.json
+          if git diff --cached --quiet; then
+            echo "Historical indicator data unchanged; no commit required."
+          else
+            git commit -m "Refresh historical country indicator source data"
+            git push origin HEAD:main
+          fi
