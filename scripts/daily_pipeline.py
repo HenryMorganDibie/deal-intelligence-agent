@@ -794,6 +794,7 @@ def _financial_collection() -> dict[str, Any]:
             failures.append(ticker)
             attempt_rows.append({
                 "ticker": ticker,
+                "market": market_by_ticker.get(ticker, "unknown"),
                 "last_attempt": today.isoformat(),
                 "status": "no_annual_data_returned",
                 "exchange_fallback_attempted": ticker.upper().endswith((".LG", ".NR")),
@@ -858,6 +859,7 @@ def _financial_collection() -> dict[str, Any]:
         })
         attempt_rows.append({
             "ticker": ticker,
+            "market": market_by_ticker.get(ticker, "unknown"),
             "last_attempt": today.isoformat(),
             "status": "collected",
             "source": result.get("source"),
