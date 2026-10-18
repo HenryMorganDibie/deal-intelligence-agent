@@ -806,8 +806,17 @@ async def cron_ingest(request: Request) -> dict:
     merged = deals_mod.merge_all(new_deals, into={k: existing[k] for k in {d["id"] for d in new_deals} if k in existing})
     async with httpx.AsyncClient(timeout=60) as client:
         r1 = await _rpc(client, "upsert_deals", {"p_rows": list(merged.values())})
+        if r1.status_code != 200:
+            log.error("deal ingestion write failed: status=%s body=%s", r1.status_code, r1.text[:300])
+            raise HTTPException(502, "Deal ingestion failed while saving records. The scheduled run must be retried.")
         r2 = await _rpc(client, "upsert_events", {"p_rows": new_events})
+        if r2.status_code != 200:
+            log.error("event ingestion write failed: status=%s body=%s", r2.status_code, r2.text[:300])
+            raise HTTPException(502, "Event ingestion failed while saving records. The scheduled run must be retried.")
         hooks = await _rpc(client, "webhook_watchlists", {})
+    if hooks.status_code != 200:
+        log.warning("watchlist webhook lookup failed after successful ingestion: status=%s body=%s",
+                    hooks.status_code, hooks.text[:300])
     delivered = 0
     for wl in (hooks.json() if hooks.status_code == 200 else []):
         since = (wl.get("last_delivered_at") or (datetime.now(timezone.utc) - timedelta(days=2)).isoformat())[:10]
@@ -824,6 +833,7 @@ async def cron_ingest(request: Request) -> dict:
         except httpx.HTTPError as e:
             log.info("webhook for %s failed: %s", wl["id"], e)
     _cache.clear()
-    return {"headlines": len(items), "deals": len(merged), "deals_saved": r1.json() if r1.status_code == 200 else r1.text[:200],
-            "events": len(new_events), "events_saved": r2.json() if r2.status_code == 200 else r2.text[:200],
-            "webhooks_delivered": delivered}
+    return {"status": "ok", "refreshed_at": datetime.now(timezone.utc).isoformat(),
+            "headlines": len(items), "deals_detected": len(new_deals), "deals_saved": r1.json(),
+            "events_detected": len(new_events), "events_saved": r2.json(),
+            "webhooks_delivered": delivered, "webhook_lookup_ok": hooks.status_code == 200}
