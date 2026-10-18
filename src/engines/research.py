@@ -538,6 +538,8 @@ def _rank_news(query: str, items: list[dict]) -> list[dict]:
         bool(series and re.search(
             rf"\bseries\s+{series.group(1)}\b", f"{item.get('title', '')} {item.get('snippet', '')}", re.IGNORECASE)),
         len(query_tokens & _news_tokens(f"{item.get('title', '')} {item.get('snippet', '')}")),
+        {"Official / primary": 3, "Established publisher": 2, "Unrated publisher": 1}.get(
+            _source_assessment("news", item.get("url"), item.get("publisher"))[0], 0),
         item.get("date") or "",
     ), reverse=True)
 
