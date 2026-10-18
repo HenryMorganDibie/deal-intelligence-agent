@@ -608,15 +608,73 @@ def train_entity_matcher() -> dict[str, Any]:
     return result
 
 
-def _financial_collection() -> dict[str, Any]:
-    from src.engines.financials import yahoo_financials
+def _normalise_exchange_statement(statement: dict[str, Any] | None, source: str, currency: str) -> dict[str, Any] | None:
+    if not statement or not isinstance(statement.get("items"), dict):
+        return None
+    period = statement.get("period") or {}
+    end = period.get("end")
+    if not end:
+        return None
+    try:
+        year = int(str(end)[:4])
+        prior_end = f"{year - 1}{str(end)[4:]}"
+        multiplier = float(statement.get("multiplier") or 1)
+    except (TypeError, ValueError):
+        return None
+    current: dict[str, float] = {}
+    prior: dict[str, float] = {}
+    for field, values in statement["items"].items():
+        if not isinstance(values, dict):
+            continue
+        for key, destination in (("current", current), ("prior", prior)):
+            value = values.get(key)
+            if isinstance(value, (int, float)) and math.isfinite(value):
+                destination[field] = float(value) * multiplier
+    annual: dict[str, dict[str, float]] = {}
+    if current:
+        annual[str(end)[:10]] = current
+    if prior:
+        annual[prior_end[:10]] = prior
+    if not annual:
+        return None
+    return {
+        "source": source,
+        "source_url": statement.get("source_url"),
+        "source_document": statement.get("document"),
+        "unit": currency,
+        "annual": dict(sorted(annual.items(), reverse=True)),
+    }
 
+
+def _financials_for_ticker(ticker: str, company: str) -> dict[str, Any] | None:
+    from src.engines.financials import yahoo_financials, ngx_financials, nse_financials
+
+    result = yahoo_financials(ticker, years=4)
+    if result and result.get("annual"):
+        return result
+
+    # Yahoo's ticker coverage is incomplete for African exchanges. Fall back to
+    # the exchange's filed statements rather than permanently treating a listing
+    # as uncovered because a third-party ticker symbol is missing.
+    if ticker.upper().endswith(".LG"):
+        exchange_result = ngx_financials(ticker)
+        statement = exchange_result.get("annual") if isinstance(exchange_result, dict) else None
+        return _normalise_exchange_statement(statement, "NGX audited filing", "NGN")
+    if ticker.upper().endswith(".NR"):
+        exchange_result = nse_financials(company)
+        statement = exchange_result.get("annual") if isinstance(exchange_result, dict) else None
+        return _normalise_exchange_statement(statement, "NSE Kenya audited filing", "KES")
+    return result
+
+
+def _financial_collection() -> dict[str, Any]:
     with UNIVERSE_DATA.open(newline="", encoding="utf-8") as f:
         universe = list(csv.DictReader(f))
     market_by_ticker = {
         row["ticker"].strip(): row.get("market", "").strip().lower()
         for row in universe if row.get("ticker", "").strip()
     }
+    company_by_ticker = {row["ticker"].strip(): row.get("company", row["ticker"]).strip() for row in universe if row.get("ticker", "").strip()}
     tickers = sorted(market_by_ticker)
     existing = _read_jsonl(FINANCIAL_DATA)
     collected = {row.get("ticker") for row in existing}
@@ -653,7 +711,7 @@ def _financial_collection() -> dict[str, Any]:
     failures = []
     attempt_rows = []
     for ticker in selected:
-        result = yahoo_financials(ticker, years=4)
+        result = _financials_for_ticker(ticker, company_by_ticker.get(ticker, ticker))
         if not result or not result.get("annual"):
             failures.append(ticker)
             attempt_rows.append({
@@ -683,6 +741,8 @@ def _financial_collection() -> dict[str, Any]:
             "period": latest_period,
             "currency": result.get("unit"),
             "source": result.get("source"),
+            "source_url": result.get("source_url"),
+            "source_document": result.get("source_document"),
             "fields": {name: latest.get(name) for name in (
                 "revenue", "profit_after_tax", "total_assets", "total_debt", "cash",
                 "operating_cash_flow", "free_cash_flow", "total_equity",
