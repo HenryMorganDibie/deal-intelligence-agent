@@ -45,9 +45,9 @@ export function SiteFooter() {
     {
       title: "Product",
       links: [
-        { label: "How it works", href: "/#pipeline" },
-        { label: "Attribution", href: "/#attribution" },
-        { label: "Coverage", href: "/#coverage" },
+        { label: "How it works", href: "/how-it-works" },
+        { label: "Attribution", href: "/attribution" },
+        { label: "Coverage", href: "/coverage" },
         { label: "Open the app", href: "/app" },
       ],
     },
