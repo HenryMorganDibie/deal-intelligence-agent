@@ -834,7 +834,7 @@ def validate_citations(text: str, n_items: int, items: Optional[list[dict]] = No
                     )) - stop
             overlap = len(claim & evidence_terms) / len(claim) if claim else 1.0
             if overlap < 0.15:
-                weakly_supported.append({"sentence": sentence, "cited_items": ids,
+                weakly_supported.append({"sentence": sentence, "text": sentence, "cited_items": ids,
                                          "overlap": round(overlap, 2)})
     return {"text": clean, "invalid_citations_removed": invalid, "cited_items": cited,
             "sentences": len(factual), "uncited_sentences": uncited,

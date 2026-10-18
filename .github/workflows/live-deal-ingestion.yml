@@ -2,13 +2,13 @@ name: Live deal ingestion
 
 on:
   schedule:
-    # GitHub Actions is the scheduler because Vercel Hobby cron is daily-only.
-    # Scheduled starts can be delayed by GitHub; this is near-real-time, not a hard SLA.
+    # OIDC authentication avoids a repository secret; GitHub schedule is best-effort.
     - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: live-deal-ingestion
@@ -19,20 +19,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Validate scheduler secret
-        env:
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      - name: Request short-lived GitHub Actions OIDC token
+        id: oidc
         run: |
-          if [ -z "$CRON_SECRET" ]; then
-            echo "::error::Repository Actions secret CRON_SECRET is missing. Add the same value configured as CRON_SECRET in Vercel."
+          set -euo pipefail
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
+            echo "::error::GitHub Actions OIDC token endpoint is unavailable. Check the workflow id-token: write permission."
             exit 1
           fi
-      - name: Trigger deal ingestion
+          response="$(curl --fail-with-body --silent --show-error --max-time 15 \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api")"
+          token="$(printf '%s' "$response" | jq -er '.value')"
+          echo "::add-mask::${token}"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Collect recent deal announcements and deliver watchlist webhooks
         env:
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          curl --fail --show-error --silent \
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
             --max-time 240 \
             --retry 2 --retry-delay 5 --retry-all-errors \
-            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H "Accept: application/json" \
             "https://deal-intelligence-api.vercel.app/api/cron/ingest"

@@ -4,8 +4,6 @@ on:
   push:
     paths:
       - ".github/workflows/near-real-time-ingest.yml"
-  schedule:
-    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 permissions:
