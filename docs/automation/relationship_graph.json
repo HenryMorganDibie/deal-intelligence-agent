@@ -23,6 +23,14 @@
     "local oil contractors": {
       "name": "Local Oil Contractors",
       "kind": "organization"
+    },
+    "quantum leap energy": {
+      "name": "Quantum Leap Energy",
+      "kind": "organization"
+    },
+    "necsa": {
+      "name": "Necsa",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -67,7 +75,21 @@
           "url": "https://www.thisdaylive.com/2026/10/16/renaissance-backs-local-oil-contractors-with-4-1bn-n435bn-fund-partners-13-banks/"
         }
       ]
+    },
+    "8a418ab81fafc5c3a0ee": {
+      "id": "8a418ab81fafc5c3a0ee",
+      "from": "quantum leap energy",
+      "to": "necsa",
+      "type": "joint_venture",
+      "first_seen": "2026-10-17",
+      "sources": [
+        {
+          "title": "Quantum Leap Energy and Necsa form joint venture to produce low enriched uranium in South Africa",
+          "publisher": "Green Building Africa",
+          "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPVW13eUhmYTZRMU82SzI4eTNReUN1dmVVWGFMaDA0NGZJbkpkZU16Z1JYVHBSc2JxTHhSZHFPUlZmSjlMVUNuUk5wX1BmajFLdVlHdFN3QmdzeHZvZFpjdWs5MzBUOWV0MWp2Q0lmbC1yaUN0bTNBQmFOUzlRU3IxZE5PVGlFTmd2SnlBRlppdzFiQ1Z5WWZ0QmhBMVhCMm9neGUxdkNLeXlIbndFWWk2ZkR6Q19idzJFSlNZUXhWUXdCM0NOcmhBQmpNZXJ5WUl3?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-18T03:17:42.075Z"
+  "updated_at": "2026-10-18T03:51:39.186467+00:00"
 }
