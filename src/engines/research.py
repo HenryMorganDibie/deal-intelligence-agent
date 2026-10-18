@@ -288,6 +288,15 @@ def _deal_text(d: dict) -> str:
     if val:
         parts.append(f"valuation: {_fmt_usd(val)}")
     parts.append(f"country: {d.get('country') or 'Africa'}; sector: {d.get('sector') or 'n/a'}")
+    tier = d.get("verification")
+    if tier:
+        parts.append(f"record verification tier: {tier}")
+    independent = d.get("independent_stories")
+    if independent is not None:
+        parts.append(f"independent reported stories: {independent}")
+    sources = d.get("sources") or []
+    if sources:
+        parts.append(f"linked source records: {len(sources)}")
     return "; ".join(parts) + f". Headline: {d.get('headline')}"
 
 
@@ -360,7 +369,7 @@ def _news_items(query: str, country: Optional[str], limit: int = 8, client: Opti
     def search_url_for(variant: str, language: Optional[str], date_scope: Optional[str]) -> str:
         search_query = " ".join(filter(None, (variant, date_scope)))
         return (c.news_url(search_query, language) if c else
-                f"https://news.google.com/rss/search?q={quote(search_query + ' Africa')}&hl=en-GB&gl=GB&ceid=GB:en")
+                f"https://news.google.com/rss/search?q={quote(search_query)}&hl=en-GB&gl=US&ceid=US:en")
 
     def resolve_article(item: dict) -> dict:
         item_url = item.get("url") or ""
@@ -533,6 +542,39 @@ def _rank_news(query: str, items: list[dict]) -> list[dict]:
     ), reverse=True)
 
 
+def _source_assessment(kind: str, url: Optional[str], source: Optional[str]) -> tuple[str, str]:
+    """Conservative, transparent source classification; this is not a truth guarantee."""
+    publisher = (source or "").strip().lower()
+    host = (urlparse(url).hostname or "").lower().removeprefix("www.") if url else ""
+    primary_hosts = {
+        "sec.gov", "edgar.sec.gov", "ngxgroup.com", "nse.co.ke", "jse.co.za",
+        "worldbank.org", "data.worldbank.org", "imf.org", "afdb.org", "ifc.org",
+        "cbn.gov.ng", "sec.gov.ng", "fsca.co.za", "cma.or.ke", "bankofengland.co.uk",
+        "ecb.europa.eu", "federalreserve.gov", "federalreserve.gov", "bis.org",
+    }
+    if host and (host.endswith(".gov") or host.endswith(".gov.ng") or host.endswith(".gov.za")
+                 or host in primary_hosts or any(host.endswith("." + d) for d in primary_hosts)):
+        return "Official / primary", "Official filing, regulator, exchange, central-bank or institutional domain."
+    primary_publishers = ("world bank", "international monetary fund", "imf", "african development bank",
+                          "ifc", "securities and exchange commission", "central bank", "stock exchange",
+                          "national statistics", "ministry of finance", "company announcement", "investor relations")
+    if any(term in publisher for term in primary_publishers):
+        return "Official / primary", "Identified as an official institution or company source; check the linked document."
+    established = ("reuters", "associated press", "ap news", "bloomberg", "financial times",
+                   "wall street journal", "the economist", "bbc", "cnbc", "africa report",
+                   "businessday", "techcabal", "techcrunch", "disrupt africa", "ventureburn",
+                   "financial afric", "moneyweb", "business daily africa", "the east african")
+    if any(term in publisher or term in host for term in established):
+        return "Established publisher", "Recognised news publisher; secondary reporting, not an official filing."
+    if not url:
+        if kind in {"statistics", "investor", "country_risk", "currency_risk"}:
+            return "Database-derived", "Computed from the product's structured data or stated methodology; inspect its underlying inputs."
+        return "No direct source link", "The claim cannot be independently checked from a direct link in this result."
+    if host in {"news.google.com", "consent.google.com"}:
+        return "Aggregator / unresolved", "Search aggregator link; publisher-level verification is still needed."
+    return "Unrated publisher", "A link is present, but this system has not independently rated the publisher or verified claim support."
+
+
 def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] = (), briefs: Iterable[dict] = (),
              live_news: bool = True, news: Optional[Callable[[str, Optional[str]], list[dict]]] = None,
              today: Optional[date] = None, max_items: int = 30) -> tuple[dict, list[dict]]:
@@ -544,8 +586,10 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
 
     def add(kind: str, title: str, text: str, url: Optional[str] = None, day: Optional[str] = None,
             source: Optional[str] = None) -> None:
+        source_quality, source_quality_note = _source_assessment(kind, url, source)
         items.append({"n": len(items) + 1, "kind": kind, "title": title, "text": text, "url": url, "date": day,
-                      "source": source})
+                      "source": source, "source_quality": source_quality,
+                      "source_quality_note": source_quality_note})
 
     # Deals: filtered by the parsed scope, ranked by term overlap then recency.
     scope = []
