@@ -72,8 +72,7 @@ export default async function LandingPage() {
                 <p className="eyebrow">Evidence-led corporate shortlist</p>
                 <h2 id="corporate-week-title" className="h2 mt-3">Corporate of the Week</h2>
                 <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[color:var(--muted)]">
-                  Up to five companies with verified, source-linked transaction announcements from the latest seven complete days,
-                  ordered newest announcement first. The list refreshes daily; fewer companies appear when evidence is limited.
+                  Up to five companies with verified, source-linked corporate events from the latest seven complete days, such as leadership changes, earnings, regulatory action or restructuring. Transaction headlines already shown in Latest Deals are excluded. The list refreshes daily; fewer companies appear when evidence is limited.
                 </p>
               </div>
               {corporateSelection && (
@@ -104,7 +103,6 @@ export default async function LandingPage() {
                           <p className="mt-2 text-sm leading-relaxed">{company.headline}</p>
                           <div className="mt-4 flex flex-wrap gap-2 text-xs text-[color:var(--muted)]">
                             <span className="kbd">{company.deal_type.replace(/_/g, " ")}</span>
-                            {company.amount_usd != null && <span className="kbd">{usd(company.amount_usd)} disclosed</span>}
                             <span className="kbd">{company.independent_stories} directly matching {company.independent_stories === 1 ? "source" : "sources"}</span>
                             {company.related_events > 0 && <span className="kbd">{company.related_events} related event signals</span>}
                           </div>
@@ -147,7 +145,7 @@ export default async function LandingPage() {
                     </article>
                   ))}
                 <p className="text-xs leading-relaxed text-[color:var(--dim)]">
-                  The list only includes dated, source-linked transactions. Companies are ordered by announcement date, newest first;
+                  The list only includes dated, source-linked non-transaction corporate events. Companies are ordered by event date, newest first;
                   the score supports editorial context and is not a probability, company rating, or investment recommendation.
                 </p>
               </div>
@@ -155,7 +153,7 @@ export default async function LandingPage() {
               <div className="panel mt-6 p-6 sm:p-8">
                 <h3 className="h3">The corporate shortlist is being prepared.</h3>
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--muted)]">
-                  Companies appear only when a dated transaction and inspectable source evidence meet the selection rules.
+                  Companies appear only when a dated corporate event and inspectable source evidence meet the selection rules.
                   If evidence is insufficient, the page will not invent entries.
                 </p>
               </div>
