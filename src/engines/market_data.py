@@ -200,6 +200,7 @@ def auto_record_outcome(
 def get_current_price(ticker: str) -> Optional[float]:
     """Fetch latest closing price for a ticker."""
     try:
+        import yfinance as yf
         resolved = _resolve_ticker(ticker)
         hist = yf.Ticker(resolved).history(period="5d", auto_adjust=True)
         if hist.empty:
@@ -212,6 +213,7 @@ def get_current_price(ticker: str) -> Optional[float]:
 def get_volatility(ticker: str, days: int = 30) -> Optional[float]:
     """Annualised volatility estimate over `days` trading days."""
     try:
+        import yfinance as yf
         resolved = _resolve_ticker(ticker)
         hist = yf.Ticker(resolved).history(
             start=(utcnow() - timedelta(days=days + 10)).strftime("%Y-%m-%d"),
