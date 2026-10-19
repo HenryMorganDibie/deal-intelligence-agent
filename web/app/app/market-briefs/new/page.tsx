@@ -3,9 +3,9 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Container } from "../../../../../components/primitives";
-import { ApiError } from "../../../../../lib/api";
-import { DEAL_TYPES, SECTORS, post } from "../../../../../lib/market";
+import { Container } from "../../../../components/primitives";
+import { ApiError } from "../../../../lib/api";
+import { DEAL_TYPES, SECTORS, post } from "../../../../lib/market";
 
 type Created = { id: string; title: string; transaction_count: number; period_start: string; period_end: string };
 const label = (value: string) => value.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
