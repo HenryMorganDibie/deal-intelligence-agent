@@ -21,16 +21,21 @@ def evaluate(path: Path) -> dict:
             case = json.loads(line)
         except json.JSONDecodeError as exc:
             raise ValueError(f"Invalid JSON on line {line_number}: {exc}") from exc
+        if case.get("label_status") != "human_reviewed":
+            continue
         for field in ("case_id", "expected_relevant_ids", "retrieved_ids"):
             if field not in case:
                 raise ValueError(f"Line {line_number} is missing required field {field!r}")
+        labels = case.get("claim_support_labels", [])
+        if not isinstance(labels, list) or any(type(label) is not bool for label in labels):
+            raise ValueError(f"Line {line_number} has invalid claim support labels")
         rows.append({
             "case_id": case["case_id"],
             **benchmark_metrics(case["expected_relevant_ids"], case["retrieved_ids"],
                                 case.get("claim_support_labels")),
         })
     if not rows:
-        raise ValueError("No benchmark cases found.")
+        raise ValueError("No reviewed benchmark cases found; independently label cases and set label_status to human_reviewed.")
     return {
         "cases": len(rows),
         "retrieval_precision_macro": round(sum(r["retrieval_precision"] for r in rows) / len(rows), 4),
