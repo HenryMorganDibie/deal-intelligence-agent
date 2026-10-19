@@ -75,6 +75,8 @@ def run(path: Path, output: Path, live_news: bool = True) -> dict:
                     "n": item.get("n"),
                     "title": item.get("title"),
                     "url": item.get("url"),
+                    "publisher_url": item.get("publisher_url"),
+                    "content_url": item.get("content_url"),
                     "date": item.get("date"),
                     "publisher": item.get("source"),
                     "source_quality": item.get("source_quality"),
