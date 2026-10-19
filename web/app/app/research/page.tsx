@@ -474,6 +474,15 @@ export default function ResearchPage() {
                   )}
                 </p>
                 {i.text !== i.title && <p className="mt-1 text-[color:var(--muted)]">{i.text}</p>}
+                {i.content_url && i.content_url !== i.url && (
+                  <p className="mt-1 text-xs text-[color:var(--dim)]">
+                    Retrieved article text from{" "}
+                    <a href={i.content_url} target="_blank" rel="noreferrer" className="hover:underline">
+                      final publisher URL
+                    </a>
+                    . Original source link is retained above.
+                  </p>
+                )}
                 {i.source_quality_note && <p className="mt-1 text-[0.75rem] text-[color:var(--dim)]">{i.source_quality_note}</p>}
               </li>
             ))}
