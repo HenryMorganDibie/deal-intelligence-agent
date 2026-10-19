@@ -30,6 +30,40 @@ function download(name: string, content: string) {
 }
 const readable = (v: unknown) => String(v ?? "Not disclosed").replace(/_/g, " ");
 
+function distribution(items: Array<Record<string, any>>, field: string) {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    const raw = field === "country"
+      ? (item.country || item.countries?.[0])
+      : item[field];
+    const label = String(raw || "Unclassified").replace(/_/g, " ");
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 5);
+}
+
+function DistributionChart({ title, values }: { title: string; values: Array<[string, number]> }) {
+  const max = Math.max(1, ...values.map(([, count]) => count));
+  return (
+    <section className="panel p-4 sm:p-5">
+      <h3 className="text-sm font-semibold">{title}</h3>
+      {values.length ? <div className="mt-4 space-y-3">
+        {values.map(([label, count]) => (
+          <div key={label}>
+            <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+              <span className="min-w-0 truncate">{label}</span>
+              <span className="shrink-0 text-[color:var(--muted)]">{count}</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-white/10" role="img" aria-label={label + ": " + count}>
+              <div className="h-full rounded-full bg-[color:var(--verified)]" style={{ width: (count / max * 100) + "%" }} />
+            </div>
+          </div>
+        ))}
+      </div> : <p className="mt-3 text-sm text-[color:var(--muted)]">No classified items available.</p>}
+    </section>
+  );
+}
+
 export default function MarketBriefPage({ params }: { params: { id: string } }) {
   const [row, setRow] = useState<Result | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
@@ -90,13 +124,14 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
 
   return (
     <Container className="max-w-5xl py-10 lg:py-14">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3 print-hide">
         <Link href="/app" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">← All briefs</Link>
         {row && <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-ghost h-8 px-3 text-[0.8125rem]" onClick={async () => {
             try { await navigator.clipboard.writeText(window.location.href); setCopied(true); }
             catch { setCopied(false); }
           }}>{copied ? "Link copied" : "Share link"}</button>
+          {row.report.brief_type === "research_newsletter" && <button type="button" className="btn btn-primary h-8 px-3 text-[0.8125rem]" onClick={() => window.print()}>Export PDF / Print</button>}
           <button type="button" className="btn btn-ghost h-8 px-3 text-[0.8125rem]" onClick={() => download("africa-deals-intelligence-brief.md", row.markdown || row.report.markdown)}>Export Markdown</button>
         </div>}
       </div>
@@ -119,6 +154,24 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
           ].map(([title, value]) => <div key={title} className="panel p-4"><p className="text-xs text-[color:var(--muted)]">{title}</p><p className="mt-2 text-xl font-semibold">{value}</p></div>)}
         </div>
         <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">Metrics describe records currently held by Deal Intelligence, not a complete census of all transactions. Undisclosed amounts are not estimated.</p>
+
+        {row.report.brief_type === "research_newsletter" && <>
+          <section className="mt-8">
+            <p className="eyebrow">Market analytics</p>
+            <h2 className="h3 mt-2 text-xl">What the selected evidence shows</h2>
+            <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">These charts summarize the transaction records selected for this briefing. They describe this evidence sample only, not the entire market or undisclosed activity.</p>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <DistributionChart title="Deal type" values={distribution(row.report.key_transactions ?? [], "deal_type")} />
+              <DistributionChart title="Sector distribution" values={distribution(row.report.key_transactions ?? [], "sector")} />
+              <DistributionChart title="Country distribution" values={distribution(row.report.key_transactions ?? [], "country")} />
+            </div>
+          </section>
+          <section className="mt-8 panel p-5 sm:p-7 newsletter-prose">
+            <p className="eyebrow">Deal Intelligence · Analyst briefing</p>
+            <h2 className="h3 mt-2 text-xl">Newsletter</h2>
+            <div className="mt-5 whitespace-pre-wrap text-[0.98rem] leading-8">{row.report.web_research?.answer || "Newsletter text is not available."}</div>
+          </section>
+        </>}
 
         <section className="mt-10 panel p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -230,7 +283,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
           <h2 className="h3 mt-2 text-xl">Create a deal or advisory newsletter</h2>
           <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
             Select the deals and web findings that matter, choose the newsletter format, and let the LLM draft a polished, source-linked briefing.
-            The generated newsletter is saved as its own shareable brief for review and Markdown export.
+            The generated newsletter is saved as its own shareable brief for review and PDF export.
           </p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <label className="block">
