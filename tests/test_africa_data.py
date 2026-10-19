@@ -1354,7 +1354,8 @@ def test_showcase_summary_uses_the_reviewed_sources():
     }
     s = showcase.summarise(brief, brief_id="b1")
     assert s["market"] == "NSE Kenya" and s["llm_used"] and s["off_target"] == 9
-    assert s["unattributed_title"] == "Airtel raises prices"
+# Unattributed headlines without a verifiable publication date must not be exposed.
+    assert s["unattributed_title"] is None
     top = s["signals"][0]
     assert top["signal_type"] == "leadership_change"
     assert top["evidence"] == "Safaricom CEO resigns" and top["source"] == "Business Daily · 0.70 credibility"
