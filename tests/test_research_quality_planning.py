@@ -78,3 +78,35 @@ def test_query_plan_expands_iso_country_codes_to_names():
         "Kenya funding",
     )
     assert any("Kenya" in query for query in plan)
+
+
+
+def test_company_research_uses_structured_transaction_and_valuation_context():
+    from src.engines.research import retrieve
+
+    deals = [{
+        "id": "acme-raise-1",
+        "deal_type": "equity_funding",
+        "stage": "announced",
+        "round": "Series A",
+        "target": "Acme",
+        "buyer": "Example Capital",
+        "seller": None,
+        "investors": ["Example Capital"],
+        "amount_usd": 20_000_000,
+        "reported_valuation_usd": 100_000_000,
+        "implied_valuation_usd": None,
+        "stake_pct": None,
+        "sector": "fintech",
+        "country": "KE",
+        "countries": ["KE"],
+        "announced": "2025-03-01",
+        "headline": "Acme raises $20 million in Series A",
+        "sources": [{"url": "https://example.com/acme", "publisher": "Example News"}],
+        "verification": "single source",
+        "independent_stories": 1,
+    }]
+    _, items = retrieve("Acme funding history", deals=deals, live_news=False)
+    kinds = {item["kind"] for item in items}
+    assert "company_activity" in kinds
+    assert "valuation_context" in kinds
