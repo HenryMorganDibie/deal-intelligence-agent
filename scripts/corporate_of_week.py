@@ -225,20 +225,40 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
             f"No eligible, source-linked company transaction found between {start} and {end}; "
             "refusing to publish an unsupported feature."
         )
+    # Editorial shortlist: newest verified announcement first. The existing score remains
+    # visible as context, but cannot cause an older announcement to outrank a newer one.
     ranked.sort(
-        key=lambda row: (row["score"], row["independent_stories"], row["transaction_records"], row["company"].casefold()),
+        key=lambda row: (
+            str(row.get("announced") or "")[:10],
+            row["score"],
+            row["independent_stories"],
+            row["transaction_records"],
+            row["company"].casefold(),
+        ),
         reverse=True,
     )
-    winner = ranked[0]
+    selected_at = datetime.now(timezone.utc).isoformat()
+    companies = [
+        {
+            **row,
+            "period_start": start.isoformat(),
+            "period_end": end.isoformat(),
+            "selected_at": selected_at,
+            "selection_version": 2,
+        }
+        for row in ranked[:5]
+    ]
+    winner = companies[0]
     return {
         **winner,
+        "companies": companies,
         "period_start": start.isoformat(),
         "period_end": end.isoformat(),
-        "selected_at": datetime.now(timezone.utc).isoformat(),
-        "selection_version": 1,
+        "selected_at": selected_at,
+        "selection_version": 2,
         "runner_ups": [
             {"company": row["company"], "score": row["score"], "reasons": row["reasons"][:3]}
-            for row in ranked[1:4]
+            for row in ranked[5:8]
         ],
     }
 
@@ -291,11 +311,10 @@ def main() -> int:
         print(f"Corporate of the Week update failed: {exc}", file=sys.stderr)
         return 1
     print(json.dumps({
-        "company": selected["company"],
+        "companies": [row["company"] for row in selected.get("companies", [selected])],
         "period_start": selected["period_start"],
         "period_end": selected["period_end"],
-        "score": selected["score"],
-        "source_count": len(selected["sources"]),
+        "company_count": len(selected.get("companies", [selected])),
     }))
     return 0
 
