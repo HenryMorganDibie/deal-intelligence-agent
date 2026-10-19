@@ -673,7 +673,7 @@ async def create_market_newsletter(body: NewsletterBody) -> dict:
         "never claim a company has an active mandate or fabricate client relationships. "
         "Separate reported facts from analysis, state when values are undisclosed, and do not infer missing figures. "
         "Cite factual claims with inline numbered citations like [1] only when those evidence items exist. Do not invent sources or citations. "
-        "If evidence is thin or conflicting, say so explicitly. End with a concise conclusion and source-aware disclaimer.\\n\\n"
+        "If evidence is thin or conflicting, say so explicitly. End with a concise conclusion and source-aware disclaimer.\n\n"
         + "\n".join(chosen_context)
     )
     try:
