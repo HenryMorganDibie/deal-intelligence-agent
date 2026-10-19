@@ -58,10 +58,10 @@ def test_selects_company_using_recent_source_linked_transaction_and_rationale():
     assert result["company"] == "Acme Holdings"
     assert result["score"] > 0
     assert result["related_events"] == 1
-    assert len(result["sources"]) == 3
-    assert result["sources"][0]["kind"] == "deal"
-    assert result["sources"][-1]["kind"] == "corporate_event"
-    assert any("Corroborated by 2 independent stories" in reason for reason in result["reasons"])
+    assert len(result["sources"]) == 1
+    assert result["sources"][0]["kind"] == "corporate_event"
+    assert result["headline"] == "Acme Holdings faces new regulatory action"
+    assert not any("Corroborated by" in reason for reason in result["reasons"])
 
 
 def test_broader_company_coverage_is_not_counted_as_deal_corroboration():
