@@ -104,7 +104,7 @@ export function Example({ brief = null }: { brief?: ShowcaseBrief | null }) {
                   <>
                     <p className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-[color:var(--muted)]">No qualifying signal in this run</p>
                     <p className="mt-3 text-[1rem] leading-relaxed">
-                      The latest showcase run did not produce a signal that met the engine's criteria. The run is shown for freshness, not as a claim that an event occurred.
+                      The latest showcase run did not produce a signal that met the engine&apos;s criteria. The run is shown for freshness, not as a claim that an event occurred.
                     </p>
                     <p className="mt-5 text-sm leading-relaxed text-[color:var(--muted)]">
                       A quiet result is still informative: the system can return no qualifying signal rather than inventing one. Review the full brief for the sources checked and any review flags.
