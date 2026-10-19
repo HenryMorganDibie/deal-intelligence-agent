@@ -1056,32 +1056,55 @@ def validate_citations(text: str, n_items: int, items: Optional[list[dict]] = No
     uncited = [s for s in factual if not _CITE.search(s)]
     cited = sorted({int(n) for n in _CITE.findall(clean)})
     weakly_supported = []
-    if items:
-        stop = _STOP | {"according", "reported", "reports", "says", "said", "announced", "announces",
-                        "company", "companies", "million", "billion", "percent", "year", "years"}
-        for sentence in factual:
-            ids = [int(n) for n in _CITE.findall(sentence) if 1 <= int(n) <= n_items]
-            if not ids:
+    claim_audit = []
+    stop = _STOP | {"according", "reported", "reports", "says", "said", "announced", "announces",
+                    "company", "companies", "million", "billion", "percent", "year", "years"}
+    item_by_id = {}
+    for index, item in enumerate(items or [], 1):
+        try:
+            item_by_id[int(item.get("n", index) or index)] = item
+        except (TypeError, ValueError):
+            continue
+    for sentence in factual:
+        ids = [int(n) for n in _CITE.findall(sentence) if 1 <= int(n) <= n_items]
+        source_details = []
+        evidence_terms = set()
+        for item_id in ids:
+            item = item_by_id.get(item_id)
+            if item is None and items and item_id <= len(items):
+                item = items[item_id - 1]
+            if not item:
                 continue
-            claim = set(re.findall(r"[a-z0-9]{3,}", _CITE.sub("", sentence).lower())) - stop
-            if len(claim) < 4:
-                continue
-            evidence_terms = set()
-            for item_id in ids:
-                item = next((it for it in items if int(it.get("n", 0) or 0) == item_id), None)
-                if item is None and 1 <= item_id <= len(items):
-                    item = items[item_id - 1]
-                if item:
-                    evidence_terms |= set(re.findall(
-                        r"[a-z0-9]{3,}", f"{item.get('title', '')} {item.get('text', '')}".lower()
-                    )) - stop
-            overlap = len(claim & evidence_terms) / len(claim) if claim else 1.0
-            if overlap < 0.15:
-                weakly_supported.append({"sentence": sentence, "text": sentence, "cited_items": ids,
-                                         "overlap": round(overlap, 2)})
+            evidence_terms |= set(re.findall(
+                r"[a-z0-9]{3,}", f"{item.get('title', '')} {item.get('text', '')}".lower()
+            )) - stop
+            source_details.append({
+                "n": item_id, "title": item.get("title"), "url": item.get("url"),
+                "date": item.get("date"), "source": item.get("source"),
+                "source_quality": item.get("source_quality"),
+                "content_status": item.get("content_status"),
+            })
+        claim = set(re.findall(r"[a-z0-9]{3,}", _CITE.sub("", sentence).lower())) - stop
+        overlap = len(claim & evidence_terms) / len(claim) if claim and ids else None
+        if not ids:
+            status = "uncited"
+        elif overlap is not None and len(claim) >= 4 and overlap < 0.15:
+            status = "weak_lexical_overlap"
+            weakly_supported.append({"sentence": sentence, "text": sentence, "cited_items": ids,
+                                     "overlap": round(overlap, 2)})
+        else:
+            status = "citation_present_review_required"
+        claim_audit.append({
+            "sentence": sentence,
+            "status": status,
+            "cited_items": ids,
+            "sources": source_details,
+            "lexical_overlap": round(overlap, 2) if overlap is not None else None,
+            "note": "Citation and lexical overlap are triage signals, not semantic verification or proof of truth.",
+        })
     return {"text": clean, "invalid_citations_removed": invalid, "cited_items": cited,
             "sentences": len(factual), "uncited_sentences": uncited,
-            "weakly_supported_sentences": weakly_supported,
+            "weakly_supported_sentences": weakly_supported, "claim_audit": claim_audit,
             "grounded_share": round(1 - len(uncited) / len(factual), 2) if factual else 1.0}
 
 
