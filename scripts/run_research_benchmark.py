@@ -40,12 +40,22 @@ def run(path: Path, output: Path, live_news: bool = True) -> dict:
     deals = list(deals_mod.load_deals().values())
     events = load_json(DATA_DIR / "events.json", list)
     output.parent.mkdir(parents=True, exist_ok=True)
+    failures = 0
     with output.open("w", encoding="utf-8") as stream:
         for case in cases:
             started = time.monotonic()
-            result = research_mod.research(
-                case["question"], deals=deals, events=events, live_news=live_news
-            )
+            run_error = None
+            try:
+                result = research_mod.research(
+                    case["question"], deals=deals, events=events, live_news=live_news
+                )
+            except Exception as exc:
+                # Keep the packet useful if one provider or question fails. The failure is
+                # recorded explicitly; it must never be mistaken for an empty successful result.
+                failures += 1
+                run_error = f"{type(exc).__name__}: {exc}"
+                result = {}
+
             evidence = result.get("evidence", [])
             retrieved_ids = [
                 str(item.get("url") or f"title:{item.get('title', '')}").strip()
@@ -54,6 +64,8 @@ def run(path: Path, output: Path, live_news: bool = True) -> dict:
             record = {
                 "case_id": case["case_id"],
                 "question": case["question"],
+                "run_status": "error" if run_error else "completed",
+                "run_error": run_error,
                 "label_status": "needs_independent_human_review",
                 "retrieved_ids": retrieved_ids,
                 "expected_relevant_ids": [],
@@ -61,8 +73,10 @@ def run(path: Path, output: Path, live_news: bool = True) -> dict:
                 "field_accuracy_labels": [],
                 "unknown_handling_labels": [],
                 "expected_conflict_ids": [],
-                "detected_conflict_ids": [str(conflict.get("company", "")) + ":" + str(conflict.get("currency", ""))
-                                          for conflict in result.get("conflicts", [])],
+                "detected_conflict_ids": [
+                    str(conflict.get("company", "")) + ":" + str(conflict.get("currency", ""))
+                    for conflict in result.get("conflicts", [])
+                ],
                 "answer": result.get("answer"),
                 "mode": result.get("mode"),
                 "model": result.get("model"),
@@ -86,12 +100,18 @@ def run(path: Path, output: Path, live_news: bool = True) -> dict:
                 "review_instructions": (
                     "Before evaluation, independently mark relevant source IDs, review material claims "
                     "against the cited text, and set label_status to human_reviewed. Do not treat "
-                    "citation presence as proof of support."
+                    "citation presence as proof of support. Cases with run_status=error are operational "
+                    "failures and must not be labelled as successful empty-evidence results."
                 ),
             }
             stream.write(json.dumps(record, ensure_ascii=False) + "\n")
-    return {"cases": len(cases), "output": str(output), "live_news": live_news,
-            "note": "Unlabelled candidate run only; not an accuracy benchmark until independently reviewed."}
+    return {
+        "cases": len(cases),
+        "failed_cases": failures,
+        "output": str(output),
+        "live_news": live_news,
+        "note": "Unlabelled candidate run only; not an accuracy benchmark until independently reviewed.",
+    }
 
 
 def main() -> None:
