@@ -129,3 +129,38 @@ def test_empty_retrieval_labels_are_not_reported_as_perfect_recall():
     unsupported = benchmark_metrics([], ["irrelevant-source"])
     assert unsupported["retrieval_precision"] == 0
     assert unsupported["retrieval_recall"] is None
+
+
+
+def test_benchmark_runner_exports_evidence_for_independent_review(tmp_path, monkeypatch):
+    from scripts import run_research_benchmark as runner
+
+    questions = tmp_path / "questions.jsonl"
+    output = tmp_path / "review.jsonl"
+    questions.write_text(
+        json.dumps({"case_id": "case-1", "question": "Verify a funding announcement"}) + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(runner.deals_mod, "load_deals", lambda: {"deal-1": {"company": "Acme"}})
+    monkeypatch.setattr(runner, "load_json", lambda *args, **kwargs: [])
+    monkeypatch.setattr(runner.research_mod, "research", lambda *args, **kwargs: {
+        "evidence": [{
+            "n": 1, "title": "Acme announcement", "url": "https://example.com/announcement",
+            "date": "2026-10-01", "source": "Acme", "source_quality": "Official / primary",
+            "content_status": "article_text_retrieved", "text": "Acme announced a round.",
+        }],
+        "answer": "Acme announced a round [1].",
+        "mode": "deterministic",
+        "model": None,
+        "query_plan": ["Acme official announcement"],
+        "limitations": ["Search is a bounded sample."],
+        "conflicts": [],
+    })
+    result = runner.run(questions, output, live_news=False)
+    row = json.loads(output.read_text(encoding="utf-8").splitlines()[0])
+    assert result["cases"] == 1
+    assert row["label_status"] == "needs_independent_human_review"
+    assert row["retrieved_ids"] == ["https://example.com/announcement"]
+    assert row["evidence"][0]["content_status"] == "article_text_retrieved"
+    assert row["mode"] == "deterministic"
+    assert row["latency_seconds"] >= 0
