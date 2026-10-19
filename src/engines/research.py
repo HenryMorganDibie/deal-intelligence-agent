@@ -36,6 +36,7 @@ from src.engines import country_risk as cr
 from src.engines import deals as deals_mod
 from src.engines import investors as inv
 from src.engines import market_risk as mr
+from src.engines.research_quality import build_query_plan, detect_evidence_conflicts, research_limitations
 
 log = logging.getLogger(__name__)
 _NEWS_EVIDENCE_LIMIT = 8
@@ -703,11 +704,28 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
         query = " ".join([*p["regions"][:1], *country_context, *query_terms]) or question[:80]
         news_country = p["countries"][0] if len(p["countries"]) == 1 and not p["regions"] else None
         news_search = news or (lambda q, c: _news_items(q, c, since=p["since"], until=p["until"]))
-        try:
-            fetched_news = news_search(query, news_country)
-        except Exception as e:
-            log.error("research news search failed: %s", e)
-            fetched_news = []
+        # Run a small, diverse query plan instead of betting the answer on one query.
+        # Query variants target company announcements, transaction terminology, and geography.
+        query_plan = build_query_plan(question, p, query, limit=3)
+        fetched_news = []
+        successful_queries = 0
+        for planned_query in query_plan:
+            try:
+                fetched_news.extend(news_search(planned_query, news_country) or [])
+                successful_queries += 1
+            except Exception as e:
+                log.error("research news search failed for %r: %s", planned_query, e)
+        # De-duplicate across queries before relevance ranking; preserve publisher metadata.
+        unique_news = {}
+        for item in fetched_news:
+            key = (item.get("url") or "").strip().rstrip("/").lower() or re.sub(
+                r"[^a-z0-9]+", " ", str(item.get("title") or "").lower()
+            ).strip()
+            if key and key not in unique_news:
+                unique_news[key] = item
+        fetched_news = _rank_news(query, list(unique_news.values()))
+        log.info("research query plan completed: %d/%d successful, %d unique items",
+                 successful_queries, len(query_plan), len(fetched_news))
         if len(p["countries"]) == 1 and not p["regions"]:
             code = p["countries"][0]
             company_tokens = [deals_mod.normalise_name(name) for name in p["companies"]]
@@ -757,6 +775,9 @@ Answer the question using ONLY the numbered evidence items provided. Rules:
 - If the items do not answer the question, say so plainly and state what evidence is missing.
 - Treat missing publication dates as unknown; never imply undated evidence is recent.
 - If credible sources conflict, explicitly describe the disagreement and cite both sides rather than silently choosing one.
+- Distinguish a source's publication date from the transaction announcement date.
+- Treat different reported amounts as unresolved unless evidence explains currency, scope, stage, and whether the figure is funding or valuation.
+- Prefer direct primary documents for material figures, while retaining credible secondary reporting when primary evidence is unavailable.
 - Distinguish announced, signed, closed and completed transactions; do not treat them as interchangeable.
 - Cite with square brackets only, e.g. [4], never other bracket styles.
 - Be concise: a short direct answer, then the key supporting points. Use currencies as reported and label conversions or derived figures clearly."""
@@ -1072,8 +1093,16 @@ def research(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
              live_news: bool = True, llm: Optional[Callable] = None, news=None, today: Optional[date] = None) -> dict:
     parsed, items = retrieve(question, deals, events, briefs, live_news=live_news, news=news, today=today)
     result = answer(question, items, parsed, llm)
+    conflicts = detect_evidence_conflicts(items, parsed.get("companies", []))
+    limitations = research_limitations(parsed, items, conflicts)
     return {"question": question, "parsed": parsed, "evidence": items,
-            "evidence_coverage": evidence_coverage(items), **result}
+            "evidence_coverage": evidence_coverage(items),
+            "conflicts": conflicts, "limitations": limitations,
+            "query_plan": build_query_plan(question, parsed, " ".join(
+                [*parsed.get("regions", [])[:1], *parsed.get("countries", [])[:1],
+                 *parsed.get("companies", [])[:2], *parsed.get("terms", [])[:3]]
+            ) or question[:80], limit=3),
+            **result}
 
 
 # ── Research reports ──────────────────────────────────────────────────────────
