@@ -1083,6 +1083,8 @@ def validate_citations(text: str, n_items: int, items: Optional[list[dict]] = No
                 "date": item.get("date"), "source": item.get("source"),
                 "source_quality": item.get("source_quality"),
                 "content_status": item.get("content_status"),
+                "publisher_url": item.get("publisher_url"),
+                "content_url": item.get("content_url"),
             })
         claim = set(re.findall(r"[a-z0-9]{3,}", _CITE.sub("", sentence).lower())) - stop
         overlap = len(claim & evidence_terms) / len(claim) if claim and ids else None
@@ -1289,8 +1291,9 @@ def evidence_coverage(items: list[dict]) -> list[dict]:
     for kind in kinds:
         selected = [item for item in items if item["kind"] == kind]
         domains = {
-            (urlparse(str(item.get("url") or "")).hostname or "").lower().removeprefix("www.")
-            for item in selected if item.get("url")
+            (urlparse(str(item.get("content_url") or item.get("publisher_url") or item.get("url") or "")).hostname or "")
+            .lower().removeprefix("www.")
+            for item in selected if item.get("content_url") or item.get("publisher_url") or item.get("url")
         }
         row = {
             "kind": kind,
