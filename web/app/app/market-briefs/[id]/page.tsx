@@ -8,6 +8,7 @@ import { ApiError } from "../../../../lib/api";
 import { get, post } from "../../../../lib/market";
 
 type MarketReport = {
+  parent_brief_id?: string | null;
   brief_type: string; title: string; audience: string; period_start: string; period_end: string; generated_at: string;
   scope_label: string; metrics: { transaction_count: number; disclosed_value_count: number; disclosed_value_usd_label: string; countries_represented: number };
   key_transactions: Array<Record<string, any>>; comparables: Array<Record<string, any>>; observed_patterns: string[];
