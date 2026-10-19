@@ -23,6 +23,7 @@ from __future__ import annotations
 import asyncio
 import html
 import logging
+from html.parser import HTMLParser
 import re
 from collections import Counter
 from datetime import date, timedelta
@@ -300,6 +301,112 @@ def _deal_text(d: dict) -> str:
     if sources:
         parts.append(f"linked source records: {len(sources)}")
     return "; ".join(parts) + f". Headline: {d.get('headline')}"
+
+
+class _ArticleTextParser(HTMLParser):
+    """Extract article-like text without executing page scripts or trusting markup as evidence."""
+    _SKIP = {"script", "style", "noscript", "svg", "nav", "footer", "header", "form", "aside"}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.skip_depth = 0
+        self.article_depth = 0
+        self.main_depth = 0
+        self.paragraph_depth = 0
+        self.parts: list[str] = []
+        self.paragraphs: list[str] = []
+        self.current: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag in self._SKIP:
+            self.skip_depth += 1
+            return
+        if self.skip_depth:
+            return
+        classes = (attrs.get("class") or "").lower()
+        role = (attrs.get("role") or "").lower()
+        if tag == "article" or "article" in classes:
+            self.article_depth += 1
+        if tag == "main" or role == "main":
+            self.main_depth += 1
+        if tag == "p":
+            self.paragraph_depth += 1
+            self.current = []
+
+    def handle_endtag(self, tag):
+        if tag in self._SKIP and self.skip_depth:
+            self.skip_depth -= 1
+            return
+        if self.skip_depth:
+            return
+        if tag == "article" and self.article_depth:
+            self.article_depth -= 1
+        if tag == "main" and self.main_depth:
+            self.main_depth -= 1
+        if tag == "p" and self.paragraph_depth:
+            self.paragraph_depth -= 1
+            paragraph = re.sub(r"\\s+", " ", " ".join(self.current)).strip()
+            if len(paragraph) >= 45:
+                self.paragraphs.append(paragraph)
+            self.current = []
+
+    def handle_data(self, data):
+        if self.skip_depth:
+            return
+        value = re.sub(r"\\s+", " ", data).strip()
+        if not value:
+            return
+        if self.paragraph_depth:
+            self.current.append(value)
+        elif self.article_depth or self.main_depth:
+            self.parts.append(value)
+
+    def text(self) -> str:
+        paragraphs = self.paragraphs
+        if len(" ".join(paragraphs)) < 350:
+            paragraphs = paragraphs + self.parts
+        seen, result = set(), []
+        for part in paragraphs:
+            part = re.sub(r"\\s+", " ", part).strip()
+            if len(part) >= 45 and part.casefold() not in seen:
+                seen.add(part.casefold())
+                result.append(part)
+        return " ".join(result)[:12000]
+
+
+def _fetch_article_content(item: dict, client: Optional[httpx.Client] = None) -> dict:
+    """Best-effort fetch of publicly accessible article text; never upgrades access to verification."""
+    url = str(item.get("url") or "")
+    parsed = urlparse(url)
+    host = (parsed.hostname or "").lower().removeprefix("www.")
+    if parsed.scheme != "https" or not host or host in {"news.google.com", "consent.google.com"}:
+        return {**item, "content_status": "snippet_only", "content_text": None}
+    request_client = client or httpx.Client(timeout=6, follow_redirects=True,
+                                             headers={"User-Agent": "DealIntelligenceResearchBot/1.0 (+public research; contact via website)"})
+    close_client = client is None
+    try:
+        response = request_client.get(url)
+        response.raise_for_status()
+        final = urlparse(str(response.url))
+        if final.scheme != "https" or not final.hostname:
+            return {**item, "content_status": "snippet_only", "content_text": None}
+        content_type = response.headers.get("content-type", "").lower()
+        if "text/html" not in content_type and "application/xhtml" not in content_type:
+            return {**item, "content_status": "non_html_source", "content_text": None}
+        parser = _ArticleTextParser()
+        parser.feed(response.text[:1_000_000])
+        content = parser.text()
+        if len(content) < 350:
+            return {**item, "content_status": "snippet_only", "content_text": None}
+        return {**item, "content_status": "article_text_retrieved", "content_text": content,
+                "content_url": str(response.url)}
+    except (httpx.HTTPError, ValueError) as exc:
+        log.info("could not retrieve article text for %s: %s", item.get("title"), exc)
+        return {**item, "content_status": "snippet_only", "content_text": None}
+    finally:
+        if close_client:
+            request_client.close()
 
 
 def _news_items(query: str, country: Optional[str], limit: int = 8, client: Optional[httpx.Client] = None,
@@ -805,9 +912,22 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             log.debug("research news RSS search returned %d date-valid results", len(valid_news))
             items = items[:max_items - len(valid_news)]
             for it in valid_news:
-                add("news", it["title"], it.get("snippet") or it["title"],
-                    it.get("url"),
-                    it.get("date"), it.get("publisher"))
+                enriched = _fetch_article_content(it) if news is None else {
+                    **it, "content_status": "injected_search_snippet", "content_text": None
+                }
+                body = enriched.get("content_text") or enriched.get("snippet") or enriched.get("title") or ""
+                if enriched.get("content_status") == "article_text_retrieved":
+                    body = ("Direct article text retrieved from the publisher page; this is not an independent "
+                            "verification of the claims. ") + body
+                add("news", enriched["title"], body,
+                    enriched.get("url"), enriched.get("date"), enriched.get("publisher"))
+                items[-1]["content_status"] = enriched.get("content_status", "snippet_only")
+                if enriched.get("content_url"):
+                    items[-1]["content_url"] = enriched["content_url"]
+                items[-1]["publisher_url"] = enriched.get("publisher_url")
+                items[-1]["syndication_key"] = re.sub(
+                    r"[^a-z0-9]+", " ", str(enriched.get("title") or "").casefold()
+                ).strip()
     return p, items[:max_items]
 
 
