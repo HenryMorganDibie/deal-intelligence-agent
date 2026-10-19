@@ -11,6 +11,7 @@ type MarketReport = {
   brief_type: string; title: string; audience: string; period_start: string; period_end: string; generated_at: string;
   scope_label: string; metrics: { transaction_count: number; disclosed_value_count: number; disclosed_value_usd_label: string; countries_represented: number };
   key_transactions: Array<Record<string, any>>; comparables: Array<Record<string, any>>; observed_patterns: string[];
+  newsletter_selected_evidence?: Array<{ n?: number; kind?: string; title: string; text?: string; url: string | null; date?: string | null; source?: string | null; source_quality?: string; source_quality_note?: string }>;
   advisory_signals: Array<{ title: string; rationale: string; evidence_count: number; evidence: Array<{ headline: string; url: string | null }> }>;
   methodology: string; coverage_note: string; markdown: string;
   research_question?: string;
@@ -201,16 +202,31 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
             </p>
           )}
           <div className="mt-5 border-t hairline pt-4">
-            <h3 className="text-sm font-semibold">Evidence found ({row.report.web_research?.evidence?.length ?? 0})</h3>
+            {row.report.brief_type === "research_newsletter" && (row.report.newsletter_selected_evidence ?? []).length > 0 && <div className="mb-5">
+              <h3 className="text-sm font-semibold">Analyst-selected web sources ({row.report.newsletter_selected_evidence?.length ?? 0})</h3>
+              <ul className="mt-3 space-y-3">
+                {(row.report.newsletter_selected_evidence ?? []).map((item, index) => <li key={String(item.n ?? index) + "-" + (item.url ?? item.title)} className="border-b hairline pb-3 last:border-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {typeof item.n === "number" && <span className="kbd">[{item.n}]</span>}
+                    {item.date && <span className="text-xs text-[color:var(--dim)]">{item.date}</span>}
+                  </div>
+                  {item.url ? <a className="mt-1 inline-block text-sm font-medium underline underline-offset-4" href={item.url} target="_blank" rel="noreferrer">{item.title} ↗</a> : <p className="mt-1 text-sm font-medium">{item.title}</p>}
+                  {item.source && <p className="mt-1 text-xs text-[color:var(--muted)]">Source: {item.source}{item.source_quality ? " · " + item.source_quality : ""}</p>}
+                  {item.text && <p className="mt-1 text-sm leading-relaxed text-[color:var(--muted)]">{item.text}</p>}
+                  {item.source_quality_note && <p className="mt-1 text-xs text-[color:var(--dim)]">{item.source_quality_note}</p>}
+                </li>)}
+              </ul>
+            </div>}
+            <h3 className="text-sm font-semibold">Research-engine evidence ({row.report.web_research?.evidence?.length ?? 0})</h3>
             <p className="mt-1 text-xs text-[color:var(--dim)]">Search results and stored records are evidence leads, not automatic confirmation. Check the original publisher page for context.</p>
             {(row.report.web_research?.evidence ?? []).length ? (
               <ul className="mt-3 space-y-3">
                 {(row.report.web_research?.evidence ?? []).map((item) => (
                   <li key={String(item.n) + "-" + (item.url ?? item.title)} className="border-b hairline pb-3 last:border-0">
-                    <label className="mb-2 flex items-center gap-2 text-xs text-[color:var(--muted)]">
+                    {row.report.brief_type !== "research_newsletter" && <label className="mb-2 flex items-center gap-2 text-xs text-[color:var(--muted)]">
                       <input type="checkbox" checked={selectedItems.includes("web:" + item.n)} onChange={(e) => toggleSelected("web:" + item.n, e.target.checked)} />
                       Include this web finding in the newsletter
-                    </label>
+                    </label>}
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="kbd">[{item.n}]</span>
                       <span className="text-xs uppercase tracking-wide text-[color:var(--muted)]">{readable(item.kind)}</span>
@@ -233,10 +249,10 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
           <h2 className="h3 text-xl">Key transactions</h2>
           <div className="mt-4 space-y-4">
             {row.report.key_transactions.length ? row.report.key_transactions.map((d, i) => <article key={String(d.id ?? i)} className="panel p-4 sm:p-5">
-              <label className="mb-3 flex items-center gap-2 text-xs text-[color:var(--muted)]">
+              {row.report.brief_type !== "research_newsletter" && <label className="mb-3 flex items-center gap-2 text-xs text-[color:var(--muted)]">
                 <input type="checkbox" checked={selectedItems.includes("deal:" + i)} onChange={(e) => toggleSelected("deal:" + i, e.target.checked)} />
                 Include this transaction in the newsletter
-              </label>
+              </label>}
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-xs uppercase tracking-wide text-[color:var(--muted)]">{readable(d.deal_type)} · {readable(d.stage)}</p>
@@ -252,11 +268,11 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
           </div>
         </section>
 
-        <section className="mt-10">
+        {row.report.brief_type !== "research_newsletter" && <section className="mt-10">
           <h2 className="h3 text-xl">Observed patterns</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[color:var(--muted)]">{row.report.observed_patterns.map((p, i) => <li key={i}>{p}</li>)}</ul>
-        </section>
-        <section className="mt-10">
+        </section>}
+        {row.report.brief_type !== "research_newsletter" && <section className="mt-10">
           <h2 className="h3 text-xl">Potential advisory research leads</h2>
           <p className="mt-2 text-sm text-[color:var(--muted)]">These are evidence-based prompts for further research, not confirmed mandates or recommendations.</p>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -267,8 +283,8 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
               <ul className="mt-2 space-y-1">{signal.evidence.filter((e) => e.url).slice(0, 3).map((e, j) => <li key={(e.url ?? "") + j}><a className="text-sm underline underline-offset-4" href={e.url ?? "#"} target="_blank" rel="noreferrer">{e.headline || "Supporting transaction"} ↗</a></li>)}</ul>
             </article>) : <p className="text-sm text-[color:var(--muted)]">The current sample does not show repeated activity strong enough to generate a research lead.</p>}
           </div>
-        </section>
-        <section className="mt-10">
+        </section>}
+        {row.report.brief_type !== "research_newsletter" && <section className="mt-10">
           <h2 className="h3 text-xl">Comparable activity</h2>
           <div className="mt-3 divide-y hairline border-y hairline">
             {row.report.comparables.length ? row.report.comparables.map((d, i) => <div key={String(d.id ?? i)} className="py-3">
@@ -277,7 +293,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
               {(d.sources || []).filter((s: any) => s.url).slice(0, 1).map((s: any) => <a key={s.url} className="mt-1 inline-block text-sm underline" href={s.url} target="_blank" rel="noreferrer">{s.publisher || "Source"} ↗</a>)}
             </div>) : <p className="py-4 text-sm text-[color:var(--muted)]">No comparable records met the similarity and date criteria.</p>}
           </div>
-        </section>
+        </section>}
         {row.report.brief_type !== "research_newsletter" && <section className="mt-10 panel p-5 sm:p-6 print-hide">
           <p className="eyebrow">Turn research into deliverable</p>
           <h2 className="h3 mt-2 text-xl">Create a deal or advisory newsletter</h2>
