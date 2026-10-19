@@ -1065,12 +1065,15 @@ def test_research_retrieves_numbered_evidence_and_uses_llm_with_citations():
 
     def fake_llm(system, user, max_tokens):
         seen["user"] = user
-        return "Cloud9 raised $500,000 [2]. Kenya's currency risk is low [4]."
+        return "## Cloud9 update\n\n**Cloud9** raised $500,000 [2].\n\n- Kenya's currency risk is low [4]."
     r = rs.research("Kenya fintech funding and currency risk", deals, [], live_news=False, llm=fake_llm)
     kinds = [i["kind"] for i in r["evidence"]]
     assert kinds[:2] == ["statistics", "deal"] and "country_risk" in kinds and "currency_risk" in kinds
     assert "[2] (deal" in seen["user"] and "ONLY the numbered evidence" in rs.SYSTEM
     assert r["mode"] == "llm" and r["validation"]["grounded_share"] == 1.0
+    assert "##" not in r["answer"] and "**" not in r["answer"]
+    assert not any(line.lstrip().startswith(("-", "*")) for line in r["answer"].splitlines())
+    assert "Cloud9 raised $500,000 [2]." in r["answer"]
 
 
 def test_research_without_llm_is_deterministic(monkeypatch):
