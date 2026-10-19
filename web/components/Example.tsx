@@ -5,7 +5,7 @@ const words = (v: string | null | undefined) => (v ? v.replace(/_/g, " ").replac
 
 /** An excerpt of a real brief: the latest showcase run when there is one, else a Boeing run of 13 Oct 2026. */
 export function Example({ brief = null }: { brief?: ShowcaseBrief | null }) {
-  const live = brief && brief.signal_count ? brief : null;
+  const live = brief && brief.created_at ? brief : null;
   const sig = live?.signals[0];
   const facts: [string, string][] = live
     ? [
@@ -96,6 +96,19 @@ export function Example({ brief = null }: { brief?: ShowcaseBrief | null }) {
                         )}
                       </div>
                     )}
+                    <a href={`/app/briefs/${live.id}`} className="kbd mt-5 inline-block text-[0.8125rem] text-verified hover:underline">
+                      Read the full brief →
+                    </a>
+                  </>
+                ) : live ? (
+                  <>
+                    <p className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-[color:var(--muted)]">No qualifying signal in this run</p>
+                    <p className="mt-3 text-[1rem] leading-relaxed">
+                      The latest showcase run did not produce a signal that met the engine's criteria. The run is shown for freshness, not as a claim that an event occurred.
+                    </p>
+                    <p className="mt-5 text-sm leading-relaxed text-[color:var(--muted)]">
+                      A quiet result is still informative: the system can return no qualifying signal rather than inventing one. Review the full brief for the sources checked and any review flags.
+                    </p>
                     <a href={`/app/briefs/${live.id}`} className="kbd mt-5 inline-block text-[0.8125rem] text-verified hover:underline">
                       Read the full brief →
                     </a>
