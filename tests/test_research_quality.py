@@ -170,3 +170,28 @@ def test_article_fetch_does_not_fetch_aggregator_urls():
     result = _fetch_article_content({"url": "https://news.google.com/rss/articles/example", "snippet": "Summary"})
     assert result["content_status"] == "snippet_only"
     assert result["content_text"] is None
+
+
+
+def test_research_marks_repeated_headlines_as_possible_syndication():
+    items = [
+        {
+            "title": "Acme raises $20 million Series A funding",
+            "snippet": "Acme announced a Series A round.",
+            "url": "https://publisher-one.example/acme",
+            "publisher": "Publisher One",
+            "date": "2026-10-01",
+        },
+        {
+            "title": "Acme raises $20 million Series A funding",
+            "snippet": "Acme announced a Series A round.",
+            "url": "https://publisher-two.example/acme",
+            "publisher": "Publisher Two",
+            "date": "2026-10-02",
+        },
+    ]
+    _, evidence = research.retrieve("Acme funding", deals=[], live_news=True, news=lambda query, country: items)
+    news = [item for item in evidence if item["kind"] == "news"]
+    assert len(news) == 2
+    assert all(item["syndication_group_size"] == 2 for item in news)
+    assert all(item["syndicated_publishers"] == ["Publisher One", "Publisher Two"] for item in news)
