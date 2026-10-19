@@ -55,7 +55,18 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
   }, [row?.id]);
 
   function toggleSelected(item: string, checked: boolean) {
-    setSelectedItems((current) => checked ? [...new Set([...current, item])] : current.filter((value) => value !== item));
+    if (checked) {
+      if (selectedItems.includes(item)) return;
+      if (selectedItems.length >= 40) {
+        setNewsletterError("A newsletter can include up to 40 selected items. Remove an item before adding another.");
+        return;
+      }
+      setNewsletterError(null);
+      setSelectedItems((current) => [...new Set([...current, item])]);
+    } else {
+      setSelectedItems((current) => current.filter((value) => value !== item));
+      setNewsletterError(null);
+    }
   }
 
   async function createNewsletter() {
