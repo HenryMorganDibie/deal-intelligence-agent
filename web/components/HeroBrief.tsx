@@ -57,7 +57,7 @@ function view(b: ShowcaseBrief | null | undefined): View {
       command: "python main.py analyse --company Intel --ticker INTC",
       steps: FALLBACK_STEPS,
       signals: FALLBACK_SIGNALS,
-      dropped: "SoftBank Group Q1 profit beats expectations on Intel windfall",
+      dropped: null, // Static fallback headlines have no live source/date validation.
       href: null,
     };
   }
