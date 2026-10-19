@@ -381,7 +381,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
     """Build and persist a public, source-linked market brief from the existing deal store."""
     if not _configured():
         raise HTTPException(503, "The API is not configured for saving market briefs.")
-    from src.hosted_market import deals as market_deals, _country_or_404
+    from src.hosted_market import deals as market_deals, events as market_events, _country_or_404
     from src.engines import deals as deals_engine, provenance
     from src.data import africa_countries as ac
 
@@ -499,7 +499,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
     )
     research_question = (
         f"Research {'; '.join(scope_parts)} private-market transactions and M&A for the "
-        f"announcement window {start.isoformat()} to {today.isoformat()} ({body.lookback_days} days). "
+        f"for the last {body.lookback_days} days. "
         f"Audience: {body.audience}. Analyst focus: {focus}. "
         "Use hybrid research: compare the structured transaction database with live web/news results. "
         "Prioritize official company announcements, regulator/exchange filings, and reputable financial press. "
@@ -507,7 +507,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
     )
     try:
         web_research = await run_in_threadpool(
-            research_engine.research, research_question, selected, __import__("src.hosted_market", fromlist=["events"]).events()
+            research_engine.research, research_question, selected, market_events()
         )
     except Exception as exc:
         log.warning("market brief hybrid research failed: %s", exc)
