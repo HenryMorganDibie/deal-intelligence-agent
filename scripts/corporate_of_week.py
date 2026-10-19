@@ -254,7 +254,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
     for row in ranked:
         row_urls = {source.get("url") for source in row["sources"] if source.get("url")}
         if any(
-            _headline_overlap(row["headline"], prior["headline"])
+            normalise(row["headline"]) == normalise(prior["headline"])
             or bool(row_urls & {source.get("url") for source in prior["sources"] if source.get("url")})
             for prior in unique_ranked
         ):
