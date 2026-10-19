@@ -68,3 +68,13 @@ def test_single_article_with_raise_and_valuation_is_not_treated_as_source_confli
         {"n": 2, "title": "Acme raises $20 million", "text": "Acme funding"},
     ]
     assert detect_evidence_conflicts(items, ["Acme"]) == []
+
+
+
+def test_query_plan_expands_iso_country_codes_to_names():
+    plan = build_query_plan(
+        "Funding activity in Kenya",
+        {"companies": [], "countries": ["KE"], "deal_types": ["equity_funding"]},
+        "Kenya funding",
+    )
+    assert any("Kenya" in query for query in plan)
