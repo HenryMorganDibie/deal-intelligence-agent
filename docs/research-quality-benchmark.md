@@ -22,6 +22,14 @@ This benchmark is intended to evaluate research quality rather than merely wheth
 - **Source diversity:** independent publishers and primary sources represented, with syndication deduplicated.
 - **Operational quality:** latency, failures, deterministic fallback rate, and estimated model/search cost.
 
+## Candidate question set and review workflow
+
+`benchmarks/research-questions.jsonl` is a candidate casebook spanning company due diligence, transaction verification, market mapping, investor activity, sector analysis, country risk, cross-border research, global scope, and insufficient-evidence handling. These are **not yet human-reviewed benchmark labels**.
+
+Run `python scripts/run_research_benchmark.py benchmarks/research-questions.jsonl --output benchmark-review-run.jsonl` to capture the current evidence and answers for review. The runner records retrieved source IDs, links, publication dates, article-content status, query plans, fallback mode, and latency. It does not assign relevance labels or claim accuracy. Reviewers must independently label expected source IDs and claim support, then set `label_status` to `human_reviewed` for each reviewed case.
+
+The evaluator ignores unreviewed cases and refuses to score a run with no human-reviewed cases, to avoid reporting misleading precision/recall from empty labels.
+
 ## Current deterministic test fixtures
 
 The automated tests exercise query planning, explicit same-currency amount disagreement flags, missing-date limitations, and metric calculations. They are **unit tests, not a measured real-world accuracy benchmark**. Populate the reviewed held-out set before making numeric claims about research quality.
@@ -32,7 +40,7 @@ The automated tests exercise query planning, explicit same-currency amount disag
 Save one JSON object per line with a stable case ID, the IDs of relevant sources expected by reviewers, the IDs actually retrieved, and optional human-reviewed claim support labels:
 
 ```json
-{"case_id":"case-001","expected_relevant_ids":["source-a","source-b"],"retrieved_ids":["source-a","source-c"],"claim_support_labels":[true,false]}
+{"case_id":"case-001","label_status":"human_reviewed","expected_relevant_ids":["source-a","source-b"],"retrieved_ids":["source-a","source-c"],"claim_support_labels":[true,false]}
 ```
 
 Run `python scripts/evaluate_research_benchmark.py path/to/reviewed-results.jsonl --output benchmark-report.json`.
