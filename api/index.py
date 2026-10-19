@@ -359,9 +359,12 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
     all_deals = market_deals()
     selected = deals_engine.search(
         all_deals, country=country_code, deal_type=body.deal_type,
-        sector=body.sector, since=start.isoformat(), until=today.isoformat(),
+        sector=body.sector, since=start.isoformat(),
         limit=max(len(all_deals), 1),
     )
+    # Compare ISO date prefixes so same-day timestamps are not accidentally excluded
+    # by a lexical comparison against a date-only upper bound.
+    selected = [d for d in selected if d.get("announced") and start.isoformat() <= str(d["announced"])[:10] <= today.isoformat()]
     selected.sort(key=lambda d: d.get("announced") or "", reverse=True)
     disclosed = [float(d.get("amount_usd")) for d in selected if d.get("amount_usd") is not None and float(d.get("amount_usd") or 0) > 0]
     country_codes = set()
