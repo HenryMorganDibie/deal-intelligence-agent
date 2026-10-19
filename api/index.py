@@ -287,6 +287,20 @@ class MarketBriefBody(BaseModel):
         return value or None
 
 
+class NewsletterBody(BaseModel):
+    source_brief_id: str = Field(..., min_length=1, max_length=64)
+    briefing_type: str = Field("both", pattern="^(deal|advisory|both)$")
+    selected_items: list[str] = Field(..., min_length=1, max_length=40)
+    audience: str = Field("Investment banking analyst", min_length=1, max_length=100)
+    instructions: str | None = Field(None, max_length=1000)
+
+    @field_validator("source_brief_id", "audience", "instructions")
+    @classmethod
+    def newsletter_strip(cls, value: str | None) -> str | None:
+        value = value.strip() if value else value
+        return value or None
+
+
 def _market_brief_markdown(report: dict) -> str:
     lines = [
         f"# {report['title']}", "",
@@ -499,7 +513,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
     )
     research_question = (
         f"Research {'; '.join(scope_parts)} private-market transactions and M&A for the "
-        f"for the last {body.lookback_days} days. "
+        f"the last {body.lookback_days} days. "
         f"Audience: {body.audience}. Analyst focus: {focus}. "
         "Use hybrid research: compare the structured transaction database with live web/news results. "
         "Prioritize official company announcements, regulator/exchange filings, and reputable financial press. "
@@ -573,6 +587,167 @@ async def get_market_brief(brief_id: str) -> dict:
         raise HTTPException(404, "Market brief not found.")
     row = rows[0]
     return {"id": row["id"], "title": row["title"], "report": row["report"], "markdown": row["markdown"], "created_at": row["created_at"]}
+
+
+@app.post("/api/market-briefs/newsletter")
+async def create_market_newsletter(body: NewsletterBody) -> dict:
+    """Turn analyst-selected market-brief evidence into a saved deal/advisory newsletter."""
+    if not _configured():
+        raise HTTPException(503, "The API is not configured for saving newsletters.")
+    try:
+        source_id = str(uuid.UUID(body.source_brief_id))
+    except ValueError:
+        raise HTTPException(404, "Source market brief not found.")
+
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await _rpc(client, "get_market_brief", {"p_id": source_id})
+    rows = resp.json() if resp.status_code == 200 else []
+    if not rows:
+        raise HTTPException(404, "Source market brief not found.")
+    source_row = rows[0]
+    source_report = source_row.get("report") or {}
+    source_deals = source_report.get("key_transactions") or []
+    web_evidence = (source_report.get("web_research") or {}).get("evidence") or []
+    selected_deals = []
+    selected_web = []
+    for key in body.selected_items:
+        try:
+            kind, raw_index = key.split(":", 1)
+            idx = int(raw_index)
+        except (ValueError, AttributeError):
+            continue
+        if kind == "deal" and 0 <= idx < len(source_deals):
+            selected_deals.append(source_deals[idx])
+        elif kind == "web":
+            item = next((item for item in web_evidence if str(item.get("n")) == str(raw_index)), None)
+            if item:
+                selected_web.append(item)
+    # Deduplicate in the order selected by the analyst.
+    seen_deals = set()
+    selected_deals = [d for d in selected_deals if not (
+        str(d.get("id") or d.get("headline") or d.get("target")) in seen_deals
+        or seen_deals.add(str(d.get("id") or d.get("headline") or d.get("target")))
+    )]
+    seen_web = set()
+    selected_web = [e for e in selected_web if not (
+        str(e.get("url") or e.get("title")) in seen_web
+        or seen_web.add(str(e.get("url") or e.get("title")))
+    )]
+    if not selected_deals and not selected_web:
+        raise HTTPException(422, "Select at least one valid deal or web evidence item.")
+
+    from src.hosted_market import events as market_events
+    from src.engines import research as research_engine
+    kind_label = {"deal": "Deal briefing newsletter", "advisory": "Advisory briefing newsletter", "both": "Deal and advisory briefing newsletter"}[body.briefing_type]
+    chosen_context = []
+    for idx, deal in enumerate(selected_deals, 1):
+        chosen_context.append(
+            f"SELECTED DEAL {idx}: {deal.get('headline') or deal.get('target') or 'Transaction'}; "
+            f"date={deal.get('announced') or 'unknown'}; country={deal.get('country') or 'unknown'}; "
+            f"sector={deal.get('sector') or 'unknown'}; type={deal.get('deal_type') or 'unknown'}; "
+            f"amount={deal.get('amount_usd_label') or 'undisclosed'}; parties="
+            f"{', '.join(str(deal.get(k)) for k in ('buyer', 'target', 'seller') if deal.get(k)) or 'unknown'}."
+        )
+    for idx, item in enumerate(selected_web, 1):
+        chosen_context.append(
+            f"SELECTED WEB EVIDENCE {idx}: {item.get('title') or 'Untitled source'}; "
+            f"publisher={item.get('source') or 'unknown'}; date={item.get('date') or 'unknown'}; "
+            f"URL={item.get('url') or 'not available'}; excerpt={str(item.get('text') or '')[:900]}"
+        )
+    instructions = body.instructions or "Write a clear, decision-useful briefing with no generic filler."
+    prompt = (
+        f"Create a professional {kind_label.lower()} based on the analyst-selected items below. "
+        f"Audience: {body.audience}. Source brief: {source_row.get('title')}. "
+        f"Scope: {source_report.get('scope_label') or 'not specified'}. "
+        f"Period: {source_report.get('period_start') or 'unknown'} to {source_report.get('period_end') or 'unknown'}. "
+        f"Analyst instructions: {instructions}.\n\n"
+        "Write polished newsletter copy with a strong headline, concise executive summary, deal-by-deal analysis, "
+        "strategic implications, relevant market context, and clear next questions for the audience. "
+        "For advisory content, identify potential client needs and research angles only as hypotheses supported by evidence; "
+        "never claim a company has an active mandate or fabricate client relationships. "
+        "Separate reported facts from analysis, state when values are undisclosed, and do not infer missing figures. "
+        "Cite factual claims using the research engine's numbered evidence citations. Do not invent sources or citations. "
+        "If evidence is thin or conflicting, say so explicitly. End with key takeaways and a short source-aware disclaimer.\n\n"
+        + "\n".join(chosen_context)
+    )
+    try:
+        research_result = await run_in_threadpool(
+            research_engine.research, prompt, selected_deals, market_events()
+        )
+    except Exception:
+        log.exception("market newsletter research failed")
+        raise HTTPException(502, "The research service could not generate this newsletter. Please try again.")
+    answer = str(research_result.get("answer") or "").strip()
+    if not answer:
+        raise HTTPException(502, "The research engine returned no briefing text. Try again with a different selection.")
+    if research_result.get("mode") == "unavailable":
+        raise HTTPException(502, "The LLM research service is unavailable. No newsletter was saved.")
+
+    now = datetime.now(timezone.utc).isoformat()
+    title_prefix = {
+        "deal": "Deal Intelligence Newsletter",
+        "advisory": "Advisory Intelligence Newsletter",
+        "both": "Deal & Advisory Intelligence Newsletter",
+    }[body.briefing_type]
+    title = f"{title_prefix}: {source_report.get('scope_label') or 'Selected research'}"
+    report = {
+        **source_report,
+        "brief_type": "research_newsletter",
+        "newsletter_type": body.briefing_type,
+        "title": title,
+        "audience": body.audience,
+        "generated_at": now,
+        "parent_brief_id": source_id,
+        "parent_brief_title": source_row.get("title"),
+        "selected_deal_count": len(selected_deals),
+        "selected_web_evidence_count": len(selected_web),
+        "key_transactions": selected_deals,
+        "comparables": [],
+        "advisory_signals": source_report.get("advisory_signals", []) if body.briefing_type in ("advisory", "both") else [],
+        "newsletter_instructions": body.instructions,
+        "newsletter_selected_evidence": selected_web,
+        "research_question": prompt,
+        "web_research": research_result,
+        "methodology": "Generated from analyst-selected records and evidence using hybrid database/live-web research and the configured LLM. Review source links and verify material claims before external distribution.",
+        "coverage_note": "This is analyst-drafted newsletter copy, not investment, legal, tax, or transaction advice. Advisory opportunities are research hypotheses, not confirmed mandates.",
+    }
+    lines = [
+        f"# {title}", "",
+        f"**Audience:** {body.audience}  ",
+        f"**Source brief:** [{source_row.get('title')}](/app/market-briefs/{source_id})  ",
+        f"**Generated:** {now}  ",
+        f"**Selected deal records:** {len(selected_deals)} · **Selected web evidence items:** {len(selected_web)}", "",
+        "---", "", answer, "",
+        "## Analyst-selected source trail", "",
+    ]
+    for item in selected_deals:
+        lines.append(f"- **{item.get('headline') or item.get('target') or 'Transaction'}** — {item.get('announced') or 'date unknown'}; {item.get('country') or 'country unknown'}; {item.get('amount_usd_label') or 'amount undisclosed'}.")
+        for source in (item.get("sources") or [])[:3]:
+            if source.get("url"):
+                lines.append(f"  - [{source.get('publisher') or source.get('title') or 'Source'}]({source['url']})")
+    for item in selected_web:
+        title_text = item.get("title") or "Web evidence"
+        if item.get("url"):
+            lines.append(f"- [{title_text}]({item['url']}) — {item.get('source') or 'publisher unknown'}; {item.get('date') or 'date unknown'}.")
+        else:
+            lines.append(f"- {title_text} — source URL unavailable.")
+    lines += ["", "## Research engine evidence", ""]
+    for item in (research_result.get("evidence") or []):
+        url = item.get("url")
+        label = item.get("title") or "Evidence"
+        lines.append(f"- [{label}]({url})" if url else f"- {label}")
+    lines += ["", "## Review note", "", report["coverage_note"], ""]
+    markdown = "\n".join(lines)
+    report["markdown"] = markdown
+    async with httpx.AsyncClient(timeout=20) as client:
+        saved = await _rpc(client, "save_market_brief", {
+            "secret": API_SECRET, "p_title": title, "p_report": report, "p_markdown": markdown,
+        })
+    if saved.status_code != 200:
+        log.error("save_market_brief newsletter failed: %s %s", saved.status_code, saved.text[:300])
+        raise HTTPException(502, "The newsletter was generated but could not be saved. Please retry.")
+    new_id = saved.json()
+    return {"id": str(new_id), "title": title, "markdown": markdown, "mode": research_result.get("mode"), "evidence_count": len(research_result.get("evidence") or [])}
 
 
 @app.get("/api/briefs/{brief_id}")
