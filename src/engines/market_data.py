@@ -11,7 +11,6 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Optional
 
-import yfinance as yf
 
 from src.schemas.models import SignalType, Severity, MarketOutcome
 from src.utils.clock import utcnow
@@ -70,6 +69,7 @@ def _fetch_price_moves(
     results: dict[str, Optional[float]] = {f"{w}d": None for w in windows}
 
     try:
+        import yfinance as yf
         det_dt = datetime.strptime(detection_date, "%Y-%m-%d")
         # Fetch 60 days of data from detection date
         end_dt = det_dt + timedelta(days=max(windows) + 10)
@@ -109,6 +109,7 @@ def _fetch_volume_spike(ticker: str, detection_date: str, window_days: int = 5) 
     """Fetch average volume spike % in first window_days after detection vs prior 20d average."""
     resolved = _resolve_ticker(ticker)
     try:
+        import yfinance as yf
         det_dt   = datetime.strptime(detection_date, "%Y-%m-%d")
         pre_start = det_dt - timedelta(days=30)
         post_end  = det_dt + timedelta(days=window_days + 5)
