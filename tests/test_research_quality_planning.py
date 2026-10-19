@@ -59,3 +59,12 @@ def test_research_result_exposes_limits_and_query_plan_without_live_news():
     assert result["limitations"]
     assert "bounded sample" in " ".join(result["limitations"])
     assert result["conflicts"] == []
+
+
+
+def test_single_article_with_raise_and_valuation_is_not_treated_as_source_conflict():
+    items = [
+        {"n": 1, "title": "Acme raises $20 million at a $100 million valuation", "text": "Acme financing"},
+        {"n": 2, "title": "Acme raises $20 million", "text": "Acme funding"},
+    ]
+    assert detect_evidence_conflicts(items, ["Acme"]) == []
