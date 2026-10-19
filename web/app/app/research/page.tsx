@@ -382,6 +382,8 @@ export default function ResearchPage() {
                     {source.distinct_source_domains ? ` · ${source.distinct_source_domains} source domains` : ""}
                     {source.direct_article_text_items ? ` · ${source.direct_article_text_items} full-text retrieved` : ""}
                     {source.snippet_only_items ? ` · ${source.snippet_only_items} snippets only` : ""}
+                    {source.distinct_headlines ? ` · ${source.distinct_headlines} distinct headlines` : ""}
+                    {source.likely_syndicated_items ? ` · ${source.likely_syndicated_items} likely syndicated items` : ""}
                   </li>
                 ))}
               </ul>
@@ -417,6 +419,7 @@ export default function ResearchPage() {
                     {i.content_status === "article_text_retrieved" ? " · publisher article text retrieved (not independently verified)" : ""}
                     {i.content_status === "snippet_only" ? " · snippet only" : ""}
                     {i.content_status === "injected_search_snippet" ? " · search snippet only" : ""}
+                    {i.syndication_group_size && i.syndication_group_size > 1 ? ` · possible syndication (${i.syndication_group_size} matching headlines)` : ""}
                   </span>
                 </div>
                 <p className="mt-1">
