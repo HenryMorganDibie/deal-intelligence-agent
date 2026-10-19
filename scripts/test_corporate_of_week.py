@@ -109,7 +109,7 @@ def test_shortlist_uses_distinct_non_transaction_events_and_newest_first():
     events.append({
         "headline": "Company 5 raises new funding",
         "day": "2026-10-18",
-        "signal_type": "ma_activity",
+        "signal_type": "m_and_a_activity",
         "rule_score": 1.0,
         "url": "https://example.com/deal/5",
     })
