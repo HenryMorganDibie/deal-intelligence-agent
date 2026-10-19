@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T07:24:20.839608+00:00",
+  "updated_at": "2026-10-19T07:28:01.467553+00:00",
   "current": {
     "company": "Aqar",
     "company_url": "/app/companies?name=Aqar",
@@ -33,7 +33,7 @@
     "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-12",
     "period_end": "2026-10-18",
-    "selected_at": "2026-10-19T07:24:20.839346+00:00",
+    "selected_at": "2026-10-19T07:28:01.467216+00:00",
     "selection_version": 2,
     "companies": [
       {
@@ -68,7 +68,7 @@
         "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T07:24:20.839346+00:00",
+        "selected_at": "2026-10-19T07:28:01.467216+00:00",
         "selection_version": 2
       },
       {
@@ -104,7 +104,7 @@
         "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T07:24:20.839346+00:00",
+        "selected_at": "2026-10-19T07:28:01.467216+00:00",
         "selection_version": 2
       },
       {
@@ -139,7 +139,7 @@
         "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T07:24:20.839346+00:00",
+        "selected_at": "2026-10-19T07:28:01.467216+00:00",
         "selection_version": 2
       },
       {
@@ -175,7 +175,7 @@
         "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T07:24:20.839346+00:00",
+        "selected_at": "2026-10-19T07:28:01.467216+00:00",
         "selection_version": 2
       },
       {
@@ -211,7 +211,7 @@
         "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T07:24:20.839346+00:00",
+        "selected_at": "2026-10-19T07:28:01.467216+00:00",
         "selection_version": 2
       }
     ],
@@ -371,7 +371,7 @@
       "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-12",
       "period_end": "2026-10-18",
-      "selected_at": "2026-10-19T07:24:20.839346+00:00",
+      "selected_at": "2026-10-19T07:28:01.467216+00:00",
       "selection_version": 2,
       "companies": [
         {
@@ -406,7 +406,7 @@
           "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T07:24:20.839346+00:00",
+          "selected_at": "2026-10-19T07:28:01.467216+00:00",
           "selection_version": 2
         },
         {
@@ -442,7 +442,7 @@
           "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T07:24:20.839346+00:00",
+          "selected_at": "2026-10-19T07:28:01.467216+00:00",
           "selection_version": 2
         },
         {
@@ -477,7 +477,7 @@
           "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T07:24:20.839346+00:00",
+          "selected_at": "2026-10-19T07:28:01.467216+00:00",
           "selection_version": 2
         },
         {
@@ -513,7 +513,7 @@
           "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T07:24:20.839346+00:00",
+          "selected_at": "2026-10-19T07:28:01.467216+00:00",
           "selection_version": 2
         },
         {
@@ -549,7 +549,7 @@
           "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T07:24:20.839346+00:00",
+          "selected_at": "2026-10-19T07:28:01.467216+00:00",
           "selection_version": 2
         }
       ],
