@@ -161,7 +161,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
     period_events = [
         event for event in events
         if within_period(event.get("day"), start, end)
-        and str(event.get("signal_type") or "").casefold() not in {"ma_activity", "m&a", "merger", "acquisition"}
+        and str(event.get("signal_type") or "").casefold() not in {"ma_activity", "m_and_a_activity", "m&a", "merger", "acquisition"}
         and event.get("url")
     ]
     ranked = []
@@ -248,6 +248,23 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
         ),
         reverse=True,
     )
+    # A single news story may name both a parent and subsidiary as separate targets.
+    # Keep only one card for substantially identical headlines or overlapping source URLs.
+    unique_ranked = []
+    for row in ranked:
+        row_urls = {source.get("url") for source in row["sources"] if source.get("url")}
+        if any(
+            _headline_overlap(row["headline"], prior["headline"])
+            or bool(row_urls & {source.get("url") for source in prior["sources"] if source.get("url")})
+            for prior in unique_ranked
+        ):
+            continue
+        unique_ranked.append(row)
+    if not unique_ranked:
+        raise RuntimeError(
+            f"No distinct, source-linked non-transaction corporate event found between {start} and {end}; "
+            "refusing to duplicate the deal feed or publish unsupported entries."
+        )
     selected_at = datetime.now(timezone.utc).isoformat()
     companies = [
         {
@@ -257,7 +274,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
             "selected_at": selected_at,
             "selection_version": 3,
         }
-        for row in ranked[:5]
+        for row in unique_ranked[:5]
     ]
     winner = companies[0]
     return {
@@ -269,7 +286,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
         "selection_version": 3,
         "runner_ups": [
             {"company": row["company"], "score": row["score"], "reasons": row["reasons"][:3]}
-            for row in ranked[5:8]
+            for row in unique_ranked[5:8]
         ],
     }
 
