@@ -278,8 +278,9 @@ class MarketBriefBody(BaseModel):
     sector: str | None = Field(None, max_length=60)
     deal_type: str | None = Field(None, max_length=60)
     audience: str = Field("Investment banking analyst", min_length=1, max_length=100)
+    research_question: str | None = Field(None, max_length=500)
 
-    @field_validator("country", "sector", "deal_type", "audience")
+    @field_validator("country", "sector", "deal_type", "audience", "research_question")
     @classmethod
     def market_brief_strip(cls, value: str | None) -> str | None:
         value = value.strip() if value else value
@@ -332,6 +333,32 @@ def _market_brief_markdown(report: dict) -> str:
     if not report["comparables"]:
         lines.append("- No comparable records met the current similarity criteria.")
     lines += ["", "## Method and limitations", "", report["methodology"], "", report["coverage_note"], ""]
+    web_research = report.get("web_research") or {}
+    lines += ["", "## Hybrid web research", ""]
+    if web_research.get("answer"):
+        lines += [f"**Synthesis mode:** {web_research.get('mode', 'unknown')}"
+                  + (f" · {web_research['model']}" if web_research.get("model") else ""), "",
+                  web_research["answer"], ""]
+        if web_research.get("validation"):
+            validation = web_research["validation"]
+            lines.append(f"**Citation check:** {validation.get('grounded_share', 0):.0%} grounded sentences; "
+                         f"{validation.get('invalid_citations_removed', 0)} invalid citation(s) removed.")
+            lines.append("")
+    else:
+        lines += ["Live web search did not return enough evidence for a narrative synthesis. The database-backed "
+                  "transaction analysis above remains available; no external facts have been inferred.", ""]
+    lines += ["### Retrieved web and database evidence", ""]
+    evidence = web_research.get("evidence") or []
+    for item in evidence:
+        url = item.get("url")
+        citation = f"[{item.get('n')}]"
+        title = item.get("title") or "Evidence item"
+        details = " · ".join(str(x) for x in (item.get("source"), item.get("date"), item.get("kind")) if x)
+        lines.append(f"- {citation} " + (f"[{title}]({url})" if url else title)
+                     + (f" — {details}" if details else ""))
+    if not evidence:
+        lines.append("- No additional live web evidence was returned for this query.")
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -457,10 +484,48 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
                     for d in evidence_rows[:5]
                 ],
             })
+    # Hybrid retrieval: use the same evidence-grounded research engine as the Research page.
+    # It combines stored deal/event records with live news search, then asks the configured
+    # LLM to synthesize only from numbered evidence and validates its citations.
+    from src.engines import research as research_engine
+    scope_parts = [
+        country_name or "Africa",
+        body.sector.replace("_", " ") if body.sector else "all sectors",
+        body.deal_type.replace("_", " ") if body.deal_type else "all transaction types",
+    ]
+    focus = body.research_question or (
+        "Summarize the latest material transactions, capital flows, notable market shifts, "
+        "and implications for the selected audience."
+    )
+    research_question = (
+        f"Research {'; '.join(scope_parts)} private-market transactions and M&A for the "
+        f"announcement window {start.isoformat()} to {today.isoformat()} ({body.lookback_days} days). "
+        f"Audience: {body.audience}. Analyst focus: {focus}. "
+        "Use hybrid research: compare the structured transaction database with live web/news results. "
+        "Prioritize official company announcements, regulator/exchange filings, and reputable financial press. "
+        "Separate confirmed reported facts from interpretation, identify conflicts and unknowns, and cite every material claim."
+    )
+    try:
+        web_research = await run_in_threadpool(
+            research_engine.research, research_question, selected, __import__("src.hosted_market", fromlist=["events"]).events()
+        )
+    except Exception as exc:
+        log.warning("market brief hybrid research failed: %s", exc)
+        web_research = {
+            "question": research_question,
+            "answer": "",
+            "mode": "unavailable",
+            "model": None,
+            "evidence": [],
+            "validation": {"grounded_share": 0, "invalid_citations_removed": 0},
+            "error": "Hybrid web research was unavailable during this run.",
+        }
+
     report = {
         "brief_type": "market_deals",
         "title": "Africa Deals & M&A Intelligence Brief",
         "audience": body.audience,
+        "research_question": focus,
         "period_start": start.isoformat(),
         "period_end": today.isoformat(),
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -478,6 +543,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
         "comparables": comparables,
         "observed_patterns": patterns,
         "advisory_signals": advisory_signals,
+        "web_research": web_research,
         "methodology": "Transactions are selected by the record's announcement date within the stated window, then filtered by country, sector and type. Amount totals include only positive disclosed/normalized USD amounts in the selected records. Comparable records are selected using the existing transparent sector/country/type/size similarity logic and then constrained to the same date window. Reported publication dates and transaction announcement dates are not interchangeable.",
         "coverage_note": "Coverage is limited to transactions discovered and retained by this product's sources and extraction pipeline. A missing record does not mean no transaction occurred. Syndicated copies are not treated as independent corroboration. Source counts indicate independent story groups where the provenance engine can resolve them; they do not certify every transaction field. This brief is a research aid, not a confirmation of mandates or investment advice.",
     }
