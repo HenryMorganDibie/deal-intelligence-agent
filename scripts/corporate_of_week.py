@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Select and archive an evidence-backed Corporate of the Week from live deal records."""
+"""Select and archive Corporate of the Week from the full company universe and dated event feed."""
 from __future__ import annotations
 
 import argparse
@@ -294,15 +294,36 @@ def build(api_base: str, output: Path, today: date | None = None) -> dict:
     today = today or datetime.now(timezone.utc).date()
     end = today - timedelta(days=1)
     start = end - timedelta(days=6)
-    params = urlencode({"since": start.isoformat(), "until": end.isoformat(), "limit": 100})
-    deals_payload = request_json(f"{api_base.rstrip('/')}/api/deals?{params}")
+    # Build the company universe from the full historical deal index, not only this
+    # week's transactions. Otherwise companies with relevant leadership, earnings,
+    # regulatory, or distress events but no fresh deal are silently excluded.
+    deals: list[dict] = []
+    offset = 0
+    page_size = 100
+    total_matching: int | None = None
+    while total_matching is None or offset < total_matching:
+        deals_payload = request_json(
+            f"{api_base.rstrip('/')}/api/deals?{urlencode({'limit': page_size, 'offset': offset})}"
+        )
+        page = deals_payload.get("deals")
+        if not isinstance(page, list):
+            raise RuntimeError("API response did not contain the expected deals list")
+        if total_matching is None:
+            try:
+                total_matching = int(deals_payload.get("total_matching", len(page)))
+            except (TypeError, ValueError):
+                total_matching = len(page)
+        deals.extend(page)
+        if not page or len(page) < page_size:
+            break
+        offset += len(page)
+
     events_payload = request_json(
         f"{api_base.rstrip('/')}/api/events?{urlencode({'since': start.isoformat(), 'limit': 500})}"
     )
-    deals = deals_payload.get("deals")
     events = events_payload.get("events")
-    if not isinstance(deals, list) or not isinstance(events, list):
-        raise RuntimeError("API response did not contain the expected deals/events lists")
+    if not isinstance(events, list):
+        raise RuntimeError("API response did not contain the expected events list")
     selected = select_company(deals, events, start, end)
 
     previous = {"current": None, "history": []}
