@@ -330,6 +330,34 @@ export default function ResearchPage() {
             </details>
           )}
           <FormattedAnswer text={result.answer} />
+          {result.conflicts && result.conflicts.length > 0 && (
+            <section className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4" aria-label="Evidence disagreements">
+              <h2 className="text-sm font-semibold">Evidence disagreements to review</h2>
+              <p className="mt-1 text-xs text-[color:var(--muted)]">Automated flags for human review, not a determination that any source is wrong.</p>
+              <ul className="mt-3 space-y-3">
+                {result.conflicts.map((conflict, index) => (
+                  <li key={index} className="text-sm">
+                    <p>{conflict.message}</p>
+                    <ul className="mt-1 list-disc pl-5 text-xs text-[color:var(--muted)]">
+                      {conflict.values.map((entry, entryIndex) => (
+                        <li key={entryIndex}>
+                          {new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(entry.value)} {conflict.currency} · evidence {entry.evidence.map((n) => "[" + n + "]").join(", ")}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {result.limitations && result.limitations.length > 0 && (
+            <details className="mt-4 rounded-xl border hairline p-4">
+              <summary className="cursor-pointer text-sm font-semibold">Research scope and limitations ({result.limitations.length})</summary>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-[color:var(--muted)]">
+                {result.limitations.map((note, index) => <li key={index}>{note}</li>)}
+              </ul>
+            </details>
+          )}
           <section className="mt-4 rounded-xl border hairline p-4" aria-label="Evidence coverage">
             <h2 className="text-sm font-semibold">Evidence retrieved for this question</h2>
             {result.evidence_coverage.length ? (
