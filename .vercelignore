@@ -10,3 +10,7 @@ __pycache__
 requirements-dev.txt
 pytest.ini
 supabase
+# Not needed by either deployed runtime; keep deployment uploads/build contexts lean.
+benchmarks
+scripts
+seed
