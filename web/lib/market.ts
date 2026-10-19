@@ -256,6 +256,7 @@ export type ResearchResult = {
     invalid_citations_removed: number[];
     cited_items: number[];
     weakly_supported_sentences?: { sentence: string; cited_items: number[]; overlap: number }[];
+    claim_audit?: Array<Record<string, unknown>>;
   };
 };
 
