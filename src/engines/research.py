@@ -1136,7 +1136,7 @@ def research(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             "query_plan": build_query_plan(question, parsed, " ".join(
                 [*parsed.get("regions", [])[:1], *parsed.get("countries", [])[:1],
                  *parsed.get("companies", [])[:2], *parsed.get("terms", [])[:3]]
-            ) or question[:80], limit=3),
+            ) or question[:80], limit=4),
             **result}
 
 
