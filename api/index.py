@@ -342,7 +342,7 @@ async def get_showcase() -> dict:
     recent = showcase.latest_per_company(recent)
     hero = showcase.pick(recent)
     others = [s for s in recent if hero and s.get("company") != hero.get("company")]
-    out = {"hero": hero, "example": showcase.pick(others),
+    out = {"hero": hero, "example": next((s for s in others if s.get("created_at")), None),
            "companies": [{"company": c, "ticker": t, "market": m} for c, t, m in showcase.COMPANIES]}
     if hero:
         _showcase_cache = (time.monotonic(), out)
