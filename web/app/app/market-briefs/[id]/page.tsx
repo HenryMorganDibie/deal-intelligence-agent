@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Container } from "../../../../../components/primitives";
-import { ApiError } from "../../../../../lib/api";
-import { get } from "../../../../../lib/market";
+import { Container } from "../../../../components/primitives";
+import { ApiError } from "../../../../lib/api";
+import { get } from "../../../../lib/market";
 
 type MarketReport = {
   brief_type: string; title: string; audience: string; period_start: string; period_end: string; generated_at: string;
