@@ -88,6 +88,7 @@ def detect_evidence_conflicts(items: list[dict], companies: list[str] | None = N
                         "url": item.get("url"), "source": item.get("source"),
                         "date": item.get("date"),
                     })
+    groups = {key: [row for row in rows if sum(1 for other in rows if other.get("n") == row.get("n")) == 1] for key, rows in groups.items()}
     conflicts = []
     for key, rows in groups.items():
         distinct = sorted({round(row["value"], 2) for row in rows})
