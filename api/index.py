@@ -387,7 +387,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
         country_list = d.get("countries") or ([d.get("country")] if d.get("country") else [])
         key_transactions.append({
             **d,
-            "amount_usd_label": (f"\${float(amount):,.0f}" if amount is not None and float(amount) > 0 else None),
+            "amount_usd_label": (f"${float(amount):,.0f}" if amount is not None and float(amount) > 0 else None),
             "verification": "corroborated" if independent >= 2 else "single source",
             "independent_stories": independent,
             "countries": country_list,
@@ -408,7 +408,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
             continue
         seen.add(d.get("id"))
         amount = d.get("amount_usd")
-        comparables.append({**d, "amount_usd_label": f"\${float(amount):,.0f}" if amount is not None and float(amount) > 0 else None})
+        comparables.append({**d, "amount_usd_label": f"${float(amount):,.0f}" if amount is not None and float(amount) > 0 else None})
         if len(comparables) >= 8:
             break
     report = {
@@ -424,7 +424,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
             "transaction_count": len(selected),
             "disclosed_value_count": len(disclosed),
             "disclosed_value_usd": round(sum(disclosed)),
-            "disclosed_value_usd_label": f"\${sum(disclosed):,.0f}" if disclosed else "not available",
+            "disclosed_value_usd_label": f"${sum(disclosed):,.0f}" if disclosed else "not available",
             "countries_represented": len(country_codes),
             "by_type": by_type, "by_sector": by_sector, "by_country": by_country,
         },
