@@ -58,6 +58,11 @@ def run(path: Path, output: Path, live_news: bool = True) -> dict:
                 "retrieved_ids": retrieved_ids,
                 "expected_relevant_ids": [],
                 "claim_support_labels": [],
+                "field_accuracy_labels": [],
+                "unknown_handling_labels": [],
+                "expected_conflict_ids": [],
+                "detected_conflict_ids": [str(conflict.get("company", "")) + ":" + str(conflict.get("currency", ""))
+                                          for conflict in result.get("conflicts", [])],
                 "answer": result.get("answer"),
                 "mode": result.get("mode"),
                 "model": result.get("model"),
