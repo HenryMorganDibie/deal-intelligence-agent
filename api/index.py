@@ -317,6 +317,15 @@ def _market_brief_markdown(report: dict) -> str:
         lines.append("")
     lines += ["## Observed patterns", ""]
     lines += [f"- {x}" for x in report["observed_patterns"]] or ["- The current filtered sample is too small to support a meaningful pattern."]
+    lines += ["", "## Potential advisory research leads", ""]
+    for signal in report["advisory_signals"]:
+        lines.append(f"- **{signal['title']}** — {signal['rationale']}")
+        lines.append(f"  - Evidence in this sample: {signal['evidence_count']} transaction record(s). This is a research lead, not evidence of an active mandate.")
+        for source in signal["evidence"][:2]:
+            if source.get("url"):
+                lines.append(f"  - [{source.get('headline') or 'Supporting transaction'}]({source['url']})")
+    if not report["advisory_signals"]:
+        lines.append("- The current sample does not support a sufficiently repeated pattern to generate a research lead.")
     lines += ["", "## Comparable activity", ""]
     for item in report["comparables"]:
         lines.append(f"- **{item.get('headline') or item.get('target') or 'Transaction'}** — {item.get('announced') or 'date unknown'}; {item.get('deal_type') or 'type unknown'}; {item.get('amount_usd_label') or 'amount undisclosed'}.")
@@ -428,6 +437,26 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
         comparables.append({**d, "amount_usd_label": f"${float(amount):,.0f}" if amount is not None and float(amount) > 0 else None})
         if len(comparables) >= 8:
             break
+    advisory_signals = []
+    signal_specs = [
+        ({"debt_financing"}, "Debt and refinancing activity", "Repeated debt-financing records may justify checking refinancing calendars, lender exposure and restructuring disclosures."),
+        ({"acquisition", "merger"}, "Consolidation activity", "Repeated acquisition/merger records may justify mapping active buyers, potential targets and sector consolidation."),
+        ({"fund_raise"}, "Fundraising activity", "Repeated fund-raise records may justify reviewing capital-raising momentum and investor allocation patterns."),
+        ({"exit"}, "Exit and liquidity activity", "Repeated exit records may justify examining exit routes, buyer appetite and portfolio liquidity."),
+        ({"equity_funding"}, "Equity funding activity", "Repeated equity-funding records may justify comparing active investors, funding stages and sector capital formation."),
+    ]
+    for kinds, title, rationale in signal_specs:
+        evidence_rows = [d for d in selected if d.get("deal_type") in kinds]
+        if len(evidence_rows) >= 2:
+            advisory_signals.append({
+                "title": title,
+                "rationale": rationale,
+                "evidence_count": len(evidence_rows),
+                "evidence": [
+                    {"headline": d.get("headline") or d.get("target"), "url": next((s.get("url") for s in (d.get("sources") or []) if s.get("url")), None)}
+                    for d in evidence_rows[:5]
+                ],
+            })
     report = {
         "brief_type": "market_deals",
         "title": "Africa Deals & M&A Intelligence Brief",
@@ -448,6 +477,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
         "key_transactions": key_transactions,
         "comparables": comparables,
         "observed_patterns": patterns,
+        "advisory_signals": advisory_signals,
         "methodology": "Transactions are selected by the record's announcement date within the stated window, then filtered by country, sector and type. Amount totals include only positive disclosed/normalized USD amounts in the selected records. Comparable records are selected using the existing transparent sector/country/type/size similarity logic and then constrained to the same date window. Reported publication dates and transaction announcement dates are not interchangeable.",
         "coverage_note": "Coverage is limited to transactions discovered and retained by this product's sources and extraction pipeline. A missing record does not mean no transaction occurred. Syndicated copies are not treated as independent corroboration. Source counts indicate independent story groups where the provenance engine can resolve them; they do not certify every transaction field. This brief is a research aid, not a confirmation of mandates or investment advice.",
     }
