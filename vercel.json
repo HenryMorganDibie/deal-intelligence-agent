@@ -3,7 +3,7 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 300,
-      "includeFiles": "{src/**,docs/backtest_summary.json,docs/evaluation_report.json,docs/backtest_predictions.csv,docs/return_forecast_validation.json,docs/automation/learned_ranker.json,evaluation/**/*.json,evaluation/**/*.jsonl}",
+      "includeFiles": "{src/**,docs/backtest_summary.json,docs/evaluation_report.json,docs/backtest_predictions.csv,docs/return_forecast_validation.json,docs/automation/learned_ranker.json,evaluation/deals/results.json,evaluation/deals/results_baseline.json,evaluation/attribution/results.json,evaluation/attribution/results_before_rule_changes.json,evaluation/deals/extraction_items.jsonl,evaluation/deals/extraction_labels.jsonl,evaluation/deals/heldout_extraction_items.jsonl,evaluation/deals/heldout_extraction_labels.jsonl,evaluation/deals/dedup_items.jsonl,evaluation/deals/dedup_labels.jsonl,evaluation/deals/identity_items.jsonl,evaluation/deals/identity_labels.jsonl,evaluation/deals/heldout_names_items.jsonl,evaluation/deals/heldout_names_labels.jsonl,evaluation/deals/errors.jsonl,evaluation/attribution/natural_items.jsonl,evaluation/attribution/natural_labels.jsonl,evaluation/attribution/hard_items.jsonl,evaluation/attribution/hard_labels.jsonl,evaluation/attribution/errors.jsonl}",
       "excludeFiles": "web/**"
     }
   },
