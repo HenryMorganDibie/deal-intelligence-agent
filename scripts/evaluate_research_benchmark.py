@@ -27,9 +27,13 @@ def _aggregate_conflicts(rows: list[dict]) -> dict | None:
     detected = sum(value["detected"] for value in values)
     # Per-case metrics do not retain conflict IDs, so aggregate counts conservatively from
     # per-case precision/recall and report macro rates instead of fabricating pooled counts.
+    precisions = [value["precision"] for value in values if value.get("precision") is not None]
+    recalls = [value["recall"] for value in values if value.get("recall") is not None]
     return {
-        "precision_macro": round(sum(value["precision"] for value in values) / len(values), 4),
-        "recall_macro": round(sum(value["recall"] for value in values) / len(values), 4),
+        "precision_macro": round(sum(precisions) / len(precisions), 4) if precisions else None,
+        "recall_macro": round(sum(recalls) / len(recalls), 4) if recalls else None,
+        "precision_cases": len(precisions),
+        "recall_cases": len(recalls),
         "cases": len(values),
         "expected_conflicts": expected,
         "detected_conflicts": detected,
