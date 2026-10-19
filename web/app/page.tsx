@@ -21,6 +21,8 @@ type CorporateSelection = {
   companies?: CorporateSelection[];
 };
 const corporateSelection = (corporateOfWeekArchive as { current: CorporateSelection | null }).current;
+const corporateCompanies = (corporateSelection?.companies?.length ? corporateSelection.companies : corporateSelection ? [corporateSelection] : [])
+  .filter((company) => company.sources.some((source) => source.kind === "corporate_event"));
 function displayDate(value: string | null | undefined): string {
   if (!value) return "Date not available";
   const parsed = new Date(value.slice(0, 10) + "T00:00:00Z");
@@ -82,9 +84,9 @@ export default async function LandingPage() {
                 </div>
               )}
             </div>
-            {corporateSelection ? (
+            {corporateSelection && corporateCompanies.length ? (
               <div className="mt-6 grid gap-4">
-                {(corporateSelection.companies?.length ? corporateSelection.companies : [corporateSelection])
+                {corporateCompanies
                   .slice(0, 5)
                   .sort((a, b) => String(b.announced || "").localeCompare(String(a.announced || "")))
                   .map((company, index) => (
