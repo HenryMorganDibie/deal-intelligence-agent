@@ -164,8 +164,8 @@ def benchmark_metrics(
         conflict_hits = len(expected_conflicts & detected_conflicts)
         conflict_metrics = {
             "precision": round(conflict_hits / len(detected_conflicts), 4) if detected_conflicts else
-                         (1.0 if not expected_conflicts else 0.0),
-            "recall": round(conflict_hits / len(expected_conflicts), 4) if expected_conflicts else 1.0,
+                         (0.0 if expected_conflicts else None),
+            "recall": round(conflict_hits / len(expected_conflicts), 4) if expected_conflicts else None,
             "expected": len(expected_conflicts),
             "detected": len(detected_conflicts),
         }
