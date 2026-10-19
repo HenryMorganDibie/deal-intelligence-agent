@@ -741,7 +741,15 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
         news_search = news or (lambda q, c: _news_items(q, c, since=p["since"], until=p["until"]))
         # Run a small, diverse query plan instead of betting the answer on one query.
         # Query variants target company announcements, transaction terminology, and geography.
-        query_plan = build_query_plan(question, p, query, limit=3)
+        query_plan_scope = {
+            **p,
+            "countries": [
+                get_country(code).name if get_country(code) else code
+                for code in p.get("countries", [])
+            ],
+        }
+        query_plan = build_query_plan(question, query_plan_scope, query, limit=4)
+        p["query_plan"] = query_plan
         fetched_news = []
         successful_queries = 0
         for planned_query in query_plan:
@@ -1133,10 +1141,7 @@ def research(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
     return {"question": question, "parsed": parsed, "evidence": items,
             "evidence_coverage": evidence_coverage(items),
             "conflicts": conflicts, "limitations": limitations,
-            "query_plan": build_query_plan(question, parsed, " ".join(
-                [*parsed.get("regions", [])[:1], *parsed.get("countries", [])[:1],
-                 *parsed.get("companies", [])[:2], *parsed.get("terms", [])[:3]]
-            ) or question[:80], limit=4),
+            "query_plan": parsed.get("query_plan", []),
             **result}
 
 
