@@ -106,51 +106,12 @@ export default function Dashboard() {
   const visibleMarketBriefs = (marketBriefs ?? []).filter((brief) => !hiddenMarketBriefIds.includes(brief.id));
 
   return (
-    <Container className="grid gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14 lg:py-14">
+    <Container className="py-10 lg:py-14">
+      <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
       <section aria-labelledby="new-title" className="min-w-0">
         <p className="eyebrow">Choose a brief</p>
-        <div className="panel mb-7 p-5 sm:p-6">
-          <p className="eyebrow">Market intelligence</p>
-          <h2 className="h3 mt-2 text-xl">Deals &amp; M&amp;A across Africa</h2>
-          <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-            Create an analyst-ready market report with dated transactions, disclosed-value metrics, comparable activity and linked source evidence.
-          </p>
-          <Link href="/app/market-briefs/new" className="btn btn-primary mt-4 inline-flex">
-            Create market brief
-          </Link>
-        </div>
-        <div className="mt-6">
-          <div className="flex items-baseline justify-between">
-            <p className="eyebrow">Recent market briefs</p>
-            <Link href="/app/market-briefs/new" className="text-xs text-[color:var(--muted)] hover:text-[color:var(--text)]">New brief →</Link>
-          </div>
-          <div className="mt-3 border-t hairline">
-            {marketBriefs === null ? <p className="py-3 text-sm text-[color:var(--dim)]">Loading market briefs…</p> :
-             visibleMarketBriefs.length === 0 ? <p className="py-3 text-sm text-[color:var(--muted)]">{marketBriefs.length ? "No visible market briefs. Removed items stay saved and can still be opened with their original links." : "Your generated market briefs will appear here."}</p> :
-             <ul>{visibleMarketBriefs.slice(0, 5).map((brief) => (
-               <li key={brief.id} className="flex items-center gap-2 border-b hairline">
-                 <Link href={"/app/market-briefs/" + encodeURIComponent(brief.id)} className="min-w-0 flex-1 py-3 transition-colors hover:text-[color:var(--text)]">
-                   <p className="font-medium">{brief.title}</p>
-                   <p className="mt-1 text-xs text-[color:var(--muted)]">{brief.scope_label} · {brief.transaction_count} records</p>
-                   <p className="mt-1 text-xs text-[color:var(--dim)]">{formatDate(brief.created_at)}</p>
-                 </Link>
-                 <button
-                   type="button"
-                   aria-label={"Remove " + brief.title + " from recent market briefs"}
-                   title="Remove from your recent list"
-                   onClick={() => {
-                     const next = [...new Set([...hiddenMarketBriefIds, brief.id])];
-                     setHiddenMarketBriefIds(next);
-                     try { window.localStorage.setItem("deal-intel:hidden-market-briefs", JSON.stringify(next)); } catch {}
-                   }}
-                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[color:var(--dim)] transition-colors hover:bg-white/[0.06] hover:text-[color:var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--text)]"
-                 >
-                   <span aria-hidden="true" className="text-lg leading-none">×</span>
-                 </button>
-               </li>
-             ))}</ul>}
-          </div>
-        </div>
+
+
         <p className="eyebrow">Company analysis</p>
         <h1 id="new-title" className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">
           Analyse a company.
@@ -254,6 +215,51 @@ export default function Dashboard() {
           </p>
         </div>
       </section>
+      <section aria-labelledby="market-intelligence-title" className="min-w-0">
+        <div className="panel mb-7 p-5 sm:p-6">
+          <p className="eyebrow">Market intelligence</p>
+          <h2 className="h3 mt-2 text-xl">Deals &amp; M&amp;A across Africa</h2>
+          <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
+            Create an analyst-ready market report with dated transactions, disclosed-value metrics, comparable activity and linked source evidence.
+          </p>
+          <Link href="/app/market-briefs/new" className="btn btn-primary mt-4 inline-flex">
+            Create market brief
+          </Link>
+        </div>
+        <div className="mt-6">
+          <div className="flex items-baseline justify-between">
+            <p className="eyebrow">Recent market briefs</p>
+            <Link href="/app/market-briefs/new" className="text-xs text-[color:var(--muted)] hover:text-[color:var(--text)]">New brief →</Link>
+          </div>
+          <div className="mt-3 border-t hairline">
+            {marketBriefs === null ? <p className="py-3 text-sm text-[color:var(--dim)]">Loading market briefs…</p> :
+             visibleMarketBriefs.length === 0 ? <p className="py-3 text-sm text-[color:var(--muted)]">{marketBriefs.length ? "No visible market briefs. Removed items stay saved and can still be opened with their original links." : "Your generated market briefs will appear here."}</p> :
+             <ul>{visibleMarketBriefs.slice(0, 5).map((brief) => (
+               <li key={brief.id} className="flex items-center gap-2 border-b hairline">
+                 <Link href={"/app/market-briefs/" + encodeURIComponent(brief.id)} className="min-w-0 flex-1 py-3 transition-colors hover:text-[color:var(--text)]">
+                   <p className="font-medium">{brief.title}</p>
+                   <p className="mt-1 text-xs text-[color:var(--muted)]">{brief.scope_label} · {brief.transaction_count} records</p>
+                   <p className="mt-1 text-xs text-[color:var(--dim)]">{formatDate(brief.created_at)}</p>
+                 </Link>
+                 <button
+                   type="button"
+                   aria-label={"Remove " + brief.title + " from recent market briefs"}
+                   title="Remove from your recent list"
+                   onClick={() => {
+                     const next = [...new Set([...hiddenMarketBriefIds, brief.id])];
+                     setHiddenMarketBriefIds(next);
+                     try { window.localStorage.setItem("deal-intel:hidden-market-briefs", JSON.stringify(next)); } catch {}
+                   }}
+                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[color:var(--dim)] transition-colors hover:bg-white/[0.06] hover:text-[color:var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--text)]"
+                 >
+                   <span aria-hidden="true" className="text-lg leading-none">×</span>
+                 </button>
+               </li>
+             ))}</ul>}
+          </div>
+        </div>
+      </section>
+      </div>
 
       <section aria-labelledby="history-title" className="min-w-0">
         <div className="flex items-baseline justify-between">
