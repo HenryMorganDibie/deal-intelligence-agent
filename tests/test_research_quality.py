@@ -92,6 +92,8 @@ def test_citation_validator_warns_when_claim_and_source_look_unrelated():
     assert result["weakly_supported_sentences"]
     assert result["weakly_supported_sentences"][0]["cited_items"] == [2]
     assert "text" in result["weakly_supported_sentences"][0]
+    assert result["claim_audit"][0]["status"] == "weak_lexical_overlap"
+    assert result["claim_audit"][0]["sources"][0]["n"] == 2
 
 
 def test_citation_validator_does_not_warn_for_overlapping_evidence():
