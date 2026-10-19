@@ -185,3 +185,12 @@ def test_build_searches_historical_company_universe_not_only_recent_deals(monkey
     assert selected["company"] == "Historical Company"
     assert selected["headline"] == "Historical Company appoints a new chief executive"
     assert any("/api/deals?limit=100&offset=0" in url for url in calls)
+
+
+def test_non_corporate_transaction_and_sports_headlines_are_excluded():
+    from scripts.corporate_of_week import NON_CORPORATE_HEADLINE, GENERIC_TARGETS
+
+    assert "une" in GENERIC_TARGETS
+    assert NON_CORPORATE_HEADLINE.search("Botswana nears agreement to increase stake in De Beers as Anglo American advances exit plans")
+    assert NON_CORPORATE_HEADLINE.search("Real Madrid réclame la démission du président de la Liga")
+    assert not NON_CORPORATE_HEADLINE.search("Company appoints a new chief executive")
