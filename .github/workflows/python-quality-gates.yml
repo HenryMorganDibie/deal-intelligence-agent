@@ -45,8 +45,10 @@ jobs:
         with:
           python-version: '3.13'
           cache: pip
-          cache-dependency-path: requirements-backtest.txt
+          cache-dependency-path: |
+            requirements-backtest.txt
+            requirements-dev.txt
       - name: Install dependencies
-        run: python -m pip install -r requirements-backtest.txt pytest pytest-asyncio
+        run: python -m pip install -r requirements-dev.txt -r requirements-backtest.txt
       - name: Run full test suite
         run: python -m pytest -q
