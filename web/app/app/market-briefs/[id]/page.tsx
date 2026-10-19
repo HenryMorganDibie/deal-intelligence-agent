@@ -94,7 +94,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
               <h3 className="font-semibold">{signal.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">{signal.rationale}</p>
               <p className="mt-2 text-xs text-[color:var(--dim)]">Based on {signal.evidence_count} transaction records in this sample</p>
-              <ul className="mt-2 space-y-1">{signal.evidence.filter((e) => e.url).slice(0, 3).map((e, j) => <li key={e.url + j}><a className="text-sm underline underline-offset-4" href={e.url!} target="_blank" rel="noreferrer">{e.headline || "Supporting transaction"} ↗</a></li>)}</ul>
+              <ul className="mt-2 space-y-1">{signal.evidence.filter((e) => e.url).slice(0, 3).map((e, j) => <li key={(e.url ?? "") + j}><a className="text-sm underline underline-offset-4" href={e.url ?? "#"} target="_blank" rel="noreferrer">{e.headline || "Supporting transaction"} ↗</a></li>)}</ul>
             </article>) : <p className="text-sm text-[color:var(--muted)]">The current sample does not show repeated activity strong enough to generate a research lead.</p>}
           </div>
         </section>
