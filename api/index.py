@@ -677,11 +677,11 @@ async def create_market_newsletter(body: NewsletterBody) -> dict:
     except Exception:
         log.exception("market newsletter research failed")
         raise HTTPException(502, "The research service could not generate this newsletter. Please try again.")
+    if research_result.get("mode") != "llm":
+        raise HTTPException(502, "The LLM was unavailable for this run, so no newsletter was saved. Please retry when LLM research is available.")
     answer = str(research_result.get("answer") or "").strip()
     if not answer:
         raise HTTPException(502, "The research engine returned no briefing text. Try again with a different selection.")
-    if research_result.get("mode") == "unavailable":
-        raise HTTPException(502, "The LLM research service is unavailable. No newsletter was saved.")
 
     now = datetime.now(timezone.utc).isoformat()
     title_prefix = {
