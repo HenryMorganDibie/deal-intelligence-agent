@@ -79,3 +79,34 @@ def test_broader_company_coverage_is_not_counted_as_deal_corroboration():
     _, reasons = score_deal(deal, [], date(2026, 10, 18))
     assert any("Only one source link directly matches" in reason for reason in reasons)
     assert not any("Corroborated by 5 independent stories" in reason for reason in reasons)
+
+
+
+def test_shortlist_contains_up_to_five_companies_newest_announcement_first():
+    deals = []
+    for index in range(6):
+        company = f"Company {index}"
+        announced = f"2026-10-{12 + index:02d}"
+        deals.append({
+            "target": company,
+            "deal_type": "equity_funding",
+            "announced": announced,
+            "amount_usd": 1_000_000 + index,
+            "country": "NG",
+            "sector": "fintech",
+            "headline": f"{company} raises new funding",
+            "independent_stories": 1,
+            "sources": [{
+                "publisher": "News",
+                "title": f"{company} raises new funding",
+                "url": f"https://example.com/{index}",
+                "date": announced,
+            }],
+        })
+    result = select_company(deals, [], date(2026, 10, 12), date(2026, 10, 18))
+    companies = result["companies"]
+    assert len(companies) == 5
+    dates = [row["announced"] for row in companies]
+    assert dates == sorted(dates, reverse=True)
+    assert companies[0]["company"] == "Company 5"
+    assert result["company"] == companies[0]["company"]
