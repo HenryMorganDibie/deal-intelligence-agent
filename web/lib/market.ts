@@ -220,6 +220,9 @@ export type EvidenceItem = {
   source: string | null;
   source_quality?: "Official / primary" | "Established publisher" | "Database-derived" | "No direct source link" | "Aggregator / unresolved" | "Unrated publisher";
   source_quality_note?: string;
+  content_status?: "article_text_retrieved" | "snippet_only" | "injected_search_snippet" | "non_html_source";
+  content_url?: string;
+  syndication_key?: string;
 };
 
 export type ResearchResult = {
@@ -229,7 +232,11 @@ export type ResearchResult = {
   mode: "llm" | "deterministic";
   model: string | null;
   evidence: EvidenceItem[];
-  evidence_coverage: { kind: string; items: number; latest_source_date: string | null }[];
+  evidence_coverage: {
+    kind: string; items: number; latest_source_date: string | null;
+    direct_article_text_items?: number; snippet_only_items?: number;
+    distinct_source_domains?: number; source_domains?: string[];
+  }[];
   conflicts?: {
     type: string;
     company: string;
