@@ -55,7 +55,7 @@ export default function NewMarketBriefPage() {
       {loading ? (
         <div className="panel mt-8 p-5" role="status" aria-live="polite">
           <p className="font-medium">Building your market brief…</p>
-          <p className="mt-2 text-sm text-[color:var(--muted)]">Filtering stored transactions, searching live news and web sources, synthesizing evidence with the configured LLM, checking citations, and assembling comparable activity.
+          <p className="mt-2 text-sm text-[color:var(--muted)]">Filtering stored transactions, searching live news and web sources, synthesizing evidence with the configured LLM, checking citations, and assembling comparable activity.</p>
         </div>
       ) : (
         <form onSubmit={submit} className="panel mt-8 space-y-5 p-5 sm:p-6">
