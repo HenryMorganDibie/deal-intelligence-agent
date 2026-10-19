@@ -67,9 +67,16 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<HistoryItem[] | null>(null);
   const [marketBriefs, setMarketBriefs] = useState<RecentMarketBrief[] | null>(null);
+  const [hiddenMarketBriefIds, setHiddenMarketBriefIds] = useState<string[]>([]);
 
   useEffect(() => {
     setRows(readHistory());
+    try {
+      const hidden = JSON.parse(window.localStorage.getItem("deal-intel:hidden-market-briefs") || "[]");
+      if (Array.isArray(hidden)) setHiddenMarketBriefIds(hidden.filter((id): id is string => typeof id === "string"));
+    } catch {
+      // If browser storage is unavailable, the recent list remains fully visible.
+    }
     get<{ briefs: RecentMarketBrief[] }>("/api/market-briefs")
       .then((result) => setMarketBriefs(result.briefs ?? []))
       .catch(() => setMarketBriefs([]));
@@ -96,6 +103,8 @@ export default function Dashboard() {
     }
   }
 
+  const visibleMarketBriefs = (marketBriefs ?? []).filter((brief) => !hiddenMarketBriefIds.includes(brief.id));
+
   return (
     <Container className="grid gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14 lg:py-14">
       <section aria-labelledby="new-title" className="min-w-0">
@@ -117,14 +126,27 @@ export default function Dashboard() {
           </div>
           <div className="mt-3 border-t hairline">
             {marketBriefs === null ? <p className="py-3 text-sm text-[color:var(--dim)]">Loading market briefs…</p> :
-             marketBriefs.length === 0 ? <p className="py-3 text-sm text-[color:var(--muted)]">Your generated market briefs will appear here.</p> :
-             <ul>{marketBriefs.slice(0, 5).map((brief) => (
-               <li key={brief.id} className="border-b hairline">
-                 <Link href={"/app/market-briefs/" + encodeURIComponent(brief.id)} className="block py-3 transition-colors hover:text-[color:var(--text)]">
+             visibleMarketBriefs.length === 0 ? <p className="py-3 text-sm text-[color:var(--muted)]">{marketBriefs.length ? "No visible market briefs. Removed items stay saved and can still be opened with their original links." : "Your generated market briefs will appear here."}</p> :
+             <ul>{visibleMarketBriefs.slice(0, 5).map((brief) => (
+               <li key={brief.id} className="flex items-center gap-2 border-b hairline">
+                 <Link href={"/app/market-briefs/" + encodeURIComponent(brief.id)} className="min-w-0 flex-1 py-3 transition-colors hover:text-[color:var(--text)]">
                    <p className="font-medium">{brief.title}</p>
                    <p className="mt-1 text-xs text-[color:var(--muted)]">{brief.scope_label} · {brief.transaction_count} records</p>
                    <p className="mt-1 text-xs text-[color:var(--dim)]">{formatDate(brief.created_at)}</p>
                  </Link>
+                 <button
+                   type="button"
+                   aria-label={"Remove " + brief.title + " from recent market briefs"}
+                   title="Remove from your recent list"
+                   onClick={() => {
+                     const next = [...new Set([...hiddenMarketBriefIds, brief.id])];
+                     setHiddenMarketBriefIds(next);
+                     try { window.localStorage.setItem("deal-intel:hidden-market-briefs", JSON.stringify(next)); } catch {}
+                   }}
+                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[color:var(--dim)] transition-colors hover:bg-white/[0.06] hover:text-[color:var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--text)]"
+                 >
+                   <span aria-hidden="true" className="text-lg leading-none">×</span>
+                 </button>
                </li>
              ))}</ul>}
           </div>
