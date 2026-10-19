@@ -57,6 +57,41 @@ app.add_middleware(
     max_age=600,
 )
 
+# Cache only anonymous, read-only market data at Vercel's shared edge.
+# Keep analysis, briefs, watchlists, tracking, feedback, admin and cron routes uncached.
+_PUBLIC_MARKET_CACHE_EXACT = {
+    "/api/countries", "/api/currencies", "/api/coverage", "/api/deals",
+    "/api/comparables", "/api/investors", "/api/funds", "/api/events",
+    "/api/companies/profile", "/api/valuation", "/api/pulse", "/api/showcase",
+    "/api/evaluation", "/api/evaluation/files",
+}
+
+
+def _public_market_cache_ttl(path: str) -> int | None:
+    path = path.rstrip("/") or "/"
+    if path in _PUBLIC_MARKET_CACHE_EXACT:
+        return 60
+    if path.startswith("/api/evaluation/files/"):
+        return 3600
+    if path.startswith(("/api/deals/", "/api/investors/", "/api/sectors/")):
+        return 60
+    if path.startswith("/api/countries/"):
+        return 3600 if path.endswith("/history") else 60
+    return None
+
+
+@app.middleware("http")
+async def cache_public_market_gets(request: Request, call_next):
+    response = await call_next(request)
+    if request.method != "GET" or response.status_code >= 400 or "set-cookie" in response.headers:
+        return response
+    ttl = _public_market_cache_ttl(request.url.path)
+    if ttl is not None:
+        response.headers["Cache-Control"] = (
+            f"public, max-age=0, s-maxage={ttl}, stale-while-revalidate={ttl * 5}"
+        )
+    return response
+
 
 class AnalyseBody(BaseModel):
     company: str = Field(..., min_length=1, max_length=120)
