@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -60,7 +61,7 @@ def _operational_summary(rows: list[dict]) -> dict:
     full_text = sum(row["direct_article_text_items"] for row in rows)
     snippets = sum(row["snippet_only_items"] for row in rows)
     news_count = sum(row["news_items_with_content_status"] for row in rows)
-    p95 = latencies[max(0, __import__("math").ceil(0.95 * len(latencies)) - 1)] if latencies else None
+    p95 = latencies[max(0, math.ceil(0.95 * len(latencies)) - 1)] if latencies else None
     return {
         "cases_with_latency": len(latencies),
         "latency_seconds_mean": round(sum(latencies) / len(latencies), 3) if latencies else None,
