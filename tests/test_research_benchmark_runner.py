@@ -164,3 +164,17 @@ def test_benchmark_runner_exports_evidence_for_independent_review(tmp_path, monk
     assert row["evidence"][0]["content_status"] == "article_text_retrieved"
     assert row["mode"] == "deterministic"
     assert row["latency_seconds"] >= 0
+
+
+
+def test_conflict_metrics_are_undefined_when_no_conflicts_are_labelled():
+    from src.engines.research_quality import benchmark_metrics
+
+    result = benchmark_metrics(
+        expected_ids=["source-a"],
+        retrieved_ids=["source-a"],
+        expected_conflict_ids=[],
+        detected_conflict_ids=[],
+    )
+    assert result["conflict_detection"]["precision"] is None
+    assert result["conflict_detection"]["recall"] is None
