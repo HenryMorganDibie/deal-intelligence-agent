@@ -109,7 +109,7 @@ export default function Dashboard() {
     <Container className="py-10 lg:py-14">
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
       <section aria-labelledby="new-title" className="min-w-0">
-        <p className="eyebrow">Choose a brief</p>
+        <p className="eyebrow">Company research</p>
 
 
         <p className="eyebrow">Company analysis</p>
@@ -218,7 +218,7 @@ export default function Dashboard() {
       <section aria-labelledby="market-intelligence-title" className="min-w-0">
         <div className="panel mb-7 p-5 sm:p-6">
           <p className="eyebrow">Market intelligence</p>
-          <h2 className="h3 mt-2 text-xl">Deals &amp; M&amp;A across Africa</h2>
+          <h2 id="market-intelligence-title" className="h3 mt-2 text-xl">Deals &amp; M&amp;A across Africa</h2>
           <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
             Create an analyst-ready market report with dated transactions, disclosed-value metrics, comparable activity and linked source evidence.
           </p>
