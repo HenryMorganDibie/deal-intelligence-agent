@@ -686,14 +686,14 @@ async def create_market_newsletter(body: NewsletterBody) -> dict:
         raise HTTPException(502, "The LLM was unavailable for this run, so no newsletter was saved. Please retry when LLM research is available.")
     answer = str(research_result.get("answer") or "").strip()
     # Present newsletter copy as readable prose, not Markdown source.
-    answer = re.sub(r"(?m)^\\s{0,3}#{1,6}\\s+", "", answer)
-    answer = re.sub(r"(?m)^\\s*[-*+]\\s+", "", answer)
-    answer = re.sub(r"\\*\\*(.*?)\\*\\*", r"\\1", answer)
-    answer = re.sub(r"(?<!\\*)\\*([^*\\n]+)\\*(?!\\*)", r"\\1", answer)
+    answer = re.sub(r"(?m)^\s{0,3}#{1,6}\s+", "", answer)
+    answer = re.sub(r"(?m)^\s*[-*+]\s+", "", answer)
+    answer = re.sub(r"\*\*(.*?)\*\*", r"\1", answer)
+    answer = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"\1", answer)
     answer = re.sub(r"`{1,3}", "", answer)
-    answer = re.sub(r"\\[([^\\]]+)\\]\\((https?://[^)]+)\\)", r"\\1 (\\2)", answer)
-    answer = re.sub(r"(?m)^\\s*\\|?\\s*:?-{3,}:?\\s*(?:\\|\\s*:?-{3,}:?\\s*)+\\|?\\s*$", "", answer)
-    answer = re.sub(r"\\n{3,}", "\\n\\n", answer).strip()
+    answer = re.sub(r"\[([^\]]+)\]\((https?://[^)]+)\)", r"\1 (\2)", answer)
+    answer = re.sub(r"(?m)^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$", "", answer)
+    answer = re.sub(r"\n{3,}", "\n\n", answer).strip()
     research_result["answer"] = answer
     if not answer:
         raise HTTPException(502, "The research engine returned no briefing text. Try again with a different selection.")
