@@ -946,6 +946,20 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
         elif valid_news:
             log.debug("research news RSS search returned %d date-valid results", len(valid_news))
             items = items[:max_items - len(valid_news)]
+            # Preserve publisher links but flag repeated headlines as possible syndication,
+            # rather than counting them as independent corroboration.
+            headline_groups: dict[str, list[dict]] = {}
+            for candidate in valid_news:
+                key = re.sub(r"[^a-z0-9]+", " ", str(candidate.get("title") or "").casefold()).strip()
+                if key:
+                    headline_groups.setdefault(key, []).append(candidate)
+            for group in headline_groups.values():
+                if len(group) > 1:
+                    publishers = sorted({str(candidate.get("publisher") or "").strip()
+                                         for candidate in group if candidate.get("publisher")})
+                    for candidate in group:
+                        candidate["syndication_group_size"] = len(group)
+                        candidate["syndicated_publishers"] = publishers
             full_text_attempts = 0
             for it in valid_news:
                 if news is None and full_text_attempts < 4:
@@ -970,6 +984,9 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
                 items[-1]["syndication_key"] = re.sub(
                     r"[^a-z0-9]+", " ", str(enriched.get("title") or "").casefold()
                 ).strip()
+                if enriched.get("syndication_group_size"):
+                    items[-1]["syndication_group_size"] = enriched["syndication_group_size"]
+                    items[-1]["syndicated_publishers"] = enriched.get("syndicated_publishers", [])
     return p, items[:max_items]
 
 
