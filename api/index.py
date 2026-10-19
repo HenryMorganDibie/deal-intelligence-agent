@@ -27,6 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import hashlib  # noqa: E402
 import json  # noqa: E402
 import logging  # noqa: E402
+import re  # noqa: E402
 import time  # noqa: E402
 import uuid  # noqa: E402
 from datetime import date, datetime, timedelta, timezone  # noqa: E402
