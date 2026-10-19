@@ -1,249 +1,172 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T07:28:01.467553+00:00",
+  "updated_at": "2026-10-19T09:20:14.128223+00:00",
   "current": {
-    "company": "Aqar",
-    "company_url": "/app/companies?name=Aqar",
-    "headline": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
-    "deal_type": "acquisition",
+    "company": "Portek International",
+    "company_url": "/app/companies?name=Portek%20International",
+    "headline": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+    "deal_type": "m_and_a_activity",
     "amount_usd": null,
-    "country": "EG",
-    "sector": "media_tech",
-    "announced": "2026-10-18",
-    "score": 38.25,
-    "independent_stories": 1,
-    "transaction_records": 1,
-    "related_events": 1,
+    "country": null,
+    "sector": null,
+    "announced": "2026-10-15",
+    "score": 52.21,
+    "independent_stories": 2,
+    "transaction_records": 0,
+    "related_events": 2,
     "reasons": [
-      "Transaction category: acquisition",
-      "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-      "Recency: 0 day(s) before the selection period ended",
-      "1 related corporate-event signal(s) found in the same period",
-      "At least one inspectable source link is available"
+      "Corporate signal: m and a activity",
+      "Event rule confidence: 0.75",
+      "2 distinct source-linked corporate event(s) found in the period",
+      "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "waya.media",
-        "title": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
-        "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxON05EM2pHLVc0SndiYW90SktYTHU5OUV2cE5CZDEteFBDQ3k5MnkwbzAtemtnYngyV28tbkw3UHJ2dGo5Q0pKeHBPM29BajB2YjhtY1VscUN5U09jZ1c1R1JCcEpBNnV1bVo0SDZkT0pKQmtSY3kxM0Q3SWNnOG5yRHJXZ2NVNGhka1FwWDIzY3dhN1E?oc=5",
-        "date": "2026-10-18",
-        "kind": "deal"
+        "publisher": "Yahoo Finance",
+        "title": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+        "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQcEsxTEVlS1YyLXhpVFNlbm5lOXZQYnhiRTI4N3lXRnRPUlhGb0NQMGNaR2pzQzFPa0o3WlZWZVo4dDdYMHpiVHZnZmM3ZDR2Q3UzVWNvd0piSTFBLXMzbzBSVGZrYjVfbzk1TGVvUGl4M3FwYjZEdHNIajFzM24wX1FjUUxXS0hGczFyZE5JLW9YaEZjQ3NiZk5haUo?oc=5",
+        "date": "2026-10-15",
+        "kind": "corporate_event"
+      },
+      {
+        "publisher": "IndexBox",
+        "title": "A.P. Moller Capital rachète Portek International à Mitsui - Actualités et statistiques",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPY0ZKR2NGaDBOR0RkVHQtODlLMDBEdDVYU3pTSTE0YXJjcGZZekhPVml4aWdhNHJickU3ZDlZNHpuZW9RcmtJVW1iR2xya2ptME9BUW1RZnZNd3E2YzF0dk1GVzg4MmVlNmhVb2daN3gyVnZZZl9KVEtiRUEyOFJPb2EtaHpSOV9ZSHFwb1pDTi1GZ0wzc1VFZmJ5Nk1LXzRSc3c?oc=5",
+        "date": "2026-10-15",
+        "kind": "corporate_event"
       }
     ],
-    "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+    "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-12",
     "period_end": "2026-10-18",
-    "selected_at": "2026-10-19T07:28:01.467216+00:00",
-    "selection_version": 2,
+    "selected_at": "2026-10-19T09:20:14.127878+00:00",
+    "selection_version": 3,
     "companies": [
       {
-        "company": "Aqar",
-        "company_url": "/app/companies?name=Aqar",
-        "headline": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
-        "deal_type": "acquisition",
+        "company": "Portek International",
+        "company_url": "/app/companies?name=Portek%20International",
+        "headline": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+        "deal_type": "m_and_a_activity",
         "amount_usd": null,
-        "country": "EG",
-        "sector": "media_tech",
-        "announced": "2026-10-18",
-        "score": 38.25,
-        "independent_stories": 1,
-        "transaction_records": 1,
-        "related_events": 1,
-        "reasons": [
-          "Transaction category: acquisition",
-          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-          "Recency: 0 day(s) before the selection period ended",
-          "1 related corporate-event signal(s) found in the same period",
-          "At least one inspectable source link is available"
-        ],
-        "sources": [
-          {
-            "publisher": "waya.media",
-            "title": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
-            "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxON05EM2pHLVc0SndiYW90SktYTHU5OUV2cE5CZDEteFBDQ3k5MnkwbzAtemtnYngyV28tbkw3UHJ2dGo5Q0pKeHBPM29BajB2YjhtY1VscUN5U09jZ1c1R1JCcEpBNnV1bVo0SDZkT0pKQmtSY3kxM0Q3SWNnOG5yRHJXZ2NVNGhka1FwWDIzY3dhN1E?oc=5",
-            "date": "2026-10-18",
-            "kind": "deal"
-          }
-        ],
-        "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T07:28:01.467216+00:00",
-        "selection_version": 2
-      },
-      {
-        "company": "Kamel Abou Aly",
-        "company_url": "/app/companies?name=Kamel%20Abou%20Aly",
-        "headline": "Egyptian hotel tycoon Kamel Abou Aly secures $250 million to expand in Morocco",
-        "deal_type": "equity_funding",
-        "amount_usd": 250000000.0,
-        "country": "EG",
-        "sector": "hospitality",
-        "announced": "2026-10-18",
-        "score": 37.0,
-        "independent_stories": 1,
-        "transaction_records": 1,
-        "related_events": 0,
-        "reasons": [
-          "Transaction category: equity funding",
-          "Disclosed transaction size contributes 12.0/18 significance points",
-          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-          "Recency: 0 day(s) before the selection period ended",
-          "No matching corporate-event record was found; no event corroboration points awarded",
-          "At least one inspectable source link is available"
-        ],
-        "sources": [
-          {
-            "publisher": "Billionaires.Africa",
-            "title": "Egyptian hotel tycoon Kamel Abou Aly secures $250 million to expand in Morocco",
-            "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNTG5oQnp3eW9CZ0Q0SUdISjdmMXdlVFowM0dhQWhYRkdNT0tocUM1WU1FenQtbU1JRTc1OWJTSV91bFlIOGR5cVpLZ2dGbEZGQTZ6MFlHNEJZaGdNUjRmQUNDazVjTW9UZTdhQVViM0xxb3lsaGlJY20yLWJaOElabnBDR1RxVEZWWHFNQzF6cWdBZWwzUVVidlpBUkdTWVJtdWhXOHNCc2NEWmFrV3FRRTgtaks3ZkZpdlNkX2p3?oc=5",
-            "date": "2026-10-18",
-            "kind": "deal"
-          }
-        ],
-        "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T07:28:01.467216+00:00",
-        "selection_version": 2
-      },
-      {
-        "company": "Oryx Energies Tanzania Downstream Business",
-        "company_url": "/app/companies?name=Oryx%20Energies%20Tanzania%20Downstream%20Business",
-        "headline": "Amsons Group Acquires Oryx Energies Tanzania Downstream Business",
-        "deal_type": "acquisition",
-        "amount_usd": null,
-        "country": "TZ",
-        "sector": "oil_gas",
-        "announced": "2026-10-18",
-        "score": 27.0,
-        "independent_stories": 1,
-        "transaction_records": 1,
-        "related_events": 0,
-        "reasons": [
-          "Transaction category: acquisition",
-          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-          "Recency: 0 day(s) before the selection period ended",
-          "No matching corporate-event record was found; no event corroboration points awarded",
-          "At least one inspectable source link is available"
-        ],
-        "sources": [
-          {
-            "publisher": "Business Today Kenya",
-            "title": "Amsons Group Acquires Oryx Energies Tanzania Downstream Business",
-            "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOeHpWZWNDNU9nREdEYzg5bGR3bUxHSUM2bXJkVE82aUtPMWNPV2VadE9ZV0xzVjJUdmpMdXAtNXJuYk55ellILXdCb3NBSl9pWWhZOE9BaDdXYUZQNWM0VGYtOV9xUml3RDFCeTVKT1pRVTBkSHhXcXdYYkNDQ2VtVmszaDNOZGlLSjFPMFR0R3RCWXRwSl9MVw?oc=5",
-            "date": "2026-10-18",
-            "kind": "deal"
-          }
-        ],
-        "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T07:28:01.467216+00:00",
-        "selection_version": 2
-      },
-      {
-        "company": "Popcorn AI Studio",
-        "company_url": "/app/companies?name=Popcorn%20AI%20Studio",
-        "headline": "Popcorn AI Studio raises $1m to democratise filmmaking",
-        "deal_type": "equity_funding",
-        "amount_usd": 1000000.0,
-        "country": "EG",
-        "sector": "media_tech",
-        "announced": "2026-10-18",
-        "score": 26.51,
-        "independent_stories": 1,
-        "transaction_records": 1,
-        "related_events": 0,
-        "reasons": [
-          "Transaction category: equity funding",
-          "Disclosed transaction size contributes 1.5/18 significance points",
-          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-          "Recency: 0 day(s) before the selection period ended",
-          "No matching corporate-event record was found; no event corroboration points awarded",
-          "At least one inspectable source link is available"
-        ],
-        "sources": [
-          {
-            "publisher": "Egyptian Gazette",
-            "title": "Popcorn AI Studio raises $1m to democratise filmmaking",
-            "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOdzNPcUpGdm1FbjJpWWJXbUl0WUZmQ0M2RWpLdjhkTzB1R3U5VDE4QzlJSzJVWmhaTFM0T0ZZUDlpSnpkTm84UjJsLWwydms0TUdBUWdqTzQ1OG8tWFduN1p1Y1IzNjBYXzUzWU5tbzJCcloyWlIxckVQZGtvVHBiRUJwOHhTZzFwd3V4RTZBbDR2b0NvTndzWXFLVnFUenV6a3lUeg?oc=5",
-            "date": "2026-10-18",
-            "kind": "deal"
-          }
-        ],
-        "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T07:28:01.467216+00:00",
-        "selection_version": 2
-      },
-      {
-        "company": "Tivano",
-        "company_url": "/app/companies?name=Tivano",
-        "headline": "Climate startup Tivano secures $606K to turn Namibia’s invasive bush into carbon credits",
-        "deal_type": "equity_funding",
-        "amount_usd": 606000.0,
-        "country": "NA",
+        "country": null,
         "sector": null,
-        "announced": "2026-10-18",
-        "score": 26.03,
-        "independent_stories": 1,
-        "transaction_records": 1,
-        "related_events": 0,
+        "announced": "2026-10-15",
+        "score": 52.21,
+        "independent_stories": 2,
+        "transaction_records": 0,
+        "related_events": 2,
         "reasons": [
-          "Transaction category: equity funding",
-          "Disclosed transaction size contributes 1.0/18 significance points",
-          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-          "Recency: 0 day(s) before the selection period ended",
-          "No matching corporate-event record was found; no event corroboration points awarded",
-          "At least one inspectable source link is available"
+          "Corporate signal: m and a activity",
+          "Event rule confidence: 0.75",
+          "2 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "Innovation Village",
-            "title": "Climate startup Tivano secures $606K to turn Namibia’s invasive bush into carbon credits",
-            "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQYkFfTExTR1RTNVQ4QkhQSzkxX0U4cTg0TUotMEE4SGw2UFF5R1RySk16bzRKdEhwWmg3b0t0WTlxR1NITjd5YWh3b1Y0aU5SczRHUFJhcU5tcU5OcWtxTWNzVllTc2k5LWhmMDViMlM4R041dFlFSzlRSklHYUlfTXhWbGpLLVYxZ0gzSU83OGFLbWU1QWVWT0M2SFVRY09ORzFnTVVLY0ZxaWktWVdZdHdYNW5kWVNqbEE?oc=5",
-            "date": "2026-10-18",
-            "kind": "deal"
+            "publisher": "Yahoo Finance",
+            "title": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+            "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQcEsxTEVlS1YyLXhpVFNlbm5lOXZQYnhiRTI4N3lXRnRPUlhGb0NQMGNaR2pzQzFPa0o3WlZWZVo4dDdYMHpiVHZnZmM3ZDR2Q3UzVWNvd0piSTFBLXMzbzBSVGZrYjVfbzk1TGVvUGl4M3FwYjZEdHNIajFzM24wX1FjUUxXS0hGczFyZE5JLW9YaEZjQ3NiZk5haUo?oc=5",
+            "date": "2026-10-15",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "IndexBox",
+            "title": "A.P. Moller Capital rachète Portek International à Mitsui - Actualités et statistiques",
+            "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPY0ZKR2NGaDBOR0RkVHQtODlLMDBEdDVYU3pTSTE0YXJjcGZZekhPVml4aWdhNHJickU3ZDlZNHpuZW9RcmtJVW1iR2xya2ptME9BUW1RZnZNd3E2YzF0dk1GVzg4MmVlNmhVb2daN3gyVnZZZl9KVEtiRUEyOFJPb2EtaHpSOV9ZSHFwb1pDTi1GZ0wzc1VFZmJ5Nk1LXzRSc3c?oc=5",
+            "date": "2026-10-15",
+            "kind": "corporate_event"
           }
         ],
-        "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T07:28:01.467216+00:00",
-        "selection_version": 2
+        "selected_at": "2026-10-19T09:20:14.127878+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "Portek",
+        "company_url": "/app/companies?name=Portek",
+        "headline": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+        "deal_type": "m_and_a_activity",
+        "amount_usd": null,
+        "country": null,
+        "sector": null,
+        "announced": "2026-10-15",
+        "score": 52.21,
+        "independent_stories": 2,
+        "transaction_records": 0,
+        "related_events": 2,
+        "reasons": [
+          "Corporate signal: m and a activity",
+          "Event rule confidence: 0.75",
+          "2 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Yahoo Finance",
+            "title": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+            "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQcEsxTEVlS1YyLXhpVFNlbm5lOXZQYnhiRTI4N3lXRnRPUlhGb0NQMGNaR2pzQzFPa0o3WlZWZVo4dDdYMHpiVHZnZmM3ZDR2Q3UzVWNvd0piSTFBLXMzbzBSVGZrYjVfbzk1TGVvUGl4M3FwYjZEdHNIajFzM24wX1FjUUxXS0hGczFyZE5JLW9YaEZjQ3NiZk5haUo?oc=5",
+            "date": "2026-10-15",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "IndexBox",
+            "title": "A.P. Moller Capital rachète Portek International à Mitsui - Actualités et statistiques",
+            "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPY0ZKR2NGaDBOR0RkVHQtODlLMDBEdDVYU3pTSTE0YXJjcGZZekhPVml4aWdhNHJickU3ZDlZNHpuZW9RcmtJVW1iR2xya2ptME9BUW1RZnZNd3E2YzF0dk1GVzg4MmVlNmhVb2daN3gyVnZZZl9KVEtiRUEyOFJPb2EtaHpSOV9ZSHFwb1pDTi1GZ0wzc1VFZmJ5Nk1LXzRSc3c?oc=5",
+            "date": "2026-10-15",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:20:14.127878+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "Kenya Airways",
+        "company_url": "/app/companies?name=Kenya%20Airways",
+        "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+        "deal_type": "debt_restructuring",
+        "amount_usd": null,
+        "country": "KE",
+        "sector": null,
+        "announced": "2026-10-13",
+        "score": 50.26,
+        "independent_stories": 2,
+        "transaction_records": 0,
+        "related_events": 2,
+        "reasons": [
+          "Corporate signal: debt restructuring",
+          "Event rule confidence: 0.88",
+          "2 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "aviationtoday.in",
+            "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+            "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
+            "date": "2026-10-13",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "People Daily",
+            "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
+            "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
+            "date": "2026-10-12",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:20:14.127878+00:00",
+        "selection_version": 3
       }
     ],
-    "runner_ups": [
-      {
-        "company": "Oryx Energies Tanzania fuel business",
-        "score": 37.39,
-        "reasons": [
-          "Transaction category: acquisition",
-          "Disclosed transaction size contributes 11.8/18 significance points",
-          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
-        ]
-      },
-      {
-        "company": "EGP 12bn",
-        "score": 35.52,
-        "reasons": [
-          "Transaction category: equity funding",
-          "Disclosed transaction size contributes 11.9/18 significance points",
-          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
-        ]
-      },
-      {
-        "company": "Necsa",
-        "score": 20.57,
-        "reasons": [
-          "Transaction category: joint venture",
-          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-          "Recency: 1 day(s) before the selection period ended"
-        ]
-      }
-    ]
+    "runner_ups": []
   },
   "history": [
     {
@@ -340,248 +263,171 @@
       ]
     },
     {
-      "company": "Aqar",
-      "company_url": "/app/companies?name=Aqar",
-      "headline": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
-      "deal_type": "acquisition",
+      "company": "Portek International",
+      "company_url": "/app/companies?name=Portek%20International",
+      "headline": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+      "deal_type": "m_and_a_activity",
       "amount_usd": null,
-      "country": "EG",
-      "sector": "media_tech",
-      "announced": "2026-10-18",
-      "score": 38.25,
-      "independent_stories": 1,
-      "transaction_records": 1,
-      "related_events": 1,
+      "country": null,
+      "sector": null,
+      "announced": "2026-10-15",
+      "score": 52.21,
+      "independent_stories": 2,
+      "transaction_records": 0,
+      "related_events": 2,
       "reasons": [
-        "Transaction category: acquisition",
-        "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-        "Recency: 0 day(s) before the selection period ended",
-        "1 related corporate-event signal(s) found in the same period",
-        "At least one inspectable source link is available"
+        "Corporate signal: m and a activity",
+        "Event rule confidence: 0.75",
+        "2 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "waya.media",
-          "title": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
-          "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxON05EM2pHLVc0SndiYW90SktYTHU5OUV2cE5CZDEteFBDQ3k5MnkwbzAtemtnYngyV28tbkw3UHJ2dGo5Q0pKeHBPM29BajB2YjhtY1VscUN5U09jZ1c1R1JCcEpBNnV1bVo0SDZkT0pKQmtSY3kxM0Q3SWNnOG5yRHJXZ2NVNGhka1FwWDIzY3dhN1E?oc=5",
-          "date": "2026-10-18",
-          "kind": "deal"
+          "publisher": "Yahoo Finance",
+          "title": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQcEsxTEVlS1YyLXhpVFNlbm5lOXZQYnhiRTI4N3lXRnRPUlhGb0NQMGNaR2pzQzFPa0o3WlZWZVo4dDdYMHpiVHZnZmM3ZDR2Q3UzVWNvd0piSTFBLXMzbzBSVGZrYjVfbzk1TGVvUGl4M3FwYjZEdHNIajFzM24wX1FjUUxXS0hGczFyZE5JLW9YaEZjQ3NiZk5haUo?oc=5",
+          "date": "2026-10-15",
+          "kind": "corporate_event"
+        },
+        {
+          "publisher": "IndexBox",
+          "title": "A.P. Moller Capital rachète Portek International à Mitsui - Actualités et statistiques",
+          "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPY0ZKR2NGaDBOR0RkVHQtODlLMDBEdDVYU3pTSTE0YXJjcGZZekhPVml4aWdhNHJickU3ZDlZNHpuZW9RcmtJVW1iR2xya2ptME9BUW1RZnZNd3E2YzF0dk1GVzg4MmVlNmhVb2daN3gyVnZZZl9KVEtiRUEyOFJPb2EtaHpSOV9ZSHFwb1pDTi1GZ0wzc1VFZmJ5Nk1LXzRSc3c?oc=5",
+          "date": "2026-10-15",
+          "kind": "corporate_event"
         }
       ],
-      "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-12",
       "period_end": "2026-10-18",
-      "selected_at": "2026-10-19T07:28:01.467216+00:00",
-      "selection_version": 2,
+      "selected_at": "2026-10-19T09:20:14.127878+00:00",
+      "selection_version": 3,
       "companies": [
         {
-          "company": "Aqar",
-          "company_url": "/app/companies?name=Aqar",
-          "headline": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
-          "deal_type": "acquisition",
+          "company": "Portek International",
+          "company_url": "/app/companies?name=Portek%20International",
+          "headline": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+          "deal_type": "m_and_a_activity",
           "amount_usd": null,
-          "country": "EG",
-          "sector": "media_tech",
-          "announced": "2026-10-18",
-          "score": 38.25,
-          "independent_stories": 1,
-          "transaction_records": 1,
-          "related_events": 1,
-          "reasons": [
-            "Transaction category: acquisition",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-            "Recency: 0 day(s) before the selection period ended",
-            "1 related corporate-event signal(s) found in the same period",
-            "At least one inspectable source link is available"
-          ],
-          "sources": [
-            {
-              "publisher": "waya.media",
-              "title": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
-              "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxON05EM2pHLVc0SndiYW90SktYTHU5OUV2cE5CZDEteFBDQ3k5MnkwbzAtemtnYngyV28tbkw3UHJ2dGo5Q0pKeHBPM29BajB2YjhtY1VscUN5U09jZ1c1R1JCcEpBNnV1bVo0SDZkT0pKQmtSY3kxM0Q3SWNnOG5yRHJXZ2NVNGhka1FwWDIzY3dhN1E?oc=5",
-              "date": "2026-10-18",
-              "kind": "deal"
-            }
-          ],
-          "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T07:28:01.467216+00:00",
-          "selection_version": 2
-        },
-        {
-          "company": "Kamel Abou Aly",
-          "company_url": "/app/companies?name=Kamel%20Abou%20Aly",
-          "headline": "Egyptian hotel tycoon Kamel Abou Aly secures $250 million to expand in Morocco",
-          "deal_type": "equity_funding",
-          "amount_usd": 250000000.0,
-          "country": "EG",
-          "sector": "hospitality",
-          "announced": "2026-10-18",
-          "score": 37.0,
-          "independent_stories": 1,
-          "transaction_records": 1,
-          "related_events": 0,
-          "reasons": [
-            "Transaction category: equity funding",
-            "Disclosed transaction size contributes 12.0/18 significance points",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-            "Recency: 0 day(s) before the selection period ended",
-            "No matching corporate-event record was found; no event corroboration points awarded",
-            "At least one inspectable source link is available"
-          ],
-          "sources": [
-            {
-              "publisher": "Billionaires.Africa",
-              "title": "Egyptian hotel tycoon Kamel Abou Aly secures $250 million to expand in Morocco",
-              "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNTG5oQnp3eW9CZ0Q0SUdISjdmMXdlVFowM0dhQWhYRkdNT0tocUM1WU1FenQtbU1JRTc1OWJTSV91bFlIOGR5cVpLZ2dGbEZGQTZ6MFlHNEJZaGdNUjRmQUNDazVjTW9UZTdhQVViM0xxb3lsaGlJY20yLWJaOElabnBDR1RxVEZWWHFNQzF6cWdBZWwzUVVidlpBUkdTWVJtdWhXOHNCc2NEWmFrV3FRRTgtaks3ZkZpdlNkX2p3?oc=5",
-              "date": "2026-10-18",
-              "kind": "deal"
-            }
-          ],
-          "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T07:28:01.467216+00:00",
-          "selection_version": 2
-        },
-        {
-          "company": "Oryx Energies Tanzania Downstream Business",
-          "company_url": "/app/companies?name=Oryx%20Energies%20Tanzania%20Downstream%20Business",
-          "headline": "Amsons Group Acquires Oryx Energies Tanzania Downstream Business",
-          "deal_type": "acquisition",
-          "amount_usd": null,
-          "country": "TZ",
-          "sector": "oil_gas",
-          "announced": "2026-10-18",
-          "score": 27.0,
-          "independent_stories": 1,
-          "transaction_records": 1,
-          "related_events": 0,
-          "reasons": [
-            "Transaction category: acquisition",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-            "Recency: 0 day(s) before the selection period ended",
-            "No matching corporate-event record was found; no event corroboration points awarded",
-            "At least one inspectable source link is available"
-          ],
-          "sources": [
-            {
-              "publisher": "Business Today Kenya",
-              "title": "Amsons Group Acquires Oryx Energies Tanzania Downstream Business",
-              "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOeHpWZWNDNU9nREdEYzg5bGR3bUxHSUM2bXJkVE82aUtPMWNPV2VadE9ZV0xzVjJUdmpMdXAtNXJuYk55ellILXdCb3NBSl9pWWhZOE9BaDdXYUZQNWM0VGYtOV9xUml3RDFCeTVKT1pRVTBkSHhXcXdYYkNDQ2VtVmszaDNOZGlLSjFPMFR0R3RCWXRwSl9MVw?oc=5",
-              "date": "2026-10-18",
-              "kind": "deal"
-            }
-          ],
-          "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T07:28:01.467216+00:00",
-          "selection_version": 2
-        },
-        {
-          "company": "Popcorn AI Studio",
-          "company_url": "/app/companies?name=Popcorn%20AI%20Studio",
-          "headline": "Popcorn AI Studio raises $1m to democratise filmmaking",
-          "deal_type": "equity_funding",
-          "amount_usd": 1000000.0,
-          "country": "EG",
-          "sector": "media_tech",
-          "announced": "2026-10-18",
-          "score": 26.51,
-          "independent_stories": 1,
-          "transaction_records": 1,
-          "related_events": 0,
-          "reasons": [
-            "Transaction category: equity funding",
-            "Disclosed transaction size contributes 1.5/18 significance points",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-            "Recency: 0 day(s) before the selection period ended",
-            "No matching corporate-event record was found; no event corroboration points awarded",
-            "At least one inspectable source link is available"
-          ],
-          "sources": [
-            {
-              "publisher": "Egyptian Gazette",
-              "title": "Popcorn AI Studio raises $1m to democratise filmmaking",
-              "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOdzNPcUpGdm1FbjJpWWJXbUl0WUZmQ0M2RWpLdjhkTzB1R3U5VDE4QzlJSzJVWmhaTFM0T0ZZUDlpSnpkTm84UjJsLWwydms0TUdBUWdqTzQ1OG8tWFduN1p1Y1IzNjBYXzUzWU5tbzJCcloyWlIxckVQZGtvVHBiRUJwOHhTZzFwd3V4RTZBbDR2b0NvTndzWXFLVnFUenV6a3lUeg?oc=5",
-              "date": "2026-10-18",
-              "kind": "deal"
-            }
-          ],
-          "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T07:28:01.467216+00:00",
-          "selection_version": 2
-        },
-        {
-          "company": "Tivano",
-          "company_url": "/app/companies?name=Tivano",
-          "headline": "Climate startup Tivano secures $606K to turn Namibia’s invasive bush into carbon credits",
-          "deal_type": "equity_funding",
-          "amount_usd": 606000.0,
-          "country": "NA",
+          "country": null,
           "sector": null,
-          "announced": "2026-10-18",
-          "score": 26.03,
-          "independent_stories": 1,
-          "transaction_records": 1,
-          "related_events": 0,
+          "announced": "2026-10-15",
+          "score": 52.21,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
           "reasons": [
-            "Transaction category: equity funding",
-            "Disclosed transaction size contributes 1.0/18 significance points",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-            "Recency: 0 day(s) before the selection period ended",
-            "No matching corporate-event record was found; no event corroboration points awarded",
-            "At least one inspectable source link is available"
+            "Corporate signal: m and a activity",
+            "Event rule confidence: 0.75",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "Innovation Village",
-              "title": "Climate startup Tivano secures $606K to turn Namibia’s invasive bush into carbon credits",
-              "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQYkFfTExTR1RTNVQ4QkhQSzkxX0U4cTg0TUotMEE4SGw2UFF5R1RySk16bzRKdEhwWmg3b0t0WTlxR1NITjd5YWh3b1Y0aU5SczRHUFJhcU5tcU5OcWtxTWNzVllTc2k5LWhmMDViMlM4R041dFlFSzlRSklHYUlfTXhWbGpLLVYxZ0gzSU83OGFLbWU1QWVWT0M2SFVRY09ORzFnTVVLY0ZxaWktWVdZdHdYNW5kWVNqbEE?oc=5",
-              "date": "2026-10-18",
-              "kind": "deal"
+              "publisher": "Yahoo Finance",
+              "title": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+              "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQcEsxTEVlS1YyLXhpVFNlbm5lOXZQYnhiRTI4N3lXRnRPUlhGb0NQMGNaR2pzQzFPa0o3WlZWZVo4dDdYMHpiVHZnZmM3ZDR2Q3UzVWNvd0piSTFBLXMzbzBSVGZrYjVfbzk1TGVvUGl4M3FwYjZEdHNIajFzM24wX1FjUUxXS0hGczFyZE5JLW9YaEZjQ3NiZk5haUo?oc=5",
+              "date": "2026-10-15",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "IndexBox",
+              "title": "A.P. Moller Capital rachète Portek International à Mitsui - Actualités et statistiques",
+              "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPY0ZKR2NGaDBOR0RkVHQtODlLMDBEdDVYU3pTSTE0YXJjcGZZekhPVml4aWdhNHJickU3ZDlZNHpuZW9RcmtJVW1iR2xya2ptME9BUW1RZnZNd3E2YzF0dk1GVzg4MmVlNmhVb2daN3gyVnZZZl9KVEtiRUEyOFJPb2EtaHpSOV9ZSHFwb1pDTi1GZ0wzc1VFZmJ5Nk1LXzRSc3c?oc=5",
+              "date": "2026-10-15",
+              "kind": "corporate_event"
             }
           ],
-          "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T07:28:01.467216+00:00",
-          "selection_version": 2
+          "selected_at": "2026-10-19T09:20:14.127878+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "Portek",
+          "company_url": "/app/companies?name=Portek",
+          "headline": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+          "deal_type": "m_and_a_activity",
+          "amount_usd": null,
+          "country": null,
+          "sector": null,
+          "announced": "2026-10-15",
+          "score": 52.21,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
+          "reasons": [
+            "Corporate signal: m and a activity",
+            "Event rule confidence: 0.75",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Yahoo Finance",
+              "title": "A.P. Moller Capital agrees to acquire Portek International from Mitsui & Co.",
+              "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQcEsxTEVlS1YyLXhpVFNlbm5lOXZQYnhiRTI4N3lXRnRPUlhGb0NQMGNaR2pzQzFPa0o3WlZWZVo4dDdYMHpiVHZnZmM3ZDR2Q3UzVWNvd0piSTFBLXMzbzBSVGZrYjVfbzk1TGVvUGl4M3FwYjZEdHNIajFzM24wX1FjUUxXS0hGczFyZE5JLW9YaEZjQ3NiZk5haUo?oc=5",
+              "date": "2026-10-15",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "IndexBox",
+              "title": "A.P. Moller Capital rachète Portek International à Mitsui - Actualités et statistiques",
+              "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPY0ZKR2NGaDBOR0RkVHQtODlLMDBEdDVYU3pTSTE0YXJjcGZZekhPVml4aWdhNHJickU3ZDlZNHpuZW9RcmtJVW1iR2xya2ptME9BUW1RZnZNd3E2YzF0dk1GVzg4MmVlNmhVb2daN3gyVnZZZl9KVEtiRUEyOFJPb2EtaHpSOV9ZSHFwb1pDTi1GZ0wzc1VFZmJ5Nk1LXzRSc3c?oc=5",
+              "date": "2026-10-15",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:20:14.127878+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "Kenya Airways",
+          "company_url": "/app/companies?name=Kenya%20Airways",
+          "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+          "deal_type": "debt_restructuring",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": null,
+          "announced": "2026-10-13",
+          "score": 50.26,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
+          "reasons": [
+            "Corporate signal: debt restructuring",
+            "Event rule confidence: 0.88",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "aviationtoday.in",
+              "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+              "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
+              "date": "2026-10-13",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "People Daily",
+              "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
+              "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
+              "date": "2026-10-12",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:20:14.127878+00:00",
+          "selection_version": 3
         }
       ],
-      "runner_ups": [
-        {
-          "company": "Oryx Energies Tanzania fuel business",
-          "score": 37.39,
-          "reasons": [
-            "Transaction category: acquisition",
-            "Disclosed transaction size contributes 11.8/18 significance points",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
-          ]
-        },
-        {
-          "company": "EGP 12bn",
-          "score": 35.52,
-          "reasons": [
-            "Transaction category: equity funding",
-            "Disclosed transaction size contributes 11.9/18 significance points",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
-          ]
-        },
-        {
-          "company": "Necsa",
-          "score": 20.57,
-          "reasons": [
-            "Transaction category: joint venture",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-            "Recency: 1 day(s) before the selection period ended"
-          ]
-        }
-      ]
+      "runner_ups": []
     }
   ]
 }
