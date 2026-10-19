@@ -382,7 +382,7 @@ def _fetch_article_content(item: dict, client: Optional[httpx.Client] = None) ->
     host = (parsed.hostname or "").lower().removeprefix("www.")
     if parsed.scheme != "https" or not host or host in {"news.google.com", "consent.google.com"}:
         return {**item, "content_status": "snippet_only", "content_text": None}
-    request_client = client or httpx.Client(timeout=6, follow_redirects=True,
+    request_client = client or httpx.Client(timeout=4, follow_redirects=True,
                                              headers={"User-Agent": "DealIntelligenceResearchBot/1.0 (+public research; contact via website)"})
     close_client = client is None
     try:
@@ -911,10 +911,17 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
         elif valid_news:
             log.debug("research news RSS search returned %d date-valid results", len(valid_news))
             items = items[:max_items - len(valid_news)]
+            full_text_attempts = 0
             for it in valid_news:
-                enriched = _fetch_article_content(it) if news is None else {
-                    **it, "content_status": "injected_search_snippet", "content_text": None
-                }
+                if news is None and full_text_attempts < 4:
+                    enriched = _fetch_article_content(it)
+                    full_text_attempts += 1
+                else:
+                    enriched = {
+                        **it,
+                        "content_status": "injected_search_snippet" if news is not None else "snippet_only",
+                        "content_text": None,
+                    }
                 body = enriched.get("content_text") or enriched.get("snippet") or enriched.get("title") or ""
                 if enriched.get("content_status") == "article_text_retrieved":
                     body = ("Direct article text retrieved from the publisher page; this is not an independent "
