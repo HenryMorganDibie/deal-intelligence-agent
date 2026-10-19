@@ -329,6 +329,48 @@ export default function ResearchPage() {
               </ul>
             </details>
           )}
+          {v?.claim_audit && v.claim_audit.length > 0 && (
+            <details className="mt-3 rounded-xl border hairline p-4">
+              <summary className="cursor-pointer text-sm font-semibold">Claim-to-source audit ({v.claim_audit.length} statements)</summary>
+              <p className="mt-1 text-xs text-[color:var(--dim)]">
+                This maps each factual sentence to its citations and source metadata. Status and keyword overlap are triage signals, not proof that a claim is true.
+              </p>
+              <ol className="mt-3 space-y-3">
+                {v.claim_audit.map((entry, index) => (
+                  <li key={index} className="border-b hairline pb-3">
+                    <p className="text-sm">{String(entry.sentence ?? "")}</p>
+                    <p className="mt-1 text-xs text-[color:var(--muted)]">
+                      Status: {String(entry.status ?? "needs review")}
+                      {typeof entry.lexical_overlap === "number" ? ` · keyword overlap ${Math.round(entry.lexical_overlap * 100)}%` : ""}
+                    </p>
+                    {Array.isArray(entry.sources) && entry.sources.length > 0 ? (
+                      <ul className="mt-2 space-y-1 text-xs">
+                        {entry.sources.map((rawSource, sourceIndex) => {
+                          const source = rawSource as Record<string, unknown>;
+                          const title = String(source.title ?? source.source ?? "Evidence source");
+                          return (
+                            <li key={sourceIndex}>
+                              {typeof source.url === "string" ? (
+                                <a href={source.url} target="_blank" rel="noreferrer" className="hover:underline">
+                                  [{String(source.n ?? "?")}] {title}
+                                </a>
+                              ) : (
+                                <span>[{String(source.n ?? "?")}] {title}</span>
+                              )}
+                              {source.date ? ` · ${String(source.date)}` : ""}
+                              {source.source_quality ? ` · ${String(source.source_quality)}` : ""}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      <p className="mt-1 text-xs text-[color:var(--dim)]">No valid source citation was mapped to this statement.</p>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
           <FormattedAnswer text={result.answer} />
           {result.conflicts && result.conflicts.length > 0 && (
             <section className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4" aria-label="Evidence disagreements">
