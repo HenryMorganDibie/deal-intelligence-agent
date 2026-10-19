@@ -33,7 +33,7 @@ def test_benchmark_evaluator_scores_only_human_reviewed_cases(tmp_path):
             "latency_seconds": 2.5,
             "mode": "llm",
             "evidence": [
-                {"url": "https://publisher.example/a", "content_status": "article_text_retrieved"},
+                {"url": "https://news.google.com/rss/articles/a", "publisher_url": "https://publisher.example/a", "content_url": "https://publisher.example/a", "content_status": "article_text_retrieved"},
                 {"url": "https://publisher.example/b", "content_status": "snippet_only"},
                 {"url": "https://other.example/c", "content_status": "snippet_only"},
             ],
