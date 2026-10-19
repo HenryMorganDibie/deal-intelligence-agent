@@ -8,6 +8,8 @@ import re
 from collections import defaultdict
 from urllib.parse import urlparse
 
+from src.data.africa_countries import get as get_country
+
 
 _ACTIONS = {
     "acquisition": ("acquisition", "acquires", "acquired", "takeover", "merger", "buyout"),
@@ -31,7 +33,8 @@ def build_query_plan(question: str, parsed: dict, base_query: str, limit: int = 
 
     add(base_query)
     companies = [str(x).strip() for x in parsed.get("companies", [])[:2] if str(x).strip()]
-    countries = [str(x).strip() for x in parsed.get("countries", [])[:2] if str(x).strip()]
+    countries = [get_country(str(x).strip()).name if get_country(str(x).strip()) else str(x).strip()
+                 for x in parsed.get("countries", [])[:2] if str(x).strip()]
     deal_types = parsed.get("deal_types", [])
     action_terms = []
     for deal_type in deal_types:
