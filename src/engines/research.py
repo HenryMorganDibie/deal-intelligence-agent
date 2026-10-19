@@ -1252,19 +1252,22 @@ def evidence_coverage(items: list[dict]) -> list[dict]:
             (urlparse(str(item.get("url") or "")).hostname or "").lower().removeprefix("www.")
             for item in selected if item.get("url")
         }
-        coverage.append({
+        row = {
             "kind": kind,
             "items": len(selected),
             "latest_source_date": max(
                 (str(item["date"])[:10] for item in selected if item.get("date")), default=None,
             ),
-            "direct_article_text_items": sum(item.get("content_status") == "article_text_retrieved"
-                                             for item in selected),
-            "snippet_only_items": sum(item.get("content_status") in {"snippet_only", "injected_search_snippet"}
-                                       for item in selected),
-            "distinct_source_domains": len(domains),
-            "source_domains": sorted(domains)[:12],
-        })
+        }
+        if any(item.get("content_status") for item in selected):
+            row["direct_article_text_items"] = sum(item.get("content_status") == "article_text_retrieved"
+                                                   for item in selected)
+            row["snippet_only_items"] = sum(item.get("content_status") in {"snippet_only", "injected_search_snippet"}
+                                             for item in selected)
+        if domains:
+            row["distinct_source_domains"] = len(domains)
+            row["source_domains"] = sorted(domains)[:12]
+        coverage.append(row)
     return coverage
 
 
