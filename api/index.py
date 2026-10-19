@@ -661,13 +661,18 @@ async def create_market_newsletter(body: NewsletterBody) -> dict:
         f"Scope: {source_report.get('scope_label') or 'not specified'}. "
         f"Period: {source_report.get('period_start') or 'unknown'} to {source_report.get('period_end') or 'unknown'}. "
         f"Analyst instructions: {instructions}.\n\n"
-        "Write polished newsletter copy with a strong headline, concise executive summary, deal-by-deal analysis, "
-        "strategic implications, relevant market context, and clear next questions for the audience. "
+        "Write a polished, publication-quality financial intelligence newsletter in NORMAL PROSE, not Markdown. "
+        "Put a compelling headline on its own line, then a concise executive-summary paragraph, followed by short titled sections "
+        "on material transactions, market implications, advisory considerations where requested, and what to watch next. "
+        "Use complete natural-language paragraphs with clear transitions. Do not use Markdown syntax, hash-prefixed headings, "
+        "asterisk emphasis, Markdown tables, or Markdown bullet lists. If a short list is essential, write it as plain numbered "
+        "sentences, not Markdown. Keep the tone suitable for investment bankers, private equity and corporate strategy teams. "
+        "Explain what matters and why; avoid generic filler and unsupported predictions. "
         "For advisory content, identify potential client needs and research angles only as hypotheses supported by evidence; "
         "never claim a company has an active mandate or fabricate client relationships. "
         "Separate reported facts from analysis, state when values are undisclosed, and do not infer missing figures. "
-        "Cite factual claims using the research engine's numbered evidence citations. Do not invent sources or citations. "
-        "If evidence is thin or conflicting, say so explicitly. End with key takeaways and a short source-aware disclaimer.\n\n"
+        "Cite factual claims with inline numbered citations like [1] only when those evidence items exist. Do not invent sources or citations. "
+        "If evidence is thin or conflicting, say so explicitly. End with a concise conclusion and source-aware disclaimer.\\n\\n"
         + "\n".join(chosen_context)
     )
     try:
