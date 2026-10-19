@@ -92,10 +92,12 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
       {row === undefined ? <p className="text-sm text-[color:var(--muted)]">Loading market brief…</p> :
        row === null ? <div><h1 className="h3 text-xl">{error ? "Could not load this brief" : "Market brief not found"}</h1><p className="mt-2 text-sm text-[color:var(--muted)]">{error ?? "Check the link and try again."}</p></div> :
        <article>
-        <p className="eyebrow">Market intelligence · {row.report.audience}</p>
+        <p className="eyebrow">{row.report.brief_type === "research_newsletter" ? "Research newsletter" : "Market intelligence"} · {row.report.audience}</p>
         <h1 className="h2 mt-3 text-[2rem] sm:text-[2.75rem]">{row.title}</h1>
         <p className="mt-3 text-sm text-[color:var(--muted)]">{row.report.scope_label}</p>
         <p className="mt-1 text-xs text-[color:var(--dim)]">Announcement window {row.report.period_start} to {row.report.period_end} · Generated {new Date(row.report.generated_at).toLocaleString()}</p>
+        {row.report.parent_brief_id && <p className="mt-2 text-sm"><Link href={"/app/market-briefs/" + encodeURIComponent(row.report.parent_brief_id)} className="underline underline-offset-4">Open source research brief ↗</Link></p>}
+        {row.report.brief_type === "research_newsletter" && <p className="mt-2 text-xs text-[color:var(--muted)]">Draft newsletter · verify every source and claim before external distribution.</p>}
 
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
@@ -106,62 +108,6 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
           ].map(([title, value]) => <div key={title} className="panel p-4"><p className="text-xs text-[color:var(--muted)]">{title}</p><p className="mt-2 text-xl font-semibold">{value}</p></div>)}
         </div>
         <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">Metrics describe records currently held by Deal Intelligence, not a complete census of all transactions. Undisclosed amounts are not estimated.</p>
-
-        <section className="mt-10 panel p-5 sm:p-6">
-          <p className="eyebrow">Turn research into deliverable</p>
-          <h2 className="h3 mt-2 text-xl">Create a deal or advisory newsletter</h2>
-          <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-            Select the deals and web findings that matter, choose the newsletter format, and let the LLM draft a polished, source-linked briefing.
-            The generated newsletter is saved as its own shareable brief for review and Markdown export.
-          </p>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="mb-1.5 block text-sm text-[color:var(--muted)]">Briefing format</span>
-              <select value={briefingType} onChange={(e) => setBriefingType(e.target.value as "deal" | "advisory" | "both")} className="field">
-                <option value="both">Deal &amp; advisory newsletter</option>
-                <option value="deal">Deal briefing newsletter</option>
-                <option value="advisory">Advisory briefing newsletter</option>
-              </select>
-            </label>
-            <label className="block">
-              <span className="mb-1.5 block text-sm text-[color:var(--muted)]">Audience</span>
-              <select value={newsletterAudience} onChange={(e) => setNewsletterAudience(e.target.value)} className="field">
-                <option>Investment banking analyst</option>
-                <option>Managing director / deal team</option>
-                <option>Private equity investor</option>
-                <option>Venture capital investor</option>
-                <option>Corporate strategy team</option>
-                <option>Market research analyst</option>
-              </select>
-            </label>
-          </div>
-          <label className="mt-4 block">
-            <span className="mb-1.5 block text-sm text-[color:var(--muted)]">Editorial instructions (optional)</span>
-            <textarea value={newsletterInstructions} onChange={(e) => setNewsletterInstructions(e.target.value)} maxLength={1000} rows={3}
-              placeholder="e.g. Lead with the three most material transactions, explain implications for Nigerian banks, and end with questions for the next client meeting."
-              className="field min-h-20 w-full resize-y" />
-          </label>
-          <div className="mt-4 rounded-lg border hairline p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold">Selected research items</h3>
-              <span className="kbd">{selectedItems.length} selected</span>
-            </div>
-            <p className="mt-1 text-xs text-[color:var(--dim)]">Use the checkboxes beside transactions and web evidence below to refine this selection. Up to 40 items can be included.</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" className="btn btn-ghost h-8 px-3 text-xs" onClick={() => setSelectedItems([
-                ...(row.report.key_transactions ?? []).map((_, index) => "deal:" + index),
-                ...(row.report.web_research?.evidence ?? []).slice(0, 25).map((item) => "web:" + item.n),
-              ].slice(0, 40))}>Select all visible</button>
-              <button type="button" className="btn btn-ghost h-8 px-3 text-xs" onClick={() => setSelectedItems([])}>Clear selection</button>
-            </div>
-          </div>
-          {newsletterError && <p className="mt-3 text-sm text-risk" role="alert">{newsletterError}</p>}
-          <button type="button" onClick={createNewsletter} disabled={generatingNewsletter || selectedItems.length === 0}
-            className="btn btn-primary mt-4 w-full sm:w-auto">
-            {generatingNewsletter ? "Drafting source-cited newsletter…" : "Generate newsletter from selected research"}
-          </button>
-          <p className="mt-2 text-xs leading-relaxed text-[color:var(--dim)]">Advisory opportunities are framed as evidence-backed research hypotheses, never as confirmed mandates. Review every citation before external distribution.</p>
-        </section>
 
         <section className="mt-10 panel p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -268,6 +214,62 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
             </div>) : <p className="py-4 text-sm text-[color:var(--muted)]">No comparable records met the similarity and date criteria.</p>}
           </div>
         </section>
+        <section className="mt-10 panel p-5 sm:p-6">
+          <p className="eyebrow">Turn research into deliverable</p>
+          <h2 className="h3 mt-2 text-xl">Create a deal or advisory newsletter</h2>
+          <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
+            Select the deals and web findings that matter, choose the newsletter format, and let the LLM draft a polished, source-linked briefing.
+            The generated newsletter is saved as its own shareable brief for review and Markdown export.
+          </p>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1.5 block text-sm text-[color:var(--muted)]">Briefing format</span>
+              <select value={briefingType} onChange={(e) => setBriefingType(e.target.value as "deal" | "advisory" | "both")} className="field">
+                <option value="both">Deal &amp; advisory newsletter</option>
+                <option value="deal">Deal briefing newsletter</option>
+                <option value="advisory">Advisory briefing newsletter</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-sm text-[color:var(--muted)]">Audience</span>
+              <select value={newsletterAudience} onChange={(e) => setNewsletterAudience(e.target.value)} className="field">
+                <option>Investment banking analyst</option>
+                <option>Managing director / deal team</option>
+                <option>Private equity investor</option>
+                <option>Venture capital investor</option>
+                <option>Corporate strategy team</option>
+                <option>Market research analyst</option>
+              </select>
+            </label>
+          </div>
+          <label className="mt-4 block">
+            <span className="mb-1.5 block text-sm text-[color:var(--muted)]">Editorial instructions (optional)</span>
+            <textarea value={newsletterInstructions} onChange={(e) => setNewsletterInstructions(e.target.value)} maxLength={1000} rows={3}
+              placeholder="e.g. Lead with the three most material transactions, explain implications for Nigerian banks, and end with questions for the next client meeting."
+              className="field min-h-20 w-full resize-y" />
+          </label>
+          <div className="mt-4 rounded-lg border hairline p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold">Selected research items</h3>
+              <span className="kbd">{selectedItems.length} selected</span>
+            </div>
+            <p className="mt-1 text-xs text-[color:var(--dim)]">Use the checkboxes beside transactions and web evidence below to refine this selection. Up to 40 items can be included.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" className="btn btn-ghost h-8 px-3 text-xs" onClick={() => setSelectedItems([
+                ...(row.report.key_transactions ?? []).map((_, index) => "deal:" + index),
+                ...(row.report.web_research?.evidence ?? []).slice(0, 25).map((item) => "web:" + item.n),
+              ].slice(0, 40))}>Select all visible</button>
+              <button type="button" className="btn btn-ghost h-8 px-3 text-xs" onClick={() => setSelectedItems([])}>Clear selection</button>
+            </div>
+          </div>
+          {newsletterError && <p className="mt-3 text-sm text-risk" role="alert">{newsletterError}</p>}
+          <button type="button" onClick={createNewsletter} disabled={generatingNewsletter || selectedItems.length === 0}
+            className="btn btn-primary mt-4 w-full sm:w-auto">
+            {generatingNewsletter ? "Drafting source-cited newsletter…" : "Generate newsletter from selected research"}
+          </button>
+          <p className="mt-2 text-xs leading-relaxed text-[color:var(--dim)]">Advisory opportunities are framed as evidence-backed research hypotheses, never as confirmed mandates. Review every citation before external distribution.</p>
+        </section>
+
         <section className="mt-10 panel p-5">
           <h2 className="h3 text-xl">Methodology and limitations</h2>
           <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">{row.report.methodology}</p>
