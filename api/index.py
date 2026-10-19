@@ -271,6 +271,197 @@ async def get_showcase() -> dict:
     return out
 
 
+
+class MarketBriefBody(BaseModel):
+    lookback_days: int = Field(30, ge=7, le=365)
+    country: str | None = Field(None, max_length=3)
+    sector: str | None = Field(None, max_length=60)
+    deal_type: str | None = Field(None, max_length=60)
+    audience: str = Field("Investment banking analyst", min_length=1, max_length=100)
+
+    @field_validator("country", "sector", "deal_type", "audience")
+    @classmethod
+    def market_brief_strip(cls, value: str | None) -> str | None:
+        value = value.strip() if value else value
+        return value or None
+
+
+def _market_brief_markdown(report: dict) -> str:
+    lines = [
+        f"# {report['title']}", "",
+        f"**Period:** {report['period_start']} to {report['period_end']}  ",
+        f"**Generated:** {report['generated_at']}  ",
+        f"**Scope:** {report['scope_label']}  ",
+        f"**Audience:** {report['audience']}", "",
+        "## Executive snapshot", "",
+        f"- **{report['metrics']['transaction_count']}** dated transaction records in the selected window.",
+        f"- **{report['metrics']['disclosed_value_count']}** records disclose an amount; disclosed value totals **{report['metrics']['disclosed_value_usd_label']}**.",
+        f"- **{report['metrics']['countries_represented']}** countries represented in the records.", "",
+        "> These figures describe records currently held by Deal Intelligence, not a complete census of all transactions. Undisclosed amounts are not estimated.", "",
+        "## Key transactions", "",
+    ]
+    for d in report["key_transactions"]:
+        parties = " — ".join(x for x in [d.get("buyer"), d.get("target"), d.get("seller")] if x)
+        lines += [
+            f"### {d.get('headline') or d.get('target') or 'Transaction'}",
+            f"- **Date:** {d.get('announced') or 'Not dated'}",
+            f"- **Type / stage:** {d.get('deal_type') or 'Unclassified'} / {d.get('stage') or 'Not stated'}",
+            f"- **Parties:** {parties or 'Not fully identified'}",
+            f"- **Country / sector:** {', '.join(d.get('countries') or ([d.get('country')] if d.get('country') else [])) or 'Not identified'} / {d.get('sector') or 'Not classified'}",
+            f"- **Disclosed amount:** {d.get('amount_usd_label') or 'Not disclosed'}",
+            f"- **Evidence status:** {d.get('verification') or 'Unassessed'}; {d.get('independent_stories', 0)} independent story group(s)",
+        ]
+        for source in (d.get("sources") or [])[:3]:
+            if source.get("url"):
+                lines.append(f"- **Source:** [{source.get('publisher') or source.get('title') or 'Open source'}]({source['url']})")
+        lines.append("")
+    lines += ["## Observed patterns", ""]
+    lines += [f"- {x}" for x in report["observed_patterns"]] or ["- The current filtered sample is too small to support a meaningful pattern."]
+    lines += ["", "## Comparable activity", ""]
+    for item in report["comparables"]:
+        lines.append(f"- **{item.get('headline') or item.get('target') or 'Transaction'}** — {item.get('announced') or 'date unknown'}; {item.get('deal_type') or 'type unknown'}; {item.get('amount_usd_label') or 'amount undisclosed'}.")
+    if not report["comparables"]:
+        lines.append("- No comparable records met the current similarity criteria.")
+    lines += ["", "## Method and limitations", "", report["methodology"], "", report["coverage_note"], ""]
+    return "\n".join(lines)
+
+
+@app.post("/api/market-briefs")
+async def create_market_brief(body: MarketBriefBody) -> dict:
+    """Build and persist a public, source-linked market brief from the existing deal store."""
+    if not _configured():
+        raise HTTPException(503, "The API is not configured for saving market briefs.")
+    from src.hosted_market import deals as market_deals, _country_or_404
+    from src.engines import deals as deals_engine, provenance
+    from src.data import africa_countries as ac
+
+    today = datetime.now(timezone.utc).date()
+    start = today - timedelta(days=body.lookback_days - 1)
+    country_code = None
+    country_name = None
+    if body.country:
+        country_obj = _country_or_404(body.country.upper())
+        country_code, country_name = country_obj.iso2, country_obj.name
+    all_deals = market_deals()
+    selected = deals_engine.search(
+        all_deals, country=country_code, deal_type=body.deal_type,
+        sector=body.sector, since=start.isoformat(), until=today.isoformat(),
+        limit=max(len(all_deals), 1),
+    )
+    selected.sort(key=lambda d: d.get("announced") or "", reverse=True)
+    disclosed = [float(d.get("amount_usd")) for d in selected if d.get("amount_usd") is not None and float(d.get("amount_usd") or 0) > 0]
+    country_codes = set()
+    for d in selected:
+        for code in (d.get("countries") or []) + ([d.get("country")] if d.get("country") else []):
+            resolved = ac.resolve(country=code)
+            if resolved:
+                country_codes.add(resolved.iso2)
+    by_type: dict[str, int] = {}
+    by_sector: dict[str, int] = {}
+    by_country: dict[str, int] = {}
+    for d in selected:
+        kind = str(d.get("deal_type") or "unclassified")
+        by_type[kind] = by_type.get(kind, 0) + 1
+        sector_name = str(d.get("sector") or "unclassified")
+        by_sector[sector_name] = by_sector.get(sector_name, 0) + 1
+        resolved = ac.resolve(country=d.get("country")) if d.get("country") else None
+        if resolved:
+            by_country[resolved.name] = by_country.get(resolved.name, 0) + 1
+    def top_labels(counts: dict[str, int], n: int = 3) -> str:
+        return ", ".join(f"{name.replace('_', ' ')} ({count})" for name, count in sorted(counts.items(), key=lambda x: (-x[1], x[0]))[:n])
+    patterns = []
+    if by_type:
+        patterns.append(f"Most represented transaction categories in this sample: {top_labels(by_type)}.")
+    if by_sector:
+        patterns.append(f"Most represented sectors in this sample: {top_labels(by_sector)}.")
+    if by_country:
+        patterns.append(f"Most represented countries in this sample: {top_labels(by_country)}.")
+    if len(selected) < 5:
+        patterns.append("The filtered sample contains fewer than five records; treat apparent concentrations as descriptive, not market-wide trends.")
+    if not selected:
+        patterns.append("No records in the current database match every selected filter and announcement-date constraint.")
+    key_transactions = []
+    for d in selected[:15]:
+        independent = len(provenance.stories(d.get("sources") or []))
+        amount = d.get("amount_usd")
+        country_list = d.get("countries") or ([d.get("country")] if d.get("country") else [])
+        key_transactions.append({
+            **d,
+            "amount_usd_label": (f"\${float(amount):,.0f}" if amount is not None and float(amount) > 0 else None),
+            "verification": "corroborated" if independent >= 2 else "single source",
+            "independent_stories": independent,
+            "countries": country_list,
+        })
+    comparable_pool = []
+    for d in selected[:5]:
+        result = deals_engine.comparables(all_deals, sector=d.get("sector"), country=d.get("country"),
+                                          deal_type=d.get("deal_type"), amount_usd=d.get("amount_usd"),
+                                          exclude_id=d.get("id"), limit=3)
+        for comparable in result.get("deals", []):
+            if comparable.get("announced") and start.isoformat() <= comparable["announced"][:10] <= today.isoformat():
+                comparable_pool.append(comparable)
+    seen = set()
+    comparables = []
+    selected_ids = {d.get("id") for d in selected}
+    for d in comparable_pool:
+        if d.get("id") in seen or d.get("id") in selected_ids:
+            continue
+        seen.add(d.get("id"))
+        amount = d.get("amount_usd")
+        comparables.append({**d, "amount_usd_label": f"\${float(amount):,.0f}" if amount is not None and float(amount) > 0 else None})
+        if len(comparables) >= 8:
+            break
+    report = {
+        "brief_type": "market_deals",
+        "title": "Africa Deals & M&A Intelligence Brief",
+        "audience": body.audience,
+        "period_start": start.isoformat(),
+        "period_end": today.isoformat(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "scope_label": f"{country_name or 'Africa'} · {body.sector.replace('_', ' ') if body.sector else 'All sectors'} · {body.deal_type.replace('_', ' ') if body.deal_type else 'All transaction types'} · {body.lookback_days} days",
+        "filters": {"lookback_days": body.lookback_days, "country": country_code, "sector": body.sector, "deal_type": body.deal_type},
+        "metrics": {
+            "transaction_count": len(selected),
+            "disclosed_value_count": len(disclosed),
+            "disclosed_value_usd": round(sum(disclosed)),
+            "disclosed_value_usd_label": f"\${sum(disclosed):,.0f}" if disclosed else "not available",
+            "countries_represented": len(country_codes),
+            "by_type": by_type, "by_sector": by_sector, "by_country": by_country,
+        },
+        "key_transactions": key_transactions,
+        "comparables": comparables,
+        "observed_patterns": patterns,
+        "methodology": "Transactions are selected by the record's announcement date within the stated window, then filtered by country, sector and type. Amount totals include only positive disclosed/normalized USD amounts in the selected records. Comparable records are selected using the existing transparent sector/country/type/size similarity logic and then constrained to the same date window. Reported publication dates and transaction announcement dates are not interchangeable.",
+        "coverage_note": "Coverage is limited to transactions discovered and retained by this product's sources and extraction pipeline. A missing record does not mean no transaction occurred. Syndicated copies are not treated as independent corroboration. Source counts indicate independent story groups where the provenance engine can resolve them; they do not certify every transaction field. This brief is a research aid, not a confirmation of mandates or investment advice.",
+    }
+    report["markdown"] = _market_brief_markdown(report)
+    async with httpx.AsyncClient(timeout=20) as client:
+        resp = await _rpc(client, "save_market_brief", {
+            "secret": API_SECRET, "p_title": report["title"], "p_report": report, "p_markdown": report["markdown"],
+        })
+    if resp.status_code != 200:
+        log.error("save_market_brief failed: %s %s", resp.status_code, resp.text[:300])
+        raise HTTPException(502, "The report was generated but could not be saved.")
+    return {"id": str(resp.json()), "title": report["title"], "transaction_count": len(selected), "period_start": report["period_start"], "period_end": report["period_end"]}
+
+
+@app.get("/api/market-briefs/{brief_id}")
+async def get_market_brief(brief_id: str) -> dict:
+    try:
+        uuid.UUID(brief_id)
+    except ValueError:
+        raise HTTPException(404, "Market brief not found.")
+    if not _configured():
+        raise HTTPException(503, "The API is not configured.")
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await _rpc(client, "get_market_brief", {"p_id": brief_id})
+    rows = resp.json() if resp.status_code == 200 else []
+    if not rows:
+        raise HTTPException(404, "Market brief not found.")
+    row = rows[0]
+    return {"id": row["id"], "title": row["title"], "report": row["report"], "markdown": row["markdown"], "created_at": row["created_at"]}
+
+
 @app.get("/api/briefs/{brief_id}")
 async def get_brief(brief_id: str) -> dict:
     try:
