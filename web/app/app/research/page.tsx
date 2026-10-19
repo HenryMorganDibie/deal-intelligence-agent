@@ -358,6 +358,14 @@ export default function ResearchPage() {
               </ul>
             </details>
           )}
+          {result.query_plan && result.query_plan.length > 0 && (
+            <details className="mt-4 rounded-xl border hairline p-4">
+              <summary className="cursor-pointer text-sm font-semibold">Search strategy ({result.query_plan.length} query variants)</summary>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-[color:var(--muted)]">
+                {result.query_plan.map((query, index) => <li key={index}>{query}</li>)}
+              </ul>
+            </details>
+          )}
           <section className="mt-4 rounded-xl border hairline p-4" aria-label="Evidence coverage">
             <h2 className="text-sm font-semibold">Evidence retrieved for this question</h2>
             {result.evidence_coverage.length ? (
