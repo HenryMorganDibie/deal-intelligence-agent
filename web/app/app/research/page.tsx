@@ -374,6 +374,9 @@ export default function ResearchPage() {
                   <li key={source.kind} className="rounded-full border hairline px-3 py-1 text-[0.75rem] text-[color:var(--muted)]">
                     {words(source.kind)}: {source.items}
                     {source.latest_source_date ? ` · latest dated ${source.latest_source_date}` : ""}
+                    {source.distinct_source_domains ? ` · ${source.distinct_source_domains} source domains` : ""}
+                    {source.direct_article_text_items ? ` · ${source.direct_article_text_items} full-text retrieved` : ""}
+                    {source.snippet_only_items ? ` · ${source.snippet_only_items} snippets only` : ""}
                   </li>
                 ))}
               </ul>
@@ -406,6 +409,9 @@ export default function ResearchPage() {
                     {i.source ? ` · ${i.source}` : ""}
                     {i.date ? ` · ${i.date}` : ""}
                     {i.source_quality ? ` · ${i.source_quality}` : ""}
+                    {i.content_status === "article_text_retrieved" ? " · publisher article text retrieved (not independently verified)" : ""}
+                    {i.content_status === "snippet_only" ? " · snippet only" : ""}
+                    {i.content_status === "injected_search_snippet" ? " · search snippet only" : ""}
                   </span>
                 </div>
                 <p className="mt-1">
