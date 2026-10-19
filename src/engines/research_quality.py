@@ -145,8 +145,10 @@ def benchmark_metrics(
     expected = set(expected_ids)
     retrieved = set(retrieved_ids)
     hits = len(expected & retrieved)
-    precision = hits / len(retrieved) if retrieved else (1.0 if not expected else 0.0)
-    recall = hits / len(expected) if expected else 1.0
+    # Empty denominators are undefined, not perfect scores. If expected sources exist
+    # but retrieval returns none, precision is set to zero to reflect a failed retrieval.
+    precision = hits / len(retrieved) if retrieved else (0.0 if expected else None)
+    recall = hits / len(expected) if expected else None
 
     def rate(values: list[bool] | None) -> float | None:
         if not values:
