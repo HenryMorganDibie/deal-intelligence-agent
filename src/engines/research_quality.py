@@ -171,8 +171,8 @@ def benchmark_metrics(
         }
     claims = relevant_claims or []
     return {
-        "retrieval_precision": round(precision, 4),
-        "retrieval_recall": round(recall, 4),
+        "retrieval_precision": round(precision, 4) if precision is not None else None,
+        "retrieval_recall": round(recall, 4) if recall is not None else None,
         "retrieved_relevant": hits,
         "expected_relevant": len(expected),
         "retrieved_count": len(retrieved),
