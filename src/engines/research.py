@@ -1291,8 +1291,8 @@ def evidence_coverage(items: list[dict]) -> list[dict]:
     for kind in kinds:
         selected = [item for item in items if item["kind"] == kind]
         domains = {
-            (urlparse(str(item.get("content_url") or item.get("publisher_url") or item.get("url") or "")).hostname or "")
-            .lower().removeprefix("www.")
+            ((urlparse(str(item.get("content_url") or item.get("publisher_url") or item.get("url") or "")).hostname or "")
+             .lower().removeprefix("www."))
             for item in selected if item.get("content_url") or item.get("publisher_url") or item.get("url")
         }
         row = {
