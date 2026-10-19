@@ -24,9 +24,19 @@ GENERIC_TARGETS = {
     "africa", "african", "company", "startup", "startups", "firm", "group",
     "fund", "consortium", "government", "unknown", "undisclosed", "generic",
     # Common scraped headline fragments, not company names.
-    "million", "millions", "president", "président", "presidente", "violators",
+    "million", "millions", "president", "président", "presidente", "violators", "une",
     "startup", "bank", "company limited", "private limited",
 }
+
+# News stories dominated by transactions, politics, or sports are not corporate
+# operating signals for this section, even when a parser labels them as leadership.
+NON_CORPORATE_HEADLINE = re.compile(
+    r"\\b(?:merger|merges|merged|fusion|acquisition|acquires|acquired|takeover|buyout|"
+    r"stake in|exit plans|raises? (?:usd|\$|€|£|\d)|funding round|"
+    r"political party|\\bpdp\\b|\\bfc\\b|football|liga|league president|"
+    r"mourns|election campaign)\\b",
+    re.IGNORECASE,
+)
 
 
 def normalise(value: str | None) -> str:
@@ -166,6 +176,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
         if within_period(event.get("day"), start, end)
         and str(event.get("signal_type") or "").casefold() not in {"ma_activity", "m_and_a_activity", "m&a", "merger", "acquisition"}
         and event.get("url")
+        and not NON_CORPORATE_HEADLINE.search(str(event.get("headline") or ""))
     ]
     ranked = []
     for key, company in company_names.items():
