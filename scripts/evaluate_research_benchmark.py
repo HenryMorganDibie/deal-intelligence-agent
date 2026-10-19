@@ -43,8 +43,9 @@ def _aggregate_conflicts(rows: list[dict]) -> dict | None:
 def _operational_metrics(case: dict) -> dict:
     evidence = case.get("evidence", [])
     domains = {
-        (urlparse(str(item.get("url") or "")).hostname or "").lower().removeprefix("www.")
-        for item in evidence if item.get("url")
+        (urlparse(str(item.get("content_url") or item.get("publisher_url") or item.get("url") or "")).hostname or "")
+        .lower().removeprefix("www.")
+        for item in evidence if item.get("content_url") or item.get("publisher_url") or item.get("url")
     }
     news = [item for item in evidence if item.get("content_status")]
     return {
