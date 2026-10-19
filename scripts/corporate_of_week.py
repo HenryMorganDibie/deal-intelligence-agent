@@ -135,104 +135,115 @@ def score_deal(deal: dict, related_events: list[dict], end: date) -> tuple[float
     return round(score, 2), reasons
 
 
+def _headline_overlap(left: str, right: str) -> bool:
+    left_norm, right_norm = normalise(left), normalise(right)
+    if not left_norm or not right_norm:
+        return False
+    if left_norm == right_norm:
+        return True
+    left_tokens = {token for token in left_norm.split() if token not in _STOPWORDS and len(token) > 2}
+    right_tokens = {token for token in right_norm.split() if token not in _STOPWORDS and len(token) > 2}
+    return bool(left_tokens and right_tokens) and len(left_tokens & right_tokens) / max(1, len(left_tokens | right_tokens)) >= 0.65
+
+
 def select_company(deals: list[dict], events: list[dict], start: date, end: date) -> dict:
-    by_company: dict[str, list[dict]] = {}
-    names: dict[str, str] = {}
+    """Select companies with notable non-transaction events, not another copy of the deal feed."""
+    company_names: dict[str, str] = {}
+    company_deals: dict[str, list[dict]] = {}
     for deal in deals:
         company = str(deal.get("target") or "").strip()
         key = normalise(company)
         if not company or len(key) < 3 or key in GENERIC_TARGETS:
             continue
-        if not within_period(deal.get("announced"), start, end):
-            continue
-        if not any(isinstance(source, dict) and source.get("url") for source in deal.get("sources") or []):
-            continue
-        by_company.setdefault(key, []).append(deal)
-        names.setdefault(key, company)
+        company_names.setdefault(key, company)
+        company_deals.setdefault(key, []).append(deal)
 
-    period_events = [event for event in events if within_period(event.get("day"), start, end)]
+    period_events = [
+        event for event in events
+        if within_period(event.get("day"), start, end)
+        and str(event.get("signal_type") or "").casefold() not in {"ma_activity", "m&a", "merger", "acquisition"}
+        and event.get("url")
+    ]
     ranked = []
-    for key, company_deals in by_company.items():
-        company = names[key]
-        related = matched_events(company, period_events)
-        scored = []
-        for deal in company_deals:
-            score, reasons = score_deal(deal, related, end)
-            scored.append((score, deal, reasons))
-        scored.sort(key=lambda row: (row[0], str(row[1].get("announced") or "")), reverse=True)
-        best_score, best_deal, reasons = scored[0]
-        score = round(best_score + min(10.0, (len(scored) - 1) * 3.0), 2)
-        if len(scored) > 1:
-            reasons.append(f"{len(scored)} reported transaction records involving this company in the period")
-
+    for key, company in company_names.items():
+        relevant = [
+            event for event in matched_events(company, period_events)
+            if not any(_headline_overlap(str(event.get("headline") or ""), str(deal.get("headline") or ""))
+                       for deal in company_deals.get(key, []))
+        ]
+        if not relevant:
+            continue
+        relevant.sort(
+            key=lambda event: (
+                str(event.get("day") or "")[:10],
+                float(event.get("rule_score") or 0),
+                float(event.get("credibility") or 0),
+            ),
+            reverse=True,
+        )
+        featured = relevant[0]
+        signal = str(featured.get("signal_type") or "corporate_event")
+        event_day = str(featured.get("day") or "")[:10] or None
+        publishers = {str(event.get("publisher") or "").casefold() for event in relevant if event.get("publisher")}
+        age = max(0, (end - date.fromisoformat(event_day)).days) if event_day else 7
+        score = round(
+            10.0
+            + min(30.0, float(featured.get("rule_score") or 0) * 30.0)
+            + min(15.0, float(featured.get("credibility") or 0) * 15.0)
+            + max(0.0, 10.0 - age * (10.0 / 7.0))
+            + min(10.0, max(0, len(publishers) - 1) * 5.0),
+            2,
+        )
         sources = []
         seen_urls = set()
-        for _, deal, _ in scored:
-            for source in deal.get("sources") or []:
-                url = source.get("url")
-                if url and url not in seen_urls:
-                    seen_urls.add(url)
-                    title = source.get("title") or deal.get("headline") or company
-                    directly_matches = source_matches_deal(company, str(deal.get("headline") or ""), title)
-                    sources.append({
-                        "publisher": source.get("publisher") or "Source",
-                        "title": title,
-                        "url": url, "date": source.get("date") or deal.get("announced"),
-                        "kind": "deal" if directly_matches else "related_company_coverage",
-                    })
-        for event in related:
+        for event in relevant:
             url = event.get("url")
-            if url and url not in seen_urls:
-                seen_urls.add(url)
-                sources.append({
-                    "publisher": event.get("publisher") or "Source",
-                    "title": event.get("headline") or company,
-                    "url": url, "date": event.get("day"), "kind": "corporate_event",
-                })
-        sources.sort(key=lambda source: source["kind"] != "deal")
-        relevant_counts = []
-        for deal in company_deals:
-            relevant = len(matching_deal_sources(company, deal))
-            try:
-                reported = max(1, int(deal.get("independent_stories") or len(deal.get("sources") or []) or 1))
-            except (TypeError, ValueError):
-                reported = 1
-            relevant_counts.append(min(reported, relevant) if relevant else 0)
-        stories = max(relevant_counts or [0])
+            if not url or url in seen_urls:
+                continue
+            seen_urls.add(url)
+            sources.append({
+                "publisher": event.get("publisher") or "Source",
+                "title": event.get("headline") or company,
+                "url": url,
+                "date": event.get("day"),
+                "kind": "corporate_event",
+            })
         ranked.append({
             "company": company,
             "company_url": "/app/companies?name=" + quote(company),
-            "headline": best_deal.get("headline") or f"{company}: reported {str(best_deal.get('deal_type') or 'corporate').replace('_', ' ')} activity",
-            "deal_type": best_deal.get("deal_type") or "other",
-            "amount_usd": best_deal.get("amount_usd"),
-            "country": best_deal.get("country"),
-            "sector": best_deal.get("sector"),
-            "announced": best_deal.get("announced"),
+            "headline": featured.get("headline") or f"{company}: corporate event",
+            "deal_type": signal,
+            "amount_usd": None,
+            "country": featured.get("country"),
+            "sector": featured.get("sector"),
+            "announced": event_day,
             "score": score,
-            "independent_stories": stories,
-            "transaction_records": len(scored),
-            "related_events": len(related),
-            "reasons": reasons,
+            "independent_stories": len(publishers),
+            "transaction_records": 0,
+            "related_events": len(relevant),
+            "reasons": [
+                f"Corporate signal: {signal.replace('_', ' ')}",
+                f"Event rule confidence: {float(featured.get('rule_score') or 0):.2f}",
+                f"{len(relevant)} distinct source-linked corporate event(s) found in the period",
+                "Selected from corporate-event monitoring, not the transaction headline feed",
+            ],
             "sources": sources[:8],
             "method": (
-                "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. "
-                "Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event "
-                "signals, and source availability. The score is a ranking aid, not a probability or investment recommendation."
+                "Deterministic ranking of dated, source-linked non-transaction corporate events. "
+                "M&A signals and headlines substantially duplicating the deal feed are excluded. "
+                "The score is an editorial ranking aid, not a probability or investment recommendation."
             ),
         })
     if not ranked:
         raise RuntimeError(
-            f"No eligible, source-linked company transaction found between {start} and {end}; "
-            "refusing to publish an unsupported feature."
+            f"No eligible, source-linked non-transaction corporate event found between {start} and {end}; "
+            "refusing to duplicate the deal feed or publish unsupported entries."
         )
-    # Editorial shortlist: newest verified announcement first. The existing score remains
-    # visible as context, but cannot cause an older announcement to outrank a newer one.
     ranked.sort(
         key=lambda row: (
             str(row.get("announced") or "")[:10],
             row["score"],
             row["independent_stories"],
-            row["transaction_records"],
             row["company"].casefold(),
         ),
         reverse=True,
@@ -244,7 +255,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
             "period_start": start.isoformat(),
             "period_end": end.isoformat(),
             "selected_at": selected_at,
-            "selection_version": 2,
+            "selection_version": 3,
         }
         for row in ranked[:5]
     ]
@@ -255,13 +266,12 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
         "period_start": start.isoformat(),
         "period_end": end.isoformat(),
         "selected_at": selected_at,
-        "selection_version": 2,
+        "selection_version": 3,
         "runner_ups": [
             {"company": row["company"], "score": row["score"], "reasons": row["reasons"][:3]}
             for row in ranked[5:8]
         ],
     }
-
 
 def build(api_base: str, output: Path, today: date | None = None) -> dict:
     today = today or datetime.now(timezone.utc).date()
