@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T09:50:19.902244+00:00",
+  "updated_at": "2026-10-19T09:51:42.081865+00:00",
   "current": {
     "company": "IFC",
     "company_url": "/app/companies?name=IFC",
@@ -32,7 +32,7 @@
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-12",
     "period_end": "2026-10-18",
-    "selected_at": "2026-10-19T09:50:19.901642+00:00",
+    "selected_at": "2026-10-19T09:51:42.081253+00:00",
     "selection_version": 3,
     "companies": [
       {
@@ -66,36 +66,63 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:50:19.901642+00:00",
+        "selected_at": "2026-10-19T09:51:42.081253+00:00",
         "selection_version": 3
       },
       {
-        "company": "Obuasi",
-        "company_url": "/app/companies?name=Obuasi",
-        "headline": "Obuasi SHTS Scandal: JoyNews probe reveals GES officials knew of sexual misconduct allegation",
-        "deal_type": "regulatory_action",
+        "company": "Président",
+        "company_url": "/app/companies?name=Pr%C3%A9sident",
+        "headline": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
+        "deal_type": "leadership_change",
         "amount_usd": null,
-        "country": "GH",
-        "sector": null,
-        "announced": "2026-10-15",
-        "score": 50.71,
-        "independent_stories": 2,
+        "country": "ML",
+        "sector": "media_tech",
+        "announced": "2026-10-14",
+        "score": 47.29,
+        "independent_stories": 1,
         "transaction_records": 0,
-        "related_events": 2,
+        "related_events": 1,
         "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.80",
-          "2 distinct source-linked corporate event(s) found in the period",
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.90",
+          "1 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "Modern Ghana",
-            "title": "Obuasi SHTS Scandal: JoyNews probe reveals GES officials knew of sexual misconduct allegation",
-            "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE55aWYxekw4RXlieXBuak9jYXZuVmFydFdSUENIV1dZS1hDUWZIdmprTWJNRlBNTW90TURqX1pvOGtDU1pIVkJHWTN2Rjk2cWN2Yk5NZENwemNuWWJIZklDN0IwRmfSAVxBVV95cUxOTVpiNm5fNlN0V2xfUWtBRzc3Y1JhSjRhaE1RTnRWRDhaakdBRnNIY21fSmpuNWNPT1FiQUpHN0pITmJKUE8tSEZSY0xrZUdzY2FKQ0JDVWhUMVRoRA?oc=5",
-            "date": "2026-10-15",
+            "publisher": "Orange Actualités",
+            "title": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
+            "url": "https://news.google.com/rss/articles/CBMihAJBVV95cUxPN2Q4ckRPT3pKVVY5d2dVUC1UTFJma3p2THRpZ0JjVThFMTJwT1VtWXpSby1hS2ItZmxFd3RpTHNHc3JPZlFuaG1JQnUzSUdjcGV5M3NNYmNqaEdKOTZVM3djY2Nmd043QTM2V3VpNFI5MTgzWkFxT2ZmUTZhTFNORWp5NTdvYkhHa1hZYjBaVzBLaU00allTUF94cUVuUDdTU1hVSzNNU2JJWFByWXhRekFQVWRtUkhMQXdqX0s2THRMdkFvSzh1bDNlb2ZSR0NrMGtCMTVPNHl4SVVOZjFVaW1FMDhlemlCTlhTOHNwSW5yOEZIR2FjaXVsMi1NNXFHNTc4MQ?oc=5",
+            "date": "2026-10-14",
             "kind": "corporate_event"
-          },
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:51:42.081253+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "First",
+        "company_url": "/app/companies?name=First",
+        "headline": "First-year students stranded as Obuasi SHTS remains closed over misconduct probe",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "GH",
+        "sector": null,
+        "announced": "2026-10-14",
+        "score": 44.29,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
           {
             "publisher": "MyJoyOnline",
             "title": "First-year students stranded as Obuasi SHTS remains closed over misconduct probe",
@@ -107,139 +134,52 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:50:19.901642+00:00",
+        "selected_at": "2026-10-19T09:51:42.081253+00:00",
         "selection_version": 3
       },
       {
-        "company": "Fresh",
-        "company_url": "/app/companies?name=Fresh",
-        "headline": "EFCC Reopens Atiku Probe After Ex-Lawmaker’s Fresh Petition",
-        "deal_type": "regulatory_action",
+        "company": "Kenya Airways",
+        "company_url": "/app/companies?name=Kenya%20Airways",
+        "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+        "deal_type": "debt_restructuring",
         "amount_usd": null,
-        "country": "NG",
+        "country": "KE",
         "sector": null,
-        "announced": "2026-10-14",
-        "score": 53.19,
+        "announced": "2026-10-13",
+        "score": 50.26,
         "independent_stories": 2,
         "transaction_records": 0,
         "related_events": 2,
         "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
+          "Corporate signal: debt restructuring",
+          "Event rule confidence: 0.88",
           "2 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "9News Nigeria",
-            "title": "EFCC Reopens Atiku Probe After Ex-Lawmaker’s Fresh Petition",
-            "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOaXBNQ2hLRzh4RVZPUVNBeTM2YVl2YkNtNVMwZGtfX3lOYks1MkVrZFZTWkdNMWNEMEtIUW9BVVJFejF5LUJsRkxWT0xsOWlVbHhHQUdvZVdURkc1YXpIVDNQanRFZGFqVEhIM2Q4NWxhOU1wVm03QVowM21lblpPYm5MWkQ1dw?oc=5",
-            "date": "2026-10-14",
+            "publisher": "aviationtoday.in",
+            "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+            "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
+            "date": "2026-10-13",
             "kind": "corporate_event"
           },
           {
-            "publisher": "Reuters",
-            "title": "UK to seek fresh global focus on developing-nation debt relief",
-            "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPTDJ3N0VjcEJxRFVLbXd5MC1xZzU1dkNFUzNIOFM3Uy0wcC1UQXllbDdmQVRRMEVlcW5HV3E2XzVpU1lPMnZuemxwek1lVGJmLXI5MklJY0NUNGRPLVgyVGZLUDNIam9rdjFGWVJfYmlMMzdQb1JXenZrWGFiSF92SF9BSFNHMWZOOGYyRUtNenFkWmF1bkJLU0NRS3JGRFNqdG5B?oc=5",
-            "date": "2026-10-14",
+            "publisher": "People Daily",
+            "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
+            "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
+            "date": "2026-10-12",
             "kind": "corporate_event"
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:50:19.901642+00:00",
-        "selection_version": 3
-      },
-      {
-        "company": "Pay",
-        "company_url": "/app/companies?name=Pay",
-        "headline": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
-        "deal_type": "regulatory_action",
-        "amount_usd": null,
-        "country": "ZW",
-        "sector": null,
-        "announced": "2026-10-14",
-        "score": 48.19,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "The South African",
-            "title": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
-            "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxONlBoeFBzMWNZa3ByUFhmbktsSnVjbVZJTDhudEloR3dMUGRMQnpJbDVoQnhUeFZsNF9iTU1ZWUhiY1BvSWxhY3ZSZ2xVaHhoYXpodE9jU2I5OGxFOE9RTkpSRlJTSko2eE1hZ2lQc1BxSk52NWxHOG5BR2RQZWdEbGZQQU52Slk4a2hnNWpyeENWbnhlYXVUZFdESDEtNzJvNXZHSE9WYWJ2RDgwSDZZTmtBUm5aOF8wZDZ6VmVBQk8?oc=5",
-            "date": "2026-10-14",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:50:19.901642+00:00",
-        "selection_version": 3
-      },
-      {
-        "company": "Boost",
-        "company_url": "/app/companies?name=Boost",
-        "headline": "Denel seeks R30 billion boost, and major bank hit with $1.2 billion fine",
-        "deal_type": "regulatory_action",
-        "amount_usd": null,
-        "country": "ZA",
-        "sector": "banking",
-        "announced": "2026-10-14",
-        "score": 48.19,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Daily Investor",
-            "title": "Denel seeks R30 billion boost, and major bank hit with $1.2 billion fine",
-            "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPeVlRVEZGOXlEcl85U0VjdTNFQl92YXdQZlNyUnpyNHNVODA0Tms2UUJ0eXlOVnRJQVROcTdkeXJNZm16b20yUzdQMDBCenI1cHVjcnl2cjdSV0VfcmZ1RkszXzF2S2NLN3FPM2FYSmViZzF0cHF2Q0NuZXdRaXNKa1FzY0Z1eVgzLTBrT01XOHFhbk5VV3ItZmhMaUQxVG1lQzYycE5hbXdLQTBSWWsxZ2FPWXA?oc=5",
-            "date": "2026-10-14",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:50:19.901642+00:00",
+        "selected_at": "2026-10-19T09:51:42.081253+00:00",
         "selection_version": 3
       }
     ],
-    "runner_ups": [
-      {
-        "company": "Président",
-        "score": 47.29,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.90",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Kenya Airways",
-        "score": 50.26,
-        "reasons": [
-          "Corporate signal: debt restructuring",
-          "Event rule confidence: 0.88",
-          "2 distinct source-linked corporate event(s) found in the period"
-        ]
-      }
-    ]
+    "runner_ups": []
   },
   "history": [
     {
@@ -366,7 +306,7 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-12",
       "period_end": "2026-10-18",
-      "selected_at": "2026-10-19T09:50:19.901642+00:00",
+      "selected_at": "2026-10-19T09:51:42.081253+00:00",
       "selection_version": 3,
       "companies": [
         {
@@ -400,36 +340,63 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:50:19.901642+00:00",
+          "selected_at": "2026-10-19T09:51:42.081253+00:00",
           "selection_version": 3
         },
         {
-          "company": "Obuasi",
-          "company_url": "/app/companies?name=Obuasi",
-          "headline": "Obuasi SHTS Scandal: JoyNews probe reveals GES officials knew of sexual misconduct allegation",
-          "deal_type": "regulatory_action",
+          "company": "Président",
+          "company_url": "/app/companies?name=Pr%C3%A9sident",
+          "headline": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
+          "deal_type": "leadership_change",
           "amount_usd": null,
-          "country": "GH",
-          "sector": null,
-          "announced": "2026-10-15",
-          "score": 50.71,
-          "independent_stories": 2,
+          "country": "ML",
+          "sector": "media_tech",
+          "announced": "2026-10-14",
+          "score": 47.29,
+          "independent_stories": 1,
           "transaction_records": 0,
-          "related_events": 2,
+          "related_events": 1,
           "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.80",
-            "2 distinct source-linked corporate event(s) found in the period",
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "Modern Ghana",
-              "title": "Obuasi SHTS Scandal: JoyNews probe reveals GES officials knew of sexual misconduct allegation",
-              "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE55aWYxekw4RXlieXBuak9jYXZuVmFydFdSUENIV1dZS1hDUWZIdmprTWJNRlBNTW90TURqX1pvOGtDU1pIVkJHWTN2Rjk2cWN2Yk5NZENwemNuWWJIZklDN0IwRmfSAVxBVV95cUxOTVpiNm5fNlN0V2xfUWtBRzc3Y1JhSjRhaE1RTnRWRDhaakdBRnNIY21fSmpuNWNPT1FiQUpHN0pITmJKUE8tSEZSY0xrZUdzY2FKQ0JDVWhUMVRoRA?oc=5",
-              "date": "2026-10-15",
+              "publisher": "Orange Actualités",
+              "title": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
+              "url": "https://news.google.com/rss/articles/CBMihAJBVV95cUxPN2Q4ckRPT3pKVVY5d2dVUC1UTFJma3p2THRpZ0JjVThFMTJwT1VtWXpSby1hS2ItZmxFd3RpTHNHc3JPZlFuaG1JQnUzSUdjcGV5M3NNYmNqaEdKOTZVM3djY2Nmd043QTM2V3VpNFI5MTgzWkFxT2ZmUTZhTFNORWp5NTdvYkhHa1hZYjBaVzBLaU00allTUF94cUVuUDdTU1hVSzNNU2JJWFByWXhRekFQVWRtUkhMQXdqX0s2THRMdkFvSzh1bDNlb2ZSR0NrMGtCMTVPNHl4SVVOZjFVaW1FMDhlemlCTlhTOHNwSW5yOEZIR2FjaXVsMi1NNXFHNTc4MQ?oc=5",
+              "date": "2026-10-14",
               "kind": "corporate_event"
-            },
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:51:42.081253+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "First",
+          "company_url": "/app/companies?name=First",
+          "headline": "First-year students stranded as Obuasi SHTS remains closed over misconduct probe",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "GH",
+          "sector": null,
+          "announced": "2026-10-14",
+          "score": 44.29,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
             {
               "publisher": "MyJoyOnline",
               "title": "First-year students stranded as Obuasi SHTS remains closed over misconduct probe",
@@ -441,139 +408,52 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:50:19.901642+00:00",
+          "selected_at": "2026-10-19T09:51:42.081253+00:00",
           "selection_version": 3
         },
         {
-          "company": "Fresh",
-          "company_url": "/app/companies?name=Fresh",
-          "headline": "EFCC Reopens Atiku Probe After Ex-Lawmaker’s Fresh Petition",
-          "deal_type": "regulatory_action",
+          "company": "Kenya Airways",
+          "company_url": "/app/companies?name=Kenya%20Airways",
+          "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+          "deal_type": "debt_restructuring",
           "amount_usd": null,
-          "country": "NG",
+          "country": "KE",
           "sector": null,
-          "announced": "2026-10-14",
-          "score": 53.19,
+          "announced": "2026-10-13",
+          "score": 50.26,
           "independent_stories": 2,
           "transaction_records": 0,
           "related_events": 2,
           "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
+            "Corporate signal: debt restructuring",
+            "Event rule confidence: 0.88",
             "2 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "9News Nigeria",
-              "title": "EFCC Reopens Atiku Probe After Ex-Lawmaker’s Fresh Petition",
-              "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOaXBNQ2hLRzh4RVZPUVNBeTM2YVl2YkNtNVMwZGtfX3lOYks1MkVrZFZTWkdNMWNEMEtIUW9BVVJFejF5LUJsRkxWT0xsOWlVbHhHQUdvZVdURkc1YXpIVDNQanRFZGFqVEhIM2Q4NWxhOU1wVm03QVowM21lblpPYm5MWkQ1dw?oc=5",
-              "date": "2026-10-14",
+              "publisher": "aviationtoday.in",
+              "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+              "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
+              "date": "2026-10-13",
               "kind": "corporate_event"
             },
             {
-              "publisher": "Reuters",
-              "title": "UK to seek fresh global focus on developing-nation debt relief",
-              "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPTDJ3N0VjcEJxRFVLbXd5MC1xZzU1dkNFUzNIOFM3Uy0wcC1UQXllbDdmQVRRMEVlcW5HV3E2XzVpU1lPMnZuemxwek1lVGJmLXI5MklJY0NUNGRPLVgyVGZLUDNIam9rdjFGWVJfYmlMMzdQb1JXenZrWGFiSF92SF9BSFNHMWZOOGYyRUtNenFkWmF1bkJLU0NRS3JGRFNqdG5B?oc=5",
-              "date": "2026-10-14",
+              "publisher": "People Daily",
+              "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
+              "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
+              "date": "2026-10-12",
               "kind": "corporate_event"
             }
           ],
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:50:19.901642+00:00",
-          "selection_version": 3
-        },
-        {
-          "company": "Pay",
-          "company_url": "/app/companies?name=Pay",
-          "headline": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "ZW",
-          "sector": null,
-          "announced": "2026-10-14",
-          "score": 48.19,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "The South African",
-              "title": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
-              "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxONlBoeFBzMWNZa3ByUFhmbktsSnVjbVZJTDhudEloR3dMUGRMQnpJbDVoQnhUeFZsNF9iTU1ZWUhiY1BvSWxhY3ZSZ2xVaHhoYXpodE9jU2I5OGxFOE9RTkpSRlJTSko2eE1hZ2lQc1BxSk52NWxHOG5BR2RQZWdEbGZQQU52Slk4a2hnNWpyeENWbnhlYXVUZFdESDEtNzJvNXZHSE9WYWJ2RDgwSDZZTmtBUm5aOF8wZDZ6VmVBQk8?oc=5",
-              "date": "2026-10-14",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:50:19.901642+00:00",
-          "selection_version": 3
-        },
-        {
-          "company": "Boost",
-          "company_url": "/app/companies?name=Boost",
-          "headline": "Denel seeks R30 billion boost, and major bank hit with $1.2 billion fine",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "ZA",
-          "sector": "banking",
-          "announced": "2026-10-14",
-          "score": 48.19,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Daily Investor",
-              "title": "Denel seeks R30 billion boost, and major bank hit with $1.2 billion fine",
-              "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPeVlRVEZGOXlEcl85U0VjdTNFQl92YXdQZlNyUnpyNHNVODA0Tms2UUJ0eXlOVnRJQVROcTdkeXJNZm16b20yUzdQMDBCenI1cHVjcnl2cjdSV0VfcmZ1RkszXzF2S2NLN3FPM2FYSmViZzF0cHF2Q0NuZXdRaXNKa1FzY0Z1eVgzLTBrT01XOHFhbk5VV3ItZmhMaUQxVG1lQzYycE5hbXdLQTBSWWsxZ2FPWXA?oc=5",
-              "date": "2026-10-14",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:50:19.901642+00:00",
+          "selected_at": "2026-10-19T09:51:42.081253+00:00",
           "selection_version": 3
         }
       ],
-      "runner_ups": [
-        {
-          "company": "Président",
-          "score": 47.29,
-          "reasons": [
-            "Corporate signal: leadership change",
-            "Event rule confidence: 0.90",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Kenya Airways",
-          "score": 50.26,
-          "reasons": [
-            "Corporate signal: debt restructuring",
-            "Event rule confidence: 0.88",
-            "2 distinct source-linked corporate event(s) found in the period"
-          ]
-        }
-      ]
+      "runner_ups": []
     }
   ]
 }
