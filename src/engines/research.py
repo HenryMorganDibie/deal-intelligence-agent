@@ -1002,6 +1002,7 @@ Answer the question using ONLY the numbered evidence items provided. Rules:
 - Prefer direct primary documents for material figures, while retaining credible secondary reporting when primary evidence is unavailable.
 - Distinguish announced, signed, closed and completed transactions; do not treat them as interchangeable.
 - Cite with square brackets only, e.g. [4], never other bracket styles.
+- Write in plain text only, not Markdown or other markup. Do not use hash-prefixed headings, asterisk/underscore emphasis, Markdown bullets, numbered-list prefixes, tables, blockquotes, code fences, or Markdown links. Use short section titles on their own lines and complete natural-language paragraphs. Keep citations such as [4] exactly as citations.
 - Be concise: a short direct answer, then the key supporting points. Use currencies as reported and label conversions or derived figures clearly."""
 
 
@@ -1012,6 +1013,26 @@ def _evidence_block(items: list[dict]) -> str:
 
 _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z\-*•])")
 _CITE = re.compile(r"\[(\d{1,3})\]")
+
+
+def plain_text_answer(text: str) -> str:
+    """Remove Markdown presentation from generated research while preserving citation markers."""
+    text = re.sub(r"(?m)^\s{0,3}`{3,}[^\n]*$", "", text)
+    text = re.sub(r"!\[([^\]]*)\]\((https?://[^)]+)\)", r"\1 (\2)", text)
+    text = re.sub(r"\[([^\]]+)\]\((https?://[^)]+)\)", r"\1 (\2)", text)
+    text = re.sub(r"(?m)^\s{0,3}#{1,6}\s*", "", text)
+    text = re.sub(r"(?m)^\s{0,3}>\s?", "", text)
+    text = re.sub(r"(?m)^\s*[-*+]\s+", "", text)
+    text = re.sub(r"(?m)^\s*\d{1,2}[.)]\s+", "", text)
+    text = re.sub(r"(?m)^\s*(?:[-*_]\s*){3,}$", "", text)
+    text = re.sub(r"(?m)^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$", "", text)
+    text = re.sub(r"(?m)^\s*\|", "", text)
+    text = re.sub(r"\|\s*$", "", text, flags=re.MULTILINE)
+    text = re.sub(r"\s*\|\s*", " — ", text)
+    text = re.sub(r"\*\*(.*?)\*\*|__(.*?)__", lambda m: m.group(1) or m.group(2), text)
+    text = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)|(?<!_)_([^_\n]+)_(?!_)", lambda m: m.group(1) or m.group(2), text)
+    text = re.sub(r"`{1,3}", "", text)
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
 def normalise_citations(text: str) -> str:
@@ -1348,6 +1369,7 @@ def answer(question: str, items: list[dict], parsed: Optional[dict] = None, llm:
         log.warning("research LLM call failed: %s", e)
         text = deterministic_answer(question, parsed, items)
         return {"answer": text, "mode": "deterministic", "model": None, **_validation_summary(text, items)}
+    text = plain_text_answer(text)
     v = validate_citations(text, len(items), items=items)
     return {"answer": v["text"], "mode": "llm", "model": model, "validation": v}
 
