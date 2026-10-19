@@ -82,8 +82,9 @@ def test_broader_company_coverage_is_not_counted_as_deal_corroboration():
 
 
 
-def test_shortlist_contains_up_to_five_companies_newest_announcement_first():
+def test_shortlist_uses_distinct_non_transaction_events_and_newest_first():
     deals = []
+    events = []
     for index in range(6):
         company = f"Company {index}"
         announced = f"2026-10-{12 + index:02d}"
@@ -91,22 +92,55 @@ def test_shortlist_contains_up_to_five_companies_newest_announcement_first():
             "target": company,
             "deal_type": "equity_funding",
             "announced": announced,
-            "amount_usd": 1_000_000 + index,
+            "headline": f"{company} raises new funding",
+            "sources": [{"url": f"https://example.com/deal/{index}"}],
+        })
+        events.append({
+            "headline": f"{company} appoints new chief executive",
+            "day": announced,
+            "signal_type": "leadership_change",
+            "rule_score": 0.9,
+            "credibility": 0.8,
+            "publisher": "Business News",
+            "url": f"https://example.com/event/{index}",
             "country": "NG",
             "sector": "fintech",
-            "headline": f"{company} raises new funding",
-            "independent_stories": 1,
-            "sources": [{
-                "publisher": "News",
-                "title": f"{company} raises new funding",
-                "url": f"https://example.com/{index}",
-                "date": announced,
-            }],
         })
-    result = select_company(deals, [], date(2026, 10, 12), date(2026, 10, 18))
+    events.append({
+        "headline": "Company 5 raises new funding",
+        "day": "2026-10-18",
+        "signal_type": "ma_activity",
+        "rule_score": 1.0,
+        "url": "https://example.com/deal/5",
+    })
+    result = select_company(deals, events, date(2026, 10, 12), date(2026, 10, 18))
     companies = result["companies"]
     assert len(companies) == 5
     dates = [row["announced"] for row in companies]
     assert dates == sorted(dates, reverse=True)
     assert companies[0]["company"] == "Company 5"
+    assert companies[0]["headline"] == "Company 5 appoints new chief executive"
+    assert companies[0]["sources"][0]["kind"] == "corporate_event"
     assert result["company"] == companies[0]["company"]
+
+
+def test_refuses_to_fill_corporate_week_with_only_transaction_posts():
+    deals = [{
+        "target": "Acme",
+        "headline": "Acme raises $10m",
+        "announced": "2026-10-15",
+        "sources": [{"url": "https://example.com/deal"}],
+    }]
+    events = [{
+        "headline": "Acme raises $10m",
+        "day": "2026-10-15",
+        "signal_type": "ma_activity",
+        "rule_score": 1.0,
+        "url": "https://example.com/deal",
+    }]
+    try:
+        select_company(deals, events, date(2026, 10, 12), date(2026, 10, 18))
+    except RuntimeError as exc:
+        assert "non-transaction corporate event" in str(exc)
+    else:
+        raise AssertionError("Corporate of the Week should not reuse a transaction post")
