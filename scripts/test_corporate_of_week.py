@@ -1,6 +1,6 @@
 from datetime import date
 
-from scripts.corporate_of_week import matched_events, score_deal, select_company
+from scripts.corporate_of_week import build, matched_events, score_deal, select_company
 
 
 def test_matching_event_requires_company_name_in_headline():
@@ -144,3 +144,44 @@ def test_refuses_to_fill_corporate_week_with_only_transaction_posts():
         assert "non-transaction corporate event" in str(exc)
     else:
         raise AssertionError("Corporate of the Week should not reuse a transaction post")
+
+
+
+def test_build_searches_historical_company_universe_not_only_recent_deals(monkeypatch, tmp_path):
+    calls = []
+
+    def fake_request_json(url):
+        calls.append(url)
+        if "/api/deals?" in url:
+            assert "since=" not in url
+            return {
+                "total_matching": 1,
+                "deals": [{
+                    "target": "Historical Company",
+                    "headline": "Historical Company raised funding last year",
+                    "announced": "2025-06-01",
+                    "deal_type": "equity_funding",
+                    "sources": [{"url": "https://example.com/old-deal"}],
+                }],
+            }
+        if "/api/events?" in url:
+            return {
+                "events": [{
+                    "headline": "Historical Company appoints a new chief executive",
+                    "day": "2026-10-17",
+                    "signal_type": "leadership_change",
+                    "rule_score": 0.9,
+                    "credibility": 0.8,
+                    "publisher": "Business News",
+                    "url": "https://example.com/new-ceo",
+                    "country": "NG",
+                }]
+            }
+        raise AssertionError(f"Unexpected API URL: {url}")
+
+    monkeypatch.setattr("scripts.corporate_of_week.request_json", fake_request_json)
+    selected = build("https://example.test", tmp_path / "corporate.json", today=date(2026, 10, 19))
+
+    assert selected["company"] == "Historical Company"
+    assert selected["headline"] == "Historical Company appoints a new chief executive"
+    assert any("/api/deals?limit=100&offset=0" in url for url in calls)
