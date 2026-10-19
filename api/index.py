@@ -127,6 +127,48 @@ from src.hosted_market import router as market_router  # noqa: E402
 app.include_router(market_router)
 
 
+# Public read-only datasets are shared by every visitor. Let Vercel's edge cache
+# absorb repeated identical GETs instead of invoking the Python function each time.
+# User-specific watchlists, brief access, analytics, writes, and cron routes are
+# deliberately excluded.
+_PUBLIC_CACHE_EXACT = {
+    "/api/countries",
+    "/api/currencies",
+    "/api/coverage",
+    "/api/deals",
+    "/api/comparables",
+    "/api/investors",
+    "/api/funds",
+    "/api/events",
+    "/api/companies/profile",
+    "/api/valuation",
+    "/api/pulse",
+    "/api/showcase",
+    "/api/evaluation",
+    "/api/evaluation/files",
+}
+
+
+def _is_public_cacheable_get(path: str) -> bool:
+    if path in _PUBLIC_CACHE_EXACT:
+        return True
+    return path.startswith((
+        "/api/countries/",
+        "/api/deals/",
+        "/api/investors/",
+        "/api/sectors/",
+        "/api/evaluation/files/",
+    ))
+
+
+@app.middleware("http")
+async def cache_public_market_reads(request: Request, call_next):
+    response = await call_next(request)
+    if request.method == "GET" and response.status_code == 200 and _is_public_cacheable_get(request.url.path):
+        response.headers.setdefault("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300")
+    return response
+
+
 async def _refresh_outcome_stats(client: httpx.AsyncClient) -> None:
     """Live outcome counts and observations for calibration, refreshed at most hourly per instance."""
     from src.hosted_market import refresh_live
