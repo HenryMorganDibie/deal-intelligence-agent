@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T09:46:42.500108+00:00",
+  "updated_at": "2026-10-19T09:49:40.120768+00:00",
   "current": {
     "company": "Société Générale",
     "company_url": "/app/companies?name=Soci%C3%A9t%C3%A9%20G%C3%A9n%C3%A9rale",
@@ -32,7 +32,7 @@
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-12",
     "period_end": "2026-10-18",
-    "selected_at": "2026-10-19T09:46:42.499420+00:00",
+    "selected_at": "2026-10-19T09:49:40.120190+00:00",
     "selection_version": 3,
     "companies": [
       {
@@ -66,55 +66,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:46:42.499420+00:00",
-        "selection_version": 3
-      },
-      {
-        "company": "Une",
-        "company_url": "/app/companies?name=Une",
-        "headline": "Après son but face à l'APR FC : Zamalek inflige une sanction aggravée à Nasser Mansi",
-        "deal_type": "regulatory_action",
-        "amount_usd": null,
-        "country": "RW",
-        "sector": null,
-        "announced": "2026-10-17",
-        "score": 62.47,
-        "independent_stories": 3,
-        "transaction_records": 0,
-        "related_events": 3,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "3 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Goal.com",
-            "title": "Après son but face à l'APR FC : Zamalek inflige une sanction aggravée à Nasser Mansi",
-            "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxQQ05tOGgtM2pDYmstTFgzdE8xXzRTVm5ENE9ILVQzTktNcVdtT0dCSndNaEhGd2ZPd0JHU3hOZ1l3ZHhXeGpNRWYzX19qTGl4R21yYkxFNm9wMTlxQl84aXhndmhSWVVTQXgzWVBaeHkxRVZxSnRETjkzdE1fekNoNUpKaVJRNG1UakFGdTJNbVFBOXlER2RGb0tReU5EX1AxVVhSaXcwazdMdjg0blNPR1phSmN5VXY4ckhPdmQ4dlNnT1hTZUN6UFlmSQ?oc=5",
-            "date": "2026-10-17",
-            "kind": "corporate_event"
-          },
-          {
-            "publisher": "Medias24",
-            "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-            "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
-            "date": "2026-10-16",
-            "kind": "corporate_event"
-          },
-          {
-            "publisher": "Algerie360",
-            "title": "Vente en ligne en Algérie : le PLF 2027 prévoit une amende de 1 million de DA",
-            "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQM3RWdjdaRkdBNmlVMUNoOEJsZWtXVW1EMElSZ01EaURnOUpxYUZRaFhxRURubUdYNUJ4ZU5tQ0hISndob2VQUmR1MEkwTUk5ZV9GaDUxMHlQMVRzYkxMMFd0VzR1eDdBUl9CX1RDYTQ5UTdybmMxTVFBV3FndzNzanhGNWVRZw?oc=5",
-            "date": "2026-10-13",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:46:42.499420+00:00",
+        "selected_at": "2026-10-19T09:49:40.120190+00:00",
         "selection_version": 3
       },
       {
@@ -155,7 +107,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:46:42.499420+00:00",
+        "selected_at": "2026-10-19T09:49:40.120190+00:00",
         "selection_version": 3
       },
       {
@@ -196,7 +148,41 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:46:42.499420+00:00",
+        "selected_at": "2026-10-19T09:49:40.120190+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "IFC",
+        "company_url": "/app/companies?name=IFC",
+        "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+        "deal_type": "distressed_asset",
+        "amount_usd": null,
+        "country": "MA",
+        "sector": "media_tech",
+        "announced": "2026-10-16",
+        "score": 52.24,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: distressed asset",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Medias24",
+            "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+            "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+            "date": "2026-10-16",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:49:40.120190+00:00",
         "selection_version": 3
       },
       {
@@ -230,7 +216,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:46:42.499420+00:00",
+        "selected_at": "2026-10-19T09:49:40.120190+00:00",
         "selection_version": 3
       }
     ],
@@ -389,7 +375,7 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-12",
       "period_end": "2026-10-18",
-      "selected_at": "2026-10-19T09:46:42.499420+00:00",
+      "selected_at": "2026-10-19T09:49:40.120190+00:00",
       "selection_version": 3,
       "companies": [
         {
@@ -423,55 +409,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:46:42.499420+00:00",
-          "selection_version": 3
-        },
-        {
-          "company": "Une",
-          "company_url": "/app/companies?name=Une",
-          "headline": "Après son but face à l'APR FC : Zamalek inflige une sanction aggravée à Nasser Mansi",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "RW",
-          "sector": null,
-          "announced": "2026-10-17",
-          "score": 62.47,
-          "independent_stories": 3,
-          "transaction_records": 0,
-          "related_events": 3,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "3 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Goal.com",
-              "title": "Après son but face à l'APR FC : Zamalek inflige une sanction aggravée à Nasser Mansi",
-              "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxQQ05tOGgtM2pDYmstTFgzdE8xXzRTVm5ENE9ILVQzTktNcVdtT0dCSndNaEhGd2ZPd0JHU3hOZ1l3ZHhXeGpNRWYzX19qTGl4R21yYkxFNm9wMTlxQl84aXhndmhSWVVTQXgzWVBaeHkxRVZxSnRETjkzdE1fekNoNUpKaVJRNG1UakFGdTJNbVFBOXlER2RGb0tReU5EX1AxVVhSaXcwazdMdjg0blNPR1phSmN5VXY4ckhPdmQ4dlNnT1hTZUN6UFlmSQ?oc=5",
-              "date": "2026-10-17",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Medias24",
-              "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-              "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
-              "date": "2026-10-16",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Algerie360",
-              "title": "Vente en ligne en Algérie : le PLF 2027 prévoit une amende de 1 million de DA",
-              "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQM3RWdjdaRkdBNmlVMUNoOEJsZWtXVW1EMElSZ01EaURnOUpxYUZRaFhxRURubUdYNUJ4ZU5tQ0hISndob2VQUmR1MEkwTUk5ZV9GaDUxMHlQMVRzYkxMMFd0VzR1eDdBUl9CX1RDYTQ5UTdybmMxTVFBV3FndzNzanhGNWVRZw?oc=5",
-              "date": "2026-10-13",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:46:42.499420+00:00",
+          "selected_at": "2026-10-19T09:49:40.120190+00:00",
           "selection_version": 3
         },
         {
@@ -512,7 +450,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:46:42.499420+00:00",
+          "selected_at": "2026-10-19T09:49:40.120190+00:00",
           "selection_version": 3
         },
         {
@@ -553,7 +491,41 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:46:42.499420+00:00",
+          "selected_at": "2026-10-19T09:49:40.120190+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "IFC",
+          "company_url": "/app/companies?name=IFC",
+          "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+          "deal_type": "distressed_asset",
+          "amount_usd": null,
+          "country": "MA",
+          "sector": "media_tech",
+          "announced": "2026-10-16",
+          "score": 52.24,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Medias24",
+              "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+              "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+              "date": "2026-10-16",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:49:40.120190+00:00",
           "selection_version": 3
         },
         {
@@ -587,7 +559,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:46:42.499420+00:00",
+          "selected_at": "2026-10-19T09:49:40.120190+00:00",
           "selection_version": 3
         }
       ],
