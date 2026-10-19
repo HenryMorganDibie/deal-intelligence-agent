@@ -193,7 +193,7 @@ export type Showcase = { hero: ShowcaseBrief | null; example: ShowcaseBrief | nu
 export async function getShowcase(): Promise<Showcase | null> {
   if (!API_URL) return null;
   try {
-    const resp = await fetch(fresh("/api/showcase"), { next: { revalidate: REVALIDATE } });
+    const resp = await fetch(fresh("/api/showcase"), { next: { revalidate: 300 } });
     if (!resp.ok) return null;
     return (await resp.json()) as Showcase;
   } catch {
