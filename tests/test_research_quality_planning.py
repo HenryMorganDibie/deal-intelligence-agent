@@ -7,13 +7,13 @@ from src.engines.research_quality import (
 def test_query_plan_uses_distinct_company_and_primary_source_queries():
     plan = build_query_plan(
         "What funding did Acme raise in Kenya?",
-        {"companies": ["Acme"], "countries": ["KE"], "deal_types": ["equity_funding"]},
+        {"companies": ["Acme"], "countries": ["Kenya"], "deal_types": ["equity_funding"]},
         "Kenya Acme funding",
     )
     assert len(plan) >= 3
     assert len({q.lower() for q in plan}) == len(plan)
     assert any("investor relations" in q for q in plan)
-    assert any("Kenya" in q for q in plan)
+    assert any(q.startswith("Kenya (") for q in plan)
 
 
 def test_amount_conflicts_are_flagged_for_named_company_only():
