@@ -26,6 +26,7 @@ GENERIC_TARGETS = {
     # Common scraped headline fragments, not company names.
     "million", "millions", "president", "président", "presidente", "violators", "une",
     "startup", "bank", "company limited", "private limited",
+    "fresh", "pay", "boost", "obuasi",
 }
 
 # News stories dominated by transactions, politics, or sports are not corporate
@@ -34,7 +35,8 @@ NON_CORPORATE_HEADLINE = re.compile(
     r"\b(?:merger|merges|merged|fusion|acquisition|acquires|acquired|takeover|buyout|"
     r"stake in|exit plans|raises? (?:usd|\$|€|£|\d)|funding round|"
     r"political party|\bpdp\b|\bfc\b|football|liga|league president|"
-    r"mourns|election campaign)\b",
+    r"mourns|election campaign|school scandal|sexual misconduct|truck driver|"
+    r"what happens if he cannot pay|ex-lawmaker|major bank hit with)\b",
     re.IGNORECASE,
 )
 
