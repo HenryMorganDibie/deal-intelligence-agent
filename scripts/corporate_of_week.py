@@ -23,6 +23,9 @@ TYPE_WEIGHT = {
 GENERIC_TARGETS = {
     "africa", "african", "company", "startup", "startups", "firm", "group",
     "fund", "consortium", "government", "unknown", "undisclosed", "generic",
+    # Common scraped headline fragments, not company names.
+    "million", "millions", "president", "président", "presidente", "violators",
+    "startup", "bank", "company limited", "private limited",
 }
 
 
