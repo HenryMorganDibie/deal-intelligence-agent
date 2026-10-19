@@ -22,7 +22,8 @@ type CorporateSelection = {
 };
 const corporateSelection = (corporateOfWeekArchive as { current: CorporateSelection | null }).current;
 const corporateCompanies = (corporateSelection?.companies?.length ? corporateSelection.companies : corporateSelection ? [corporateSelection] : [])
-  .filter((company) => company.sources.some((source) => source.kind === "corporate_event"));
+  .filter((company) => company.sources.some((source) => source.kind === "corporate_event"))
+  .filter((company) => !["ma_activity", "m_and_a_activity", "m&a", "merger", "acquisition"].includes(company.deal_type.toLowerCase()));
 function displayDate(value: string | null | undefined): string {
   if (!value) return "Date not available";
   const parsed = new Date(value.slice(0, 10) + "T00:00:00Z");
