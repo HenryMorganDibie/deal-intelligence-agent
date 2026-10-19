@@ -22,7 +22,7 @@ TYPE_WEIGHT = {
 }
 GENERIC_TARGETS = {
     "africa", "african", "company", "startup", "startups", "firm", "group",
-    "fund", "consortium", "government", "unknown", "undisclosed",
+    "fund", "consortium", "government", "unknown", "undisclosed", "generic",
 }
 
 
