@@ -178,3 +178,33 @@ def test_conflict_metrics_are_undefined_when_no_conflicts_are_labelled():
     )
     assert result["conflict_detection"]["precision"] is None
     assert result["conflict_detection"]["recall"] is None
+
+
+def test_benchmark_runner_records_question_failure_and_continues(tmp_path, monkeypatch):
+    from scripts import run_research_benchmark as runner
+
+    questions = tmp_path / "questions.jsonl"
+    output = tmp_path / "review.jsonl"
+    questions.write_text(
+        json.dumps({"case_id": "case-fails", "question": "Question that fails"}) + "\\n"
+        + json.dumps({"case_id": "case-works", "question": "Question that works"}) + "\\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(runner.deals_mod, "load_deals", lambda: {})
+    monkeypatch.setattr(runner, "load_json", lambda *args, **kwargs: [])
+    calls = {"count": 0}
+
+    def fake_research(*args, **kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise RuntimeError("temporary provider failure")
+        return {"evidence": [], "answer": "Insufficient evidence", "mode": "deterministic"}
+
+    monkeypatch.setattr(runner.research_mod, "research", fake_research)
+    result = runner.run(questions, output, live_news=False)
+    rows = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()]
+    assert result["cases"] == 2
+    assert result["failed_cases"] == 1
+    assert rows[0]["run_status"] == "error"
+    assert "temporary provider failure" in rows[0]["run_error"]
+    assert rows[1]["run_status"] == "completed"
