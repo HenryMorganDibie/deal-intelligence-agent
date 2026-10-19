@@ -326,6 +326,20 @@ def _market_brief_markdown(report: dict) -> str:
     return "\n".join(lines)
 
 
+@app.get("/api/market-briefs")
+async def list_market_briefs() -> dict:
+    """Return a small public index of market briefs, never company-analysis history."""
+    if not _configured():
+        raise HTTPException(503, "The API is not configured.")
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await _rpc(client, "list_market_briefs", {"p_limit": 20})
+    if resp.status_code != 200:
+        log.error("list_market_briefs failed: %s %s", resp.status_code, resp.text[:300])
+        raise HTTPException(502, "Could not load recent market briefs.")
+    rows = resp.json() or []
+    return {"briefs": rows}
+
+
 @app.post("/api/market-briefs")
 async def create_market_brief(body: MarketBriefBody) -> dict:
     """Build and persist a public, source-linked market brief from the existing deal store."""
