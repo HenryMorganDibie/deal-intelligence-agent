@@ -346,7 +346,7 @@ class _ArticleTextParser(HTMLParser):
             self.main_depth -= 1
         if tag == "p" and self.paragraph_depth:
             self.paragraph_depth -= 1
-            paragraph = re.sub(r"\\s+", " ", " ".join(self.current)).strip()
+            paragraph = re.sub(r"\s+", " ", " ".join(self.current)).strip()
             if len(paragraph) >= 45:
                 self.paragraphs.append(paragraph)
             self.current = []
@@ -354,7 +354,7 @@ class _ArticleTextParser(HTMLParser):
     def handle_data(self, data):
         if self.skip_depth:
             return
-        value = re.sub(r"\\s+", " ", data).strip()
+        value = re.sub(r"\s+", " ", data).strip()
         if not value:
             return
         if self.paragraph_depth:
@@ -368,7 +368,7 @@ class _ArticleTextParser(HTMLParser):
             paragraphs = paragraphs + self.parts
         seen, result = set(), []
         for part in paragraphs:
-            part = re.sub(r"\\s+", " ", part).strip()
+            part = re.sub(r"\s+", " ", part).strip()
             if len(part) >= 45 and part.casefold() not in seen:
                 seen.add(part.casefold())
                 result.append(part)
