@@ -47,6 +47,8 @@ def build_query_plan(question: str, parsed: dict, base_query: str, limit: int = 
         add(" ".join(countries) + f" ({action})")
     if not companies and not countries and len(queries) < limit:
         add(question + " official source")
+    if countries and action and len(queries) > limit:
+        queries = queries[:limit - 1] + [queries[-1]]
     return queries[:max(1, limit)]
 
 
