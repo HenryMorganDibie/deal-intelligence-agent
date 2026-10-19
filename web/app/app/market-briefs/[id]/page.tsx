@@ -132,7 +132,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
             catch { setCopied(false); }
           }}>{copied ? "Link copied" : "Share link"}</button>
           {row.report.brief_type === "research_newsletter" && <button type="button" className="btn btn-primary h-8 px-3 text-[0.8125rem]" onClick={() => window.print()}>Export PDF / Print</button>}
-          <button type="button" className="btn btn-ghost h-8 px-3 text-[0.8125rem]" onClick={() => download("africa-deals-intelligence-brief.md", row.markdown || row.report.markdown)}>Export Markdown</button>
+          {row.report.brief_type !== "research_newsletter" && <button type="button" className="btn btn-ghost h-8 px-3 text-[0.8125rem]" onClick={() => download("africa-deals-intelligence-brief.md", row.markdown || row.report.markdown)}>Export Markdown</button>}
         </div>}
       </div>
       {row === undefined ? <p className="text-sm text-[color:var(--muted)]">Loading market brief…</p> :
