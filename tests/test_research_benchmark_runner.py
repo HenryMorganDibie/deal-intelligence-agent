@@ -186,8 +186,8 @@ def test_benchmark_runner_records_question_failure_and_continues(tmp_path, monke
     questions = tmp_path / "questions.jsonl"
     output = tmp_path / "review.jsonl"
     questions.write_text(
-        json.dumps({"case_id": "case-fails", "question": "Question that fails"}) + "\\n"
-        + json.dumps({"case_id": "case-works", "question": "Question that works"}) + "\\n",
+        json.dumps({"case_id": "case-fails", "question": "Question that fails"}) + "\n"
+        + json.dumps({"case_id": "case-works", "question": "Question that works"}) + "\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(runner.deals_mod, "load_deals", lambda: {})
