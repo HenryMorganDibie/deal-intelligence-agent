@@ -12,6 +12,12 @@ type MarketReport = {
   key_transactions: Array<Record<string, any>>; comparables: Array<Record<string, any>>; observed_patterns: string[];
   advisory_signals: Array<{ title: string; rationale: string; evidence_count: number; evidence: Array<{ headline: string; url: string | null }> }>;
   methodology: string; coverage_note: string; markdown: string;
+  research_question?: string;
+  web_research?: {
+    question?: string; answer?: string; mode?: "llm" | "deterministic" | "unavailable"; model?: string | null;
+    evidence?: Array<{ n: number; kind: string; title: string; text: string; url: string | null; date: string | null; source: string | null; source_quality?: string; source_quality_note?: string }>;
+    validation?: { grounded_share?: number; invalid_citations_removed?: number; uncited_sentences?: string[] };
+  };
 };
 type Result = { id: string; title: string; report: MarketReport; markdown: string; created_at: string };
 
@@ -62,6 +68,58 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
           ].map(([title, value]) => <div key={title} className="panel p-4"><p className="text-xs text-[color:var(--muted)]">{title}</p><p className="mt-2 text-xl font-semibold">{value}</p></div>)}
         </div>
         <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">Metrics describe records currently held by Deal Intelligence, not a complete census of all transactions. Undisclosed amounts are not estimated.</p>
+
+        <section className="mt-10 panel p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="eyebrow">Hybrid research</p>
+              <h2 className="h3 mt-2 text-xl">LLM analysis with live web evidence</h2>
+              {row.report.research_question && <p className="mt-2 text-sm text-[color:var(--muted)]">Focus: {row.report.research_question}</p>}
+            </div>
+            <span className="kbd">{row.report.web_research?.mode === "llm" ? "LLM synthesis" : row.report.web_research?.mode === "deterministic" ? "Deterministic fallback" : "Web research unavailable"}</span>
+          </div>
+          {row.report.web_research?.mode !== "llm" && (
+            <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
+              {row.report.web_research?.mode === "deterministic"
+                ? "The LLM was unavailable for this run, so this section uses the research engine's deterministic fallback. Check the linked evidence before relying on an interpretation."
+                : "Live web research could not be completed for this run. The database-backed transaction metrics remain available; no external findings have been inferred."}
+            </p>
+          )}
+          {row.report.web_research?.answer && (
+            <div className="mt-4 whitespace-pre-wrap text-sm leading-7">{row.report.web_research.answer}</div>
+          )}
+          {row.report.web_research?.validation && (
+            <p className="mt-3 text-xs text-[color:var(--dim)]">
+              Citation validation: {Math.round((row.report.web_research.validation.grounded_share ?? 0) * 100)}% grounded sentences
+              {typeof row.report.web_research.validation.invalid_citations_removed === "number"
+                ? " · " + row.report.web_research.validation.invalid_citations_removed + " invalid citation(s) removed"
+                : ""}.
+            </p>
+          )}
+          <div className="mt-5 border-t hairline pt-4">
+            <h3 className="text-sm font-semibold">Evidence found ({row.report.web_research?.evidence?.length ?? 0})</h3>
+            <p className="mt-1 text-xs text-[color:var(--dim)]">Search results and stored records are evidence leads, not automatic confirmation. Check the original publisher page for context.</p>
+            {(row.report.web_research?.evidence ?? []).length ? (
+              <ul className="mt-3 space-y-3">
+                {(row.report.web_research?.evidence ?? []).map((item) => (
+                  <li key={String(item.n) + "-" + (item.url ?? item.title)} className="border-b hairline pb-3 last:border-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="kbd">[{item.n}]</span>
+                      <span className="text-xs uppercase tracking-wide text-[color:var(--muted)]">{readable(item.kind)}</span>
+                      {item.date && <span className="text-xs text-[color:var(--dim)]">{item.date}</span>}
+                    </div>
+                    {item.url ? (
+                      <a className="mt-1 inline-block text-sm font-medium underline decoration-[color:var(--dim)] underline-offset-4 hover:text-[color:var(--text)]" href={item.url} target="_blank" rel="noreferrer">{item.title} ↗</a>
+                    ) : <p className="mt-1 text-sm font-medium">{item.title}</p>}
+                    {item.source && <p className="mt-1 text-xs text-[color:var(--muted)]">Source: {item.source}{item.source_quality ? " · " + item.source_quality : ""}</p>}
+                    <p className="mt-1 text-sm leading-relaxed text-[color:var(--muted)]">{item.text}</p>
+                    {item.source_quality_note && <p className="mt-1 text-xs text-[color:var(--dim)]">{item.source_quality_note}</p>}
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="mt-3 text-sm text-[color:var(--muted)]">No additional live web evidence was returned for this query.</p>}
+          </div>
+        </section>
 
         <section className="mt-10">
           <h2 className="h3 text-xl">Key transactions</h2>
