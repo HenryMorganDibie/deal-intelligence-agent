@@ -1201,19 +1201,29 @@ def deterministic_answer(question: str, parsed: dict, items: list[dict]) -> str:
 
 
 def evidence_coverage(items: list[dict]) -> list[dict]:
-    """Summarise retrieved evidence and its newest source date without implying completeness."""
+    """Summarise source dates, accessible article text and publisher diversity without implying completeness."""
     kinds = sorted({item["kind"] for item in items})
-    return [
-        {
-            "kind": kind,
-            "items": sum(1 for item in items if item["kind"] == kind),
-            "latest_source_date": max(
-                (str(item["date"])[:10] for item in items if item["kind"] == kind and item.get("date")),
-                default=None,
-            ),
+    coverage = []
+    for kind in kinds:
+        selected = [item for item in items if item["kind"] == kind]
+        domains = {
+            (urlparse(str(item.get("url") or "")).hostname or "").lower().removeprefix("www.")
+            for item in selected if item.get("url")
         }
-        for kind in kinds
-    ]
+        coverage.append({
+            "kind": kind,
+            "items": len(selected),
+            "latest_source_date": max(
+                (str(item["date"])[:10] for item in selected if item.get("date")), default=None,
+            ),
+            "direct_article_text_items": sum(item.get("content_status") == "article_text_retrieved"
+                                             for item in selected),
+            "snippet_only_items": sum(item.get("content_status") in {"snippet_only", "injected_search_snippet"}
+                                       for item in selected),
+            "distinct_source_domains": len(domains),
+            "source_domains": sorted(domains)[:12],
+        })
+    return coverage
 
 
 def answer(question: str, items: list[dict], parsed: Optional[dict] = None, llm: Optional[Callable] = None) -> dict:
