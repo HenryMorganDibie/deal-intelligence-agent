@@ -230,6 +230,15 @@ export type ResearchResult = {
   model: string | null;
   evidence: EvidenceItem[];
   evidence_coverage: { kind: string; items: number; latest_source_date: string | null }[];
+  conflicts?: {
+    type: string;
+    company: string;
+    currency: string;
+    values: { value: number; evidence: number[] }[];
+    message: string;
+  }[];
+  limitations?: string[];
+  query_plan?: string[];
   validation: {
     grounded_share: number;
     uncited_sentences: string[];
