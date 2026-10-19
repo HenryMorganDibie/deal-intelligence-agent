@@ -115,11 +115,12 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
         raw = ([record.get("country")] if record.get("country") else []) + (record.get("countries") or [])
         codes: set[str] = set()
         for value in raw:
+            if isinstance(value, str) and len(value.strip()) == 2 and value.strip().isalpha():
+                codes.add(value.strip().upper())
+                continue
             resolved = resolve_country(country=value)
             if resolved:
                 codes.add(resolved.iso2)
-            elif isinstance(value, str) and len(value.strip()) == 2 and value.strip().isalpha():
-                codes.add(value.strip().upper())
         return codes
     country_deals = [d for d in deals if code in record_country_codes(d)]
     country_events = [e for e in events if code in record_country_codes(e)]
