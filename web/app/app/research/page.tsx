@@ -358,6 +358,11 @@ export default function ResearchPage() {
               </ul>
             </details>
           )}
+          {result.query_execution && (
+            <p className="mt-3 text-xs text-[color:var(--muted)]">
+              Search execution: {result.query_execution.successful_queries}/{result.query_execution.planned_queries} queries succeeded, {result.query_execution.unique_results_before_filters} unique results before filters.
+            </p>
+          )}
           {result.query_plan && result.query_plan.length > 0 && (
             <details className="mt-4 rounded-xl border hairline p-4">
               <summary className="cursor-pointer text-sm font-semibold">Search strategy ({result.query_plan.length} query variants)</summary>
