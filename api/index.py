@@ -523,7 +523,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
 
     report = {
         "brief_type": "market_deals",
-        "title": "Africa Deals & M&A Intelligence Brief",
+        "title": f"{country_name or 'Africa'} Deals & M&A Intelligence Brief",
         "audience": body.audience,
         "research_question": focus,
         "period_start": start.isoformat(),
