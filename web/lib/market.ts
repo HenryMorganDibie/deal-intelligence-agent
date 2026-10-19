@@ -246,6 +246,7 @@ export type ResearchResult = {
   }[];
   limitations?: string[];
   query_plan?: string[];
+  query_execution?: { planned_queries: number; successful_queries: number; unique_results_before_filters: number; provider_failures: number };
   validation: {
     grounded_share: number;
     uncited_sentences: string[];
