@@ -874,6 +874,12 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             if key and key not in unique_news:
                 unique_news[key] = item
         fetched_news = _rank_news(query, list(unique_news.values()))
+        p["query_execution"] = {
+            "planned_queries": len(query_plan),
+            "successful_queries": successful_queries,
+            "unique_results_before_filters": len(fetched_news),
+            "provider_failures": len(query_plan) - successful_queries,
+        }
         log.info("research query plan completed: %d/%d successful, %d unique items",
                  successful_queries, len(query_plan), len(fetched_news))
         if len(p["countries"]) == 1 and not p["regions"]:
