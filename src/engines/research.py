@@ -381,7 +381,7 @@ def _safe_article_url(url: str):
     host = (parsed.hostname or "").lower().rstrip(".")
     if parsed.scheme != "https" or not host or parsed.username or parsed.password:
         return None
-    if host in {"localhost", "metadata.google.internal"} or host.endswith((".localhost", ".local", ".internal", ".test")):
+    if host in {"localhost", "metadata.google.internal", "news.google.com", "consent.google.com"} or host.endswith((".localhost", ".local", ".internal", ".test")):
         return None
     try:
         address = ipaddress.ip_address(host)
