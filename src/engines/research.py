@@ -34,6 +34,7 @@ import httpx
 from src.data.africa_countries import COUNTRIES, countries_in_text, get as get_country
 from src.engines import country_risk as cr
 from src.engines import deals as deals_mod
+from src.engines import company_profile as company_profile_mod
 from src.engines import investors as inv
 from src.engines import market_risk as mr
 from src.engines.research_quality import build_query_plan, detect_evidence_conflicts, research_limitations
@@ -677,6 +678,40 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             add("brief", f"Signal brief: {b.get('company')}", f"severity {b.get('severity')}; signals: "
                 + "; ".join(f"{s.get('signal_type')} ({s.get('severity')})" for s in sigs[:6]),
                 None, (b.get("created_at") or "")[:10], "Deal Intelligence brief")
+
+    # Reuse structured company transaction history and valuation comparables already
+    # available in the product; do not imply that missing financial statements were checked.
+    for company_name in p["companies"][:2]:
+        try:
+            company_summary = company_profile_mod.private_market_summary(company_name, deals)
+            if company_summary.get("deal_count"):
+                raised = company_summary.get("total_raised_usd")
+                raised_text = _fmt_usd(raised) if raised is not None else "not established from disclosed amounts"
+                add("company_activity", f"{company_name} structured transaction history",
+                    f"{company_summary['deal_count']} related deal records; {company_summary.get('as_target', 0)} as target; "
+                    f"recorded total raised {raised_text}; last round {company_summary.get('last_round') or 'unknown'}; "
+                    f"investors/lenders: {', '.join(company_summary.get('investors_and_lenders', [])[:8]) or 'not listed'}. "
+                    "Amounts are based on records in the product database and may omit undisclosed transactions.",
+                    source="Deal Intelligence structured deals database")
+            valuation = mr.valuation_view(company_name, deals)
+            marks = valuation.get("transaction_marks") or []
+            comps = valuation.get("comparables") or {}
+            size = comps.get("size_usd")
+            if marks or size:
+                mark_text = "; ".join(
+                    f"{mark.get('announced') or 'undated'} {mark.get('deal_type')}: "
+                    f"amount {_fmt_usd(mark.get('amount_usd'))}; valuation {_fmt_usd(mark.get('valuation_usd'))} "
+                    f"({mark.get('basis') or 'basis not stated'})"
+                    for mark in marks[:5]
+                ) or "No company-specific transaction mark found."
+                comp_text = (f"Comparable deal size statistics: n={size.get('n')}, median={_fmt_usd(size.get('median'))}, "
+                             f"range {_fmt_usd(size.get('min'))} to {_fmt_usd(size.get('max'))}."
+                             if size else "Comparable deal size statistics unavailable.")
+                add("valuation_context", f"{company_name} valuation and comparable context",
+                    f"{mark_text} {comp_text} {valuation.get('note', '')}",
+                    source="Deal Intelligence valuation engine")
+        except Exception as e:
+            log.warning("structured company research failed for %s: %s", company_name, e)
 
     # Live news is attempted even when local evidence is full; valid results displace
     # the least-prioritised local items so they survive the final evidence cap.
