@@ -1285,6 +1285,10 @@ def research(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             "evidence_coverage": evidence_coverage(items),
             "conflicts": conflicts, "limitations": limitations,
             "query_plan": parsed.get("query_plan", []),
+            "query_execution": parsed.get("query_execution", {
+                "planned_queries": 0, "successful_queries": 0,
+                "unique_results_before_filters": 0, "provider_failures": 0,
+            }),
             **result}
 
 
