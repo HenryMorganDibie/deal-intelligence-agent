@@ -382,3 +382,34 @@ details > summary::-webkit-details-marker {
 details[open] .faq-icon {
   transform: rotate(45deg);
 }
+
+
+/* Professional newsletter print/PDF output */
+@media print {
+  @page { size: A4; margin: 16mm 15mm 18mm; }
+  :root {
+    color-scheme: light;
+    --bg: #ffffff; --raised: #ffffff; --panel: #ffffff;
+    --line: #d9dde3; --line-strong: #cbd0d8; --text: #17191d;
+    --muted: #444b55; --dim: #59616d; --verified: #27785f;
+    --explain: #5842a0; --risk: #a73522;
+  }
+  html, body {
+    background: #ffffff !important; color: #17191d !important;
+    overflow: visible !important; print-color-adjust: exact;
+    -webkit-print-color-adjust: exact; font-size: 10.5pt;
+  }
+  body * { box-shadow: none !important; text-shadow: none !important; }
+  .print-hide, button, input[type="checkbox"] { display: none !important; }
+  .panel {
+    background: #ffffff !important; border: 1px solid #d9dde3 !important;
+    break-inside: avoid; box-shadow: none !important;
+  }
+  .newsletter-prose { border: 0 !important; padding: 0 !important; break-inside: auto; }
+  .newsletter-prose .whitespace-pre-wrap { white-space: pre-wrap !important; line-height: 1.75 !important; }
+  a { color: #174d80 !important; text-decoration: underline; overflow-wrap: anywhere; }
+  h1, h2, h3 { color: #17191d !important; break-after: avoid; }
+  article, section, li { break-inside: avoid-page; }
+  .eyebrow { color: #59616d !important; }
+  .kbd { border-color: #cbd0d8 !important; color: #444b55 !important; }
+}
