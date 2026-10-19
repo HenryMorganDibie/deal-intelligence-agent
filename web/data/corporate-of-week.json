@@ -1,156 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T09:49:40.120768+00:00",
+  "updated_at": "2026-10-19T09:50:03.353016+00:00",
   "current": {
-    "company": "Société Générale",
-    "company_url": "/app/companies?name=Soci%C3%A9t%C3%A9%20G%C3%A9n%C3%A9rale",
-    "headline": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
-    "deal_type": "leadership_change",
+    "company": "IFC",
+    "company_url": "/app/companies?name=IFC",
+    "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+    "deal_type": "distressed_asset",
     "amount_usd": null,
-    "country": "BF",
-    "sector": "banking",
-    "announced": "2026-10-18",
-    "score": 53.3,
+    "country": "MA",
+    "sector": "media_tech",
+    "announced": "2026-10-16",
+    "score": 52.24,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
     "reasons": [
-      "Corporate signal: leadership change",
-      "Event rule confidence: 0.75",
+      "Corporate signal: distressed asset",
+      "Event rule confidence: 0.80",
       "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "Financial Afrik",
-        "title": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
-        "url": "https://www.financialafrik.com/2026/10/18/breaking-news-vista-bank-burkina-moumounou-gnankambary-nomme-dg-pour-piloter-la-fusion-avec-societe-generale-burkina-faso/",
-        "date": "2026-10-18",
+        "publisher": "Medias24",
+        "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+        "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+        "date": "2026-10-16",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-12",
     "period_end": "2026-10-18",
-    "selected_at": "2026-10-19T09:49:40.120190+00:00",
+    "selected_at": "2026-10-19T09:50:03.352499+00:00",
     "selection_version": 3,
     "companies": [
-      {
-        "company": "Société Générale",
-        "company_url": "/app/companies?name=Soci%C3%A9t%C3%A9%20G%C3%A9n%C3%A9rale",
-        "headline": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
-        "deal_type": "leadership_change",
-        "amount_usd": null,
-        "country": "BF",
-        "sector": "banking",
-        "announced": "2026-10-18",
-        "score": 53.3,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.75",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Financial Afrik",
-            "title": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
-            "url": "https://www.financialafrik.com/2026/10/18/breaking-news-vista-bank-burkina-moumounou-gnankambary-nomme-dg-pour-piloter-la-fusion-avec-societe-generale-burkina-faso/",
-            "date": "2026-10-18",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:49:40.120190+00:00",
-        "selection_version": 3
-      },
-      {
-        "company": "Président",
-        "company_url": "/app/companies?name=Pr%C3%A9sident",
-        "headline": "Real Madrid réclame la démission du président de la Liga",
-        "deal_type": "leadership_change",
-        "amount_usd": null,
-        "country": "MA",
-        "sector": null,
-        "announced": "2026-10-16",
-        "score": 55.14,
-        "independent_stories": 2,
-        "transaction_records": 0,
-        "related_events": 2,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.90",
-          "2 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Nessma TV",
-            "title": "Real Madrid réclame la démission du président de la Liga",
-            "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNdGxlZGVBdFFNUXJRZ1hxY1R1R1RlZFlCMThaSGtTd0RXclpySGR3X0NxS3d3RGNXS25SR3NpcE1pV21GOHI3M2IwSTE1ZDZmQ1ZpeWF3T2t1Tkd3Y3R2TXltYjBQNlE1cFg4Wkhyc183SGg1X1hsazV4QnhFT1M5dlVIckQ3QlQ1U0JpSmdtX3BHUU9wOFU0RGcxZUpNbjM0c0ZzM1ROREZjZGhs0gGyAUFVX3lxTFBvc0xubm5aX0h2X1E2d1ZLaTEtWUR3S0lMLWctVUpWV1o2Qm5qbU1jVXI2MDIxRERpSFBrN3hjeEx0UGJBRnpUSlpmWmwzbHU5c1drV2tRdTZDQlZRWU1xNzRpcm5UV190TW1SQzFURGRvaFgxUkZwdWJTVnkyVHRQb3BXLV9OTnd5SjNKR0lJSXd4TFp3QnhBcl9MTUU5UzZHLXBscTNBTW5fX2tmVDdlU1E?oc=5",
-            "date": "2026-10-16",
-            "kind": "corporate_event"
-          },
-          {
-            "publisher": "Orange Actualités",
-            "title": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
-            "url": "https://news.google.com/rss/articles/CBMihAJBVV95cUxPN2Q4ckRPT3pKVVY5d2dVUC1UTFJma3p2THRpZ0JjVThFMTJwT1VtWXpSby1hS2ItZmxFd3RpTHNHc3JPZlFuaG1JQnUzSUdjcGV5M3NNYmNqaEdKOTZVM3djY2Nmd043QTM2V3VpNFI5MTgzWkFxT2ZmUTZhTFNORWp5NTdvYkhHa1hZYjBaVzBLaU00allTUF94cUVuUDdTU1hVSzNNU2JJWFByWXhRekFQVWRtUkhMQXdqX0s2THRMdkFvSzh1bDNlb2ZSR0NrMGtCMTVPNHl4SVVOZjFVaW1FMDhlemlCTlhTOHNwSW5yOEZIR2FjaXVsMi1NNXFHNTc4MQ?oc=5",
-            "date": "2026-10-14",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:49:40.120190+00:00",
-        "selection_version": 3
-      },
-      {
-        "company": "De Beers",
-        "company_url": "/app/companies?name=De%20Beers",
-        "headline": "Botswana Nears Agreement To Increase Stake In De Beers As Anglo American Advances Exit Plans",
-        "deal_type": "insider_activity",
-        "amount_usd": null,
-        "country": "BW",
-        "sector": null,
-        "announced": "2026-10-16",
-        "score": 53.64,
-        "independent_stories": 2,
-        "transaction_records": 0,
-        "related_events": 2,
-        "reasons": [
-          "Corporate signal: insider activity",
-          "Event rule confidence: 0.85",
-          "2 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Trendsnafrica",
-            "title": "Botswana Nears Agreement To Increase Stake In De Beers As Anglo American Advances Exit Plans",
-            "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxOZXlTTXd5ZlQ5Q3hoQ2N5OWNmR0lCd2IwaTFxNC03SFllNTNXWlJ1VVNBQXVkSHJ3d25oY0FTMDYtNXpSbHczOUpvaWhRSTlKZlBVQUdXbzQxYVd3NkxOeURPZW9LeUFvMjRBcjl5OUg3LWtfeFJycUNyelVDSURseVYzLUhFZkVERmRSUXBGcmMxUWZNMmNtYkhtMnhPRWVXRW1HQVVnR3BTVXB3WmdGQ0kzSUUzajlqREt30gHDAUFVX3lxTFBzQXpMTVkySnZsM3NZaDh1NUI1bE8yMHZhQ1VHM0JmS3NsRm5oVjE0RmtKQ0Q5cTMxNTVpSE5hOUp3YzJlcGxYckN6T2E3RmJ1R3ZHUUdyUEtKT2VYZXFYeldiTWUwbHA0YTVIeWktbG10bEpDY0pnNmRNNElzbXZJM29nRmNvTkpDd2VubFZWcmgxdzlVRUJ0V3gtZHhrTk8wWDllZTR1QVJ6SzFzSDRIZk5VcGxGczhFU2p2eWtCWVg5NA?oc=5",
-            "date": "2026-10-16",
-            "kind": "corporate_event"
-          },
-          {
-            "publisher": "Sada Elbalad English",
-            "title": "Botswana Nears Deal to Increase Its Stake in De Beers to Around 25%",
-            "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQUVJnMVlFM1dxRFVNblZZcnhlUnJUdEp4NEdKcVV4ODU2VktaTzZSbzNOWFBnZGhSbG1JWGNnLUhWZ2lYV0dnNmU4VFBPTHVtdklnRkFkdjNNQ0tieU12Y3JXYUdORkhmcWJnQ1RXVnNxQktOQmJBamlsaVRuQ3dTQUd0TURCelhVOUhZ?oc=5",
-            "date": "2026-10-14",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:49:40.120190+00:00",
-        "selection_version": 3
-      },
       {
         "company": "IFC",
         "company_url": "/app/companies?name=IFC",
@@ -182,69 +66,176 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:49:40.120190+00:00",
+        "selected_at": "2026-10-19T09:50:03.352499+00:00",
         "selection_version": 3
       },
       {
-        "company": "Cross River",
-        "company_url": "/app/companies?name=Cross%20River",
-        "headline": "BREAKING: Cross River PDP Chairman Venatius Ikem Resigns, Cites Leadership Crisis",
-        "deal_type": "leadership_change",
+        "company": "Obuasi",
+        "company_url": "/app/companies?name=Obuasi",
+        "headline": "Obuasi SHTS Scandal: JoyNews probe reveals GES officials knew of sexual misconduct allegation",
+        "deal_type": "regulatory_action",
         "amount_usd": null,
-        "country": "NG",
+        "country": "GH",
         "sector": null,
-        "announced": "2026-10-16",
-        "score": 50.14,
-        "independent_stories": 1,
+        "announced": "2026-10-15",
+        "score": 50.71,
+        "independent_stories": 2,
         "transaction_records": 0,
-        "related_events": 1,
+        "related_events": 2,
         "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.90",
-          "1 distinct source-linked corporate event(s) found in the period",
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.80",
+          "2 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "The Trumpet Newspaper Nigeria",
-            "title": "BREAKING: Cross River PDP Chairman Venatius Ikem Resigns, Cites Leadership Crisis",
-            "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOZlR2d3Y1YW9Ia2RaNE1EcW9PdWZvYWJ2UnF6THJybnNlak1BZW5qTU1DUFlsWW8wY3QyVGM4b196Tm41WEk2VkVNWGhMeGU3djVzR1RMbWlScTVXREhZMHMzTmVyLVRyV1prZGtQLS1IRU1kejViekVXMUxOSVVmVGR4N2RyYUFjUFJlTDhIN1VqNXJ4TmhCSU55cm5OWmpOZWc0bQ?oc=5",
-            "date": "2026-10-16",
+            "publisher": "Modern Ghana",
+            "title": "Obuasi SHTS Scandal: JoyNews probe reveals GES officials knew of sexual misconduct allegation",
+            "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE55aWYxekw4RXlieXBuak9jYXZuVmFydFdSUENIV1dZS1hDUWZIdmprTWJNRlBNTW90TURqX1pvOGtDU1pIVkJHWTN2Rjk2cWN2Yk5NZENwemNuWWJIZklDN0IwRmfSAVxBVV95cUxOTVpiNm5fNlN0V2xfUWtBRzc3Y1JhSjRhaE1RTnRWRDhaakdBRnNIY21fSmpuNWNPT1FiQUpHN0pITmJKUE8tSEZSY0xrZUdzY2FKQ0JDVWhUMVRoRA?oc=5",
+            "date": "2026-10-15",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "MyJoyOnline",
+            "title": "First-year students stranded as Obuasi SHTS remains closed over misconduct probe",
+            "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPMFk5NWExOEdpWS0xT2NuODZ1RWR6elZJaEtvc1lTbWI5emxjTGNrMnlseEw5YmxPSUF1NUZHbUljOFVZdDcta3Q4amMxalYydDN0R09wd0g0NmRVZEtrS19MZ0xCSjZMVzZRNEhsejJpSE5vM1p4cUozMUJXeVZGc0JQZkpiSFdNbk1PdGJsYzFMX3A1MGtIR2RZWlUyNE10Vnd1cjJYa1IxZUNkaFE?oc=5",
+            "date": "2026-10-14",
             "kind": "corporate_event"
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:49:40.120190+00:00",
+        "selected_at": "2026-10-19T09:50:03.352499+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "Fresh",
+        "company_url": "/app/companies?name=Fresh",
+        "headline": "EFCC Reopens Atiku Probe After Ex-Lawmaker’s Fresh Petition",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "NG",
+        "sector": null,
+        "announced": "2026-10-14",
+        "score": 53.19,
+        "independent_stories": 2,
+        "transaction_records": 0,
+        "related_events": 2,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "2 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "9News Nigeria",
+            "title": "EFCC Reopens Atiku Probe After Ex-Lawmaker’s Fresh Petition",
+            "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOaXBNQ2hLRzh4RVZPUVNBeTM2YVl2YkNtNVMwZGtfX3lOYks1MkVrZFZTWkdNMWNEMEtIUW9BVVJFejF5LUJsRkxWT0xsOWlVbHhHQUdvZVdURkc1YXpIVDNQanRFZGFqVEhIM2Q4NWxhOU1wVm03QVowM21lblpPYm5MWkQ1dw?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "Reuters",
+            "title": "UK to seek fresh global focus on developing-nation debt relief",
+            "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPTDJ3N0VjcEJxRFVLbXd5MC1xZzU1dkNFUzNIOFM3Uy0wcC1UQXllbDdmQVRRMEVlcW5HV3E2XzVpU1lPMnZuemxwek1lVGJmLXI5MklJY0NUNGRPLVgyVGZLUDNIam9rdjFGWVJfYmlMMzdQb1JXenZrWGFiSF92SF9BSFNHMWZOOGYyRUtNenFkWmF1bkJLU0NRS3JGRFNqdG5B?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:50:03.352499+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "Pay",
+        "company_url": "/app/companies?name=Pay",
+        "headline": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "ZW",
+        "sector": null,
+        "announced": "2026-10-14",
+        "score": 48.19,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "The South African",
+            "title": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
+            "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxONlBoeFBzMWNZa3ByUFhmbktsSnVjbVZJTDhudEloR3dMUGRMQnpJbDVoQnhUeFZsNF9iTU1ZWUhiY1BvSWxhY3ZSZ2xVaHhoYXpodE9jU2I5OGxFOE9RTkpSRlJTSko2eE1hZ2lQc1BxSk52NWxHOG5BR2RQZWdEbGZQQU52Slk4a2hnNWpyeENWbnhlYXVUZFdESDEtNzJvNXZHSE9WYWJ2RDgwSDZZTmtBUm5aOF8wZDZ6VmVBQk8?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:50:03.352499+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "Boost",
+        "company_url": "/app/companies?name=Boost",
+        "headline": "Denel seeks R30 billion boost, and major bank hit with $1.2 billion fine",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "ZA",
+        "sector": "banking",
+        "announced": "2026-10-14",
+        "score": 48.19,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Daily Investor",
+            "title": "Denel seeks R30 billion boost, and major bank hit with $1.2 billion fine",
+            "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPeVlRVEZGOXlEcl85U0VjdTNFQl92YXdQZlNyUnpyNHNVODA0Tms2UUJ0eXlOVnRJQVROcTdkeXJNZm16b20yUzdQMDBCenI1cHVjcnl2cjdSV0VfcmZ1RkszXzF2S2NLN3FPM2FYSmViZzF0cHF2Q0NuZXdRaXNKa1FzY0Z1eVgzLTBrT01XOHFhbk5VV3ItZmhMaUQxVG1lQzYycE5hbXdLQTBSWWsxZ2FPWXA?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:50:03.352499+00:00",
         "selection_version": 3
       }
     ],
     "runner_ups": [
       {
-        "company": "TotalEnergies",
-        "score": 48.64,
+        "company": "Président",
+        "score": 47.29,
         "reasons": [
-          "Corporate signal: insider activity",
-          "Event rule confidence: 0.85",
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.90",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       },
       {
-        "company": "Obuasi",
-        "score": 50.71,
+        "company": "Kenya Airways",
+        "score": 50.26,
         "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.80",
-          "2 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Fresh",
-        "score": 53.19,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
+          "Corporate signal: debt restructuring",
+          "Event rule confidence: 0.88",
           "2 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -345,155 +336,39 @@
       ]
     },
     {
-      "company": "Société Générale",
-      "company_url": "/app/companies?name=Soci%C3%A9t%C3%A9%20G%C3%A9n%C3%A9rale",
-      "headline": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
-      "deal_type": "leadership_change",
+      "company": "IFC",
+      "company_url": "/app/companies?name=IFC",
+      "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+      "deal_type": "distressed_asset",
       "amount_usd": null,
-      "country": "BF",
-      "sector": "banking",
-      "announced": "2026-10-18",
-      "score": 53.3,
+      "country": "MA",
+      "sector": "media_tech",
+      "announced": "2026-10-16",
+      "score": 52.24,
       "independent_stories": 1,
       "transaction_records": 0,
       "related_events": 1,
       "reasons": [
-        "Corporate signal: leadership change",
-        "Event rule confidence: 0.75",
+        "Corporate signal: distressed asset",
+        "Event rule confidence: 0.80",
         "1 distinct source-linked corporate event(s) found in the period",
         "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "Financial Afrik",
-          "title": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
-          "url": "https://www.financialafrik.com/2026/10/18/breaking-news-vista-bank-burkina-moumounou-gnankambary-nomme-dg-pour-piloter-la-fusion-avec-societe-generale-burkina-faso/",
-          "date": "2026-10-18",
+          "publisher": "Medias24",
+          "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+          "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+          "date": "2026-10-16",
           "kind": "corporate_event"
         }
       ],
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-12",
       "period_end": "2026-10-18",
-      "selected_at": "2026-10-19T09:49:40.120190+00:00",
+      "selected_at": "2026-10-19T09:50:03.352499+00:00",
       "selection_version": 3,
       "companies": [
-        {
-          "company": "Société Générale",
-          "company_url": "/app/companies?name=Soci%C3%A9t%C3%A9%20G%C3%A9n%C3%A9rale",
-          "headline": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
-          "deal_type": "leadership_change",
-          "amount_usd": null,
-          "country": "BF",
-          "sector": "banking",
-          "announced": "2026-10-18",
-          "score": 53.3,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: leadership change",
-            "Event rule confidence: 0.75",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Financial Afrik",
-              "title": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
-              "url": "https://www.financialafrik.com/2026/10/18/breaking-news-vista-bank-burkina-moumounou-gnankambary-nomme-dg-pour-piloter-la-fusion-avec-societe-generale-burkina-faso/",
-              "date": "2026-10-18",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:49:40.120190+00:00",
-          "selection_version": 3
-        },
-        {
-          "company": "Président",
-          "company_url": "/app/companies?name=Pr%C3%A9sident",
-          "headline": "Real Madrid réclame la démission du président de la Liga",
-          "deal_type": "leadership_change",
-          "amount_usd": null,
-          "country": "MA",
-          "sector": null,
-          "announced": "2026-10-16",
-          "score": 55.14,
-          "independent_stories": 2,
-          "transaction_records": 0,
-          "related_events": 2,
-          "reasons": [
-            "Corporate signal: leadership change",
-            "Event rule confidence: 0.90",
-            "2 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Nessma TV",
-              "title": "Real Madrid réclame la démission du président de la Liga",
-              "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNdGxlZGVBdFFNUXJRZ1hxY1R1R1RlZFlCMThaSGtTd0RXclpySGR3X0NxS3d3RGNXS25SR3NpcE1pV21GOHI3M2IwSTE1ZDZmQ1ZpeWF3T2t1Tkd3Y3R2TXltYjBQNlE1cFg4Wkhyc183SGg1X1hsazV4QnhFT1M5dlVIckQ3QlQ1U0JpSmdtX3BHUU9wOFU0RGcxZUpNbjM0c0ZzM1ROREZjZGhs0gGyAUFVX3lxTFBvc0xubm5aX0h2X1E2d1ZLaTEtWUR3S0lMLWctVUpWV1o2Qm5qbU1jVXI2MDIxRERpSFBrN3hjeEx0UGJBRnpUSlpmWmwzbHU5c1drV2tRdTZDQlZRWU1xNzRpcm5UV190TW1SQzFURGRvaFgxUkZwdWJTVnkyVHRQb3BXLV9OTnd5SjNKR0lJSXd4TFp3QnhBcl9MTUU5UzZHLXBscTNBTW5fX2tmVDdlU1E?oc=5",
-              "date": "2026-10-16",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Orange Actualités",
-              "title": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
-              "url": "https://news.google.com/rss/articles/CBMihAJBVV95cUxPN2Q4ckRPT3pKVVY5d2dVUC1UTFJma3p2THRpZ0JjVThFMTJwT1VtWXpSby1hS2ItZmxFd3RpTHNHc3JPZlFuaG1JQnUzSUdjcGV5M3NNYmNqaEdKOTZVM3djY2Nmd043QTM2V3VpNFI5MTgzWkFxT2ZmUTZhTFNORWp5NTdvYkhHa1hZYjBaVzBLaU00allTUF94cUVuUDdTU1hVSzNNU2JJWFByWXhRekFQVWRtUkhMQXdqX0s2THRMdkFvSzh1bDNlb2ZSR0NrMGtCMTVPNHl4SVVOZjFVaW1FMDhlemlCTlhTOHNwSW5yOEZIR2FjaXVsMi1NNXFHNTc4MQ?oc=5",
-              "date": "2026-10-14",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:49:40.120190+00:00",
-          "selection_version": 3
-        },
-        {
-          "company": "De Beers",
-          "company_url": "/app/companies?name=De%20Beers",
-          "headline": "Botswana Nears Agreement To Increase Stake In De Beers As Anglo American Advances Exit Plans",
-          "deal_type": "insider_activity",
-          "amount_usd": null,
-          "country": "BW",
-          "sector": null,
-          "announced": "2026-10-16",
-          "score": 53.64,
-          "independent_stories": 2,
-          "transaction_records": 0,
-          "related_events": 2,
-          "reasons": [
-            "Corporate signal: insider activity",
-            "Event rule confidence: 0.85",
-            "2 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Trendsnafrica",
-              "title": "Botswana Nears Agreement To Increase Stake In De Beers As Anglo American Advances Exit Plans",
-              "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxOZXlTTXd5ZlQ5Q3hoQ2N5OWNmR0lCd2IwaTFxNC03SFllNTNXWlJ1VVNBQXVkSHJ3d25oY0FTMDYtNXpSbHczOUpvaWhRSTlKZlBVQUdXbzQxYVd3NkxOeURPZW9LeUFvMjRBcjl5OUg3LWtfeFJycUNyelVDSURseVYzLUhFZkVERmRSUXBGcmMxUWZNMmNtYkhtMnhPRWVXRW1HQVVnR3BTVXB3WmdGQ0kzSUUzajlqREt30gHDAUFVX3lxTFBzQXpMTVkySnZsM3NZaDh1NUI1bE8yMHZhQ1VHM0JmS3NsRm5oVjE0RmtKQ0Q5cTMxNTVpSE5hOUp3YzJlcGxYckN6T2E3RmJ1R3ZHUUdyUEtKT2VYZXFYeldiTWUwbHA0YTVIeWktbG10bEpDY0pnNmRNNElzbXZJM29nRmNvTkpDd2VubFZWcmgxdzlVRUJ0V3gtZHhrTk8wWDllZTR1QVJ6SzFzSDRIZk5VcGxGczhFU2p2eWtCWVg5NA?oc=5",
-              "date": "2026-10-16",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Sada Elbalad English",
-              "title": "Botswana Nears Deal to Increase Its Stake in De Beers to Around 25%",
-              "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQUVJnMVlFM1dxRFVNblZZcnhlUnJUdEp4NEdKcVV4ODU2VktaTzZSbzNOWFBnZGhSbG1JWGNnLUhWZ2lYV0dnNmU4VFBPTHVtdklnRkFkdjNNQ0tieU12Y3JXYUdORkhmcWJnQ1RXVnNxQktOQmJBamlsaVRuQ3dTQUd0TURCelhVOUhZ?oc=5",
-              "date": "2026-10-14",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:49:40.120190+00:00",
-          "selection_version": 3
-        },
         {
           "company": "IFC",
           "company_url": "/app/companies?name=IFC",
@@ -525,69 +400,176 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:49:40.120190+00:00",
+          "selected_at": "2026-10-19T09:50:03.352499+00:00",
           "selection_version": 3
         },
         {
-          "company": "Cross River",
-          "company_url": "/app/companies?name=Cross%20River",
-          "headline": "BREAKING: Cross River PDP Chairman Venatius Ikem Resigns, Cites Leadership Crisis",
-          "deal_type": "leadership_change",
+          "company": "Obuasi",
+          "company_url": "/app/companies?name=Obuasi",
+          "headline": "Obuasi SHTS Scandal: JoyNews probe reveals GES officials knew of sexual misconduct allegation",
+          "deal_type": "regulatory_action",
           "amount_usd": null,
-          "country": "NG",
+          "country": "GH",
           "sector": null,
-          "announced": "2026-10-16",
-          "score": 50.14,
-          "independent_stories": 1,
+          "announced": "2026-10-15",
+          "score": 50.71,
+          "independent_stories": 2,
           "transaction_records": 0,
-          "related_events": 1,
+          "related_events": 2,
           "reasons": [
-            "Corporate signal: leadership change",
-            "Event rule confidence: 0.90",
-            "1 distinct source-linked corporate event(s) found in the period",
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.80",
+            "2 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "The Trumpet Newspaper Nigeria",
-              "title": "BREAKING: Cross River PDP Chairman Venatius Ikem Resigns, Cites Leadership Crisis",
-              "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOZlR2d3Y1YW9Ia2RaNE1EcW9PdWZvYWJ2UnF6THJybnNlak1BZW5qTU1DUFlsWW8wY3QyVGM4b196Tm41WEk2VkVNWGhMeGU3djVzR1RMbWlScTVXREhZMHMzTmVyLVRyV1prZGtQLS1IRU1kejViekVXMUxOSVVmVGR4N2RyYUFjUFJlTDhIN1VqNXJ4TmhCSU55cm5OWmpOZWc0bQ?oc=5",
-              "date": "2026-10-16",
+              "publisher": "Modern Ghana",
+              "title": "Obuasi SHTS Scandal: JoyNews probe reveals GES officials knew of sexual misconduct allegation",
+              "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE55aWYxekw4RXlieXBuak9jYXZuVmFydFdSUENIV1dZS1hDUWZIdmprTWJNRlBNTW90TURqX1pvOGtDU1pIVkJHWTN2Rjk2cWN2Yk5NZENwemNuWWJIZklDN0IwRmfSAVxBVV95cUxOTVpiNm5fNlN0V2xfUWtBRzc3Y1JhSjRhaE1RTnRWRDhaakdBRnNIY21fSmpuNWNPT1FiQUpHN0pITmJKUE8tSEZSY0xrZUdzY2FKQ0JDVWhUMVRoRA?oc=5",
+              "date": "2026-10-15",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "MyJoyOnline",
+              "title": "First-year students stranded as Obuasi SHTS remains closed over misconduct probe",
+              "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPMFk5NWExOEdpWS0xT2NuODZ1RWR6elZJaEtvc1lTbWI5emxjTGNrMnlseEw5YmxPSUF1NUZHbUljOFVZdDcta3Q4amMxalYydDN0R09wd0g0NmRVZEtrS19MZ0xCSjZMVzZRNEhsejJpSE5vM1p4cUozMUJXeVZGc0JQZkpiSFdNbk1PdGJsYzFMX3A1MGtIR2RZWlUyNE10Vnd1cjJYa1IxZUNkaFE?oc=5",
+              "date": "2026-10-14",
               "kind": "corporate_event"
             }
           ],
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:49:40.120190+00:00",
+          "selected_at": "2026-10-19T09:50:03.352499+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "Fresh",
+          "company_url": "/app/companies?name=Fresh",
+          "headline": "EFCC Reopens Atiku Probe After Ex-Lawmaker’s Fresh Petition",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": null,
+          "announced": "2026-10-14",
+          "score": 53.19,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "9News Nigeria",
+              "title": "EFCC Reopens Atiku Probe After Ex-Lawmaker’s Fresh Petition",
+              "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOaXBNQ2hLRzh4RVZPUVNBeTM2YVl2YkNtNVMwZGtfX3lOYks1MkVrZFZTWkdNMWNEMEtIUW9BVVJFejF5LUJsRkxWT0xsOWlVbHhHQUdvZVdURkc1YXpIVDNQanRFZGFqVEhIM2Q4NWxhOU1wVm03QVowM21lblpPYm5MWkQ1dw?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "Reuters",
+              "title": "UK to seek fresh global focus on developing-nation debt relief",
+              "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPTDJ3N0VjcEJxRFVLbXd5MC1xZzU1dkNFUzNIOFM3Uy0wcC1UQXllbDdmQVRRMEVlcW5HV3E2XzVpU1lPMnZuemxwek1lVGJmLXI5MklJY0NUNGRPLVgyVGZLUDNIam9rdjFGWVJfYmlMMzdQb1JXenZrWGFiSF92SF9BSFNHMWZOOGYyRUtNenFkWmF1bkJLU0NRS3JGRFNqdG5B?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:50:03.352499+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "Pay",
+          "company_url": "/app/companies?name=Pay",
+          "headline": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ZW",
+          "sector": null,
+          "announced": "2026-10-14",
+          "score": 48.19,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "The South African",
+              "title": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
+              "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxONlBoeFBzMWNZa3ByUFhmbktsSnVjbVZJTDhudEloR3dMUGRMQnpJbDVoQnhUeFZsNF9iTU1ZWUhiY1BvSWxhY3ZSZ2xVaHhoYXpodE9jU2I5OGxFOE9RTkpSRlJTSko2eE1hZ2lQc1BxSk52NWxHOG5BR2RQZWdEbGZQQU52Slk4a2hnNWpyeENWbnhlYXVUZFdESDEtNzJvNXZHSE9WYWJ2RDgwSDZZTmtBUm5aOF8wZDZ6VmVBQk8?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:50:03.352499+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "Boost",
+          "company_url": "/app/companies?name=Boost",
+          "headline": "Denel seeks R30 billion boost, and major bank hit with $1.2 billion fine",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ZA",
+          "sector": "banking",
+          "announced": "2026-10-14",
+          "score": 48.19,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Daily Investor",
+              "title": "Denel seeks R30 billion boost, and major bank hit with $1.2 billion fine",
+              "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPeVlRVEZGOXlEcl85U0VjdTNFQl92YXdQZlNyUnpyNHNVODA0Tms2UUJ0eXlOVnRJQVROcTdkeXJNZm16b20yUzdQMDBCenI1cHVjcnl2cjdSV0VfcmZ1RkszXzF2S2NLN3FPM2FYSmViZzF0cHF2Q0NuZXdRaXNKa1FzY0Z1eVgzLTBrT01XOHFhbk5VV3ItZmhMaUQxVG1lQzYycE5hbXdLQTBSWWsxZ2FPWXA?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:50:03.352499+00:00",
           "selection_version": 3
         }
       ],
       "runner_ups": [
         {
-          "company": "TotalEnergies",
-          "score": 48.64,
+          "company": "Président",
+          "score": 47.29,
           "reasons": [
-            "Corporate signal: insider activity",
-            "Event rule confidence: 0.85",
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
         },
         {
-          "company": "Obuasi",
-          "score": 50.71,
+          "company": "Kenya Airways",
+          "score": 50.26,
           "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.80",
-            "2 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Fresh",
-          "score": 53.19,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
+            "Corporate signal: debt restructuring",
+            "Event rule confidence: 0.88",
             "2 distinct source-linked corporate event(s) found in the period"
           ]
         }
