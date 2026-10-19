@@ -25,3 +25,16 @@ This benchmark is intended to evaluate research quality rather than merely wheth
 ## Current deterministic test fixtures
 
 The automated tests exercise query planning, explicit same-currency amount disagreement flags, missing-date limitations, and metric calculations. They are **unit tests, not a measured real-world accuracy benchmark**. Populate the reviewed held-out set before making numeric claims about research quality.
+
+
+## Running saved benchmark results
+
+Save one JSON object per line with a stable case ID, the IDs of relevant sources expected by reviewers, the IDs actually retrieved, and optional human-reviewed claim support labels:
+
+```json
+{"case_id":"case-001","expected_relevant_ids":["source-a","source-b"],"retrieved_ids":["source-a","source-c"],"claim_support_labels":[true,false]}
+```
+
+Run `python scripts/evaluate_research_benchmark.py path/to/reviewed-results.jsonl --output benchmark-report.json`.
+
+The evaluator intentionally does not scrape sources or label claims itself. Source relevance and claim support need independent review; otherwise the reported metrics would create false confidence.
