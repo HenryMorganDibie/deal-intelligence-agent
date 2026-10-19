@@ -109,8 +109,8 @@ def evaluate(path: Path) -> dict:
         raise ValueError("No reviewed benchmark cases found; independently label cases and set label_status to human_reviewed.")
     return {
         "cases": len(rows),
-        "retrieval_precision_macro": round(sum(r["retrieval_precision"] for r in rows) / len(rows), 4),
-        "retrieval_recall_macro": round(sum(r["retrieval_recall"] for r in rows) / len(rows), 4),
+        "retrieval_precision_macro": _macro(rows, "retrieval_precision"),
+        "retrieval_recall_macro": _macro(rows, "retrieval_recall"),
         "claim_support_rate_macro": _macro(rows, "claim_support_rate"),
         "field_accuracy_rate_macro": _macro(rows, "field_accuracy_rate"),
         "unknown_handling_rate_macro": _macro(rows, "unknown_handling_rate"),
