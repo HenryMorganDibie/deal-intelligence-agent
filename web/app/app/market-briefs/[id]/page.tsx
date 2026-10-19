@@ -177,7 +177,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="eyebrow">Hybrid research</p>
-              <h2 className="h3 mt-2 text-xl">LLM analysis with live web evidence</h2>
+              <h2 className="h3 mt-2 text-xl">{row.report.brief_type === "research_newsletter" ? "Source evidence and citation trail" : "LLM analysis with live web evidence"}</h2>
               {row.report.research_question && <p className="mt-2 text-sm text-[color:var(--muted)]">Focus: {row.report.research_question}</p>}
             </div>
             <span className="kbd">{row.report.web_research?.mode === "llm" ? "LLM synthesis" : row.report.web_research?.mode === "deterministic" ? "Deterministic fallback" : "Web research unavailable"}</span>
@@ -189,7 +189,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
                 : "Live web research could not be completed for this run. The database-backed transaction metrics remain available; no external findings have been inferred."}
             </p>
           )}
-          {row.report.web_research?.answer && (
+          {row.report.brief_type !== "research_newsletter" && row.report.web_research?.answer && (
             <div className="mt-4 whitespace-pre-wrap text-sm leading-7">{row.report.web_research.answer}</div>
           )}
           {row.report.web_research?.validation && (
@@ -278,7 +278,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
             </div>) : <p className="py-4 text-sm text-[color:var(--muted)]">No comparable records met the similarity and date criteria.</p>}
           </div>
         </section>
-        <section className="mt-10 panel p-5 sm:p-6">
+        {row.report.brief_type !== "research_newsletter" && <section className="mt-10 panel p-5 sm:p-6 print-hide">
           <p className="eyebrow">Turn research into deliverable</p>
           <h2 className="h3 mt-2 text-xl">Create a deal or advisory newsletter</h2>
           <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
@@ -332,7 +332,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
             {generatingNewsletter ? "Drafting source-cited newsletter…" : "Generate newsletter from selected research"}
           </button>
           <p className="mt-2 text-xs leading-relaxed text-[color:var(--dim)]">Advisory opportunities are framed as evidence-backed research hypotheses, never as confirmed mandates. Review every citation before external distribution.</p>
-        </section>
+        </section>}
 
         <section className="mt-10 panel p-5">
           <h2 className="h3 text-xl">Methodology and limitations</h2>
