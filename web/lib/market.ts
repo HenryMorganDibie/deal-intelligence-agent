@@ -223,6 +223,8 @@ export type EvidenceItem = {
   content_status?: "article_text_retrieved" | "snippet_only" | "injected_search_snippet" | "non_html_source";
   content_url?: string;
   syndication_key?: string;
+  syndication_group_size?: number;
+  syndicated_publishers?: string[];
 };
 
 export type ResearchResult = {
@@ -236,6 +238,7 @@ export type ResearchResult = {
     kind: string; items: number; latest_source_date: string | null;
     direct_article_text_items?: number; snippet_only_items?: number;
     distinct_source_domains?: number; source_domains?: string[];
+    distinct_headlines?: number; likely_syndicated_items?: number;
   }[];
   conflicts?: {
     type: string;
