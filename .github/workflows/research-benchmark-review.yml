@@ -1,0 +1,52 @@
+name: Research benchmark review packet
+
+on:
+  workflow_dispatch:
+    inputs:
+      live_news:
+        description: "Use live RSS/news search (slower and dependent on external availability)"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: research-benchmark-review
+  cancel-in-progress: false
+
+jobs:
+  build-review-packet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run candidate questions for independent review
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          ARGS=()
+          if [ "${{ inputs.live_news }}" != "true" ]; then ARGS+=(--no-live-news); fi
+          python scripts/run_research_benchmark.py benchmarks/research-questions.jsonl --output benchmark-review-run.jsonl "${ARGS[@]}"
+
+      - name: Upload review packet
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-benchmark-review-${{ github.run_id }}
+          path: benchmark-review-run.jsonl
+          if-no-files-found: error
+          retention-days: 14
