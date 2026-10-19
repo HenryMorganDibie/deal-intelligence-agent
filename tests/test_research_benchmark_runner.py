@@ -69,3 +69,32 @@ def test_benchmark_case_loader_requires_unique_ids(tmp_path):
     )
     with pytest.raises(ValueError, match="unique"):
         load_cases(path)
+
+
+
+def test_benchmark_metrics_cover_field_accuracy_unknown_handling_and_conflicts():
+    from src.engines.research_quality import benchmark_metrics
+
+    result = benchmark_metrics(
+        expected_ids=["source-a", "source-b"],
+        retrieved_ids=["source-a", "source-c"],
+        relevant_claims=[True, False, True],
+        field_accuracy_labels=[True, True, False, True],
+        unknown_handling_labels=[True, False],
+        expected_conflict_ids=["Acme:USD", "Beta:EUR"],
+        detected_conflict_ids=["Acme:USD", "Gamma:GBP"],
+    )
+    assert result["retrieval_precision"] == 0.5
+    assert result["retrieval_recall"] == 0.5
+    assert result["claim_support_rate"] == 0.6667
+    assert result["field_accuracy_rate"] == 0.75
+    assert result["unknown_handling_rate"] == 0.5
+    assert result["conflict_detection"]["precision"] == 0.5
+    assert result["conflict_detection"]["recall"] == 0.5
+
+
+def test_benchmark_metrics_reject_non_boolean_field_labels():
+    from src.engines.research_quality import benchmark_metrics
+
+    with pytest.raises(ValueError, match="true/false booleans"):
+        benchmark_metrics(["a"], ["a"], field_accuracy_labels=["yes"])
