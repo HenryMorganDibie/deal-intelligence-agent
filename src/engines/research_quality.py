@@ -129,13 +129,41 @@ def research_limitations(parsed: dict, items: list[dict], conflicts: list[dict])
     return list(dict.fromkeys(notes))
 
 
-def benchmark_metrics(expected_ids: list[str], retrieved_ids: list[str], relevant_claims: list[bool] | None = None) -> dict:
-    """Small deterministic metric helper for reviewed, held-out research cases."""
+def benchmark_metrics(
+    expected_ids: list[str],
+    retrieved_ids: list[str],
+    relevant_claims: list[bool] | None = None,
+    field_accuracy_labels: list[bool] | None = None,
+    unknown_handling_labels: list[bool] | None = None,
+    expected_conflict_ids: list[str] | None = None,
+    detected_conflict_ids: list[str] | None = None,
+) -> dict:
+    """Calculate metrics only from independently reviewed labels."""
     expected = set(expected_ids)
     retrieved = set(retrieved_ids)
     hits = len(expected & retrieved)
     precision = hits / len(retrieved) if retrieved else (1.0 if not expected else 0.0)
     recall = hits / len(expected) if expected else 1.0
+
+    def rate(values: list[bool] | None) -> float | None:
+        if not values:
+            return None
+        if any(type(value) is not bool for value in values):
+            raise ValueError("benchmark labels must be true/false booleans")
+        return round(sum(values) / len(values), 4)
+
+    expected_conflicts = set(expected_conflict_ids or [])
+    detected_conflicts = set(detected_conflict_ids or [])
+    conflict_metrics = None
+    if expected_conflict_ids is not None and detected_conflict_ids is not None:
+        conflict_hits = len(expected_conflicts & detected_conflicts)
+        conflict_metrics = {
+            "precision": round(conflict_hits / len(detected_conflicts), 4) if detected_conflicts else
+                         (1.0 if not expected_conflicts else 0.0),
+            "recall": round(conflict_hits / len(expected_conflicts), 4) if expected_conflicts else 1.0,
+            "expected": len(expected_conflicts),
+            "detected": len(detected_conflicts),
+        }
     claims = relevant_claims or []
     return {
         "retrieval_precision": round(precision, 4),
@@ -143,6 +171,11 @@ def benchmark_metrics(expected_ids: list[str], retrieved_ids: list[str], relevan
         "retrieved_relevant": hits,
         "expected_relevant": len(expected),
         "retrieved_count": len(retrieved),
-        "claim_support_rate": round(sum(bool(x) for x in claims) / len(claims), 4) if claims else None,
+        "claim_support_rate": rate(claims),
         "claim_count": len(claims),
+        "field_accuracy_rate": rate(field_accuracy_labels),
+        "field_count": len(field_accuracy_labels or []),
+        "unknown_handling_rate": rate(unknown_handling_labels),
+        "unknown_handling_count": len(unknown_handling_labels or []),
+        "conflict_detection": conflict_metrics,
     }
