@@ -68,94 +68,94 @@ export default async function LandingPage() {
           <Container>
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="eyebrow">Evidence-led editorial selection</p>
+                <p className="eyebrow">Evidence-led corporate shortlist</p>
                 <h2 id="corporate-week-title" className="h2 mt-3">Corporate of the Week</h2>
                 <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[color:var(--muted)]">
-                  One company selected from the previous seven days of reported transactions, ranked using disclosed deal
-                  significance, independent reporting, recency, and matching corporate-event evidence.
+                  Up to five companies with verified, source-linked transaction announcements from the latest seven complete days,
+                  ordered newest announcement first. The list refreshes daily; fewer companies appear when evidence is limited.
                 </p>
               </div>
-              {corporateSelection && <p className="eyebrow">Week ending {displayDate(corporateSelection.period_end)}</p>}
+              {corporateSelection && (
+                <div className="text-right">
+                  <p className="eyebrow">Week ending {displayDate(corporateSelection.period_end)}</p>
+                  <p className="mt-2 text-xs text-[color:var(--muted)]">Updated {displayDate(corporateSelection.selected_at)}</p>
+                </div>
+              )}
             </div>
             {corporateSelection ? (
-              <div className="panel mt-6 overflow-hidden">
-                <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.2fr_0.8fr]">
-                  <div>
-                    <p className="eyebrow">
-                      {corporateSelection.country || "Market not specified"}
-                      {corporateSelection.sector ? " · " + corporateSelection.sector.replace(/_/g, " ") : ""}
-                      {corporateSelection.announced ? " · Reported " + displayDate(corporateSelection.announced) : ""}
-                    </p>
-                    <h3 className="h2 mt-3">{corporateSelection.company}</h3>
-                    <p className="mt-4 text-base leading-relaxed">{corporateSelection.headline}</p>
-                    <div className="mt-5 flex flex-wrap gap-2 text-sm text-[color:var(--muted)]">
-                      <span className="kbd">{corporateSelection.deal_type.replace(/_/g, " ")}</span>
-                      {corporateSelection.amount_usd != null && <span className="kbd">{usd(corporateSelection.amount_usd)} disclosed</span>}
-                      <span className="kbd">{corporateSelection.independent_stories} independent {corporateSelection.independent_stories === 1 ? "story" : "stories"}</span>
-                      {corporateSelection.related_events > 0 && <span className="kbd">{corporateSelection.related_events} related event signals</span>}
-                    </div>
-                    <div className="mt-6 flex flex-wrap gap-3">
-                      <a href={corporateSelection.company_url} className="btn btn-primary">Explore company <ArrowRight /></a>
-                      {corporateSelection.sources[0] && (
-                        <a href={corporateSelection.sources[0].url} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
-                          Read original source <ArrowRight />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                  <div className="border-t hairline pt-5 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
-                    <h4 className="h3">Why it was selected</h4>
-                    <ul className="mt-4 space-y-3">
-                      {corporateSelection.reasons.map((reason) => (
-                        <li key={reason} className="flex gap-2 text-sm leading-relaxed text-[color:var(--muted)]">
-                          <span aria-hidden="true" className="text-verified">•</span><span>{reason}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="mt-5 border-t hairline pt-4 text-xs leading-relaxed text-[color:var(--dim)]">
-                      Ranking score: {corporateSelection.score.toFixed(2)}. This is a relative selection score, not a
-                      probability, company rating, or investment recommendation.
-                    </p>
-                  </div>
-                </div>
-                <div className="border-t hairline px-6 py-5 sm:px-8">
-                  <h4 className="h3">Evidence trail ({corporateSelection.sources.length} source links)</h4>
-                  <ul className="mt-3 grid gap-3 md:grid-cols-2">
-                    {corporateSelection.sources.slice(0, 4).map((source) => (
-                      <li key={source.url} className="min-w-0">
-                        <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-verified hover:underline">
-                          {source.title}
-                        </a>
-                        <p className="mt-1 text-xs text-[color:var(--muted)]">
-                          {source.publisher}{source.date ? " · " + displayDate(source.date) : ""}
-                          {" · "}{source.kind === "related_company_coverage" ? "Related company coverage" : source.kind === "corporate_event" ? "Corporate event" : "Transaction report"}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                  {corporateSelection.runner_ups.length > 0 && (
-                    <details className="mt-5 border-t hairline pt-4">
-                      <summary className="cursor-pointer text-sm hover:text-verified">Other companies considered</summary>
-                      <ul className="mt-3 grid gap-3 sm:grid-cols-3">
-                        {corporateSelection.runner_ups.map((candidate) => (
-                          <li key={candidate.company} className="rounded-lg border hairline p-3">
-                            <p className="text-sm font-medium">{candidate.company}</p>
-                            <p className="mt-1 text-xs text-[color:var(--muted)]">Score {candidate.score.toFixed(2)}</p>
-                            <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">{candidate.reasons[0]}</p>
-                          </li>
-                        ))}
-                      </ul>
-                    </details>
-                  )}
-                  <p className="mt-4 text-xs leading-relaxed text-[color:var(--dim)]">{corporateSelection.method}</p>
-                </div>
+              <div className="mt-6 grid gap-4">
+                {(corporateSelection.companies?.length ? corporateSelection.companies : [corporateSelection])
+                  .slice(0, 5)
+                  .sort((a, b) => String(b.announced || "").localeCompare(String(a.announced || "")))
+                  .map((company, index) => (
+                    <article key={company.company} className="panel overflow-hidden">
+                      <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.35fr)]">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="kbd">#{index + 1}</span>
+                            <p className="eyebrow">
+                              {company.country || "Market not specified"}
+                              {company.sector ? " · " + company.sector.replace(/_/g, " ") : ""}
+                            </p>
+                            <span className="text-xs text-[color:var(--muted)]">Announced {displayDate(company.announced)}</span>
+                          </div>
+                          <h3 className="h3 mt-3">{company.company}</h3>
+                          <p className="mt-2 text-sm leading-relaxed">{company.headline}</p>
+                          <div className="mt-4 flex flex-wrap gap-2 text-xs text-[color:var(--muted)]">
+                            <span className="kbd">{company.deal_type.replace(/_/g, " ")}</span>
+                            {company.amount_usd != null && <span className="kbd">{usd(company.amount_usd)} disclosed</span>}
+                            <span className="kbd">{company.independent_stories} directly matching {company.independent_stories === 1 ? "source" : "sources"}</span>
+                            {company.related_events > 0 && <span className="kbd">{company.related_events} related event signals</span>}
+                          </div>
+                          <div className="mt-4 flex flex-wrap gap-3">
+                            <a href={company.company_url} className="btn btn-primary">Explore company <ArrowRight /></a>
+                            {company.sources[0] && (
+                              <a href={company.sources[0].url} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
+                                Read source <ArrowRight />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        <div className="border-t hairline pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+                          <h4 className="text-sm font-medium">Why it made the list</h4>
+                          <ul className="mt-3 space-y-2">
+                            {company.reasons.slice(0, 3).map((reason) => (
+                              <li key={reason} className="flex gap-2 text-xs leading-relaxed text-[color:var(--muted)]">
+                                <span aria-hidden="true" className="text-verified">•</span><span>{reason}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <p className="mt-4 border-t hairline pt-3 text-xs leading-relaxed text-[color:var(--dim)]">
+                            Evidence links: {company.sources.length}. Ranking score: {company.score.toFixed(2)} (not an investment rating).
+                          </p>
+                        </div>
+                      </div>
+                      <div className="border-t hairline px-5 py-4 sm:px-6">
+                        <p className="text-xs font-medium text-[color:var(--muted)]">Source trail</p>
+                        <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+                          {company.sources.slice(0, 2).map((source) => (
+                            <li key={source.url} className="min-w-0">
+                              <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-xs hover:text-verified hover:underline">
+                                {source.title}
+                              </a>
+                              <p className="mt-1 text-xs text-[color:var(--dim)]">{source.publisher}{source.date ? " · " + displayDate(source.date) : ""}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </article>
+                  ))}
+                <p className="text-xs leading-relaxed text-[color:var(--dim)]">
+                  The list only includes dated, source-linked transactions. Companies are ordered by announcement date, newest first;
+                  the score supports editorial context and is not a probability, company rating, or investment recommendation.
+                </p>
               </div>
             ) : (
               <div className="panel mt-6 p-6 sm:p-8">
-                <h3 className="h3">The weekly selection is being prepared.</h3>
+                <h3 className="h3">The corporate shortlist is being prepared.</h3>
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--muted)]">
-                  This section only features a company when a dated transaction and inspectable source evidence meet the
-                  selection rules. If the evidence is insufficient, it will not invent a winner.
+                  Companies appear only when a dated transaction and inspectable source evidence meet the selection rules.
+                  If evidence is insufficient, the page will not invent entries.
                 </p>
               </div>
             )}
