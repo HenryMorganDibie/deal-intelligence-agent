@@ -32,7 +32,7 @@ The evaluator ignores unreviewed cases and refuses to score a run with no human-
 
 ## Current deterministic test fixtures
 
-The automated tests exercise query planning, explicit same-currency amount disagreement flags, missing-date limitations, and metric calculations. They are **unit tests, not a measured real-world accuracy benchmark**. Populate the reviewed held-out set before making numeric claims about research quality.
+The research engine also attempts multiple focused queries, exposes query execution counts, retrieves accessible publisher article text within a bounded time budget, falls back to RSS snippets when full text is unavailable, and marks repeated headlines as possible syndication without discarding source links. Retrieved text is not itself independent verification. The automated tests cover query planning, disagreement flags, missing-date limitations, article extraction and fallback, syndication markers, benchmark-label safeguards, and metric calculations. They are **unit tests, not a measured real-world accuracy benchmark**. Populate the reviewed held-out set before making numeric claims about research quality.
 
 
 ## Running saved benchmark results
