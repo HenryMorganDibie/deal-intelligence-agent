@@ -7,7 +7,7 @@ The registry is deliberately explicit; missing host mappings remain unverified.
 from __future__ import annotations
 
 from urllib.parse import urlparse
-from src.data.africa_countries import resolve as resolve_country
+from src.data.africa_countries import countries_in_text, resolve as resolve_country
 
 # Domains are allowlisted by institution/country; matching is exact or a true subdomain.
 # The API reports host match, not a guarantee that every page's claims are correct.
@@ -121,6 +121,8 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
             resolved = resolve_country(country=value)
             if resolved:
                 codes.add(resolved.iso2)
+            elif isinstance(value, str):
+                codes.update(country.iso2 for country in countries_in_text(value))
         return codes
     country_deals = [d for d in deals if code in record_country_codes(d)]
     country_events = [e for e in events if code in record_country_codes(e)]
