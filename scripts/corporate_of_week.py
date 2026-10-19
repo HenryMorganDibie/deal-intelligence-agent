@@ -31,10 +31,10 @@ GENERIC_TARGETS = {
 # News stories dominated by transactions, politics, or sports are not corporate
 # operating signals for this section, even when a parser labels them as leadership.
 NON_CORPORATE_HEADLINE = re.compile(
-    r"\\b(?:merger|merges|merged|fusion|acquisition|acquires|acquired|takeover|buyout|"
+    r"\b(?:merger|merges|merged|fusion|acquisition|acquires|acquired|takeover|buyout|"
     r"stake in|exit plans|raises? (?:usd|\$|€|£|\d)|funding round|"
-    r"political party|\\bpdp\\b|\\bfc\\b|football|liga|league president|"
-    r"mourns|election campaign)\\b",
+    r"political party|\bpdp\b|\bfc\b|football|liga|league president|"
+    r"mourns|election campaign)\b",
     re.IGNORECASE,
 )
 
