@@ -18,6 +18,7 @@ type CorporateSelection = {
   independent_stories: number; transaction_records: number; related_events: number; reasons: string[];
   sources: CorporateSource[]; method: string; period_start: string; period_end: string; selected_at: string;
   runner_ups: { company: string; score: number; reasons: string[] }[];
+  companies?: CorporateSelection[];
 };
 const corporateSelection = (corporateOfWeekArchive as { current: CorporateSelection | null }).current;
 function displayDate(value: string | null | undefined): string {
