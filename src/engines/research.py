@@ -22,13 +22,14 @@ from __future__ import annotations
 
 import asyncio
 import html
+import ipaddress
 import logging
 from html.parser import HTMLParser
 import re
 from collections import Counter
 from datetime import date, timedelta
 from typing import Callable, Iterable, Optional
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urljoin, urlparse
 
 import httpx
 
@@ -375,21 +376,49 @@ class _ArticleTextParser(HTMLParser):
         return " ".join(result)[:12000]
 
 
-def _fetch_article_content(item: dict, client: Optional[httpx.Client] = None) -> dict:
-    """Best-effort fetch of publicly accessible article text; never upgrades access to verification."""
-    url = str(item.get("url") or "")
+def _safe_article_url(url: str):
     parsed = urlparse(url)
-    host = (parsed.hostname or "").lower().removeprefix("www.")
-    if parsed.scheme != "https" or not host or host in {"news.google.com", "consent.google.com"}:
+    host = (parsed.hostname or "").lower().rstrip(".")
+    if parsed.scheme != "https" or not host or parsed.username or parsed.password:
+        return None
+    if host in {"localhost", "metadata.google.internal"} or host.endswith((".localhost", ".local", ".internal", ".test")):
+        return None
+    try:
+        address = ipaddress.ip_address(host)
+        if not address.is_global:
+            return None
+    except ValueError:
+        pass
+    return parsed
+
+
+def _fetch_article_content(item: dict, client: Optional[httpx.Client] = None) -> dict:
+    """Best-effort fetch of public article text; never upgrades access to verification."""
+    url = str(item.get("url") or "")
+    if not _safe_article_url(url):
         return {**item, "content_status": "snippet_only", "content_text": None}
-    request_client = client or httpx.Client(timeout=4, follow_redirects=True,
+    request_client = client or httpx.Client(timeout=4, follow_redirects=False,
                                              headers={"User-Agent": "DealIntelligenceResearchBot/1.0 (+public research; contact via website)"})
     close_client = client is None
     try:
-        response = request_client.get(url)
-        response.raise_for_status()
-        final = urlparse(str(response.url))
-        if final.scheme != "https" or not final.hostname:
+        response = None
+        current_url = url
+        for _ in range(4):
+            if not _safe_article_url(current_url):
+                return {**item, "content_status": "snippet_only", "content_text": None}
+            response = request_client.get(current_url)
+            if response.status_code in {301, 302, 303, 307, 308}:
+                location = response.headers.get("location")
+                if not location:
+                    return {**item, "content_status": "snippet_only", "content_text": None}
+                current_url = urljoin(current_url, location)
+                continue
+            response.raise_for_status()
+            break
+        else:
+            return {**item, "content_status": "snippet_only", "content_text": None}
+        final_url = str(response.url)
+        if not _safe_article_url(final_url):
             return {**item, "content_status": "snippet_only", "content_text": None}
         content_type = response.headers.get("content-type", "").lower()
         if "text/html" not in content_type and "application/xhtml" not in content_type:
@@ -400,7 +429,7 @@ def _fetch_article_content(item: dict, client: Optional[httpx.Client] = None) ->
         if len(content) < 350:
             return {**item, "content_status": "snippet_only", "content_text": None}
         return {**item, "content_status": "article_text_retrieved", "content_text": content,
-                "content_url": str(response.url)}
+                "content_url": final_url}
     except (httpx.HTTPError, ValueError) as exc:
         log.info("could not retrieve article text for %s: %s", item.get("title"), exc)
         return {**item, "content_status": "snippet_only", "content_text": None}
