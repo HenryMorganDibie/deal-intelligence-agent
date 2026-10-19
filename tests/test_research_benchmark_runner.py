@@ -112,3 +112,20 @@ def test_benchmark_metrics_reject_non_boolean_field_labels():
 
     with pytest.raises(ValueError, match="true/false booleans"):
         benchmark_metrics(["a"], ["a"], field_accuracy_labels=["yes"])
+
+
+
+def test_empty_retrieval_labels_are_not_reported_as_perfect_recall():
+    from src.engines.research_quality import benchmark_metrics
+
+    empty = benchmark_metrics([], [])
+    assert empty["retrieval_precision"] is None
+    assert empty["retrieval_recall"] is None
+
+    missed = benchmark_metrics(["expected-source"], [])
+    assert missed["retrieval_precision"] == 0
+    assert missed["retrieval_recall"] == 0
+
+    unsupported = benchmark_metrics([], ["irrelevant-source"])
+    assert unsupported["retrieval_precision"] == 0
+    assert unsupported["retrieval_recall"] is None
