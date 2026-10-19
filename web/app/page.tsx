@@ -5,7 +5,7 @@ import { MarketPulse } from "../components/MarketPulse";
 import { Problem } from "../components/Problem";
 import { SiteNav } from "../components/SiteNav";
 import { SourceMarquee } from "../components/SourceMarquee";
-import { getPulse, getShowcase, usd } from "../lib/pulse";
+import { getPulse, getShowcase } from "../lib/pulse";
 import corporateOfWeekArchive from "../data/corporate-of-week.json";
 import { ArrowRight, Container, Reveal } from "../components/primitives";
 
