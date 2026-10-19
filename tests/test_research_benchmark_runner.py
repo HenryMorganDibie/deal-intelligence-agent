@@ -30,6 +30,13 @@ def test_benchmark_evaluator_scores_only_human_reviewed_cases(tmp_path):
             "expected_relevant_ids": ["a", "b"],
             "retrieved_ids": ["a", "c"],
             "claim_support_labels": [True, False],
+            "latency_seconds": 2.5,
+            "mode": "llm",
+            "evidence": [
+                {"url": "https://publisher.example/a", "content_status": "article_text_retrieved"},
+                {"url": "https://publisher.example/b", "content_status": "snippet_only"},
+                {"url": "https://other.example/c", "content_status": "snippet_only"},
+            ],
         },
         {
             "case_id": "candidate-2",
@@ -45,6 +52,13 @@ def test_benchmark_evaluator_scores_only_human_reviewed_cases(tmp_path):
     assert result["retrieval_precision_macro"] == 0.5
     assert result["retrieval_recall_macro"] == 0.5
     assert result["claim_support_rate_macro"] == 0.5
+    assert result["operational_quality"]["latency_seconds_mean"] == 2.5
+    assert result["operational_quality"]["latency_seconds_p95"] == 2.5
+    assert result["operational_quality"]["distinct_source_domains_mean"] == 2
+    assert result["operational_quality"]["direct_article_text_items"] == 1
+    assert result["operational_quality"]["snippet_only_items"] == 2
+    assert result["operational_quality"]["direct_article_text_share"] == 0.3333
+    assert result["operational_quality"]["deterministic_fallback_rate"] == 0
 
 
 def test_benchmark_evaluator_rejects_non_boolean_claim_labels(tmp_path):
