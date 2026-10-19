@@ -1,0 +1,50 @@
+"""Tests for deterministic research planning, evidence conflicts, and evaluation metrics."""
+from src.engines.research_quality import (
+    benchmark_metrics, build_query_plan, detect_evidence_conflicts, research_limitations,
+)
+
+
+def test_query_plan_uses_distinct_company_and_primary_source_queries():
+    plan = build_query_plan(
+        "What funding did Acme raise in Kenya?",
+        {"companies": ["Acme"], "countries": ["KE"], "deal_types": ["equity_funding"]},
+        "Kenya Acme funding",
+    )
+    assert len(plan) >= 3
+    assert len({q.lower() for q in plan}) == len(plan)
+    assert any("investor relations" in q for q in plan)
+    assert any("KE" in q for q in plan)
+
+
+def test_amount_conflicts_are_flagged_for_named_company_only():
+    items = [
+        {"n": 1, "title": "Acme raises $20 million", "text": "Acme funding round", "url": "https://a.test"},
+        {"n": 2, "title": "Acme funding round at $25 million", "text": "Acme raised funds", "url": "https://b.test"},
+        {"n": 3, "title": "OtherCo raises $99 million", "text": "OtherCo round", "url": "https://c.test"},
+    ]
+    conflicts = detect_evidence_conflicts(items, ["Acme"])
+    assert len(conflicts) == 1
+    assert conflicts[0]["currency"] == "USD"
+    assert len(conflicts[0]["values"]) == 2
+    assert detect_evidence_conflicts(items, []) == []
+
+
+def test_same_reported_amount_is_not_a_conflict():
+    items = [
+        {"n": 1, "title": "Acme raises $20 million", "text": "Acme funding"},
+        {"n": 2, "title": "Acme raised $20 million", "text": "Acme financing"},
+    ]
+    assert detect_evidence_conflicts(items, ["Acme"]) == []
+
+
+def test_research_limitations_disclose_unknown_dates_and_bounded_coverage():
+    notes = research_limitations({"since": "2026-01-01"}, [{"url": "https://x.test", "date": None}], [])
+    assert any("unknown date" in note for note in notes)
+    assert any("bounded sample" in note for note in notes)
+
+
+def test_benchmark_metrics_are_reproducible():
+    metrics = benchmark_metrics(["a", "b"], ["a", "c"], [True, False])
+    assert metrics["retrieval_precision"] == 0.5
+    assert metrics["retrieval_recall"] == 0.5
+    assert metrics["claim_support_rate"] == 0.5
