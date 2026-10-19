@@ -92,7 +92,18 @@ export default function Dashboard() {
   return (
     <Container className="grid gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14 lg:py-14">
       <section aria-labelledby="new-title" className="min-w-0">
-        <p className="eyebrow">New brief</p>
+        <p className="eyebrow">Choose a brief</p>
+        <div className="panel mb-7 p-5 sm:p-6">
+          <p className="eyebrow">Market intelligence</p>
+          <h2 className="h3 mt-2 text-xl">Deals &amp; M&amp;A across Africa</h2>
+          <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
+            Create an analyst-ready market report with dated transactions, disclosed-value metrics, comparable activity and linked source evidence.
+          </p>
+          <Link href="/app/market-briefs/new" className="btn btn-primary mt-4 inline-flex">
+            Create market brief
+          </Link>
+        </div>
+        <p className="eyebrow">Company analysis</p>
         <h1 id="new-title" className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">
           Analyse a company.
         </h1>
