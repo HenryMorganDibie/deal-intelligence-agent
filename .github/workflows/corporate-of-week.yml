@@ -41,7 +41,7 @@ jobs:
       - name: Test ranking and evidence rationale
         run: python -m pytest scripts/test_corporate_of_week.py -q
 
-      - name: Select company from live, source-linked transaction data
+      - name: Select companies from distinct, source-linked corporate events
         run: python scripts/corporate_of_week.py
 
       - name: Commit weekly selection and archive directly to main
