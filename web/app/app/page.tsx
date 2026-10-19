@@ -8,6 +8,7 @@ import { Container } from "../../components/primitives";
 import { analyse, ApiError } from "../../lib/api";
 import { formatDate } from "../../lib/brief";
 import { addToHistory, readHistory, removeFromHistory, type HistoryItem } from "../../lib/history";
+import { get } from "../../lib/market";
 
 const EXAMPLES = [
   { company: "Intel", ticker: "INTC" },
@@ -15,6 +16,8 @@ const EXAMPLES = [
   { company: "Naspers", ticker: "NPN.JO" },
   { company: "GTBank", ticker: "GTCO.LG" },
 ];
+
+type RecentMarketBrief = { id: string; title: string; created_at: string; scope_label: string; period_start: string; period_end: string; transaction_count: string | number };
 
 const STAGES = [
   "Collecting SEC filings, exchange disclosures and news",
@@ -63,9 +66,13 @@ export default function Dashboard() {
   const [running, setRunning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<HistoryItem[] | null>(null);
+  const [marketBriefs, setMarketBriefs] = useState<RecentMarketBrief[] | null>(null);
 
   useEffect(() => {
     setRows(readHistory());
+    get<{ briefs: RecentMarketBrief[] }>("/api/market-briefs")
+      .then((result) => setMarketBriefs(result.briefs ?? []))
+      .catch(() => setMarketBriefs([]));
   }, []);
 
   async function submit(e: FormEvent) {
@@ -102,6 +109,25 @@ export default function Dashboard() {
           <Link href="/app/market-briefs/new" className="btn btn-primary mt-4 inline-flex">
             Create market brief
           </Link>
+        </div>
+        <div className="mt-6">
+          <div className="flex items-baseline justify-between">
+            <p className="eyebrow">Recent market briefs</p>
+            <Link href="/app/market-briefs/new" className="text-xs text-[color:var(--muted)] hover:text-[color:var(--text)]">New brief →</Link>
+          </div>
+          <div className="mt-3 border-t hairline">
+            {marketBriefs === null ? <p className="py-3 text-sm text-[color:var(--dim)]">Loading market briefs…</p> :
+             marketBriefs.length === 0 ? <p className="py-3 text-sm text-[color:var(--muted)]">Your generated market briefs will appear here.</p> :
+             <ul>{marketBriefs.slice(0, 5).map((brief) => (
+               <li key={brief.id} className="border-b hairline">
+                 <Link href={"/app/market-briefs/" + encodeURIComponent(brief.id)} className="block py-3 transition-colors hover:text-[color:var(--text)]">
+                   <p className="font-medium">{brief.title}</p>
+                   <p className="mt-1 text-xs text-[color:var(--muted)]">{brief.scope_label} · {brief.transaction_count} records</p>
+                   <p className="mt-1 text-xs text-[color:var(--dim)]">{formatDate(brief.created_at)}</p>
+                 </Link>
+               </li>
+             ))}</ul>}
+          </div>
         </div>
         <p className="eyebrow">Company analysis</p>
         <h1 id="new-title" className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">
