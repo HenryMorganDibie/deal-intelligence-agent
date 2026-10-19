@@ -1,90 +1,303 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T09:21:30.836789+00:00",
+  "updated_at": "2026-10-19T09:43:14.108979+00:00",
   "current": {
-    "company": "Kenya Airways",
-    "company_url": "/app/companies?name=Kenya%20Airways",
-    "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-    "deal_type": "debt_restructuring",
+    "company": "Société Générale",
+    "company_url": "/app/companies?name=Soci%C3%A9t%C3%A9%20G%C3%A9n%C3%A9rale",
+    "headline": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
+    "deal_type": "leadership_change",
     "amount_usd": null,
-    "country": "KE",
-    "sector": null,
-    "announced": "2026-10-13",
-    "score": 50.26,
-    "independent_stories": 2,
+    "country": "BF",
+    "sector": "banking",
+    "announced": "2026-10-18",
+    "score": 53.3,
+    "independent_stories": 1,
     "transaction_records": 0,
-    "related_events": 2,
+    "related_events": 1,
     "reasons": [
-      "Corporate signal: debt restructuring",
-      "Event rule confidence: 0.88",
-      "2 distinct source-linked corporate event(s) found in the period",
+      "Corporate signal: leadership change",
+      "Event rule confidence: 0.75",
+      "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "aviationtoday.in",
-        "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-        "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
-        "date": "2026-10-13",
-        "kind": "corporate_event"
-      },
-      {
-        "publisher": "People Daily",
-        "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
-        "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
-        "date": "2026-10-12",
+        "publisher": "Financial Afrik",
+        "title": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
+        "url": "https://www.financialafrik.com/2026/10/18/breaking-news-vista-bank-burkina-moumounou-gnankambary-nomme-dg-pour-piloter-la-fusion-avec-societe-generale-burkina-faso/",
+        "date": "2026-10-18",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-12",
     "period_end": "2026-10-18",
-    "selected_at": "2026-10-19T09:21:30.836475+00:00",
+    "selected_at": "2026-10-19T09:43:14.108563+00:00",
     "selection_version": 3,
     "companies": [
       {
-        "company": "Kenya Airways",
-        "company_url": "/app/companies?name=Kenya%20Airways",
-        "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-        "deal_type": "debt_restructuring",
+        "company": "Société Générale",
+        "company_url": "/app/companies?name=Soci%C3%A9t%C3%A9%20G%C3%A9n%C3%A9rale",
+        "headline": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
+        "deal_type": "leadership_change",
         "amount_usd": null,
-        "country": "KE",
-        "sector": null,
-        "announced": "2026-10-13",
-        "score": 50.26,
-        "independent_stories": 2,
+        "country": "BF",
+        "sector": "banking",
+        "announced": "2026-10-18",
+        "score": 53.3,
+        "independent_stories": 1,
         "transaction_records": 0,
-        "related_events": 2,
+        "related_events": 1,
         "reasons": [
-          "Corporate signal: debt restructuring",
-          "Event rule confidence: 0.88",
-          "2 distinct source-linked corporate event(s) found in the period",
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.75",
+          "1 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "aviationtoday.in",
-            "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-            "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
-            "date": "2026-10-13",
-            "kind": "corporate_event"
-          },
-          {
-            "publisher": "People Daily",
-            "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
-            "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
-            "date": "2026-10-12",
+            "publisher": "Financial Afrik",
+            "title": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
+            "url": "https://www.financialafrik.com/2026/10/18/breaking-news-vista-bank-burkina-moumounou-gnankambary-nomme-dg-pour-piloter-la-fusion-avec-societe-generale-burkina-faso/",
+            "date": "2026-10-18",
             "kind": "corporate_event"
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:21:30.836475+00:00",
+        "selected_at": "2026-10-19T09:43:14.108563+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "Million",
+        "company_url": "/app/companies?name=Million",
+        "headline": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "NA",
+        "sector": null,
+        "announced": "2026-10-17",
+        "score": 62.47,
+        "independent_stories": 5,
+        "transaction_records": 0,
+        "related_events": 8,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "8 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Herald.co.zw",
+            "title": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
+            "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNMXFyV0ZIajlLaFdFWmlGZDNYOTNIWU9BOXZIRWtTQ09ibFNJTVBKTTFnRTdpbU1hbGNnNE9fRWN1elJlQmVEb0RrM0ZiVmNaeDNFaW5rRTlTalhHaVBDZmM3WXdHZjJYVGJxaldJNUpDZk5ZbjFpS1U2czNlbGJ1TUlUc0FLQnZNbDI5T3NWOE16UWJNS2FDMm00XzA2ZEttWTFQelVnVnY1eFVZTXZVZ0txSlVlS1NPd0E?oc=5",
+            "date": "2026-10-17",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "The Eastleigh Voice",
+            "title": "IEBC officials face Sh2 million fine, five years in jail over ungazetted polling stations",
+            "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNSGdTcnlNMGRwTnFaODFMUXQ5MDFWemgxRl9TX0xuUzh0RW1sM2lHT0RTbTY4c1hmaFZkcHdOTlFXRmNMNEg5UktjVnpBT0U3Y1cxSmFENFZQUUY2c0Vkc0VXRzYzazZBc3NMbGVQLVlvUDlQMW5aRkIyY21xeDlOcUN4UWQ2RFdmV0dhNTl0NEFlTFh5enFlbjd4QklCSzlLMHBDRkNRMkRWXzZVUmFYUjVIMlBfNG9kWDlhRzdXbFNjRlZYejRrcA?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "The South African",
+            "title": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
+            "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxONlBoeFBzMWNZa3ByUFhmbktsSnVjbVZJTDhudEloR3dMUGRMQnpJbDVoQnhUeFZsNF9iTU1ZWUhiY1BvSWxhY3ZSZ2xVaHhoYXpodE9jU2I5OGxFOE9RTkpSRlJTSko2eE1hZ2lQc1BxSk52NWxHOG5BR2RQZWdEbGZQQU52Slk4a2hnNWpyeENWbnhlYXVUZFdESDEtNzJvNXZHSE9WYWJ2RDgwSDZZTmtBUm5aOF8wZDZ6VmVBQk8?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "Herald.co.zw",
+            "title": "Zimbabwean truck driver fined R10 million for cigarette smuggling",
+            "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNanlhSlotTkNuSTBodkY3aGJSSzl0SGNHZVNkUDZOa0JhODJCVmVNckhnR0NwQlJyZjlYekpQcjQ2Vm5LTXh0ckMwczZmRUZqalRSSlpQU1VQNDNmbGV6QTFCcG9Ycm03QXJnOEhva3RYbmNXWHRGVmVKeWZSRWZXc2xQYUsyaVZ5cWVlYTNQZTI3UkN5UmkzZGhmQXFXdw?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "Herald.co.zw",
+            "title": "Zimbabwean truck driver fined R10 million for smuggling cigarettes into SA",
+            "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNcUlXU25zLW90RHFiSUg5Q21rVl82TVNydEhlTXo4aFEtc09haWYtc0ZtWk1DdWYxNU9OcU5vQWI1eWFfQ01RSnNpTFhFWnNvQU5lVmJGSVRTcjRPMHF0SWNNQjRGLXAyNzVCVXZ1VWJzWDBoVGRwNWtCb0RKa05WdXpwSXlZd2Y4UEYxTjVBTEZPMzBuclJORFBSd3hkLXBkN0pnSzVqNzZlZw?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "The Eastleigh Voice",
+            "title": "Employers face Sh1 million fine, jail term under Bill protecting breastfeeding mothers’ rights at work",
+            "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxPeWRDSmlDMTAyQ1QwSVh2dDlDeEdFSkNadFVhVHBGMzdPSHdlajVNNURuZ1dMMEFYSm14bUZhX1c0NDhjOUxsaWIwVk1BQldvcmcteWdXS0NaSkh1U28wQm90eTJrNTh2cHFGTEpRdFhOQTlHX3M5Zm9BN2lrVXF1N2NkdHhGVGRZMlVKY1M5VWVhbklSNHpydjRydmdBZi1GWEJ4dzFjVEU4djQ0cDd1eWdQRWw5Z2luNExRbFRwQ1JzMWJlR1hjazJ4eUdQT0NQUmkwUVpRQnJIZTUxc0JXXw?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "Algerie360",
+            "title": "Vente en ligne en Algérie : le PLF 2027 prévoit une amende de 1 million de DA",
+            "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQM3RWdjdaRkdBNmlVMUNoOEJsZWtXVW1EMElSZ01EaURnOUpxYUZRaFhxRURubUdYNUJ4ZU5tQ0hISndob2VQUmR1MEkwTUk5ZV9GaDUxMHlQMVRzYkxMMFd0VzR1eDdBUl9CX1RDYTQ5UTdybmMxTVFBV3FndzNzanhGNWVRZw?oc=5",
+            "date": "2026-10-13",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "aviationtoday.in",
+            "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+            "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
+            "date": "2026-10-13",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:43:14.108563+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "Président",
+        "company_url": "/app/companies?name=Pr%C3%A9sident",
+        "headline": "Real Madrid réclame la démission du président de la Liga",
+        "deal_type": "leadership_change",
+        "amount_usd": null,
+        "country": "MA",
+        "sector": null,
+        "announced": "2026-10-16",
+        "score": 55.14,
+        "independent_stories": 2,
+        "transaction_records": 0,
+        "related_events": 2,
+        "reasons": [
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.90",
+          "2 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Nessma TV",
+            "title": "Real Madrid réclame la démission du président de la Liga",
+            "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNdGxlZGVBdFFNUXJRZ1hxY1R1R1RlZFlCMThaSGtTd0RXclpySGR3X0NxS3d3RGNXS25SR3NpcE1pV21GOHI3M2IwSTE1ZDZmQ1ZpeWF3T2t1Tkd3Y3R2TXltYjBQNlE1cFg4Wkhyc183SGg1X1hsazV4QnhFT1M5dlVIckQ3QlQ1U0JpSmdtX3BHUU9wOFU0RGcxZUpNbjM0c0ZzM1ROREZjZGhs0gGyAUFVX3lxTFBvc0xubm5aX0h2X1E2d1ZLaTEtWUR3S0lMLWctVUpWV1o2Qm5qbU1jVXI2MDIxRERpSFBrN3hjeEx0UGJBRnpUSlpmWmwzbHU5c1drV2tRdTZDQlZRWU1xNzRpcm5UV190TW1SQzFURGRvaFgxUkZwdWJTVnkyVHRQb3BXLV9OTnd5SjNKR0lJSXd4TFp3QnhBcl9MTUU5UzZHLXBscTNBTW5fX2tmVDdlU1E?oc=5",
+            "date": "2026-10-16",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "Orange Actualités",
+            "title": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
+            "url": "https://news.google.com/rss/articles/CBMihAJBVV95cUxPN2Q4ckRPT3pKVVY5d2dVUC1UTFJma3p2THRpZ0JjVThFMTJwT1VtWXpSby1hS2ItZmxFd3RpTHNHc3JPZlFuaG1JQnUzSUdjcGV5M3NNYmNqaEdKOTZVM3djY2Nmd043QTM2V3VpNFI5MTgzWkFxT2ZmUTZhTFNORWp5NTdvYkhHa1hZYjBaVzBLaU00allTUF94cUVuUDdTU1hVSzNNU2JJWFByWXhRekFQVWRtUkhMQXdqX0s2THRMdkFvSzh1bDNlb2ZSR0NrMGtCMTVPNHl4SVVOZjFVaW1FMDhlemlCTlhTOHNwSW5yOEZIR2FjaXVsMi1NNXFHNTc4MQ?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:43:14.108563+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "De Beers",
+        "company_url": "/app/companies?name=De%20Beers",
+        "headline": "Botswana Nears Agreement To Increase Stake In De Beers As Anglo American Advances Exit Plans",
+        "deal_type": "insider_activity",
+        "amount_usd": null,
+        "country": "BW",
+        "sector": null,
+        "announced": "2026-10-16",
+        "score": 53.64,
+        "independent_stories": 2,
+        "transaction_records": 0,
+        "related_events": 2,
+        "reasons": [
+          "Corporate signal: insider activity",
+          "Event rule confidence: 0.85",
+          "2 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Trendsnafrica",
+            "title": "Botswana Nears Agreement To Increase Stake In De Beers As Anglo American Advances Exit Plans",
+            "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxOZXlTTXd5ZlQ5Q3hoQ2N5OWNmR0lCd2IwaTFxNC03SFllNTNXWlJ1VVNBQXVkSHJ3d25oY0FTMDYtNXpSbHczOUpvaWhRSTlKZlBVQUdXbzQxYVd3NkxOeURPZW9LeUFvMjRBcjl5OUg3LWtfeFJycUNyelVDSURseVYzLUhFZkVERmRSUXBGcmMxUWZNMmNtYkhtMnhPRWVXRW1HQVVnR3BTVXB3WmdGQ0kzSUUzajlqREt30gHDAUFVX3lxTFBzQXpMTVkySnZsM3NZaDh1NUI1bE8yMHZhQ1VHM0JmS3NsRm5oVjE0RmtKQ0Q5cTMxNTVpSE5hOUp3YzJlcGxYckN6T2E3RmJ1R3ZHUUdyUEtKT2VYZXFYeldiTWUwbHA0YTVIeWktbG10bEpDY0pnNmRNNElzbXZJM29nRmNvTkpDd2VubFZWcmgxdzlVRUJ0V3gtZHhrTk8wWDllZTR1QVJ6SzFzSDRIZk5VcGxGczhFU2p2eWtCWVg5NA?oc=5",
+            "date": "2026-10-16",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "Sada Elbalad English",
+            "title": "Botswana Nears Deal to Increase Its Stake in De Beers to Around 25%",
+            "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQUVJnMVlFM1dxRFVNblZZcnhlUnJUdEp4NEdKcVV4ODU2VktaTzZSbzNOWFBnZGhSbG1JWGNnLUhWZ2lYV0dnNmU4VFBPTHVtdklnRkFkdjNNQ0tieU12Y3JXYUdORkhmcWJnQ1RXVnNxQktOQmJBamlsaVRuQ3dTQUd0TURCelhVOUhZ?oc=5",
+            "date": "2026-10-14",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:43:14.108563+00:00",
+        "selection_version": 3
+      },
+      {
+        "company": "IFC",
+        "company_url": "/app/companies?name=IFC",
+        "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+        "deal_type": "distressed_asset",
+        "amount_usd": null,
+        "country": "MA",
+        "sector": "media_tech",
+        "announced": "2026-10-16",
+        "score": 52.24,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: distressed asset",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Medias24",
+            "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+            "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+            "date": "2026-10-16",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T09:43:14.108563+00:00",
         "selection_version": 3
       }
     ],
-    "runner_ups": []
+    "runner_ups": [
+      {
+        "company": "Cross River",
+        "score": 50.14,
+        "reasons": [
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.90",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "TotalEnergies",
+        "score": 48.64,
+        "reasons": [
+          "Corporate signal: insider activity",
+          "Event rule confidence: 0.85",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "Obuasi",
+        "score": 50.71,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.80",
+          "2 distinct source-linked corporate event(s) found in the period"
+        ]
+      }
+    ]
   },
   "history": [
     {
@@ -181,89 +394,302 @@
       ]
     },
     {
-      "company": "Kenya Airways",
-      "company_url": "/app/companies?name=Kenya%20Airways",
-      "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-      "deal_type": "debt_restructuring",
+      "company": "Société Générale",
+      "company_url": "/app/companies?name=Soci%C3%A9t%C3%A9%20G%C3%A9n%C3%A9rale",
+      "headline": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
+      "deal_type": "leadership_change",
       "amount_usd": null,
-      "country": "KE",
-      "sector": null,
-      "announced": "2026-10-13",
-      "score": 50.26,
-      "independent_stories": 2,
+      "country": "BF",
+      "sector": "banking",
+      "announced": "2026-10-18",
+      "score": 53.3,
+      "independent_stories": 1,
       "transaction_records": 0,
-      "related_events": 2,
+      "related_events": 1,
       "reasons": [
-        "Corporate signal: debt restructuring",
-        "Event rule confidence: 0.88",
-        "2 distinct source-linked corporate event(s) found in the period",
+        "Corporate signal: leadership change",
+        "Event rule confidence: 0.75",
+        "1 distinct source-linked corporate event(s) found in the period",
         "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "aviationtoday.in",
-          "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-          "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
-          "date": "2026-10-13",
-          "kind": "corporate_event"
-        },
-        {
-          "publisher": "People Daily",
-          "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
-          "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
-          "date": "2026-10-12",
+          "publisher": "Financial Afrik",
+          "title": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
+          "url": "https://www.financialafrik.com/2026/10/18/breaking-news-vista-bank-burkina-moumounou-gnankambary-nomme-dg-pour-piloter-la-fusion-avec-societe-generale-burkina-faso/",
+          "date": "2026-10-18",
           "kind": "corporate_event"
         }
       ],
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-12",
       "period_end": "2026-10-18",
-      "selected_at": "2026-10-19T09:21:30.836475+00:00",
+      "selected_at": "2026-10-19T09:43:14.108563+00:00",
       "selection_version": 3,
       "companies": [
         {
-          "company": "Kenya Airways",
-          "company_url": "/app/companies?name=Kenya%20Airways",
-          "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-          "deal_type": "debt_restructuring",
+          "company": "Société Générale",
+          "company_url": "/app/companies?name=Soci%C3%A9t%C3%A9%20G%C3%A9n%C3%A9rale",
+          "headline": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
+          "deal_type": "leadership_change",
           "amount_usd": null,
-          "country": "KE",
-          "sector": null,
-          "announced": "2026-10-13",
-          "score": 50.26,
-          "independent_stories": 2,
+          "country": "BF",
+          "sector": "banking",
+          "announced": "2026-10-18",
+          "score": 53.3,
+          "independent_stories": 1,
           "transaction_records": 0,
-          "related_events": 2,
+          "related_events": 1,
           "reasons": [
-            "Corporate signal: debt restructuring",
-            "Event rule confidence: 0.88",
-            "2 distinct source-linked corporate event(s) found in the period",
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "aviationtoday.in",
-              "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-              "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
-              "date": "2026-10-13",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "People Daily",
-              "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
-              "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
-              "date": "2026-10-12",
+              "publisher": "Financial Afrik",
+              "title": "Breaking news — Vista Bank Burkina : Moumounou Gnankambary nommé DG pour piloter la fusion avec Société Générale Burkina Faso",
+              "url": "https://www.financialafrik.com/2026/10/18/breaking-news-vista-bank-burkina-moumounou-gnankambary-nomme-dg-pour-piloter-la-fusion-avec-societe-generale-burkina-faso/",
+              "date": "2026-10-18",
               "kind": "corporate_event"
             }
           ],
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:21:30.836475+00:00",
+          "selected_at": "2026-10-19T09:43:14.108563+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "Million",
+          "company_url": "/app/companies?name=Million",
+          "headline": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NA",
+          "sector": null,
+          "announced": "2026-10-17",
+          "score": 62.47,
+          "independent_stories": 5,
+          "transaction_records": 0,
+          "related_events": 8,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "8 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Herald.co.zw",
+              "title": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
+              "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNMXFyV0ZIajlLaFdFWmlGZDNYOTNIWU9BOXZIRWtTQ09ibFNJTVBKTTFnRTdpbU1hbGNnNE9fRWN1elJlQmVEb0RrM0ZiVmNaeDNFaW5rRTlTalhHaVBDZmM3WXdHZjJYVGJxaldJNUpDZk5ZbjFpS1U2czNlbGJ1TUlUc0FLQnZNbDI5T3NWOE16UWJNS2FDMm00XzA2ZEttWTFQelVnVnY1eFVZTXZVZ0txSlVlS1NPd0E?oc=5",
+              "date": "2026-10-17",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "The Eastleigh Voice",
+              "title": "IEBC officials face Sh2 million fine, five years in jail over ungazetted polling stations",
+              "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNSGdTcnlNMGRwTnFaODFMUXQ5MDFWemgxRl9TX0xuUzh0RW1sM2lHT0RTbTY4c1hmaFZkcHdOTlFXRmNMNEg5UktjVnpBT0U3Y1cxSmFENFZQUUY2c0Vkc0VXRzYzazZBc3NMbGVQLVlvUDlQMW5aRkIyY21xeDlOcUN4UWQ2RFdmV0dhNTl0NEFlTFh5enFlbjd4QklCSzlLMHBDRkNRMkRWXzZVUmFYUjVIMlBfNG9kWDlhRzdXbFNjRlZYejRrcA?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "The South African",
+              "title": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
+              "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxONlBoeFBzMWNZa3ByUFhmbktsSnVjbVZJTDhudEloR3dMUGRMQnpJbDVoQnhUeFZsNF9iTU1ZWUhiY1BvSWxhY3ZSZ2xVaHhoYXpodE9jU2I5OGxFOE9RTkpSRlJTSko2eE1hZ2lQc1BxSk52NWxHOG5BR2RQZWdEbGZQQU52Slk4a2hnNWpyeENWbnhlYXVUZFdESDEtNzJvNXZHSE9WYWJ2RDgwSDZZTmtBUm5aOF8wZDZ6VmVBQk8?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "Herald.co.zw",
+              "title": "Zimbabwean truck driver fined R10 million for cigarette smuggling",
+              "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNanlhSlotTkNuSTBodkY3aGJSSzl0SGNHZVNkUDZOa0JhODJCVmVNckhnR0NwQlJyZjlYekpQcjQ2Vm5LTXh0ckMwczZmRUZqalRSSlpQU1VQNDNmbGV6QTFCcG9Ycm03QXJnOEhva3RYbmNXWHRGVmVKeWZSRWZXc2xQYUsyaVZ5cWVlYTNQZTI3UkN5UmkzZGhmQXFXdw?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "Herald.co.zw",
+              "title": "Zimbabwean truck driver fined R10 million for smuggling cigarettes into SA",
+              "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNcUlXU25zLW90RHFiSUg5Q21rVl82TVNydEhlTXo4aFEtc09haWYtc0ZtWk1DdWYxNU9OcU5vQWI1eWFfQ01RSnNpTFhFWnNvQU5lVmJGSVRTcjRPMHF0SWNNQjRGLXAyNzVCVXZ1VWJzWDBoVGRwNWtCb0RKa05WdXpwSXlZd2Y4UEYxTjVBTEZPMzBuclJORFBSd3hkLXBkN0pnSzVqNzZlZw?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "The Eastleigh Voice",
+              "title": "Employers face Sh1 million fine, jail term under Bill protecting breastfeeding mothers’ rights at work",
+              "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxPeWRDSmlDMTAyQ1QwSVh2dDlDeEdFSkNadFVhVHBGMzdPSHdlajVNNURuZ1dMMEFYSm14bUZhX1c0NDhjOUxsaWIwVk1BQldvcmcteWdXS0NaSkh1U28wQm90eTJrNTh2cHFGTEpRdFhOQTlHX3M5Zm9BN2lrVXF1N2NkdHhGVGRZMlVKY1M5VWVhbklSNHpydjRydmdBZi1GWEJ4dzFjVEU4djQ0cDd1eWdQRWw5Z2luNExRbFRwQ1JzMWJlR1hjazJ4eUdQT0NQUmkwUVpRQnJIZTUxc0JXXw?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "Algerie360",
+              "title": "Vente en ligne en Algérie : le PLF 2027 prévoit une amende de 1 million de DA",
+              "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQM3RWdjdaRkdBNmlVMUNoOEJsZWtXVW1EMElSZ01EaURnOUpxYUZRaFhxRURubUdYNUJ4ZU5tQ0hISndob2VQUmR1MEkwTUk5ZV9GaDUxMHlQMVRzYkxMMFd0VzR1eDdBUl9CX1RDYTQ5UTdybmMxTVFBV3FndzNzanhGNWVRZw?oc=5",
+              "date": "2026-10-13",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "aviationtoday.in",
+              "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+              "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
+              "date": "2026-10-13",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:43:14.108563+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "Président",
+          "company_url": "/app/companies?name=Pr%C3%A9sident",
+          "headline": "Real Madrid réclame la démission du président de la Liga",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "MA",
+          "sector": null,
+          "announced": "2026-10-16",
+          "score": 55.14,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nessma TV",
+              "title": "Real Madrid réclame la démission du président de la Liga",
+              "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNdGxlZGVBdFFNUXJRZ1hxY1R1R1RlZFlCMThaSGtTd0RXclpySGR3X0NxS3d3RGNXS25SR3NpcE1pV21GOHI3M2IwSTE1ZDZmQ1ZpeWF3T2t1Tkd3Y3R2TXltYjBQNlE1cFg4Wkhyc183SGg1X1hsazV4QnhFT1M5dlVIckQ3QlQ1U0JpSmdtX3BHUU9wOFU0RGcxZUpNbjM0c0ZzM1ROREZjZGhs0gGyAUFVX3lxTFBvc0xubm5aX0h2X1E2d1ZLaTEtWUR3S0lMLWctVUpWV1o2Qm5qbU1jVXI2MDIxRERpSFBrN3hjeEx0UGJBRnpUSlpmWmwzbHU5c1drV2tRdTZDQlZRWU1xNzRpcm5UV190TW1SQzFURGRvaFgxUkZwdWJTVnkyVHRQb3BXLV9OTnd5SjNKR0lJSXd4TFp3QnhBcl9MTUU5UzZHLXBscTNBTW5fX2tmVDdlU1E?oc=5",
+              "date": "2026-10-16",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "Orange Actualités",
+              "title": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
+              "url": "https://news.google.com/rss/articles/CBMihAJBVV95cUxPN2Q4ckRPT3pKVVY5d2dVUC1UTFJma3p2THRpZ0JjVThFMTJwT1VtWXpSby1hS2ItZmxFd3RpTHNHc3JPZlFuaG1JQnUzSUdjcGV5M3NNYmNqaEdKOTZVM3djY2Nmd043QTM2V3VpNFI5MTgzWkFxT2ZmUTZhTFNORWp5NTdvYkhHa1hZYjBaVzBLaU00allTUF94cUVuUDdTU1hVSzNNU2JJWFByWXhRekFQVWRtUkhMQXdqX0s2THRMdkFvSzh1bDNlb2ZSR0NrMGtCMTVPNHl4SVVOZjFVaW1FMDhlemlCTlhTOHNwSW5yOEZIR2FjaXVsMi1NNXFHNTc4MQ?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:43:14.108563+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "De Beers",
+          "company_url": "/app/companies?name=De%20Beers",
+          "headline": "Botswana Nears Agreement To Increase Stake In De Beers As Anglo American Advances Exit Plans",
+          "deal_type": "insider_activity",
+          "amount_usd": null,
+          "country": "BW",
+          "sector": null,
+          "announced": "2026-10-16",
+          "score": 53.64,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.85",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Trendsnafrica",
+              "title": "Botswana Nears Agreement To Increase Stake In De Beers As Anglo American Advances Exit Plans",
+              "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxOZXlTTXd5ZlQ5Q3hoQ2N5OWNmR0lCd2IwaTFxNC03SFllNTNXWlJ1VVNBQXVkSHJ3d25oY0FTMDYtNXpSbHczOUpvaWhRSTlKZlBVQUdXbzQxYVd3NkxOeURPZW9LeUFvMjRBcjl5OUg3LWtfeFJycUNyelVDSURseVYzLUhFZkVERmRSUXBGcmMxUWZNMmNtYkhtMnhPRWVXRW1HQVVnR3BTVXB3WmdGQ0kzSUUzajlqREt30gHDAUFVX3lxTFBzQXpMTVkySnZsM3NZaDh1NUI1bE8yMHZhQ1VHM0JmS3NsRm5oVjE0RmtKQ0Q5cTMxNTVpSE5hOUp3YzJlcGxYckN6T2E3RmJ1R3ZHUUdyUEtKT2VYZXFYeldiTWUwbHA0YTVIeWktbG10bEpDY0pnNmRNNElzbXZJM29nRmNvTkpDd2VubFZWcmgxdzlVRUJ0V3gtZHhrTk8wWDllZTR1QVJ6SzFzSDRIZk5VcGxGczhFU2p2eWtCWVg5NA?oc=5",
+              "date": "2026-10-16",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "Sada Elbalad English",
+              "title": "Botswana Nears Deal to Increase Its Stake in De Beers to Around 25%",
+              "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQUVJnMVlFM1dxRFVNblZZcnhlUnJUdEp4NEdKcVV4ODU2VktaTzZSbzNOWFBnZGhSbG1JWGNnLUhWZ2lYV0dnNmU4VFBPTHVtdklnRkFkdjNNQ0tieU12Y3JXYUdORkhmcWJnQ1RXVnNxQktOQmJBamlsaVRuQ3dTQUd0TURCelhVOUhZ?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:43:14.108563+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "IFC",
+          "company_url": "/app/companies?name=IFC",
+          "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+          "deal_type": "distressed_asset",
+          "amount_usd": null,
+          "country": "MA",
+          "sector": "media_tech",
+          "announced": "2026-10-16",
+          "score": 52.24,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Medias24",
+              "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+              "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+              "date": "2026-10-16",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T09:43:14.108563+00:00",
           "selection_version": 3
         }
       ],
-      "runner_ups": []
+      "runner_ups": [
+        {
+          "company": "Cross River",
+          "score": 50.14,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "TotalEnergies",
+          "score": 48.64,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.85",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Obuasi",
+          "score": 50.71,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.80",
+            "2 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
     }
   ]
 }
