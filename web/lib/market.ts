@@ -222,6 +222,7 @@ export type EvidenceItem = {
   source_quality_note?: string;
   content_status?: "article_text_retrieved" | "snippet_only" | "injected_search_snippet" | "non_html_source";
   content_url?: string;
+  publisher_url?: string;
   syndication_key?: string;
   syndication_group_size?: number;
   syndicated_publishers?: string[];
