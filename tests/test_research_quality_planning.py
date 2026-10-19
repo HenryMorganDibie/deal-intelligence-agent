@@ -48,3 +48,14 @@ def test_benchmark_metrics_are_reproducible():
     assert metrics["retrieval_precision"] == 0.5
     assert metrics["retrieval_recall"] == 0.5
     assert metrics["claim_support_rate"] == 0.5
+
+
+
+def test_research_result_exposes_limits_and_query_plan_without_live_news():
+    from src.engines.research import research
+
+    result = research("What happened to Acme?", live_news=False)
+    assert result["query_plan"]
+    assert result["limitations"]
+    assert "bounded sample" in " ".join(result["limitations"])
+    assert result["conflicts"] == []
