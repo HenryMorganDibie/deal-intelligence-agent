@@ -1284,6 +1284,12 @@ def evidence_coverage(items: list[dict]) -> list[dict]:
         if domains:
             row["distinct_source_domains"] = len(domains)
             row["source_domains"] = sorted(domains)[:12]
+        headline_keys = [item.get("syndication_key") for item in selected if item.get("syndication_key")]
+        if headline_keys:
+            row["distinct_headlines"] = len(set(headline_keys))
+            row["likely_syndicated_items"] = sum(
+                1 for item in selected if (item.get("syndication_group_size") or 0) > 1
+            )
         coverage.append(row)
     return coverage
 
