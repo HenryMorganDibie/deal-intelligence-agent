@@ -42,7 +42,7 @@ jobs:
         run: |
           ARGS=()
           if [ "${{ inputs.live_news }}" != "true" ]; then ARGS+=(--no-live-news); fi
-          python scripts/run_research_benchmark.py benchmarks/research-questions.jsonl --output benchmark-review-run.jsonl "${ARGS[@]}"
+          python -m scripts.run_research_benchmark benchmarks/research-questions.jsonl --output benchmark-review-run.jsonl "${ARGS[@]}"
 
       - name: Upload review packet
         uses: actions/upload-artifact@v4
