@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T09:43:32.855431+00:00",
+  "updated_at": "2026-10-19T09:46:42.500108+00:00",
   "current": {
     "company": "Société Générale",
     "company_url": "/app/companies?name=Soci%C3%A9t%C3%A9%20G%C3%A9n%C3%A9rale",
@@ -32,7 +32,7 @@
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-12",
     "period_end": "2026-10-18",
-    "selected_at": "2026-10-19T09:43:32.854750+00:00",
+    "selected_at": "2026-10-19T09:46:42.499420+00:00",
     "selection_version": 3,
     "companies": [
       {
@@ -66,69 +66,41 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:43:32.854750+00:00",
+        "selected_at": "2026-10-19T09:46:42.499420+00:00",
         "selection_version": 3
       },
       {
-        "company": "Million",
-        "company_url": "/app/companies?name=Million",
-        "headline": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
+        "company": "Une",
+        "company_url": "/app/companies?name=Une",
+        "headline": "Après son but face à l'APR FC : Zamalek inflige une sanction aggravée à Nasser Mansi",
         "deal_type": "regulatory_action",
         "amount_usd": null,
-        "country": "NA",
+        "country": "RW",
         "sector": null,
         "announced": "2026-10-17",
         "score": 62.47,
-        "independent_stories": 5,
+        "independent_stories": 3,
         "transaction_records": 0,
-        "related_events": 8,
+        "related_events": 3,
         "reasons": [
           "Corporate signal: regulatory action",
           "Event rule confidence: 0.93",
-          "8 distinct source-linked corporate event(s) found in the period",
+          "3 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "Herald.co.zw",
-            "title": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
-            "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNMXFyV0ZIajlLaFdFWmlGZDNYOTNIWU9BOXZIRWtTQ09ibFNJTVBKTTFnRTdpbU1hbGNnNE9fRWN1elJlQmVEb0RrM0ZiVmNaeDNFaW5rRTlTalhHaVBDZmM3WXdHZjJYVGJxaldJNUpDZk5ZbjFpS1U2czNlbGJ1TUlUc0FLQnZNbDI5T3NWOE16UWJNS2FDMm00XzA2ZEttWTFQelVnVnY1eFVZTXZVZ0txSlVlS1NPd0E?oc=5",
+            "publisher": "Goal.com",
+            "title": "Après son but face à l'APR FC : Zamalek inflige une sanction aggravée à Nasser Mansi",
+            "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxQQ05tOGgtM2pDYmstTFgzdE8xXzRTVm5ENE9ILVQzTktNcVdtT0dCSndNaEhGd2ZPd0JHU3hOZ1l3ZHhXeGpNRWYzX19qTGl4R21yYkxFNm9wMTlxQl84aXhndmhSWVVTQXgzWVBaeHkxRVZxSnRETjkzdE1fekNoNUpKaVJRNG1UakFGdTJNbVFBOXlER2RGb0tReU5EX1AxVVhSaXcwazdMdjg0blNPR1phSmN5VXY4ckhPdmQ4dlNnT1hTZUN6UFlmSQ?oc=5",
             "date": "2026-10-17",
             "kind": "corporate_event"
           },
           {
-            "publisher": "The Eastleigh Voice",
-            "title": "IEBC officials face Sh2 million fine, five years in jail over ungazetted polling stations",
-            "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNSGdTcnlNMGRwTnFaODFMUXQ5MDFWemgxRl9TX0xuUzh0RW1sM2lHT0RTbTY4c1hmaFZkcHdOTlFXRmNMNEg5UktjVnpBT0U3Y1cxSmFENFZQUUY2c0Vkc0VXRzYzazZBc3NMbGVQLVlvUDlQMW5aRkIyY21xeDlOcUN4UWQ2RFdmV0dhNTl0NEFlTFh5enFlbjd4QklCSzlLMHBDRkNRMkRWXzZVUmFYUjVIMlBfNG9kWDlhRzdXbFNjRlZYejRrcA?oc=5",
-            "date": "2026-10-14",
-            "kind": "corporate_event"
-          },
-          {
-            "publisher": "The South African",
-            "title": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
-            "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxONlBoeFBzMWNZa3ByUFhmbktsSnVjbVZJTDhudEloR3dMUGRMQnpJbDVoQnhUeFZsNF9iTU1ZWUhiY1BvSWxhY3ZSZ2xVaHhoYXpodE9jU2I5OGxFOE9RTkpSRlJTSko2eE1hZ2lQc1BxSk52NWxHOG5BR2RQZWdEbGZQQU52Slk4a2hnNWpyeENWbnhlYXVUZFdESDEtNzJvNXZHSE9WYWJ2RDgwSDZZTmtBUm5aOF8wZDZ6VmVBQk8?oc=5",
-            "date": "2026-10-14",
-            "kind": "corporate_event"
-          },
-          {
-            "publisher": "Herald.co.zw",
-            "title": "Zimbabwean truck driver fined R10 million for cigarette smuggling",
-            "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNanlhSlotTkNuSTBodkY3aGJSSzl0SGNHZVNkUDZOa0JhODJCVmVNckhnR0NwQlJyZjlYekpQcjQ2Vm5LTXh0ckMwczZmRUZqalRSSlpQU1VQNDNmbGV6QTFCcG9Ycm03QXJnOEhva3RYbmNXWHRGVmVKeWZSRWZXc2xQYUsyaVZ5cWVlYTNQZTI3UkN5UmkzZGhmQXFXdw?oc=5",
-            "date": "2026-10-14",
-            "kind": "corporate_event"
-          },
-          {
-            "publisher": "Herald.co.zw",
-            "title": "Zimbabwean truck driver fined R10 million for smuggling cigarettes into SA",
-            "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNcUlXU25zLW90RHFiSUg5Q21rVl82TVNydEhlTXo4aFEtc09haWYtc0ZtWk1DdWYxNU9OcU5vQWI1eWFfQ01RSnNpTFhFWnNvQU5lVmJGSVRTcjRPMHF0SWNNQjRGLXAyNzVCVXZ1VWJzWDBoVGRwNWtCb0RKa05WdXpwSXlZd2Y4UEYxTjVBTEZPMzBuclJORFBSd3hkLXBkN0pnSzVqNzZlZw?oc=5",
-            "date": "2026-10-14",
-            "kind": "corporate_event"
-          },
-          {
-            "publisher": "The Eastleigh Voice",
-            "title": "Employers face Sh1 million fine, jail term under Bill protecting breastfeeding mothers’ rights at work",
-            "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxPeWRDSmlDMTAyQ1QwSVh2dDlDeEdFSkNadFVhVHBGMzdPSHdlajVNNURuZ1dMMEFYSm14bUZhX1c0NDhjOUxsaWIwVk1BQldvcmcteWdXS0NaSkh1U28wQm90eTJrNTh2cHFGTEpRdFhOQTlHX3M5Zm9BN2lrVXF1N2NkdHhGVGRZMlVKY1M5VWVhbklSNHpydjRydmdBZi1GWEJ4dzFjVEU4djQ0cDd1eWdQRWw5Z2luNExRbFRwQ1JzMWJlR1hjazJ4eUdQT0NQUmkwUVpRQnJIZTUxc0JXXw?oc=5",
-            "date": "2026-10-14",
+            "publisher": "Medias24",
+            "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+            "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+            "date": "2026-10-16",
             "kind": "corporate_event"
           },
           {
@@ -137,19 +109,12 @@
             "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQM3RWdjdaRkdBNmlVMUNoOEJsZWtXVW1EMElSZ01EaURnOUpxYUZRaFhxRURubUdYNUJ4ZU5tQ0hISndob2VQUmR1MEkwTUk5ZV9GaDUxMHlQMVRzYkxMMFd0VzR1eDdBUl9CX1RDYTQ5UTdybmMxTVFBV3FndzNzanhGNWVRZw?oc=5",
             "date": "2026-10-13",
             "kind": "corporate_event"
-          },
-          {
-            "publisher": "aviationtoday.in",
-            "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-            "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
-            "date": "2026-10-13",
-            "kind": "corporate_event"
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:43:32.854750+00:00",
+        "selected_at": "2026-10-19T09:46:42.499420+00:00",
         "selection_version": 3
       },
       {
@@ -190,7 +155,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:43:32.854750+00:00",
+        "selected_at": "2026-10-19T09:46:42.499420+00:00",
         "selection_version": 3
       },
       {
@@ -231,33 +196,33 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:43:32.854750+00:00",
+        "selected_at": "2026-10-19T09:46:42.499420+00:00",
         "selection_version": 3
       },
       {
-        "company": "IFC",
-        "company_url": "/app/companies?name=IFC",
-        "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-        "deal_type": "distressed_asset",
+        "company": "Cross River",
+        "company_url": "/app/companies?name=Cross%20River",
+        "headline": "BREAKING: Cross River PDP Chairman Venatius Ikem Resigns, Cites Leadership Crisis",
+        "deal_type": "leadership_change",
         "amount_usd": null,
-        "country": "MA",
-        "sector": "media_tech",
+        "country": "NG",
+        "sector": null,
         "announced": "2026-10-16",
-        "score": 52.24,
+        "score": 50.14,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
         "reasons": [
-          "Corporate signal: distressed asset",
-          "Event rule confidence: 0.80",
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.90",
           "1 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "Medias24",
-            "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-            "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+            "publisher": "The Trumpet Newspaper Nigeria",
+            "title": "BREAKING: Cross River PDP Chairman Venatius Ikem Resigns, Cites Leadership Crisis",
+            "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOZlR2d3Y1YW9Ia2RaNE1EcW9PdWZvYWJ2UnF6THJybnNlak1BZW5qTU1DUFlsWW8wY3QyVGM4b196Tm41WEk2VkVNWGhMeGU3djVzR1RMbWlScTVXREhZMHMzTmVyLVRyV1prZGtQLS1IRU1kejViekVXMUxOSVVmVGR4N2RyYUFjUFJlTDhIN1VqNXJ4TmhCSU55cm5OWmpOZWc0bQ?oc=5",
             "date": "2026-10-16",
             "kind": "corporate_event"
           }
@@ -265,20 +230,11 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-12",
         "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T09:43:32.854750+00:00",
+        "selected_at": "2026-10-19T09:46:42.499420+00:00",
         "selection_version": 3
       }
     ],
     "runner_ups": [
-      {
-        "company": "Cross River",
-        "score": 50.14,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.90",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
       {
         "company": "TotalEnergies",
         "score": 48.64,
@@ -294,6 +250,15 @@
         "reasons": [
           "Corporate signal: regulatory action",
           "Event rule confidence: 0.80",
+          "2 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "Fresh",
+        "score": 53.19,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
           "2 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -424,7 +389,7 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-12",
       "period_end": "2026-10-18",
-      "selected_at": "2026-10-19T09:43:32.854750+00:00",
+      "selected_at": "2026-10-19T09:46:42.499420+00:00",
       "selection_version": 3,
       "companies": [
         {
@@ -458,69 +423,41 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:43:32.854750+00:00",
+          "selected_at": "2026-10-19T09:46:42.499420+00:00",
           "selection_version": 3
         },
         {
-          "company": "Million",
-          "company_url": "/app/companies?name=Million",
-          "headline": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
+          "company": "Une",
+          "company_url": "/app/companies?name=Une",
+          "headline": "Après son but face à l'APR FC : Zamalek inflige une sanction aggravée à Nasser Mansi",
           "deal_type": "regulatory_action",
           "amount_usd": null,
-          "country": "NA",
+          "country": "RW",
           "sector": null,
           "announced": "2026-10-17",
           "score": 62.47,
-          "independent_stories": 5,
+          "independent_stories": 3,
           "transaction_records": 0,
-          "related_events": 8,
+          "related_events": 3,
           "reasons": [
             "Corporate signal: regulatory action",
             "Event rule confidence: 0.93",
-            "8 distinct source-linked corporate event(s) found in the period",
+            "3 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "Herald.co.zw",
-              "title": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
-              "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNMXFyV0ZIajlLaFdFWmlGZDNYOTNIWU9BOXZIRWtTQ09ibFNJTVBKTTFnRTdpbU1hbGNnNE9fRWN1elJlQmVEb0RrM0ZiVmNaeDNFaW5rRTlTalhHaVBDZmM3WXdHZjJYVGJxaldJNUpDZk5ZbjFpS1U2czNlbGJ1TUlUc0FLQnZNbDI5T3NWOE16UWJNS2FDMm00XzA2ZEttWTFQelVnVnY1eFVZTXZVZ0txSlVlS1NPd0E?oc=5",
+              "publisher": "Goal.com",
+              "title": "Après son but face à l'APR FC : Zamalek inflige une sanction aggravée à Nasser Mansi",
+              "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxQQ05tOGgtM2pDYmstTFgzdE8xXzRTVm5ENE9ILVQzTktNcVdtT0dCSndNaEhGd2ZPd0JHU3hOZ1l3ZHhXeGpNRWYzX19qTGl4R21yYkxFNm9wMTlxQl84aXhndmhSWVVTQXgzWVBaeHkxRVZxSnRETjkzdE1fekNoNUpKaVJRNG1UakFGdTJNbVFBOXlER2RGb0tReU5EX1AxVVhSaXcwazdMdjg0blNPR1phSmN5VXY4ckhPdmQ4dlNnT1hTZUN6UFlmSQ?oc=5",
               "date": "2026-10-17",
               "kind": "corporate_event"
             },
             {
-              "publisher": "The Eastleigh Voice",
-              "title": "IEBC officials face Sh2 million fine, five years in jail over ungazetted polling stations",
-              "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNSGdTcnlNMGRwTnFaODFMUXQ5MDFWemgxRl9TX0xuUzh0RW1sM2lHT0RTbTY4c1hmaFZkcHdOTlFXRmNMNEg5UktjVnpBT0U3Y1cxSmFENFZQUUY2c0Vkc0VXRzYzazZBc3NMbGVQLVlvUDlQMW5aRkIyY21xeDlOcUN4UWQ2RFdmV0dhNTl0NEFlTFh5enFlbjd4QklCSzlLMHBDRkNRMkRWXzZVUmFYUjVIMlBfNG9kWDlhRzdXbFNjRlZYejRrcA?oc=5",
-              "date": "2026-10-14",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "The South African",
-              "title": "Zimbabwean truck driver faces R10 million fine: What happens if he cannot pay?",
-              "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxONlBoeFBzMWNZa3ByUFhmbktsSnVjbVZJTDhudEloR3dMUGRMQnpJbDVoQnhUeFZsNF9iTU1ZWUhiY1BvSWxhY3ZSZ2xVaHhoYXpodE9jU2I5OGxFOE9RTkpSRlJTSko2eE1hZ2lQc1BxSk52NWxHOG5BR2RQZWdEbGZQQU52Slk4a2hnNWpyeENWbnhlYXVUZFdESDEtNzJvNXZHSE9WYWJ2RDgwSDZZTmtBUm5aOF8wZDZ6VmVBQk8?oc=5",
-              "date": "2026-10-14",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Herald.co.zw",
-              "title": "Zimbabwean truck driver fined R10 million for cigarette smuggling",
-              "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNanlhSlotTkNuSTBodkY3aGJSSzl0SGNHZVNkUDZOa0JhODJCVmVNckhnR0NwQlJyZjlYekpQcjQ2Vm5LTXh0ckMwczZmRUZqalRSSlpQU1VQNDNmbGV6QTFCcG9Ycm03QXJnOEhva3RYbmNXWHRGVmVKeWZSRWZXc2xQYUsyaVZ5cWVlYTNQZTI3UkN5UmkzZGhmQXFXdw?oc=5",
-              "date": "2026-10-14",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Herald.co.zw",
-              "title": "Zimbabwean truck driver fined R10 million for smuggling cigarettes into SA",
-              "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNcUlXU25zLW90RHFiSUg5Q21rVl82TVNydEhlTXo4aFEtc09haWYtc0ZtWk1DdWYxNU9OcU5vQWI1eWFfQ01RSnNpTFhFWnNvQU5lVmJGSVRTcjRPMHF0SWNNQjRGLXAyNzVCVXZ1VWJzWDBoVGRwNWtCb0RKa05WdXpwSXlZd2Y4UEYxTjVBTEZPMzBuclJORFBSd3hkLXBkN0pnSzVqNzZlZw?oc=5",
-              "date": "2026-10-14",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "The Eastleigh Voice",
-              "title": "Employers face Sh1 million fine, jail term under Bill protecting breastfeeding mothers’ rights at work",
-              "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxPeWRDSmlDMTAyQ1QwSVh2dDlDeEdFSkNadFVhVHBGMzdPSHdlajVNNURuZ1dMMEFYSm14bUZhX1c0NDhjOUxsaWIwVk1BQldvcmcteWdXS0NaSkh1U28wQm90eTJrNTh2cHFGTEpRdFhOQTlHX3M5Zm9BN2lrVXF1N2NkdHhGVGRZMlVKY1M5VWVhbklSNHpydjRydmdBZi1GWEJ4dzFjVEU4djQ0cDd1eWdQRWw5Z2luNExRbFRwQ1JzMWJlR1hjazJ4eUdQT0NQUmkwUVpRQnJIZTUxc0JXXw?oc=5",
-              "date": "2026-10-14",
+              "publisher": "Medias24",
+              "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+              "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+              "date": "2026-10-16",
               "kind": "corporate_event"
             },
             {
@@ -529,19 +466,12 @@
               "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQM3RWdjdaRkdBNmlVMUNoOEJsZWtXVW1EMElSZ01EaURnOUpxYUZRaFhxRURubUdYNUJ4ZU5tQ0hISndob2VQUmR1MEkwTUk5ZV9GaDUxMHlQMVRzYkxMMFd0VzR1eDdBUl9CX1RDYTQ5UTdybmMxTVFBV3FndzNzanhGNWVRZw?oc=5",
               "date": "2026-10-13",
               "kind": "corporate_event"
-            },
-            {
-              "publisher": "aviationtoday.in",
-              "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-              "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
-              "date": "2026-10-13",
-              "kind": "corporate_event"
             }
           ],
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:43:32.854750+00:00",
+          "selected_at": "2026-10-19T09:46:42.499420+00:00",
           "selection_version": 3
         },
         {
@@ -582,7 +512,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:43:32.854750+00:00",
+          "selected_at": "2026-10-19T09:46:42.499420+00:00",
           "selection_version": 3
         },
         {
@@ -623,33 +553,33 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:43:32.854750+00:00",
+          "selected_at": "2026-10-19T09:46:42.499420+00:00",
           "selection_version": 3
         },
         {
-          "company": "IFC",
-          "company_url": "/app/companies?name=IFC",
-          "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-          "deal_type": "distressed_asset",
+          "company": "Cross River",
+          "company_url": "/app/companies?name=Cross%20River",
+          "headline": "BREAKING: Cross River PDP Chairman Venatius Ikem Resigns, Cites Leadership Crisis",
+          "deal_type": "leadership_change",
           "amount_usd": null,
-          "country": "MA",
-          "sector": "media_tech",
+          "country": "NG",
+          "sector": null,
           "announced": "2026-10-16",
-          "score": 52.24,
+          "score": 50.14,
           "independent_stories": 1,
           "transaction_records": 0,
           "related_events": 1,
           "reasons": [
-            "Corporate signal: distressed asset",
-            "Event rule confidence: 0.80",
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
             "1 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "Medias24",
-              "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-              "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+              "publisher": "The Trumpet Newspaper Nigeria",
+              "title": "BREAKING: Cross River PDP Chairman Venatius Ikem Resigns, Cites Leadership Crisis",
+              "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOZlR2d3Y1YW9Ia2RaNE1EcW9PdWZvYWJ2UnF6THJybnNlak1BZW5qTU1DUFlsWW8wY3QyVGM4b196Tm41WEk2VkVNWGhMeGU3djVzR1RMbWlScTVXREhZMHMzTmVyLVRyV1prZGtQLS1IRU1kejViekVXMUxOSVVmVGR4N2RyYUFjUFJlTDhIN1VqNXJ4TmhCSU55cm5OWmpOZWc0bQ?oc=5",
               "date": "2026-10-16",
               "kind": "corporate_event"
             }
@@ -657,20 +587,11 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T09:43:32.854750+00:00",
+          "selected_at": "2026-10-19T09:46:42.499420+00:00",
           "selection_version": 3
         }
       ],
       "runner_ups": [
-        {
-          "company": "Cross River",
-          "score": 50.14,
-          "reasons": [
-            "Corporate signal: leadership change",
-            "Event rule confidence: 0.90",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
         {
           "company": "TotalEnergies",
           "score": 48.64,
@@ -686,6 +607,15 @@
           "reasons": [
             "Corporate signal: regulatory action",
             "Event rule confidence: 0.80",
+            "2 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Fresh",
+          "score": 53.19,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
             "2 distinct source-linked corporate event(s) found in the period"
           ]
         }
