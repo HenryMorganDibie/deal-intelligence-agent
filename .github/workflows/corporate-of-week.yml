@@ -8,8 +8,8 @@ on:
       - "scripts/corporate_of_week.py"
       - "scripts/test_corporate_of_week.py"
   schedule:
-    # Select after weekend ingestion; the feature covers the previous seven complete UTC days.
-    - cron: "30 7 * * 1"
+    # Refresh daily; each run considers the latest seven complete UTC days.
+    - cron: "30 7 * * *"
   workflow_dispatch:
 
 permissions:
