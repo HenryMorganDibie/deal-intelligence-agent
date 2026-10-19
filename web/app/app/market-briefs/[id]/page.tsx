@@ -10,6 +10,7 @@ type MarketReport = {
   brief_type: string; title: string; audience: string; period_start: string; period_end: string; generated_at: string;
   scope_label: string; metrics: { transaction_count: number; disclosed_value_count: number; disclosed_value_usd_label: string; countries_represented: number };
   key_transactions: Array<Record<string, any>>; comparables: Array<Record<string, any>>; observed_patterns: string[];
+  advisory_signals: Array<{ title: string; rationale: string; evidence_count: number; evidence: Array<{ headline: string; url: string | null }> }>;
   methodology: string; coverage_note: string; markdown: string;
 };
 type Result = { id: string; title: string; report: MarketReport; markdown: string; created_at: string };
@@ -84,6 +85,18 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
         <section className="mt-10">
           <h2 className="h3 text-xl">Observed patterns</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[color:var(--muted)]">{row.report.observed_patterns.map((p, i) => <li key={i}>{p}</li>)}</ul>
+        </section>
+        <section className="mt-10">
+          <h2 className="h3 text-xl">Potential advisory research leads</h2>
+          <p className="mt-2 text-sm text-[color:var(--muted)]">These are evidence-based prompts for further research, not confirmed mandates or recommendations.</p>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {(row.report.advisory_signals ?? []).length ? row.report.advisory_signals.map((signal, i) => <article key={signal.title + i} className="panel p-4">
+              <h3 className="font-semibold">{signal.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">{signal.rationale}</p>
+              <p className="mt-2 text-xs text-[color:var(--dim)]">Based on {signal.evidence_count} transaction records in this sample</p>
+              <ul className="mt-2 space-y-1">{signal.evidence.filter((e) => e.url).slice(0, 3).map((e, j) => <li key={e.url + j}><a className="text-sm underline underline-offset-4" href={e.url!} target="_blank" rel="noreferrer">{e.headline || "Supporting transaction"} ↗</a></li>)}</ul>
+            </article>) : <p className="text-sm text-[color:var(--muted)]">The current sample does not show repeated activity strong enough to generate a research lead.</p>}
+          </div>
         </section>
         <section className="mt-10">
           <h2 className="h3 text-xl">Comparable activity</h2>
