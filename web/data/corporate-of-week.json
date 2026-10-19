@@ -1,93 +1,244 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-18T22:57:23.769435+00:00",
+  "updated_at": "2026-10-19T07:24:20.839608+00:00",
   "current": {
-    "company": "Kenya Airways",
-    "company_url": "/app/companies?name=Kenya%20Airways",
-    "headline": "Kenya Airways secures $350m state loan to shore up finances",
-    "deal_type": "debt_financing",
-    "amount_usd": 350000000.0,
-    "country": "KE",
-    "sector": null,
-    "announced": "2026-10-12",
-    "score": 56.78,
-    "independent_stories": 3,
+    "company": "Aqar",
+    "company_url": "/app/companies?name=Aqar",
+    "headline": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
+    "deal_type": "acquisition",
+    "amount_usd": null,
+    "country": "EG",
+    "sector": "media_tech",
+    "announced": "2026-10-18",
+    "score": 38.25,
+    "independent_stories": 1,
     "transaction_records": 1,
-    "related_events": 2,
+    "related_events": 1,
     "reasons": [
-      "Transaction category: debt financing",
-      "Disclosed transaction size contributes 12.7/18 significance points",
-      "Corroborated by 3 independent stories matching the transaction headline",
-      "Recency: 5 day(s) before the selection period ended",
-      "2 related corporate-event signal(s) found in the same period",
+      "Transaction category: acquisition",
+      "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+      "Recency: 0 day(s) before the selection period ended",
+      "1 related corporate-event signal(s) found in the same period",
       "At least one inspectable source link is available"
     ],
     "sources": [
       {
-        "publisher": "FlightGlobal",
-        "title": "Kenya Airways secures $350m state loan to shore up finances",
-        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNcmVpT0FLNW9MdC1WaF9FUnBuaGxhLVFIc0E3MGdwUGVQYzNKTnZuX0ZyNVBvOUdLb045R2IzMmlfdjJuMHZRYTh2Q0ZxV0txa3VtRVZMWHlWUVdWTXVxUmhvR3M0RVNndVNYM3IxM244cWhiU2pObFU0NWFVRk9mbEttNDhYYlBzMHNMSDVGNVBGVUJuQ285TzRwZm93a0tTWllXOGhja3M?oc=5",
-        "date": "2026-10-12",
+        "publisher": "waya.media",
+        "title": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
+        "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxON05EM2pHLVc0SndiYW90SktYTHU5OUV2cE5CZDEteFBDQ3k5MnkwbzAtemtnYngyV28tbkw3UHJ2dGo5Q0pKeHBPM29BajB2YjhtY1VscUN5U09jZ1c1R1JCcEpBNnV1bVo0SDZkT0pKQmtSY3kxM0Q3SWNnOG5yRHJXZ2NVNGhka1FwWDIzY3dhN1E?oc=5",
+        "date": "2026-10-18",
         "kind": "deal"
-      },
-      {
-        "publisher": "ad-hoc-news.de",
-        "title": "Kenya Airways secures $350m state loan to shore up finances",
-        "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPZnpyN1d0Nmo4Y0VIYUVVTzR4MHNzTG5nblNKX0tnblRZSzlEVjF4NWhvbkNqQ3Rjd2k4Ny1pOG5YbDFuOFo2TkY2M1pZYlBFUmpHWEJiQ09WOU1uRXhnSzM4c0dveTZHUXZwWms0Y05Ma0lBVGtaVTJnUGZZRXBRWm9saWFYWE1mVzAtQVZQNXRSWV9zNDc5ZjZEZWhTVjdFZDdobm9uSEhsT0hXWThlUWRxZ011ZVNjcUxKLVIwQVVwcTVN?oc=5",
-        "date": "2026-10-14",
-        "kind": "deal"
-      },
-      {
-        "publisher": "aviationtoday.in",
-        "title": "Kenya Airways secures $350m state loan to shore up finances",
-        "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
-        "date": "2026-10-13",
-        "kind": "deal"
-      },
-      {
-        "publisher": "Ecofin Agency",
-        "title": "Kenya Airways Secures $1.3 Billion State Rescue Through New Funding and Debt Conversion",
-        "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbDBxRm8xZ2JiQlM4b1pCNjRwZVlmX1FXcjZUMUtCTGQ4dVh2VUZiOEt2S1dvLTZFQzNBb0R6QXpmZ3l4ZmhCMVl0R0stNjBwY1ROYUIzSXhhWmlzT1NjUEc3NXd2NE9tREdhZ19HU28talZNeU5OQ3ptSFB2WXVmaDNkNWU4ZUpaSlNMck5TSzE3TmtRSVYyMFRpSEh6ZXo1M0p2Q21LcWZjRDFrUVZWOE5KMy1JQUNpQ1JGc0xYeTlNSVhZNlppakUweDJxb1R2Si1pNVlUaw?oc=5",
-        "date": "2026-10-15",
-        "kind": "related_company_coverage"
-      },
-      {
-        "publisher": "People Daily",
-        "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
-        "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
-        "date": "2026-10-12",
-        "kind": "related_company_coverage"
       }
     ],
     "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-10-11",
-    "period_end": "2026-10-17",
-    "selected_at": "2026-10-18T22:57:23.769186+00:00",
-    "selection_version": 1,
-    "runner_ups": [
+    "period_start": "2026-10-12",
+    "period_end": "2026-10-18",
+    "selected_at": "2026-10-19T07:24:20.839346+00:00",
+    "selection_version": 2,
+    "companies": [
       {
-        "company": "Portek",
-        "score": 42.82,
+        "company": "Aqar",
+        "company_url": "/app/companies?name=Aqar",
+        "headline": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
+        "deal_type": "acquisition",
+        "amount_usd": null,
+        "country": "EG",
+        "sector": "media_tech",
+        "announced": "2026-10-18",
+        "score": 38.25,
+        "independent_stories": 1,
+        "transaction_records": 1,
+        "related_events": 1,
         "reasons": [
           "Transaction category: acquisition",
           "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-          "Recency: 1 day(s) before the selection period ended"
-        ]
+          "Recency: 0 day(s) before the selection period ended",
+          "1 related corporate-event signal(s) found in the same period",
+          "At least one inspectable source link is available"
+        ],
+        "sources": [
+          {
+            "publisher": "waya.media",
+            "title": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
+            "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxON05EM2pHLVc0SndiYW90SktYTHU5OUV2cE5CZDEteFBDQ3k5MnkwbzAtemtnYngyV28tbkw3UHJ2dGo5Q0pKeHBPM29BajB2YjhtY1VscUN5U09jZ1c1R1JCcEpBNnV1bVo0SDZkT0pKQmtSY3kxM0Q3SWNnOG5yRHJXZ2NVNGhka1FwWDIzY3dhN1E?oc=5",
+            "date": "2026-10-18",
+            "kind": "deal"
+          }
+        ],
+        "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T07:24:20.839346+00:00",
+        "selection_version": 2
       },
       {
-        "company": "Local Oil Contractors",
-        "score": 41.57,
+        "company": "Kamel Abou Aly",
+        "company_url": "/app/companies?name=Kamel%20Abou%20Aly",
+        "headline": "Egyptian hotel tycoon Kamel Abou Aly secures $250 million to expand in Morocco",
+        "deal_type": "equity_funding",
+        "amount_usd": 250000000.0,
+        "country": "EG",
+        "sector": "hospitality",
+        "announced": "2026-10-18",
+        "score": 37.0,
+        "independent_stories": 1,
+        "transaction_records": 1,
+        "related_events": 0,
         "reasons": [
           "Transaction category: equity funding",
-          "Disclosed transaction size contributes 18.0/18 significance points",
+          "Disclosed transaction size contributes 12.0/18 significance points",
+          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+          "Recency: 0 day(s) before the selection period ended",
+          "No matching corporate-event record was found; no event corroboration points awarded",
+          "At least one inspectable source link is available"
+        ],
+        "sources": [
+          {
+            "publisher": "Billionaires.Africa",
+            "title": "Egyptian hotel tycoon Kamel Abou Aly secures $250 million to expand in Morocco",
+            "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNTG5oQnp3eW9CZ0Q0SUdISjdmMXdlVFowM0dhQWhYRkdNT0tocUM1WU1FenQtbU1JRTc1OWJTSV91bFlIOGR5cVpLZ2dGbEZGQTZ6MFlHNEJZaGdNUjRmQUNDazVjTW9UZTdhQVViM0xxb3lsaGlJY20yLWJaOElabnBDR1RxVEZWWHFNQzF6cWdBZWwzUVVidlpBUkdTWVJtdWhXOHNCc2NEWmFrV3FRRTgtaks3ZkZpdlNkX2p3?oc=5",
+            "date": "2026-10-18",
+            "kind": "deal"
+          }
+        ],
+        "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T07:24:20.839346+00:00",
+        "selection_version": 2
+      },
+      {
+        "company": "Oryx Energies Tanzania Downstream Business",
+        "company_url": "/app/companies?name=Oryx%20Energies%20Tanzania%20Downstream%20Business",
+        "headline": "Amsons Group Acquires Oryx Energies Tanzania Downstream Business",
+        "deal_type": "acquisition",
+        "amount_usd": null,
+        "country": "TZ",
+        "sector": "oil_gas",
+        "announced": "2026-10-18",
+        "score": 27.0,
+        "independent_stories": 1,
+        "transaction_records": 1,
+        "related_events": 0,
+        "reasons": [
+          "Transaction category: acquisition",
+          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+          "Recency: 0 day(s) before the selection period ended",
+          "No matching corporate-event record was found; no event corroboration points awarded",
+          "At least one inspectable source link is available"
+        ],
+        "sources": [
+          {
+            "publisher": "Business Today Kenya",
+            "title": "Amsons Group Acquires Oryx Energies Tanzania Downstream Business",
+            "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOeHpWZWNDNU9nREdEYzg5bGR3bUxHSUM2bXJkVE82aUtPMWNPV2VadE9ZV0xzVjJUdmpMdXAtNXJuYk55ellILXdCb3NBSl9pWWhZOE9BaDdXYUZQNWM0VGYtOV9xUml3RDFCeTVKT1pRVTBkSHhXcXdYYkNDQ2VtVmszaDNOZGlLSjFPMFR0R3RCWXRwSl9MVw?oc=5",
+            "date": "2026-10-18",
+            "kind": "deal"
+          }
+        ],
+        "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T07:24:20.839346+00:00",
+        "selection_version": 2
+      },
+      {
+        "company": "Popcorn AI Studio",
+        "company_url": "/app/companies?name=Popcorn%20AI%20Studio",
+        "headline": "Popcorn AI Studio raises $1m to democratise filmmaking",
+        "deal_type": "equity_funding",
+        "amount_usd": 1000000.0,
+        "country": "EG",
+        "sector": "media_tech",
+        "announced": "2026-10-18",
+        "score": 26.51,
+        "independent_stories": 1,
+        "transaction_records": 1,
+        "related_events": 0,
+        "reasons": [
+          "Transaction category: equity funding",
+          "Disclosed transaction size contributes 1.5/18 significance points",
+          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+          "Recency: 0 day(s) before the selection period ended",
+          "No matching corporate-event record was found; no event corroboration points awarded",
+          "At least one inspectable source link is available"
+        ],
+        "sources": [
+          {
+            "publisher": "Egyptian Gazette",
+            "title": "Popcorn AI Studio raises $1m to democratise filmmaking",
+            "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOdzNPcUpGdm1FbjJpWWJXbUl0WUZmQ0M2RWpLdjhkTzB1R3U5VDE4QzlJSzJVWmhaTFM0T0ZZUDlpSnpkTm84UjJsLWwydms0TUdBUWdqTzQ1OG8tWFduN1p1Y1IzNjBYXzUzWU5tbzJCcloyWlIxckVQZGtvVHBiRUJwOHhTZzFwd3V4RTZBbDR2b0NvTndzWXFLVnFUenV6a3lUeg?oc=5",
+            "date": "2026-10-18",
+            "kind": "deal"
+          }
+        ],
+        "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T07:24:20.839346+00:00",
+        "selection_version": 2
+      },
+      {
+        "company": "Tivano",
+        "company_url": "/app/companies?name=Tivano",
+        "headline": "Climate startup Tivano secures $606K to turn Namibia’s invasive bush into carbon credits",
+        "deal_type": "equity_funding",
+        "amount_usd": 606000.0,
+        "country": "NA",
+        "sector": null,
+        "announced": "2026-10-18",
+        "score": 26.03,
+        "independent_stories": 1,
+        "transaction_records": 1,
+        "related_events": 0,
+        "reasons": [
+          "Transaction category: equity funding",
+          "Disclosed transaction size contributes 1.0/18 significance points",
+          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+          "Recency: 0 day(s) before the selection period ended",
+          "No matching corporate-event record was found; no event corroboration points awarded",
+          "At least one inspectable source link is available"
+        ],
+        "sources": [
+          {
+            "publisher": "Innovation Village",
+            "title": "Climate startup Tivano secures $606K to turn Namibia’s invasive bush into carbon credits",
+            "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQYkFfTExTR1RTNVQ4QkhQSzkxX0U4cTg0TUotMEE4SGw2UFF5R1RySk16bzRKdEhwWmg3b0t0WTlxR1NITjd5YWh3b1Y0aU5SczRHUFJhcU5tcU5OcWtxTWNzVllTc2k5LWhmMDViMlM4R041dFlFSzlRSklHYUlfTXhWbGpLLVYxZ0gzSU83OGFLbWU1QWVWT0M2SFVRY09ORzFnTVVLY0ZxaWktWVdZdHdYNW5kWVNqbEE?oc=5",
+            "date": "2026-10-18",
+            "kind": "deal"
+          }
+        ],
+        "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-12",
+        "period_end": "2026-10-18",
+        "selected_at": "2026-10-19T07:24:20.839346+00:00",
+        "selection_version": 2
+      }
+    ],
+    "runner_ups": [
+      {
+        "company": "Oryx Energies Tanzania fuel business",
+        "score": 37.39,
+        "reasons": [
+          "Transaction category: acquisition",
+          "Disclosed transaction size contributes 11.8/18 significance points",
           "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
         ]
       },
       {
-        "company": "Portek International",
-        "score": 39.82,
+        "company": "EGP 12bn",
+        "score": 35.52,
         "reasons": [
-          "Transaction category: acquisition",
+          "Transaction category: equity funding",
+          "Disclosed transaction size contributes 11.9/18 significance points",
+          "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
+        ]
+      },
+      {
+        "company": "Necsa",
+        "score": 20.57,
+        "reasons": [
+          "Transaction category: joint venture",
           "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
           "Recency: 1 day(s) before the selection period ended"
         ]
@@ -182,6 +333,250 @@
           "score": 39.82,
           "reasons": [
             "Transaction category: acquisition",
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+            "Recency: 1 day(s) before the selection period ended"
+          ]
+        }
+      ]
+    },
+    {
+      "company": "Aqar",
+      "company_url": "/app/companies?name=Aqar",
+      "headline": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
+      "deal_type": "acquisition",
+      "amount_usd": null,
+      "country": "EG",
+      "sector": "media_tech",
+      "announced": "2026-10-18",
+      "score": 38.25,
+      "independent_stories": 1,
+      "transaction_records": 1,
+      "related_events": 1,
+      "reasons": [
+        "Transaction category: acquisition",
+        "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+        "Recency: 0 day(s) before the selection period ended",
+        "1 related corporate-event signal(s) found in the same period",
+        "At least one inspectable source link is available"
+      ],
+      "sources": [
+        {
+          "publisher": "waya.media",
+          "title": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
+          "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxON05EM2pHLVc0SndiYW90SktYTHU5OUV2cE5CZDEteFBDQ3k5MnkwbzAtemtnYngyV28tbkw3UHJ2dGo5Q0pKeHBPM29BajB2YjhtY1VscUN5U09jZ1c1R1JCcEpBNnV1bVo0SDZkT0pKQmtSY3kxM0Q3SWNnOG5yRHJXZ2NVNGhka1FwWDIzY3dhN1E?oc=5",
+          "date": "2026-10-18",
+          "kind": "deal"
+        }
+      ],
+      "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-10-12",
+      "period_end": "2026-10-18",
+      "selected_at": "2026-10-19T07:24:20.839346+00:00",
+      "selection_version": 2,
+      "companies": [
+        {
+          "company": "Aqar",
+          "company_url": "/app/companies?name=Aqar",
+          "headline": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
+          "deal_type": "acquisition",
+          "amount_usd": null,
+          "country": "EG",
+          "sector": "media_tech",
+          "announced": "2026-10-18",
+          "score": 38.25,
+          "independent_stories": 1,
+          "transaction_records": 1,
+          "related_events": 1,
+          "reasons": [
+            "Transaction category: acquisition",
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+            "Recency: 0 day(s) before the selection period ended",
+            "1 related corporate-event signal(s) found in the same period",
+            "At least one inspectable source link is available"
+          ],
+          "sources": [
+            {
+              "publisher": "waya.media",
+              "title": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
+              "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxON05EM2pHLVc0SndiYW90SktYTHU5OUV2cE5CZDEteFBDQ3k5MnkwbzAtemtnYngyV28tbkw3UHJ2dGo5Q0pKeHBPM29BajB2YjhtY1VscUN5U09jZ1c1R1JCcEpBNnV1bVo0SDZkT0pKQmtSY3kxM0Q3SWNnOG5yRHJXZ2NVNGhka1FwWDIzY3dhN1E?oc=5",
+              "date": "2026-10-18",
+              "kind": "deal"
+            }
+          ],
+          "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T07:24:20.839346+00:00",
+          "selection_version": 2
+        },
+        {
+          "company": "Kamel Abou Aly",
+          "company_url": "/app/companies?name=Kamel%20Abou%20Aly",
+          "headline": "Egyptian hotel tycoon Kamel Abou Aly secures $250 million to expand in Morocco",
+          "deal_type": "equity_funding",
+          "amount_usd": 250000000.0,
+          "country": "EG",
+          "sector": "hospitality",
+          "announced": "2026-10-18",
+          "score": 37.0,
+          "independent_stories": 1,
+          "transaction_records": 1,
+          "related_events": 0,
+          "reasons": [
+            "Transaction category: equity funding",
+            "Disclosed transaction size contributes 12.0/18 significance points",
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+            "Recency: 0 day(s) before the selection period ended",
+            "No matching corporate-event record was found; no event corroboration points awarded",
+            "At least one inspectable source link is available"
+          ],
+          "sources": [
+            {
+              "publisher": "Billionaires.Africa",
+              "title": "Egyptian hotel tycoon Kamel Abou Aly secures $250 million to expand in Morocco",
+              "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNTG5oQnp3eW9CZ0Q0SUdISjdmMXdlVFowM0dhQWhYRkdNT0tocUM1WU1FenQtbU1JRTc1OWJTSV91bFlIOGR5cVpLZ2dGbEZGQTZ6MFlHNEJZaGdNUjRmQUNDazVjTW9UZTdhQVViM0xxb3lsaGlJY20yLWJaOElabnBDR1RxVEZWWHFNQzF6cWdBZWwzUVVidlpBUkdTWVJtdWhXOHNCc2NEWmFrV3FRRTgtaks3ZkZpdlNkX2p3?oc=5",
+              "date": "2026-10-18",
+              "kind": "deal"
+            }
+          ],
+          "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T07:24:20.839346+00:00",
+          "selection_version": 2
+        },
+        {
+          "company": "Oryx Energies Tanzania Downstream Business",
+          "company_url": "/app/companies?name=Oryx%20Energies%20Tanzania%20Downstream%20Business",
+          "headline": "Amsons Group Acquires Oryx Energies Tanzania Downstream Business",
+          "deal_type": "acquisition",
+          "amount_usd": null,
+          "country": "TZ",
+          "sector": "oil_gas",
+          "announced": "2026-10-18",
+          "score": 27.0,
+          "independent_stories": 1,
+          "transaction_records": 1,
+          "related_events": 0,
+          "reasons": [
+            "Transaction category: acquisition",
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+            "Recency: 0 day(s) before the selection period ended",
+            "No matching corporate-event record was found; no event corroboration points awarded",
+            "At least one inspectable source link is available"
+          ],
+          "sources": [
+            {
+              "publisher": "Business Today Kenya",
+              "title": "Amsons Group Acquires Oryx Energies Tanzania Downstream Business",
+              "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOeHpWZWNDNU9nREdEYzg5bGR3bUxHSUM2bXJkVE82aUtPMWNPV2VadE9ZV0xzVjJUdmpMdXAtNXJuYk55ellILXdCb3NBSl9pWWhZOE9BaDdXYUZQNWM0VGYtOV9xUml3RDFCeTVKT1pRVTBkSHhXcXdYYkNDQ2VtVmszaDNOZGlLSjFPMFR0R3RCWXRwSl9MVw?oc=5",
+              "date": "2026-10-18",
+              "kind": "deal"
+            }
+          ],
+          "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T07:24:20.839346+00:00",
+          "selection_version": 2
+        },
+        {
+          "company": "Popcorn AI Studio",
+          "company_url": "/app/companies?name=Popcorn%20AI%20Studio",
+          "headline": "Popcorn AI Studio raises $1m to democratise filmmaking",
+          "deal_type": "equity_funding",
+          "amount_usd": 1000000.0,
+          "country": "EG",
+          "sector": "media_tech",
+          "announced": "2026-10-18",
+          "score": 26.51,
+          "independent_stories": 1,
+          "transaction_records": 1,
+          "related_events": 0,
+          "reasons": [
+            "Transaction category: equity funding",
+            "Disclosed transaction size contributes 1.5/18 significance points",
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+            "Recency: 0 day(s) before the selection period ended",
+            "No matching corporate-event record was found; no event corroboration points awarded",
+            "At least one inspectable source link is available"
+          ],
+          "sources": [
+            {
+              "publisher": "Egyptian Gazette",
+              "title": "Popcorn AI Studio raises $1m to democratise filmmaking",
+              "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOdzNPcUpGdm1FbjJpWWJXbUl0WUZmQ0M2RWpLdjhkTzB1R3U5VDE4QzlJSzJVWmhaTFM0T0ZZUDlpSnpkTm84UjJsLWwydms0TUdBUWdqTzQ1OG8tWFduN1p1Y1IzNjBYXzUzWU5tbzJCcloyWlIxckVQZGtvVHBiRUJwOHhTZzFwd3V4RTZBbDR2b0NvTndzWXFLVnFUenV6a3lUeg?oc=5",
+              "date": "2026-10-18",
+              "kind": "deal"
+            }
+          ],
+          "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T07:24:20.839346+00:00",
+          "selection_version": 2
+        },
+        {
+          "company": "Tivano",
+          "company_url": "/app/companies?name=Tivano",
+          "headline": "Climate startup Tivano secures $606K to turn Namibia’s invasive bush into carbon credits",
+          "deal_type": "equity_funding",
+          "amount_usd": 606000.0,
+          "country": "NA",
+          "sector": null,
+          "announced": "2026-10-18",
+          "score": 26.03,
+          "independent_stories": 1,
+          "transaction_records": 1,
+          "related_events": 0,
+          "reasons": [
+            "Transaction category: equity funding",
+            "Disclosed transaction size contributes 1.0/18 significance points",
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
+            "Recency: 0 day(s) before the selection period ended",
+            "No matching corporate-event record was found; no event corroboration points awarded",
+            "At least one inspectable source link is available"
+          ],
+          "sources": [
+            {
+              "publisher": "Innovation Village",
+              "title": "Climate startup Tivano secures $606K to turn Namibia’s invasive bush into carbon credits",
+              "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQYkFfTExTR1RTNVQ4QkhQSzkxX0U4cTg0TUotMEE4SGw2UFF5R1RySk16bzRKdEhwWmg3b0t0WTlxR1NITjd5YWh3b1Y0aU5SczRHUFJhcU5tcU5OcWtxTWNzVllTc2k5LWhmMDViMlM4R041dFlFSzlRSklHYUlfTXhWbGpLLVYxZ0gzSU83OGFLbWU1QWVWT0M2SFVRY09ORzFnTVVLY0ZxaWktWVdZdHdYNW5kWVNqbEE?oc=5",
+              "date": "2026-10-18",
+              "kind": "deal"
+            }
+          ],
+          "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-19T07:24:20.839346+00:00",
+          "selection_version": 2
+        }
+      ],
+      "runner_ups": [
+        {
+          "company": "Oryx Energies Tanzania fuel business",
+          "score": 37.39,
+          "reasons": [
+            "Transaction category: acquisition",
+            "Disclosed transaction size contributes 11.8/18 significance points",
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
+          ]
+        },
+        {
+          "company": "EGP 12bn",
+          "score": 35.52,
+          "reasons": [
+            "Transaction category: equity funding",
+            "Disclosed transaction size contributes 11.9/18 significance points",
+            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
+          ]
+        },
+        {
+          "company": "Necsa",
+          "score": 20.57,
+          "reasons": [
+            "Transaction category: joint venture",
             "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
             "Recency: 1 day(s) before the selection period ended"
           ]
