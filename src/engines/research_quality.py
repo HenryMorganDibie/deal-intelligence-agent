@@ -121,6 +121,9 @@ def research_limitations(parsed: dict, items: list[dict], conflicts: list[dict])
         notes.append("Retrieved evidence has no direct links, so the underlying claims cannot be independently checked here.")
     if any(not item.get("date") for item in items):
         notes.append("Some evidence has no publication date; recency could not be established for those items.")
+    news_items = [item for item in items if item.get("kind") == "news"]
+    if news_items and not any(item.get("content_status") == "article_text_retrieved" for item in news_items):
+        notes.append("Live-news evidence contains snippets rather than retrieved publisher article text; material claims need direct source review.")
     if conflicts:
         notes.append("At least one company/amount disagreement needs human review before using the figure.")
     if parsed.get("since") or parsed.get("until"):
