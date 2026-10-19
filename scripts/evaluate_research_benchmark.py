@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from urllib.parse import urlparse
 
 from src.engines.research_quality import benchmark_metrics
 
@@ -31,6 +32,46 @@ def _aggregate_conflicts(rows: list[dict]) -> dict | None:
         "cases": len(values),
         "expected_conflicts": expected,
         "detected_conflicts": detected,
+    }
+
+
+def _operational_metrics(case: dict) -> dict:
+    evidence = case.get("evidence", [])
+    domains = {
+        (urlparse(str(item.get("url") or "")).hostname or "").lower().removeprefix("www.")
+        for item in evidence if item.get("url")
+    }
+    news = [item for item in evidence if item.get("content_status")]
+    return {
+        "latency_seconds": case.get("latency_seconds"),
+        "mode": case.get("mode"),
+        "source_domain_count": len(domains),
+        "source_domains": sorted(domains),
+        "direct_article_text_items": sum(item.get("content_status") == "article_text_retrieved" for item in news),
+        "snippet_only_items": sum(item.get("content_status") in {"snippet_only", "injected_search_snippet"} for item in news),
+        "news_items_with_content_status": len(news),
+    }
+
+
+def _operational_summary(rows: list[dict]) -> dict:
+    latencies = sorted(row["latency_seconds"] for row in rows
+                       if isinstance(row.get("latency_seconds"), (int, float)))
+    domains = [row["source_domain_count"] for row in rows]
+    full_text = sum(row["direct_article_text_items"] for row in rows)
+    snippets = sum(row["snippet_only_items"] for row in rows)
+    news_count = sum(row["news_items_with_content_status"] for row in rows)
+    p95 = latencies[max(0, __import__("math").ceil(0.95 * len(latencies)) - 1)] if latencies else None
+    return {
+        "cases_with_latency": len(latencies),
+        "latency_seconds_mean": round(sum(latencies) / len(latencies), 3) if latencies else None,
+        "latency_seconds_p95": round(p95, 3) if p95 is not None else None,
+        "distinct_source_domains_mean": round(sum(domains) / len(domains), 2) if domains else None,
+        "direct_article_text_items": full_text,
+        "snippet_only_items": snippets,
+        "news_items_with_content_status": news_count,
+        "direct_article_text_share": round(full_text / news_count, 4) if news_count else None,
+        "deterministic_fallback_cases": sum(row.get("mode") == "deterministic" for row in rows),
+        "deterministic_fallback_rate": round(sum(row.get("mode") == "deterministic" for row in rows) / len(rows), 4) if rows else None,
     }
 
 
@@ -61,6 +102,7 @@ def evaluate(path: Path) -> dict:
                 case.get("unknown_handling_labels"), case.get("expected_conflict_ids"),
                 case.get("detected_conflict_ids"),
             ),
+            **_operational_metrics(case),
         })
     if not rows:
         raise ValueError("No reviewed benchmark cases found; independently label cases and set label_status to human_reviewed.")
@@ -72,6 +114,7 @@ def evaluate(path: Path) -> dict:
         "field_accuracy_rate_macro": _macro(rows, "field_accuracy_rate"),
         "unknown_handling_rate_macro": _macro(rows, "unknown_handling_rate"),
         "conflict_detection": _aggregate_conflicts(rows),
+        "operational_quality": _operational_summary(rows),
         "per_case": rows,
         "note": "Metrics are only as reliable as the human-reviewed labels in the input file.",
     }
