@@ -13,7 +13,7 @@ def test_query_plan_uses_distinct_company_and_primary_source_queries():
     assert len(plan) >= 3
     assert len({q.lower() for q in plan}) == len(plan)
     assert any("investor relations" in q for q in plan)
-    assert any("KE" in q for q in plan)
+    assert any("Kenya" in q for q in plan)
 
 
 def test_amount_conflicts_are_flagged_for_named_company_only():
