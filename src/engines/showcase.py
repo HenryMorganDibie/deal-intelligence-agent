@@ -106,7 +106,7 @@ def summarise(brief: dict, *, brief_id: Optional[str] = None, created_at: Option
         "total_sources": brief.get("total_sources"),
         "candidates": brief.get("signal_candidates_count", 0),
         "off_target": trace.get("off_target"), "unattributed": trace.get("unattributed"),
-        "unattributed_title": _strip_publisher((trace.get("unattributed_titles") or [None])[0]),
+        "unattributed_title": None,  # Do not publish unattributed headlines without verifiable source dates.
         "review_reasons": (brief.get("human_review_reasons") or [])[:3],
         "signal_count": len(brief.get("detected_signals") or []),
         "signals": signals,
