@@ -1017,12 +1017,29 @@ def same_transaction(a: dict, b: dict) -> bool:
     return bool(shared) and (ta <= tb or tb <= ta) and any(len(t) >= 4 for t in shared)
 
 
+def is_visible(deal: dict) -> bool:
+    """A record the product shows: not folded into another record, not excluded as a non-transaction."""
+    return not deal.get("merged_into") and not deal.get("excluded")
+
+
+def canonical_id(deal_id: str, store: dict[str, dict]) -> str:
+    """Follow merged_into links to the record that absorbed a report."""
+    seen = set()
+    while deal_id in store and store[deal_id].get("merged_into") and deal_id not in seen:
+        seen.add(deal_id)
+        deal_id = store[deal_id]["merged_into"]
+    return deal_id
+
+
 def resolve_duplicates(new: Iterable[dict], existing: dict[str, dict]) -> list[dict]:
     """Re-key each new report onto a stored or earlier report of the same transaction, so merge() combines them."""
-    seen = list(existing.values())
+    seen = [e for e in existing.values() if is_visible(e)]
     out = []
     for d in new:
-        if d["id"] not in existing:
+        target = canonical_id(d["id"], existing)
+        if target != d["id"]:
+            d = {**d, "id": target}
+        elif d["id"] not in existing:
             match = next((e for e in seen if e["id"] != d["id"] and same_transaction(d, e)), None)
             if match:
                 d = {**d, "id": match["id"]}

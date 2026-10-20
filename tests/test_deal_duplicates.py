@@ -33,3 +33,20 @@ def test_resolve_duplicates_rekeys_onto_stored_and_earlier_reports():
     ]
     assert [d["id"] for d in resolve_duplicates(new, stored)] == ["a", "c", "c"]
     assert new[0]["id"] == "b"                    # inputs are not mutated
+
+
+def test_merged_and_excluded_records_are_hidden_and_new_reports_follow_the_merge():
+    from src.engines.deals import canonical_id, is_visible
+
+    stored = {
+        "keep": _deal("keep", "Ventures Platform", 84e6, "2026-08-26"),
+        "dup": {**_deal("dup", "VC Firm Ventures Platform", 84e6, "2026-08-27"), "merged_into": "keep"},
+        "gone": {**_deal("gone", "World Bank Group", 200e9, "2026-01-01"), "excluded": "programme"},
+    }
+    assert [i for i, d in stored.items() if is_visible(d)] == ["keep"]
+    assert canonical_id("dup", stored) == "keep" and canonical_id("new", stored) == "new"
+    again = resolve_duplicates([_deal("dup", "VC Firm Ventures Platform", 84e6, "2026-08-27")], stored)
+    assert again[0]["id"] == "keep"
+    # A hidden record is never the match for a different report.
+    fresh = resolve_duplicates([_deal("x", "World Bank Group", 200e9, "2026-01-02")], stored)
+    assert fresh[0]["id"] == "x"

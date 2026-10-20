@@ -151,7 +151,8 @@ def _load(kind: str) -> list[dict]:
 
 
 def deals() -> list[dict]:
-    return _load("deals")
+    """Deals the product shows; merged duplicates and excluded non-transactions stay stored for audit."""
+    return [d for d in _load("deals") if deals_mod.is_visible(d)]
 
 
 def events() -> list[dict]:
@@ -323,8 +324,9 @@ def _field_accuracy() -> Optional[dict]:
 
 @router.get("/api/deals/{deal_id}")
 async def deal(deal_id: str) -> dict:
-    d = next((d for d in deals() if d.get("id") == deal_id), None)
-    if d is None:
+    stored = {d.get("id"): d for d in _load("deals")}
+    d = stored.get(deals_mod.canonical_id(deal_id, stored))
+    if d is None or not deals_mod.is_visible(d):
         raise HTTPException(404, "Deal not found.")
     from src.engines import provenance
     return {"deal": d, "verification": provenance.verify(d), "field_accuracy": _field_accuracy(),
@@ -948,7 +950,7 @@ async def cron_ingest(
         items = await market_feed.collect("when:7d")
     new_deals, new_events = market_feed.to_deals(items), market_feed.to_events(items)
     _cache.clear()
-    existing = {d["id"]: d for d in await run_in_threadpool(deals)}
+    existing = {d["id"]: d for d in await run_in_threadpool(_load, "deals")}
     new_deals = deals_mod.resolve_duplicates(new_deals, existing)
     merged = deals_mod.merge_all(new_deals, into={k: existing[k] for k in {d["id"] for d in new_deals} if k in existing})
     async with httpx.AsyncClient(timeout=60) as client:
