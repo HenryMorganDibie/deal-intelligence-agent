@@ -949,6 +949,7 @@ async def cron_ingest(
     new_deals, new_events = market_feed.to_deals(items), market_feed.to_events(items)
     _cache.clear()
     existing = {d["id"]: d for d in await run_in_threadpool(deals)}
+    new_deals = deals_mod.resolve_duplicates(new_deals, existing)
     merged = deals_mod.merge_all(new_deals, into={k: existing[k] for k in {d["id"] for d in new_deals} if k in existing})
     async with httpx.AsyncClient(timeout=60) as client:
         r1 = await _rpc(client, "upsert_deals", {"p_rows": list(merged.values())})

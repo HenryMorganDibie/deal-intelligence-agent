@@ -986,6 +986,50 @@ def merge_all(deals: Iterable[dict], into: Optional[dict[str, dict]] = None) -> 
     return store
 
 
+
+# Report-level duplicates the exact id misses: a reworded target ("VC Firm Ventures Platform"),
+# a different parsed type for one close, or reports either side of a month boundary.
+_TXN_KINDS = ({"acquisition", "merger", "equity_funding", "debt_financing", "exit"}, {"fund_raise", "equity_funding"})
+_NAME_NOISE = {"vc", "firm", "fund", "funds", "pan", "african", "africa", "s", "the", "a", "new", "close", "first",
+               "second", "final", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"}
+
+
+def _name_tokens(name: Optional[str]) -> set[str]:
+    return {t for t in normalise_name(name).split() if t not in _NAME_NOISE and not _is_descriptor(t)}
+
+
+def same_transaction(a: dict, b: dict) -> bool:
+    """Two reports of one transaction: matching amount, nearby dates, compatible types, one name inside the other."""
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    if not ua or not ub or abs(ua - ub) > 0.01 * max(ua, ub):
+        return False
+    try:
+        gap = abs((date.fromisoformat(a["announced"][:10]) - date.fromisoformat(b["announced"][:10])).days)
+    except (KeyError, TypeError, ValueError):
+        return False
+    if gap > 30:
+        return False
+    types = {a.get("deal_type"), b.get("deal_type")}
+    if len(types) > 1 and not any(types <= kinds for kinds in _TXN_KINDS):
+        return False
+    ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
+    shared = ta & tb
+    return bool(shared) and (ta <= tb or tb <= ta) and any(len(t) >= 4 for t in shared)
+
+
+def resolve_duplicates(new: Iterable[dict], existing: dict[str, dict]) -> list[dict]:
+    """Re-key each new report onto a stored or earlier report of the same transaction, so merge() combines them."""
+    seen = list(existing.values())
+    out = []
+    for d in new:
+        if d["id"] not in existing:
+            match = next((e for e in seen if e["id"] != d["id"] and same_transaction(d, e)), None)
+            if match:
+                d = {**d, "id": match["id"]}
+        out.append(d)
+        seen.append(d)
+    return out
+
 # ── Local store ───────────────────────────────────────────────────────────────
 
 def load_deals() -> dict[str, dict]:
