@@ -479,7 +479,7 @@ def _recover_target_from_title(title: str, deal_type: str) -> Optional[str]:
     if not match:
         return None
     candidate = _clean_name(match.group(1))
-    candidate = re.sub(r"(?i)^(?:parts? provider|supplier|manufacturer|operator|business)\\s+", "", candidate).strip()
+    candidate = re.sub(r"(?i)^(?:parts? provider|supplier|manufacturer|operator|business)\s+", "", candidate).strip()
     if not candidate or re.fullmatch(r"(?i).+-(?:based|founded|focused|headquartered|owned|listed)", candidate):
         return None
     return candidate
