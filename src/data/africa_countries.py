@@ -241,7 +241,11 @@ _NAME_LOOKUP = {n.lower(): c for n, c in _NAME_INDEX}
 def countries_in_text(text: str) -> list[Country]:
     """African countries named in text, in order of first mention, without duplicates."""
     seen: dict[str, Country] = {}
-    for m in _NAME_RE.finditer((text or "").replace("’", "'")):
+    # A demonym or place can be hyphenated to a descriptor in headlines
+    # ("Ghanaian-based", "South Africa-founded"). Treat that hyphen as a
+    # separator for country matching without splitting country names like Guinea-Bissau.
+    searchable = re.sub(r"-(?=(?:based|founded|focused|headquartered|owned|listed)\\b)", " ", (text or "").replace("’", "'"), flags=re.IGNORECASE)
+    for m in _NAME_RE.finditer(searchable):
         name = m.group(1)
         # "Niger" in title case only: avoids "niger" inside other contexts and "Chad" the first name.
         if name.lower() in ("niger", "chad", "togo", "mali") and not name[0].isupper():
