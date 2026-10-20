@@ -111,7 +111,21 @@ type ReturnForecastValidation = {
   by_market: Record<"us" | "africa", ReturnForecastSlice>;
 };
 
+type Review2026 = {
+  name: string;
+  seed: number;
+  drawn: string;
+  items: number;
+  pairs: number;
+  strata: Record<string, number>;
+  pair_strata: Record<string, number>;
+  note?: string;
+  status: string;
+  progress: { labels_a: number; labels_b: number; pair_labels_a: number; pair_labels_b: number; adjudicated: number };
+};
+
 type Evaluation = {
+  review_2026?: Review2026 | null;
   signal_report: SignalReport | null;
   data_quality: DataQuality | null;
   data_quality_baseline: DataQuality | null;
@@ -255,8 +269,100 @@ const NAV = [
   ["rules", "Labelling rules"],
   ["data-quality", "Deal data quality"],
   ["attribution", "Attribution tests"],
+  ["review-2026", "2026 independent review"],
   ["reproduce", "Reproduce"],
 ];
+
+const STRATUM_LABEL: Record<string, string> = {
+  random: "Random 2026 reports",
+  "hard:cross_border": "Cross-border deals",
+  "hard:french": "French-language headlines",
+  "hard:large_amount": "Amounts of $1bn or more",
+  "hard:duplicate_cluster": "Reports from duplicate clusters",
+  negative_candidate: "Deal-like headlines that may not be deals",
+  merged: "Reports the system merged",
+  kept_apart: "Look-alike reports kept separate",
+  hard_negative: "Same company, different amount",
+};
+
+function Progress({ label, done, total }: { label: string; done: number; total: number }) {
+  const share = total ? Math.min(done / total, 1) : 0;
+  return (
+    <div>
+      <div className="flex justify-between text-[0.8125rem]">
+        <span>{label}</span>
+        <span className="kbd text-[color:var(--dim)]">
+          {done} / {total}
+        </span>
+      </div>
+      <div className="mt-1.5 h-1.5 rounded-full bg-white/[0.06]" role="progressbar" aria-valuenow={done} aria-valuemin={0} aria-valuemax={total} aria-label={label}>
+        <div className="h-1.5 rounded-full bg-verified" style={{ width: `${share * 100}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function Review2026Section({ review }: { review: Review2026 }) {
+  const p = review.progress;
+  return (
+    <Section
+      id="review-2026"
+      title="2026 independent review"
+      lede={
+        <>
+          The labels above were written by an AI annotator and have not been reviewed by an independent person. To fix that, a
+          fresh, blind sample of 2026 reports was drawn on {review.drawn} (fixed seed {review.seed}) for two independent human
+          annotators, with a third resolving disagreements. Annotators see only the headline, publisher and date. The published
+          scores do not change until both label sets and the adjudication are complete.
+        </>
+      }
+    >
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="panel p-4">
+          <p className="eyebrow">Status</p>
+          <p className="mt-1.5 leading-relaxed capitalize">{review.status}</p>
+          <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+            {review.items} headlines and {review.pairs} report pairs
+          </p>
+        </div>
+        <div className="panel p-4 md:col-span-2">
+          <p className="eyebrow">Labelling progress</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <Progress label="Headlines, annotator A" done={p.labels_a} total={review.items} />
+            <Progress label="Headlines, annotator B" done={p.labels_b} total={review.items} />
+            <Progress label="Pairs, annotator A" done={p.pair_labels_a} total={review.pairs} />
+            <Progress label="Pairs, annotator B" done={p.pair_labels_b} total={review.pairs} />
+          </div>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        {([
+          ["Headlines in the sample", review.strata],
+          ["Report pairs in the sample", review.pair_strata],
+        ] as const).map(([title, counts]) => (
+          <div key={title} className="panel p-4">
+            <p className="eyebrow">{title}</p>
+            <ul className="mt-2 grid gap-1 text-[0.8125rem]">
+              {Object.entries(counts).map(([k, n]) => (
+                <li key={k} className="flex justify-between gap-4">
+                  <span>{STRATUM_LABEL[k] ?? k}</span>
+                  <span className="kbd text-[color:var(--dim)]">{n}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4">
+        <Callout>
+          New fields measure the failures found in the October 2026 data audit: whether a figure is a deal size, a valuation or a
+          market size; whether a record is in scope; and whether a country comes from the headline or from knowing the company.
+          {review.note ? ` ${review.note}` : ""} The sample, blank label files and labelling guide are downloadable below.
+        </Callout>
+      </div>
+    </Section>
+  );
+}
 
 function MarketToggle({ market, set }: { market: Market; set: (m: Market) => void }) {
   return (
@@ -788,6 +894,8 @@ export default function EvaluationPage() {
             </Section>
           )}
 
+          {e.review_2026 && <Review2026Section review={e.review_2026} />}
+
           <Section
             id="reproduce"
             title="Reproduce it"
@@ -817,6 +925,11 @@ export default function EvaluationPage() {
                 ["attribution_hard_items.jsonl", "Attribution: hard-case real headlines"],
                 ["attribution_hard_labels.jsonl", "Attribution: hard-case labels"],
                 ["attribution_errors.jsonl", "Attribution: every error, with source links"],
+                ["review_2026_items.jsonl", "2026 review: headlines to label"],
+                ["review_2026_pairs.jsonl", "2026 review: report pairs to label"],
+                ["review_2026_labels_template.jsonl", "2026 review: blank headline labels"],
+                ["review_2026_pair_labels_template.jsonl", "2026 review: blank pair labels"],
+                ["review_2026_guidelines.md", "2026 review: labelling guide"],
               ].map(([f, label]) => (
                 <li key={f}>
                   <a href={apiUrl(`/api/evaluation/files/${f}`)} className="text-verified hover:underline">

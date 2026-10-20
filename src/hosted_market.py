@@ -843,7 +843,40 @@ _DOWNLOADS = {
     "attribution_hard_items.jsonl": ("evaluation/attribution/hard_items.jsonl", "application/x-ndjson"),
     "attribution_hard_labels.jsonl": ("evaluation/attribution/hard_labels.jsonl", "application/x-ndjson"),
     "attribution_errors.jsonl": ("evaluation/attribution/errors.jsonl", "application/x-ndjson"),
+    "review_2026_items.jsonl": ("evaluation/review_2026/items.jsonl", "application/x-ndjson"),
+    "review_2026_pairs.jsonl": ("evaluation/review_2026/pairs.jsonl", "application/x-ndjson"),
+    "review_2026_labels_template.jsonl": ("evaluation/review_2026/labels_a.jsonl", "application/x-ndjson"),
+    "review_2026_pair_labels_template.jsonl": ("evaluation/review_2026/pair_labels_a.jsonl", "application/x-ndjson"),
+    "review_2026_guidelines.md": ("evaluation/review_2026/GUIDELINES.md", "text/markdown"),
 }
+_REVIEW_2026 = _ROOT / "evaluation" / "review_2026"
+
+
+def _filled(path: Path, key: str) -> int:
+    """Rows an annotator has completed: signed and with the main judgement made."""
+    try:
+        rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    except (OSError, ValueError):
+        return 0
+    return sum(1 for r in rows if r.get("annotator") and r.get(key) is not None)
+
+
+def _review_2026_status() -> Optional[dict]:
+    """Progress of the independent 2026 review; scores are published only once it is complete."""
+    manifest = _read_json(_REVIEW_2026 / "manifest.json")
+    if not manifest:
+        return None
+    progress = {
+        "labels_a": _filled(_REVIEW_2026 / "labels_a.jsonl", "is_transaction"),
+        "labels_b": _filled(_REVIEW_2026 / "labels_b.jsonl", "is_transaction"),
+        "pair_labels_a": _filled(_REVIEW_2026 / "pair_labels_a.jsonl", "same_transaction"),
+        "pair_labels_b": _filled(_REVIEW_2026 / "pair_labels_b.jsonl", "same_transaction"),
+        "adjudicated": _filled(_REVIEW_2026 / "adjudicated_labels.jsonl", "is_transaction"),
+    }
+    done = (progress["labels_a"] == progress["labels_b"] == manifest["items"]
+            and progress["pair_labels_a"] == progress["pair_labels_b"] == manifest["pairs"])
+    return {**manifest, "progress": progress,
+            "status": "labelled, awaiting adjudication" if done else "awaiting independent labels"}
 
 
 def _read_json(path: Path) -> Optional[dict]:
@@ -890,6 +923,7 @@ async def evaluation() -> dict:
             "data_quality_baseline": _read_json(_ROOT / "evaluation" / "deals" / "results_baseline.json"),
             "attribution": _read_json(_ROOT / "evaluation" / "attribution" / "results.json"),
             "attribution_before": _read_json(_ROOT / "evaluation" / "attribution" / "results_before_rule_changes.json"),
+            "review_2026": _review_2026_status(),
             "method": "Historical: walk-forward replay, 30-day lookback, 90-day horizon, confirmation strictly after "
                       "each as-of date. Live: every hosted brief's signals labelled daily against later filings, "
                       "credible news and abnormal price moves."}

@@ -1,0 +1,22 @@
+{
+  "name": "2026 independent review",
+  "seed": 20261020,
+  "drawn": "2026-10-20",
+  "pool_snapshot": "2026-10-20",
+  "items": 200,
+  "pairs": 88,
+  "strata": {
+    "hard:large_amount": 15,
+    "random": 120,
+    "negative_candidate": 20,
+    "hard:cross_border": 15,
+    "hard:french": 15,
+    "hard:duplicate_cluster": 15
+  },
+  "pair_strata": {
+    "kept_apart": 40,
+    "hard_negative": 8,
+    "merged": 40
+  },
+  "note": "The pool holds 8 same-company, different-amount pairs, so the hard-negative stratum has 8 of the 20 planned."
+}

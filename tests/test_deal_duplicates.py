@@ -57,3 +57,21 @@ def test_excluded_events_are_hidden():
 
     rows = [{"id": "a"}, {"id": "b", "excluded": "no African party"}]
     assert [e["id"] for e in _visible_events(rows)] == ["a"]
+
+
+def test_review_2026_status_reports_progress_and_files_are_published():
+    import asyncio
+    import json as _json
+
+    from src.hosted_market import _DOWNLOADS, _ROOT, _review_2026_status
+
+    status = _review_2026_status()
+    manifest = _json.loads((_ROOT / "evaluation" / "review_2026" / "manifest.json").read_text())
+    assert status["items"] == manifest["items"] == 200
+    assert status["status"] == "awaiting independent labels"
+    assert set(status["progress"]) == {"labels_a", "labels_b", "pair_labels_a", "pair_labels_b", "adjudicated"}
+    for name in ("review_2026_items.jsonl", "review_2026_pairs.jsonl", "review_2026_guidelines.md"):
+        assert (_ROOT / _DOWNLOADS[name][0]).exists(), name
+    # Annotators get inputs only: no system output in the item files.
+    item = _json.loads((_ROOT / "evaluation" / "review_2026" / "items.jsonl").read_text().splitlines()[0])
+    assert set(item) == {"item_id", "title", "publisher", "date"}
