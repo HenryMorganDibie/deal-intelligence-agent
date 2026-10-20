@@ -678,7 +678,20 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if target and re.fullmatch(r"(?i)(?:more than(?: half)?|less than|the|a|an|growth|economy|pickups?|tractors?|shs\d+[a-z]*|n\$\s?\d+|ai)", target.strip()):
         return None
 
-    # Reject currency fragments and sentence debris captured as the target (e.g. GH¢, Q1, "We").
+    def _recover_target_from_title(title: str, deal_type: str) -> Optional[str]:
+    """Recover a real counterparty when a transaction parser captured only a descriptor."""
+    if deal_type not in {"acquisition", "merger", "exit"}:
+        return None
+    match = re.search(r"(?i)\b(?:acquires?|buys?|purchases?|takes over)\s+(.+)$", title)
+    if not match:
+        return None
+    candidate = _clean_name(match.group(1))
+    if not candidate or re.fullmatch(r"(?i).+-(?:based|founded|focused|headquartered|owned|listed)", candidate):
+        return None
+    return candidate
+
+
+# Reject currency fragments and sentence debris captured as the target (e.g. GH¢, Q1, "We").
     # For fund closes, recover the complete named fund rather than keeping only "Fund II".
     if target and re.fullmatch(r"(?i)(?:gh|q\d|1m|pe|vc|we|be|ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
         if deal_type == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
@@ -717,6 +730,14 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None
     if re.search(r"(?i)\b(?:skills? push|skills? training|educational institutions|sanitary standards|local crafters|refugee empowerment|digital economy|green transition and support small businesses|budget support loan|economic and green reforms|governance reforms|urban infrastructure|water security|economic reforms|TVET sector)\b", title) and re.search(r"(?i)\b(?:EU|European Union|South Korea|Canada|government|Ecobank|AfDB|African Development Bank|OPEC Fund|New Development Bank|Afreximbank)\b", title):
         return None
+    # A parser can mistake a geographic descriptor for the acquired company
+    # (e.g. "acquires South Africa-based parts provider Eventspec" -> "South Africa-based").
+    if target and re.fullmatch(r"(?i).+-(?:based|founded|focused|headquartered|owned|listed)", target.strip()):
+        recovered = _recover_target_from_title(title, deal_type)
+        if recovered:
+            target = recovered
+        else:
+            target = None
     # A parser can mistake the amount or a generic headline word for the investee/manager
     # (e.g. a fund's "$30 million first close" becoming target="Million"). Never persist
     # these fragments as company entities. For fund closes, the extracted subject is often
