@@ -149,7 +149,7 @@ def split_names(name: Optional[str]) -> list[str]:
         # Split only when a part is a known investor: "Procter & Gamble" and "Johnson & Johnson" stay whole.
         if any(registry_entry(p) for p in parts):
             return [c for p in parts for c in split_names(p)]
-    if _GENERIC_PARTY.match(raw) or normalise_name(raw) in _GENERIC_PARTY_KEYS or _FRAGMENT.search(raw):
+    if _GENERIC_PARTY.match(raw) or not normalise_name(raw) or normalise_name(raw) in _GENERIC_PARTY_KEYS or _FRAGMENT.search(raw):
         return []
     c = canonical(raw)
     return [c] if c else []
