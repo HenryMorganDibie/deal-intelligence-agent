@@ -75,3 +75,12 @@ def test_review_2026_status_reports_progress_and_files_are_published():
     # Annotators get inputs only: no system output in the item files.
     item = _json.loads((_ROOT / "evaluation" / "review_2026" / "items.jsonl").read_text().splitlines()[0])
     assert set(item) == {"item_id", "title", "publisher", "date"}
+
+
+def test_review_guide_is_served_from_the_manifest_when_markdown_is_not_bundled(monkeypatch):
+    import src.hosted_market as hm
+
+    monkeypatch.setitem(hm._DOWNLOADS, "review_2026_guidelines.md", ("evaluation/review_2026/MISSING.md", "text/markdown"))
+    body = hm._download_body("review_2026_guidelines.md")
+    assert body and body.startswith("# 2026 independent review")
+    assert "guidelines_md" not in hm._review_2026_status()

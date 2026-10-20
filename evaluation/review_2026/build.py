@@ -178,7 +178,9 @@ def build(pool_path: Path) -> None:
                 "strata": dict(counts), "pair_strata": dict(pair_counts),
                 "note": (f"The pool holds {len(hard_negative)} same-company, different-amount pairs, so the hard-negative "
                          f"stratum has {pair_counts['hard_negative']} of the {N_PAIR_HARD_NEGATIVE} planned."
-                         if pair_counts["hard_negative"] < N_PAIR_HARD_NEGATIVE else "")}
+                         if pair_counts["hard_negative"] < N_PAIR_HARD_NEGATIVE else ""),
+                # The hosted runtime drops Markdown files, so the guide also travels inside the manifest.
+                "guidelines_md": (HERE / "GUIDELINES.md").read_text()}
     (HERE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps(manifest, indent=2))
 

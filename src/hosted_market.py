@@ -875,6 +875,7 @@ def _review_2026_status() -> Optional[dict]:
     }
     done = (progress["labels_a"] == progress["labels_b"] == manifest["items"]
             and progress["pair_labels_a"] == progress["pair_labels_b"] == manifest["pairs"])
+    manifest = {k: v for k, v in manifest.items() if k != "guidelines_md"}
     return {**manifest, "progress": progress,
             "status": "labelled, awaiting adjudication" if done else "awaiting independent labels"}
 
@@ -888,18 +889,26 @@ def _read_json(path: Path) -> Optional[dict]:
 
 @router.get("/api/evaluation/files")
 async def evaluation_files() -> dict:
-    return {"files": [{"name": k, "url": f"/api/evaluation/files/{k}", "available": (_ROOT / v[0]).exists()}
-                      for k, v in _DOWNLOADS.items()]}
+    return {"files": [{"name": k, "url": f"/api/evaluation/files/{k}", "available": _download_body(k) is not None}
+                      for k in _DOWNLOADS]}
+
+
+def _download_body(name: str) -> Optional[str]:
+    try:
+        return (_ROOT / _DOWNLOADS[name][0]).read_text()
+    except OSError:
+        if name == "review_2026_guidelines.md":         # the hosted runtime drops Markdown; the manifest carries it
+            return (_read_json(_REVIEW_2026 / "manifest.json") or {}).get("guidelines_md")
+        return None
 
 
 @router.get("/api/evaluation/files/{name}")
 async def evaluation_file(name: str) -> Response:
     if name not in _DOWNLOADS:
         raise HTTPException(404, "Unknown file.")
-    rel, media = _DOWNLOADS[name]
-    try:
-        body = (_ROOT / rel).read_text()
-    except OSError:
+    media = _DOWNLOADS[name][1]
+    body = _download_body(name)
+    if body is None:
         raise HTTPException(404, "File not published.")
     return Response(body, media_type=media, headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
