@@ -81,6 +81,11 @@ _PLEDGE_BEFORE = re.compile(r"(?i)\b(promet|promises?|pledges?|vows?|plans?\s+to
 # "$7 billion fertiliser expansion": the cost of a project, not the deal.
 _PROJECT_AFTER = re.compile(r"(?i)^\W{0,3}(?:\S+\s+){0,2}?(expansion|project|programme|plan|refinery|port|airport|plant|"
                             r"factory|complex|corridor|pipeline|railway)\b")
+# "Africa's $1.7 trillion trade market", "$55 billion financing gap": a market size or a need, never a deal.
+_MARKET_AFTER = re.compile(r"(?i)^\W{0,3}(?:\S+\s+){0,2}?(market|economy|industry|sector|opportunity|gap|deficit|"
+                           r"shortfall|needs?)\b")
+# Larger than any transaction in the region; a figure above it is a misread market size or programme.
+_MAX_DEAL_USD = 20e9
 
 
 def deal_amount(text: str) -> Optional[tuple[float, str]]:
@@ -95,6 +100,7 @@ def deal_amount(text: str) -> Optional[tuple[float, str]]:
     if not found:
         return None
     usable = [(m, a) for m, a in found if not _PLEDGE_BEFORE.search(text[max(0, m.start() - 40): m.start()])
+              and not _MARKET_AFTER.match(text[m.end():])
               and not (len(found) > 1 and _PROJECT_AFTER.match(text[m.end():]))]
     tied = [(m, a) for m, a in usable if _INSTRUMENT_AFTER.match(text[m.end():])]
     pick = (tied or usable or [None])[0]
@@ -212,7 +218,8 @@ _GENERIC = {"africa", "african", "african startups", "startups", "firm", "abu dh
             "central bank", "banque centrale", "reserve bank",
             "l'etat", "l’etat", "state government", "nigeria", "kenya", "egypt", "ghana", "startup", "startups", "report", "exclusive",
             "breaking", "update", "news", "deal", "deals", "how", "why", "what", "watch", "opinion", "analysis",
-            "weekly", "the big deal", "funding", "investors", "series", "seed", "ceo", "it", "this"}
+            "weekly", "the big deal", "funding", "investors", "series", "seed", "ceo", "it", "this",
+            "world bank group", "scale"}
 
 
 _CORPORATE_WORDS = {"industries", "group", "holdings", "holding", "bank", "capital", "partners", "ventures", "energy",
@@ -728,6 +735,9 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None
     if re.search(r"(?i)\b(?:ministry|government|department)\b", title) and re.search(r"(?i)\bbacks? private investment\b|\b(?:skills push|public policy|economic reforms)\b", title):
         return None
+    # Economic outlooks, financing gaps and a company's own planned spending are not transactions.
+    if re.search(r"(?i)\b(?:economic outlook|financing gap|funding gap|investment gap|must mobili[sz]e|planned investment)\b", title):
+        return None
     if re.search(r"(?i)^cross river secures \$[\d.,]+m oil palm investment", title):
         return None
     # Weekly sector totals and public-sector programmes are not individual company deals.
@@ -833,6 +843,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     usd = to_usd(amount, currency, year, rates) if amount and currency else None
     if usd is not None and usd < 50_000:
         return None                              # donations and micro-grants, not transactions
+    if usd is not None and usd > _MAX_DEAL_USD:
+        amount = currency = usd = None           # keep the transaction, drop the implausible figure
     implied = round(usd / (stake / 100), 0) if usd and stake and deal_type in ("acquisition", "equity_funding", "exit") else None
     reported_valuation = (to_usd(valuation_amounts[0][0], valuation_amounts[0][1], year, rates)
                           if valuation_amounts else None)

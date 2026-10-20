@@ -79,3 +79,37 @@ def test_demonym_in_target_phrase_sets_primary_country():
     assert deal is not None
     assert deal["country"] == "GH"
     assert "GH" in deal["countries"]
+
+def test_market_size_is_not_the_deal_amount():
+    from src.engines.deals import extract_deal
+
+    deal = extract_deal(
+        "Native Acquires Frontline Research Group to Build the Agentic Artificial Intelligence (AI) "
+        "Data Layer for Africa's $1.7 Trillion Traditional Trade Market",
+        published="2026-01-01", publisher="Example source", url="https://example.com/native", africa_source=True,
+    )
+    assert deal is not None
+    assert deal["target"] == "Frontline Research Group"
+    assert deal["amount_usd"] is None
+
+def test_implausible_amount_is_dropped_but_deal_kept():
+    from src.engines.deals import extract_deal
+
+    deal = extract_deal(
+        "Kenya's Acme acquires Beta for $40 billion",
+        published="2026-01-01", publisher="Example source", url="https://example.com/cap", africa_source=True,
+    )
+    assert deal is not None
+    assert deal["amount_usd"] is None and deal["amount"] is None
+
+def test_outlooks_gaps_and_planned_spending_are_not_deals():
+    from src.engines.deals import extract_deal
+
+    for headline in (
+        "Regional Economic Outlook 2026: Southern Africa Must Mobilise Development Finance at Scale "
+        "to Close Annual $55 Billion Financing Gap",
+        "Dangote raises planned investment in Ethiopia fertiliser project to over $4 billion",
+        "World Bank Group raises $200b for Nigeria, others",
+    ):
+        assert extract_deal(headline, published="2026-01-01", publisher="Example source",
+                            url="https://example.com/x", africa_source=True) is None, headline
