@@ -679,19 +679,19 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None
 
     def _recover_target_from_title(title: str, deal_type: str) -> Optional[str]:
-    """Recover a real counterparty when a transaction parser captured only a descriptor."""
-    if deal_type not in {"acquisition", "merger", "exit"}:
-        return None
-    match = re.search(r"(?i)\b(?:acquires?|buys?|purchases?|takes over)\s+(.+)$", title)
-    if not match:
-        return None
-    candidate = _clean_name(match.group(1))
-    if not candidate or re.fullmatch(r"(?i).+-(?:based|founded|focused|headquartered|owned|listed)", candidate):
-        return None
-    return candidate
+        """Recover a real counterparty when a transaction parser captured only a descriptor."""
+        if deal_type not in {"acquisition", "merger", "exit"}:
+            return None
+        match = re.search(r"(?i)\b(?:acquires?|buys?|purchases?|takes over)\s+(.+)$", title)
+        if not match:
+            return None
+        candidate = _clean_name(match.group(1))
+        if not candidate or re.fullmatch(r"(?i).+-(?:based|founded|focused|headquartered|owned|listed)", candidate):
+            return None
+        return candidate
 
 
-# Reject currency fragments and sentence debris captured as the target (e.g. GH¢, Q1, "We").
+    # Reject currency fragments and sentence debris captured as the target (e.g. GH¢, Q1, "We").
     # For fund closes, recover the complete named fund rather than keeping only "Fund II".
     if target and re.fullmatch(r"(?i)(?:gh|q\d|1m|pe|vc|we|be|ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
         if deal_type == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", target.strip()):
