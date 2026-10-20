@@ -67,6 +67,18 @@ def within_period(value: str | None, start: date, end: date) -> bool:
     return start <= parsed <= end
 
 
+def is_generic_company(value: str | None) -> bool:
+    key = normalise(value)
+    return (
+        not key
+        or len(key) < 3
+        or key in GENERIC_TARGETS
+        or (len(key.split()) == 1 and key in {
+            "public", "first", "president", "million", "billion", "company", "unknown"
+        })
+    )
+
+
 def matched_events(company: str, events: list[dict]) -> list[dict]:
     key = normalise(company)
     if len(key) < 3:
@@ -171,10 +183,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
     for deal in deals:
         company = str(deal.get("target") or "").strip()
         key = normalise(company)
-        if not company or len(key) < 3 or key in GENERIC_TARGETS:
-            continue
-        # Do not treat a scraped descriptor or a single generic adjective as a company.
-        if len(key.split()) == 1 and key in {"public", "first", "president", "million", "billion", "company", "unknown"}:
+        if is_generic_company(company):
             continue
         company_names.setdefault(key, company)
         company_deals.setdefault(key, []).append(deal)
@@ -305,7 +314,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
         "period_start": start.isoformat(),
         "period_end": end.isoformat(),
         "selected_at": selected_at,
-        "selection_version": 3,
+        "selection_version": 4,
         "runner_ups": [
             {"company": row["company"], "score": row["score"], "reasons": row["reasons"][:3]}
             for row in unique_ranked[5:8]
