@@ -511,6 +511,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         buyer = backing.group("buyer").strip(" ,.;:'’\"-")
         target = backing.group("target").strip(" ,.;:'’\"-")
         countries = [country.iso2 for country in countries_in_text(text)]
+        target_countries = [country.iso2 for country in countries_in_text(target)]
+        primary_country = target_countries[0] if target_countries else (countries[0] if countries else None)
         based = re.search(
             r"(?i)\b((?:[A-Z][A-Za-zÀ-ÿ'’.-]*\s+){0,3}[A-Z][A-Za-zÀ-ÿ'’.-]*)-based\b",
             snippet or "",
@@ -541,7 +543,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
                 "implied_valuation_usd": None,
                 "reported_valuation_usd": None,
                 "sector": classify_sector(text),
-                "country": countries[0],
+                "country": primary_country,
                 "countries": countries,
                 "announced": published,
                 "headline": title,
