@@ -20,6 +20,26 @@ While a period is unfinished, each month continues it and republishes once it co
 the committed results, measured tables and prediction file redeploy the site. Live outcomes from hosted briefs update hourly. The deal
 and attribution sets change only when new labelled samples are drawn.
 
+### 2026 live-market backfill and evaluation
+
+The scheduled ingestion job refreshes the rolling seven-day feed. A manual run of
+`.github/workflows/live-deal-ingestion.yml` additionally backfills 2026 one calendar
+month at a time into the same Supabase deal and corporate-event tables, then refreshes
+the Corporate of the Week archive from the updated public API. The investor leaderboard
+is derived from deal records, while the country-risk snapshot job records the current
+risk inputs for all 54 markets.
+
+**A larger or newer live database does not, by itself, change the held-out evaluation
+scores.** Those scores measure labelled examples, not database size. After the backfill,
+review 2026 records for source validity, duplicate transactions, investor/target identity,
+announced dates, country attribution, and missing/conflicting amounts. Draw a new dated
+sample of 2026 headlines and independently label it before reporting current extraction
+precision, recall, or field accuracy. Keep it separate from the existing held-out set;
+if the new sample is used to tune rules, it becomes a development set and a fresh held-out
+sample is needed. Do not rewrite published scores until the scorer has been run against
+the new labelled files and the sample size, confidence intervals, and methodology are
+reported alongside the existing results.
+
 ## How the labels were made
 
 - Items were sampled with fixed seeds from stored data (`build_sets.py`). Item files contain inputs
