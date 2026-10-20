@@ -922,16 +922,30 @@ async def cron_country_snapshot(request: Request) -> dict:
 
 
 @router.get("/api/cron/ingest")
-async def cron_ingest(request: Request) -> dict:
-    """Frequent rolling ingestion: capture fresh and delayed news, upsert idempotently, deliver webhooks."""
+async def cron_ingest(
+    request: Request,
+    month: Optional[str] = Query(default=None, pattern=r"^2026-(0[1-9]|1[0-2])$"),
+) -> dict:
+    """Refresh recent news, or backfill one bounded 2026 calendar month without sending stale alerts."""
     if not _authorized_cron(request):
         raise HTTPException(401, "Unauthorized")
     if not _configured():
         raise HTTPException(503, "The API is not configured.")
     from src.engines import market_feed
-    # Re-scan a rolling week every run: Google News and RSS can index stories late.
-    # Stable deal/event IDs and Supabase upserts make overlapping windows safe.
-    items = await market_feed.collect("when:7d")
+    if month:
+        month_start = datetime.strptime(month, "%Y-%m").date()
+        next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+        month_end = min(next_month - timedelta(days=1), datetime.now(timezone.utc).date())
+        if month_start > month_end:
+            raise HTTPException(400, "That 2026 month has not started yet.")
+        try:
+            items = await market_feed.collect_historical(month_start, month_end)
+        except (RuntimeError, ValueError) as exc:
+            log.error("historical deal collection failed for %s: %s", month, exc)
+            raise HTTPException(502, f"Historical collection failed for {month}; the backfill can be retried.")
+    else:
+        # Re-scan a rolling week because news sources can index stories late.
+        items = await market_feed.collect("when:7d")
     new_deals, new_events = market_feed.to_deals(items), market_feed.to_events(items)
     _cache.clear()
     existing = {d["id"]: d for d in await run_in_threadpool(deals)}
@@ -950,7 +964,8 @@ async def cron_ingest(request: Request) -> dict:
         log.warning("watchlist webhook lookup failed after successful ingestion: status=%s body=%s",
                     hooks.status_code, hooks.text[:300])
     delivered = 0
-    for wl in (hooks.json() if hooks.status_code == 200 else []):
+    # Historical backfills populate the database silently; never send stale alerts.
+    for wl in (hooks.json() if hooks.status_code == 200 and not month else []):
         since = (wl.get("last_delivered_at") or (datetime.now(timezone.utc) - timedelta(days=2)).isoformat())[:10]
         alerts = watch.matches(wl, new_events, list(merged.values()), since=since)
         if not alerts or not _public_host(wl["webhook_url"]):
@@ -965,7 +980,9 @@ async def cron_ingest(request: Request) -> dict:
         except httpx.HTTPError as e:
             log.info("webhook for %s failed: %s", wl["id"], e)
     _cache.clear()
-    return {"status": "ok", "refreshed_at": datetime.now(timezone.utc).isoformat(),
+    return {"status": "ok", "mode": f"backfill:{month}" if month else "rolling-7d",
+            "refreshed_at": datetime.now(timezone.utc).isoformat(),
             "headlines": len(items), "deals_detected": len(new_deals), "deals_saved": r1.json(),
             "events_detected": len(new_events), "events_saved": r2.json(),
-            "webhooks_delivered": delivered, "webhook_lookup_ok": hooks.status_code == 200}
+            "webhooks_delivered": delivered, "webhook_lookup_ok": hooks.status_code == 200,
+            "alerts_suppressed": bool(month)}
