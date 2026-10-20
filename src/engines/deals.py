@@ -192,6 +192,7 @@ _DESCRIPTOR_WORDS = {
     "payment", "digital", "online", "electric", "ev", "lending", "credit", "telecoms", "infrastructure", "pharmaceutical",
     "healthcare", "mining", "oil", "gas", "food", "agribusiness", "retail", "real", "estate", "property",
     "insurance", "broker", "brokerage", "bottler", "brewer", "carrier", "airline", "distributor",
+    "classifieds", "outlet",
 }
 _STOP_TAIL = re.compile(r"\s+(?:Ltd|Limited|Plc|PLC|Inc|SA|S\.A\.|Holdings?|Group)\.?$")
 _GENERIC = {"africa", "african", "african startups", "startups", "firm", "abu dhabi firm", "consortium",
@@ -509,9 +510,10 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     )
     if backing and explicit_equity_evidence:
         buyer = backing.group("buyer").strip(" ,.;:'’\"-")
-        target = backing.group("target").strip(" ,.;:'’\"-")
+        raw_target = backing.group("target").strip(" ,.;:'’\"-")
+        target = _clean_name(raw_target) or raw_target
         countries = [country.iso2 for country in countries_in_text(text)]
-        target_countries = [country.iso2 for country in countries_in_text(target)]
+        target_countries = [country.iso2 for country in countries_in_text(raw_target)]
         primary_country = target_countries[0] if target_countries else (countries[0] if countries else None)
         based = re.search(
             r"(?i)\b((?:[A-Z][A-Za-zÀ-ÿ'’.-]*\s+){0,3}[A-Z][A-Za-zÀ-ÿ'’.-]*)-based\b",
@@ -628,9 +630,6 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     investors: list[str] = []
     if deal_type in ("acquisition",):
         buyer, target = subj, obj
-        # Remove a descriptive category from targets such as "classifieds outlet Tonaton".
-        # Keep the full raw object separately below for target-country attribution.
-        target = re.sub(r"(?i)^classifieds?\s+outlet\s+", "", target or "").strip() or target
     elif deal_type == "merger":
         buyer, target = subj, obj
     elif deal_type == "exit":
@@ -857,34 +856,9 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     # For cross-border deals, the primary country should describe the target, not simply
     # whichever country appears first (e.g. Kenya's Jiji buying Ghanaian-based Tonaton).
     raw_obj_for_country = (m.groupdict().get("obj") or "")
-    # Use the raw target phrase before display-name cleanup. Some country names are
-    # expressed as demonyms (e.g. Ghanaian-based), which the country-name matcher
-    # does not recognize, so include explicit target-based/demonym clues.
+    # Use the raw target phrase before display-name cleanup; the resolver handles
+    # demonym descriptors such as "Ghanaian-based".
     target_countries = [c.iso2 for c in countries_in_text(raw_obj_for_country)]
-    target_clues = (
-        ("ghana", "GH"), ("ghanaian", "GH"), ("nigeria", "NG"), ("nigerian", "NG"),
-        ("kenya", "KE"), ("kenyan", "KE"), ("south africa", "ZA"), ("south african", "ZA"),
-        ("egypt", "EG"), ("egyptian", "EG"), ("morocco", "MA"), ("moroccan", "MA"),
-        ("senegal", "SN"), ("senegalese", "SN"), ("rwanda", "RW"), ("rwandan", "RW"),
-        ("uganda", "UG"), ("ugandan", "UG"), ("tanzania", "TZ"), ("tanzanian", "TZ"),
-        ("zambia", "ZM"), ("zambian", "ZM"), ("zimbabwe", "ZW"), ("zimbabwean", "ZW"),
-        ("ethiopia", "ET"), ("ethiopian", "ET"), ("ivorian", "CI"), ("ivory coast", "CI"),
-        ("cameroon", "CM"), ("cameroonian", "CM"), ("angola", "AO"), ("angolan", "AO"),
-        ("mozambique", "MZ"), ("mozambican", "MZ"), ("tunisia", "TN"), ("tunisian", "TN"),
-        ("algeria", "DZ"), ("algerian", "DZ"), ("mali", "ML"), ("malian", "ML"),
-        ("namibia", "NA"), ("namibian", "NA"), ("botswana", "BW"), ("botswanan", "BW"),
-        ("malawi", "MW"), ("malawian", "MW"), ("congo", "CD"), ("congolese", "CD"),
-        ("burundi", "BI"), ("burundian", "BI"), ("liberia", "LR"), ("liberian", "LR"),
-        ("sierra leone", "SL"), ("gambia", "GM"), ("gambian", "GM"),
-        ("benin", "BJ"), ("beninese", "BJ"), ("togo", "TG"), ("togolese", "TG"),
-        ("burkina faso", "BF"), ("mauritius", "MU"), ("mauritian", "MU"),
-        ("seychelles", "SC"), ("somalia", "SO"), ("somali", "SO"), ("sudan", "SD"),
-        ("sudanese", "SD"), ("libya", "LY"), ("libyan", "LY"), ("nigerien", "NE"),
-    )
-    target_text = raw_obj_for_country.lower()
-    for clue, iso2 in target_clues:
-        if clue in target_text and iso2 not in target_countries:
-            target_countries.append(iso2)
     primary_country = target_countries[0] if target_countries else (countries[0] if countries else None)
     # Placement needs the text itself: a named African country, "Africa", or an Africa-only deal outlet.
     # A search's country is only a hint (Google returns foreign stories for country queries).
