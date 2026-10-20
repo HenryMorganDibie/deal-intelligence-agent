@@ -717,6 +717,22 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None
     if re.search(r"(?i)\b(?:skills? push|skills? training|educational institutions|sanitary standards|local crafters|refugee empowerment|digital economy|green transition and support small businesses|budget support loan|economic and green reforms|governance reforms|urban infrastructure|water security|economic reforms|TVET sector)\b", title) and re.search(r"(?i)\b(?:EU|European Union|South Korea|Canada|government|Ecobank|AfDB|African Development Bank|OPEC Fund|New Development Bank|Afreximbank)\b", title):
         return None
+    # A parser can mistake the amount or a generic headline word for the investee/manager
+    # (e.g. a fund's "$30 million first close" becoming target="Million"). Never persist
+    # these fragments as company entities. For fund closes, the extracted subject is often
+    # the actual manager; use it only when it is itself a non-generic name.
+    if target and normalise_name(target) in {
+        "million", "millions", "billion", "billions", "company", "unknown", "public",
+        "first", "president", "presidente", "une", "fund", "n a", "na",
+    }:
+        fallback_target = _clean_name(subj) if deal_type == "fund_raise" and subj else None
+        if fallback_target and normalise_name(fallback_target) not in {
+            "million", "millions", "billion", "billions", "company", "unknown", "public",
+            "first", "president", "presidente", "une", "fund", "n a", "na",
+        }:
+            target = fallback_target
+        else:
+            target = None
     if not target and not buyer:
         return None
     raw_subj = (m.groupdict().get("subj") or "").strip()
