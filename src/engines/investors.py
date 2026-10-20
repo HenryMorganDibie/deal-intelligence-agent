@@ -134,6 +134,8 @@ _FRAGMENT = re.compile(
 )
 _GENERIC_PARTY = re.compile(r"^(capital\s+market|investors?|others?|other\s+investors|govt|government|state|the\s+state)$",
                             re.IGNORECASE)
+_GENERIC_PARTY_KEYS = {"public", "first", "million", "millions", "billion", "billions",
+                       "company", "unknown", "president", "presidente", "une", "fund", "n a", "na"}
 
 
 def split_names(name: Optional[str]) -> list[str]:
