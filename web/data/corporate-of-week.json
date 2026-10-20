@@ -1,40 +1,88 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T14:53:48.129716+00:00",
+  "updated_at": "2026-10-20T12:52:48.090990+00:00",
   "current": {
-    "company": "IFC",
-    "company_url": "/app/companies?name=IFC",
-    "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-    "deal_type": "distressed_asset",
+    "company": "Public",
+    "company_url": "/app/companies?name=Public",
+    "headline": "Sénégal : Sonko, opposé à la restructuration de la dette, invite Aminou Lô à «un débat public contradictoire»",
+    "deal_type": "debt_restructuring",
     "amount_usd": null,
-    "country": "MA",
-    "sector": "media_tech",
-    "announced": "2026-10-16",
-    "score": 52.24,
-    "independent_stories": 1,
+    "country": "SN",
+    "sector": null,
+    "announced": "2026-10-19",
+    "score": 57.4,
+    "independent_stories": 2,
     "transaction_records": 0,
-    "related_events": 1,
+    "related_events": 2,
     "reasons": [
-      "Corporate signal: distressed asset",
-      "Event rule confidence: 0.80",
-      "1 distinct source-linked corporate event(s) found in the period",
+      "Corporate signal: debt restructuring",
+      "Event rule confidence: 0.88",
+      "2 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "Medias24",
-        "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-        "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
-        "date": "2026-10-16",
+        "publisher": "Pressafrik",
+        "title": "Sénégal : Sonko, opposé à la restructuration de la dette, invite Aminou Lô à «un débat public contradictoire»",
+        "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxQeFlTTUpTMVJNRGtoT2JiNVBFRngzQlBzWXZwbGxsdlZYWm9pSVR5NEVoTGRsamNXdWR5ZkJTYXNnZ2xwcXRzWTJCN2NzZ1B4QnNqcWo2ZE8zMVdVTjN0Vm9nWUp3WjJRSW9kbktwbUdheUdMWlJvZTFnNUVHV1VkeGpWWGx4SGUwQ0ZFeWFFbEVmQ3hIS1ItSzd4c0NWVlZhR0l5R0wwZ2FOTmRkT3ZVLXhCRjdWd2lQRHZIQklfNWRSZERsOUJCSXRBUXFtYnAzZlNnY2tXYU9KcUk?oc=5",
+        "date": "2026-10-19",
+        "kind": "corporate_event"
+      },
+      {
+        "publisher": "Daily Nation",
+        "title": "Fresh public servants headcount begins as Sh6.2bn payroll fraud probe widens",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQUmZLQWtIN1IxaFhoRmpuei1zRXk2UEFYeFY3MjJqV3J1TFJoSkp2YkwxckxKQkh2MXVKRVNTTVBkQ0g3NFQ5TER2a3RoLV93ZGNTRXlUWDlIRmhwdnNKT0JZV1ZwWXh0QnJUU1EyWW9OaVFwTlB0cHdiNS1ueE5IeWEyajJ3TzFaSFRGd1l6cFAxUkVrdDZYN0FaUFRab1hoYTZJTzRqOA?oc=5",
+        "date": "2026-10-19",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-10-12",
-    "period_end": "2026-10-18",
-    "selected_at": "2026-10-19T14:53:48.129126+00:00",
+    "period_start": "2026-10-13",
+    "period_end": "2026-10-19",
+    "selected_at": "2026-10-20T12:52:48.090459+00:00",
     "selection_version": 3,
     "companies": [
+      {
+        "company": "Public",
+        "company_url": "/app/companies?name=Public",
+        "headline": "Sénégal : Sonko, opposé à la restructuration de la dette, invite Aminou Lô à «un débat public contradictoire»",
+        "deal_type": "debt_restructuring",
+        "amount_usd": null,
+        "country": "SN",
+        "sector": null,
+        "announced": "2026-10-19",
+        "score": 57.4,
+        "independent_stories": 2,
+        "transaction_records": 0,
+        "related_events": 2,
+        "reasons": [
+          "Corporate signal: debt restructuring",
+          "Event rule confidence: 0.88",
+          "2 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Pressafrik",
+            "title": "Sénégal : Sonko, opposé à la restructuration de la dette, invite Aminou Lô à «un débat public contradictoire»",
+            "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxQeFlTTUpTMVJNRGtoT2JiNVBFRngzQlBzWXZwbGxsdlZYWm9pSVR5NEVoTGRsamNXdWR5ZkJTYXNnZ2xwcXRzWTJCN2NzZ1B4QnNqcWo2ZE8zMVdVTjN0Vm9nWUp3WjJRSW9kbktwbUdheUdMWlJvZTFnNUVHV1VkeGpWWGx4SGUwQ0ZFeWFFbEVmQ3hIS1ItSzd4c0NWVlZhR0l5R0wwZ2FOTmRkT3ZVLXhCRjdWd2lQRHZIQklfNWRSZERsOUJCSXRBUXFtYnAzZlNnY2tXYU9KcUk?oc=5",
+            "date": "2026-10-19",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "Daily Nation",
+            "title": "Fresh public servants headcount begins as Sh6.2bn payroll fraud probe widens",
+            "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQUmZLQWtIN1IxaFhoRmpuei1zRXk2UEFYeFY3MjJqV3J1TFJoSkp2YkwxckxKQkh2MXVKRVNTTVBkQ0g3NFQ5TER2a3RoLV93ZGNTRXlUWDlIRmhwdnNKT0JZV1ZwWXh0QnJUU1EyWW9OaVFwTlB0cHdiNS1ueE5IeWEyajJ3TzFaSFRGd1l6cFAxUkVrdDZYN0FaUFRab1hoYTZJTzRqOA?oc=5",
+            "date": "2026-10-19",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-13",
+        "period_end": "2026-10-19",
+        "selected_at": "2026-10-20T12:52:48.090459+00:00",
+        "selection_version": 3
+      },
       {
         "company": "IFC",
         "company_url": "/app/companies?name=IFC",
@@ -44,7 +92,7 @@
         "country": "MA",
         "sector": "media_tech",
         "announced": "2026-10-16",
-        "score": 52.24,
+        "score": 50.81,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +112,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T14:53:48.129126+00:00",
+        "period_start": "2026-10-13",
+        "period_end": "2026-10-19",
+        "selected_at": "2026-10-20T12:52:48.090459+00:00",
         "selection_version": 3
       },
       {
@@ -78,7 +126,7 @@
         "country": "ML",
         "sector": "media_tech",
         "announced": "2026-10-14",
-        "score": 47.29,
+        "score": 45.86,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +146,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T14:53:48.129126+00:00",
+        "period_start": "2026-10-13",
+        "period_end": "2026-10-19",
+        "selected_at": "2026-10-20T12:52:48.090459+00:00",
         "selection_version": 3
       },
       {
@@ -112,7 +160,7 @@
         "country": "GH",
         "sector": null,
         "announced": "2026-10-14",
-        "score": 44.29,
+        "score": 42.86,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,9 +180,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T14:53:48.129126+00:00",
+        "period_start": "2026-10-13",
+        "period_end": "2026-10-19",
+        "selected_at": "2026-10-20T12:52:48.090459+00:00",
         "selection_version": 3
       },
       {
@@ -146,14 +194,14 @@
         "country": "KE",
         "sector": null,
         "announced": "2026-10-13",
-        "score": 50.26,
-        "independent_stories": 2,
+        "score": 43.83,
+        "independent_stories": 1,
         "transaction_records": 0,
-        "related_events": 2,
+        "related_events": 1,
         "reasons": [
           "Corporate signal: debt restructuring",
           "Event rule confidence: 0.88",
-          "2 distinct source-linked corporate event(s) found in the period",
+          "1 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
@@ -163,19 +211,12 @@
             "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
             "date": "2026-10-13",
             "kind": "corporate_event"
-          },
-          {
-            "publisher": "People Daily",
-            "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
-            "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
-            "date": "2026-10-12",
-            "kind": "corporate_event"
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-12",
-        "period_end": "2026-10-18",
-        "selected_at": "2026-10-19T14:53:48.129126+00:00",
+        "period_start": "2026-10-13",
+        "period_end": "2026-10-19",
+        "selected_at": "2026-10-20T12:52:48.090459+00:00",
         "selection_version": 3
       }
     ],
@@ -450,6 +491,227 @@
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
           "selected_at": "2026-10-19T14:53:48.129126+00:00",
+          "selection_version": 3
+        }
+      ],
+      "runner_ups": []
+    },
+    {
+      "company": "Public",
+      "company_url": "/app/companies?name=Public",
+      "headline": "Sénégal : Sonko, opposé à la restructuration de la dette, invite Aminou Lô à «un débat public contradictoire»",
+      "deal_type": "debt_restructuring",
+      "amount_usd": null,
+      "country": "SN",
+      "sector": null,
+      "announced": "2026-10-19",
+      "score": 57.4,
+      "independent_stories": 2,
+      "transaction_records": 0,
+      "related_events": 2,
+      "reasons": [
+        "Corporate signal: debt restructuring",
+        "Event rule confidence: 0.88",
+        "2 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Pressafrik",
+          "title": "Sénégal : Sonko, opposé à la restructuration de la dette, invite Aminou Lô à «un débat public contradictoire»",
+          "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxQeFlTTUpTMVJNRGtoT2JiNVBFRngzQlBzWXZwbGxsdlZYWm9pSVR5NEVoTGRsamNXdWR5ZkJTYXNnZ2xwcXRzWTJCN2NzZ1B4QnNqcWo2ZE8zMVdVTjN0Vm9nWUp3WjJRSW9kbktwbUdheUdMWlJvZTFnNUVHV1VkeGpWWGx4SGUwQ0ZFeWFFbEVmQ3hIS1ItSzd4c0NWVlZhR0l5R0wwZ2FOTmRkT3ZVLXhCRjdWd2lQRHZIQklfNWRSZERsOUJCSXRBUXFtYnAzZlNnY2tXYU9KcUk?oc=5",
+          "date": "2026-10-19",
+          "kind": "corporate_event"
+        },
+        {
+          "publisher": "Daily Nation",
+          "title": "Fresh public servants headcount begins as Sh6.2bn payroll fraud probe widens",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQUmZLQWtIN1IxaFhoRmpuei1zRXk2UEFYeFY3MjJqV3J1TFJoSkp2YkwxckxKQkh2MXVKRVNTTVBkQ0g3NFQ5TER2a3RoLV93ZGNTRXlUWDlIRmhwdnNKT0JZV1ZwWXh0QnJUU1EyWW9OaVFwTlB0cHdiNS1ueE5IeWEyajJ3TzFaSFRGd1l6cFAxUkVrdDZYN0FaUFRab1hoYTZJTzRqOA?oc=5",
+          "date": "2026-10-19",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-10-13",
+      "period_end": "2026-10-19",
+      "selected_at": "2026-10-20T12:52:48.090459+00:00",
+      "selection_version": 3,
+      "companies": [
+        {
+          "company": "Public",
+          "company_url": "/app/companies?name=Public",
+          "headline": "Sénégal : Sonko, opposé à la restructuration de la dette, invite Aminou Lô à «un débat public contradictoire»",
+          "deal_type": "debt_restructuring",
+          "amount_usd": null,
+          "country": "SN",
+          "sector": null,
+          "announced": "2026-10-19",
+          "score": 57.4,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
+          "reasons": [
+            "Corporate signal: debt restructuring",
+            "Event rule confidence: 0.88",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Pressafrik",
+              "title": "Sénégal : Sonko, opposé à la restructuration de la dette, invite Aminou Lô à «un débat public contradictoire»",
+              "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxQeFlTTUpTMVJNRGtoT2JiNVBFRngzQlBzWXZwbGxsdlZYWm9pSVR5NEVoTGRsamNXdWR5ZkJTYXNnZ2xwcXRzWTJCN2NzZ1B4QnNqcWo2ZE8zMVdVTjN0Vm9nWUp3WjJRSW9kbktwbUdheUdMWlJvZTFnNUVHV1VkeGpWWGx4SGUwQ0ZFeWFFbEVmQ3hIS1ItSzd4c0NWVlZhR0l5R0wwZ2FOTmRkT3ZVLXhCRjdWd2lQRHZIQklfNWRSZERsOUJCSXRBUXFtYnAzZlNnY2tXYU9KcUk?oc=5",
+              "date": "2026-10-19",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "Daily Nation",
+              "title": "Fresh public servants headcount begins as Sh6.2bn payroll fraud probe widens",
+              "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQUmZLQWtIN1IxaFhoRmpuei1zRXk2UEFYeFY3MjJqV3J1TFJoSkp2YkwxckxKQkh2MXVKRVNTTVBkQ0g3NFQ5TER2a3RoLV93ZGNTRXlUWDlIRmhwdnNKT0JZV1ZwWXh0QnJUU1EyWW9OaVFwTlB0cHdiNS1ueE5IeWEyajJ3TzFaSFRGd1l6cFAxUkVrdDZYN0FaUFRab1hoYTZJTzRqOA?oc=5",
+              "date": "2026-10-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-13",
+          "period_end": "2026-10-19",
+          "selected_at": "2026-10-20T12:52:48.090459+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "IFC",
+          "company_url": "/app/companies?name=IFC",
+          "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+          "deal_type": "distressed_asset",
+          "amount_usd": null,
+          "country": "MA",
+          "sector": "media_tech",
+          "announced": "2026-10-16",
+          "score": 50.81,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Medias24",
+              "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+              "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+              "date": "2026-10-16",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-13",
+          "period_end": "2026-10-19",
+          "selected_at": "2026-10-20T12:52:48.090459+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "Président",
+          "company_url": "/app/companies?name=Pr%C3%A9sident",
+          "headline": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "ML",
+          "sector": "media_tech",
+          "announced": "2026-10-14",
+          "score": 45.86,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Orange Actualités",
+              "title": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
+              "url": "https://news.google.com/rss/articles/CBMihAJBVV95cUxPN2Q4ckRPT3pKVVY5d2dVUC1UTFJma3p2THRpZ0JjVThFMTJwT1VtWXpSby1hS2ItZmxFd3RpTHNHc3JPZlFuaG1JQnUzSUdjcGV5M3NNYmNqaEdKOTZVM3djY2Nmd043QTM2V3VpNFI5MTgzWkFxT2ZmUTZhTFNORWp5NTdvYkhHa1hZYjBaVzBLaU00allTUF94cUVuUDdTU1hVSzNNU2JJWFByWXhRekFQVWRtUkhMQXdqX0s2THRMdkFvSzh1bDNlb2ZSR0NrMGtCMTVPNHl4SVVOZjFVaW1FMDhlemlCTlhTOHNwSW5yOEZIR2FjaXVsMi1NNXFHNTc4MQ?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-13",
+          "period_end": "2026-10-19",
+          "selected_at": "2026-10-20T12:52:48.090459+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "First",
+          "company_url": "/app/companies?name=First",
+          "headline": "First-year students stranded as Obuasi SHTS remains closed over misconduct probe",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "GH",
+          "sector": null,
+          "announced": "2026-10-14",
+          "score": 42.86,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "MyJoyOnline",
+              "title": "First-year students stranded as Obuasi SHTS remains closed over misconduct probe",
+              "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPMFk5NWExOEdpWS0xT2NuODZ1RWR6elZJaEtvc1lTbWI5emxjTGNrMnlseEw5YmxPSUF1NUZHbUljOFVZdDcta3Q4amMxalYydDN0R09wd0g0NmRVZEtrS19MZ0xCSjZMVzZRNEhsejJpSE5vM1p4cUozMUJXeVZGc0JQZkpiSFdNbk1PdGJsYzFMX3A1MGtIR2RZWlUyNE10Vnd1cjJYa1IxZUNkaFE?oc=5",
+              "date": "2026-10-14",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-13",
+          "period_end": "2026-10-19",
+          "selected_at": "2026-10-20T12:52:48.090459+00:00",
+          "selection_version": 3
+        },
+        {
+          "company": "Kenya Airways",
+          "company_url": "/app/companies?name=Kenya%20Airways",
+          "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+          "deal_type": "debt_restructuring",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": null,
+          "announced": "2026-10-13",
+          "score": 43.83,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: debt restructuring",
+            "Event rule confidence: 0.88",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "aviationtoday.in",
+              "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+              "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
+              "date": "2026-10-13",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-13",
+          "period_end": "2026-10-19",
+          "selected_at": "2026-10-20T12:52:48.090459+00:00",
           "selection_version": 3
         }
       ],
