@@ -471,6 +471,19 @@ def _split_names(s: str) -> list[str]:
     return [n for n in (_clean_name(p) for p in parts) if n]
 
 
+def _recover_target_from_title(title: str, deal_type: str) -> Optional[str]:
+    """Recover a real counterparty when a transaction parser captured only a descriptor."""
+    if deal_type not in {"acquisition", "merger", "exit"}:
+        return None
+    match = re.search(r"(?i)\b(?:acquires?|buys?|purchases?|takes over)\s+(.+)$", title)
+    if not match:
+        return None
+    candidate = _clean_name(match.group(1))
+    if not candidate or re.fullmatch(r"(?i).+-(?:based|founded|focused|headquartered|owned|listed)", candidate):
+        return None
+    return candidate
+
+
 def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = None,
                  publisher: str = "", url: str = "", country_hint: Optional[str] = None,
                  africa_source: bool = False,
@@ -677,19 +690,6 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
             target = named_asset.group("name")
     if target and re.fullmatch(r"(?i)(?:more than(?: half)?|less than|the|a|an|growth|economy|pickups?|tractors?|shs\d+[a-z]*|n\$\s?\d+|ai)", target.strip()):
         return None
-
-    def _recover_target_from_title(title: str, deal_type: str) -> Optional[str]:
-        """Recover a real counterparty when a transaction parser captured only a descriptor."""
-        if deal_type not in {"acquisition", "merger", "exit"}:
-            return None
-        match = re.search(r"(?i)\b(?:acquires?|buys?|purchases?|takes over)\s+(.+)$", title)
-        if not match:
-            return None
-        candidate = _clean_name(match.group(1))
-        if not candidate or re.fullmatch(r"(?i).+-(?:based|founded|focused|headquartered|owned|listed)", candidate):
-            return None
-        return candidate
-
 
     # Reject currency fragments and sentence debris captured as the target (e.g. GH¢, Q1, "We").
     # For fund closes, recover the complete named fund rather than keeping only "Fund II".
