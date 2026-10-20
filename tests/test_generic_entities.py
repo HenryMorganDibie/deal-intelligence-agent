@@ -34,3 +34,18 @@ def test_country_resolver_handles_hyphenated_country_descriptors():
         "South Africa-founded Refiant AI raises $5 million"
     )}
     assert founded == {"ZA"}
+
+def test_cross_border_acquisition_uses_target_country_and_clean_target_name():
+    from src.engines.deals import extract_deal
+
+    deal = extract_deal(
+        "Kenya’s Jiji acquires Ghanaian-based classifieds outlet Tonaton",
+        published="2026-01-01",
+        publisher="Financial Fortune Media",
+        url="https://example.com/story",
+        africa_source=True,
+    )
+    assert deal is not None
+    assert deal["target"] == "Tonaton"
+    assert deal["country"] == "GH"
+    assert set(deal["countries"]) == {"KE", "GH"}
