@@ -628,7 +628,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         buyer, target = subj, obj
         # Remove a descriptive category from targets such as "classifieds outlet Tonaton".
         # Keep the full raw object separately below for target-country attribution.
-        target = re.sub(r"(?i)^classifieds?\\s+outlet\\s+", "", target or "").strip() or target
+        target = re.sub(r"(?i)^classifieds?\s+outlet\s+", "", target or "").strip() or target
     elif deal_type == "merger":
         buyer, target = subj, obj
     elif deal_type == "exit":
