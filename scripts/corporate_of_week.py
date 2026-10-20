@@ -7,6 +7,7 @@ import json
 import math
 import re
 import sys
+import unicodedata
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -24,9 +25,9 @@ GENERIC_TARGETS = {
     "africa", "african", "company", "startup", "startups", "firm", "group",
     "fund", "consortium", "government", "unknown", "undisclosed", "generic",
     # Common scraped headline fragments, not company names.
-    "million", "millions", "president", "président", "presidente", "violators", "une",
-    "startup", "bank", "company limited", "private limited",
-    "fresh", "pay", "boost", "obuasi",
+    "million", "millions", "billion", "billions", "president", "président", "presidente",
+    "public", "first", "company", "company limited", "private limited", "unknown",
+    "violators", "une", "startup", "bank", "fresh", "pay", "boost", "obuasi",
 }
 
 # News stories dominated by transactions, politics, or sports are not corporate
@@ -42,7 +43,9 @@ NON_CORPORATE_HEADLINE = re.compile(
 
 
 def normalise(value: str | None) -> str:
-    return re.sub(r"[^a-z0-9]+", " ", (value or "").casefold()).strip()
+    # Fold accents before filtering to ASCII so Président and president share a key.
+    folded = unicodedata.normalize("NFKD", value or "").encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", " ", folded.casefold()).strip()
 
 
 def request_json(url: str) -> dict:
@@ -170,6 +173,9 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
         key = normalise(company)
         if not company or len(key) < 3 or key in GENERIC_TARGETS:
             continue
+        # Do not treat a scraped descriptor or a single generic adjective as a company.
+        if len(key.split()) == 1 and key in {"public", "first", "president", "million", "billion", "company", "unknown"}:
+            continue
         company_names.setdefault(key, company)
         company_deals.setdefault(key, []).append(deal)
 
@@ -288,7 +294,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
             "period_start": start.isoformat(),
             "period_end": end.isoformat(),
             "selected_at": selected_at,
-            "selection_version": 3,
+            "selection_version": 4,
         }
         for row in unique_ranked[:5]
     ]
