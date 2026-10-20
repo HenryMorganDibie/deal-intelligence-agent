@@ -51,6 +51,62 @@
     "oryx energies tanzania downstream business": {
       "name": "Oryx Energies Tanzania Downstream Business",
       "kind": "organization"
+    },
+    "reps": {
+      "name": "Reps",
+      "kind": "organization"
+    },
+    "tinubu": {
+      "name": "Tinubu",
+      "kind": "organization"
+    },
+    "sas": {
+      "name": "SAS",
+      "kind": "organization"
+    },
+    "afrikelp": {
+      "name": "Afrikelp",
+      "kind": "organization"
+    },
+    "sas group": {
+      "name": "SAS Group",
+      "kind": "organization"
+    },
+    "south african biostimulant": {
+      "name": "South African Biostimulant",
+      "kind": "organization"
+    },
+    "gambian international musa barrow reportedly": {
+      "name": "Gambian International Musa Barrow Reportedly",
+      "kind": "organization"
+    },
+    "aj soccer": {
+      "name": "AJ Soccer",
+      "kind": "organization"
+    },
+    "eha impact ventures": {
+      "name": "EHA Impact Ventures",
+      "kind": "organization"
+    },
+    "kebbi": {
+      "name": "Kebbi",
+      "kind": "organization"
+    },
+    "nlc": {
+      "name": "NLC",
+      "kind": "organization"
+    },
+    "compulsory land": {
+      "name": "Compulsory Land",
+      "kind": "organization"
+    },
+    "amson group": {
+      "name": "Amson Group",
+      "kind": "organization"
+    },
+    "oryx tanzania": {
+      "name": "Oryx Tanzania",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -166,7 +222,105 @@
           "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOeHpWZWNDNU9nREdEYzg5bGR3bUxHSUM2bXJkVE82aUtPMWNPV2VadE9ZV0xzVjJUdmpMdXAtNXJuYk55ellILXdCb3NBSl9pWWhZOE9BaDdXYUZQNWM0VGYtOV9xUml3RDFCeTVKT1pRVTBkSHhXcXdYYkNDQ2VtVmszaDNOZGlLSjFPMFR0R3RCWXRwSl9MVw?oc=5"
         }
       ]
+    },
+    "f2528212ee0d1dcdfdc7": {
+      "id": "f2528212ee0d1dcdfdc7",
+      "from": "reps",
+      "to": "tinubu",
+      "type": "equity_funding",
+      "first_seen": "2026-10-20",
+      "sources": [
+        {
+          "title": "Reps back Tinubu, Dangote, NMDPRA, demand pipeline funding",
+          "publisher": "Vanguard Nigeria",
+          "url": "https://www.vanguardngr.com/2026/10/reps-back-tinubu-dangote-nmdpra-demand-pipeline-funding/"
+        }
+      ]
+    },
+    "a91443cbc22ef1a339d1": {
+      "id": "a91443cbc22ef1a339d1",
+      "from": "sas",
+      "to": "afrikelp",
+      "type": "acquisition",
+      "first_seen": "2026-10-19",
+      "sources": [
+        {
+          "title": "SAS buys South Africa's Afrikelp in sixth deal under Stirling Square",
+          "publisher": "Dealroom",
+          "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQU1VRNDRpZ28zcTYzb21hQ0NURVpGY1g4ZGhaYWx4YTMtN1B3X05ZWXRkYTY1Wi1Pa0xXTGRpaVgyTERGLVJFOWstLUx1SjBSenBTUHpTa0xZdGFxVzN0OG12czhMR19VRFJxUEZOYjFBd1VCTVd5eHdiTUdWdDR6QU56NXJmc1l2S3pPU2I5NmhLSVBmdFdtbUM5Vmk5MTFjUXdnaQ?oc=5"
+        }
+      ]
+    },
+    "02bd808b4d269e4b2ef0": {
+      "id": "02bd808b4d269e4b2ef0",
+      "from": "sas group",
+      "to": "south african biostimulant",
+      "type": "acquisition",
+      "first_seen": "2026-10-19",
+      "sources": [
+        {
+          "title": "SAS Group acquires majority stake in South African Biostimulant firm Afrikelp",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQQURYZjBQdE9xa3VGVG90eGhHZEdNUEJPYU1Lc1gxVW5zLXQybDg3MldqYlNFYlRGQzE1c2tJNHdhWDZtV1RvLXE5WklNN0J6ZEJKb3d1R3hzSDJLQVktUHc5dld2dTBqeW9UeDB4ZllaR042NkRQZjN4VWw4Q1I4Mml4dVRNM0tVNEpFMmFGNkMxVXZnS1R4UXUtYmtpZERLV2RyaEdXSFMtQnMwbEE?oc=5"
+        }
+      ]
+    },
+    "6a4760e297e7f4bcd223": {
+      "id": "6a4760e297e7f4bcd223",
+      "from": "gambian international musa barrow reportedly",
+      "to": "aj soccer",
+      "type": "acquisition",
+      "first_seen": "2026-10-19",
+      "sources": [
+        {
+          "title": "Gambian International Musa Barrow Reportedly Acquires AJ Soccer",
+          "publisher": "Voice Gambia",
+          "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNTjN5eDQ0clU1RDBvemloT0lHQnZuY0Y4SnJjU3J6T1BEUzVja2YxT0QybEN5ZWswdHpEYVdMWDRRM1ZTbU0xckpXS2xzbGQyZXMxb0JJejRrNlRnUzI0QTNRbHppeTVNM0tsR3hOVGQwUUc4Wm9xTVNtUXUwQWI0WGFtdm92Zm05U3BlbHlEdHo0eFJEQzRDOXR5Tkh0Vmw2MFFQZDZiYknSAZ8BQVVfeXFMTTRqcXpWZHJhZkxKUGlmbWtFVmtLdUhVNFBkcWx5OWR4UFBlbmJsa3h0amkzSENVdzZTS09wTXNhR09FU3A0TDJxdzBQM2ZOSUhmMml1bmZPOG9XSzBzY0FKcEx1OVpwMzZ1V1RiNFRWVU1wbmo0a2dTQmVKODZfR2xFMWlsUm9QRG50NDJQTVY2ZkhUY2FoWXFTV00ycmlr?oc=5"
+        }
+      ]
+    },
+    "0529eae54d48b934ecff": {
+      "id": "0529eae54d48b934ecff",
+      "from": "eha impact ventures",
+      "to": "kebbi",
+      "type": "equity_funding",
+      "first_seen": "2026-10-19",
+      "sources": [
+        {
+          "title": "EHA Impact Ventures invests $50,000 in Kebbi firm to expand nutrition production",
+          "publisher": "The Guardian Nigeria News",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQNE1LcWtyT1g2V1g4YWg5ajQtX1VFUHAzQWloMDh2MC1NeWliekhfZ1VEbXhwZkVocUNheEdaSUV0Rmx2VHZJU0tRREE4VkhHQ1FuMlNWREo2M3BSTjhhX3NaaFczUkY1M29RMlNJc3ZyWGV1eFdNU0dFR0laV09VdFZQY09ncWQwTmhXYldEN0xtblBWQzBaZ19qa19ScWNOTDd1RFBfR3lnREx2NUJ5RXU1bkR4Ymtt?oc=5"
+        }
+      ]
+    },
+    "e074831135b4be247ce6": {
+      "id": "e074831135b4be247ce6",
+      "from": "nlc",
+      "to": "compulsory land",
+      "type": "acquisition",
+      "first_seen": "2026-10-19",
+      "sources": [
+        {
+          "title": "NLC Announces Compulsory Land Acquisition In Two Counties For Major Road Projects",
+          "publisher": "The Kenya Times",
+          "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE1aMDhuRmt0cWdDQmlJSVRhdktXTVpEbWZzVzRJRXlFVkFvcDhqZ1U2aGpqWGtVOTNfcTk3b2k1Q1Vmd2VzWkRJR1Y4UVppUHhLTFpZdjNMLVpBal9SZURrSkstN25EQTFvei1KZDh5WmVubHZCQjRtN0drTFpPUQ?oc=5"
+        }
+      ]
+    },
+    "7a6a9a0b5d1e3032625d": {
+      "id": "7a6a9a0b5d1e3032625d",
+      "from": "amson group",
+      "to": "oryx tanzania",
+      "type": "acquisition",
+      "first_seen": "2026-10-19",
+      "sources": [
+        {
+          "title": "Amson Group acquires Oryx Tanzania business for $230 million",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPVkFwYVVrbjJ4YmRoWWhjTVducF96eUJHRXdkZGNJTmxxOFZOTm9IaUJPN1N5ZXRheUpST0MyWkZfYl9mdHctcDJJNzBLTDBJeDdnWWlzUEVuemJ4d0psVjhjQzhpVTA5SjBvb3QzNXdScS1iYk93amxKc2huYjVKOVQwMGt1eUhhbklvbTNrd2R1dUdWampnVnpzTVlkSVJ6M0FqTVF6Qnc2NmtZbzl1ZTE5YXVkdTEyMlVhdQ?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-18T07:48:13.199089+00:00"
+  "updated_at": "2026-10-20T00:02:45.690744+00:00"
 }

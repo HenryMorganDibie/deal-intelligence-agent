@@ -152,3 +152,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "ATW.CS"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-18", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/45913_AUSTIN_LAZ_AND_COMPANY_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_JANUARY_2026.pdf", "status": "collected", "ticker": "AUSTINLAZ.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "AUTO.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AVACAP.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AVAIF.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AVI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AVL.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AVONCROWN.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AVR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AWT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AXC.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AXPH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AYO.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AYRTN.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "BAL.CS"}
