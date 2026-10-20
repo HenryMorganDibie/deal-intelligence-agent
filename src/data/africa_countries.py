@@ -238,21 +238,53 @@ _NAME_RE = re.compile(
 _NAME_LOOKUP = {n.lower(): c for n, c in _NAME_INDEX}
 
 
+# Commercial cities that name one country unambiguously, matched only when capitalised.
+_CITIES = {
+    "Lagos": "NG", "Abuja": "NG", "Port Harcourt": "NG", "Kano": "NG", "Nairobi": "KE", "Mombasa": "KE",
+    "Accra": "GH", "Kumasi": "GH", "Dakar": "SN", "Abidjan": "CI", "Casablanca": "MA", "Rabat": "MA",
+    "Marrakech": "MA", "Tangier": "MA", "Cairo": "EG", "Johannesburg": "ZA", "Cape Town": "ZA", "Durban": "ZA",
+    "Pretoria": "ZA", "Sandton": "ZA", "Stellenbosch": "ZA", "Kigali": "RW", "Kampala": "UG",
+    "Dar es Salaam": "TZ", "Addis Ababa": "ET", "Lusaka": "ZM", "Harare": "ZW", "Bulawayo": "ZW", "Luanda": "AO",
+    "Maputo": "MZ", "Tunis": "TN", "Algiers": "DZ", "Kinshasa": "CD", "Lubumbashi": "CD", "Douala": "CM",
+    "Yaoundé": "CM", "Windhoek": "NA", "Gaborone": "BW", "Lomé": "TG", "Cotonou": "BJ", "Bamako": "ML",
+    "Ouagadougou": "BF", "Port Louis": "MU", "Ebène": "MU", "Libreville": "GA", "Freetown": "SL",
+    "Monrovia": "LR", "Conakry": "GN", "Niamey": "NE", "Antananarivo": "MG", "Lilongwe": "MW", "Blantyre": "MW",
+    "Khartoum": "SD", "Tripoli": "LY", "Brazzaville": "CG", "Nouakchott": "MR",
+}
+_CITY_RE = re.compile(r"(?<![\w-])(" + "|".join(re.escape(c) for c in sorted(_CITIES, key=len, reverse=True))
+                      + r")(?![\w])")
+# "SA's Yoco", "SA fintech Moment" and the national exchanges. "SA" alone is usually "société anonyme".
+_ABBREVIATIONS = re.compile(r"(?<![\w.])(?:(SA)(?=['’]s\b|\s+(?:startups?|start-ups?|fintechs?|firms?|companies|company|"
+                            r"tech|energy|agri-?tech|insurtech|healthtech|edtech|proptech|crowd-farming|aviation|"
+                            r"retailer|lender|bank|banks|investors?|VC|mining|miners?)\b)|(JSE|NGX))(?![\w.])")
+_ABBREVIATION_ISO2 = {"SA": "ZA", "JSE": "ZA", "NGX": "NG"}
+
+
 def countries_in_text(text: str) -> list[Country]:
-    """African countries named in text, in order of first mention, without duplicates."""
+    """African countries named in text, in order of first mention, without duplicates.
+
+    Country names and demonyms come first in authority; capitalised commercial cities, "SA's" and the
+    JSE/NGX exchanges also identify a country.
+    """
     seen: dict[str, Country] = {}
     # A demonym or place can be hyphenated to a descriptor in headlines
     # ("Ghanaian-based", "South Africa-founded"). Treat that hyphen as a
     # separator for country matching without splitting country names like Guinea-Bissau.
     searchable = re.sub(r"-(?=(?:based|founded|focused|headquartered|owned|listed)\b)", " ", (text or "").replace("’", "'"), flags=re.IGNORECASE)
+    hits: list[tuple[int, Country]] = []
     for m in _NAME_RE.finditer(searchable):
         name = m.group(1)
         # "Niger" in title case only: avoids "niger" inside other contexts and "Chad" the first name.
         if name.lower() in ("niger", "chad", "togo", "mali") and not name[0].isupper():
             continue
         c = _NAME_LOOKUP.get(name.lower())
-        if c and c.iso2 not in seen:
-            seen[c.iso2] = c
+        if c:
+            hits.append((m.start(), c))
+    hits += [(m.start(), BY_ISO2[_CITIES[m.group(1)]]) for m in _CITY_RE.finditer(searchable)]
+    hits += [(m.start(), BY_ISO2[_ABBREVIATION_ISO2[m.group(1) or m.group(2)]])
+             for m in _ABBREVIATIONS.finditer(searchable)]
+    for _, c in sorted(hits, key=lambda h: h[0]):
+        seen.setdefault(c.iso2, c)
     return list(seen.values())
 
 

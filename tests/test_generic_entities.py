@@ -113,3 +113,16 @@ def test_outlooks_gaps_and_planned_spending_are_not_deals():
     ):
         assert extract_deal(headline, published="2026-01-01", publisher="Example source",
                             url="https://example.com/x", africa_source=True) is None, headline
+
+def test_country_resolver_reads_cities_sa_and_exchanges_but_not_societe_anonyme():
+    def iso(text):
+        return [country.iso2 for country in countries_in_text(text)]
+
+    assert iso("SA’s Yoco acquires Dyner.ai") == ["ZA"]
+    assert iso("SA fintech startup Moment raises $22m") == ["ZA"]
+    assert iso("In Dakar, Clasquin sells stake in CVL International") == ["SN"]
+    assert iso("United Capital acquires 5% stake in NGX Group") == ["NG"]
+    assert iso("Zimbabwe's Rainbow Tourism Group buys Cape Town hotel") == ["ZW", "ZA"]
+    assert iso("Orange SA acquires stake in Telkom") == []
+    assert iso("TotalEnergies SA sells assets") == []
+    assert iso("a lagos-style market") == []
