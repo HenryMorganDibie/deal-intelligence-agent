@@ -50,3 +50,10 @@ def test_merged_and_excluded_records_are_hidden_and_new_reports_follow_the_merge
     # A hidden record is never the match for a different report.
     fresh = resolve_duplicates([_deal("x", "World Bank Group", 200e9, "2026-01-02")], stored)
     assert fresh[0]["id"] == "x"
+
+
+def test_excluded_events_are_hidden():
+    from src.hosted_market import _visible_events
+
+    rows = [{"id": "a"}, {"id": "b", "excluded": "no African party"}]
+    assert [e["id"] for e in _visible_events(rows)] == ["a"]

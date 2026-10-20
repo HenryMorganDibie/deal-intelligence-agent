@@ -155,8 +155,13 @@ def deals() -> list[dict]:
     return [d for d in _load("deals") if deals_mod.is_visible(d)]
 
 
+def _visible_events(rows: list[dict]) -> list[dict]:
+    """Events the product shows; reviewed out-of-scope items stay stored for audit."""
+    return [e for e in rows if not e.get("excluded")]
+
+
 def events() -> list[dict]:
-    return _load("events")
+    return _visible_events(_load("events"))
 
 
 def _country_or_404(code: str) -> ac.Country:

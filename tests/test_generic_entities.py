@@ -126,3 +126,15 @@ def test_country_resolver_reads_cities_sa_and_exchanges_but_not_societe_anonyme(
     assert iso("Orange SA acquires stake in Telkom") == []
     assert iso("TotalEnergies SA sells assets") == []
     assert iso("a lagos-style market") == []
+
+def test_valuation_phrasings_are_not_read_as_the_round_size():
+    from src.engines.deals import extract_deal
+
+    for headline in (
+        "Flutterwave raises Series E funding at $3.2bn valuation; Ripple participates",
+        "Ripple invests in Flutterwave at $3.2b valuation to improve cross-border payments",
+        "Flutterwave lands Series E, pushes valuation to $3.2 billion",
+    ):
+        deal = extract_deal(headline, published="2026-06-16", publisher="Example source",
+                            url="https://example.com/v", africa_source=True)
+        assert deal is None or deal["amount_usd"] != 3.2e9, headline

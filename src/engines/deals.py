@@ -407,7 +407,7 @@ _NOT_A_DEAL = re.compile(r"\b(black\s+stars|super\s+eagles|super\s+falcons|bafan
 _VALUATION = re.compile(r"(?i)(?:at\s+(?:an?\s+)?(?P<a>[^,;]{2,25}?)\s+(?:(?:post|pre)-money\s+)?(?:valuation|valorisation)"
                         r"|(?P<d>\S*\d[\d.,]*\s?(?:billion|million|bn|m|b)?)\s+(?:price\s+tag|valuation)"
                         r"|valued\s+at\s+(?P<b>[^,;]{2,25}?)(?=$|[,;.]|\s+(?:in|after|as|following)\b)"
-                        r"|valuation\s+of\s+(?P<c>[^,;]{2,25}?)(?=$|[,;.]|\s))")
+                        r"|valuation\s+(?:of|to|at)\s+(?P<c>[^,;]{2,25}?)(?=$|[,;.]|\s))")
 _CAPEX_AFTER = re.compile(r"^\s*(?:'s\s+)?(?:\S+\s+)?(plant|factory|facility|facilities|project|expansion|hub|office|housing|"
                           r"warehouse|site|refinery|mine|campus|infrastructure|network|schools?|programme|scheme)\b",
                           re.IGNORECASE)
