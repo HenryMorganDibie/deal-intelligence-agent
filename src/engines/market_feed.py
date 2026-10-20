@@ -228,7 +228,9 @@ async def collect_historical(since: date, until: date, concurrency: int = 6) -> 
     seen, out = set(), []
     for batch in batches:
         for it in batch:
-            if it["title"] not in seen and (not it.get("date") or since.isoformat() <= it["date"] <= until.isoformat()):
+            # Keep only dated items inside the requested period; date-restricted
+            # searches can still return undated results that must not be assigned to 2026.
+            if it.get("date") and since.isoformat() <= it["date"] <= until.isoformat() and it["title"] not in seen:
                 seen.add(it["title"])
                 out.append(it)
     return out
