@@ -209,10 +209,22 @@ def historical_queries(since: date, until: date) -> list[tuple[str, str, Optiona
 
 
 async def collect_historical(since: date, until: date, concurrency: int = 6) -> list[dict]:
+    """Collect date-restricted headlines for a bounded historical backfill window."""
+    if until < since:
+        raise ValueError("Historical collection end date must not precede its start date.")
+    if (until - since).days > 31:
+        raise ValueError("Historical collection is limited to 32 days per request.")
     sem = asyncio.Semaphore(concurrency)
-    async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
-        batches = await asyncio.gather(*(_fetch(client, sem, u, label, c, False)
-                                         for u, label, c in historical_queries(since, until)))
+    failures: list[str] = []
+    jobs = historical_queries(since, until)
+    headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) deal-intelligence-agent/1.0"}
+    async with httpx.AsyncClient(timeout=30, follow_redirects=True, headers=headers) as client:
+        batches = await asyncio.gather(*(_fetch(client, sem, u, label, c, False, failures)
+                                         for u, label, c in jobs))
+    if jobs and len(failures) == len(jobs):
+        raise RuntimeError(f"All {len(jobs)} historical market-news feeds failed for {since} to {until}.")
+    if failures:
+        log.warning("Historical market-news collection completed with %d/%d feeds unavailable", len(failures), len(jobs))
     seen, out = set(), []
     for batch in batches:
         for it in batch:
