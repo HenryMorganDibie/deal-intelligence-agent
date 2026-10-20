@@ -49,3 +49,19 @@ def test_cross_border_acquisition_uses_target_country_and_clean_target_name():
     assert deal["target"] == "Tonaton"
     assert deal["country"] == "GH"
     assert set(deal["countries"]) == {"KE", "GH"}
+
+def test_backing_snippet_uses_target_country_for_cross_border_investment():
+    from src.engines.deals import extract_deal
+
+    deal = extract_deal(
+        "Kenya's Jiji backs Ghana-based Tonaton",
+        snippet="The company completed a minority equity investment.",
+        published="2026-10-20",
+        publisher="Example source",
+        url="https://example.com/backing",
+        africa_source=True,
+    )
+    assert deal is not None
+    assert deal["target"] == "Tonaton"
+    assert deal["country"] == "GH"
+    assert set(deal["countries"]) == {"KE", "GH"}
