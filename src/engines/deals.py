@@ -626,6 +626,9 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     investors: list[str] = []
     if deal_type in ("acquisition",):
         buyer, target = subj, obj
+        # Remove a descriptive category from targets such as "classifieds outlet Tonaton".
+        # Keep the full raw object separately below for target-country attribution.
+        target = re.sub(r"(?i)^classifieds?\\s+outlet\\s+", "", target or "").strip() or target
     elif deal_type == "merger":
         buyer, target = subj, obj
     elif deal_type == "exit":
@@ -849,6 +852,11 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
 
     rnd = _ROUND.search(text)
     countries = [c.iso2 for c in countries_in_text(text)]
+    # For cross-border deals, the primary country should describe the target, not simply
+    # whichever country appears first (e.g. Kenya's Jiji buying Ghanaian-based Tonaton).
+    raw_obj_for_country = (m.groupdict().get("obj") or "")
+    target_countries = [c.iso2 for c in countries_in_text(raw_obj_for_country)]
+    primary_country = target_countries[0] if target_countries else (countries[0] if countries else None)
     # Placement needs the text itself: a named African country, "Africa", or an Africa-only deal outlet.
     # A search's country is only a hint (Google returns foreign stories for country queries).
     if not countries and not (africa_source or re.search(r"\bafrica|\bafrique|\báfrica", text, re.IGNORECASE)):
@@ -878,7 +886,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         "implied_valuation_usd": implied,
         "reported_valuation_usd": reported_valuation,
         "sector": classify_sector(text),
-        "country": countries[0] if countries else None,
+        "country": primary_country,
         "countries": countries,
         "announced": published,
         "headline": title,
