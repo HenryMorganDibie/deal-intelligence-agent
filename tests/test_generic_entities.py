@@ -1,4 +1,5 @@
 from scripts.corporate_of_week import is_generic_company, normalise
+from src.data.africa_countries import countries_in_text
 from src.engines.deals import _recover_target_from_title
 from src.engines.investors import split_names
 
@@ -22,3 +23,14 @@ def test_acquisition_target_recovers_after_country_descriptor():
         "acquisition",
     )
     assert recovered == "Eventspec Proprietary Limited"
+
+
+def test_country_resolver_handles_hyphenated_country_descriptors():
+    found = {country.iso2 for country in countries_in_text(
+        "Kenya’s Jiji acquires Ghanaian-based classifieds outlet Tonaton"
+    )}
+    assert found == {"KE", "GH"}
+    founded = {country.iso2 for country in countries_in_text(
+        "South Africa-founded Refiant AI raises $5 million"
+    )}
+    assert founded == {"ZA"}
