@@ -13,11 +13,14 @@ def test_behavioral_scores_require_minimum_audience_and_smooth_small_samples():
              "unique_openers": 1, "opens": 1},
             {"deal_id": "qualified", "impressions": 20, "unique_impression_visitors": 10,
              "unique_openers": 5, "opens": 5},
+            {"deal_id": "repeat_clicks", "impressions": 50, "unique_impression_visitors": 10,
+             "unique_openers": 2, "opens": 50},
         ]
     })
     assert "small" not in scores
     assert "one_opener" not in scores
     assert abs(scores["qualified"] - 1.0) < 1e-9
+    assert abs(scores["repeat_clicks"] - 0.5) < 1e-9
 
 
 def test_behavioral_reranking_is_stable_without_signals():
