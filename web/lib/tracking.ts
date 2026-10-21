@@ -63,6 +63,14 @@ export function trackProductAction(
   if (!id) return;
   const payload: Record<string, string> = { v: id, a: action };
   if (targetId) payload.t = targetId.slice(0, 160);
+  if (action === "deal_search_submitted" || action === "deal_opened" || action === "research_submitted" || action === "market_brief_opened" || action === "deal_impression") {
+    payload.e = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (ch) => {
+          const n = Math.random() * 16 | 0;
+          return (ch === "x" ? n : (n & 3 | 8)).toString(16);
+        });
+  }
   if (context) {
     const safeContext = Object.fromEntries(
       Object.entries(context)
