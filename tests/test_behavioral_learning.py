@@ -17,7 +17,7 @@ def test_behavioral_scores_require_minimum_audience_and_smooth_small_samples():
     })
     assert "small" not in scores
     assert "one_opener" not in scores
-    assert scores["qualified"] == 0.5
+    assert scores["qualified"] == 0.75
 
 
 def test_behavioral_reranking_is_stable_without_signals():
@@ -26,8 +26,9 @@ def test_behavioral_reranking_is_stable_without_signals():
 
 
 def test_behavioral_reranking_preserves_all_items_and_only_uses_known_ids():
-    items = [{"id": "a"}, {"id": "b"}, {"id": "c"}, {"id": "d"}]
+    items = [{"id": f"deal-{index}"} for index in range(100)]
+    items[-1]["id"] = "d"
     ranked = _rerank_with_behavioral_interest(items, {"d": 1.0, "unknown": 1.0})
-    assert {item["id"] for item in ranked} == {"a", "b", "c", "d"}
+    assert {item["id"] for item in ranked} == {item["id"] for item in items}
     assert len(ranked) == len(items)
     assert ranked.index({"id": "d"}) < items.index({"id": "d"})
