@@ -1151,6 +1151,18 @@ async def cron_ingest(
     _cache.clear()
     existing = {d["id"]: d for d in await run_in_threadpool(_load, "deals")}
     new_deals = deals_mod.resolve_duplicates(new_deals, existing)
+    if month:
+        # Backfilled history clears a stricter bar; held-back records are kept, marked, for audit.
+        for d in new_deals:
+            if d["id"] not in existing:
+                reason = deals_mod.history_exclusion(d.get("headline", ""),
+                                                     [d.get("target"), d.get("buyer"), *(d.get("investors") or [])])
+                if reason:
+                    d["excluded"] = reason
+        for e in new_events:
+            reason = deals_mod.history_exclusion(e.get("headline", ""))
+            if reason:
+                e["excluded"] = reason
     merged = deals_mod.merge_all(new_deals, into={k: existing[k] for k in {d["id"] for d in new_deals} if k in existing})
     async with httpx.AsyncClient(timeout=60) as client:
         r1 = await _rpc(client, "upsert_deals", {"p_rows": list(merged.values())})

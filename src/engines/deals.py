@@ -490,6 +490,8 @@ def _recover_target_from_title(title: str, deal_type: str) -> Optional[str]:
     if not match:
         return None
     candidate = _clean_name(match.group(1))
+    if not candidate:                                   # only a generic phrase followed the verb
+        return None
     candidate = re.sub(r"(?i)^(?:parts? provider|supplier|manufacturer|operator|business)\s+", "", candidate).strip()
     if not candidate or re.fullmatch(r"(?i).+-(?:based|founded|focused|headquartered|owned|listed)", candidate):
         return None
@@ -966,7 +968,8 @@ def merge(existing: dict, new: dict) -> dict:
     """Combine two reports of one deal: keep known fields, the most advanced stage, every source."""
     out = dict(existing)
     for k, v in new.items():
-        if k in ("sources", "investors", "countries", "id"):
+        # Review markers belong to the stored record; an incoming report never hides or re-points it.
+        if k in ("sources", "investors", "countries", "id", "excluded", "merged_into"):
             continue
         if out.get(k) in (None, "", []) and v not in (None, "", []):
             out[k] = v
@@ -1049,6 +1052,50 @@ def resolve_duplicates(new: Iterable[dict], existing: dict[str, dict]) -> list[d
         out.append(d)
         seen.append(d)
     return out
+
+
+# Older news searches return far more generic results than recent ones, so backfilled history has to
+# clear a stricter bar before analysts see it. Each rule names why a record is held back.
+_HISTORY_ASSET = re.compile(
+    r"(?i)\b(?:buys?|bought|acquires?|acquired|purchases?|to buy|forced to buy|takes delivery of|commissions?)\b.{0,60}?"
+    r"\b(?:planes?|aircraft|jets?|airbus|boeing|vessels?|ships?|vans?|buses|trucks?|cars|vehicles|land|drugs|"
+    r"equipment|machines?|bungalow|houses?|buildings?|tractors?|locomotives?)\b")
+_HISTORY_PROGRAMME = re.compile(
+    r"(?i)\b(?:famine|drought|relief|humanitarian|donat\w*|charit\w*|gospel|church|scholarships?)\b"
+    r"|\bsupports? investment\b|\bgets\b.{0,30}\bboost\b|\b(?:sector|industry|economy)\b.{0,25}\b(?:gets|receives)\b"
+    r"|\bbacks?\b.{0,40}\b(?:bid|plan|programme|program|initiative|strategy)\b|\bdisburses?\b"
+    r"|\b(?:programme|program|initiative)\b.{0,20}\binvests?\b"
+    r"|\binvests? in (?:public servants|people|youth|women|communities|content)\b")
+_HISTORY_NEGATION = re.compile(r"(?i)\b(?:will not|won't|not to|refuses? to|denies|deny|no longer)\b")
+_HISTORY_COMMENTARY = re.compile(r"(?i)^(?:meet the|how |why |what |top \d+|\d+ (?:things|ways|reasons)|on this day)"
+                                 r"|\b(?:must|should|needs? to) invest\b")
+_AFRICA_WORD = re.compile(r"(?i)\b(?:africa|african|afrique|africain\w*|áfrica|africano)\b")
+
+
+def _african_party(names: Iterable[Optional[str]]) -> bool:
+    """A party the investor registry places in Africa (e.g. Access Bank, Lagos)."""
+    from src.engines.investors import registry_entry
+    for name in names:
+        entry = registry_entry(name) if name else None
+        if entry and entry.hq and countries_in_text(entry.hq):
+            return True
+    return False
+
+
+def history_exclusion(headline: str, parties: Iterable[Optional[str]] = ()) -> Optional[str]:
+    """Why a backfilled (historical) headline is not trustworthy enough to show, or None if it is."""
+    h = headline or ""
+    if not (countries_in_text(h) or _AFRICA_WORD.search(h) or _african_party(parties)):
+        return "historical quality gate: no African country named in the headline"
+    if _HISTORY_ASSET.search(h):
+        return "historical quality gate: asset purchase, not a company transaction"
+    if _HISTORY_PROGRAMME.search(h):
+        return "historical quality gate: grant, aid or programme, not a transaction"
+    if _HISTORY_NEGATION.search(h):
+        return "historical quality gate: no transaction stated"
+    if _HISTORY_COMMENTARY.search(h):
+        return "historical quality gate: commentary, not a transaction"
+    return None
 
 # ── Local store ───────────────────────────────────────────────────────────────
 

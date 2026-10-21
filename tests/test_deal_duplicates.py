@@ -143,3 +143,25 @@ def test_backfill_reaches_back_to_2010_and_the_product_loads_full_history(monkey
     assert client.get("/api/cron/ingest?month=2010-01").status_code == 200
     assert collected[-1] == (date(2010, 1, 1), date(2010, 1, 31))
     assert client.get("/api/cron/ingest?month=2009-12").status_code in (400, 422)
+
+
+def test_history_gate_holds_back_untrustworthy_backfill_without_touching_trusted_records():
+    from src.engines.deals import history_exclusion, merge
+
+    held = {
+        "Microsoft to buy Skype for $8.5 billion": "no African country",
+        "Cash strapped Air Zimbabwe buys Airbus planes": "asset purchase",
+        "AU raises $351 million to fight famine, drought in East Africa": "grant, aid or programme",
+        "Government Will Not Sell Bungalow To Jake in Ghana": "no transaction stated",
+        "Meet The Millionaires And Billionaires Suddenly Buying Tons Of Land In Africa": "commentary",
+    }
+    for headline, why in held.items():
+        assert why in (history_exclusion(headline) or ""), headline
+    for headline in ("WNS acquires South African BPO firm for £10 mn", "Ecobank to acquire stake in Ghana’s TTB",
+                     "AfDB, IFC, FMO Invest €66 Million in Dibamba Power Company in Cameroon",
+                     "Bralirwa lists on the Rwanda stock exchange"):
+        assert history_exclusion(headline) is None, headline
+    # An incoming report never hides or re-points a stored record.
+    stored = {"id": "k", "deal_type": "acquisition", "headline": "h"}
+    merged = merge(stored, {"id": "k", "deal_type": "acquisition", "excluded": "x", "merged_into": "y"})
+    assert "excluded" not in merged and "merged_into" not in merged

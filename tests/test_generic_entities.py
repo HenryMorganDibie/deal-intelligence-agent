@@ -149,3 +149,10 @@ def test_public_office_holders_receiving_money_are_not_funding_rounds():
     deal = extract_deal("Moniepoint receives $110m from Google", published="2024-10-29", publisher="Example source",
                         url="https://example.com/m", africa_source=True)
     assert deal is not None and deal["target"] == "Moniepoint"
+
+def test_target_recovery_survives_a_generic_object_after_the_verb():
+    from src.engines.deals import extract_deal
+
+    # Crashed the 2024-11 backfill: the recovered object cleans to nothing.
+    extract_deal("CPPIB investing $1 billion in Korea data centres, Ontario Teachers’ buys Paris-based logistics portfolio",
+                 published="2024-11-05", publisher="Example source", url="https://example.com/c", africa_source=True)
