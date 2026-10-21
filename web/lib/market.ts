@@ -50,7 +50,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 function productAction(path: string): ProductAction | null {
   const pathname = path.split("?", 1)[0];
   if (pathname === "/api/deals" || pathname.startsWith("/api/deals/") || pathname === "/api/comparables") {
-    return "deals_loaded";
+    return pathname === "/api/deals" ? "deals_loaded" : "deal_opened";
   }
   if (pathname === "/api/investors" || pathname.startsWith("/api/investors/") || pathname === "/api/funds") {
     return "investors_loaded";
