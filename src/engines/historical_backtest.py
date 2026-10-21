@@ -300,16 +300,49 @@ def detect(src: Sources, company: str, ticker: str, as_of: date, sec_rows: list[
     return out
 
 
+# Raised when price outcomes are fetched differently, so finished companies get their prices filled again.
+# Version 2: the backtest machines had no Yahoo client, and every lookup was cached as "no prices".
+PRICES_VERSION = 2
+
+
+def _price_moves(symbol: str, iso: str) -> dict:
+    """Cached price moves; a lookup that found no prices is not cached, so a later run tries again."""
+    from src.engines.outcome_labeller import default_price_moves
+
+    def fetch():
+        moves = default_price_moves(symbol, iso) or {}
+        return moves if any(v is not None for v in moves.values()) else None
+    return _cached(f"px2:{symbol}:{iso}", fetch) or {}
+
+
+def _refresh_prices(checkpoint: dict, today: date) -> dict:
+    """A finished company's predictions with price outcomes filled where they are missing. Confirmation
+    labels are kept as they are: only the stock and benchmark moves are looked up again."""
+    from src.engines.outcome_labeller import benchmark_for
+    out = []
+    for p in checkpoint.get("predictions", []):
+        if p.get("price_change_10d_pct") is None and p.get("ticker") and p.get("as_of") \
+                and (today - date.fromisoformat(p["as_of"])).days >= 10:
+            stock = _price_moves(p["ticker"], p["as_of"])
+            bench_symbol = benchmark_for(p["ticker"])
+            bench = _price_moves(bench_symbol, p["as_of"]) if (bench_symbol and stock) else {}
+            if stock.get("10d") is not None:
+                abnormal = round(stock["10d"] - bench["10d"], 2) if bench.get("10d") is not None else None
+                move = abnormal if abnormal is not None else stock["10d"]
+                p = {**p, "price_change_10d_pct": stock["10d"], "abnormal_return_10d_pct": abnormal}
+                if p.get("direction") in ("positive", "negative"):
+                    p["direction_correct"] = (move > 0) == (p["direction"] == "positive") if move != 0 else False
+        out.append(p)
+    return {**checkpoint, "predictions": out, "prices_version": PRICES_VERSION}
+
+
 def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_dates: list[date],
                  horizon_end: date, today: date, src: "Sources") -> dict:
     """Detections, outcome labels, ground truth and base-rate hits for one company."""
     from src.engines.event_sources import news_events
     from src.engines.outcome_labeller import (
-        filing_events, ground_truth, label_prediction, market_for_ticker, confirming_events, default_price_moves,
+        filing_events, ground_truth, label_prediction, market_for_ticker, confirming_events,
     )
-
-    def price_moves(symbol: str, iso: str) -> dict:
-        return _cached(f"px:{symbol}:{iso}", lambda: default_price_moves(symbol, iso)) or {}
 
     company, ticker, cik = (tuple(entry) + (None,))[:3]
     market = market_for_ticker(ticker)
@@ -343,7 +376,7 @@ def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_
                 continue                      # same signal still live: not a new prediction
             o = label_prediction(company_name=company, ticker=ticker, signal_type=SignalType(p.signal_type),
                                  severity=p.severity, detection_date=as_of, expected_direction=p.direction,
-                                 events=events, today=today, price_moves=price_moves) or {}
+                                 events=events, today=today, price_moves=_price_moves) or {}
             official = None
             if o.get("event_confirmed") is not None:
                 official_events = [e for e in events if not e.get("signal_types")
@@ -359,7 +392,7 @@ def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_
                                 "direction_correct": o.get("direction_correct")})
     return {"company": company, "ticker": ticker, "market": market, "as_of_dates": len(dates),
             "headlines": headlines, "filings": len(sec_rows), "covered": bool(headlines or sec_rows),
-            "predictions": predictions, "truth": truth, "base": base}
+            "predictions": predictions, "truth": truth, "base": base, "prices_version": PRICES_VERSION}
 
 
 def rolling_period(today: date, months: int = 17) -> tuple[date, date]:
@@ -378,13 +411,24 @@ def _checkpoint(run_dir: Path, ticker: str) -> Path:
 
 
 def _checkpoint_needs_run(path: Path) -> bool:
-    """Retry companies previously marked uncovered; their missing history may be transient."""
+    """Retry companies previously marked uncovered (their missing history may be transient), and those
+    whose price outcomes predate PRICES_VERSION (only their prices are looked up again)."""
+    return _checkpoint_state(path) != "done"
+
+
+def _checkpoint_state(path: Path) -> str:
+    """'run' (no usable checkpoint), 'prices' (finished, but its price outcomes need filling) or 'done'."""
     if not path.exists():
-        return True
+        return "run"
     try:
-        return not bool(json.loads(path.read_text(encoding="utf-8")).get("covered", True))
+        data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError, TypeError):
-        return True
+        return "run"
+    if not data.get("covered", True):
+        return "run"
+    if data.get("predictions") and data.get("prices_version", 1) < PRICES_VERSION:
+        return "prices"
+    return "done"
 
 
 # A published period whose last as-of date is this far behind the latest rolling period is abandoned
@@ -413,13 +457,16 @@ def publish_decision(start: date, end: date, universe: list[tuple]) -> tuple[boo
     every company is done; for an unfinished run only when it is the published period and covers more
     companies than are published now, so a partial month never replaces a fuller result."""
     run_dir = RUNS_DIR / f"{start}_{end}"
-    covered = missing = 0
+    covered = missing = priced = 0
     for e in universe:
         path = _checkpoint(run_dir, e[1])
         if not path.exists():
             missing += 1
-        elif json.loads(path.read_text()).get("covered", True):
+            continue
+        data = json.loads(path.read_text())
+        if data.get("covered", True):
             covered += 1
+            priced += sum(1 for p in data.get("predictions", []) if p.get("price_change_10d_pct") is not None)
     if not missing:
         return True, f"all {len(universe)} companies done ({covered} with usable history)"
     try:
@@ -430,6 +477,10 @@ def publish_decision(start: date, end: date, universe: list[tuple]) -> tuple[boo
     published = int(pub.get("companies") or 0)
     if same and covered > published:
         return True, f"{covered} companies now, {published} published; {missing} still to run"
+    published_priced = int(pub.get("predictions_with_returns") or 0)
+    if same and covered == published and priced > published_priced:
+        return True, (f"price outcomes for {priced} predictions, {published_priced} published; "
+                      f"{missing} still to run")
     newer = bool(pub.get("end")) and end > date.fromisoformat(pub["end"])
     if newer and covered >= published:
         return True, (f"a more recent period covers {covered} companies, at least the {published} published; "
@@ -485,12 +536,19 @@ def run(
     def work(entry: tuple) -> str:
         if stop_at and time.monotonic() > stop_at:
             return f"{entry[0]} ({entry[1]}): deferred to the next run"
+        path = _checkpoint(run_dir, entry[1])
+        if _checkpoint_state(path) == "prices":
+            out = _refresh_prices(json.loads(path.read_text(encoding="utf-8")), today)
+            tmp = path.with_suffix(".json.tmp")
+            tmp.write_text(json.dumps(out, default=str))
+            tmp.replace(path)
+            priced = sum(1 for p in out["predictions"] if p.get("price_change_10d_pct") is not None)
+            return f"{entry[0]} ({entry[1]}): prices filled for {priced} of {len(out['predictions'])} predictions"
         if not hasattr(local, "src"):
             local.src = Sources()
         for attempt in range(3):
             try:
                 out = _company_run(entry, start, end, dates, truth_dates, horizon_end, today, local.src)
-                path = _checkpoint(run_dir, entry[1])
                 tmp = path.with_suffix(".json.tmp")   # atomic: a run stopped mid-write leaves no torn checkpoint
                 tmp.write_text(json.dumps(out, default=str))
                 tmp.replace(path)
@@ -555,6 +613,7 @@ def aggregate(start: date, end: date, universe: list[tuple], dates: list[date], 
               "companies": sum(companies.values()), "companies_by_market": companies, "company_months": months,
               "uncovered_companies": uncovered, "missing_companies": missing, "universe_size": len(universe),
               "lookback_days": LOOKBACK_DAYS, "horizon_days": HORIZON_DAYS,
+              "predictions_with_returns": sum(1 for p in predictions if p.get("price_change_10d_pct") is not None),
               "predictions": predictions, "ground_truth_events": truth, "metrics": metrics,
               "by_severity": by_severity(predictions), "alpha_validation": alpha_validation(predictions)}
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -567,7 +626,8 @@ def aggregate(start: date, end: date, universe: list[tuple], dates: list[date], 
     SUMMARY_PATH.write_text(json.dumps({k: result[k] for k in ("start", "end", "step_days", "as_of_dates", "companies",
                                                                 "companies_by_market", "company_months",
                                                                 "uncovered_companies", "missing_companies", "universe_size",
-                                                                "lookback_days", "horizon_days", "metrics",
+                                                                "lookback_days", "horizon_days",
+                                                                "predictions_with_returns", "metrics",
                                                                 "by_severity", "alpha_validation")},
                                        indent=1, default=str))
     return result

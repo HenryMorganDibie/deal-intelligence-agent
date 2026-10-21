@@ -3,3 +3,5 @@
 -r requirements.txt
 pandas>=2.2
 lxml>=5.0
+# Price outcomes (Yahoo Finance) for US, Johannesburg and Cairo listings; without it every lookup is empty.
+yfinance>=0.2.0

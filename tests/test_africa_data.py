@@ -1607,3 +1607,56 @@ def test_market_cap_is_a_valuation_and_sovereign_or_sector_backing_is_not_a_deal
         assert extract_deal(headline, published="2024-01-01") is None, headline
     # A state-owned lender with a named borrower is still a deal.
     assert extract_deal("Kenya's M-Kopa raises $250m in debt and equity", published="2024-01-01")["target"] == "M-Kopa"
+
+
+def test_finished_companies_get_missing_prices_filled_without_a_rerun(tmp_path, monkeypatch):
+    import json
+    from datetime import date
+    from src.engines import historical_backtest as hb
+    monkeypatch.setattr(hb, "CACHE_DIR", tmp_path / "cache")
+    calls = []
+
+    def moves(symbol, iso):
+        calls.append(symbol)
+        return {"FIC0": {"5d": 1.0, "10d": 3.0, "30d": 2.0}, "SPY": {"5d": 0.5, "10d": 1.0, "30d": 1.0}}.get(
+            symbol, {"5d": None, "10d": None, "30d": None})
+    monkeypatch.setattr("src.engines.outcome_labeller.default_price_moves", moves)
+
+    pred = {"ticker": "FIC0", "as_of": "2025-01-15", "direction": "negative", "event_confirmed": True,
+            "price_change_10d_pct": None, "abnormal_return_10d_pct": None, "direction_correct": None}
+    stale = {"covered": True, "predictions": [pred, {**pred, "ticker": "NOPX"}]}
+    path = tmp_path / "c.json"
+    path.write_text(json.dumps(stale))
+    assert hb._checkpoint_state(path) == "prices" and hb._checkpoint_needs_run(path)
+
+    out = hb._refresh_prices(stale, date(2026, 10, 21))
+    filled, empty = out["predictions"]
+    assert filled["price_change_10d_pct"] == 3.0 and filled["abnormal_return_10d_pct"] == 2.0
+    assert filled["direction_correct"] is False and filled["event_confirmed"] is True   # labels kept
+    assert empty["price_change_10d_pct"] is None
+    path.write_text(json.dumps(out))
+    assert hb._checkpoint_state(path) == "done"
+
+    hb._price_moves("NOPX", "2025-01-15")                    # an empty lookup is not cached: tried again
+    assert calls.count("NOPX") == 2
+    hb._price_moves("FIC0", "2025-01-15")                    # a found one is
+    assert calls.count("FIC0") == 1
+
+
+def test_published_period_is_republished_when_more_predictions_have_returns():
+    import json
+    from datetime import date
+    from src.engines import historical_backtest as hb
+    universe = [(f"Fictional Co {i}", f"PXF{i}", "us") for i in range(3)]
+    start, end = date(2023, 1, 15), date(2024, 6, 15)
+    run_dir = hb.RUNS_DIR / f"{start}_{end}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    hb.SUMMARY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    hb.SUMMARY_PATH.write_text(json.dumps({"start": "2023-01-15", "end": "2024-06-15", "companies": 2,
+                                           "missing_companies": 1, "predictions_with_returns": 0}))
+    bare = {"covered": True, "prices_version": hb.PRICES_VERSION, "predictions": [{"price_change_10d_pct": None}]}
+    for t in ("PXF0", "PXF1"):
+        hb._checkpoint(run_dir, t).write_text(json.dumps(bare))
+    assert hb.publish_decision(start, end, universe)[0] is False
+    hb._checkpoint(run_dir, "PXF0").write_text(json.dumps({**bare, "predictions": [{"price_change_10d_pct": 1.5}]}))
+    assert hb.publish_decision(start, end, universe)[0] is True

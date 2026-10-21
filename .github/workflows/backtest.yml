@@ -197,7 +197,10 @@ jobs:
 
       - name: Stop the run before packing (after a cancel or timeout it may still be writing)
         if: always()
-        run: pkill -INT -f "main.py backtest" && sleep 15; pkill -KILL -f "main.py backtest"; find data -name "*.tmp" -delete; true
+        run: |
+          # pkill exits 1 when nothing is running (the usual case), which must not fail the job.
+          if pkill -INT -f "main.py backtest"; then sleep 15; pkill -KILL -f "main.py backtest" || true; fi
+          find data -name "*.tmp" -delete || true
 
       - name: Pack what this shard fetched and finished
         if: always()
