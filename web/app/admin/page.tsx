@@ -40,6 +40,7 @@ type Stats = {
   pages: { path: string; views: number; visitors: number }[];
   actions?: ActionRow[];
   app_page_activity?: PageActivity[];
+  behavioral_signals?: BehavioralSignals;
 };
 
 const API = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
