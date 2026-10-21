@@ -125,7 +125,83 @@ type Review = {
   status: string;
   progress: { labels_a: number; labels_b: number; pair_labels_a: number; pair_labels_b: number; adjudicated: number };
   downloads: string[];
+  results?: Partial<Record<"independent" | "automated", ReviewResult>>;
 };
+
+type Rate = { rate: number | null; k: number; n: number; ci95: [number, number] | null };
+type ReviewResult = {
+  label: string;
+  independent: boolean;
+  error_count: number;
+  errors_sample: { item_id: string; title: string; error: string }[];
+  notes: string;
+} & Record<
+  "transaction_precision" | "transaction_precision_random_stratum" | "missed_transactions_among_rejected" |
+  "deal_type_accuracy" | "amount_accuracy" | "target_accuracy" | "merge_precision" | "kept_apart_correct",
+  Rate
+>;
+
+const REVIEW_METRICS: [keyof ReviewResult, string, string][] = [
+  ["transaction_precision_random_stratum", "Accepted records that are real, in-scope transactions", "Random sample of accepted records"],
+  ["transaction_precision", "Same, across every stratum", "Includes hard cases on purpose"],
+  ["missed_transactions_among_rejected", "Rejected headlines that were real transactions", "Lower is better"],
+  ["deal_type_accuracy", "Deal type correct", "Among real transactions"],
+  ["target_accuracy", "Target company correct", "Among real transactions"],
+  ["amount_accuracy", "Amount correct (within 5%)", "Where the headline states a US-dollar deal size"],
+  ["merge_precision", "Merged reports that are the same deal", "Duplicate merging"],
+  ["kept_apart_correct", "Look-alike reports correctly kept apart", "Lower means missed duplicates"],
+];
+
+function ratePct(r: Rate) {
+  return r.rate == null ? "n/a" : `${Math.round(r.rate * 100)}%`;
+}
+
+function ReviewResults({ result }: { result: ReviewResult }) {
+  return (
+    <div className="panel mt-4 p-4">
+      <p className="eyebrow">{result.independent ? "Independent review results" : "Automated review (not independent)"}</p>
+      <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">
+        {result.independent
+          ? "Scored from the adjudicated labels of two independent annotators."
+          : "An automated reviewer labelled the same blind sample with the same guide. It is a check that shows where the system fails; it is not independent evidence and does not replace the human review above."}{" "}
+        {result.notes}
+      </p>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full min-w-[34rem] text-left text-[0.8125rem]">
+          <thead className="text-[color:var(--dim)]">
+            <tr><th className="py-1 font-normal">Measure</th><th className="font-normal">Rate</th><th className="font-normal">95% interval</th><th className="font-normal">Sample</th></tr>
+          </thead>
+          <tbody>
+            {REVIEW_METRICS.map(([key, label, note]) => {
+              const r = result[key] as Rate;
+              return (
+                <tr key={key} className="border-t hairline">
+                  <td className="py-1.5">{label}<span className="block text-[0.75rem] text-[color:var(--dim)]">{note}</span></td>
+                  <td className="kbd">{ratePct(r)}</td>
+                  <td className="kbd text-[color:var(--muted)]">{r.ci95 ? `${Math.round(r.ci95[0] * 100)}–${Math.round(r.ci95[1] * 100)}%` : "n/a"}</td>
+                  <td className="kbd text-[color:var(--muted)]">{r.k}/{r.n}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {result.errors_sample.length > 0 && (
+        <details className="mt-3 text-[0.8125rem]">
+          <summary className="cursor-pointer text-[color:var(--muted)]">{result.error_count} errors found; first {result.errors_sample.length} shown</summary>
+          <ul className="mt-2 grid gap-1">
+            {result.errors_sample.map((e, i) => (
+              <li key={`${e.item_id}-${i}`} className="border-t hairline pt-1">
+                <span className="kbd text-[color:var(--dim)]">{e.item_id}</span> {e.title}
+                <span className="block text-[0.75rem] text-[color:var(--muted)]">{e.error}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
+  );
+}
 
 type Evaluation = {
   independent_review?: { current: Review | null; previous: (Review | null)[] } | null;
@@ -346,6 +422,8 @@ function ReviewSection({ review, previous }: { review: Review; previous: Review[
           </div>
         </div>
       </div>
+      {review.results?.independent && <ReviewResults result={review.results.independent} />}
+      {review.results?.automated && <ReviewResults result={review.results.automated} />}
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {([
           ["Headlines in the sample", review.strata],

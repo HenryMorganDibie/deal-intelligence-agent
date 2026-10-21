@@ -1022,7 +1022,14 @@ def _review_status(year: int) -> Optional[dict]:
     status = ("complete" if labelled and progress["adjudicated"] else
               "labelled, awaiting adjudication" if labelled else "awaiting independent labels")
     manifest = {k: v for k, v in manifest.items() if k != "guidelines_md"}
-    return {**manifest, "year": year, "progress": progress, "status": status,
+    results = {}
+    for source in ("independent", "automated"):
+        scored = _read_json(folder / f"results_{source}.json")
+        if scored:
+            errors = scored.get("errors") or []
+            results[source] = {**{k: v for k, v in scored.items() if k != "errors"},
+                               "error_count": len(errors), "errors_sample": errors[:25]}
+    return {**manifest, "year": year, "progress": progress, "status": status, "results": results,
             "downloads": [f"review_{year}_{f}" for f in [*_REVIEW_FILES, "guidelines.md"]]}
 
 

@@ -1,0 +1,456 @@
+{
+  "year": 2026,
+  "source": "automated",
+  "independent": false,
+  "label": "Automated review: a check on the same sample, not independent evidence",
+  "transaction_precision": {
+    "rate": 0.8352,
+    "k": 147,
+    "n": 176,
+    "ci95": [
+      0.7734,
+      0.8828
+    ]
+  },
+  "transaction_precision_random_stratum": {
+    "rate": 0.8067,
+    "k": 96,
+    "n": 119,
+    "ci95": [
+      0.7266,
+      0.8676
+    ]
+  },
+  "missed_transactions_among_rejected": {
+    "rate": 0.3913,
+    "k": 9,
+    "n": 23,
+    "ci95": [
+      0.2216,
+      0.5921
+    ]
+  },
+  "deal_type_accuracy": {
+    "rate": 0.8571,
+    "k": 126,
+    "n": 147,
+    "ci95": [
+      0.7915,
+      0.9046
+    ]
+  },
+  "amount_accuracy": {
+    "rate": 0.9487,
+    "k": 74,
+    "n": 78,
+    "ci95": [
+      0.8754,
+      0.9799
+    ]
+  },
+  "target_accuracy": {
+    "rate": 0.9178,
+    "k": 134,
+    "n": 146,
+    "ci95": [
+      0.8618,
+      0.9524
+    ]
+  },
+  "merge_precision": {
+    "rate": 1.0,
+    "k": 40,
+    "n": 40,
+    "ci95": [
+      0.9124,
+      1.0
+    ]
+  },
+  "kept_apart_correct": {
+    "rate": 0.5833,
+    "k": 28,
+    "n": 48,
+    "ci95": [
+      0.4428,
+      0.7115
+    ]
+  },
+  "errors": [
+    {
+      "item_id": "r000",
+      "title": "Coca-Cola Invests US$1bn into South African Expansion",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r002",
+      "title": "Woolworths Holdings Limited to Acquire Full Ownership of in2food in South Africa",
+      "error": "target 'Full Ownership' (label 'in2food')"
+    },
+    {
+      "item_id": "r003",
+      "title": "Zimbabwe sustains HIV response gains as National AIDS Council raises US$76 million",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r004",
+      "title": "3 Weeks To Go! Meet the AVCA Sustainable Investing in Africa Summit Speakers",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r015",
+      "title": "Gen Z Founders Raise $11.75M to Put Africa’s Defense in African Hands",
+      "error": "target 'Gen Z Founders' (label 'Terra Industries')"
+    },
+    {
+      "item_id": "r016",
+      "title": "Nankabirwa: Why Uganda Acquired 20.15% Stake in Kenya Oil Pipeline",
+      "error": "deal type acquisition (label equity_funding)"
+    },
+    {
+      "item_id": "r017",
+      "title": "Dangote Criticises Wealthy Africans Buying Private Jets Without Investing in Factories",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r021",
+      "title": "Standard Chartered secures $2.3 billion for Tanzania rail project in major Africa trade push",
+      "error": "deal type equity_funding (label debt_financing)"
+    },
+    {
+      "item_id": "r021",
+      "title": "Standard Chartered secures $2.3 billion for Tanzania rail project in major Africa trade push",
+      "error": "target 'Standard Chartered' (label 'Tanzania standard gauge railway')"
+    },
+    {
+      "item_id": "r024",
+      "title": "Standard Chartered Received $29 Million From Sale of Cameroon Unit to Access Bank",
+      "error": "deal type equity_funding (label exit)"
+    },
+    {
+      "item_id": "r026",
+      "title": "IFC to buy Sh645m stake in electric motorbike company",
+      "error": "a real transaction the system did not accept"
+    },
+    {
+      "item_id": "r033",
+      "title": "Electric mobility startup Spiro raises $50 million for African expansion",
+      "error": "deal type debt_financing (label equity_funding)"
+    },
+    {
+      "item_id": "r033",
+      "title": "Electric mobility startup Spiro raises $50 million for African expansion",
+      "error": "amount 7000000 (label 50000000.0 USD)"
+    },
+    {
+      "item_id": "r048",
+      "title": "Nigeria's Dangote Refinery secures $1 billion underwriting ahead of IPO",
+      "error": "deal type equity_funding (label ipo)"
+    },
+    {
+      "item_id": "r048",
+      "title": "Nigeria's Dangote Refinery secures $1 billion underwriting ahead of IPO",
+      "error": "amount 5000000000 (label 1000000000.0 USD)"
+    },
+    {
+      "item_id": "r051",
+      "title": "L'AFC lève 2 milliards de dollars, portée par l'appétit des banques asiatiques",
+      "error": "deal type equity_funding (label debt_financing)"
+    },
+    {
+      "item_id": "r051",
+      "title": "L'AFC lève 2 milliards de dollars, portée par l'appétit des banques asiatiques",
+      "error": "target \"L'AFC\" (label 'Africa Finance Corporation')"
+    },
+    {
+      "item_id": "r059",
+      "title": "Spiro raises $50m to scale EV battery swapping across Africa",
+      "error": "deal type debt_financing (label equity_funding)"
+    },
+    {
+      "item_id": "r059",
+      "title": "Spiro raises $50m to scale EV battery swapping across Africa",
+      "error": "amount 7000000 (label 50000000.0 USD)"
+    },
+    {
+      "item_id": "r061",
+      "title": "Investment firm sells stake in Africa Specialty Risks",
+      "error": "a real transaction the system did not accept"
+    },
+    {
+      "item_id": "r064",
+      "title": "Hlayisani Capital lands $30 million for financial inclusion, health and education in South Africa",
+      "error": "deal type equity_funding (label fund_raise)"
+    },
+    {
+      "item_id": "r066",
+      "title": "Exclusive / Heineken subsidiary threatens Asahi’s bid to acquire Diageo breweries in Kenya",
+      "error": "a real transaction the system did not accept"
+    },
+    {
+      "item_id": "r067",
+      "title": "AfDB Approves $200m Facility for BOI to Expand SME Financing in Nigeria -",
+      "error": "target 'BOI' (label 'Bank of Industry')"
+    },
+    {
+      "item_id": "r069",
+      "title": "Afreximbank Raises US$1.5 bn in Largest Ever Bond Issuance",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r070",
+      "title": "Uganda Moves to Acquire Stake in Kenya Pipeline",
+      "error": "a real transaction the system did not accept"
+    },
+    {
+      "item_id": "r072",
+      "title": "Bassim Haidar sells off Optasia stake as Nigerian regulation hits business",
+      "error": "a real transaction the system did not accept"
+    },
+    {
+      "item_id": "r073",
+      "title": "BII commits $65 million in Zambia and Zimbabwe to strengthen financial markets and unlock investment in frontier economies",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r077",
+      "title": "S&P Global to Acquire Majority Stake in Pan-African Rating Agency Agusto",
+      "error": "target 'Pan-African Rating Agency Agusto' (label 'Agusto & Co')"
+    },
+    {
+      "item_id": "r084",
+      "title": "Germany eyes increased Nigeria investment, backs ECOWAS against terrorism",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r086",
+      "title": "81 African Startups From 2022 Seed Class Yet to Raise a Series A, Says Condia Report",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r088",
+      "title": "Yas Raises € 270mn to Expand Operations in Kenya, Senegal",
+      "error": "deal type debt_financing (label equity_funding)"
+    },
+    {
+      "item_id": "r089",
+      "title": "Uganda’s Arua Airport Upgrade Project Receives €155.99 Million Loan Approval",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r091",
+      "title": "Marketing & Media Solutions acquires Olympic Games media rights in sub-Saharan Africa",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r094",
+      "title": "Morocco's First LFP Battery Gigafactory Gets €100M Boost",
+      "error": "deal type equity_funding (label debt_financing)"
+    },
+    {
+      "item_id": "r097",
+      "title": "BP Acquires 60% of Three Offshore Exploration Blocks in Namibia's Walvis Basin",
+      "error": "target 'Three Offshore Exploration Blocks' (label 'Walvis Basin offshore blocks')"
+    },
+    {
+      "item_id": "r101",
+      "title": "Egypt’s Blnk raises $37m debt, equity funding to deepen point of sale credit for consumers",
+      "error": "deal type debt_financing (label equity_funding)"
+    },
+    {
+      "item_id": "r104",
+      "title": "Nigerian Startups Lead Africa With $624m Funding As Continent Raises $2.49bn In 2026",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r105",
+      "title": "Conditional Sale and Purchase Agreement to acquire Kalahari Copper Limited Senior Management Appointment",
+      "error": "a real transaction the system did not accept"
+    },
+    {
+      "item_id": "r109",
+      "title": "DRC: African Development Bank Approves $10 Million Trade Finance Guarantee to Support Local Businesses and SMEs",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r112",
+      "title": "Kenya Power invests Ksh 765M in Kwale and Kilifi substations",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r115",
+      "title": "IFC’s Landmark Shilling Bond Raises $100 Million for Tanzania’s Small Businesses",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r119",
+      "title": "Canadian firm to acquire uranium assets in Namibia",
+      "error": "a real transaction the system did not accept"
+    },
+    {
+      "item_id": "r120",
+      "title": "RDC : le Gouvernement lève 35,2 millions USD sur le marché financier domestique",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r121",
+      "title": "BFREE closes growth round to acquire non-performing loans across Africa",
+      "error": "deal type debt_financing (label equity_funding)"
+    },
+    {
+      "item_id": "r124",
+      "title": "IFC Invests $15 Million in Mauritania’s First International Five-Star Hotel to Boost Tourism and Jobs",
+      "error": "deal type equity_funding (label debt_financing)"
+    },
+    {
+      "item_id": "r124",
+      "title": "IFC Invests $15 Million in Mauritania’s First International Five-Star Hotel to Boost Tourism and Jobs",
+      "error": "target 'First International Five-Star Hotel' (label 'Mauritania five-star hotel')"
+    },
+    {
+      "item_id": "r125",
+      "title": "Absa Group nets $15.5m dividend ahead of stake increase in Kenya subsidiary",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r127",
+      "title": "IPMC Ghana invests GHS1.6 million in education and community support to GETFUND",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r128",
+      "title": "Ayman Abbas Acquires 10% Stake in Egypt’s Aqar Exit at USD 2M Valuation",
+      "error": "deal type acquisition (label equity_funding)"
+    },
+    {
+      "item_id": "r130",
+      "title": "Prometal, ProAlu Secure CFA80.6 Billion in Financing Deals for Industrial Expansion and Operations",
+      "error": "target 'ProAlu' (label 'Prometal')"
+    },
+    {
+      "item_id": "r133",
+      "title": "Moab to Acquire Additional Uranium Tenements at Manyoni Project in Tanzania",
+      "error": "target 'Additional Uranium Tenements' (label 'Manyoni uranium tenements')"
+    },
+    {
+      "item_id": "r136",
+      "title": "Platinum Credit Uganda Secures $4 Million Funding Boost to Expand MSME and Low-income Financing Across Uganda – BeBeez International",
+      "error": "deal type equity_funding (label debt_financing)"
+    },
+    {
+      "item_id": "r137",
+      "title": "AfDB Approves $400m Loan For South Africa’s Municipal Utility Reforms",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r139",
+      "title": "Heirs Energies Acquires 20% Stake In Seplat For $500m",
+      "error": "deal type acquisition (label equity_funding)"
+    },
+    {
+      "item_id": "r144",
+      "title": "CFAO Mobility Invests in EVs and CNG Vehicles in Nigeria",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r145",
+      "title": "Zafiri Launches $176 Million Fund to Expand Renewable Energy Access Across Africa",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r146",
+      "title": "New York investment firm backs Uganda’s specialty coffee industry",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r150",
+      "title": "Bfree Raises $3.1 Million to Tackle Africa’s Growing Digital Loan Crisis",
+      "error": "deal type debt_financing (label equity_funding)"
+    },
+    {
+      "item_id": "r153",
+      "title": "Security Firm Says KCB Forced Directors to Sign KSh84mn Loan",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r157",
+      "title": "Pixxel lève 100 millions $ dans le plus gros tour spatial indien",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r158",
+      "title": "AfDB signs R82bn loan to ease Africa’s fertiliser and energy crisis",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r159",
+      "title": "DPI Names New CEO, Hits First Close on Latest Africa Fund",
+      "error": "target 'DPI Names New' (label 'Development Partners International')"
+    },
+    {
+      "item_id": "r164",
+      "title": "ESSENCE Ventures invests in REVOLT parent Offscript",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r165",
+      "title": "L'État de Côte d'Ivoire lève 79,03 milliards FCFA sur le marché financier de l'UMOA",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r169",
+      "title": "IFC to Inject €52 million into German auto supplier Marquardt’s Tunisian expansion",
+      "error": "deal type equity_funding (label debt_financing)"
+    },
+    {
+      "item_id": "r169",
+      "title": "IFC to Inject €52 million into German auto supplier Marquardt’s Tunisian expansion",
+      "error": "target 'German' (label 'Marquardt Tunisia')"
+    },
+    {
+      "item_id": "r171",
+      "title": "Burkina Faso : le Diaspora Bond lève 151,5 milliards de FCFA",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r178",
+      "title": "Coris Holding secures $86.7 million from BIDC for SMEs",
+      "error": "deal type equity_funding (label debt_financing)"
+    },
+    {
+      "item_id": "r179",
+      "title": "Africa50 Secures USD 50 M For Climate-Resilient Infrastructure Projects In Africa",
+      "error": "deal type equity_funding (label fund_raise)"
+    },
+    {
+      "item_id": "r182",
+      "title": "Spiro Raises $50 Million As Demand For Its Battery Swapping Infrastructure & EVs Surges Across Africa",
+      "error": "deal type debt_financing (label equity_funding)"
+    },
+    {
+      "item_id": "r182",
+      "title": "Spiro Raises $50 Million As Demand For Its Battery Swapping Infrastructure & EVs Surges Across Africa",
+      "error": "amount 7000000 (label 50000000.0 USD)"
+    },
+    {
+      "item_id": "r189",
+      "title": "FCB plc backs Malawi’s mining investment push at African Mining Indaba",
+      "error": "accepted, but not an in-scope transaction"
+    },
+    {
+      "item_id": "r195",
+      "title": "Le géant chinois Zijin Mining rachète plusieurs mines d'or au Mali, en Côte d'Ivoire et en Éthiopie",
+      "error": "a real transaction the system did not accept"
+    },
+    {
+      "item_id": "r196",
+      "title": "Abu Dhabi energy platform takes 90% stake in Azura as Gulf capital targets Africa’s power growth",
+      "error": "a real transaction the system did not accept"
+    },
+    {
+      "item_id": "r199",
+      "title": "Reps approve Tinubu’s $516.3m loan for Sokoto–Badagry highway",
+      "error": "accepted, but not an in-scope transaction"
+    }
+  ],
+  "notes": "Amounts are compared only where the headline states a deal size in US dollars. Items whose scope the reviewer could not decide are left out. Hard strata over-sample difficult cases; the random-stratum precision is the unbiased estimate."
+}

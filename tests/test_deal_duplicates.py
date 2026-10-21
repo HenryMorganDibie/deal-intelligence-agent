@@ -211,3 +211,18 @@ def test_merge_never_copies_soft_delete_markers():
     stored = {"id": "k", "deal_type": "acquisition", "headline": "h"}
     merged = merge(stored, {"id": "k", "deal_type": "acquisition", "excluded": "x", "merged_into": "y"})
     assert "excluded" not in merged and "merged_into" not in merged
+
+
+def test_review_scorer_reproduces_the_published_automated_results_and_refuses_partial_independent_sets():
+    import json
+    import pytest
+    from evaluation.review import score as review_score
+
+    assert review_score.wilson(0, 0)["rate"] is None
+    w = review_score.wilson(96, 119)
+    assert w["rate"] == round(96 / 119, 4) and w["ci95"][0] < w["rate"] < w["ci95"][1]
+    published = json.loads((review_score.HERE / "2026" / "results_automated.json").read_text())
+    assert review_score.score(2026, "automated") == published
+    assert published["independent"] is False and "not independent" in published["label"]
+    with pytest.raises(SystemExit):
+        review_score.score(2026, "independent")
