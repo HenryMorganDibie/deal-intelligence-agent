@@ -1,40 +1,176 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-20T21:53:05.078487+00:00",
+  "updated_at": "2026-10-21T09:24:51.467689+00:00",
   "current": {
-    "company": "IFC",
-    "company_url": "/app/companies?name=IFC",
-    "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-    "deal_type": "distressed_asset",
+    "company": "Full",
+    "company_url": "/app/companies?name=Full",
+    "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+    "deal_type": "earnings_surprise",
     "amount_usd": null,
-    "country": "MA",
-    "sector": "media_tech",
-    "announced": "2026-10-16",
-    "score": 50.81,
+    "country": "BW",
+    "sector": "mining",
+    "announced": "2026-10-20",
+    "score": 50.0,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
     "reasons": [
-      "Corporate signal: distressed asset",
+      "Corporate signal: earnings surprise",
       "Event rule confidence: 0.80",
       "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "Medias24",
-        "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-        "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
-        "date": "2026-10-16",
+        "publisher": "Mining Weekly",
+        "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+        "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+        "date": "2026-10-20",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-10-13",
-    "period_end": "2026-10-19",
-    "selected_at": "2026-10-20T21:53:05.077991+00:00",
+    "period_start": "2026-10-14",
+    "period_end": "2026-10-20",
+    "selected_at": "2026-10-21T09:24:51.466763+00:00",
     "selection_version": 4,
     "companies": [
+      {
+        "company": "Full",
+        "company_url": "/app/companies?name=Full",
+        "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+        "deal_type": "earnings_surprise",
+        "amount_usd": null,
+        "country": "BW",
+        "sector": "mining",
+        "announced": "2026-10-20",
+        "score": 50.0,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: earnings surprise",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Mining Weekly",
+            "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+            "date": "2026-10-20",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-14",
+        "period_end": "2026-10-20",
+        "selected_at": "2026-10-21T09:24:51.466763+00:00",
+        "selection_version": 4
+      },
+      {
+        "company": "Bond",
+        "company_url": "/app/companies?name=Bond",
+        "headline": "Cameroon bond yields spike as Fitch cuts rating on politics and funding strain",
+        "deal_type": "credit_risk",
+        "amount_usd": null,
+        "country": "CM",
+        "sector": null,
+        "announced": "2026-10-19",
+        "score": 52.17,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: credit risk",
+          "Event rule confidence: 0.92",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Briefs Finance",
+            "title": "Cameroon bond yields spike as Fitch cuts rating on politics and funding strain",
+            "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQUElNaDMyTE1lS0dfXzJrY1NEWjhOYXRzYjVnbXFMcDVncnhSXzVUVGhJVlFsWHpkT3RrSTlVS3Fkb20ycEpwWkRmWUJXWjR2ZHRWMlZwY0NKUmRRbVZoVUxscnl0c2Rvby0yRG11aks0cjV3VzktZTVWZDJJOU9RbkZRQmFpWkRsRTNPcUNxd3I?oc=5",
+            "date": "2026-10-19",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-14",
+        "period_end": "2026-10-20",
+        "selected_at": "2026-10-21T09:24:51.466763+00:00",
+        "selection_version": 4
+      },
+      {
+        "company": "Education",
+        "company_url": "/app/companies?name=Education",
+        "headline": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "KE",
+        "sector": "education",
+        "announced": "2026-10-19",
+        "score": 48.57,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "The Eastleigh Voice",
+            "title": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
+            "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPOG5pclRGbEdPaWNPQ2FlSmN2WWF5YzhvN1lqMjduY19DV2hjNnFmcDhXdUFUb1dZS19OVU5NTDdJUnFhRHdnT1o4MXpHUldfcjJiNDBSTjE5LS0xVjBOekhzbTRGSHp5NnZ5MEJMY2pHWnJHdmNZNFp2b0FFVi1vTFhrck1XYmJySGcwTjF2NzR0eVpCbEdzeEVDV0psUkE5WlU5X0NIQnBMY2ZIUXRucVM2SFVGVXBvay1vX0x4Qy1KMThmblpQMXlwVktTVUdocUhXSk9Yc2Z4aWh2MnNYQ1ZyVQ?oc=5",
+            "date": "2026-10-19",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-14",
+        "period_end": "2026-10-20",
+        "selected_at": "2026-10-21T09:24:51.466763+00:00",
+        "selection_version": 4
+      },
+      {
+        "company": "Out",
+        "company_url": "/app/companies?name=Out",
+        "headline": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "NA",
+        "sector": null,
+        "announced": "2026-10-17",
+        "score": 49.61,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Herald.co.zw",
+            "title": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
+            "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNMXFyV0ZIajlLaFdFWmlGZDNYOTNIWU9BOXZIRWtTQ09ibFNJTVBKTTFnRTdpbU1hbGNnNE9fRWN1elJlQmVEb0RrM0ZiVmNaeDNFaW5rRTlTalhHaVBDZmM3WXdHZjJYVGJxaldJNUpDZk5ZbjFpS1U2czNlbGJ1TUlUc0FLQnZNbDI5T3NWOE16UWJNS2FDMm00XzA2ZEttWTFQelVnVnY1eFVZTXZVZ0txSlVlS1NPd0E?oc=5",
+            "date": "2026-10-17",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-14",
+        "period_end": "2026-10-20",
+        "selected_at": "2026-10-21T09:24:51.466763+00:00",
+        "selection_version": 4
+      },
       {
         "company": "IFC",
         "company_url": "/app/companies?name=IFC",
@@ -44,7 +180,7 @@
         "country": "MA",
         "sector": "media_tech",
         "announced": "2026-10-16",
-        "score": 50.81,
+        "score": 49.39,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,47 +200,41 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-13",
-        "period_end": "2026-10-19",
-        "selected_at": "2026-10-20T21:53:05.077991+00:00",
-        "selection_version": 4
-      },
-      {
-        "company": "Kenya Airways",
-        "company_url": "/app/companies?name=Kenya%20Airways",
-        "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-        "deal_type": "debt_restructuring",
-        "amount_usd": null,
-        "country": "KE",
-        "sector": null,
-        "announced": "2026-10-13",
-        "score": 43.83,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: debt restructuring",
-          "Event rule confidence: 0.88",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "aviationtoday.in",
-            "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
-            "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
-            "date": "2026-10-13",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-13",
-        "period_end": "2026-10-19",
-        "selected_at": "2026-10-20T21:53:05.077991+00:00",
+        "period_start": "2026-10-14",
+        "period_end": "2026-10-20",
+        "selected_at": "2026-10-21T09:24:51.466763+00:00",
         "selection_version": 4
       }
     ],
-    "runner_ups": []
+    "runner_ups": [
+      {
+        "company": "Back",
+        "score": 49.39,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "South",
+        "score": 41.43,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "Operations",
+        "score": 39.93,
+        "reasons": [
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.75",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      }
+    ]
   },
   "history": [
     {
@@ -484,6 +614,241 @@
         }
       ],
       "runner_ups": []
+    },
+    {
+      "company": "Full",
+      "company_url": "/app/companies?name=Full",
+      "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+      "deal_type": "earnings_surprise",
+      "amount_usd": null,
+      "country": "BW",
+      "sector": "mining",
+      "announced": "2026-10-20",
+      "score": 50.0,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: earnings surprise",
+        "Event rule confidence: 0.80",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Mining Weekly",
+          "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+          "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+          "date": "2026-10-20",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-10-14",
+      "period_end": "2026-10-20",
+      "selected_at": "2026-10-21T09:24:51.466763+00:00",
+      "selection_version": 4,
+      "companies": [
+        {
+          "company": "Full",
+          "company_url": "/app/companies?name=Full",
+          "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "BW",
+          "sector": "mining",
+          "announced": "2026-10-20",
+          "score": 50.0,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Mining Weekly",
+              "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+              "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+              "date": "2026-10-20",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-14",
+          "period_end": "2026-10-20",
+          "selected_at": "2026-10-21T09:24:51.466763+00:00",
+          "selection_version": 4
+        },
+        {
+          "company": "Bond",
+          "company_url": "/app/companies?name=Bond",
+          "headline": "Cameroon bond yields spike as Fitch cuts rating on politics and funding strain",
+          "deal_type": "credit_risk",
+          "amount_usd": null,
+          "country": "CM",
+          "sector": null,
+          "announced": "2026-10-19",
+          "score": 52.17,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: credit risk",
+            "Event rule confidence: 0.92",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Briefs Finance",
+              "title": "Cameroon bond yields spike as Fitch cuts rating on politics and funding strain",
+              "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQUElNaDMyTE1lS0dfXzJrY1NEWjhOYXRzYjVnbXFMcDVncnhSXzVUVGhJVlFsWHpkT3RrSTlVS3Fkb20ycEpwWkRmWUJXWjR2ZHRWMlZwY0NKUmRRbVZoVUxscnl0c2Rvby0yRG11aks0cjV3VzktZTVWZDJJOU9RbkZRQmFpWkRsRTNPcUNxd3I?oc=5",
+              "date": "2026-10-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-14",
+          "period_end": "2026-10-20",
+          "selected_at": "2026-10-21T09:24:51.466763+00:00",
+          "selection_version": 4
+        },
+        {
+          "company": "Education",
+          "company_url": "/app/companies?name=Education",
+          "headline": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": "education",
+          "announced": "2026-10-19",
+          "score": 48.57,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "The Eastleigh Voice",
+              "title": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
+              "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPOG5pclRGbEdPaWNPQ2FlSmN2WWF5YzhvN1lqMjduY19DV2hjNnFmcDhXdUFUb1dZS19OVU5NTDdJUnFhRHdnT1o4MXpHUldfcjJiNDBSTjE5LS0xVjBOekhzbTRGSHp5NnZ5MEJMY2pHWnJHdmNZNFp2b0FFVi1vTFhrck1XYmJySGcwTjF2NzR0eVpCbEdzeEVDV0psUkE5WlU5X0NIQnBMY2ZIUXRucVM2SFVGVXBvay1vX0x4Qy1KMThmblpQMXlwVktTVUdocUhXSk9Yc2Z4aWh2MnNYQ1ZyVQ?oc=5",
+              "date": "2026-10-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-14",
+          "period_end": "2026-10-20",
+          "selected_at": "2026-10-21T09:24:51.466763+00:00",
+          "selection_version": 4
+        },
+        {
+          "company": "Out",
+          "company_url": "/app/companies?name=Out",
+          "headline": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NA",
+          "sector": null,
+          "announced": "2026-10-17",
+          "score": 49.61,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Herald.co.zw",
+              "title": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
+              "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNMXFyV0ZIajlLaFdFWmlGZDNYOTNIWU9BOXZIRWtTQ09ibFNJTVBKTTFnRTdpbU1hbGNnNE9fRWN1elJlQmVEb0RrM0ZiVmNaeDNFaW5rRTlTalhHaVBDZmM3WXdHZjJYVGJxaldJNUpDZk5ZbjFpS1U2czNlbGJ1TUlUc0FLQnZNbDI5T3NWOE16UWJNS2FDMm00XzA2ZEttWTFQelVnVnY1eFVZTXZVZ0txSlVlS1NPd0E?oc=5",
+              "date": "2026-10-17",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-14",
+          "period_end": "2026-10-20",
+          "selected_at": "2026-10-21T09:24:51.466763+00:00",
+          "selection_version": 4
+        },
+        {
+          "company": "IFC",
+          "company_url": "/app/companies?name=IFC",
+          "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+          "deal_type": "distressed_asset",
+          "amount_usd": null,
+          "country": "MA",
+          "sector": "media_tech",
+          "announced": "2026-10-16",
+          "score": 49.39,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Medias24",
+              "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
+              "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
+              "date": "2026-10-16",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-14",
+          "period_end": "2026-10-20",
+          "selected_at": "2026-10-21T09:24:51.466763+00:00",
+          "selection_version": 4
+        }
+      ],
+      "runner_ups": [
+        {
+          "company": "Back",
+          "score": 49.39,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "South",
+          "score": 41.43,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Operations",
+          "score": 39.93,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
     }
   ]
 }
