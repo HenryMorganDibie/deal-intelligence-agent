@@ -3,8 +3,8 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 300,
-      "includeFiles": "{src/**,docs/*.json,docs/backtest_predictions.csv,docs/automation/learned_ranker.json,evaluation/**/*.jsonl,evaluation/**/results*.json,evaluation/review_2026/**}",
-      "excludeFiles": "{web/**,evaluation/review_2026/pool.jsonl}"
+      "includeFiles": "{src/**,docs/*.json,docs/backtest_predictions.csv,docs/automation/learned_ranker.json,evaluation/**/*.jsonl,evaluation/**/results*.json,evaluation/review/**}",
+      "excludeFiles": "{web/**,evaluation/review/*/pool.jsonl}"
     }
   },
   "rewrites": [

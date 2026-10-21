@@ -1,0 +1,73 @@
+name: Independent review sample
+
+# Draws each year's blind sample for two independent human annotators. A year that is already
+# drawn is never redrawn, so labels in progress are never overwritten. Labelling itself is done
+# by people; the evaluation page shows the new year and its progress as soon as this commits.
+on:
+  schedule:
+    - cron: "13 6 20 10 *"            # 06:13 UTC on 20 October every year
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "Year to draw (defaults to the current year)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: independent-review-sample
+  cancel-in-progress: false
+
+jobs:
+  draw:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            requirements-backtest.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-dev.txt -r requirements-backtest.txt
+
+      - name: Draw the sample from the public API
+        env:
+          YEAR: ${{ inputs.year }}
+        run: |
+          YEAR="${YEAR:-$(date -u +%Y)}"
+          echo "YEAR=$YEAR" >> "$GITHUB_ENV"
+          python -m evaluation.review.build --year "$YEAR" --from-api https://deal-intelligence-api.vercel.app
+
+      - name: Check the review kit
+        run: python -m pytest -q tests/test_deal_duplicates.py -k review
+
+      - name: Commit the new year's kit directly to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "evaluation/review/$YEAR"
+          if git diff --cached --quiet; then
+            echo "Nothing new: the $YEAR review is already drawn."
+            exit 0
+          fi
+          git commit -m "Draw the $YEAR independent review sample"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            git fetch origin main
+            git rebase origin/main
+          done
+          exit 1

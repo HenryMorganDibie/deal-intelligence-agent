@@ -1,15 +1,20 @@
 """
-Draw the 2026 independent-review sample: headlines and report pairs for two human annotators.
+Draw a year's independent-review sample: headlines and report pairs for two human annotators.
 
-    python -m evaluation.review_2026.build --pool evaluation/review_2026/pool.jsonl
+    python -m evaluation.review.build --year 2027 --from-api https://deal-intelligence-api.vercel.app
+    python -m evaluation.review.build --year 2026 --pool evaluation/review/2026/pool.jsonl --out /tmp/check
 
-The pool is a snapshot of 2026 deal source headlines and deal-like event headlines from the hosted
-store (see pool.jsonl's header row for the query date). Item files carry the headline, publisher and
-date only, never the system's extraction, so labels stay blind. The stratum of each item and the
-system's merge decision for each pair are written to separate files that annotators must not open.
-Fixed seed: re-running on the same pool gives the same sample.
+Each year gets its own folder, evaluation/review/<year>/. A year that already has a manifest is
+never redrawn, so labels in progress are never overwritten (pass --out to rebuild elsewhere, e.g.
+to check that a published draw reproduces). Item files carry the headline, publisher and date only,
+never the system's extraction, so labels stay blind. The stratum of each item and the system's
+merge decision for each pair go to separate files that annotators must not open. The seed is fixed
+per year: re-running on the same pool gives the same sample.
 
-    --from-export PATH   rebuild pool.jsonl from a raw store export first
+Pool sources:
+    --from-api URL       the hosted API's deals (with every source report) and deal-like events
+    --from-export PATH   a raw store export (deals with sources, merge flags, events)
+    --pool PATH          an existing pool.jsonl
 """
 from __future__ import annotations
 
@@ -17,6 +22,8 @@ import json
 import random
 import re
 import sys
+import urllib.parse
+import urllib.request
 from collections import defaultdict
 from datetime import date
 from pathlib import Path
@@ -25,11 +32,13 @@ from src.engines import deals as dl
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-SEED = 20261020
 N_RANDOM, N_PER_HARD, N_NEGATIVE = 120, 15, 20
 N_PAIR_MERGED, N_PAIR_LOOKALIKE, N_PAIR_HARD_NEGATIVE = 40, 40, 20
+MIN_POOL_RECORDS = 200
 
 _FRENCH = re.compile(r"(?i)\b(l[eè]ve|rach[eè]te|acquiert|c[eè]de|milliards?|financement|pr[eê]t|lev[ée]e|investit)\b")
+_DEALISH = re.compile(r"(?i)(acquir|acquisition|merg|stake|invest|raises|raised|funding|financ|loan|facility|ipo|"
+                      r"listing|fund |rach[eè]t|l[eè]ve|cession|financement)")
 _GENERIC = {"capital", "africa", "african", "bank", "group", "holdings", "fund", "partners", "limited", "ventures",
             "energy", "power", "solar", "investment", "investments", "global", "international", "finance", "the",
             "south", "north", "east", "west", "central", "southern", "nigeria", "nigerian", "kenya", "kenyan", "egypt",
@@ -45,12 +54,23 @@ LABEL_FIELDS = {
 PAIR_FIELDS = {"same_transaction": None, "confidence": None, "note": ""}
 
 
+def seed_for(year: int) -> int:
+    return int(f"{year}1020")
+
+
 def _key(title: str) -> str:
     return re.sub(r"\W+", " ", (title or "").lower()).strip()
 
 
 def _words(name: str) -> set[str]:
     return {w for w in dl.normalise_name(name or "").split() if len(w) > 3 and w not in _GENERIC}
+
+
+def _write_pool(rows: list[dict], out: Path, source: str) -> None:
+    header = {"_pool": "independent review", "snapshot": date.today().isoformat(), "source": source, "rows": len(rows)}
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in [header, *rows]))
+    print(f"pool: {len(rows)} headlines -> {out}")
 
 
 def pool_from_export(export: Path, out: Path) -> None:
@@ -71,14 +91,56 @@ def pool_from_export(export: Path, out: Path) -> None:
         if e.get("t"):
             rows.append({"kind": "event", "title": e["t"], "publisher": e.get("p"), "date": e.get("d"),
                          "url": e.get("u"), "excluded": e.get("excluded")})
-    header = {"_pool": "2026 review", "snapshot": date.today().isoformat(), "rows": len(rows)}
-    out.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in [header, *rows]))
-    print(f"pool: {len(rows)} headlines -> {out.relative_to(ROOT)}")
+    _write_pool(rows, out, "store export")
 
 
-def _previous_titles() -> set[str]:
+def _get(url: str) -> dict:
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "independent-review"}), timeout=60) as r:
+        return json.loads(r.read())
+
+
+def pool_from_api(api: str, year: int, out: Path) -> None:
+    """One row per source report of every visible deal announced in the year, plus deal-like events.
+
+    The public API shows merged duplicates folded into the record that absorbed them, so a record's
+    several source reports are the reports the system merged.
+    """
+    api = api.rstrip("/")
+    rows, offset = [], 0
+    while True:
+        q = urllib.parse.urlencode({"since": f"{year}-01-01", "until": f"{year}-12-31", "limit": 100, "offset": offset})
+        page = _get(f"{api}/api/deals?{q}")
+        for d in page.get("deals") or []:
+            for s in d.get("sources") or []:
+                if s.get("title"):
+                    rows.append({"kind": "deal", "title": s["title"], "publisher": s.get("publisher"),
+                                 "date": s.get("date") or d.get("announced"), "url": s.get("url"), "record": d["id"],
+                                 "merged_into": None, "excluded": False, "deal_type": d.get("deal_type"),
+                                 "usd": d.get("amount_usd"), "countries": len(d.get("countries") or []),
+                                 "target": d.get("target")})
+        offset += 100
+        if offset >= (page.get("total_matching") or 0) or not page.get("deals"):
+            break
+    offset = 0
+    while True:
+        page = _get(f"{api}/api/events?" + urllib.parse.urlencode({"since": f"{year}-01-01", "limit": 500, "offset": offset}))
+        for e in page.get("events") or []:
+            if (e.get("day") or "")[:4] == str(year) and _DEALISH.search(e.get("headline") or ""):
+                rows.append({"kind": "event", "title": e["headline"], "publisher": e.get("publisher"),
+                             "date": e.get("day"), "url": e.get("url"), "excluded": False})
+        offset += 500
+        if offset >= (page.get("count") or 0) or not page.get("events"):
+            break
+    _write_pool(rows, out, api)
+
+
+def _previous_titles(year: int) -> set[str]:
+    """Headlines already used by any earlier evaluation set or another year's review."""
     seen = set()
-    for path in [*(ROOT / "evaluation" / "deals").glob("*_items.jsonl"), *(ROOT / "evaluation" / "attribution").glob("*_items.jsonl")]:
+    paths = [*(ROOT / "evaluation" / "deals").glob("*_items.jsonl"), *(ROOT / "evaluation" / "attribution").glob("*_items.jsonl"),
+             *(p for p in HERE.glob("*/items.jsonl") if p.parent.name != str(year)),
+             *(p for p in HERE.glob("*/pairs.jsonl") if p.parent.name != str(year))]
+    for path in paths:
         for line in path.open():
             item = json.loads(line)
             for t in (item.get("title"), (item.get("a") or {}).get("title") if isinstance(item.get("a"), dict) else None,
@@ -92,11 +154,12 @@ def _item(item_id: str, r: dict) -> dict:
     return {"item_id": item_id, "title": r["title"], "publisher": r.get("publisher"), "date": r.get("date")}
 
 
-def build(pool_path: Path) -> None:
-    rng = random.Random(SEED)
+def build(year: int, pool_path: Path, out_dir: Path) -> dict:
+    seed = seed_for(year)
+    rng = random.Random(seed)
     lines = [json.loads(l) for l in pool_path.open()]
     rows = [r for r in lines if "_pool" not in r]
-    previous = _previous_titles()
+    previous = _previous_titles(year)
     unique, seen = [], set()
     for r in rows:
         k = _key(r["title"])
@@ -107,6 +170,8 @@ def build(pool_path: Path) -> None:
     by_record = defaultdict(list)
     for r in deals:
         by_record[r["record"]].append(r)
+    if len(by_record) < MIN_POOL_RECORDS:
+        raise SystemExit(f"Only {len(by_record)} deal records in the {year} pool; at least {MIN_POOL_RECORDS} are needed.")
 
     used: set[str] = set()
     picks: list[tuple[str, dict]] = []
@@ -123,20 +188,24 @@ def build(pool_path: Path) -> None:
     take("hard:french", [r for r in deals if _FRENCH.search(r["title"])], N_PER_HARD)
     take("hard:large_amount", [r for r in deals if (r.get("usd") or 0) >= 1e9], N_PER_HARD)
     clustered = {r["merged_into"] for r in deals if r.get("merged_into")}
-    take("hard:duplicate_cluster", [r for r in deals if r.get("merged_into") or r["record"] in clustered], N_PER_HARD)
+    cluster_rows = [r for r in deals if r.get("merged_into") or r["record"] in clustered]
+    if not clustered:                                 # API pools: merged reports sit inside one record
+        cluster_rows = [r for r in deals if len(by_record[r["record"]]) >= 2]
+    take("hard:duplicate_cluster", cluster_rows, N_PER_HARD)
     take("negative_candidate", [r for r in unique if r["kind"] == "event"], N_NEGATIVE)
     rng.shuffle(picks)
     items = [_item(f"r{k:03d}", r) for k, (_, r) in enumerate(picks)]
     strata = [{"item_id": f"r{k:03d}", "stratum": s} for k, (s, _) in enumerate(picks)]
 
     # Pairs: reports the system merged, look-alikes it kept apart, and same-company hard negatives.
-    record_rows = {rid: v for rid, v in by_record.items()}
     groups = defaultdict(list)
-    for rid, v in record_rows.items():
+    for rid, v in by_record.items():
         head = v[0]
         groups[head.get("merged_into") or rid].append(head)
     merged = [(a, b) for g in groups.values() if len(g) >= 2 for a, b in [tuple(rng.sample(g, 2))]]
-    heads = sorted((v[0] for k, v in record_rows.items() if not v[0].get("merged_into") and not v[0].get("excluded")),
+    if not clustered:                                 # API pools: two reports folded into one record
+        merged = [tuple(rng.sample(v, 2)) for _, v in sorted(by_record.items()) if len(v) >= 2]
+    heads = sorted((v[0] for k, v in by_record.items() if not v[0].get("merged_into") and not v[0].get("excluded")),
                    key=lambda r: r.get("date") or "")
     lookalike, hard_negative = [], []
     for i, a in enumerate(heads):
@@ -157,8 +226,10 @@ def build(pool_path: Path) -> None:
     pairs = [{"item_id": f"p{k:03d}", "a": _item("a", a), "b": _item("b", b)} for k, (_, (a, b)) in enumerate(pair_picks)]
     pair_system = [{"item_id": f"p{k:03d}", "system": s} for k, (s, _) in enumerate(pair_picks)]
 
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     def write(name: str, rows_: list[dict]) -> None:
-        (HERE / name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows_))
+        (out_dir / name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows_))
 
     write("items.jsonl", items)
     write("pairs.jsonl", pairs)
@@ -167,13 +238,12 @@ def build(pool_path: Path) -> None:
     for who in ("a", "b"):
         write(f"labels_{who}.jsonl", [{"item_id": i["item_id"], "annotator": "", **LABEL_FIELDS} for i in items])
         write(f"pair_labels_{who}.jsonl", [{"item_id": p["item_id"], "annotator": "", **PAIR_FIELDS} for p in pairs])
-    counts = defaultdict(int)
+    counts, pair_counts = defaultdict(int), defaultdict(int)
     for s in strata:
         counts[s["stratum"]] += 1
-    pair_counts = defaultdict(int)
     for s in pair_system:
         pair_counts[s["system"]] += 1
-    manifest = {"name": "2026 independent review", "seed": SEED, "drawn": date.today().isoformat(),
+    manifest = {"name": f"{year} independent review", "year": year, "seed": seed, "drawn": date.today().isoformat(),
                 "pool_snapshot": lines[0].get("snapshot"), "items": len(items), "pairs": len(pairs),
                 "strata": dict(counts), "pair_strata": dict(pair_counts),
                 "note": (f"The pool holds {len(hard_negative)} same-company, different-amount pairs, so the hard-negative "
@@ -181,15 +251,27 @@ def build(pool_path: Path) -> None:
                          if pair_counts["hard_negative"] < N_PAIR_HARD_NEGATIVE else ""),
                 # The hosted runtime drops Markdown files, so the guide also travels inside the manifest.
                 "guidelines_md": (HERE / "GUIDELINES.md").read_text()}
-    (HERE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    print(json.dumps(manifest, indent=2))
+    (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    return manifest
+
+
+def main(args: list[str]) -> None:
+    def opt(name: str) -> str | None:
+        return args[args.index(name) + 1] if name in args else None
+
+    year = int(opt("--year") or date.today().year)
+    out_dir = Path(opt("--out")) if opt("--out") else HERE / str(year)
+    if (HERE / str(year) / "manifest.json").exists() and not opt("--out"):
+        print(f"The {year} review is already drawn; it is never redrawn, so labels in progress are safe.")
+        return
+    pool = Path(opt("--pool")) if opt("--pool") else out_dir / "pool.jsonl"
+    if opt("--from-api"):
+        pool_from_api(opt("--from-api"), year, pool)
+    elif opt("--from-export"):
+        pool_from_export(Path(opt("--from-export")), pool)
+    manifest = build(year, pool, out_dir)
+    print(json.dumps({k: v for k, v in manifest.items() if k != "guidelines_md"}, indent=2))
 
 
 if __name__ == "__main__":
-    args = sys.argv[1:]
-    pool = HERE / "pool.jsonl"
-    if "--from-export" in args:
-        pool_from_export(Path(args[args.index("--from-export") + 1]), pool)
-    if "--pool" in args:
-        pool = Path(args[args.index("--pool") + 1])
-    build(pool)
+    main(sys.argv[1:])

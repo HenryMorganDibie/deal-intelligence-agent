@@ -938,13 +938,30 @@ _DOWNLOADS = {
     "attribution_hard_items.jsonl": ("evaluation/attribution/hard_items.jsonl", "application/x-ndjson"),
     "attribution_hard_labels.jsonl": ("evaluation/attribution/hard_labels.jsonl", "application/x-ndjson"),
     "attribution_errors.jsonl": ("evaluation/attribution/errors.jsonl", "application/x-ndjson"),
-    "review_2026_items.jsonl": ("evaluation/review_2026/items.jsonl", "application/x-ndjson"),
-    "review_2026_pairs.jsonl": ("evaluation/review_2026/pairs.jsonl", "application/x-ndjson"),
-    "review_2026_labels_template.jsonl": ("evaluation/review_2026/labels_a.jsonl", "application/x-ndjson"),
-    "review_2026_pair_labels_template.jsonl": ("evaluation/review_2026/pair_labels_a.jsonl", "application/x-ndjson"),
-    "review_2026_guidelines.md": ("evaluation/review_2026/GUIDELINES.md", "text/markdown"),
 }
-_REVIEW_2026 = _ROOT / "evaluation" / "review_2026"
+_REVIEW = _ROOT / "evaluation" / "review"
+_REVIEW_FILES = {
+    "items.jsonl": "items.jsonl", "pairs.jsonl": "pairs.jsonl",
+    "labels_template.jsonl": "labels_a.jsonl", "pair_labels_template.jsonl": "pair_labels_a.jsonl",
+}
+
+
+def _review_years() -> list[int]:
+    """Years with a drawn review sample, newest first; a new year appears once its folder is committed."""
+    try:
+        return sorted((int(p.name) for p in _REVIEW.iterdir() if p.name.isdigit() and (p / "manifest.json").exists()),
+                      reverse=True)
+    except OSError:
+        return []
+
+
+def _review_downloads() -> dict[str, tuple[str, str]]:
+    out = {}
+    for year in _review_years():
+        for public, local in _REVIEW_FILES.items():
+            out[f"review_{year}_{public}"] = (f"evaluation/review/{year}/{local}", "application/x-ndjson")
+        out[f"review_{year}_guidelines.md"] = ("evaluation/review/GUIDELINES.md", "text/markdown")
+    return out
 
 
 def _filled(path: Path, key: str) -> int:
@@ -956,23 +973,33 @@ def _filled(path: Path, key: str) -> int:
     return sum(1 for r in rows if r.get("annotator") and r.get(key) is not None)
 
 
-def _review_2026_status() -> Optional[dict]:
-    """Progress of the independent 2026 review; scores are published only once it is complete."""
-    manifest = _read_json(_REVIEW_2026 / "manifest.json")
+def _review_status(year: int) -> Optional[dict]:
+    """Progress of one year's independent review; scores are published only once it is complete."""
+    folder = _REVIEW / str(year)
+    manifest = _read_json(folder / "manifest.json")
     if not manifest:
         return None
     progress = {
-        "labels_a": _filled(_REVIEW_2026 / "labels_a.jsonl", "is_transaction"),
-        "labels_b": _filled(_REVIEW_2026 / "labels_b.jsonl", "is_transaction"),
-        "pair_labels_a": _filled(_REVIEW_2026 / "pair_labels_a.jsonl", "same_transaction"),
-        "pair_labels_b": _filled(_REVIEW_2026 / "pair_labels_b.jsonl", "same_transaction"),
-        "adjudicated": _filled(_REVIEW_2026 / "adjudicated_labels.jsonl", "is_transaction"),
+        "labels_a": _filled(folder / "labels_a.jsonl", "is_transaction"),
+        "labels_b": _filled(folder / "labels_b.jsonl", "is_transaction"),
+        "pair_labels_a": _filled(folder / "pair_labels_a.jsonl", "same_transaction"),
+        "pair_labels_b": _filled(folder / "pair_labels_b.jsonl", "same_transaction"),
+        "adjudicated": _filled(folder / "adjudicated_labels.jsonl", "is_transaction"),
     }
-    done = (progress["labels_a"] == progress["labels_b"] == manifest["items"]
-            and progress["pair_labels_a"] == progress["pair_labels_b"] == manifest["pairs"])
+    labelled = (progress["labels_a"] == progress["labels_b"] == manifest["items"]
+                and progress["pair_labels_a"] == progress["pair_labels_b"] == manifest["pairs"])
+    status = ("complete" if labelled and progress["adjudicated"] else
+              "labelled, awaiting adjudication" if labelled else "awaiting independent labels")
     manifest = {k: v for k, v in manifest.items() if k != "guidelines_md"}
-    return {**manifest, "progress": progress,
-            "status": "labelled, awaiting adjudication" if done else "awaiting independent labels"}
+    return {**manifest, "year": year, "progress": progress, "status": status,
+            "downloads": [f"review_{year}_{f}" for f in [*_REVIEW_FILES, "guidelines.md"]]}
+
+
+def _independent_review() -> Optional[dict]:
+    years = _review_years()
+    if not years:
+        return None
+    return {"current": _review_status(years[0]), "previous": [_review_status(y) for y in years[1:]]}
 
 
 def _read_json(path: Path) -> Optional[dict]:
@@ -985,23 +1012,32 @@ def _read_json(path: Path) -> Optional[dict]:
 @router.get("/api/evaluation/files")
 async def evaluation_files() -> dict:
     return {"files": [{"name": k, "url": f"/api/evaluation/files/{k}", "available": _download_body(k) is not None}
-                      for k in _DOWNLOADS]}
+                      for k in _all_downloads()]}
+
+
+def _all_downloads() -> dict[str, tuple[str, str]]:
+    return {**_DOWNLOADS, **_review_downloads()}
 
 
 def _download_body(name: str) -> Optional[str]:
+    downloads = _all_downloads()
+    if name not in downloads:
+        return None
     try:
-        return (_ROOT / _DOWNLOADS[name][0]).read_text()
+        return (_ROOT / downloads[name][0]).read_text()
     except OSError:
-        if name == "review_2026_guidelines.md":         # the hosted runtime drops Markdown; the manifest carries it
-            return (_read_json(_REVIEW_2026 / "manifest.json") or {}).get("guidelines_md")
+        year = re.fullmatch(r"review_(\d{4})_guidelines\.md", name)
+        if year:                                         # the hosted runtime drops Markdown; the manifest carries it
+            return (_read_json(_REVIEW / year.group(1) / "manifest.json") or {}).get("guidelines_md")
         return None
 
 
 @router.get("/api/evaluation/files/{name}")
 async def evaluation_file(name: str) -> Response:
-    if name not in _DOWNLOADS:
+    downloads = _all_downloads()
+    if name not in downloads:
         raise HTTPException(404, "Unknown file.")
-    media = _DOWNLOADS[name][1]
+    media = downloads[name][1]
     body = _download_body(name)
     if body is None:
         raise HTTPException(404, "File not published.")
@@ -1027,7 +1063,7 @@ async def evaluation() -> dict:
             "data_quality_baseline": _read_json(_ROOT / "evaluation" / "deals" / "results_baseline.json"),
             "attribution": _read_json(_ROOT / "evaluation" / "attribution" / "results.json"),
             "attribution_before": _read_json(_ROOT / "evaluation" / "attribution" / "results_before_rule_changes.json"),
-            "review_2026": _review_2026_status(),
+            "independent_review": _independent_review(),
             "method": "Historical: walk-forward replay, 30-day lookback, 90-day horizon, confirmation strictly after "
                       "each as-of date. Live: every hosted brief's signals labelled daily against later filings, "
                       "credible news and abnormal price moves."}

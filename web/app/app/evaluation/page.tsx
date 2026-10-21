@@ -111,8 +111,9 @@ type ReturnForecastValidation = {
   by_market: Record<"us" | "africa", ReturnForecastSlice>;
 };
 
-type Review2026 = {
+type Review = {
   name: string;
+  year: number;
   seed: number;
   drawn: string;
   items: number;
@@ -122,10 +123,11 @@ type Review2026 = {
   note?: string;
   status: string;
   progress: { labels_a: number; labels_b: number; pair_labels_a: number; pair_labels_b: number; adjudicated: number };
+  downloads: string[];
 };
 
 type Evaluation = {
-  review_2026?: Review2026 | null;
+  independent_review?: { current: Review | null; previous: (Review | null)[] } | null;
   signal_report: SignalReport | null;
   data_quality: DataQuality | null;
   data_quality_baseline: DataQuality | null;
@@ -269,12 +271,12 @@ const NAV = [
   ["rules", "Labelling rules"],
   ["data-quality", "Deal data quality"],
   ["attribution", "Attribution tests"],
-  ["review-2026", "2026 independent review"],
+  ["independent-review", "Independent review"],
   ["reproduce", "Reproduce"],
 ];
 
 const STRATUM_LABEL: Record<string, string> = {
-  random: "Random 2026 reports",
+  random: "Random reports from the year",
   "hard:cross_border": "Cross-border deals",
   "hard:french": "French-language headlines",
   "hard:large_amount": "Amounts of $1bn or more",
@@ -302,18 +304,26 @@ function Progress({ label, done, total }: { label: string; done: number; total: 
   );
 }
 
-function Review2026Section({ review }: { review: Review2026 }) {
+const REVIEW_FILE_LABEL: Record<string, string> = {
+  "items.jsonl": "headlines to label",
+  "pairs.jsonl": "report pairs to label",
+  "labels_template.jsonl": "blank headline labels",
+  "pair_labels_template.jsonl": "blank pair labels",
+  "guidelines.md": "labelling guide",
+};
+
+function ReviewSection({ review, previous }: { review: Review; previous: Review[] }) {
   const p = review.progress;
   return (
     <Section
-      id="review-2026"
-      title="2026 independent review"
+      id="independent-review"
+      title={`${review.year} independent review`}
       lede={
         <>
           The labels above were written by an AI annotator and have not been reviewed by an independent person. To fix that, a
-          fresh, blind sample of 2026 reports was drawn on {review.drawn} (fixed seed {review.seed}) for two independent human
+          fresh, blind sample of {review.year} reports was drawn on {review.drawn} (fixed seed {review.seed}) for two independent human
           annotators, with a third resolving disagreements. Annotators see only the headline, publisher and date. The published
-          scores do not change until both label sets and the adjudication are complete.
+          scores do not change until both label sets and the adjudication are complete. A new sample is drawn every year.
         </>
       }
     >
@@ -357,9 +367,34 @@ function Review2026Section({ review }: { review: Review2026 }) {
         <Callout>
           New fields measure the failures found in the October 2026 data audit: whether a figure is a deal size, a valuation or a
           market size; whether a record is in scope; and whether a country comes from the headline or from knowing the company.
-          {review.note ? ` ${review.note}` : ""} The sample, blank label files and labelling guide are downloadable below.
+          {review.note ? ` ${review.note}` : ""}
         </Callout>
       </div>
+      <ul className="mt-4 grid gap-2 text-[0.8125rem] sm:grid-cols-2">
+        {review.downloads.map((f) => (
+          <li key={f}>
+            <a href={apiUrl(`/api/evaluation/files/${f}`)} className="text-verified hover:underline">
+              {review.year} review: {REVIEW_FILE_LABEL[f.replace(`review_${review.year}_`, "")] ?? f}
+            </a>{" "}
+            <span className="kbd text-[0.6875rem] text-[color:var(--dim)]">{f}</span>
+          </li>
+        ))}
+      </ul>
+      {previous.length > 0 && (
+        <div className="mt-4 panel p-4">
+          <p className="eyebrow">Earlier reviews</p>
+          <ul className="mt-2 grid gap-1 text-[0.8125rem]">
+            {previous.map((r) => (
+              <li key={r.year} className="flex justify-between gap-4">
+                <span>
+                  {r.year}: {r.items} headlines, {r.pairs} pairs
+                </span>
+                <span className="capitalize text-[color:var(--muted)]">{r.status}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </Section>
   );
 }
@@ -894,7 +929,12 @@ export default function EvaluationPage() {
             </Section>
           )}
 
-          {e.review_2026 && <Review2026Section review={e.review_2026} />}
+          {e.independent_review?.current && (
+            <ReviewSection
+              review={e.independent_review.current}
+              previous={(e.independent_review.previous ?? []).filter((r): r is Review => r !== null)}
+            />
+          )}
 
           <Section
             id="reproduce"
@@ -925,11 +965,6 @@ export default function EvaluationPage() {
                 ["attribution_hard_items.jsonl", "Attribution: hard-case real headlines"],
                 ["attribution_hard_labels.jsonl", "Attribution: hard-case labels"],
                 ["attribution_errors.jsonl", "Attribution: every error, with source links"],
-                ["review_2026_items.jsonl", "2026 review: headlines to label"],
-                ["review_2026_pairs.jsonl", "2026 review: report pairs to label"],
-                ["review_2026_labels_template.jsonl", "2026 review: blank headline labels"],
-                ["review_2026_pair_labels_template.jsonl", "2026 review: blank pair labels"],
-                ["review_2026_guidelines.md", "2026 review: labelling guide"],
               ].map(([f, label]) => (
                 <li key={f}>
                   <a href={apiUrl(`/api/evaluation/files/${f}`)} className="text-verified hover:underline">

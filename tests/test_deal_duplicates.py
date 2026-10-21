@@ -59,28 +59,56 @@ def test_excluded_events_are_hidden():
     assert [e["id"] for e in _visible_events(rows)] == ["a"]
 
 
-def test_review_2026_status_reports_progress_and_files_are_published():
-    import asyncio
+def test_independent_review_reports_the_latest_year_and_serves_its_files():
     import json as _json
 
-    from src.hosted_market import _DOWNLOADS, _ROOT, _review_2026_status
+    from src.hosted_market import _REVIEW, _download_body, _independent_review, _review_years
 
-    status = _review_2026_status()
-    manifest = _json.loads((_ROOT / "evaluation" / "review_2026" / "manifest.json").read_text())
-    assert status["items"] == manifest["items"] == 200
-    assert status["status"] == "awaiting independent labels"
-    assert set(status["progress"]) == {"labels_a", "labels_b", "pair_labels_a", "pair_labels_b", "adjudicated"}
-    for name in ("review_2026_items.jsonl", "review_2026_pairs.jsonl", "review_2026_guidelines.md"):
-        assert (_ROOT / _DOWNLOADS[name][0]).exists(), name
-    # Annotators get inputs only: no system output in the item files.
-    item = _json.loads((_ROOT / "evaluation" / "review_2026" / "items.jsonl").read_text().splitlines()[0])
+    assert 2026 in _review_years()
+    review = _independent_review()
+    current = review["current"]
+    assert current["year"] == max(_review_years())
+    manifest = _json.loads((_REVIEW / str(current["year"]) / "manifest.json").read_text())
+    assert current["items"] == manifest["items"]
+    assert current["status"] == "awaiting independent labels"
+    assert set(current["progress"]) == {"labels_a", "labels_b", "pair_labels_a", "pair_labels_b", "adjudicated"}
+    assert "guidelines_md" not in current
+    for name in current["downloads"]:
+        assert _download_body(name), name
+    # Older names keep working, and annotators get inputs only.
+    assert _download_body("review_2026_items.jsonl")
+    item = _json.loads((_REVIEW / "2026" / "items.jsonl").read_text().splitlines()[0])
     assert set(item) == {"item_id", "title", "publisher", "date"}
 
 
 def test_review_guide_is_served_from_the_manifest_when_markdown_is_not_bundled(monkeypatch):
     import src.hosted_market as hm
 
-    monkeypatch.setitem(hm._DOWNLOADS, "review_2026_guidelines.md", ("evaluation/review_2026/MISSING.md", "text/markdown"))
+    real = hm._review_downloads
+    monkeypatch.setattr(hm, "_review_downloads", lambda: {
+        **real(), "review_2026_guidelines.md": ("evaluation/review/MISSING.md", "text/markdown")})
     body = hm._download_body("review_2026_guidelines.md")
-    assert body and body.startswith("# 2026 independent review")
-    assert "guidelines_md" not in hm._review_2026_status()
+    assert body and body.startswith("# ")
+
+
+def test_a_new_year_appears_without_code_changes(tmp_path, monkeypatch):
+    import json as _json
+
+    import src.hosted_market as hm
+
+    for year, items in ((2026, 200), (2027, 180)):
+        folder = tmp_path / str(year)
+        folder.mkdir()
+        (folder / "manifest.json").write_text(_json.dumps({"items": items, "pairs": 90, "strata": {}, "pair_strata": {}}))
+    monkeypatch.setattr(hm, "_REVIEW", tmp_path)
+    review = hm._independent_review()
+    assert review["current"]["year"] == 2027 and review["current"]["items"] == 180
+    assert [r["year"] for r in review["previous"]] == [2026]
+    assert "review_2027_items.jsonl" in hm._review_downloads()
+
+
+def test_review_builder_never_redraws_an_existing_year(capsys):
+    from evaluation.review.build import main
+
+    main(["--year", "2026"])
+    assert "never redrawn" in capsys.readouterr().out

@@ -1,6 +1,6 @@
-# 2026 independent review: labelling guide
+# Independent review: labelling guide
 
-Two annotators label every item independently; a third person resolves disagreements. Published
+Each year a fresh sample is drawn into `evaluation/review/<year>/`. Two annotators label every item independently; a third person resolves disagreements. Published
 data-quality scores change only after both label files and the adjudication are complete.
 
 ## Who may label
@@ -14,8 +14,8 @@ data-quality scores change only after both label files and the adjudication are 
 
 | File | Contents |
 |---|---|
-| `items.jsonl` | 200 headlines: `item_id`, `title`, `publisher`, `date`. Nothing the system extracted. |
-| `pairs.jsonl` | 88 pairs of headlines: are they the same transaction? |
+| `items.jsonl` | About 200 headlines (the exact count is in `manifest.json`): `item_id`, `title`, `publisher`, `date`. Nothing the system extracted. |
+| `pairs.jsonl` | About 100 pairs of headlines: are they the same transaction? |
 | `labels_a.jsonl` / `labels_b.jsonl` | Blank label rows for annotator A or B, one per item. |
 | `pair_labels_a.jsonl` / `pair_labels_b.jsonl` | Blank pair rows for A or B. |
 
