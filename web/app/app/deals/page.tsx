@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Container } from "../../../components/primitives";
 import { DealRows, ErrorNote, Field, Loading, PageHeader, Pagination, Stat, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
+import { trackProductAction } from "../../../lib/tracking";
 import { DEAL_TYPES, SECTORS, get, type Deal } from "../../../lib/market";
 
 type Filters = { q: string; country: string; type: string; sector: string; investor: string; since: string };
@@ -43,6 +44,7 @@ export default function DealsPage() {
 
   function submit(e: FormEvent) {
     e.preventDefault();
+    trackProductAction("deal_search_submitted");
     load(filters, 0, limit);
   }
 
