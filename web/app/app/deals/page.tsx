@@ -27,6 +27,15 @@ export default function DealsPage() {
     try {
       const r = await get<{ total_in_database: number; total_matching: number; deals: Deal[] }>("/api/deals", { ...f, limit: nextLimit, offset: nextOffset });
       setRows(r.deals);
+      r.deals.forEach((deal, index) => {
+        trackProductAction("deal_impression", deal.id, {
+          result_position: index + 1,
+          has_query: Boolean(f.q.trim()),
+          country: f.country.trim().toUpperCase() || undefined,
+          deal_type: f.type || undefined,
+          sector: f.sector || undefined,
+        });
+      });
       setTotalMatching(r.total_matching);
       setTotalInDatabase(r.total_in_database);
     } catch (err) {
