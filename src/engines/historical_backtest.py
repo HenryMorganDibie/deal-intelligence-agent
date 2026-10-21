@@ -465,8 +465,9 @@ def run(
     aggregate_results: bool = True,
 ) -> Optional[dict]:
     """Walk forward over [start, end] for every company (in parallel, resumable); label, aggregate, save.
-    With a deadline, no new company starts after it; returns None if any company is still to run, so a
-    later call resumes from the checkpoints."""
+    With a deadline, no new company starts after it and failed companies are not retried past it (one
+    already running is let finish); returns None if any company is still to run, so a later call resumes
+    from the checkpoints."""
     from src.engines import backtest_universe
 
     universe = universe or backtest_universe.load()
@@ -489,10 +490,15 @@ def run(
         for attempt in range(3):
             try:
                 out = _company_run(entry, start, end, dates, truth_dates, horizon_end, today, local.src)
-                _checkpoint(run_dir, entry[1]).write_text(json.dumps(out, default=str))
+                path = _checkpoint(run_dir, entry[1])
+                tmp = path.with_suffix(".json.tmp")   # atomic: a run stopped mid-write leaves no torn checkpoint
+                tmp.write_text(json.dumps(out, default=str))
+                tmp.replace(path)
                 return f"{entry[0]} ({entry[1]}): {len(out['predictions'])} predictions, {out['headlines']} headlines"
             except Exception as e:                  # one company's failure never stops the run
                 log.warning("company %s failed (attempt %d): %r", entry[1], attempt + 1, e)
+                if stop_at and time.monotonic() > stop_at:
+                    break                               # past the deadline: leave the retry to the next run
                 time.sleep(60 * (attempt + 1))         # let a news cool-down pass before retrying
         return f"{entry[0]} ({entry[1]}): failed"
 

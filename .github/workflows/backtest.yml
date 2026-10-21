@@ -179,12 +179,21 @@ jobs:
           path: docs/backtest_universe.csv
           key: btuniverse-${{ github.run_id }}
 
-      - name: Run this shard (stops starting companies after 140 minutes)
+      # Companies already running at the deadline may take a while to finish, so the run is also stopped
+      # outright at 160 minutes; that leaves the job's last 40 minutes for packing and saving progress.
+      - name: Run this shard (stops starting companies after 125 minutes, stops outright at 160)
         run: |
           mkdir -p data/hist_cache data/backtest_runs && touch .shard-start
           printf '%s' "${{ matrix.tickers }}" > tickers.txt
-          python main.py backtest --historical --period continue --tickers @tickers.txt --no-aggregate \
-            --workers 8 --deadline-minutes 140
+          status=0
+          timeout --signal=INT --kill-after=60 160m \
+            python main.py backtest --historical --period continue --tickers @tickers.txt --no-aggregate \
+              --workers 8 --deadline-minutes 125 || status=$?
+          if [ "$status" -eq 124 ] || [ "$status" -eq 130 ] || [ "$status" -eq 137 ]; then
+            echo "Stopped at the hard limit; finished companies are kept for the next run."
+          elif [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
 
       - name: Stop the run before packing (after a cancel or timeout it may still be writing)
         if: always()
