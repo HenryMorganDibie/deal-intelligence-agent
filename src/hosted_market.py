@@ -816,6 +816,7 @@ def _backtest_freshness() -> Optional[dict]:
 
 ADMIN_KEY = os.environ.get("DEAL_INTEL_ADMIN_KEY", "")
 _VISITOR = re.compile(r"^[a-z0-9]{8,40}$")
+_EVENT_ID = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 _PRODUCT_ACTIONS = {
     "deals_loaded", "investors_loaded", "events_loaded", "risk_data_loaded",
     "company_data_loaded", "watchlists_used", "brief_opened", "performance_data_loaded",
@@ -864,7 +865,8 @@ async def track_visit(request: Request) -> dict:
                     "p_visitor": visitor,
                     "p_target_id": target_id or None,
                     "p_context": context,
-                    "p_event_id": event_id or None,
+                    # A malformed id from an old or misbehaving client must not reject the event.
+                    "p_event_id": event_id if _EVENT_ID.fullmatch(event_id) else None,
                 })
                 if not r.is_success:
                     return {"ok": False}

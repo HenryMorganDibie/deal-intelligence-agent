@@ -1,6 +1,5 @@
 -- Extend the existing product-action tracker; no new API endpoint is introduced.
--- The existing daily uniqueness guard prevents repeated events from one browser
--- inflating the same action's daily count.
+-- Existing uniqueness guard prevents the same visitor/action from inflating daily counts.
 alter table public.product_actions
   drop constraint if exists product_actions_action_check;
 

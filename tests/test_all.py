@@ -3908,6 +3908,23 @@ class TestHostedApi:
         rpc.assert_awaited_once()
         assert rpc.await_args.args[2] == {"p_visitor": "a" * 32, "p_action": "deals_loaded"}
 
+    def test_tracking_passes_valid_event_ids_and_drops_malformed_ones(self, monkeypatch):
+        import src.hosted_market as hm
+        client, _ = self._client(monkeypatch)
+        monkeypatch.setattr(hm, "_configured", lambda: True)
+        rpc = AsyncMock(return_value=MagicMock(is_success=True))
+        monkeypatch.setattr(hm, "_rpc", rpc)
+        good = "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+
+        for sent, expected in ((good, good), ("not-a-uuid", None)):
+            rpc.reset_mock()
+            response = client.post("/api/track", content=json.dumps({"v": "a" * 32, "a": "deal_opened", "t": "d1", "e": sent}),
+                                   headers={"content-type": "text/plain"})
+            assert response.json() == {"ok": True}
+            behavioural = rpc.await_args_list[-1].args
+            assert behavioural[1] == "log_behavioral_event"
+            assert behavioural[2]["p_event_id"] == expected
+
     def test_tracking_rejects_unknown_product_action(self, monkeypatch):
         import src.hosted_market as hm
         client, _ = self._client(monkeypatch)

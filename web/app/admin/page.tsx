@@ -217,7 +217,7 @@ export default function Admin() {
           <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
             These signals help rank relevant results; they are not evidence that a deal is accurate or verified. Deal ranking uses a maximum 3% adjustment and requires a minimum audience before engagement can affect order.
           </p>
-          {stats.behavioral_signals ? (
+          {stats.behavioral_signals?.top_deals && stats.behavioral_signals.top_briefs ? (
             <>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
