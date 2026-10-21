@@ -43,7 +43,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError(detail, resp.status);
   }
   const action = productAction(path);
-  if (action) trackProductAction(action);
+  if (action) {
+    const pathname = path.split("?", 1)[0];
+    const targetId = pathname.startsWith("/api/deals/") ? decodeURIComponent(pathname.slice("/api/deals/".length)).split("/")[0] : undefined;
+    const briefId = pathname.startsWith("/api/market-briefs/") ? decodeURIComponent(pathname.slice("/api/market-briefs/".length)).split("/")[0] : undefined;
+    trackProductAction(action, targetId || briefId);
+  }
   return body as T;
 }
 
