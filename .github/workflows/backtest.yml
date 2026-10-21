@@ -198,8 +198,15 @@ jobs:
       - name: Stop the run before packing (after a cancel or timeout it may still be writing)
         if: always()
         run: |
-          # pkill exits 1 when nothing is running (the usual case), which must not fail the job.
-          if pkill -INT -f "main.py backtest"; then sleep 15; pkill -KILL -f "main.py backtest" || true; fi
+          # Use a bracketed pattern so pgrep does not match its own command line.
+          # No matching process is normal after a clean exit and must not fail the job.
+          pids="$(pgrep -f '[p]ython main.py backtest' || true)"
+          if [ -n "$pids" ]; then
+            kill -INT $pids 2>/dev/null || true
+            sleep 15
+            pids="$(pgrep -f '[p]ython main.py backtest' || true)"
+            if [ -n "$pids" ]; then kill -KILL $pids 2>/dev/null || true; fi
+          fi
           find data -name "*.tmp" -delete || true
 
       - name: Pack what this shard fetched and finished
