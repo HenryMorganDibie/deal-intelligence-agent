@@ -818,12 +818,12 @@ async def admin_stats(request: Request) -> dict:
             "p_days": days, "p_excluded_visitor": visitor,
             "p_excluded_client_hash": _client_hash(request),
         })
-    if not r.is_success:
-        raise HTTPException(status_code=502, detail="Stats unavailable")
-    stats = r.json()
-    behavioral = await _rpc(client, "behavioral_signal_stats", {"p_days": days})
-    stats["behavioral_signals"] = behavioral.json() if behavioral.is_success else {"status": "unavailable"}
-    return stats
+        if not r.is_success:
+            raise HTTPException(status_code=502, detail="Stats unavailable")
+        stats = r.json()
+        behavioral = await _rpc(client, "behavioral_signal_stats", {"p_days": days})
+        stats["behavioral_signals"] = behavioral.json() if behavioral.is_success else {"status": "unavailable"}
+        return stats
 
 
 @router.get("/api/pulse")
