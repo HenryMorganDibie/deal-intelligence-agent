@@ -138,3 +138,14 @@ def test_valuation_phrasings_are_not_read_as_the_round_size():
         deal = extract_deal(headline, published="2026-06-16", publisher="Example source",
                             url="https://example.com/v", africa_source=True)
         assert deal is None or deal["amount_usd"] != 3.2e9, headline
+
+def test_public_office_holders_receiving_money_are_not_funding_rounds():
+    from src.engines.deals import extract_deal
+
+    for headline in ("Senators receive N1.3billion new cars", "Lawmakers receive N5bn for constituency projects",
+                     "Governors receive N200bn bailout"):
+        assert extract_deal(headline, published="2012-03-09", publisher="Example source",
+                            url="https://example.com/o", africa_source=True) is None, headline
+    deal = extract_deal("Moniepoint receives $110m from Google", published="2024-10-29", publisher="Example source",
+                        url="https://example.com/m", africa_source=True)
+    assert deal is not None and deal["target"] == "Moniepoint"

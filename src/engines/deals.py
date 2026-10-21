@@ -219,7 +219,10 @@ _GENERIC = {"africa", "african", "african startups", "startups", "firm", "abu dh
             "l'etat", "l’etat", "state government", "nigeria", "kenya", "egypt", "ghana", "startup", "startups", "report", "exclusive",
             "breaking", "update", "news", "deal", "deals", "how", "why", "what", "watch", "opinion", "analysis",
             "weekly", "the big deal", "funding", "investors", "series", "seed", "ceo", "it", "this",
-            "world bank group", "scale"}
+            "world bank group", "scale",
+            # Public office-holders receive allocations, not investment.
+            "senators", "senator", "lawmakers", "lawmaker", "legislators", "governors", "ministers", "mps",
+            "councillors", "councilors", "lawmakers'", "assembly members", "reps", "house of reps"}
 
 
 _CORPORATE_WORDS = {"industries", "group", "holdings", "holding", "bank", "capital", "partners", "ventures", "energy",
