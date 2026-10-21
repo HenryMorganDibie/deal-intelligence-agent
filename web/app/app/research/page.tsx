@@ -6,6 +6,7 @@ import { ErrorNote, PageHeader, Pill, words } from "../../../components/app/ui";
 import { ResultFeedback } from "../../../components/app/ResultFeedback";
 import { ApiError } from "../../../lib/api";
 import { get, post, type Event as MarketEvent, type ResearchResult } from "../../../lib/market";
+import { trackProductAction } from "../../../lib/tracking";
 
 type ResearchSuggestion = {
   title: string;
@@ -221,6 +222,7 @@ export default function ResearchPage() {
 
   async function ask(e?: FormEvent, q = question) {
     e?.preventDefault();
+    trackProductAction("research_submitted");
     if (q.trim().length < 5 || busy) return;
     setBusy(true);
     setError(null);
