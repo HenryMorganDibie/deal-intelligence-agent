@@ -64,9 +64,10 @@ def build(iso2: str, deals: Iterable[dict], events: Iterable[dict], today: Optio
     largest = sorted((d for d in country_deals if (d.get("amount_usd") or 0) > 0),
                      key=lambda d: float(d["amount_usd"]), reverse=True)[:10]
     years = sorted(by_year)
+    deal_years = [y for y in years if by_year[y]["deals"]]
     return {
-        "first_year": years[0] if years else None,
-        "last_year": years[-1] if years else None,
+        "first_year": deal_years[0] if deal_years else None,       # of the deal record; events may start earlier
+        "last_year": deal_years[-1] if deal_years else None,
         "deals": len(country_deals),
         "events": len(country_events),
         "deals_with_amount": len(amounts),

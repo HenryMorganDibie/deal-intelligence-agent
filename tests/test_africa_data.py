@@ -1587,6 +1587,8 @@ def test_country_profile_summarises_the_whole_history_not_the_latest_page():
     p = country_profile.build("NG", ds, es, today=date(2026, 10, 21))
     assert p["first_year"] == 2010 and p["last_year"] == 2026 and p["deals"] == 17 and p["events"] == 2
     assert {r["year"]: r["events"] for r in p["by_year"]}[2011] == 1      # events are dated by "day"
+    early = country_profile.build("NG", ds[5:], es, today=date(2026, 10, 21))
+    assert early["first_year"] == 2015 and early["by_year"][0]["year"] == 2011   # an event-only year is charted, not the start
     assert p["largest_deals"][0]["id"] == "big" and all(d["id"] != "ke" for d in p["largest_deals"])
     assert p["deal_types"][0] == {"label": "acquisition", "deals": 16, "disclosed_value_usd": 1_360_000_000}
     assert p["sectors"][-1]["label"] == "unclassified"

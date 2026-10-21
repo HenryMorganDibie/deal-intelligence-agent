@@ -242,7 +242,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
       )}
 
 
-      <h2 className="eyebrow mt-12">Market activity since {profile?.first_year ?? (d.history_start ?? "2010").slice(0, 4)}</h2>
+      <h2 className="eyebrow mt-12">Market activity{profile?.first_year ? ` since ${profile.first_year}` : ""}</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
         Every deal and event record held for {c.name}, from the start of the record (history begins in{" "}
         {(d.history_start ?? "2010").slice(0, 4)}). Counts are records found in published news and filings, not a census of
