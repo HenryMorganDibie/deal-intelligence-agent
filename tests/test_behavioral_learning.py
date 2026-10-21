@@ -17,7 +17,7 @@ def test_behavioral_scores_require_minimum_audience_and_smooth_small_samples():
     })
     assert "small" not in scores
     assert "one_opener" not in scores
-    assert scores["qualified"] == 0.75
+    assert abs(scores["qualified"] - 0.75) < 1e-9
 
 
 def test_behavioral_reranking_is_stable_without_signals():
