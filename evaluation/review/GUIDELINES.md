@@ -10,6 +10,13 @@ data-quality scores change only after both label files and the adjudication are 
 - Not the people who built or tuned the pipeline. Annotators must not discuss items with each other
   before adjudication.
 
+## How to label
+
+The simplest way is the labelling page: the project owner sends each annotator, and the adjudicator, a
+private link. The page shows one headline (or pair) at a time with the fields below, saves each label as
+you go, and never shows the system's answers or the other annotator's labels. Labels are copied into this
+folder every day. Filling the files below directly also works; use one route, not both.
+
 ## What you receive
 
 | File | Contents |
@@ -68,7 +75,9 @@ you checked in `note`. Mark anything you are unsure of `"confidence": "low"` rat
 
 ## Adjudication
 
-The adjudicator reads only the rows where A and B differ, writes the final label to
-`adjudicated_labels.jsonl` / `adjudicated_pair_labels.jsonl` with both annotator names and a reason,
-and never edits A's or B's files. Then run the scorer and publish the results with their sample sizes
-and 95% intervals next to the existing figures.
+Where A and B agree on every core judgement (transaction, scope, deal type, target, amount, currency,
+what the figure is, country), their label is final. The adjudicator rules only on the rows where they
+differ, never edits A's or B's labels, and gives a reason in the note. The final labels are written to
+`adjudicated_labels.jsonl` / `adjudicated_pair_labels.jsonl`. Once every headline and pair has a final
+label, the review is scored (`python -m evaluation.review.score --year <year> --source independent`)
+and published with its sample sizes and 95% intervals; the daily import does this automatically.

@@ -58,6 +58,26 @@ export default function Admin() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [error, setError] = useState("");
+  const [linkRole, setLinkRole] = useState<"a" | "b" | "adjudicator">("a");
+  const [linkName, setLinkName] = useState("");
+  const [links, setLinks] = useState<{ role: string; name: string; url: string }[]>([]);
+
+  async function createLink() {
+    setError("");
+    try {
+      const r = await fetch(`${API}/api/admin/review/annotators`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, role: linkRole, name: linkName }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail ?? "Could not create the link");
+      setLinks((rows) => [{ role: data.role, name: data.name, url: `${window.location.origin}${data.path}` }, ...rows]);
+      setLinkName("");
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
 
   async function load(k: string, d: number) {
     setError("");
@@ -195,6 +215,37 @@ export default function Admin() {
           <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
             Since {stats.since}. Unique browsers are anonymous browser IDs, not verified people. Engaged browsers viewed two or more pages or used a feature; single-view browsers include crawlers and link previews, which are no longer counted from this release. This dashboard excludes this browser. Analysis and research runs are keyed by a salted IP hash, so runs from this network are also excluded; that can include other people using the same network.
           </p>
+
+          <h2 className="mt-8 font-semibold">Independent review: labelling links</h2>
+          <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+            Create one private link for each annotator (A and B) and one for the adjudicator, and send each person only
+            their own link. Annotators label the blind sample on the page the link opens; they never see the system&apos;s
+            answers or each other&apos;s labels. The adjudicator sees only the items where A and B disagree. Labels are
+            imported into the review folder every day, progress shows on the evaluation page, and the review is scored and
+            published automatically once every headline and pair has a final label. A link is shown once: copy it now.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <select value={linkRole} onChange={(e) => setLinkRole(e.target.value as typeof linkRole)} className="rounded-lg border hairline bg-transparent px-3 py-2">
+              <option value="a">Annotator A</option>
+              <option value="b">Annotator B</option>
+              <option value="adjudicator">Adjudicator</option>
+            </select>
+            <input value={linkName} onChange={(e) => setLinkName(e.target.value)} placeholder="Name or initials"
+              className="min-w-0 flex-1 rounded-lg border hairline bg-transparent px-3 py-2" />
+            <button type="button" onClick={createLink} disabled={!linkName.trim()} className="rounded-lg bg-white/90 px-4 py-2 font-medium text-black disabled:opacity-50">
+              Create link
+            </button>
+          </div>
+          {links.length > 0 && (
+            <ul className="mt-3 space-y-2 text-sm">
+              {links.map((l) => (
+                <li key={l.url} className="panel p-3">
+                  <p className="text-[color:var(--muted)]">{l.role === "adjudicator" ? "Adjudicator" : `Annotator ${l.role.toUpperCase()}`}: {l.name}</p>
+                  <p className="kbd mt-1 break-all">{l.url}</p>
+                </li>
+              ))}
+            </ul>
+          )}
 
           <h2 className="mt-8 font-semibold">Where visitors come from</h2>
           <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">

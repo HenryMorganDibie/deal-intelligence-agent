@@ -8,7 +8,7 @@ import { trackPageView } from "../lib/tracking";
 export function Track() {
   const path = usePathname();
   useEffect(() => {
-    if (!path || path.startsWith("/admin")) return;
+    if (!path || path.startsWith("/admin") || path.startsWith("/review")) return;
     trackPageView(path);
   }, [path]);
   return null;

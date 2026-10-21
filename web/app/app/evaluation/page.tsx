@@ -123,7 +123,7 @@ type Review = {
   pair_strata: Record<string, number>;
   note?: string;
   status: string;
-  progress: { labels_a: number; labels_b: number; pair_labels_a: number; pair_labels_b: number; adjudicated: number };
+  progress: { labels_a: number; labels_b: number; pair_labels_a: number; pair_labels_b: number; adjudicated: number; adjudicated_pairs?: number };
   downloads: string[];
   results?: Partial<Record<"independent" | "automated", ReviewResult>>;
 };

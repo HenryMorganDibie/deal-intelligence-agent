@@ -1,0 +1,108 @@
+name: Import independent review labels
+
+# Labels entered on the labelling page are stored in the database. This copies them into the year's review
+# folder as the label files the guide describes, and once every headline and pair has a final label (agreed by
+# both annotators or ruled by the adjudicator) it scores the independent review and publishes the results.
+# Nothing is committed while the labels are unchanged.
+on:
+  schedule:
+    - cron: "37 6 * * *"              # daily at 06:37 UTC
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "Review year (defaults to the latest drawn sample)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: review-labels-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            requirements-backtest.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-dev.txt -r requirements-backtest.txt
+
+      - name: Fetch the labels from the API
+        env:
+          YEAR: ${{ inputs.year }}
+        run: |
+          set -euo pipefail
+          token="$(curl --fail --silent --show-error --max-time 15 \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api" | jq -er '.value')"
+          echo "::add-mask::${token}"
+          query=""
+          if [ -n "${YEAR:-}" ]; then query="?year=${YEAR}"; fi
+          curl --fail-with-body --silent --show-error --max-time 60 --retry 2 --retry-delay 10 --retry-all-errors \
+            -H "Authorization: Bearer ${token}" \
+            "https://deal-intelligence-api.vercel.app/api/cron/review-export${query}" > export.json
+          jq -e '.year and .files' export.json > /dev/null
+
+      - name: Write the label files
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          data = json.load(open("export.json"))
+          folder = pathlib.Path("evaluation/review") / str(data["year"])
+          if not (folder / "manifest.json").exists():
+              raise SystemExit(f"No drawn sample for {data['year']}")
+          for name, body in data["files"].items():
+              if not name.endswith(".jsonl") or "/" in name:
+                  raise SystemExit(f"unexpected file name {name!r}")
+              path = folder / name
+              rows = [json.loads(line) for line in body.splitlines() if line.strip()]
+              # Nothing signed in the database for this file: keep whatever is committed (labels may have
+              # been filled in the file directly). Adjudicated files appear once a row is final.
+              if not any(r.get("annotator") for r in rows):
+                  continue
+              path.write_text(body)
+          print("year", data["year"], {k: v.count("\n") for k, v in data["files"].items()})
+          open("year.txt", "w").write(str(data["year"]))
+          PY
+
+      - name: Score the independent review once every label is final
+        run: |
+          year="$(cat year.txt)"
+          if python -m evaluation.review.score --year "$year" --source independent; then
+            echo "Independent review scored."
+          else
+            echo "Not every headline and pair has a final label yet; nothing to score."
+          fi
+
+      - name: Commit changed labels and results to main
+        run: |
+          year="$(cat year.txt)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "evaluation/review/$year"
+          if git diff --cached --quiet; then
+            echo "Labels unchanged."
+            exit 0
+          fi
+          git commit -m "Import $year independent review labels"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git fetch origin main
+            git rebase origin/main
+          done
+          exit 1

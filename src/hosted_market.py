@@ -82,6 +82,7 @@ def _authorized_cron(request: Request) -> bool:
         allowed_workflows = {
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/live-deal-ingestion.yml@refs/heads/main",
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/historical-backfill.yml@refs/heads/main",
+            "HenryMorganDibie/deal-intelligence-agent/.github/workflows/review-labels-import.yml@refs/heads/main",
         }
         return (
             claims.get("repository") == "HenryMorganDibie/deal-intelligence-agent"
@@ -932,6 +933,125 @@ async def admin_stats(request: Request) -> dict:
         return stats
 
 
+# ── Independent review labelling ─────────────────────────────────────────────
+
+def _review_token_hash(token: str) -> str:
+    import hashlib
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def _admin_key_ok(body: dict) -> bool:
+    import hmac
+    return bool(ADMIN_KEY and _configured() and hmac.compare_digest(str(body.get("key", "")), ADMIN_KEY))
+
+
+def _review_sample(year: int) -> tuple[list[dict], list[dict]]:
+    folder = _REVIEW / str(year)
+    read = lambda name: [json.loads(line) for line in (folder / name).read_text().splitlines() if line.strip()]  # noqa: E731
+    try:
+        return read("items.jsonl"), read("pairs.jsonl")
+    except OSError:
+        raise HTTPException(status_code=404, detail="No review sample for that year.")
+
+
+async def _review_body(request: Request) -> dict:
+    try:
+        body = json.loads((await request.body())[:20000] or b"{}")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid request body.")
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Invalid request body.")
+    return body
+
+
+@router.post("/api/admin/review/annotators")
+async def review_create_link(request: Request) -> dict:
+    """Create a private labelling link for annotator A, annotator B or the adjudicator (owner only)."""
+    import secrets
+    body = await _review_body(request)
+    if not _admin_key_ok(body):
+        raise HTTPException(status_code=401, detail="Wrong key")
+    role, name = str(body.get("role", "")), " ".join(str(body.get("name", "")).split())[:80]
+    year = int(body.get("year") or (_review_years() or [0])[0])
+    if role not in ("a", "b", "adjudicator") or not name or year not in _review_years():
+        raise HTTPException(status_code=422, detail="Choose a role, a name and a year with a drawn sample.")
+    token = secrets.token_urlsafe(24)
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "review_create_annotator", {"p_token_hash": _review_token_hash(token), "p_year": year,
+                                                          "p_role": role, "p_name": name})
+    if not r.is_success:
+        raise HTTPException(status_code=502, detail="The link could not be created.")
+    return {"token": token, "year": year, "role": role, "name": name, "path": f"/review?t={token}"}
+
+
+@router.post("/api/review/session")
+async def review_session(request: Request) -> dict:
+    """What a labelling link may see: the blind sample, the guide and the holder's own labels.
+    The adjudicator also receives both annotators' labels. Never the system's decisions."""
+    body = await _review_body(request)
+    token = str(body.get("token", ""))
+    if not (_configured() and 20 <= len(token) <= 64):
+        raise HTTPException(status_code=401, detail="This labelling link is not valid.")
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "review_session", {"p_token_hash": _review_token_hash(token)})
+    session = r.json() if r.is_success else None
+    if not session:
+        raise HTTPException(status_code=401, detail="This labelling link is not valid or has been withdrawn.")
+    items, pairs = _review_sample(session["year"])
+    manifest = _read_json(_REVIEW / str(session["year"]) / "manifest.json") or {}
+    return {**session, "items": items, "pairs": pairs, "guidelines_md": manifest.get("guidelines_md")}
+
+
+@router.post("/api/review/label")
+async def review_save(request: Request) -> dict:
+    from src.engines import review_labels
+    body = await _review_body(request)
+    token, kind, item_id = str(body.get("token", "")), str(body.get("kind", "")), str(body.get("item_id", ""))
+    pattern = review_labels.ITEM_ID if kind == "item" else review_labels.PAIR_ID if kind == "pair" else None
+    if not (_configured() and 20 <= len(token) <= 64 and pattern and pattern.fullmatch(item_id)):
+        raise HTTPException(status_code=422, detail="Invalid label request.")
+    try:
+        label = (review_labels.clean_item if kind == "item" else review_labels.clean_pair)(body.get("label") or {})
+    except review_labels.LabelError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "review_save_label", {"p_token_hash": _review_token_hash(token), "p_kind": kind,
+                                                    "p_item_id": item_id, "p_label": label})
+    if not r.is_success:
+        raise HTTPException(status_code=502, detail="The label could not be saved; try again.")
+    if r.json() is not True:
+        raise HTTPException(status_code=401, detail="This labelling link is not valid or has been withdrawn.")
+    return {"saved": True, "label": label}
+
+
+def _review_export_files(year: int) -> dict[str, str]:
+    from src.engines import review_labels
+    items, pairs = _review_sample(year)
+    r = _rpc_sync("review_export", {"p_year": year}, timeout=30)
+    if not r.is_success:
+        raise HTTPException(status_code=502, detail="Labels unavailable.")
+    files = review_labels.to_files(r.json() or [], [i["item_id"] for i in items], [p["item_id"] for p in pairs])
+    return {name: "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows) for name, rows in files.items()}
+
+
+@router.post("/api/admin/review/export")
+async def review_export_admin(request: Request) -> dict:
+    body = await _review_body(request)
+    if not _admin_key_ok(body):
+        raise HTTPException(status_code=401, detail="Wrong key")
+    year = int(body.get("year") or (_review_years() or [0])[0])
+    return {"year": year, "files": await run_in_threadpool(_review_export_files, year)}
+
+
+@router.get("/api/cron/review-export")
+async def review_export_cron(request: Request, year: Optional[int] = Query(None, ge=2020, le=2100)) -> dict:
+    """The scheduled import workflow pulls the labels here and commits them next to the sample."""
+    if not _authorized_cron(request):
+        raise HTTPException(status_code=401, detail="Scheduled workflow authorization required.")
+    year = year or (_review_years() or [0])[0]
+    return {"year": year, "files": await run_in_threadpool(_review_export_files, year)}
+
+
 @router.get("/api/pulse")
 async def market_pulse() -> dict:
     from src.engines import pulse
@@ -1004,22 +1124,47 @@ def _filled(path: Path, key: str) -> int:
     return sum(1 for r in rows if r.get("annotator") and r.get(key) is not None)
 
 
+_review_progress_cache: dict[int, tuple[float, dict]] = {}
+
+
+def _review_live_progress(year: int) -> dict:
+    cached = _review_progress_cache.get(year)
+    if cached and time.time() - cached[0] < 120:
+        return cached[1]
+    live: dict = {}
+    if _configured():
+        try:
+            r = _rpc_sync("review_progress", {"p_year": year}, timeout=8)
+            live = r.json() if r.is_success and isinstance(r.json(), dict) else {}
+        except (httpx.HTTPError, ValueError):
+            live = {}
+    _review_progress_cache[year] = (time.time(), live)
+    return live
+
+
 def _review_status(year: int) -> Optional[dict]:
     """Progress of one year's independent review; scores are published only once it is complete."""
     folder = _REVIEW / str(year)
     manifest = _read_json(folder / "manifest.json")
     if not manifest:
         return None
+    live = _review_live_progress(year)
     progress = {
         "labels_a": _filled(folder / "labels_a.jsonl", "is_transaction"),
         "labels_b": _filled(folder / "labels_b.jsonl", "is_transaction"),
         "pair_labels_a": _filled(folder / "pair_labels_a.jsonl", "same_transaction"),
         "pair_labels_b": _filled(folder / "pair_labels_b.jsonl", "same_transaction"),
         "adjudicated": _filled(folder / "adjudicated_labels.jsonl", "is_transaction"),
+        "adjudicated_pairs": _filled(folder / "adjudicated_pair_labels.jsonl", "same_transaction"),
     }
+    # Labels entered on the labelling page count as soon as they are saved, before the import commits them.
+    for key, live_key in (("labels_a", "a:item"), ("labels_b", "b:item"), ("pair_labels_a", "a:pair"),
+                          ("pair_labels_b", "b:pair")):
+        progress[key] = max(progress[key], int(live.get(live_key) or 0))
     labelled = (progress["labels_a"] == progress["labels_b"] == manifest["items"]
                 and progress["pair_labels_a"] == progress["pair_labels_b"] == manifest["pairs"])
-    status = ("complete" if labelled and progress["adjudicated"] else
+    resolved = progress["adjudicated"] == manifest["items"] and progress["adjudicated_pairs"] == manifest["pairs"]
+    status = ("complete" if labelled and resolved else
               "labelled, awaiting adjudication" if labelled else "awaiting independent labels")
     manifest = {k: v for k, v in manifest.items() if k != "guidelines_md"}
     results = {}

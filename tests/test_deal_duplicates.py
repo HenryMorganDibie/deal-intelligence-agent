@@ -71,7 +71,7 @@ def test_independent_review_reports_the_latest_year_and_serves_its_files():
     manifest = _json.loads((_REVIEW / str(current["year"]) / "manifest.json").read_text())
     assert current["items"] == manifest["items"]
     assert current["status"] == "awaiting independent labels"
-    assert set(current["progress"]) == {"labels_a", "labels_b", "pair_labels_a", "pair_labels_b", "adjudicated"}
+    assert set(current["progress"]) == {"labels_a", "labels_b", "pair_labels_a", "pair_labels_b", "adjudicated", "adjudicated_pairs"}
     assert "guidelines_md" not in current
     for name in current["downloads"]:
         assert _download_body(name), name
@@ -226,3 +226,63 @@ def test_review_scorer_reproduces_the_published_automated_results_and_refuses_pa
     assert published["independent"] is False and "not independent" in published["label"]
     with pytest.raises(SystemExit):
         review_score.score(2026, "independent")
+
+
+def test_review_labels_follow_the_guide_and_final_labels_need_agreement_or_a_ruling():
+    import pytest
+    from src.engines import review_labels as rl
+
+    good = rl.clean_item({"is_transaction": True, "in_scope": True, "deal_type": "acquisition", "target": " Tonaton ",
+                          "country": "gh", "currency": "usd", "amount": 85e6, "amount_kind": "deal_size", "extra": "dropped"})
+    assert good["target"] == "Tonaton" and good["country"] == "GH" and good["currency"] == "USD" and "extra" not in good
+    for bad in ({"deal_type": "loan"}, {"country": "Ghana"}, {"amount": -1}, {"is_transaction": "yes"},
+                {"is_transaction": False}):                       # the last one lacks the required reason
+        with pytest.raises(rl.LabelError):
+            rl.clean_item(bad)
+    assert rl.clean_item({"is_transaction": False, "scope_reason": "sovereign bond", "deal_type": "ipo"})["deal_type"] is None
+
+    lab = lambda **kw: rl.clean_item({"is_transaction": True, "in_scope": True, "deal_type": "acquisition", "target": "X", **kw})
+    rows = [{"role": "a", "kind": "item", "item_id": "r000", "label": lab(note="a"), "annotator": "Ama"},
+            {"role": "b", "kind": "item", "item_id": "r000", "label": lab(target="x", confidence="low"), "annotator": "Bo"},
+            {"role": "a", "kind": "item", "item_id": "r001", "label": lab(), "annotator": "Ama"},
+            {"role": "b", "kind": "item", "item_id": "r001", "label": lab(deal_type="merger"), "annotator": "Bo"},
+            {"role": "a", "kind": "item", "item_id": "r002", "label": lab(), "annotator": "Ama"},
+            {"role": "b", "kind": "item", "item_id": "r002", "label": lab(deal_type="exit"), "annotator": "Bo"},
+            {"role": "adjudicator", "kind": "item", "item_id": "r002", "label": lab(deal_type="exit"), "annotator": "Cy"}]
+    files = rl.to_files(rows, ["r000", "r001", "r002", "r003"], ["p000"])
+    assert [r["annotator"] for r in files["labels_a.jsonl"]] == ["Ama", "Ama", "Ama", ""]      # every id, blank if unlabelled
+    final = {r["item_id"]: r for r in files["adjudicated_labels.jsonl"]}
+    assert final["r000"]["resolution"] == "agreed"                   # notes, confidence and case may differ
+    assert "r001" not in final                                       # disputed, not yet ruled
+    assert final["r002"]["resolution"] == "adjudicated" and final["r002"]["deal_type"] == "exit"
+    assert files["adjudicated_pair_labels.jsonl"] == []
+
+
+def test_review_labelling_api_validates_labels_and_never_sends_the_system_decisions(monkeypatch):
+    import json
+    from unittest.mock import AsyncMock, MagicMock
+    from fastapi.testclient import TestClient
+    import api.index as api
+    import src.hosted_market as hm
+
+    monkeypatch.setattr(hm, "_configured", lambda: True)
+    rpc = AsyncMock(return_value=MagicMock(is_success=True, json=lambda: {"year": 2026, "role": "a", "name": "Ama",
+                                                                          "labels": [], "annotator_labels": None}))
+    monkeypatch.setattr(hm, "_rpc", rpc)
+    client = TestClient(api.app)
+    token = "t" * 32
+    session = client.post("/api/review/session", content=json.dumps({"token": token})).json()
+    assert len(session["items"]) == 200 and len(session["pairs"]) == 88
+    body = json.dumps(session)
+    assert "stratum" not in body and "kept_apart" not in body and "\"record\"" not in body
+    assert rpc.await_args.args[2]["p_token_hash"] != token                       # only a hash is sent to the store
+
+    bad = client.post("/api/review/label", content=json.dumps({"token": token, "kind": "item", "item_id": "r000",
+                                                               "label": {"deal_type": "loan"}}))
+    assert bad.status_code == 422 and "deal_type" in bad.json()["detail"]
+    rpc.return_value = MagicMock(is_success=True, json=lambda: True)
+    ok = client.post("/api/review/label", content=json.dumps({"token": token, "kind": "pair", "item_id": "p000",
+                                                              "label": {"same_transaction": False}}))
+    assert ok.json()["saved"] is True
+    assert client.post("/api/review/label", content=json.dumps({"token": token, "kind": "item", "item_id": "x1"})).status_code == 422
+    assert client.post("/api/admin/review/annotators", content=json.dumps({"key": "wrong", "role": "a", "name": "A"})).status_code == 401
