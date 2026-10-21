@@ -53,6 +53,13 @@ jobs:
           key: backtest-keepalive-${{ github.run_id }}
           restore-keys: backtest-
 
+      - name: Restore the progress archive (keeps it from expiring)
+        uses: actions/cache/restore@v4
+        with:
+          path: btstate
+          key: btstate-keepalive-${{ github.run_id }}
+          restore-keys: btstate-
+
   plan:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.schedule == '17 3 2 * *'
     runs-on: ubuntu-latest
@@ -79,6 +86,18 @@ jobs:
             data/backtest_runs
           key: backtest-plan-${{ github.run_id }}
           restore-keys: backtest-
+
+      # Progress is cached as one archive: caching the directories file by file fails once they hold
+      # hundreds of thousands of files. Older directory caches above are still read for continuity.
+      - name: Restore the progress archive
+        uses: actions/cache/restore@v4
+        with:
+          path: btstate
+          key: btstate-plan-${{ github.run_id }}
+          restore-keys: btstate-
+
+      - name: Unpack the progress archive
+        run: if [ -f btstate/state.tgz ]; then mkdir -p data && tar -xzf btstate/state.tgz --skip-old-files; fi; true
 
       - name: Add the committed seed (finished companies not yet in the cache)
         run: |
@@ -143,17 +162,29 @@ jobs:
           key: backtest-shard-${{ github.run_id }}
           restore-keys: backtest-
 
+      # Progress is cached as one archive: caching the directories file by file fails once they hold
+      # hundreds of thousands of files. Older directory caches above are still read for continuity.
+      - name: Restore the progress archive
+        uses: actions/cache/restore@v4
+        with:
+          path: btstate
+          key: btstate-shard-${{ github.run_id }}
+          restore-keys: btstate-
+
+      - name: Unpack the progress archive
+        run: if [ -f btstate/state.tgz ]; then mkdir -p data && tar -xzf btstate/state.tgz --skip-old-files; fi; true
+
       - uses: actions/cache/restore@v4
         with:
           path: docs/backtest_universe.csv
           key: btuniverse-${{ github.run_id }}
 
-      - name: Run this shard (stops starting companies after 165 minutes)
+      - name: Run this shard (stops starting companies after 140 minutes)
         run: |
           mkdir -p data/hist_cache data/backtest_runs && touch .shard-start
           printf '%s' "${{ matrix.tickers }}" > tickers.txt
           python main.py backtest --historical --period continue --tickers @tickers.txt --no-aggregate \
-            --workers 8 --deadline-minutes 165
+            --workers 8 --deadline-minutes 140
 
       - name: Stop the run before packing (after a cancel or timeout it may still be writing)
         if: always()
@@ -197,6 +228,18 @@ jobs:
           key: backtest-finish-${{ github.run_id }}
           restore-keys: backtest-
 
+      # Progress is cached as one archive: caching the directories file by file fails once they hold
+      # hundreds of thousands of files. Older directory caches above are still read for continuity.
+      - name: Restore the progress archive
+        uses: actions/cache/restore@v4
+        with:
+          path: btstate
+          key: btstate-finish-${{ github.run_id }}
+          restore-keys: btstate-
+
+      - name: Unpack the progress archive
+        run: if [ -f btstate/state.tgz ]; then mkdir -p data && tar -xzf btstate/state.tgz --skip-old-files; fi; true
+
       - uses: actions/cache/restore@v4
         with:
           path: docs/backtest_universe.csv
@@ -234,15 +277,17 @@ jobs:
       - name: Evaluate return forecast candidate
         run: python -m src.engines.return_forecast > docs/return_forecast_validation.json
 
+      - name: Pack fetched data and finished companies into one archive
+        if: always()
+        run: mkdir -p btstate && tar -czf btstate/state.tgz data/hist_cache data/backtest_runs && ls -l btstate/state.tgz
+
       - name: Keep fetched data and finished companies
         id: save
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: |
-            data/hist_cache
-            data/backtest_runs
-          key: backtest-${{ github.run_id }}
+          path: btstate
+          key: btstate-${{ github.run_id }}
 
       - name: Free cache space (this run's hand-offs and superseded caches)
         if: always()
@@ -251,10 +296,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh cache list --limit 100 --json key --jq '.[].key' > keys.txt
+          # A failed save is only a warning, so delete nothing unless this run's archive is really stored:
+          # the shard hand-offs are the only other copy of the work.
+          if ! grep -qx "btstate-${{ github.run_id }}" keys.txt; then
+            echo "::warning::Progress archive not stored; keeping this run's shard hand-offs and older caches."
+            exit 0
+          fi
           grep -E "^(btdelta|btuniverse)-${{ github.run_id }}" keys.txt | while read -r k; do gh cache delete "$k"; done
-          if grep -qx "backtest-${{ github.run_id }}" keys.txt; then
-            grep -E "^backtest-" keys.txt | grep -vx "backtest-${{ github.run_id }}" | while read -r k; do gh cache delete "$k"; done
-          fi; true
+          grep -E "^(btstate|backtest)-" keys.txt | grep -vx "btstate-${{ github.run_id }}" | while read -r k; do gh cache delete "$k"; done
+          true
 
       - name: Commit the results
         run: |
