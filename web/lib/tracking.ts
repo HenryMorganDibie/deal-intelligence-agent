@@ -12,7 +12,8 @@ export type ProductAction =
   | "deal_search_submitted"
   | "deal_opened"
   | "research_submitted"
-  | "market_brief_opened";
+  | "market_brief_opened"
+  | "deal_impression";
 
 export function browserVisitorId(): string | null {
   if (typeof window === "undefined") return null;
