@@ -202,6 +202,7 @@ _DESCRIPTOR_WORDS = {
 }
 _STOP_TAIL = re.compile(r"\s+(?:Ltd|Limited|Plc|PLC|Inc|SA|S\.A\.|Holdings?|Group)\.?$")
 _GENERIC = {"africa", "african", "african startups", "startups", "firm", "abu dhabi firm", "consortium",
+            "sector", "industry", "economy",
             "government", "federal government", "fg", "house", "senate", "court", "parliament", "cabinet", "ministry",
             "police", "state", "shareholders", "residents", "students", "fans", "president", "governor", "accord",
             "world bank", "imf", "treasury", "central bank", "board", "union", "unions", "pdp", "apc", "anc",
@@ -406,10 +407,16 @@ _NOT_A_DEAL = re.compile(r"\b(black\s+stars|super\s+eagles|super\s+falcons|bafan
                          r"questions?|prices?|tariffs?|rates?|fears?|hopes?|the\s+bar|bursary|igr|revenue\s+target))\b"
                          r"|\braise[sd]?\s+(?:\S+\s+){0,3}(cap|ceiling|limit|investment|capital|budget|allocation|target|commitment)\s+to\b",
                          re.IGNORECASE)
+_SOVEREIGN = re.compile(
+    r"(?i)^(?:the\s+)?(?:China|Chinese\s+government|Beijing|Saudi\s+Arabia|Saudi|Riyadh|Qatar|UAE|United\s+Arab\s+Emirates|"
+    r"Kuwait|Japan|India|Turkey|Türkiye|Russia|United\s+States|U\.?S\.?|USA|America|UK|U\.K\.|Britain|United\s+Kingdom|France|"
+    r"Germany|Italy|Spain|South\s+Korea|Korea|Brazil|Canada|Netherlands|Norway|Sweden|Denmark|EU|European\s+Union)$")
 _VALUATION = re.compile(r"(?i)(?:at\s+(?:an?\s+)?(?P<a>[^,;]{2,25}?)\s+(?:(?:post|pre)-money\s+)?(?:valuation|valorisation)"
                         r"|(?P<d>\S*\d[\d.,]*\s?(?:billion|million|bn|m|b)?)\s+(?:price\s+tag|valuation)"
                         r"|valued\s+at\s+(?P<b>[^,;]{2,25}?)(?=$|[,;.]|\s+(?:in|after|as|following)\b)"
-                        r"|valuation\s+(?:of|to|at)\s+(?P<c>[^,;]{2,25}?)(?=$|[,;.]|\s))")
+                        r"|valuation\s+(?:of|to|at)\s+(?P<c>[^,;]{2,25}?)(?=$|[,;.]|\s)"
+                        # "market cap soars above $7.6 billion" is the company's value, not the raise
+                        r"|market\s+(?:cap(?:itali[sz]ation)?|value)\s+(?:\S+\s+){0,3}?(?P<e>(?:US\$|\$|€|£)?\d[\d.,]*\s?(?:billion|million|bn|m|b)?))")
 _CAPEX_AFTER = re.compile(r"^\s*(?:'s\s+)?(?:\S+\s+)?(plant|factory|facility|facilities|project|expansion|hub|office|housing|"
                           r"warehouse|site|refinery|mine|campus|infrastructure|network|schools?|programme|scheme)\b",
                           re.IGNORECASE)
@@ -615,7 +622,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if deal_type == "equity_funding" and m.groupdict().get("obj") and _CAPEX_AFTER.match(norm[m.end():]):
         return None
     vm = _VALUATION.search(title)
-    valuation_amounts = parse_amounts(vm.group("a") or vm.group("b") or vm.group("c") or vm.group("d") or "") if vm else []
+    valuation_amounts = parse_amounts(vm.group("a") or vm.group("b") or vm.group("c") or vm.group("d") or vm.group("e") or "") if vm else []
     deal_title = title[:vm.start()] + title[vm.end():] if vm else title
     # Amounts come from the headline only: a description's figures often refer to something else.
     best = deal_amount(deal_title)
@@ -687,6 +694,9 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         target = subj
     elif deal_type == "joint_venture":
         buyer, target = subj, obj
+    # A state backing an economy or a sector, with no company on the other side, is sovereign finance.
+    if not target and _SOVEREIGN.match((buyer or (investors[0] if investors else "") or "").strip()):
+        return None
     # Reject headline-level statistics and product/asset purchases that match a
     # transaction verb but are not private-market transactions. These checks run
     # after party extraction so they can use the complete headline and parsed type.

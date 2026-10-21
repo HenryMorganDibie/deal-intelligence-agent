@@ -19,7 +19,30 @@ type CountryResponse = {
   events: Event[];
   events_total: number;
   investors: InvestorRow[];
+  profile?: CountryProfile;
+  history_start?: string;
 };
+
+type Mix = { label: string; deals: number; disclosed_value_usd: number };
+type CountryProfile = {
+  first_year: number | null;
+  last_year: number | null;
+  deals: number;
+  events: number;
+  deals_with_amount: number;
+  disclosed_value_usd: number;
+  median_disclosed_usd: number | null;
+  corroborated_deals: number;
+  single_source_deals: number;
+  by_year: { year: number; deals: number; with_amount: number; disclosed_value_usd: number; events: number }[];
+  by_month_last_12: { month: string; deals: number }[];
+  sectors: Mix[];
+  deal_types: Mix[];
+  event_types: { label: string; events: number }[];
+  largest_deals: { id: string; headline: string; target: string | null; buyer: string | null; deal_type: string | null; sector: string | null; amount_usd: number; announced: string | null }[];
+};
+
+const compactUsd = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 1, notation: "compact" }).format(n);
 
 function ReportText({ text }: { text: string }) {
   const parts: ReactNode[] = [];
@@ -88,9 +111,6 @@ export default function CountryPage({ params }: { params: { code: string } }) {
   const [dealLimit, setDealLimit] = useState(25);
   const [eventOffset, setEventOffset] = useState(0);
   const [eventLimit, setEventLimit] = useState(25);
-  const [marketDeals, setMarketDeals] = useState<Deal[]>([]);
-  const [marketTotals, setMarketTotals] = useState({ deals: 0, events: 0 });
-  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [riskHistory, setRiskHistory] = useState<{ year: number; score: number | null; tier: string | null; coverage: number; input_years: Record<string, number>; indicator_count: number }[]>([]);
   const [marketHistory, setMarketHistory] = useState<{ year: number; deal_records: number; event_records: number; disclosed_deal_value_usd: number; deals_with_official_host: number; events_with_official_host: number; source_links_checked: number; official_host_matched_links: number; dated_records: number }[]>([]);
   const [marketHistoryNote, setMarketHistoryNote] = useState<string>("");
@@ -113,57 +133,23 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         setHistoryMeta({ source: result.source, source_url: result.source_url, retrieved: result.retrieved, method: result.method, archived_snapshots: result.archived_snapshots, snapshot_note: result.snapshot_note });
       })
       .catch(() => { if (!cancelled) setHistoryMeta(null); });
-    setAnalyticsLoading(true);
-    Promise.all([
-      get<{ deals: Deal[]; total_matching: number }>("/api/deals", { country: params.code.toUpperCase(), limit: 100, offset: 0 }),
-      get<{ events: Event[]; count: number }>("/api/events", { country: params.code.toUpperCase(), limit: 500, offset: 0 }),
-    ]).then(([dealResult, eventResult]) => {
-      if (cancelled) return;
-      setMarketDeals(dealResult.deals);
-      setMarketTotals({ deals: dealResult.total_matching, events: eventResult.count });
-    }).catch(() => {
-      // The country page remains usable if the optional aggregate requests fail.
-    }).finally(() => {
-      if (!cancelled) setAnalyticsLoading(false);
-    });
     return () => { cancelled = true; };
   }, [params.code]);
 
-  const sectorMix = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const deal of marketDeals) {
-      const label = deal.sector?.trim() || "Unclassified";
-      counts.set(label, (counts.get(label) ?? 0) + 1);
-    }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
-  }, [marketDeals]);
-
-  const dealTypeMix = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const deal of marketDeals) {
-      const label = deal.deal_type?.trim() || "Unclassified";
-      counts.set(label, (counts.get(label) ?? 0) + 1);
-    }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
-  }, [marketDeals]);
-
+  const profile = d?.profile;
   const monthlyDealFlow = useMemo(() => {
     const now = new Date();
-    const months = Array.from({ length: 12 }, (_, i) => {
+    const counts = new Map((profile?.by_month_last_12 ?? []).map((m) => [m.month, m.deals] as const));
+    return Array.from({ length: 12 }, (_, i) => {
       const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (11 - i), 1));
-      return { key: date.toISOString().slice(0, 7), label: date.toLocaleDateString("en", { month: "short", timeZone: "UTC" }), count: 0 };
+      const key = date.toISOString().slice(0, 7);
+      return { key, label: date.toLocaleDateString("en", { month: "short", timeZone: "UTC" }), count: counts.get(key) ?? 0 };
     });
-    const byMonth = new Map(months.map((month) => [month.key, month] as const));
-    for (const deal of marketDeals) {
-      if (!deal.announced) continue;
-      const month = byMonth.get(deal.announced.slice(0, 7));
-      if (month) month.count += 1;
-    }
-    return months;
-  }, [marketDeals]);
-
+  }, [profile]);
   const maxMonthlyDeals = Math.max(1, ...monthlyDealFlow.map((month) => month.count));
-  const maxSectorCount = Math.max(1, ...sectorMix.map(([, count]) => count));
+  const maxYearDeals = Math.max(1, ...(profile?.by_year ?? []).map((y) => y.deals));
+  const sectorMix = (profile?.sectors ?? []).slice(0, 8);
+  const maxSectorCount = Math.max(1, ...sectorMix.map((row) => row.deals));
 
   async function loadDeals(offset: number, limit: number) {
     setDealOffset(offset);
@@ -256,88 +242,132 @@ export default function CountryPage({ params }: { params: { code: string } }) {
       )}
 
 
-      <h2 className="eyebrow mt-12">Market activity overview</h2>
+      <h2 className="eyebrow mt-12">Market activity since {profile?.first_year ?? (d.history_start ?? "2010").slice(0, 4)}</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
-        This view summarizes the country’s currently recorded deal and event dataset. Deal and event totals count available records, not every transaction or announcement in the real economy. The charts use up to 100 retrieved deal records; if more records exist, the distributions may not cover the full dataset. Coverage and disclosure vary by market.
+        Every deal and event record held for {c.name}, from the start of the record (history begins in{" "}
+        {(d.history_start ?? "2010").slice(0, 4)}). Counts are records found in published news and filings, not a census of
+        every transaction; earlier years are thinner and fewer amounts were disclosed. Values add up disclosed amounts only.
       </p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Deals in dataset" value={analyticsLoading ? "Loading…" : marketTotals.deals.toLocaleString()} note="Matching records returned by the API" />
-        <Stat label="Corporate events" value={analyticsLoading ? "Loading…" : marketTotals.events.toLocaleString()} note="Matching event records" />
-        <Stat label="Multi-source corroborated" value={analyticsLoading ? "Loading…" : marketDeals.filter((deal) => deal.verification === "corroborated").length.toLocaleString()} note="Corroborated records among the retrieved deals" />
-        <Stat label="Deals with disclosed value" value={analyticsLoading ? "Loading…" : marketDeals.filter((deal) => deal.amount_usd != null && deal.amount_usd > 0).length.toLocaleString()} note="Among retrieved deal records, not all market transactions" />
-      </div>
-      {!analyticsLoading && marketDeals.length > 0 && (
-        <p className="mt-2 text-xs text-[color:var(--dim)]">
-          Of the {marketDeals.length.toLocaleString()} retrieved deal records, {(marketDeals.filter((deal) => deal.verification === "single source").length).toLocaleString()} are currently labelled single-source. Multi-source corroboration means multiple independent stories were detected, not necessarily official filing confirmation.
-        </p>
-      )}
-
-      <div className="mt-5 grid gap-4 lg:grid-cols-2">
-        <section className="panel p-4 sm:p-5">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="font-medium">Recorded deal flow</h3>
-            <span className="text-xs text-[color:var(--dim)]">Last 12 months by announcement date</span>
+      {!profile ? <Loading label="Loading market activity…" /> : (
+        <>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <Stat label={`Deals ${profile.first_year ?? ""}–${profile.last_year ?? ""}`} value={profile.deals.toLocaleString()} note={`${profile.events.toLocaleString()} corporate events`} />
+            <Stat label="Disclosed deal value" value={profile.disclosed_value_usd ? compactUsd(profile.disclosed_value_usd) : "None"} note={`${profile.deals_with_amount.toLocaleString()} deals with an amount`} />
+            <Stat label="Median disclosed deal" value={profile.median_disclosed_usd ? compactUsd(profile.median_disclosed_usd) : "n/a"} note="Among deals with an amount" />
+            <Stat label="Corroborated deals" value={profile.corroborated_deals.toLocaleString()} note={`Two or more independent stories; ${profile.single_source_deals.toLocaleString()} single-source`} />
           </div>
-          {analyticsLoading ? <Loading label="Loading deal activity…" /> : marketDeals.length === 0 ? (
-            <p className="mt-4 text-sm text-[color:var(--muted)]">No deal records were returned for this market. Check coverage before concluding that no deals occurred.</p>
-          ) : (
-            <div className="mt-4">
-              <div className="flex h-36 items-end gap-1.5 border-b hairline pb-1">
+
+          <section className="panel mt-5 p-4 sm:p-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="font-medium">Deal flow by year</h3>
+              <span className="text-xs text-[color:var(--dim)]">Deals by announcement year; hover for value and events</span>
+            </div>
+            {profile.by_year.length === 0 ? (
+              <p className="mt-4 text-sm text-[color:var(--muted)]">No dated deal records yet. Check coverage before concluding that no deals occurred.</p>
+            ) : (
+              <div className="mt-4 overflow-x-auto">
+                <div className="flex h-40 min-w-[32rem] items-end gap-1.5 border-b hairline pb-1">
+                  {profile.by_year.map((y) => (
+                    <div key={y.year} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1"
+                      title={`${y.year}: ${y.deals} deals, ${y.with_amount} with an amount${y.disclosed_value_usd ? ` (${compactUsd(y.disclosed_value_usd)})` : ""}, ${y.events} events`}>
+                      <span className="text-[10px] text-[color:var(--dim)]">{y.deals || ""}</span>
+                      <div className="w-full max-w-8 rounded-t bg-verified/80" style={{ height: `${Math.max(y.deals ? 4 : 0, (y.deals / maxYearDeals) * 100)}px` }} />
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-2 flex min-w-[32rem] gap-1.5">
+                  {profile.by_year.map((y) => <span key={y.year} className="min-w-0 flex-1 truncate text-center text-[10px] text-[color:var(--dim)]">{String(y.year).slice(2)}</span>)}
+                </div>
+              </div>
+            )}
+          </section>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <section className="panel p-4 sm:p-5">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="font-medium">Last 12 months</h3>
+                <span className="text-xs text-[color:var(--dim)]">Deals by announcement month</span>
+              </div>
+              <div className="mt-4 flex h-32 items-end gap-1.5 border-b hairline pb-1">
                 {monthlyDealFlow.map((month) => (
-                  <div key={month.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1" title={`${month.key}: ${month.count} recorded deals`}>
+                  <div key={month.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1" title={`${month.key}: ${month.count} deals`}>
                     <span className="text-[10px] text-[color:var(--dim)]">{month.count || ""}</span>
-                    <div className="w-full max-w-7 rounded-t bg-verified/80" style={{ height: `${Math.max(month.count ? 5 : 0, (month.count / maxMonthlyDeals) * 78)}px` }} />
+                    <div className="w-full max-w-7 rounded-t bg-verified/80" style={{ height: `${Math.max(month.count ? 4 : 0, (month.count / maxMonthlyDeals) * 76)}px` }} />
                   </div>
                 ))}
               </div>
               <div className="mt-2 flex gap-1.5">
                 {monthlyDealFlow.map((month) => <span key={month.key} className="min-w-0 flex-1 truncate text-center text-[10px] text-[color:var(--dim)]">{month.label}</span>)}
               </div>
-              <p className="mt-3 text-xs text-[color:var(--dim)]">Only records with an announcement date in this window are counted. Undated deals are not plotted.</p>
-            </div>
-          )}
-        </section>
+            </section>
 
-        <section className="panel p-4 sm:p-5">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="font-medium">Sector distribution</h3>
-            <span className="text-xs text-[color:var(--dim)]">{marketDeals.length.toLocaleString()} records analyzed</span>
-          </div>
-          {analyticsLoading ? <Loading label="Loading sector mix…" /> : sectorMix.length === 0 ? (
-            <p className="mt-4 text-sm text-[color:var(--muted)]">Sector distribution is unavailable until deal records are returned.</p>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {sectorMix.map(([sector, count]) => (
-                <div key={sector}>
-                  <div className="mb-1 flex items-center justify-between gap-3 text-xs">
-                    <span>{words(sector)}</span>
-                    <span className="kbd text-[color:var(--muted)]">{count.toLocaleString()}</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-[color:var(--line)]">
-                    <div className="h-full rounded-full bg-verified/80" style={{ width: `${(count / maxSectorCount) * 100}%` }} />
-                  </div>
+            <section className="panel p-4 sm:p-5">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="font-medium">Sectors</h3>
+                <span className="text-xs text-[color:var(--dim)]">All {profile.deals.toLocaleString()} deals</span>
+              </div>
+              {sectorMix.length === 0 ? <p className="mt-4 text-sm text-[color:var(--muted)]">No sector data yet.</p> : (
+                <div className="mt-4 space-y-3">
+                  {sectorMix.map((row) => (
+                    <div key={row.label}>
+                      <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+                        <span>{words(row.label)}</span>
+                        <span className="kbd text-[color:var(--muted)]">{row.deals.toLocaleString()}{row.disclosed_value_usd ? ` · ${compactUsd(row.disclosed_value_usd)}` : ""}</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-[color:var(--line)]">
+                        <div className="h-full rounded-full bg-verified/80" style={{ width: `${(row.deals / maxSectorCount) * 100}%` }} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-          <p className="mt-3 text-xs text-[color:var(--dim)]">Distribution is based on classified retrieved deal records; unclassified records are shown separately when present.</p>
-        </section>
-      </div>
-
-      <section className="panel mt-4 p-4 sm:p-5">
-        <h3 className="font-medium">Deal-type mix</h3>
-        {analyticsLoading ? <Loading label="Loading deal types…" /> : dealTypeMix.length === 0 ? (
-          <p className="mt-3 text-sm text-[color:var(--muted)]">No deal-type breakdown is available yet.</p>
-        ) : (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {dealTypeMix.map(([type, count]) => (
-              <span key={type} className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1.5 text-xs">
-                {words(type)} <span className="kbd text-[color:var(--dim)]">{count.toLocaleString()}</span>
-              </span>
-            ))}
+              )}
+            </section>
           </div>
-        )}
-      </section>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <section className="panel p-4 sm:p-5">
+              <h3 className="font-medium">Deal types</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {profile.deal_types.map((row) => (
+                  <span key={row.label} className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1.5 text-xs">
+                    {words(row.label)} <span className="kbd text-[color:var(--dim)]">{row.deals.toLocaleString()}</span>
+                  </span>
+                ))}
+              </div>
+            </section>
+            <section className="panel p-4 sm:p-5">
+              <h3 className="font-medium">Corporate events by type</h3>
+              {profile.event_types.length === 0 ? <p className="mt-3 text-sm text-[color:var(--muted)]">No events recorded yet.</p> : (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {profile.event_types.map((row) => (
+                    <span key={row.label} className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1.5 text-xs">
+                      {words(row.label)} <span className="kbd text-[color:var(--dim)]">{row.events.toLocaleString()}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+
+          {profile.largest_deals.length > 0 && (
+            <section className="mt-4">
+              <h3 className="font-medium">Largest disclosed deals</h3>
+              <div className="mt-3">
+                <Table head={["Date", "Deal", "Type", "Amount"]} minWidth="40rem">
+                  {profile.largest_deals.map((deal) => (
+                    <tr key={deal.id}>
+                      <Td className="kbd text-[color:var(--muted)]">{deal.announced ?? "n/a"}</Td>
+                      <Td><Link href={`/app/deals/${encodeURIComponent(deal.id)}`} className="hover:underline">{deal.headline}</Link></Td>
+                      <Td className="text-[color:var(--muted)]">{deal.deal_type ? words(deal.deal_type) : "n/a"}</Td>
+                      <Td className="kbd">{compactUsd(deal.amount_usd)}</Td>
+                    </tr>
+                  ))}
+                </Table>
+              </div>
+            </section>
+          )}
+        </>
+      )}
 
       <h2 className="eyebrow mt-12">Historical country risk</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">

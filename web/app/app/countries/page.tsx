@@ -10,10 +10,13 @@ import { get } from "../../../lib/market";
 type Row = {
   iso2: string; name: string; region: string; currency: string; exchange: string | null; risk_score: number | null;
   risk_tier: string | null; risk_coverage: number; coverage_tier: string; deals: number; events: number;
+  deal_value_usd?: number; first_year?: number | null; deals_last_12m?: number;
   source_quality?: { source_links_checked: number; official_host_matched_links: number; registered_country_hosts: number; registry_status: string };
 };
 
 const REGIONS = ["Northern Africa", "Western Africa", "Middle Africa", "Eastern Africa", "Southern Africa"];
+
+const compactUsd = (n?: number) => n ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 1, notation: "compact" }).format(n) : "None";
 
 function scoreLabel(score: number | null) {
   return score == null ? "Not available" : `${score}/100`;
@@ -23,7 +26,7 @@ export default function CountriesPage() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [asOf, setAsOf] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sort, setSort] = useState<"risk" | "name" | "deals" | "events" | "coverage">("deals");
+  const [sort, setSort] = useState<"risk" | "name" | "deals" | "events" | "coverage" | "value" | "recent">("deals");
   const [region, setRegion] = useState("");
   const [query, setQuery] = useState("");
   const [riskTier, setRiskTier] = useState("");
@@ -53,6 +56,8 @@ export default function CountriesPage() {
       if (sort === "name") return a.name.localeCompare(b.name);
       if (sort === "deals") return b.deals - a.deals || a.name.localeCompare(b.name);
       if (sort === "events") return b.events - a.events || a.name.localeCompare(b.name);
+      if (sort === "value") return (b.deal_value_usd ?? 0) - (a.deal_value_usd ?? 0) || a.name.localeCompare(b.name);
+      if (sort === "recent") return (b.deals_last_12m ?? 0) - (a.deals_last_12m ?? 0) || a.name.localeCompare(b.name);
       if (sort === "coverage") return b.risk_coverage - a.risk_coverage || a.name.localeCompare(b.name);
       if (a.risk_score == null) return b.risk_score == null ? a.name.localeCompare(b.name) : 1;
       if (b.risk_score == null) return -1;
@@ -133,6 +138,8 @@ export default function CountriesPage() {
             <span className="mb-1.5 block text-xs text-[color:var(--muted)]">Sort markets</span>
             <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="field w-full">
               <option value="deals">Most recorded deals</option>
+              <option value="value">Largest disclosed deal value</option>
+              <option value="recent">Most deals in the last 12 months</option>
               <option value="events">Most corporate events</option>
               <option value="risk">Risk score (high to low)</option>
               <option value="coverage">Highest risk-data coverage</option>
@@ -174,6 +181,9 @@ export default function CountriesPage() {
                   ["Risk-data coverage", (c: Row) => `${Math.round(c.risk_coverage * 100)}%`],
                   ["Evidence coverage tier", (c: Row) => c.coverage_tier],
                   ["Recorded deals", (c: Row) => c.deals.toLocaleString()],
+                  ["Deals in the last 12 months", (c: Row) => (c.deals_last_12m ?? 0).toLocaleString()],
+                  ["Disclosed deal value", (c: Row) => compactUsd(c.deal_value_usd)],
+                  ["Record starts", (c: Row) => c.first_year ? String(c.first_year) : "No dated deals"],
                   ["Corporate events", (c: Row) => c.events.toLocaleString()],
                   ["Currency", (c: Row) => c.currency],
                   ["Exchange", (c: Row) => c.exchange ?? "Not listed"],
@@ -197,7 +207,7 @@ export default function CountriesPage() {
             <button type="button" className="btn btn-ghost mt-4" onClick={clearFilters}>Reset filters</button>
           </div>
         ) : (
-          <Table head={["Compare", "Country", "Region", "Risk score", "Risk tier", "Risk-data coverage", "Evidence tier", "Official-source links", "Deals", "Events", "Currency"]} minWidth="78rem">
+          <Table head={["Compare", "Country", "Region", "Risk score", "Risk tier", "Risk-data coverage", "Evidence tier", "Official-source links", "Deals", "Last 12 mo", "Disclosed value", "Since", "Events", "Currency"]} minWidth="90rem">
             {shown.map((c) => (
               <tr key={c.iso2}>
                 <Td>
@@ -232,6 +242,9 @@ export default function CountriesPage() {
                   <span className="mt-1 block text-xs text-[color:var(--dim)]">{c.source_quality?.registry_status === "needs_host_review" ? "Host registry needs review" : "Official host matches"}</span>
                 </Td>
                 <Td className="kbd">{c.deals.toLocaleString()}</Td>
+                <Td className="kbd">{(c.deals_last_12m ?? 0).toLocaleString()}</Td>
+                <Td className="kbd">{compactUsd(c.deal_value_usd)}</Td>
+                <Td className="kbd text-[color:var(--muted)]">{c.first_year ?? "—"}</Td>
                 <Td className="kbd">{c.events.toLocaleString()}</Td>
                 <Td className="kbd">{c.currency}</Td>
               </tr>

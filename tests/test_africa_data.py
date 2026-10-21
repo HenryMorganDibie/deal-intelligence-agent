@@ -1570,3 +1570,38 @@ def test_monthly_run_continues_the_unfinished_period_and_publishes_only_improvem
 
     hb.SUMMARY_PATH.write_text(json.dumps({"start": "2024-01-15", "end": "2025-06-15", "missing_companies": 0}))
     assert hb.current_period(date(2026, 11, 2)) == (*hb.rolling_period(date(2026, 11, 2)), 0)
+
+
+def test_country_profile_summarises_the_whole_history_not_the_latest_page():
+    from datetime import date
+    from src.engines import country_profile
+
+    src = lambda pub: {"publisher": pub, "url": f"https://{pub}.example/a", "title": "t"}
+    ds = [{"id": f"d{y}", "country": "NG", "announced": f"{y}-03-01", "deal_type": "acquisition",
+           "sector": "banking", "amount_usd": 10e6 * (y - 2009), "sources": [src("a")]} for y in range(2010, 2026)]
+    ds += [{"id": "big", "countries": ["NG", "GH"], "announced": "2026-09-01", "deal_type": "equity_funding",
+            "amount_usd": 900e6, "sources": [src("a"), src("b")]},
+           {"id": "ke", "country": "KE", "announced": "2026-09-01", "amount_usd": 5e9}]
+    es = [{"id": "e1", "country": "NG", "day": "2011-05-02", "signal_type": "regulatory_action"},
+          {"id": "e2", "countries": ["NG"], "day": "2026-01-02", "signal_type": "m_and_a_activity"}]
+    p = country_profile.build("NG", ds, es, today=date(2026, 10, 21))
+    assert p["first_year"] == 2010 and p["last_year"] == 2026 and p["deals"] == 17 and p["events"] == 2
+    assert {r["year"]: r["events"] for r in p["by_year"]}[2011] == 1      # events are dated by "day"
+    assert p["largest_deals"][0]["id"] == "big" and all(d["id"] != "ke" for d in p["largest_deals"])
+    assert p["deal_types"][0] == {"label": "acquisition", "deals": 16, "disclosed_value_usd": 1_360_000_000}
+    assert p["sectors"][-1]["label"] == "unclassified"
+    assert p["by_month_last_12"] == [{"month": "2026-09", "deals": 1}]
+
+
+def test_market_cap_is_a_valuation_and_sovereign_or_sector_backing_is_not_a_deal():
+    from src.engines.deals import extract_deal
+
+    tingo = extract_deal("Nigerian founder Dozy Mmobuosi’s Tingo moves to raise $500 million, market cap soars above $7.6 billion",
+                         published="2022-02-22")
+    assert tingo["amount_usd"] == 500e6 and tingo["reported_valuation_usd"] == 7.6e9
+    for headline in ("China Invests $16 Billion in Nigeria's Oil Sector",
+                     "Saudi Arabia backs Nigeria’s economic reforms with $5bn bilateral trade facility",
+                     "Norway Invests US$ 307 Million in Kenya's E-Mobility Sector"):
+        assert extract_deal(headline, published="2024-01-01") is None, headline
+    # A state-owned lender with a named borrower is still a deal.
+    assert extract_deal("Kenya's M-Kopa raises $250m in debt and equity", published="2024-01-01")["target"] == "M-Kopa"

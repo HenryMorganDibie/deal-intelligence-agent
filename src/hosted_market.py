@@ -46,7 +46,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field, field_validator
 
 from src.data import africa_countries as ac
-from src.engines import company_profile, coverage, country_risk, deals as deals_mod, investors, market_risk
+from src.engines import company_profile, country_profile, coverage, country_risk, deals as deals_mod, investors, market_risk
 from src.engines import research as research_mod, watch, official_sources
 
 log = logging.getLogger("deal_intel.market")
@@ -248,6 +248,19 @@ def _country_or_404(code: str) -> ac.Country:
 @router.get("/api/countries")
 async def countries() -> dict:
     ds, es = deals(), events()
+    today = datetime.now(timezone.utc).date()
+    recent_cutoff = (today - timedelta(days=365)).isoformat()
+    first_year: dict[str, int] = {}
+    recent: dict[str, int] = {}
+    for d in ds:
+        year = (d.get("announced") or "")[:4]
+        for iso in d.get("countries") or [d.get("country")]:
+            if not iso:
+                continue
+            if year.isdigit():
+                first_year[iso] = min(first_year.get(iso, 9999), int(year))
+            if (d.get("announced") or "") >= recent_cutoff:
+                recent[iso] = recent.get(iso, 0) + 1
     rows = []
     for c in ac.COUNTRIES:
         risk = country_risk.assess(c, fx=lambda _: None)
@@ -256,7 +269,9 @@ async def countries() -> dict:
         rows.append({"iso2": c.iso2, "name": c.name, "region": c.region, "currency": c.currency,
                      "exchange": c.exchange, "risk_score": risk["score"], "risk_tier": risk["tier"],
                      "risk_coverage": risk["coverage"], "coverage_tier": cov["tier"], "deals": cov["deals"],
-                     "events": cov["events"], "source_quality": source_quality})
+                     "events": cov["events"], "deal_value_usd": cov["deal_value_usd"],
+                     "first_year": first_year.get(c.iso2), "deals_last_12m": recent.get(c.iso2, 0),
+                     "source_quality": source_quality})
     return {"countries": rows, "data_as_of": country_risk.load_snapshot().get("retrieved")}
 
 
@@ -288,7 +303,7 @@ async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
                     return year
         return None
     deal_years = {id(d): _record_year(d, ("announced", "date", "published")) for d in country_deals}
-    event_years = {id(e): _record_year(e, ("date", "announced", "published", "timestamp")) for e in country_events}
+    event_years = {id(e): _record_year(e, ("day", "date", "announced", "published", "timestamp")) for e in country_events}
     first_years = [y for y in [*deal_years.values(), *event_years.values()] if y is not None]
     activity_start = min(first_years) if first_years else None
     activity_end = max(first_years) if first_years else None
@@ -346,6 +361,8 @@ async def country(code: str) -> dict:
                          key=lambda e: e.get("day") or "", reverse=True)[:25],
         "events_total": sum(1 for e in es if c.iso2 in (e.get("countries") or [e.get("country")])),
         "investors": investors.leaderboard(deals_mod.search(ds, country=c.iso2, limit=5000), limit=10),
+        "profile": country_profile.build(c.iso2, ds, es, today=datetime.now(timezone.utc).date()),
+        "history_start": HISTORY_START.isoformat(),
     }
 
 
