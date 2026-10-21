@@ -66,3 +66,29 @@ Training is not inferred from the deterministic rules. Until a candidate clears
 its separate holdout gate, the running production detector remains unchanged.
 No investment instrument is labelled a personalized buy recommendation: the
 investing page is educational and explains risks, fees, suitability and drawbacks.
+
+
+## Behavioural relevance signals
+
+The existing `POST /api/track` endpoint records deal-search submissions, deal
+impressions, deal-detail opens, research submissions and market-brief opens. The
+existing Supabase `behavioral_events` table stores event IDs, pseudonymous
+visitor IDs, target IDs and small, allowlisted search context. Event IDs make
+retries idempotent without collapsing legitimate repeated opens into one
+visitor/action/day count.
+
+Deal search reads the aggregate `behavioral_signal_stats` RPC through a
+five-minute server cache. Engagement can affect the original search ordering
+only after a deal has at least five impressions, three distinct impression
+visitors and two distinct openers. A smoothed click-through estimate limits
+small-sample spikes, and the engagement adjustment is capped at 3% of the
+ranking score. If Supabase is unavailable or the sample threshold is not met,
+the original deterministic search order is retained.
+
+These signals are **relevance feedback, not factual labels**. Repeated opens,
+impressions or brief engagement must never increase source credibility,
+country certainty, transaction confidence or extraction accuracy. The
+supervised learned ranker still requires independently labelled outcomes and
+must pass its chronological holdout gate before promotion. Monitor behavioural
+data volume and ranking outcomes before increasing the adjustment or training a
+separate learned relevance model.
