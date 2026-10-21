@@ -106,6 +106,72 @@ async def _rpc(client: httpx.AsyncClient, fn: str, args: dict) -> httpx.Response
     return await client.post(f"{SUPABASE_URL}/rest/v1/rpc/{fn}", headers=_headers(), json={"secret": API_SECRET, **args})
 
 
+_behavioral_interest_cache: tuple[float, dict[str, float]] | None = None
+
+
+def _behavioral_interest_scores_from_stats(stats: dict) -> dict[str, float]:
+    """Build conservative, smoothed interest scores; engagement never means factual verification."""
+    scores: dict[str, float] = {}
+    rows = stats.get("top_deals", []) if isinstance(stats, dict) else []
+    if not isinstance(rows, list):
+        return scores
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        deal_id = str(row.get("deal_id") or "")
+        try:
+            impressions = max(0, int(row.get("impressions", 0)))
+            unique_impression_visitors = max(0, int(row.get("unique_impression_visitors", 0)))
+            unique_openers = max(0, int(row.get("unique_openers", 0)))
+            opens = max(0, int(row.get("opens", 0)))
+        except (TypeError, ValueError):
+            continue
+        # Require a small independent audience before engagement can influence ranking.
+        if not deal_id or impressions < 5 or unique_impression_visitors < 3 or unique_openers < 2:
+            continue
+        # Beta-style smoothing dampens small-sample CTR spikes; cap opens at impressions.
+        posterior_ctr = (min(opens, impressions) + 1.0) / (impressions + 20.0)
+        scores[deal_id] = min(1.0, posterior_ctr / 0.20)
+    return scores
+
+
+def _rerank_with_behavioral_interest(items: list[dict], interest: dict[str, float]) -> list[dict]:
+    """Apply at most a 3% tie-breaking-style adjustment to existing relevance order."""
+    if len(items) < 2 or not interest:
+        return items
+    denominator = max(1, len(items) - 1)
+    ranked = sorted(
+        enumerate(items),
+        key=lambda pair: (
+            0.97 * (1.0 - pair[0] / denominator)
+            + 0.03 * interest.get(str(pair[1].get("id") or ""), 0.0),
+            -pair[0],
+        ),
+        reverse=True,
+    )
+    return [item for _, item in ranked]
+
+
+def _behavioral_interest_scores() -> dict[str, float]:
+    """Read cached aggregate engagement through the existing Supabase RPC; fail open."""
+    global _behavioral_interest_cache
+    if not _configured():
+        return {}
+    now = time.monotonic()
+    if _behavioral_interest_cache and now - _behavioral_interest_cache[0] < 300:
+        return _behavioral_interest_cache[1]
+    try:
+        response = _rpc_sync("behavioral_signal_stats", {"p_days": 30}, timeout=4)
+        if response.status_code != 200:
+            raise RuntimeError(f"behavioural stats returned HTTP {response.status_code}")
+        scores = _behavioral_interest_scores_from_stats(response.json())
+        _behavioral_interest_cache = (now, scores)
+        return scores
+    except (httpx.HTTPError, ValueError, RuntimeError, TypeError) as exc:
+        log.info("Behavioural ranking signals unavailable; retaining baseline order (%s)", type(exc).__name__)
+        return _behavioral_interest_cache[1] if _behavioral_interest_cache else {}
+
+
 def _client_hash(request: Request) -> str:
     import hashlib
     forwarded = request.headers.get("x-forwarded-for", "")
@@ -301,6 +367,10 @@ async def deal_search(q: str = "", country: Optional[str] = None, type: Optional
     # covers the complete matching result set rather than only the first page.
     matching = deals_mod.search(ds, q=q, country=country, deal_type=type, sector=sector, since=since, until=until,
                                 investor=investor, min_usd=min_usd, limit=max(len(ds), 1))
+    # Engagement may make only a small, evidence-gated adjustment to the existing
+    # relevance order. It never changes deal facts or verification labels.
+    interest = await run_in_threadpool(_behavioral_interest_scores)
+    matching = _rerank_with_behavioral_interest(matching, interest)
     total_matching = len(matching)
     rows = matching[offset:offset + limit]
     from src.engines import provenance
