@@ -169,7 +169,7 @@ def _behavioral_interest_scores() -> dict[str, float]:
         return scores
     except (httpx.HTTPError, ValueError, RuntimeError, TypeError) as exc:
         log.info("Behavioural ranking signals unavailable; retaining baseline order (%s)", type(exc).__name__)
-        return _behavioral_interest_cache[1] if _behavioral_interest_cache else {}
+        return {}
 
 
 def _client_hash(request: Request) -> str:
