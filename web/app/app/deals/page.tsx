@@ -44,7 +44,14 @@ export default function DealsPage() {
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    trackProductAction("deal_search_submitted");
+    trackProductAction("deal_search_submitted", undefined, {
+      has_query: Boolean(filters.q.trim()),
+      country: filters.country.trim().toUpperCase() || undefined,
+      deal_type: filters.type || undefined,
+      sector: filters.sector || undefined,
+      has_investor_filter: Boolean(filters.investor.trim()),
+      has_date_filter: Boolean(filters.since),
+    });
     load(filters, 0, limit);
   }
 
