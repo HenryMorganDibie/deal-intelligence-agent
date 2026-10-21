@@ -129,8 +129,9 @@ def _behavioral_interest_scores_from_stats(stats: dict) -> dict[str, float]:
         # Require a small independent audience before engagement can influence ranking.
         if not deal_id or impressions < 5 or unique_impression_visitors < 3 or unique_openers < 2:
             continue
-        # Beta-style smoothing dampens small-sample CTR spikes; cap opens at impressions.
-        posterior_ctr = (min(opens, impressions) + 1.0) / (impressions + 20.0)
+        # Use distinct visitors/openers so repeat clicks cannot masquerade as
+        # independent votes; smoothing dampens small-audience CTR spikes.
+        posterior_ctr = (min(unique_openers, unique_impression_visitors) + 1.0) / (unique_impression_visitors + 20.0)
         scores[deal_id] = min(1.0, posterior_ctr / 0.20)
     return scores
 
