@@ -6,6 +6,24 @@ import { browserVisitorId } from "../../lib/tracking";
 type Row = { views: number; visitors: number; users: number };
 type ActionRow = { action: string; completions: number; clients: number };
 type PageActivity = { feature: string; browsers: number; page_views: number };
+type BehavioralDeal = {
+  deal_id: string;
+  unique_impression_visitors: number;
+  unique_openers: number;
+  impressions: number;
+  opens: number;
+  active_days: number;
+  click_through_rate: number | null;
+};
+type BehavioralBrief = { brief_id: string; unique_visitors: number; active_days: number };
+type BehavioralSignals = {
+  since: string;
+  days: number;
+  totals: Record<string, number>;
+  top_deals: BehavioralDeal[];
+  top_briefs: BehavioralBrief[];
+  status?: string;
+};
 type FeedbackItem = {
   id: string;
   created_at: string;
@@ -98,7 +116,7 @@ export default function Admin() {
     company_data_loaded: "Company profiles and valuations loaded",
     watchlists_used: "Watchlist actions completed",
     brief_opened: "Saved briefs opened",
-    performance_data_loaded: "Performance data loaded",
+    performance_data_loaded: "Performance data loaded",\n    deal_search_submitted: "Deal searches submitted",\n    deal_opened: "Deal detail opens",\n    research_submitted: "Research questions submitted",\n    market_brief_opened: "Market briefs opened",\n    deal_impression: "Deal result impressions",
   };
   const actions = stats?.actions ?? [];
   const appPageActivity = stats?.app_page_activity ?? [];
@@ -188,6 +206,61 @@ export default function Admin() {
               }) : <tr><td className="py-1.5" colSpan={3}>Usage action metrics are not available yet.</td></tr>}
             </tbody>
           </table>
+
+          <h2 className="mt-8 font-semibold">Behavioural relevance signals</h2>
+          <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+            These signals help rank relevant results; they are not evidence that a deal is accurate or verified. Deal ranking uses a maximum 3% adjustment and requires a minimum audience before engagement can affect order.
+          </p>
+          {stats.behavioral_signals ? (
+            <>
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  ["deal_search_submitted", "Searches"],
+                  ["deal_impression", "Impressions"],
+                  ["deal_opened", "Deal opens"],
+                  ["market_brief_opened", "Brief opens"],
+                ].map(([action, label]) => (
+                  <div key={action} className="panel p-3">
+                    <div className="text-xl font-semibold">
+                      {(stats.behavioral_signals?.totals?.[action] ?? 0).toLocaleString("en-US")}
+                    </div>
+                    <div className="mt-1 text-xs text-[color:var(--muted)]">{label}</div>
+                  </div>
+                ))}
+              </div>
+              <h3 className="mt-5 text-sm font-medium">Deals with eligible engagement data</h3>
+              {stats.behavioral_signals.top_deals.length ? (
+                <div className="mt-2 overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="text-[color:var(--muted)]">
+                      <tr><th className="py-1 font-normal">Deal ID</th><th className="font-normal">Impressions</th><th className="font-normal">Unique openers</th><th className="font-normal">Observed CTR</th></tr>
+                    </thead>
+                    <tbody>
+                      {stats.behavioral_signals.top_deals.slice(0, 10).map((deal) => (
+                        <tr key={deal.deal_id} className="border-t hairline">
+                          <td className="max-w-48 truncate py-1.5" title={deal.deal_id}>{deal.deal_id}</td>
+                          <td>{deal.impressions.toLocaleString("en-US")}</td>
+                          <td>{deal.unique_openers.toLocaleString("en-US")}</td>
+                          <td>{deal.click_through_rate == null ? "—" : String((deal.click_through_rate * 100).toFixed(1)) + "%"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : <p className="mt-2 text-sm text-[color:var(--dim)]">No deals have enough impression data yet to report an eligible engagement signal.</p>}
+              <h3 className="mt-5 text-sm font-medium">Market briefs with repeat readership</h3>
+              {stats.behavioral_signals.top_briefs.length ? (
+                <ul className="mt-2 space-y-1 text-sm">
+                  {stats.behavioral_signals.top_briefs.slice(0, 10).map((brief) => (
+                    <li key={brief.brief_id} className="flex flex-wrap justify-between gap-2 border-t hairline py-2">
+                      <span className="max-w-56 truncate" title={brief.brief_id}>{brief.brief_id}</span>
+                      <span className="text-[color:var(--muted)]">{brief.unique_visitors} browsers · {brief.active_days} active days</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="mt-2 text-sm text-[color:var(--dim)]">No repeat-reader brief signals yet.</p>}
+            </>
+          ) : <p className="mt-2 text-sm text-[color:var(--dim)]">Behavioural signals are not available from the API yet.</p>}
 
           <h2 className="mt-8 font-semibold">Result reports for review</h2>
           <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
