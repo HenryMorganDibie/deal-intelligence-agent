@@ -112,3 +112,34 @@ def test_review_builder_never_redraws_an_existing_year(capsys):
 
     main(["--year", "2026"])
     assert "never redrawn" in capsys.readouterr().out
+
+
+def test_backfill_reaches_back_to_2010_and_the_product_loads_full_history(monkeypatch):
+    from datetime import date
+    from unittest.mock import AsyncMock, MagicMock
+
+    from fastapi.testclient import TestClient
+
+    import api.index as api
+    import src.hosted_market as hm
+    from src.engines import market_feed
+
+    assert hm.HISTORY_START == date(2010, 1, 1)
+    monkeypatch.setattr(hm, "_authorized_cron", lambda request: True)
+    monkeypatch.setattr(hm, "_configured", lambda: True)
+    collected = []
+
+    async def collect_historical(since, until):
+        collected.append((since, until))
+        return []
+
+    monkeypatch.setattr(market_feed, "collect_historical", collect_historical)
+    monkeypatch.setattr(hm, "_load", lambda kind: [])
+    ok = MagicMock(status_code=200, is_success=True)
+    ok.json.return_value = []
+    monkeypatch.setattr(hm, "_rpc", AsyncMock(return_value=ok))
+    client = TestClient(api.app)
+
+    assert client.get("/api/cron/ingest?month=2010-01").status_code == 200
+    assert collected[-1] == (date(2010, 1, 1), date(2010, 1, 31))
+    assert client.get("/api/cron/ingest?month=2009-12").status_code in (400, 422)

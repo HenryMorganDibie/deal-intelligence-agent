@@ -1,0 +1,81 @@
+name: Historical deal backfill
+
+# Fills the deal and corporate-event store month by month, back to January 2010. Each request
+# covers one calendar month, so a timeout or feed failure costs one month and can be re-run;
+# re-running a month merges into the records already stored rather than duplicating them, and
+# backfills never send watchlist alerts. One job per year, at most two at a time, to stay gentle
+# on news feeds and inside the free Actions allowance (roughly 30 to 50 minutes per year).
+on:
+  workflow_dispatch:
+    inputs:
+      from_year:
+        description: "First year to backfill (2010 or later)"
+        required: true
+        default: "2010"
+      to_year:
+        description: "Last year to backfill (defaults to last year)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: historical-backfill
+  cancel-in-progress: false
+
+jobs:
+  years:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.years.outputs.matrix }}
+    steps:
+      - id: years
+        env:
+          FROM_YEAR: ${{ inputs.from_year }}
+          TO_YEAR: ${{ inputs.to_year }}
+        run: |
+          set -euo pipefail
+          from="${FROM_YEAR:-2010}"
+          to="${TO_YEAR:-$(( $(date -u +%Y) - 1 ))}"
+          if [ "$from" -lt 2010 ]; then echo "::error::History starts in 2010."; exit 1; fi
+          if [ "$to" -lt "$from" ]; then echo "::error::to_year is before from_year."; exit 1; fi
+          echo "matrix=$(seq "$from" "$to" | jq -R 'tonumber' | jq -cs '{year: .}')" >> "$GITHUB_OUTPUT"
+
+  backfill:
+    needs: years
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.years.outputs.matrix) }}
+    steps:
+      - name: Backfill ${{ matrix.year }}, one month per request
+        env:
+          YEAR: ${{ matrix.year }}
+        run: |
+          set -uo pipefail
+          failed=()
+          for m in 01 02 03 04 05 06 07 08 09 10 11 12; do
+            month="${YEAR}-${m}"
+            if [[ "$month" > "$(date -u +%Y-%m)" ]]; then break; fi
+            # OIDC tokens are short-lived, so each month gets a fresh one.
+            token="$(curl --fail --silent --show-error --max-time 15 \
+              -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api" | jq -er '.value')" || { failed+=("$month"); continue; }
+            echo "::add-mask::${token}"
+            echo "Backfilling ${month}"
+            if ! curl --fail-with-body --silent --show-error --max-time 290 \
+                 --retry 2 --retry-delay 10 --retry-all-errors \
+                 -H "Authorization: Bearer ${token}" -H "Accept: application/json" \
+                 "https://deal-intelligence-api.vercel.app/api/cron/ingest?month=${month}" \
+                 | jq -c '{mode, headlines, deals_detected, events_detected}'; then
+              failed+=("$month")
+            fi
+          done
+          if [ "${#failed[@]}" -gt 0 ]; then
+            echo "::warning::Months to re-run for ${YEAR}: ${failed[*]}"
+            exit 1
+          fi

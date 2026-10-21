@@ -81,6 +81,7 @@ def _authorized_cron(request: Request) -> bool:
         claims = jwt.decode(token, key, algorithms=["RS256"], audience="deal-intelligence-api", issuer="https://token.actions.githubusercontent.com")
         allowed_workflows = {
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/live-deal-ingestion.yml@refs/heads/main",
+            "HenryMorganDibie/deal-intelligence-agent/.github/workflows/historical-backfill.yml@refs/heads/main",
         }
         return (
             claims.get("repository") == "HenryMorganDibie/deal-intelligence-agent"
@@ -186,13 +187,17 @@ _TTL = 300
 _cache: dict[str, tuple[float, list]] = {}
 
 
+# Earliest month the store keeps and the product shows; backfills may reach back this far.
+HISTORY_START = date(2010, 1, 1)
+
+
 def _load(kind: str) -> list[dict]:
     hit = _cache.get(kind)
     if hit and time.monotonic() - hit[0] < _TTL:
         return hit[1]
     rows: list[dict] = []
     if _configured():
-        since = (date.today() - timedelta(days=3 * 365)).isoformat()
+        since = HISTORY_START.isoformat()
         try:
             r = _rpc_sync("list_deals" if kind == "deals" else "list_events", {"p_since": since})
             if r.status_code != 200:
@@ -1118,9 +1123,9 @@ async def cron_country_snapshot(request: Request) -> dict:
 @router.get("/api/cron/ingest")
 async def cron_ingest(
     request: Request,
-    month: Optional[str] = Query(default=None, pattern=r"^2026-(0[1-9]|1[0-2])$"),
+    month: Optional[str] = Query(default=None, pattern=r"^20[1-9][0-9]-(0[1-9]|1[0-2])$"),
 ) -> dict:
-    """Refresh recent news, or backfill one bounded 2026 calendar month without sending stale alerts."""
+    """Refresh recent news, or backfill one bounded calendar month (from 2010) without sending stale alerts."""
     if not _authorized_cron(request):
         raise HTTPException(401, "Unauthorized")
     if not _configured():
@@ -1128,10 +1133,12 @@ async def cron_ingest(
     from src.engines import market_feed
     if month:
         month_start = datetime.strptime(month, "%Y-%m").date()
+        if month_start < HISTORY_START:
+            raise HTTPException(400, f"History starts in {HISTORY_START:%B %Y}.")
         next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
         month_end = min(next_month - timedelta(days=1), datetime.now(timezone.utc).date())
         if month_start > month_end:
-            raise HTTPException(400, "That 2026 month has not started yet.")
+            raise HTTPException(400, "That month has not started yet.")
         try:
             items = await market_feed.collect_historical(month_start, month_end)
         except (RuntimeError, ValueError) as exc:
