@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-21T13:05:27.193623+00:00",
+  "updated_at": "2026-10-21T21:43:35.875810+00:00",
   "current": {
     "company": "Full",
     "company_url": "/app/companies?name=Full",
@@ -32,7 +32,7 @@
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-14",
     "period_end": "2026-10-20",
-    "selected_at": "2026-10-21T13:05:27.192614+00:00",
+    "selected_at": "2026-10-21T21:43:35.875131+00:00",
     "selection_version": 4,
     "companies": [
       {
@@ -66,7 +66,48 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-14",
         "period_end": "2026-10-20",
-        "selected_at": "2026-10-21T13:05:27.192614+00:00",
+        "selected_at": "2026-10-21T21:43:35.875131+00:00",
+        "selection_version": 4
+      },
+      {
+        "company": "Education",
+        "company_url": "/app/companies?name=Education",
+        "headline": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "KE",
+        "sector": "education",
+        "announced": "2026-10-19",
+        "score": 53.57,
+        "independent_stories": 2,
+        "transaction_records": 0,
+        "related_events": 2,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.80",
+          "2 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "The Eastleigh Voice",
+            "title": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
+            "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPOG5pclRGbEdPaWNPQ2FlSmN2WWF5YzhvN1lqMjduY19DV2hjNnFmcDhXdUFUb1dZS19OVU5NTDdJUnFhRHdnT1o4MXpHUldfcjJiNDBSTjE5LS0xVjBOekhzbTRGSHp5NnZ5MEJMY2pHWnJHdmNZNFp2b0FFVi1vTFhrck1XYmJySGcwTjF2NzR0eVpCbEdzeEVDV0psUkE5WlU5X0NIQnBMY2ZIUXRucVM2SFVGVXBvay1vX0x4Qy1KMThmblpQMXlwVktTVUdocUhXSk9Yc2Z4aWh2MnNYQ1ZyVQ?oc=5",
+            "date": "2026-10-19",
+            "kind": "corporate_event"
+          },
+          {
+            "publisher": "Sifa FM Kenya",
+            "title": "Education Ministry orders mandatory staff verification as Sh6.2 billion payroll fraud probe deepens",
+            "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNZHFhaExJS0o2YXh4c2F4V2F4Slh1UEpJN0F6NWczN2p4MS14Y2QtM3BjWHJkV0h6M19rZFdtSnlOUTJBY1lIVWY3RldmSW9OMGtrM0JoekgwcEVhWHhkNzhvZ0hCU3U2MGtuNGt0QzUxS1VWUTkySkU3NEFrSm9oZ3JWdkpmWDh6OXcyUTlvSDJxYjJSMlg3RU9Bd2NXcjlxclFJQnRyam9DQVVBQ0RNTkZwX0F3UmViZzYwcHp3?oc=5",
+            "date": "2026-10-19",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-14",
+        "period_end": "2026-10-20",
+        "selected_at": "2026-10-21T21:43:35.875131+00:00",
         "selection_version": 4
       },
       {
@@ -100,41 +141,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-14",
         "period_end": "2026-10-20",
-        "selected_at": "2026-10-21T13:05:27.192614+00:00",
-        "selection_version": 4
-      },
-      {
-        "company": "Education",
-        "company_url": "/app/companies?name=Education",
-        "headline": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
-        "deal_type": "regulatory_action",
-        "amount_usd": null,
-        "country": "KE",
-        "sector": "education",
-        "announced": "2026-10-19",
-        "score": 48.57,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.80",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "The Eastleigh Voice",
-            "title": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
-            "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPOG5pclRGbEdPaWNPQ2FlSmN2WWF5YzhvN1lqMjduY19DV2hjNnFmcDhXdUFUb1dZS19OVU5NTDdJUnFhRHdnT1o4MXpHUldfcjJiNDBSTjE5LS0xVjBOekhzbTRGSHp5NnZ5MEJMY2pHWnJHdmNZNFp2b0FFVi1vTFhrck1XYmJySGcwTjF2NzR0eVpCbEdzeEVDV0psUkE5WlU5X0NIQnBMY2ZIUXRucVM2SFVGVXBvay1vX0x4Qy1KMThmblpQMXlwVktTVUdocUhXSk9Yc2Z4aWh2MnNYQ1ZyVQ?oc=5",
-            "date": "2026-10-19",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-14",
-        "period_end": "2026-10-20",
-        "selected_at": "2026-10-21T13:05:27.192614+00:00",
+        "selected_at": "2026-10-21T21:43:35.875131+00:00",
         "selection_version": 4
       },
       {
@@ -168,7 +175,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-14",
         "period_end": "2026-10-20",
-        "selected_at": "2026-10-21T13:05:27.192614+00:00",
+        "selected_at": "2026-10-21T21:43:35.875131+00:00",
         "selection_version": 4
       },
       {
@@ -202,7 +209,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-14",
         "period_end": "2026-10-20",
-        "selected_at": "2026-10-21T13:05:27.192614+00:00",
+        "selected_at": "2026-10-21T21:43:35.875131+00:00",
         "selection_version": 4
       }
     ],
@@ -646,7 +653,7 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-14",
       "period_end": "2026-10-20",
-      "selected_at": "2026-10-21T13:05:27.192614+00:00",
+      "selected_at": "2026-10-21T21:43:35.875131+00:00",
       "selection_version": 4,
       "companies": [
         {
@@ -680,7 +687,48 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-14",
           "period_end": "2026-10-20",
-          "selected_at": "2026-10-21T13:05:27.192614+00:00",
+          "selected_at": "2026-10-21T21:43:35.875131+00:00",
+          "selection_version": 4
+        },
+        {
+          "company": "Education",
+          "company_url": "/app/companies?name=Education",
+          "headline": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": "education",
+          "announced": "2026-10-19",
+          "score": 53.57,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.80",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "The Eastleigh Voice",
+              "title": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
+              "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPOG5pclRGbEdPaWNPQ2FlSmN2WWF5YzhvN1lqMjduY19DV2hjNnFmcDhXdUFUb1dZS19OVU5NTDdJUnFhRHdnT1o4MXpHUldfcjJiNDBSTjE5LS0xVjBOekhzbTRGSHp5NnZ5MEJMY2pHWnJHdmNZNFp2b0FFVi1vTFhrck1XYmJySGcwTjF2NzR0eVpCbEdzeEVDV0psUkE5WlU5X0NIQnBMY2ZIUXRucVM2SFVGVXBvay1vX0x4Qy1KMThmblpQMXlwVktTVUdocUhXSk9Yc2Z4aWh2MnNYQ1ZyVQ?oc=5",
+              "date": "2026-10-19",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "Sifa FM Kenya",
+              "title": "Education Ministry orders mandatory staff verification as Sh6.2 billion payroll fraud probe deepens",
+              "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNZHFhaExJS0o2YXh4c2F4V2F4Slh1UEpJN0F6NWczN2p4MS14Y2QtM3BjWHJkV0h6M19rZFdtSnlOUTJBY1lIVWY3RldmSW9OMGtrM0JoekgwcEVhWHhkNzhvZ0hCU3U2MGtuNGt0QzUxS1VWUTkySkU3NEFrSm9oZ3JWdkpmWDh6OXcyUTlvSDJxYjJSMlg3RU9Bd2NXcjlxclFJQnRyam9DQVVBQ0RNTkZwX0F3UmViZzYwcHp3?oc=5",
+              "date": "2026-10-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-14",
+          "period_end": "2026-10-20",
+          "selected_at": "2026-10-21T21:43:35.875131+00:00",
           "selection_version": 4
         },
         {
@@ -714,41 +762,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-14",
           "period_end": "2026-10-20",
-          "selected_at": "2026-10-21T13:05:27.192614+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Education",
-          "company_url": "/app/companies?name=Education",
-          "headline": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "KE",
-          "sector": "education",
-          "announced": "2026-10-19",
-          "score": 48.57,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "The Eastleigh Voice",
-              "title": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
-              "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPOG5pclRGbEdPaWNPQ2FlSmN2WWF5YzhvN1lqMjduY19DV2hjNnFmcDhXdUFUb1dZS19OVU5NTDdJUnFhRHdnT1o4MXpHUldfcjJiNDBSTjE5LS0xVjBOekhzbTRGSHp5NnZ5MEJMY2pHWnJHdmNZNFp2b0FFVi1vTFhrck1XYmJySGcwTjF2NzR0eVpCbEdzeEVDV0psUkE5WlU5X0NIQnBMY2ZIUXRucVM2SFVGVXBvay1vX0x4Qy1KMThmblpQMXlwVktTVUdocUhXSk9Yc2Z4aWh2MnNYQ1ZyVQ?oc=5",
-              "date": "2026-10-19",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-14",
-          "period_end": "2026-10-20",
-          "selected_at": "2026-10-21T13:05:27.192614+00:00",
+          "selected_at": "2026-10-21T21:43:35.875131+00:00",
           "selection_version": 4
         },
         {
@@ -782,7 +796,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-14",
           "period_end": "2026-10-20",
-          "selected_at": "2026-10-21T13:05:27.192614+00:00",
+          "selected_at": "2026-10-21T21:43:35.875131+00:00",
           "selection_version": 4
         },
         {
@@ -816,7 +830,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-14",
           "period_end": "2026-10-20",
-          "selected_at": "2026-10-21T13:05:27.192614+00:00",
+          "selected_at": "2026-10-21T21:43:35.875131+00:00",
           "selection_version": 4
         }
       ],
