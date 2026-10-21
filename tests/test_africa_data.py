@@ -1126,6 +1126,17 @@ def test_coverage_matrix_covers_54_countries_with_tiers():
     assert rows["SN"]["deals"] == 1 and rows["SN"]["news"]["national_edition"]
 
 
+def test_coverage_by_year_counts_depth_per_announcement_year():
+    ds = [{"announced": "2011-03-02", "amount_usd": 5e6, "countries": ["NG", "GH"]},
+          {"announced": "2011-07-09", "countries": ["NG"]},
+          {"announced": "2024-01-15", "amount_usd": 2e6, "country": "KE"},
+          {"announced": None}]
+    assert cov.by_year(ds) == [
+        {"year": 2011, "deals": 2, "with_amount": 1, "value_usd": 5000000, "countries": 2},
+        {"year": 2024, "deals": 1, "with_amount": 1, "value_usd": 2000000, "countries": 1},
+    ]
+
+
 @pytest.mark.parametrize("title", [
     "La Côte d’Ivoire lève 454,205 milliards de FCFA sur le marché financier de l’UMOA",
     "Le Burkina lève 49,500 milliards de FCFA sur le marché financier de l’UMOA",

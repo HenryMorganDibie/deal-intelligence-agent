@@ -7,8 +7,8 @@ import { ApiError } from "../../../lib/api";
 import { trackProductAction } from "../../../lib/tracking";
 import { DEAL_TYPES, SECTORS, get, type Deal } from "../../../lib/market";
 
-type Filters = { q: string; country: string; type: string; sector: string; investor: string; since: string };
-const EMPTY: Filters = { q: "", country: "", type: "", sector: "", investor: "", since: "" };
+type Filters = { q: string; country: string; type: string; sector: string; investor: string; since: string; until: string };
+const EMPTY: Filters = { q: "", country: "", type: "", sector: "", investor: "", since: "", until: "" };
 
 export default function DealsPage() {
   const [filters, setFilters] = useState<Filters>(EMPTY);
@@ -59,7 +59,7 @@ export default function DealsPage() {
       deal_type: filters.type || undefined,
       sector: filters.sector || undefined,
       has_investor_filter: Boolean(filters.investor.trim()),
-      has_date_filter: Boolean(filters.since),
+      has_date_filter: Boolean(filters.since || filters.until),
     });
     load(filters, 0, limit);
   }
@@ -75,10 +75,11 @@ export default function DealsPage() {
       <PageHeader eyebrow="Deals" title="Private equity, venture, debt and M&A across Africa.">
         Transactions extracted daily from African business and private-capital publications in English, French and
         Portuguese, with every source linked. Amounts are as reported, converted to US dollars at the year&apos;s official
-        rate. Undisclosed deals that no one reports cannot appear.
+        rate. History runs from 2010; earlier years are thinner and back-filled records are kept only when an African
+        market and a transaction are both stated. Undisclosed deals that no one reports cannot appear.
       </PageHeader>
 
-      <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+      <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
         <div className="sm:col-span-2">
           <Field label="Search">
             <input value={filters.q} onChange={set("q")} placeholder="Company, investor or keyword" className="field" />
@@ -107,10 +108,13 @@ export default function DealsPage() {
             ))}
           </select>
         </Field>
-        <Field label="Since">
-          <input type="date" value={filters.since} onChange={set("since")} className="field" />
+        <Field label="From">
+          <input type="date" value={filters.since} onChange={set("since")} min="2010-01-01" className="field" />
         </Field>
-        <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-6">
+        <Field label="To">
+          <input type="date" value={filters.until} onChange={set("until")} min="2010-01-01" className="field" />
+        </Field>
+        <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-7">
           <button type="submit" className="btn btn-primary">
             Search
           </button>

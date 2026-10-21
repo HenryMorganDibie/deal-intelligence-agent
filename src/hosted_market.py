@@ -356,7 +356,7 @@ async def currencies() -> dict:
 
 @router.get("/api/coverage")
 async def coverage_matrix() -> dict:
-    return coverage.matrix(deals(), events())
+    return {**coverage.matrix(deals(), events()), "history_start": HISTORY_START.isoformat()}
 
 
 # ── Deals, comparables, investors, funds, events ──────────────────────────────

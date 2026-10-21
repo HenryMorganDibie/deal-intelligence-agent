@@ -67,11 +67,29 @@ def country_row(c: Country, deals: Iterable[dict] = (), events: Iterable[dict] =
     }
 
 
+def by_year(deals: Iterable[dict]) -> list:
+    """Depth of the deal record per announcement year, so thin early years are visible."""
+    years: dict = {}
+    for d in deals:
+        year = (d.get("announced") or "")[:4]
+        if not year.isdigit():
+            continue
+        y = years.setdefault(year, {"year": int(year), "deals": 0, "with_amount": 0, "value_usd": 0.0, "countries": set()})
+        y["deals"] += 1
+        if d.get("amount_usd"):
+            y["with_amount"] += 1
+            y["value_usd"] += d["amount_usd"]
+        y["countries"].update(d.get("countries") or ([d["country"]] if d.get("country") else []))
+    return [{**y, "value_usd": round(y["value_usd"]), "countries": len(y["countries"])}
+            for _, y in sorted(years.items())]
+
+
 def matrix(deals: Iterable[dict] = (), events: Iterable[dict] = ()) -> dict:
     deals, events = list(deals), list(events)
     rows = [country_row(c, deals, events) for c in COUNTRIES]
     return {
         "countries": rows,
+        "by_year": by_year(deals),
         "summary": {
             "countries": len(rows),
             "by_tier": dict(Counter(r["tier"] for r in rows)),

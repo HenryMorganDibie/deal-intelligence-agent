@@ -11,7 +11,12 @@ type Matrix = {
   countries: CoverageRow[];
   summary: { countries: number; by_tier: Record<string, number>; national_news_editions: number; full_country_risk_coverage: number; with_deals: number; with_events: number };
   tiers: Record<string, string>;
+  by_year?: { year: number; deals: number; with_amount: number; value_usd: number; countries: number }[];
+  history_start?: string;
 };
+
+// Below this many deals in a year, totals and medians for that year are too thin to compare.
+const THIN_YEAR = 50;
 
 export default function CoveragePage() {
   const [m, setM] = useState<Matrix | null>(null);
@@ -76,6 +81,36 @@ export default function CoveragePage() {
               ))}
             </Table>
           </div>
+          {m.by_year?.length ? (
+            <section className="mt-10" aria-labelledby="depth-title">
+              <h2 id="depth-title" className="eyebrow">
+                Depth by year
+              </h2>
+              <p className="mt-2 max-w-3xl text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">
+                The deal record starts in {m.history_start?.slice(0, 4) ?? "2010"}. Earlier years come from archived news, so they
+                are thinner and fewer amounts were disclosed; back-filled records are kept only when an African market and a
+                transaction are both stated. Years with fewer than {THIN_YEAR} deals are marked thin: read them as indicative, not
+                as market totals.
+              </p>
+              <div className="mt-4">
+                <Table head={["Year", "Deals", "With amount", "Disclosed value", "Countries", "Depth"]} minWidth="36rem">
+                  {[...m.by_year].reverse().map((y) => (
+                    <tr key={y.year}>
+                      <Td className="kbd">{y.year}</Td>
+                      <Td>{y.deals.toLocaleString("en-US")}</Td>
+                      <Td>
+                        {y.with_amount.toLocaleString("en-US")}
+                        <span className="ml-1 text-[0.75rem] text-[color:var(--dim)]">({Math.round((y.with_amount / Math.max(y.deals, 1)) * 100)}%)</span>
+                      </Td>
+                      <Td>{y.value_usd ? usd(y.value_usd) : "None"}</Td>
+                      <Td>{y.countries}</Td>
+                      <Td className="text-[color:var(--muted)]">{y.deals < THIN_YEAR ? "Thin" : "Usable"}</Td>
+                    </tr>
+                  ))}
+                </Table>
+              </div>
+            </section>
+          ) : null}
         </>
       )}
     </Container>
