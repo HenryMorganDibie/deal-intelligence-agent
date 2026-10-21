@@ -3937,14 +3937,16 @@ class TestHostedApi:
             headers={"x-forwarded-for": "203.0.113.7"},
         )
 
-        assert response.json() == {"ok": True}
-        rpc.assert_awaited_once()
-        assert rpc.await_args.args[1] == "visit_stats"
-        assert rpc.await_args.args[2] == {
+        assert response.json() == {"ok": True, "behavioral_signals": {"ok": True}}
+        assert rpc.await_count == 2
+        assert rpc.await_args_list[0].args[1] == "visit_stats"
+        assert rpc.await_args_list[0].args[2] == {
             "p_days": 7,
             "p_excluded_visitor": "a" * 32,
             "p_excluded_client_hash": hashlib.sha256(b"api-secret:203.0.113.7").hexdigest()[:32],
         }
+        assert rpc.await_args_list[1].args[1] == "behavioral_signal_stats"
+        assert rpc.await_args_list[1].args[2] == {"p_days": 7}
 
     def test_admin_stats_rejects_malformed_owner_browser_id(self, monkeypatch):
         import src.hosted_market as hm
