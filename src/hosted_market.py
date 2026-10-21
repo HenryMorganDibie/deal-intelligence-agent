@@ -760,6 +760,9 @@ async def track_visit(request: Request) -> dict:
         visitor = str(body.get("v", ""))
         path = str(body.get("p", ""))
         action = str(body.get("a", ""))
+        target_id = str(body.get("t", ""))[:160]
+        context_raw = body.get("c", "{}")
+        context = json.loads(context_raw) if isinstance(context_raw, str) else context_raw
     except (ValueError, AttributeError):
         return {"ok": False}
     if not (_configured() and _VISITOR.fullmatch(visitor)):
@@ -770,6 +773,10 @@ async def track_visit(request: Request) -> dict:
         return {"ok": False}
     if not path and not action:
         return {"ok": False}
+    if context is None or not isinstance(context, dict) or len(json.dumps(context)) > 1200:
+        return {"ok": False}
+    if target_id and any(ord(ch) < 32 for ch in target_id):
+        return {"ok": False}
     async with httpx.AsyncClient(timeout=10) as client:
         if path:
             r = await _rpc(client, "log_visit", {"p_visitor": visitor, "p_path": path.split("?")[0]})
@@ -779,6 +786,15 @@ async def track_visit(request: Request) -> dict:
             r = await _rpc(client, "log_product_action", {"p_visitor": visitor, "p_action": action})
             if not r.is_success:
                 return {"ok": False}
+            if action in {"deal_search_submitted", "deal_opened", "research_submitted", "market_brief_opened"}:
+                r = await _rpc(client, "log_behavioral_event", {
+                    "p_event_type": action,
+                    "p_visitor": visitor,
+                    "p_target_id": target_id or None,
+                    "p_context": context,
+                })
+                if not r.is_success:
+                    return {"ok": False}
     return {"ok": r.is_success}
 
 
