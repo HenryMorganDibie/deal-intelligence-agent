@@ -761,6 +761,7 @@ async def track_visit(request: Request) -> dict:
         path = str(body.get("p", ""))
         action = str(body.get("a", ""))
         target_id = str(body.get("t", ""))[:160]
+        event_id = str(body.get("e", ""))
         context_raw = body.get("c", "{}")
         context = json.loads(context_raw) if isinstance(context_raw, str) else context_raw
     except (ValueError, AttributeError):
@@ -792,6 +793,7 @@ async def track_visit(request: Request) -> dict:
                     "p_visitor": visitor,
                     "p_target_id": target_id or None,
                     "p_context": context,
+                    "p_event_id": event_id or None,
                 })
                 if not r.is_success:
                     return {"ok": False}
