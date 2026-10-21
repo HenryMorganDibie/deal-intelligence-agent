@@ -53,7 +53,22 @@ export function trackPageView(path: string) {
   if (id) send({ v: id, p: path });
 }
 
-export function trackProductAction(action: ProductAction) {
+export function trackProductAction(
+  action: ProductAction,
+  targetId?: string,
+  context?: Record<string, string | number | boolean | null | undefined>,
+) {
   const id = visitorId();
-  if (id) send({ v: id, a: action });
+  if (!id) return;
+  const payload: Record<string, string> = { v: id, a: action };
+  if (targetId) payload.t = targetId.slice(0, 160);
+  if (context) {
+    const safeContext = Object.fromEntries(
+      Object.entries(context)
+        .filter(([key, value]) => /^[a-z_]{1,32}$/.test(key) && value !== undefined && value !== null)
+        .map(([key, value]) => [key, typeof value === "string" ? value.slice(0, 80) : value]),
+    );
+    payload.c = JSON.stringify(safeContext).slice(0, 900);
+  }
+  send(payload);
 }
