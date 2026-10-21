@@ -80,7 +80,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
   const router = useRouter();
   useEffect(() => {
     get<Result>("/api/market-briefs/" + encodeURIComponent(params.id))
-      .then((result) => { trackProductAction("market_brief_opened"); setRow(result); })
+      .then((result) => { trackProductAction("market_brief_opened", params.id); setRow(result); })
       .catch((err) => { setRow(null); setError(err instanceof ApiError ? err.message : "Could not load this market brief."); });
   }, [params.id]);
 
