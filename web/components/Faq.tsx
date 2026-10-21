@@ -3,7 +3,7 @@ import { Container, Heading, Reveal, Section } from "./primitives";
 const FAQ = [
   {
     q: "Does it need an LLM?",
-    a: "No. Detection, calibration, scoring, attribution and compound events are deterministic. Without a key the brief is built from those findings, labelled as such and flagged for human review. With Claude or Groq you also get analyst-language headlines, reasoning, an executive summary and an attribution check.",
+    a: "No. Detection, calibration, scoring, attribution and compound events are deterministic. Without a key the brief is built from those findings, labelled as such and flagged for human review. With a language model configured you also get analyst-language headlines, reasoning, an executive summary and an attribution check.",
   },
   {
     q: "Can the LLM change a signal?",
@@ -11,7 +11,7 @@ const FAQ = [
   },
   {
     q: "Which model does it use?",
-    a: "Claude and Groq, with no lock-in to either. Claude first, then Groq (gpt-oss-120b, with Qwen behind it); if one fails, the next answers. Each brief and the audit log record which model actually wrote it.",
+    a: "Hosted language models from two providers, with no lock-in to either: a primary model, then a fallback; if one fails, the next answers. Each brief records whether the primary or the fallback model wrote its narrative.",
   },
   {
     q: "Is this investment advice?",

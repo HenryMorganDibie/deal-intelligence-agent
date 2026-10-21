@@ -7,7 +7,7 @@ Retrieval first, generation second:
   2. Evidence is retrieved from the deals database, the corporate-event feed,
      country and currency risk, investor profiles, and a live news search.
      Every item gets a number.
-  3. The LLM (Claude or Groq) writes the answer using only those items and
+  3. The language model writes the answer using only those items and
      cites them as [n]. Citations are then checked: a number that does not
      match an item is removed, and every sentence without a valid citation is
      reported, so the reader sees exactly how much of the answer is grounded.
@@ -1345,12 +1345,12 @@ def answer(question: str, items: list[dict], parsed: Optional[dict] = None, llm:
     model = None
     if llm is None:
         try:
-            from src.agents.signal_agent import _call_llm, _get_llm_client, _model_label
+            from src.agents.signal_agent import _call_llm, _get_llm_client, _model_label, public_model_name
             client, provider = _get_llm_client()
 
             def llm(system: str, user: str, max_tokens: int) -> str:     # noqa: E306
                 return _call_llm(client, provider, system, user, max_tokens)
-            model_of = lambda: _model_label(client, provider)            # noqa: E731
+            model_of = lambda: public_model_name(_model_label(client, provider))  # noqa: E731
         except Exception as e:
             log.info("research without LLM: %s", e)
             llm, model_of = None, None

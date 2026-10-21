@@ -32,9 +32,20 @@ export function browserVisitorId(): string | null {
   }
 }
 
+// Crawlers, link previews and automated browsers run the page script too; they are not visitors.
+const BOT_AGENT = /bot|crawl|spider|slurp|preview|headless|lighthouse|pagespeed|facebookexternalhit|embedly|whatsapp|curl|python|axios|playwright|puppeteer/i;
+
+function isAutomated(): boolean {
+  try {
+    return Boolean(navigator.webdriver) || BOT_AGENT.test(navigator.userAgent || "");
+  } catch {
+    return false;
+  }
+}
+
 function visitorId(): string | null {
   try {
-    if (typeof window === "undefined" || localStorage.getItem("di_owner")) return null;
+    if (typeof window === "undefined" || localStorage.getItem("di_owner") || isAutomated()) return null;
     return browserVisitorId();
   } catch {
     return null;
@@ -49,9 +60,31 @@ function send(payload: Record<string, string>) {
     .catch((error: unknown) => console.warn("Could not send anonymous usage tracking.", error));
 }
 
+/** Where this session landed from, sent once per browser session: the referring site's host (never the
+ * full URL) and any utm_source, utm_medium and utm_campaign tags on the landing address. */
+function landingSource(): Record<string, string> {
+  try {
+    if (sessionStorage.getItem("di_src")) return {};
+    sessionStorage.setItem("di_src", "1");
+    const source: Record<string, string> = {};
+    if (document.referrer) {
+      const host = new URL(document.referrer).hostname.toLowerCase();
+      if (host && host !== window.location.hostname) source.r = host;
+    }
+    const params = new URLSearchParams(window.location.search);
+    for (const [param, key] of [["utm_source", "us"], ["utm_medium", "um"], ["utm_campaign", "uc"]]) {
+      const value = params.get(param);
+      if (value) source[key] = value.slice(0, 60);
+    }
+    return source;
+  } catch {
+    return {};
+  }
+}
+
 export function trackPageView(path: string) {
   const id = visitorId();
-  if (id) send({ v: id, p: path });
+  if (id) send({ v: id, p: path, ...landingSource() });
 }
 
 export function trackProductAction(

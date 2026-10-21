@@ -33,9 +33,15 @@ type FeedbackItem = {
   note: string;
   reviewed_at: string | null;
 };
+type SourceRow = { source: string; browsers: number; engaged_browsers: number; views: number };
+type CampaignRow = { campaign: string; source: string | null; medium: string | null; browsers: number; engaged_browsers: number };
 type Stats = {
   since: string;
-  totals: Row & { returning_users: number };
+  totals: Row & { returning_users: number; engaged_visitors?: number };
+  sources?: SourceRow[];
+  referrers?: { referrer: string; browsers: number }[];
+  campaigns?: CampaignRow[];
+  attribution_since?: string | null;
   days: (Row & { day: string })[];
   pages: { path: string; views: number; visitors: number }[];
   actions?: ActionRow[];
@@ -175,7 +181,7 @@ export default function Admin() {
         <>
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              [t.visitors, "unique browsers"],
+              [t.engaged_visitors ?? null, `engaged browsers (of ${t.visitors.toLocaleString("en-US")} unique)`],
               [actionsAvailable ? actionCounts.brief_completed ?? 0 : null, "company briefs completed"],
               [actionsAvailable ? completedResearch : null, "research answers & reports completed"],
               [actionsAvailable ? successfulFeatures : null, "successful app feature uses"],
@@ -187,8 +193,63 @@ export default function Admin() {
             ))}
           </div>
           <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
-            Since {stats.since}. Unique browsers are anonymous browser IDs, not verified people. This dashboard excludes this browser. Analysis and research runs are keyed by a salted IP hash, so runs from this network are also excluded; that can include other people using the same network.
+            Since {stats.since}. Unique browsers are anonymous browser IDs, not verified people. Engaged browsers viewed two or more pages or used a feature; single-view browsers include crawlers and link previews, which are no longer counted from this release. This dashboard excludes this browser. Analysis and research runs are keyed by a salted IP hash, so runs from this network are also excluded; that can include other people using the same network.
           </p>
+
+          <h2 className="mt-8 font-semibold">Where visitors come from</h2>
+          <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+            Each browser counts once, under the source of its first attributed visit in the period: a campaign tag
+            (utm_source) when the link carried one, otherwise the referring site. Only the site&apos;s domain is kept, never
+            the page address. &ldquo;Direct or unknown&rdquo; covers typed addresses, bookmarks, apps that hide the referrer and
+            visits before source tracking began{stats.attribution_since ? ` (${stats.attribution_since})` : ""}. Add
+            <span className="kbd"> ?utm_source=linkedin&amp;utm_campaign=launch </span> to links you share to see each one here.
+          </p>
+          {stats.sources ? (
+            <table className="mt-2 w-full text-left">
+              <thead className="text-[color:var(--muted)]">
+                <tr><th className="py-1 font-normal">Source</th><th className="font-normal">Browsers</th><th className="font-normal">Engaged</th><th className="font-normal">Views</th></tr>
+              </thead>
+              <tbody>
+                {stats.sources.map((row) => (
+                  <tr key={row.source} className="border-t hairline">
+                    <td className="py-1.5">{row.source}</td><td>{row.browsers}</td><td>{row.engaged_browsers}</td><td>{row.views}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : <p className="mt-2 text-sm text-[color:var(--dim)]">Source data is not available from the API yet.</p>}
+          {stats.referrers && stats.referrers.length > 0 && (
+            <>
+              <h3 className="mt-5 text-sm font-medium">Referring sites</h3>
+              <ul className="mt-2 space-y-1 text-sm">
+                {stats.referrers.map((row) => (
+                  <li key={row.referrer} className="flex justify-between gap-2 border-t hairline py-1.5">
+                    <span className="kbd truncate">{row.referrer}</span>
+                    <span className="text-[color:var(--muted)]">{row.browsers} browsers</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {stats.campaigns && stats.campaigns.length > 0 && (
+            <>
+              <h3 className="mt-5 text-sm font-medium">Campaigns</h3>
+              <table className="mt-2 w-full text-left text-sm">
+                <thead className="text-[color:var(--muted)]">
+                  <tr><th className="py-1 font-normal">Campaign</th><th className="font-normal">Source / medium</th><th className="font-normal">Browsers</th><th className="font-normal">Engaged</th></tr>
+                </thead>
+                <tbody>
+                  {stats.campaigns.map((row) => (
+                    <tr key={row.campaign} className="border-t hairline">
+                      <td className="py-1.5 kbd">{row.campaign}</td>
+                      <td>{[row.source, row.medium].filter(Boolean).join(" / ") || "—"}</td>
+                      <td>{row.browsers}</td><td>{row.engaged_browsers}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
 
           <h2 className="mt-8 font-semibold">Successful app actions</h2>
           <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">

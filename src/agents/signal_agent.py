@@ -73,7 +73,7 @@ _THINKING_HEADROOM = 12000
 
 def _anthropic_client():
     if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
-        raise RuntimeError("no LLM API key is configured (ANTHROPIC_API_KEY is not set).")
+        raise RuntimeError("no language model API key is configured.")
     return anthropic.Anthropic()
 
 
@@ -125,7 +125,7 @@ def _get_llm_client():
         except RuntimeError as e:
             errors.append(str(e))
     if not available:
-        raise RuntimeError("no LLM API key is configured (ANTHROPIC_API_KEY is not set, GROQ_API_KEY is not set).")
+        raise RuntimeError("no language model API key is configured.")
     if len(available) == 1:
         return available[0]
     return LLMRouter(available), "router"
@@ -139,6 +139,18 @@ def _model_label(client, provider: str) -> str:
     if provider == "router":
         return getattr(client, "last_model", None) or "unknown"
     return _last_model.get(provider) or (GROQ_MODEL if provider == "groq" else ANTHROPIC_MODEL)
+
+
+def public_model_name(model: Optional[str]) -> Optional[str]:
+    """How the product names the model that wrote a narrative: by role, never by vendor or model id.
+    The exact model is still kept in the server logs and the LLM cache key."""
+    if not model:
+        return model
+    if model in (GROQ_MODEL, *GROQ_FALLBACK_MODELS) or "/" in model:
+        return "the fallback language model"
+    if model == "unknown":
+        return "the language model"
+    return "the primary language model"
 
 
 # Identical requests return the stored reply, so re-running or replaying an analysis
@@ -738,7 +750,7 @@ class BriefSynthesisAgent:
         state.brief = AnalystBrief(
             company_name=company, ticker=ticker,
             analyst_model=("deterministic engine only (LLM unavailable)" if narrative_error
-                           else _model_label(self.client, self.provider)),
+                           else public_model_name(_model_label(self.client, self.provider))),
             executive_summary=_text("executive_summary", (
                 f"Narrative synthesis unavailable. {len(state.detected_signals)} signal(s) were "
                 f"confirmed by the deterministic engine and are listed below."

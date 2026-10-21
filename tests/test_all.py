@@ -1101,7 +1101,8 @@ class TestBriefSynthesisAgent:
         r = await BriefSynthesisAgent().run(self._state())
         assert "LLM unavailable" in r.brief.analyst_model
         reasons = " ".join(r.brief.human_review_reasons)
-        assert "ANTHROPIC_API_KEY is not set" in reasons
+        assert "no language model API key is configured" in reasons
+        assert "claude" not in reasons.lower() and "anthropic" not in reasons.lower()
         assert "authentication method" not in reasons
 
 
@@ -2686,7 +2687,7 @@ class TestLLMProvider:
         monkeypatch.delenv("ANTHROPIC_API_KEY")
         assert sa._get_llm_client()[1] == "groq"            # only Groq configured
         monkeypatch.delenv("GROQ_API_KEY")
-        with pytest.raises(RuntimeError, match="no LLM API key"):
+        with pytest.raises(RuntimeError, match="no language model API key"):
             sa._get_llm_client()
 
     def test_router_falls_back_to_groq(self):
@@ -2892,7 +2893,7 @@ class TestReportIntegrity:
         assert b.executive_summary == "Analysis complete."
         assert b.recent_developments == ["one item"]
         assert b.top_alpha_score == 60.0                        # max, not list position
-        assert b.analyst_model == sa.ANTHROPIC_MODEL
+        assert b.analyst_model == "the primary language model"           # named by role, never by vendor
         assert b.compound_signals and b.systemic_risk_level.value != "isolated"
         assert "2 low-confidence signal(s) suppressed" in b.compliance_flags
 
@@ -3919,6 +3920,27 @@ class TestHostedApi:
             behavioural = rpc.await_args_list[-1].args
             assert behavioural[1] == "log_behavioral_event"
             assert behavioural[2]["p_event_id"] == expected
+
+    def test_tracking_records_referrer_host_and_campaign_tags_only_when_well_formed(self, monkeypatch):
+        import src.hosted_market as hm
+        client, _ = self._client(monkeypatch)
+        monkeypatch.setattr(hm, "_configured", lambda: True)
+        rpc = AsyncMock(return_value=MagicMock(is_success=True))
+        monkeypatch.setattr(hm, "_rpc", rpc)
+
+        response = client.post("/api/track", content=json.dumps({
+            "v": "a" * 32, "p": "/app/deals?x=1", "r": "WWW.LinkedIn.com", "us": "newsletter", "um": "email", "uc": "oct-2026"}),
+            headers={"content-type": "text/plain"})
+        assert response.json() == {"ok": True}
+        assert rpc.await_args.args[1] == "log_visit_with_source"
+        assert rpc.await_args.args[2] == {"p_visitor": "a" * 32, "p_path": "/app/deals", "p_referrer": "www.linkedin.com",
+                                          "p_utm_source": "newsletter", "p_utm_medium": "email", "p_utm_campaign": "oct-2026"}
+
+        rpc.reset_mock()
+        client.post("/api/track", content=json.dumps({"v": "a" * 32, "p": "/", "r": "https://evil.example/path?q=1", "uc": "<script>"}),
+                    headers={"content-type": "text/plain"})
+        sent = rpc.await_args.args[2]
+        assert sent["p_referrer"] is None and sent["p_utm_campaign"] is None and sent["p_utm_source"] is None
 
     def test_tracking_rejects_unknown_product_action(self, monkeypatch):
         import src.hosted_market as hm

@@ -821,6 +821,9 @@ def _backtest_freshness() -> Optional[dict]:
 
 ADMIN_KEY = os.environ.get("DEAL_INTEL_ADMIN_KEY", "")
 _VISITOR = re.compile(r"^[a-z0-9]{8,40}$")
+# Where a session landed from: the referring site's host (never a full URL) and campaign tags.
+_REFERRER_HOST = re.compile(r"^[a-z0-9.-]{1,100}$")
+_UTM_VALUE = re.compile(r"^[A-Za-z0-9._+-]{1,60}$")
 _EVENT_ID = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 _PRODUCT_ACTIONS = {
     "deals_loaded", "investors_loaded", "events_loaded", "risk_data_loaded",
@@ -839,6 +842,7 @@ async def track_visit(request: Request) -> dict:
         action = str(body.get("a", ""))
         target_id = str(body.get("t", ""))[:160]
         event_id = str(body.get("e", ""))
+        source = {k: str(body.get(k) or "") for k in ("r", "us", "um", "uc")}
         context_raw = body.get("c", "{}")
         context = json.loads(context_raw) if isinstance(context_raw, str) else context_raw
     except (ValueError, AttributeError):
@@ -857,7 +861,12 @@ async def track_visit(request: Request) -> dict:
         return {"ok": False}
     async with httpx.AsyncClient(timeout=10) as client:
         if path:
-            r = await _rpc(client, "log_visit", {"p_visitor": visitor, "p_path": path.split("?")[0]})
+            r = await _rpc(client, "log_visit_with_source", {
+                "p_visitor": visitor, "p_path": path.split("?")[0],
+                "p_referrer": source["r"].lower() if _REFERRER_HOST.fullmatch(source["r"].lower()) else None,
+                **{f"p_utm_{name}": source[k] if _UTM_VALUE.fullmatch(source[k]) else None
+                   for k, name in (("us", "source"), ("um", "medium"), ("uc", "campaign"))},
+            })
             if not r.is_success:
                 return {"ok": False}
         if action:
