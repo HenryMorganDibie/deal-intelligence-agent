@@ -116,7 +116,12 @@ export default function Admin() {
     company_data_loaded: "Company profiles and valuations loaded",
     watchlists_used: "Watchlist actions completed",
     brief_opened: "Saved briefs opened",
-    performance_data_loaded: "Performance data loaded",\n    deal_search_submitted: "Deal searches submitted",\n    deal_opened: "Deal detail opens",\n    research_submitted: "Research questions submitted",\n    market_brief_opened: "Market briefs opened",\n    deal_impression: "Deal result impressions",
+    performance_data_loaded: "Performance data loaded",
+    deal_search_submitted: "Deal searches submitted",
+    deal_opened: "Deal detail opens",
+    research_submitted: "Research questions submitted",
+    market_brief_opened: "Market briefs opened",
+    deal_impression: "Deal result impressions",
   };
   const actions = stats?.actions ?? [];
   const appPageActivity = stats?.app_page_activity ?? [];
