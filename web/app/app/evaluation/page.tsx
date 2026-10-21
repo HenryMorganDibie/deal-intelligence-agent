@@ -96,6 +96,7 @@ type ReturnForecastSlice = {
   reason: string;
 };
 type ReturnForecastValidation = {
+  method?: string;
   horizon: string;
   candidate: string;
   train_through?: string;
@@ -700,7 +701,7 @@ export default function EvaluationPage() {
           <Section
             id="return-forecast"
             title="Return forecast validation"
-            lede="This is a separate evaluation from alpha and event confirmation. A return estimate is eligible for use only after it beats a zero-return baseline on a recent chronological holdout, with enough data overall and in each market."
+            lede="This is a separate evaluation from alpha and event confirmation. Each month's flags are forecast only from earlier months (walk-forward), and a return estimate is issued only while it beats a zero-return baseline on recent data, overall and in each market. Freshness is re-checked every time this page loads."
           >
             {!returnForecast ? (
               <Callout tone="warn">
@@ -742,7 +743,8 @@ export default function EvaluationPage() {
                   Latest labelled date: {day(returnForecast.latest_labelled_as_of) ?? "n/a"}
                   {returnForecast.data_age_days != null ? ` (${returnForecast.data_age_days} days old)` : ""}.
                   Freshness gate: at most {returnForecast.freshness_max_age_days ?? "n/a"} days.
-                  Even if these retrospective gates pass, individual live return estimates are not issued yet.
+                  {returnForecast.method ? ` Method: ${returnForecast.method}.` : ""} Estimates are served at
+                  /api/return-forecast only while every gate passes; otherwise the endpoint returns the reason.
                 </p>
               </div>
             )}

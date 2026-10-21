@@ -1044,6 +1044,21 @@ async def evaluation_file(name: str) -> Response:
     return Response(body, media_type=media, headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
 
+def _return_forecast_status() -> Optional[dict]:
+    from src.engines import return_forecast
+    return return_forecast.current_status(_read_json(_ROOT / "docs" / "return_forecast_validation.json"))
+
+
+@router.get("/api/return-forecast")
+async def return_forecast_estimate(market: str = Query(..., pattern="^(us|africa)$"),
+                                   signal_type: str = Query(..., max_length=40),
+                                   severity: str = Query(..., pattern="^(low|medium|high|critical)$")) -> dict:
+    """A 10-day market-adjusted return estimate for a flag, issued only while the validation gates pass today."""
+    from src.engines import return_forecast
+    return return_forecast.estimate(_read_json(_ROOT / "docs" / "return_forecast_validation.json"),
+                                    market, signal_type, severity)
+
+
 @router.get("/api/evaluation")
 async def evaluation() -> dict:
     try:
@@ -1056,9 +1071,7 @@ async def evaluation() -> dict:
             live = await refresh_live(client)
     return {"historical_backtest": backtest, "live_outcomes": live, "measured_now": _measured_summary(),
             "signal_report": _read_json(_ROOT / "docs" / "evaluation_report.json"),
-            "return_forecast_validation": _read_json(
-                _ROOT / "docs" / "return_forecast_validation.json"
-            ),
+            "return_forecast_validation": _return_forecast_status(),
             "data_quality": _read_json(_ROOT / "evaluation" / "deals" / "results.json"),
             "data_quality_baseline": _read_json(_ROOT / "evaluation" / "deals" / "results_baseline.json"),
             "attribution": _read_json(_ROOT / "evaluation" / "attribution" / "results.json"),

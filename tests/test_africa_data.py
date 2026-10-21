@@ -1539,7 +1539,8 @@ def test_monthly_run_continues_the_unfinished_period_and_publishes_only_improvem
     hb.SUMMARY_PATH.parent.mkdir(parents=True, exist_ok=True)
     hb.SUMMARY_PATH.write_text(json.dumps({"start": "2024-01-15", "end": "2025-06-15", "companies": 2,
                                            "missing_companies": 2}))
-    assert hb.current_period(date(2026, 11, 2)) == (start, end, 30)
+    assert hb.current_period(date(2025, 11, 2)) == (start, end, 30)          # recent: keep filling it
+    assert hb.current_period(date(2026, 11, 2)) == (*hb.rolling_period(date(2026, 11, 2)), 0)  # stale: move on
 
     for t in ("FIC0", "FIC1"):
         hb._checkpoint(run_dir, t).write_text(json.dumps({"covered": True}))
@@ -1547,7 +1548,12 @@ def test_monthly_run_continues_the_unfinished_period_and_publishes_only_improvem
     hb._checkpoint(run_dir, "FIC2").write_text(json.dumps({"covered": True}))
     assert hb.publish_decision(start, end, universe)[0] is True           # more companies than published
     other = date(2024, 2, 15), date(2025, 7, 15)
-    assert hb.publish_decision(*other, universe)[0] is False               # a partial new period never replaces
+    assert hb.publish_decision(*other, universe)[0] is False               # a partial newer period with less coverage
+    other_dir = hb.RUNS_DIR / f"{other[0]}_{other[1]}"
+    other_dir.mkdir(parents=True, exist_ok=True)
+    for t in ("FIC0", "FIC1"):
+        hb._checkpoint(other_dir, t).write_text(json.dumps({"covered": True}))
+    assert hb.publish_decision(*other, universe)[0] is True                # newer, as much coverage as published
     hb._checkpoint(run_dir, "FIC3").write_text(json.dumps({"covered": False}))
     assert hb.publish_decision(start, end, universe)[0] is True           # complete
 

@@ -387,16 +387,24 @@ def _checkpoint_needs_run(path: Path) -> bool:
         return True
 
 
+# A published period whose last as-of date is this far behind the latest rolling period is abandoned
+# for the latest one even while companies remain, so results (and the return-forecast validation fed
+# by them) cannot stay frozen on old dates.
+MAX_PERIOD_LAG_DAYS = 120
+
+
 def current_period(today: date) -> tuple[date, date, int]:
     """(start, end, step_days) the monthly run works on: the published period while some of its companies
-    are still to run, so each month adds to it; once it is complete, the latest rolling period."""
+    are still to run and it is recent, so each month adds to it; otherwise the latest rolling period."""
     try:
         pub = json.loads(SUMMARY_PATH.read_text())
     except (OSError, ValueError):
         pub = {}
-    if pub.get("missing_companies") and pub.get("start") and pub.get("end"):
-        return date.fromisoformat(pub["start"]), date.fromisoformat(pub["end"]), int(pub.get("step_days", 30))
     start, end = rolling_period(today)
+    if pub.get("missing_companies") and pub.get("start") and pub.get("end"):
+        pub_end = date.fromisoformat(pub["end"])
+        if (end - pub_end).days <= MAX_PERIOD_LAG_DAYS:
+            return date.fromisoformat(pub["start"]), pub_end, int(pub.get("step_days", 30))
     return start, end, 0
 
 
@@ -422,6 +430,10 @@ def publish_decision(start: date, end: date, universe: list[tuple]) -> tuple[boo
     published = int(pub.get("companies") or 0)
     if same and covered > published:
         return True, f"{covered} companies now, {published} published; {missing} still to run"
+    newer = bool(pub.get("end")) and end > date.fromisoformat(pub["end"])
+    if newer and covered >= published:
+        return True, (f"a more recent period covers {covered} companies, at least the {published} published; "
+                      f"{missing} still to run")
     return False, (f"{covered} companies done, {published} published"
                    f"{'' if same else ' for another period'}; {missing} still to run, keeping the published results")
 

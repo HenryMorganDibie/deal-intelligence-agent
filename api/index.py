@@ -63,7 +63,7 @@ _PUBLIC_MARKET_CACHE_EXACT = {
     "/api/countries", "/api/currencies", "/api/coverage", "/api/deals",
     "/api/comparables", "/api/investors", "/api/funds", "/api/events",
     "/api/companies/profile", "/api/valuation", "/api/pulse", "/api/showcase",
-    "/api/evaluation", "/api/evaluation/files",
+    "/api/evaluation", "/api/evaluation/files", "/api/return-forecast",
 }
 
 

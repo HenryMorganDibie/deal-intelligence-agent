@@ -65,3 +65,43 @@ def test_stale_holdout_cannot_qualify_as_a_live_return_forecast():
 def test_requires_six_or_more_holdout_dates():
     with pytest.raises(ValueError, match="at least 6"):
         evaluate([], holdout_dates=5)
+
+
+def test_clustered_interval_measures_the_change_in_error_not_the_size_of_returns():
+    from src.engines.return_forecast import _metrics
+
+    # A forecast of 0.1 against large returns barely changes each absolute error, so the
+    # interval must be narrow; using |return| - |forecast| would make it as wide as the returns.
+    pairs = []
+    for day in range(1, 13):
+        for actual in (-8.0, 8.0, -6.0, 6.0):
+            pairs.append((0.1, actual, date(2025, 1, day)))
+    m = _metrics(pairs)
+    assert m["mae_improvement_pct"] == 0.0
+    assert abs(m["absolute_mae_improvement_ci_low_pct_points"]) < 0.05
+
+
+def test_walk_forward_scores_every_date_after_the_training_window_without_lookahead():
+    rows = []
+    for month in range(1, 13):
+        # Each month's outcomes equal the month number, so any forecast that saw the
+        # month's own outcomes would be exact; prior-only forecasts cannot be.
+        rows.extend(_row(f"2024-{month:02d}-01", "us", float(month)) for _ in range(40))
+    result = evaluate(rows, evaluation_date=date(2024, 12, 15))
+    assert result["holdout_from"] == "2024-07-01" and result["overall"]["holdout_dates"] == 6
+    assert result["method"].startswith("walk-forward")
+    assert result["overall"]["candidate_mae_pct"] > 0
+
+
+def test_published_report_is_rechecked_for_freshness_and_gates_estimates():
+    from src.engines.return_forecast import current_status, estimate
+
+    report = {"qualified": True, "latest_labelled_as_of": "2026-06-15", "freshness_max_age_days": 180,
+              "horizon": "10 calendar days, market-adjusted", "candidate": "c", "evaluated_on": "2026-07-01",
+              "overall": {"candidate_mae_pct": 3.0}, "reason": "Passed"}
+    assert current_status(report, date(2026, 9, 1))["qualified"] is True
+    stale = current_status(report, date(2027, 3, 1))
+    assert stale["qualified"] is False and "days old" in stale["reason"]
+    refused = estimate({**report, "qualified": False, "reason": "MAE improvement below 5%"}, "us", "m_and_a_activity", "high")
+    assert refused == {"issued": False, "reason": "MAE improvement below 5%"}
+    assert estimate(report, "us", "m_and_a_activity", "high", today=date(2027, 3, 1))["issued"] is False

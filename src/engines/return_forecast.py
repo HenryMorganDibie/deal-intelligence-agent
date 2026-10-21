@@ -1,7 +1,9 @@
 """Chronological validation for a simple market-adjusted return forecast.
 
-This module deliberately does not publish a live forecast. A model must beat a
-zero-return baseline on a later, date-separated holdout before it can be used.
+Walk-forward: every as-of date after a minimum training window is a holdout date, forecast only
+from strictly earlier dates (10-day outcomes resolve long before the next monthly as-of date, so
+no outcome leaks into a later forecast). A forecast may be issued only while it beats a
+zero-return baseline on these holdouts, overall and in each market, on recent data.
 """
 from __future__ import annotations
 
@@ -19,6 +21,10 @@ DEFAULT_PREDICTIONS = Path(__file__).resolve().parents[2] / "docs" / "backtest_p
 MIN_TRAIN_GROUP = 30
 MIN_HOLDOUT_ROWS = 100
 MIN_HOLDOUT_DATES = 6
+MIN_TRAIN_DATES = 6
+CANDIDATE = "Prior-only median by market/signal/severity, with hierarchical backoff"
+HORIZON = "10 calendar days, market-adjusted"
+METHOD = "walk-forward, expanding training window, one holdout date at a time"
 MIN_MAE_IMPROVEMENT = 0.05
 MAX_DATA_AGE_DAYS = 180
 _T_CRITICAL_95 = {5: 2.571, 6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228,
@@ -75,7 +81,7 @@ def _metrics(pairs: list[tuple[float, float, date]]) -> dict:
     for forecast, actual, as_of in pairs:
         model_errors.append(abs(forecast - actual))
         baseline_errors.append(abs(actual))
-        improvement_by_date[as_of].append(abs(actual) - abs(forecast))
+        improvement_by_date[as_of].append(abs(actual) - abs(forecast - actual))
         if forecast != 0 and actual != 0:
             direction_hits.append((forecast > 0) == (actual > 0))
 
@@ -124,38 +130,46 @@ def _metrics(pairs: list[tuple[float, float, date]]) -> dict:
     }
 
 
+def _walk_forward(rows: list[dict], holdout: list[date]) -> list[tuple[dict, float]]:
+    """(row, forecast) for every holdout row, each forecast from rows strictly before its date."""
+    out = []
+    for as_of in holdout:
+        history = [r for r in rows if r["as_of"] < as_of]
+        out.extend((row, _forecast(history, row)) for row in rows if row["as_of"] == as_of)
+    return out
+
+
 def evaluate(
     rows: Iterable[dict],
-    holdout_dates: int = 6,
+    holdout_dates: int | None = None,
     evaluation_date: date | None = None,
 ) -> dict:
-    """Evaluate a prior-only grouped-median forecast against a zero-return baseline."""
+    """Walk-forward evaluation of the prior-only grouped-median forecast against a zero-return baseline.
+
+    The holdout is every date after the first MIN_TRAIN_DATES, or the last `holdout_dates` dates.
+    """
     rows = sorted(rows, key=lambda r: r["as_of"])
     dates = sorted({r["as_of"] for r in rows})
     evaluated_on = evaluation_date or date.today()
-    if holdout_dates < MIN_HOLDOUT_DATES:
+    if holdout_dates is not None and holdout_dates < MIN_HOLDOUT_DATES:
         raise ValueError(f"holdout_dates must be at least {MIN_HOLDOUT_DATES}")
-    if len(dates) <= holdout_dates:
+    n_holdout = holdout_dates if holdout_dates is not None else len(dates) - MIN_TRAIN_DATES
+    if n_holdout < MIN_HOLDOUT_DATES or len(dates) - n_holdout < MIN_TRAIN_DATES:
         return {
-            "horizon": "10 calendar days, market-adjusted",
-            "candidate": "Prior-only median by market/signal/severity, with hierarchical backoff",
+            "horizon": HORIZON, "candidate": CANDIDATE, "method": METHOD,
             "qualified": False,
             "reason": "Not enough distinct dates for a chronological train/holdout split.",
             "overall": _metrics([]),
             "by_market": {},
         }
 
-    first_holdout = dates[-holdout_dates]
+    holdout = dates[-n_holdout:]
+    first_holdout = holdout[0]
     latest_as_of = dates[-1]
-    train = [r for r in rows if r["as_of"] < first_holdout]
-    test = [r for r in rows if r["as_of"] >= first_holdout]
-    pairs = [(_forecast(train, row), row["outcome"], row["as_of"]) for row in test]
-    overall = _metrics(pairs)
+    scored = _walk_forward(rows, holdout)
+    overall = _metrics([(f, row["outcome"], row["as_of"]) for row, f in scored])
     by_market = {
-        market: _metrics([
-            (_forecast(train, row), row["outcome"], row["as_of"])
-            for row in test if row["market"] == market
-        ])
+        market: _metrics([(f, row["outcome"], row["as_of"]) for row, f in scored if row["market"] == market])
         for market in ("us", "africa")
     }
     qualified = overall["qualified"] and all(
@@ -173,12 +187,13 @@ def evaluate(
         )
     qualified = qualified and fresh
     return {
-        "horizon": "10 calendar days, market-adjusted",
-        "candidate": "Prior-only median by market/signal/severity, with hierarchical backoff",
-        "train_through": max(r["as_of"] for r in train).isoformat(),
+        "horizon": HORIZON,
+        "candidate": CANDIDATE,
+        "method": METHOD,
+        "train_through": max(r["as_of"] for r in rows if r["as_of"] < first_holdout).isoformat(),
         "holdout_from": first_holdout.isoformat(),
         "holdout_through": dates[-1].isoformat(),
-        "train_n": len(train),
+        "train_n": sum(1 for r in rows if r["as_of"] < first_holdout),
         "evaluated_on": evaluated_on.isoformat(),
         "latest_labelled_as_of": latest_as_of.isoformat(),
         "data_age_days": data_age_days,
@@ -191,10 +206,43 @@ def evaluate(
     }
 
 
+def current_status(report: dict | None, today: date | None = None) -> dict | None:
+    """A published report with freshness re-checked for today, so a stale report cannot stay qualified."""
+    if not report or not report.get("latest_labelled_as_of"):
+        return report
+    today = today or date.today()
+    age = (today - date.fromisoformat(report["latest_labelled_as_of"])).days
+    limit = report.get("freshness_max_age_days", MAX_DATA_AGE_DAYS)
+    fresh = 0 <= age <= limit
+    out = {**report, "data_age_days": age, "freshness_passed": fresh, "checked_on": today.isoformat()}
+    if report.get("qualified") and not fresh:
+        out["qualified"] = False
+        out["reason"] = f"latest labelled as-of date is {age} days old (maximum {limit}); awaiting fresher outcomes"
+    elif not fresh and "days old" not in (report.get("reason") or ""):
+        out["reason"] = f"{report.get('reason', '')}; latest labelled as-of date is {age} days old (maximum {limit})".lstrip("; ")
+    return out
+
+
+def estimate(report: dict | None, market: str, signal_type: str, severity: str,
+             path: Path = DEFAULT_PREDICTIONS, today: date | None = None) -> dict:
+    """A 10-day market-adjusted return estimate for a flag, issued only while validation passes today."""
+    status = current_status(report, today)
+    if not status or not status.get("qualified"):
+        return {"issued": False,
+                "reason": (status or {}).get("reason") or "No return-forecast validation has been published."}
+    rows = _read_predictions(path)
+    value = _forecast(rows, {"market": market, "signal_type": signal_type, "severity": severity})
+    return {"issued": True, "estimate_pct": round(value, 3), "horizon": status["horizon"],
+            "candidate": status["candidate"], "validated_on": status.get("evaluated_on"),
+            "holdout_mae_pct": status["overall"]["candidate_mae_pct"],
+            "note": "A median of comparable earlier flags; descriptive of past moves, not a trading recommendation."}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate a separate 10-day return forecast.")
     parser.add_argument("--csv", type=Path, default=DEFAULT_PREDICTIONS)
-    parser.add_argument("--holdout-dates", type=int, default=6)
+    parser.add_argument("--holdout-dates", type=int, default=None,
+                        help="score only the last N dates (default: every date after the training window)")
     args = parser.parse_args()
     print(json.dumps(evaluate(_read_predictions(args.csv), args.holdout_dates), indent=2))
 
