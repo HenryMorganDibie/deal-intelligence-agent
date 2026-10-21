@@ -748,7 +748,7 @@ _VISITOR = re.compile(r"^[a-z0-9]{8,40}$")
 _PRODUCT_ACTIONS = {
     "deals_loaded", "investors_loaded", "events_loaded", "risk_data_loaded",
     "company_data_loaded", "watchlists_used", "brief_opened", "performance_data_loaded",
-    "deal_search_submitted", "deal_opened", "research_submitted", "market_brief_opened",
+    "deal_search_submitted", "deal_opened", "research_submitted", "market_brief_opened", "deal_impression",
 }
 
 
@@ -786,7 +786,7 @@ async def track_visit(request: Request) -> dict:
             r = await _rpc(client, "log_product_action", {"p_visitor": visitor, "p_action": action})
             if not r.is_success:
                 return {"ok": False}
-            if action in {"deal_search_submitted", "deal_opened", "research_submitted", "market_brief_opened"}:
+            if action in {"deal_search_submitted", "deal_opened", "research_submitted", "market_brief_opened", "deal_impression"}:
                 r = await _rpc(client, "log_behavioral_event", {
                     "p_event_type": action,
                     "p_visitor": visitor,
