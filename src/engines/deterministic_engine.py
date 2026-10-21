@@ -21,7 +21,7 @@ from typing import Optional
 from src.data.africa_countries import COUNTRIES, regulator_acronyms
 from src.utils.clock import utcnow
 from src.schemas.models import (
-    SECFiling, NewsItem, SignalCandidate, SignalType, AgentState
+    SignalCandidate, SignalType, AgentState
 )
 
 # ─── Source Credibility Registry ─────────────────────────────────────────────
@@ -588,7 +588,7 @@ HEADLINE_RULES: list[tuple[SignalType, list[str], float]] = [
     ], 0.75),
     (SignalType.CREDIT_RISK, [
         rf"\b{_AGENCY}\b.{{0,40}}\b(downgrades?|downgraded|cuts?|lowers?|lowered|slashes|slashed)\b",
-        rf"\b(downgrades?|downgraded|cuts?|lowers?|lowered)\b.{{0,40}}\b(rating|outlook\s+to\s+negative|to\s+(junk|ccc|cc|b-|b\+|bb-))",
+        r"\b(downgrades?|downgraded|cuts?|lowers?|lowered)\b.{0,40}\b(rating|outlook\s+to\s+negative|to\s+(junk|ccc|cc|b-|b\+|bb-))",
         r"\b(defaults?|defaulted)\s+on\b",
         r"\b(misses?|missed|skips?|skipped)\s+(an?\s+|its\s+)?(coupon|interest|bond|debt|loan|eurobond)\s+(payments?|repayments?)\b",
         r"\b(fitch|moody'?s|s&p)\s+a\s+abaiss[eé]\b.{0,40}\bnote\b",
@@ -602,7 +602,7 @@ HEADLINE_RULES: list[tuple[SignalType, list[str], float]] = [
     ], 0.95),
     (SignalType.REGULATORY_ACTION, [
         rf"\b(fined|fines?|penali[sz]ed|sanctioned|censured)\b.{{0,40}}{_MONEY}",
-        rf"\b(hit\s+with|slapped\s+with|faces?)\s+(a\s+|an\s+)?(\S+\s+){{0,4}}(fine|penalty|antitrust\s+suit|lawsuit|enforcement\s+action)\b",
+        r"\b(hit\s+with|slapped\s+with|faces?)\s+(a\s+|an\s+)?(\S+\s+){0,4}(fine|penalty|antitrust\s+suit|lawsuit|enforcement\s+action)\b",
         r"\b(securities\s+and\s+exchange\s+commission|competition\s+(commission|authority|tribunal)|data\s+protection\s+(commission|authority))\b.{0,60}\b(investigat\w*|probe|sanction\w*|fine[sd]?|penalt\w*|charge[sd]?)\b",
         r"\b(opened|opens|launched|launches)\s+(an?\s+)?(investigation|probe|inquiry)\s+into\b",
         r"\b(sues?|sued|charges?|charged)\b.{0,30}\b(antitrust|fraud|securities|misconduct|bribery|price[-\s]fixing)\b",

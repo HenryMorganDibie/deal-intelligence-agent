@@ -10,7 +10,6 @@ import json
 import uuid
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -19,7 +18,7 @@ from src.schemas.models import (
     AnalysisRequest, AgentState, AnalystBrief, DetectedSignal,
     SECFiling, NewsItem, CompanyProfile, RiskFactor, KeyMetric,
     SignalType, Severity, SignalCandidate, AlphaScore, LiquidityTier,
-    FeedbackEntry, FeedbackType, AuditEntry
+    FeedbackType
 )
 from src.utils.clock import utcnow
 
@@ -1465,7 +1464,7 @@ class TestSignalInteractionEngine:
         assert compounds[0].escalation_score == 0.80
 
     def test_mixed_insider_and_earnings_directions_are_contradictory(self):
-        from src.engines.signal_interaction import _apply_alpha_multipliers, _find_interactions
+        from src.engines.signal_interaction import _find_interactions
         from src.schemas.models import InteractionType
         for insider, earnings in [("open-market purchase of 1,000 shares", "Acme misses estimates"),
                                   ("open-market sale of 1,000 shares", "Acme beats estimates")]:
@@ -1496,7 +1495,7 @@ class TestSignalInteractionEngine:
             assert len(result.compound_signals[0].reasoning_chain) > 20
 
     def test_low_severity_signals_excluded(self):
-        from src.engines.signal_interaction import SignalInteractionEngine, _signals_qualify
+        from src.engines.signal_interaction import _signals_qualify
         signals = [self._make_signal(SignalType.MA_ACTIVITY, severity=Severity.LOW)]
         qualified = _signals_qualify(signals)
         assert len(qualified) == 0
@@ -1506,10 +1505,6 @@ class TestSignalInteractionEngine:
 
 class TestWarehouse:
     def test_schema_import(self):
-        from src.engines.warehouse import (
-            FilingRecord, NewsRecord, DetectedSignalRecord,
-            AnalystBriefRecord, MarketOutcomeRecord, ReplayRunRecord
-        )
         assert True  # all import without error
 
     def test_get_engine_creates_tables(self, tmp_path):
@@ -1736,7 +1731,7 @@ class TestConfidenceDecomposition:
         assert high.corroboration_score > low.corroboration_score
 
     def test_only_verified_target_match_increases_entity_score(self):
-        from src.engines.confidence import _entity_match_score, decompose
+        from src.engines.confidence import _entity_match_score
         unverified = self._cand()
         unverified.entity_mentions = ["Acme Corp", "Target Ltd", "$2.1B", "35%"]
         verified = unverified.model_copy(update={"target_entity_matched": True})
@@ -2451,8 +2446,8 @@ class TestEntityResolver:
 
     def test_normalise_deduplicates(self, tmp_path):
         r = self._resolver(tmp_path)
-        id1 = r.register("Apple Inc.")
-        id2 = r.register("Apple, Inc")
+        r.register("Apple Inc.")
+        r.register("Apple, Inc")
         # Both should resolve to same or similar canonical id
         assert r.resolve("Apple Inc") is not None
 
@@ -2616,7 +2611,7 @@ class TestAfricanSourcesExpansion:
         assert any("casablanca" in u.lower() for u in urls), "Casablanca missing"
 
     def test_gcr_ratings_in_sources(self):
-        from src.tools.africa_tool import PE_CAPITAL_SOURCES, AFRICAN_SOURCE_MAP
+        from src.tools.africa_tool import AFRICAN_SOURCE_MAP
         assert "gcrratings.com" in AFRICAN_SOURCE_MAP
 
     def test_imf_africa_in_sources(self):

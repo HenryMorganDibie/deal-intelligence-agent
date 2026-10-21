@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from urllib.parse import urlparse
 
 from src.data.africa_countries import get as get_country
 

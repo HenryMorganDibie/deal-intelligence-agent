@@ -20,8 +20,6 @@ citation rules.
 """
 from __future__ import annotations
 
-import asyncio
-import html
 import ipaddress
 import logging
 from html.parser import HTMLParser
@@ -690,7 +688,7 @@ def _source_assessment(kind: str, url: Optional[str], source: Optional[str]) -> 
         "sec.gov", "edgar.sec.gov", "ngxgroup.com", "nse.co.ke", "jse.co.za",
         "worldbank.org", "data.worldbank.org", "imf.org", "afdb.org", "ifc.org",
         "cbn.gov.ng", "sec.gov.ng", "fsca.co.za", "cma.or.ke", "bankofengland.co.uk",
-        "ecb.europa.eu", "federalreserve.gov", "federalreserve.gov", "bis.org",
+        "ecb.europa.eu", "federalreserve.gov", "bis.org",
     }
     if host and (host.endswith(".gov") or host.endswith(".gov.ng") or host.endswith(".gov.za")
                  or host in primary_hosts or any(host.endswith("." + d) for d in primary_hosts)):

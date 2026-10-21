@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 from typing import Iterable, Optional
 
-from src.data.africa_countries import Country, from_ticker, get as get_country, resolve
+from src.data.africa_countries import Country, resolve
 from src.engines import deals as deals_mod
 from src.engines import financials as fin
 from src.engines.investors import parties

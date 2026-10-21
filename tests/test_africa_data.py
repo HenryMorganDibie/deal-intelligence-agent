@@ -1310,7 +1310,7 @@ def test_committed_tables_keep_their_observations():
     assert len(t.get("observations", [])) == t["backtest_observations"] > 0
 
 
-from datetime import date, timedelta  # noqa: E402
+from datetime import timedelta  # noqa: E402
 
 from src.engines import pulse  # noqa: E402
 

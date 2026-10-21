@@ -19,13 +19,12 @@ Valuation view:
 """
 from __future__ import annotations
 
-import math
 import statistics
 from collections import Counter
 from datetime import date, timedelta
 from typing import Callable, Iterable, Optional
 
-from src.data.africa_countries import COUNTRIES, Country, get as get_country
+from src.data.africa_countries import COUNTRIES, get as get_country
 from src.engines import country_risk as cr
 from src.engines import deals as deals_mod
 

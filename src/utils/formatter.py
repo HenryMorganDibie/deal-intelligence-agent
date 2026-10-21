@@ -7,8 +7,6 @@ Renders an AnalystBrief as:
 """
 from __future__ import annotations
 
-import json
-from datetime import datetime
 from typing import Optional
 
 from rich.console import Console
@@ -18,7 +16,7 @@ from rich.text import Text
 from rich import box
 from rich.markup import escape
 
-from src.schemas.models import AnalystBrief, DetectedSignal, Severity, SignalType
+from src.schemas.models import AnalystBrief, Severity, SignalType
 
 console = Console()
 
@@ -310,11 +308,11 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
         lines.append(f"**Liquidity:** {_title(brief.liquidity_tier.value)}  ")
     lines.append(f"**Systemic Risk:** {_title(brief.systemic_risk_level.value)}  ")
     if brief.compliance_mode:
-        lines.append(f"**Compliance Mode:** ON  ")
+        lines.append("**Compliance Mode:** ON  ")
         for f in brief.compliance_flags:
             lines.append(f"⚠ {f}  ")
     if brief.requires_human_review:
-        lines.append(f"\n> ⚑ **HUMAN REVIEW REQUIRED BEFORE ACTING**")
+        lines.append("\n> ⚑ **HUMAN REVIEW REQUIRED BEFORE ACTING**")
         for r in brief.human_review_reasons:
             lines.append(f"> {r}")
 

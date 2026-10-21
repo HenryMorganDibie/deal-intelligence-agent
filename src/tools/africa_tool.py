@@ -287,10 +287,7 @@ AFRICAN_SOURCE_MAP = {
     "resbank.co.za":               "SARB South Africa",
     # Additional exchanges
     "egx.com.eg":                  "Egyptian Exchange",
-    "casablanca-bourse.com":       "Casablanca Stock Exchange",
     "brvm.org":                    "BRVM West Africa",
-    "dse.co.tz":                   "Dar es Salaam Stock Exchange",
-    "rse.rw":                      "Rwanda Stock Exchange",
     # New news sources
     "moroccoworldnews.com":        "Morocco World News",
     "agenceecofin.com":            "Agence Ecofin",

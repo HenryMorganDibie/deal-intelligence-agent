@@ -6,16 +6,15 @@ from __future__ import annotations
 
 import asyncio
 import html
-import json
 import re
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any, Optional
 from urllib.parse import quote
 
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from src.schemas.models import SECFiling, FilingType
+from src.schemas.models import SECFiling
 from src.utils.clock import utcnow
 
 EDGAR_BASE       = "https://efts.sec.gov/LATEST/search-index"
@@ -273,7 +272,7 @@ class EdgarTool:
             r = await self.client.get(url)
             r.raise_for_status()
             data = r.json()
-        except Exception as e:
+        except Exception:
             return []
 
         cutoff = (utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
@@ -387,7 +386,6 @@ class EdgarTool:
         for hit in hits:
             src = hit.get("_source", {})
             entity = src.get("entity_name", "Unknown")
-            cik_raw = src.get("file_num", "") or src.get("period_of_report", "")
             accession = hit.get("_id", "")
             form_type = src.get("form_type", "")
             file_date = src.get("file_date", "")

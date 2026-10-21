@@ -1,0 +1,7 @@
+# CI enforces correctness rules only: syntax errors, undefined or unused names, duplicate keys and values.
+# Style rules are not enforced.
+target-version = "py311"
+extend-exclude = ["web", "data", "seed"]
+
+[lint]
+select = ["E9", "F", "B033"]

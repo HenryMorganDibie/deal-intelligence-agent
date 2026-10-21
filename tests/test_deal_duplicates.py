@@ -146,7 +146,7 @@ def test_backfill_reaches_back_to_2010_and_the_product_loads_full_history(monkey
 
 
 def test_history_gate_holds_back_untrustworthy_backfill_without_touching_trusted_records():
-    from src.engines.deals import history_exclusion, merge
+    from src.engines.deals import history_exclusion
 
     held = {
         "Microsoft to buy Skype for $8.5 billion": "no African market",

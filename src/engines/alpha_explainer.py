@@ -8,13 +8,10 @@ compliance flag is traced to its source.
 from __future__ import annotations
 
 from typing import Optional
-from src.schemas.models import DetectedSignal, SignalCandidate, AlphaScore, Severity, SignalType
+from src.schemas.models import DetectedSignal, SignalCandidate, Severity
 from src.engines.alpha_scorer import (
-    SEVERITY_WEIGHT, LIQUIDITY_WEIGHT, _recency_decay,
-    _corroboration_weight, _infer_liquidity_tier,
-    HUMAN_REVIEW_ALPHA_THRESHOLD, WEIGHTS,
+    LIQUIDITY_WEIGHT, HUMAN_REVIEW_ALPHA_THRESHOLD, WEIGHTS,
 )
-from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY
 
 
 def explain_alpha(

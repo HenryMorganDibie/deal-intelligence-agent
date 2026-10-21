@@ -12,6 +12,8 @@ on:
       - "requirements*.txt"
       - "pyproject.toml"
       - "pytest.ini"
+      - "ruff.toml"
+      - "evaluation/**/*.py"
       - ".github/workflows/python-quality-gates.yml"
   push:
     branches: [main]
@@ -24,6 +26,8 @@ on:
       - "requirements*.txt"
       - "pyproject.toml"
       - "pytest.ini"
+      - "ruff.toml"
+      - "evaluation/**/*.py"
       - ".github/workflows/python-quality-gates.yml"
 
 permissions:
@@ -50,5 +54,7 @@ jobs:
             requirements-dev.txt
       - name: Install dependencies
         run: python -m pip install -r requirements-dev.txt -r requirements-backtest.txt
+      - name: Lint for correctness (undefined and unused names, duplicate keys)
+        run: python -m pip install ruff==0.16.9 && ruff check .
       - name: Run full test suite
         run: python -m pytest -q

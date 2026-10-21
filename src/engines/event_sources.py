@@ -20,7 +20,7 @@ import re
 import threading
 import os
 import time
-from datetime import date, datetime
+from datetime import date
 from email.utils import parsedate_to_datetime
 from typing import Optional
 from urllib.parse import quote

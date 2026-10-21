@@ -12,15 +12,13 @@ is the separate, measured `confidence` on the signal.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta
 import re
-from typing import Optional
 
 from src.schemas.models import (
-    SignalCandidate, DetectedSignal, ConfidenceDecomposition,
-    SignalType, Severity
+    SignalCandidate, ConfidenceDecomposition,
+    SignalType
 )
-from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY, candidate_credibility
+from src.engines.deterministic_engine import candidate_credibility
 from src.engines.feedback import get_signal_stats, get_source_reliability
 from src.utils.clock import utcnow
 

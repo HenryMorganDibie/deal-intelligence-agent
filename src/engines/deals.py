@@ -215,9 +215,8 @@ _GENERIC = {"africa", "african", "african startups", "startups", "firm", "abu dh
             "cotonou", "conakry", "freetown", "monrovia", "banjul", "bissau", "nouakchott", "windhoek", "gaborone",
             "maseru", "mbabane", "lilongwe", "antananarivo", "port louis", "moroni", "asmara", "mogadishu", "khartoum",
             "juba", "n'djamena", "ndjamena", "bangui", "malabo", "praia", "tripoli", "bujumbura",
-            "central bank", "banque centrale", "reserve bank",
-            "l'etat", "l’etat", "state government", "nigeria", "kenya", "egypt", "ghana", "startup", "startups", "report", "exclusive",
-            "breaking", "update", "news", "deal", "deals", "how", "why", "what", "watch", "opinion", "analysis",
+            "banque centrale", "reserve bank",
+            "l'etat", "l’etat", "state government", "nigeria", "kenya", "egypt", "ghana", "startup", "report", "breaking", "update", "news", "deal", "deals", "how", "why", "what", "watch", "opinion", "analysis",
             "weekly", "the big deal", "funding", "investors", "series", "seed", "ceo", "it", "this",
             "world bank group", "scale",
             # Public office-holders receive allocations, not investment.
@@ -276,7 +275,7 @@ _OWNED_GENERIC = re.compile(r"(?i)\b(purchase|acquisition|expansion|project|oper
 _FILLER = {"ratings", "rating", "three", "two", "four", "five", "six", "several", "local", "foreign", "its", "new",
            "major", "leading", "top", "big", "small", "global", "state", "private", "public", "owned", "listed",
            "investment", "consumer", "core", "banking", "insurance", "fashion", "travel", "technology", "telecom",
-           "power", "energy", "brand", "brands", "school", "private", "regional", "unnamed", "undisclosed"}
+           "power", "energy", "brand", "brands", "school", "regional", "unnamed", "undisclosed"}
 
 
 def _is_filler(word: str) -> bool:

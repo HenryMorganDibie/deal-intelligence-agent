@@ -20,13 +20,11 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime
-from pathlib import Path
 from typing import Any, Optional
 
 from sqlalchemy import (
     create_engine, Column, String, Float, Integer,
-    Boolean, DateTime, Text, Index
+    Boolean, DateTime, Text
 )
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from src.utils.clock import utcnow

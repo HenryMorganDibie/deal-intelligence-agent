@@ -27,16 +27,16 @@ import json
 import logging
 import math
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
 from src.schemas.models import (
     SignalCandidate, DetectedSignal, Severity, SignalType,
-    AlphaScore, LiquidityTier, AnalystBrief
+    AlphaScore, LiquidityTier
 )
-from src.engines.deterministic_engine import SOURCE_CREDIBILITY, DEFAULT_CREDIBILITY, candidate_credibility
+from src.engines.deterministic_engine import candidate_credibility
 from src.utils.clock import utcnow
 
 log = logging.getLogger(__name__)

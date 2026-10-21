@@ -124,7 +124,7 @@ def _behavioral_interest_scores_from_stats(stats: dict) -> dict[str, float]:
             impressions = max(0, int(row.get("impressions", 0)))
             unique_impression_visitors = max(0, int(row.get("unique_impression_visitors", 0)))
             unique_openers = max(0, int(row.get("unique_openers", 0)))
-            opens = max(0, int(row.get("opens", 0)))
+            int(row.get("opens", 0))  # a malformed row is skipped even though raw opens do not score
         except (TypeError, ValueError):
             continue
         # Require a small independent audience before engagement can influence ranking.

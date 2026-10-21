@@ -43,7 +43,7 @@ from typing import Any, Callable, Optional
 
 import httpx
 
-from src.schemas.models import AgentState, AnalysisRequest, NewsItem, SECFiling, Severity, SignalType
+from src.schemas.models import AgentState, AnalysisRequest, NewsItem, SECFiling, SignalType
 from src.utils.paths import DATA_DIR
 
 log = logging.getLogger(__name__)

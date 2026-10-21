@@ -23,13 +23,11 @@ Usage:
 from __future__ import annotations
 
 from src.utils.storage import load_json, save_json
-import json
 import statistics
 from datetime import date, datetime
-from pathlib import Path
 from typing import Optional
 
-from src.schemas.models import SignalType, Severity
+from src.schemas.models import SignalType
 from src.utils.clock import utcnow
 from src.utils.paths import DATA_DIR
 

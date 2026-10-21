@@ -112,7 +112,6 @@ class NewsTool:
             return []
 
         items = []
-        ns = {"media": "http://search.yahoo.com/mrss/"}
         for item in root.findall(".//item"):
             title = item.findtext("title") or ""
             link  = item.findtext("link") or ""

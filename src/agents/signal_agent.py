@@ -26,7 +26,6 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from datetime import datetime
 from typing import Any, Optional
 
 import os
@@ -39,7 +38,7 @@ except ImportError:
 
 from src.schemas.models import (
     AgentState, AnalystBrief, DetectedSignal, RiskFactor, KeyMetric,
-    SignalType, Severity, SignalCandidate, LiquidityTier
+    SignalType, Severity, SignalCandidate
 )
 from src.engines.deterministic_engine import DeterministicSignalEngine
 from src.engines.signal_interaction import _get_systemic_risk

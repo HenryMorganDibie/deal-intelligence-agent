@@ -15,9 +15,6 @@ Features:
 from __future__ import annotations
 
 from src.utils.storage import load_json, save_json
-import json
-from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
 from src.schemas.models import Severity, SignalType, CompanyRiskProfile

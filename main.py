@@ -249,7 +249,7 @@ async def _run_analysis(args: argparse.Namespace) -> None:
         f"[white]Target:[/white] {company}"
         + (f" ([dim]{args.ticker}[/dim])" if args.ticker else "")
         + f"\n[white]Lookback:[/white] {args.lookback} days  [white]Depth:[/white] {args.depth}"
-        + (f"\n[yellow]Compliance Mode: ON[/yellow]" if compliance else "")
+        + ("\n[yellow]Compliance Mode: ON[/yellow]" if compliance else "")
         + f"\n[dim]Provider: {provider.upper()} — {sa.MODEL}[/dim]",
         border_style="cyan", padding=(0,2)
     ))
@@ -596,7 +596,7 @@ def _run_graph(args: argparse.Namespace) -> None:
 # ─── registry ─────────────────────────────────────────────────────────────────
 
 def _run_registry(args: argparse.Namespace) -> None:
-    from src.engines.signal_registry import list_all_signals, get_signal_spec, SIGNAL_REGISTRY
+    from src.engines.signal_registry import list_all_signals, get_signal_spec
     from src.schemas.models import SignalType
 
     if getattr(args, 'show', None):
@@ -712,7 +712,6 @@ def _run_backtest(args: argparse.Namespace) -> None:
         return
 
     if getattr(args, "historical", False):
-        from datetime import date as _date
         from src.engines import backtest_universe
         from src.engines import historical_backtest as hb
         universe = backtest_universe.load()
@@ -800,7 +799,7 @@ def _print_backtest_result(result: dict) -> None:
 # ─── portfolio ─────────────────────────────────────────────────────────────────
 
 def _run_portfolio(args: argparse.Namespace) -> None:
-    from src.engines.portfolio import Portfolio, list_portfolios, get_portfolio
+    from src.engines.portfolio import Portfolio, list_portfolios
 
     if getattr(args, "list", False):
         names = list_portfolios()
@@ -912,7 +911,6 @@ def _run_entities(args: argparse.Namespace) -> None:
 
 def _run_explain(args: argparse.Namespace) -> None:
     from src.engines.company_memory import get_profile
-    from src.engines.alpha_explainer import explain_alpha
 
     company = args.company
     profile = get_profile(company)
@@ -924,9 +922,9 @@ def _run_explain(args: argparse.Namespace) -> None:
 
     console.print(f"\n[bold cyan]Alpha Score Explanation: {company}[/bold cyan]")
     console.print(f"Latest alpha: [bold]{profile.alpha_score_history[-1].get('alpha','—')}[/bold]  Severity: {profile.alpha_score_history[-1].get('severity','—').upper()}")
-    console.print(f"\n[dim]Full SHAP-style breakdown requires running a live analysis.[/dim]")
+    console.print("\n[dim]Full SHAP-style breakdown requires running a live analysis.[/dim]")
     console.print(f"Run: [bold]python main.py analyse --company \"{company}\" --output json[/bold]")
-    console.print(f"The JSON output includes alpha_score with full component breakdown per signal.\n")
+    console.print("The JSON output includes alpha_score with full component breakdown per signal.\n")
 
 
 # ─── marketdata ───────────────────────────────────────────────────────────────

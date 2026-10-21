@@ -13,9 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import uuid
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from src.schemas.models import AuditEntry, AgentState
 from src.utils.paths import DATA_DIR

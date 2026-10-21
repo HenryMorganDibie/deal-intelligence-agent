@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from src.schemas.models import SignalType, Severity
+from src.schemas.models import SignalType
 
 
 @dataclass

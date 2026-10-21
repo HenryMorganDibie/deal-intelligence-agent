@@ -11,11 +11,10 @@ The LLM synthesis layer explains compound events, it does not define them.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timedelta
 from typing import NamedTuple, Optional
 
 from src.schemas.models import (
-    DetectedSignal, SignalCandidate, CompoundSignal,
+    DetectedSignal, CompoundSignal,
     InteractionType, SystemicRiskLevel, SignalType, Severity, AgentState
 )
 from src.engines.alpha_scorer import HUMAN_REVIEW_ALPHA_THRESHOLD, evidence_direction

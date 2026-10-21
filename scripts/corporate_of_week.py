@@ -26,8 +26,7 @@ GENERIC_TARGETS = {
     "fund", "consortium", "government", "unknown", "undisclosed", "generic",
     # Common scraped headline fragments, not company names.
     "million", "millions", "billion", "billions", "president", "président", "presidente",
-    "public", "first", "company", "company limited", "private limited", "unknown",
-    "violators", "une", "startup", "bank", "fresh", "pay", "boost", "obuasi",
+    "public", "first", "company limited", "private limited", "violators", "une", "bank", "fresh", "pay", "boost", "obuasi",
 }
 
 # News stories dominated by transactions, politics, or sports are not corporate
