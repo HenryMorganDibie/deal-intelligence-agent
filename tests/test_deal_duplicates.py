@@ -149,7 +149,7 @@ def test_history_gate_holds_back_untrustworthy_backfill_without_touching_trusted
     from src.engines.deals import history_exclusion, merge
 
     held = {
-        "Microsoft to buy Skype for $8.5 billion": "no African country",
+        "Microsoft to buy Skype for $8.5 billion": "no African market",
         "Cash strapped Air Zimbabwe buys Airbus planes": "asset purchase",
         "AU raises $351 million to fight famine, drought in East Africa": "grant, aid or programme",
         "Government Will Not Sell Bungalow To Jake in Ghana": "no transaction stated",
@@ -161,6 +161,52 @@ def test_history_gate_holds_back_untrustworthy_backfill_without_touching_trusted
                      "AfDB, IFC, FMO Invest €66 Million in Dibamba Power Company in Cameroon",
                      "Bralirwa lists on the Rwanda stock exchange"):
         assert history_exclusion(headline) is None, headline
+
+
+def test_history_gate_reads_french_investit_publisher_bars_and_personal_purchases():
+    from src.engines.deals import history_exclusion
+
+    held = {
+        "Guinée: l'UFDG investit Dalein Diallo candidat à la présidentielle": "no transaction stated",
+        "Centrafrique : Sangaris se déploie ; le 1er RHP investit Berbérati": "no transaction stated",
+        "Zimbabwe Government Said to Seek Ban on Foreign Investment in Retail Sector": "no transaction stated",
+        "Nigerian Singer Kizz Daniel Acquires Luxurious Seafront Mansion": "asset purchase",
+        "Yumkella raises $ 500k to fight Ebola in Sierra Leone": "grant, aid or programme",
+        "Francophonie Vs Commonwealth: How Rwanda Bagged $3 Billion When It Said ‘au revoir’": "commentary",
+        "Marriott rachète Starwood et devient le N°1 mondial | Tourisme, hôtels, voyages en Tunisie": "no African market",
+    }
+    for headline, why in held.items():
+        assert why in (history_exclusion(headline) or ""), headline
+    for headline in ("Tunisie : Tuninvest investit dans Maille Club", "Madagascar: Sipromad investit 10M d'euros dans les cigarettes",
+                     "South African rent-to-buy car subscription company Planet42 raises R1.8 billion in funding",
+                     "Kigali Heights Sells Building for US$31.8 Million in Major Buyout",
+                     "News | Qatar-Funded Investment Platform Acquires Crowne Plaza Hotel in Kenya",
+                     "SSFR receives Rwf130m from Safaricom - Kenya | The New Times"):
+        assert history_exclusion(headline) is None, headline
+
+
+def test_history_gate_places_a_story_by_currency_party_or_african_outlet():
+    from src.engines.deals import history_exclusion
+
+    # The market is implicit in the headline but clear from the outlet, the amount or a known party.
+    assert history_exclusion("Kitui Flour Mills to acquire 100% stake in Rafiki Millers", publishers=["Business Daily"]) is None
+    assert history_exclusion("Universal Music acquires major stake in Mavin Global", publishers=["Techpoint Africa"]) is None
+    assert history_exclusion("Clicks to buy Sorbet salons' holding company for R105m") is None
+    assert history_exclusion("Access Bank Raises N442 Billion Capital through Syndicated Tier II Facility") is None
+    # An African outlet is not enough when the headline points to another market, or names no deal at all.
+    assert "no African market" in history_exclusion("QMS Medical acquires 51% stake in Saarathi Healthcare for Rs 45 crore",
+                                                     publishers=["Business Daily"])
+    assert "no African market" in history_exclusion("Mimecast Ltd Acquires Elevate Security", publishers=["Reuters"])
+    assert "asset purchase" in history_exclusion("Singer Sean Tizzle Acquires New Chevrolet Camaro RS 2013",
+                                                 publishers=["Modern Ghana"])
+    assert "no transaction" in history_exclusion("Tottenham snap up Werner on loan", publishers=["The Namibian"])
+    assert history_exclusion("Airtel Snaps Up Tigo Rwanda") is None
+    assert history_exclusion("Uber rival acquires ride-hailing startup in Nigeria") is None
+
+
+def test_merge_never_copies_soft_delete_markers():
+    from src.engines.deals import merge
+
     # An incoming report never hides or re-points a stored record.
     stored = {"id": "k", "deal_type": "acquisition", "headline": "h"}
     merged = merge(stored, {"id": "k", "deal_type": "acquisition", "excluded": "x", "merged_into": "y"})

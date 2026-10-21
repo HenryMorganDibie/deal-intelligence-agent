@@ -1057,19 +1057,88 @@ def resolve_duplicates(new: Iterable[dict], existing: dict[str, dict]) -> list[d
 # Older news searches return far more generic results than recent ones, so backfilled history has to
 # clear a stricter bar before analysts see it. Each rule names why a record is held back.
 _HISTORY_ASSET = re.compile(
-    r"(?i)\b(?:buys?|bought|acquires?|acquired|purchases?|to buy|forced to buy|takes delivery of|commissions?)\b.{0,60}?"
-    r"\b(?:planes?|aircraft|jets?|airbus|boeing|vessels?|ships?|vans?|buses|trucks?|cars|vehicles|land|drugs|"
-    r"equipment|machines?|bungalow|houses?|buildings?|tractors?|locomotives?)\b")
+    r"(?i)(?<!-)\b(?:buys?|bought|acquires?|acquired|purchases?|to buy|forced to buy|takes delivery of|commissions?|"
+    r"invests? in|acquiert|achète|adquire|compra)\b.{0,60}?"
+    r"\b(?:planes?|aircraft|jets?|airbus|boeing|vessels?|ships?|vans?|buses|trucks?|cars?|automobiles?|vehicles|land|"
+    r"drugs|equipment|machines?|bungalow|houses?|mansions?|buildings?|tractors?|locomotives?|cows|cattle|cranes|"
+    r"meters|scanners?|ride(?!-)|range rover|porsche|camaro|hummer|jeep|g[- ]wagon|mercedes|benz|suvs?|gadgets|"
+    r"barges?|avions?|aviões|boeing|système|systèmes|navires?)\b"
+    r"|(?<!-)\b(?:sells?|sold|to sell)\b.{0,40}?\b(?:cars?|automobiles?|mansions?)\b")
 _HISTORY_PROGRAMME = re.compile(
     r"(?i)\b(?:famine|drought|relief|humanitarian|donat\w*|charit\w*|gospel|church|scholarships?)\b"
     r"|\bsupports? investment\b|\bgets\b.{0,30}\bboost\b|\b(?:sector|industry|economy)\b.{0,25}\b(?:gets|receives)\b"
     r"|\bbacks?\b.{0,40}\b(?:bid|plan|programme|program|initiative|strategy)\b|\bdisburses?\b"
     r"|\b(?:programme|program|initiative)\b.{0,20}\binvests?\b"
-    r"|\binvests? in (?:public servants|people|youth|women|communities|content)\b")
-_HISTORY_NEGATION = re.compile(r"(?i)\b(?:will not|won't|not to|refuses? to|denies|deny|no longer)\b")
-_HISTORY_COMMENTARY = re.compile(r"(?i)^(?:meet the|how |why |what |top \d+|\d+ (?:things|ways|reasons)|on this day)"
-                                 r"|\b(?:must|should|needs? to) invest\b")
+    r"|\binvests? in (?:public servants|people|youth|women|communities|content)\b"
+    r"|\bvictims\b|\bto (?:fight|combat)\b|\bebola\b|\bprograma\b|\bcompulsor\w* acquire\b")
+_HISTORY_NEGATION = re.compile(r"(?i)\b(?:will not|won't|not to|refuses? to|denies|deny|no longer|ban on|no plans?)\b"
+                               r"|\bon loan\b|\breplacement\b")
+# French "investit" also means to nominate a candidate or occupy a place ("le parti investit X", "l'armée
+# investit Bangui"); as a transaction it is followed by an amount or by dans/en/au.
+_HISTORY_INVESTIT = re.compile(
+    r"(?i)\binvestit\b(?!\s+(?:dans|en|au|aux|à|plus|massivement|davantage|près|environ|quelque|un|une|des|"
+    r"l['’]|le capital|\d|\S+\s+(?:millions?|milliards?)))")
+_HISTORY_COMMENTARY = re.compile(r"(?i)^(?:meet the|how |why |what |top \d+|\d+ (?:things|ways|reasons)|on this day"
+                                 r"|this is (?:how|why|what)|here(?:'s| is) (?:how|what)|(?:i|we) will\b)"
+                                 r"|\b(?:must|should|needs? to) invest\b|: how\b|\btake advantage of\b|\byour dream\b"
+                                 r"|, more$|\burged to\b|\badvises\b|\bclaims\b|^don['’]t\b|\bwhat (?:should|to make)\b")
+# Publishers append their name after a bar ("... | The New Times", "... | Tourisme en Tunisie"), which
+# must not count as the country of the story.
+_BAR = re.compile(r"\s+\|\s+")
+
+
+def _headline_proper(headline: str) -> str:
+    """The story part of a headline: drop short section labels before a bar ("News | ...") and the
+    publisher after it."""
+    parts = _BAR.split(headline)
+    while len(parts) > 1 and len(parts[0].split()) <= 2:
+        parts = parts[1:]
+    return parts[0]
+
+
 _AFRICA_WORD = re.compile(r"(?i)\b(?:africa|african|afrique|africain\w*|áfrica|africano)\b")
+# A headline often leaves the market implicit ("Kitui Flour Mills to acquire Rafiki Millers"). The amount's
+# currency, or the outlet that published it, then places the story in Africa.
+_AFRICAN_CURRENCY = re.compile(
+    r"(?:₦|\bN\$?\s?\d|\bKSh?s?\.?\s?\d|\bSh\.?\s?\d|\bRwf\s?\d|\bR\s?\d[\d.,]*\s?(?:m|bn|million|billion)\b|GH[¢₵]"
+    r"|\b(?:FCFA|CFA|birr|cedis?|naira|rand|shillings?|kwacha|meticais|kwanzas?|UGX|TZS|KES|NGN|ZAR|EGP|MAD|TND)\b|جنيه)",
+    re.IGNORECASE)
+_AFRICAN_TLD = re.compile(
+    r"(?i)\.(?:co\.za|co\.zw|co\.ke|co\.ug|co\.tz|co\.bw|com\.gh|com\.ng|ng|ke|gh|ug|tz|rw|zm|zw|mw|na|bw|ma|tn|dz|eg|sn|"
+    r"ci|cm|bj|tg|bf|ml|ne|ga|cd|cg|ao|mz|mg|mu|et|so|sd|ly|gn|sl|lr|gm|cv|st|sz|ls|bi|dj|er|km|sc|mr|td|cf|gq)\b")
+# National outlets whose names carry no country, city or "Africa" (those that do are recognised already).
+_AFRICAN_OUTLETS = frozenset(o.lower() for o in (
+    "Business Daily", "Businessday NG", "BusinessDay", "Nairametrics", "Punch Newspapers", "Vanguard News",
+    "ThisDay", "THISDAYLIVE", "Daily Trust", "Leadership Newspapers", "The Nation Newspaper", "Channels Television",
+    "Stears", "TechCabal", "Technext24.com", "Technext", "Techeconomy", "Ripples Nigeria", "Benjamindada",
+    "WeeTracker", "Dabafinance", "MyJoyOnline", "Joy Online", "GhanaWeb", "Graphic Online", "Citi Newsroom",
+    "The Standard", "The Standard Media Group", "Standard Media", "Capital FM Kenya", "The Star", "Nation",
+    "The EastAfrican", "The East African", "Daily Monitor", "Nyasa Times", "Malawi24", "Mmegi Online",
+    "Herald", "The Herald", "NewsDay", "The Chronicle", "New Era Live", "Lusaka Times", "Addis Fortune",
+    "Moneyweb", "News24", "Fin24", "BusinessTech", "BusinessLIVE", "TimesLIVE", "Daily Maverick", "IOL",
+    "Mail & Guardian", "Engineering News", "Mining Weekly", "MiningMX", "ITWeb", "MyBroadband", "TechCentral",
+    "Ventureburn", "Bizcommunity", "Biznews", "The Citizen", "The New Times", "IGIHE", "Le360", "Hespress",
+    "Médias24", "Medias24", "TelQuel", "Le Desk", "LesEco.ma", "Webmanagercenter", "Kapitalis", "La Presse",
+    "Sika Finance", "Abidjan.net News", "Fratmat", "Linfodrome", "Koaci", "Seneweb", "Le Soleil", "Mali Actu",
+    "AGENCE ECOFIN", "Ecofin", "Financial Afrik", "Rede Angola", "Expansão", "Novo Jornal", "Jornal de Angola",
+    "Lexpress.mu", "Defimedia", "Ahram Online", "Daily News Egypt", "Enterprise", "Masrawy", "مصراوي",
+    "اليوم السابع", "المصري اليوم", "الأهرام", "جريدة البورصة", "ايكونومي بلس", "بوابة الشروق",
+))
+# A publisher's location is weak evidence when the headline itself points elsewhere.
+_FOREIGN_MARKET = re.compile(
+    r"(?i)\b(?:U\.S\.|US|USA|American|UK|U\.K\.|British|Britain|London|India|Indian|China|Chinese|Saudi|Qatari?|UAE|"
+    r"Emirati|Dubai|Abu Dhabi|Kuwait\w*|Bahrain\w*|Pakistan\w*|Australia\w*|New Zealand|Canad\w*|German\w*|"
+    r"Italian|Italy|Spain|Spanish|Turk\w*|Japan\w*|Korea\w*|Brazil\w*|Mexic\w*|Europe\w*|Philippin\w*|"
+    r"Malaysia\w*|Singapore\w*|Indonesia\w*|Vietnam\w*|Ukrain\w*|Russia\w*|Polish|Poland|Israel\w*|Irish|"
+    r"Ireland|Dutch|Netherlands|Swiss|Switzerland|Swed\w*|Norw\w*|Danish|Denmark|Belgi\w*|Austria\w*|"
+    r"Hong Kong|Taiwan\w*|Wall Street|Nasdaq|NYSE|Silicon Valley|Manhattan|Texas|California|New York|Toronto|"
+    r"Mumbai|crore)\b|السعودية|قطر|الإمارات|الكويت|البحرين|تركيا|الهند")
+
+
+def _african_outlet(publisher: Optional[str]) -> bool:
+    name = (publisher or "").strip(" -")
+    return bool(name) and bool(countries_in_text(name) or _AFRICA_WORD.search(name) or _AFRICAN_TLD.search(name)
+                               or name.lower() in _AFRICAN_OUTLETS)
 
 
 def _african_party(names: Iterable[Optional[str]]) -> bool:
@@ -1082,16 +1151,23 @@ def _african_party(names: Iterable[Optional[str]]) -> bool:
     return False
 
 
-def history_exclusion(headline: str, parties: Iterable[Optional[str]] = ()) -> Optional[str]:
+def _placed_in_africa(h: str, parties: Iterable[Optional[str]], publishers: Iterable[Optional[str]]) -> bool:
+    if countries_in_text(h) or _AFRICA_WORD.search(h) or _AFRICAN_CURRENCY.search(h) or _african_party(parties):
+        return True
+    return any(_african_outlet(p) for p in publishers) and not _FOREIGN_MARKET.search(h)
+
+
+def history_exclusion(headline: str, parties: Iterable[Optional[str]] = (),
+                      publishers: Iterable[Optional[str]] = ()) -> Optional[str]:
     """Why a backfilled (historical) headline is not trustworthy enough to show, or None if it is."""
-    h = headline or ""
-    if not (countries_in_text(h) or _AFRICA_WORD.search(h) or _african_party(parties)):
-        return "historical quality gate: no African country named in the headline"
+    h = _headline_proper(headline or "")
+    if not _placed_in_africa(h, parties, publishers):
+        return "historical quality gate: no African market in the headline or its source"
     if _HISTORY_ASSET.search(h):
         return "historical quality gate: asset purchase, not a company transaction"
     if _HISTORY_PROGRAMME.search(h):
         return "historical quality gate: grant, aid or programme, not a transaction"
-    if _HISTORY_NEGATION.search(h):
+    if _HISTORY_NEGATION.search(h) or _HISTORY_INVESTIT.search(h):
         return "historical quality gate: no transaction stated"
     if _HISTORY_COMMENTARY.search(h):
         return "historical quality gate: commentary, not a transaction"

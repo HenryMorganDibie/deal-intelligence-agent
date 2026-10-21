@@ -1156,11 +1156,13 @@ async def cron_ingest(
         for d in new_deals:
             if d["id"] not in existing:
                 reason = deals_mod.history_exclusion(d.get("headline", ""),
-                                                     [d.get("target"), d.get("buyer"), *(d.get("investors") or [])])
+                                                     [d.get("target"), d.get("buyer"), *(d.get("investors") or [])],
+                                                     [s.get("publisher") for s in d.get("sources") or []])
                 if reason:
                     d["excluded"] = reason
         for e in new_events:
-            reason = deals_mod.history_exclusion(e.get("headline", ""))
+            reason = deals_mod.history_exclusion(e.get("headline", ""), [e.get("company")],
+                                                 [e.get("publisher"), *(s.get("publisher") for s in e.get("sources") or [])])
             if reason:
                 e["excluded"] = reason
     merged = deals_mod.merge_all(new_deals, into={k: existing[k] for k in {d["id"] for d in new_deals} if k in existing})
