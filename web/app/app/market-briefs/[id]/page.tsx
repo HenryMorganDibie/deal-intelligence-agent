@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Container } from "../../../../components/primitives";
 import { ApiError } from "../../../../lib/api";
 import { get, post } from "../../../../lib/market";
+import { trackProductAction } from "../../../../lib/tracking";
 
 type MarketReport = {
   parent_brief_id?: string | null;
@@ -79,7 +80,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
   const router = useRouter();
   useEffect(() => {
     get<Result>("/api/market-briefs/" + encodeURIComponent(params.id))
-      .then(setRow)
+      .then((result) => { trackProductAction("market_brief_opened"); setRow(result); })
       .catch((err) => { setRow(null); setError(err instanceof ApiError ? err.message : "Could not load this market brief."); });
   }, [params.id]);
 
