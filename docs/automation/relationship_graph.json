@@ -107,6 +107,58 @@
     "oryx tanzania": {
       "name": "Oryx Tanzania",
       "kind": "organization"
+    },
+    "nedbank": {
+      "name": "Nedbank",
+      "kind": "organization"
+    },
+    "ncba": {
+      "name": "NCBA",
+      "kind": "organization"
+    },
+    "owners of south african bank": {
+      "name": "Owners of South African Bank",
+      "kind": "organization"
+    },
+    "rmbv": {
+      "name": "RMBV",
+      "kind": "organization"
+    },
+    "atco pharma": {
+      "name": "ATCO Pharma",
+      "kind": "organization"
+    },
+    "tycoon": {
+      "name": "Tycoon",
+      "kind": "organization"
+    },
+    "bamburi cement expands empire": {
+      "name": "Bamburi Cement Expands Empire",
+      "kind": "organization"
+    },
+    "bamburi cement": {
+      "name": "Bamburi Cement",
+      "kind": "organization"
+    },
+    "oryx": {
+      "name": "Oryx",
+      "kind": "organization"
+    },
+    "fortis green renewables": {
+      "name": "Fortis Green Renewables",
+      "kind": "organization"
+    },
+    "grips energy group": {
+      "name": "GRIPS Energy Group",
+      "kind": "organization"
+    },
+    "nordic impact funds": {
+      "name": "Nordic Impact Funds",
+      "kind": "organization"
+    },
+    "irrisol": {
+      "name": "Irrisol",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -320,7 +372,110 @@
           "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPVkFwYVVrbjJ4YmRoWWhjTVducF96eUJHRXdkZGNJTmxxOFZOTm9IaUJPN1N5ZXRheUpST0MyWkZfYl9mdHctcDJJNzBLTDBJeDdnWWlzUEVuemJ4d0psVjhjQzhpVTA5SjBvb3QzNXdScS1iYk93amxKc2huYjVKOVQwMGt1eUhhbklvbTNrd2R1dUdWampnVnpzTVlkSVJ6M0FqTVF6Qnc2NmtZbzl1ZTE5YXVkdTEyMlVhdQ?oc=5"
         }
       ]
+    },
+    "83d63ab9336ca0b4edb2": {
+      "id": "83d63ab9336ca0b4edb2",
+      "from": "nedbank",
+      "to": "ncba",
+      "type": "acquisition",
+      "first_seen": "2026-10-20",
+      "sources": [
+        {
+          "title": "Wealth Intelligence: The Kenyan Exit — What the Kenyatta, Ndegwa and Merali Families Received as Nedbank Completed Its NCBA Takeover",
+          "publisher": "Billionaires.Africa",
+          "url": "https://news.google.com/rss/articles/CBMiggJBVV95cUxPdUV0S2xabnRUc2lXMEVsLWZMUTJ1SmVFZnlUdktQbjVZQjJUMkJlTFg2clNFM1l1c2lIQ1NGRzcyUUdyV2oxWEFMTXFSQk9rSW1yM3hEVlN3dlJGVTIyZFVKd3liTUE4alVFd0Q1aklsSVM2SEQxTy1zZlBwZnpvRFhRaldtUVBlc0Fhc3U3ZXJLUDlEVDlKQUVwTnRfQ2pDNzdHZTRfVkV4VXlnU3h0dVNZeG1nWFhZUXBYNjRxUkprcjI1bDB6eENzZE1hbXJndVdpTkM2WFJyRl90cTRSVTg3clhLVDlZbDhZZEhudndXckJkYktYLW8xcmpKNlZhS1E?oc=5"
+        },
+        {
+          "title": "Nedbank acquires NCBA after Kenya deal",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPRncyV2l3R01IanRNRTNrNGtjTkVUc3lFY0FRakpCR0FTbHlpaWxwVWhTZ0RoZlRjTnI3UEpVakNzZTRiaVIzQVhQVzNMRk5xRkZlZVlMSGpVY2JvOXlkZ0dvNWg5WTYxRkV1WUp5OFRqelNLd1VPWjlRLTAwSmNBSDJCSGRuZnc?oc=5"
+        }
+      ]
+    },
+    "523c1ce73915bc19ad0c": {
+      "id": "523c1ce73915bc19ad0c",
+      "from": "owners of south african bank",
+      "to": "ncba",
+      "type": "acquisition",
+      "first_seen": "2026-10-20",
+      "sources": [
+        {
+          "title": "Real Owners of South African Bank That Has Acquired Kenyatta Family's NCBA",
+          "publisher": "Tuko News",
+          "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxON3JxQWRxYVgtaHdndC1YVC03S3ZsVV95UmVUNGlmd2RJb2hNYkhKR2lCanR2RURQNGZhelJFaE1BYzJUd0NZQjRKcXdocUxDU3VTb0N2cUlCcjA2T0FtbDBSelFncEFzZ2oxdjJyTnN0bmZ6V21TSUcxbkpfeVZVOS1oNm10S3lDakFEMHNOajhNYk5kVjIwTUVoeFE2OFRBRXVnbHd0SlBuYldXektXdTFhTDhqSjh6QmM0WVNmcVhlTlllclE?oc=5"
+        }
+      ]
+    },
+    "340caaacb7943a920a69": {
+      "id": "340caaacb7943a920a69",
+      "from": "rmbv",
+      "to": "atco pharma",
+      "type": "acquisition",
+      "first_seen": "2026-10-20",
+      "sources": [
+        {
+          "title": "Investment firm RMBV to acquire 50% stake in Egypt's ATCO Pharma",
+          "publisher": "TradingView",
+          "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxQbHJkcmxZaWg1QUMyakFJaGVoZWpyaXVBcDUyLVRQQ2dRZE9YVkRuUURaQ1paLVZVU2N6Sld3Z0lndEhWUU5uaXJVNzZDVzJBQm9CM2lZZ09tNkdLcUJMMDZSMXRRZTZzZjZvU1J4SlpOQ2ZjSHVjNURLMUNFdkJncmtuVnA0cmRfMDFUakxqUjAtaTljcjFmdUVteVlLZ0d4LVVZaEVDaXk5Vkxvdk9oQzlRcUpKOGxRMXpvWUt2WkZ6alRkbC02aUJqVThXNThibXUxLTdR?oc=5"
+        }
+      ]
+    },
+    "b17a082cc95e646bac19": {
+      "id": "b17a082cc95e646bac19",
+      "from": "tycoon",
+      "to": "bamburi cement expands empire",
+      "type": "acquisition",
+      "first_seen": "2026-10-20",
+      "sources": [
+        {
+          "title": "Tycoon Who Bought Kenya’s Bamburi Cement Expands Empire Into Tanzania’s Petroleum Industry",
+          "publisher": "Tuko News",
+          "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxOSFJYNG5hSEhrVzRUbzF1TTRnSFU0OUFqM21VTmxIWnlKb2tsbG1rQnd2VzY0YnhCd3pqdmlGakFHdWpsMi02c0ZxWXE3d0x6enpqdFFib2FCVUxlcC00aUFYWjMtT0t3OW1HbkRmV3VhMzI3S0pmVHJhY0NwTnhobHdGOHItS1VjRTBiSVNjREtYV3Jyc0xBMU1YNHJYbVY0SlR0RWI4TWg2aFRDM1I0OENRa2xGaF9VcC1LdTVhUy1PS1hhQlFOdUNYZTIzWkJm?oc=5"
+        }
+      ]
+    },
+    "c16c083cd364eb6d6794": {
+      "id": "c16c083cd364eb6d6794",
+      "from": "bamburi cement",
+      "to": "oryx",
+      "type": "acquisition",
+      "first_seen": "2026-10-20",
+      "sources": [
+        {
+          "title": "Tanzanian tycoon behind Bamburi Cement agrees to buy Oryx’s fuel business as East African empire expands",
+          "publisher": "Business Insider Africa",
+          "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxQamhCNEhyeTRGVjE1bGdYdkNMMzFacm1qQnBUa3dNYVRJeGNsczJqVUJwOEFYVEJiQnpsZFZrV1hwMWphaFItbkNWaGJzeHVqaWtTb2dBRGJkRFROZlRXTEpHYk1ZWFdLdEw2QUhkdHRHYWtWUFFxN241WXJfVjI4aDg1b05CcGhEZjZMVS1rRUJTaG83djZ1eHBmUHU2QnVvZXlPbWhFTWlscEFaUFFaNkpOSmFDcnh5LWZYRTRNYnZ5RVpJOC0yamJubWZUSnh5WFhz?oc=5"
+        }
+      ]
+    },
+    "945ad7d58f0fb5166aca": {
+      "id": "945ad7d58f0fb5166aca",
+      "from": "fortis green renewables",
+      "to": "grips energy group",
+      "type": "equity_funding",
+      "first_seen": "2026-10-20",
+      "sources": [
+        {
+          "title": "Fortis Green Renewables invests in GRIPS Energy Group",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxPMnlHVXFHdGFkZjh1eks3bmdxOG1sV09rWHVwZmU0bDJPTjZLVGxrLXlXdmtsT3NRNDV1VUIwNEh5LUNRUHNlcFVtOTNCcXJHeGItajFQbFVYcFF6emQzenFxbXM3ajczUEVFam5nR1Brck5PeE84MV9DR2JMNng1U3FR?oc=5"
+        }
+      ]
+    },
+    "0fcad21208c2569be395": {
+      "id": "0fcad21208c2569be395",
+      "from": "nordic impact funds",
+      "to": "irrisol",
+      "type": "equity_funding",
+      "first_seen": "2026-10-20",
+      "sources": [
+        {
+          "title": "Nordic Impact Funds invests in Irrisol to expand solar-powered water access in Uganda",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNYXNyVmJaVU0zX2M5LWxtZDRQekExZDJRbjNBdFdDTElLNllGNWcyVlNqekQzWUZUSjg1bndUWFFoVEFZNVpCTU4xR3dwSTRWYUtvZWRiM3BJaDlzVkpmc05JTWVLczQtN0pKNTNjU3M5SDRLLW1VMEFWdGxEa3d2MVp6UlZXdHJWRzFIQ1JnVWhMQUFaMDZLZFUxTVJWWTE1Tk9YVE8zR2J4dXdjeWlkYm9XLTEya0NP?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-20T00:02:45.690744+00:00"
+  "updated_at": "2026-10-21T00:30:59.371826+00:00"
 }

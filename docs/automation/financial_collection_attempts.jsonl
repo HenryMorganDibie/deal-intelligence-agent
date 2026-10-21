@@ -164,3 +164,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AYO.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "AYRTN.GH"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "BAL.CS"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BAMB.NR"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-21", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46499_BRICLINKS_AFRICA_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "BAPLC.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BATK.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BATZA.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BAU.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BAUM.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BAW.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BAWP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BBGC.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BCAP.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BCF.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BCI.CS"}
