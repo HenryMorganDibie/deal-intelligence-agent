@@ -8,7 +8,11 @@ export type ProductAction =
   | "company_data_loaded"
   | "watchlists_used"
   | "brief_opened"
-  | "performance_data_loaded";
+  | "performance_data_loaded"
+  | "deal_search_submitted"
+  | "deal_opened"
+  | "research_submitted"
+  | "market_brief_opened";
 
 export function browserVisitorId(): string | null {
   if (typeof window === "undefined") return null;
