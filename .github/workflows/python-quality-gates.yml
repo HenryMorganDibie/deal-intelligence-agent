@@ -59,4 +59,4 @@ jobs:
       - name: Run full test suite
         run: python -m pytest -q
       - name: Recompute duplicate-detection metrics
-        run: python -c "import json; from evaluation.deals.score import dedup; print(json.dumps(dedup()[0], indent=2))"
+        run: python -c "import json; from evaluation.deals.score import dedup; r,e=dedup(); print(json.dumps({\"metrics\":r,\"errors\":e}, indent=2))"
