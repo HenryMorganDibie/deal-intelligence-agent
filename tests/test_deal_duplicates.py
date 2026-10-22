@@ -75,8 +75,8 @@ def test_extractor_and_matcher_cover_clear_reworded_duplicate_reports():
         ),
     ]
     for index, (title_a, title_b, country) in enumerate(cases):
-        a = extract_deal(title_a, published=f"2026-10-{10 + index:02d}", country_hint=country, africa_source=True)
-        b = extract_deal(title_b, published=f"2026-10-{12 + index:02d}", country_hint=country, africa_source=True)
+        a = extract_deal(title_a, published=f"2026-10-{10 + index:02d}", country_hint=country)
+        b = extract_deal(title_b, published=f"2026-10-{12 + index:02d}", country_hint=country)
         assert a is not None, title_a
         assert b is not None, title_b
         assert same_transaction(a, b), (title_a, title_b, a, b)
