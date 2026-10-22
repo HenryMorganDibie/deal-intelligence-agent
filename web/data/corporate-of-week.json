@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-22T19:09:17.913311+00:00",
+  "updated_at": "2026-10-22T21:36:11.218870+00:00",
   "current": {
     "company": "NGX",
     "company_url": "/app/companies?name=NGX",
@@ -32,7 +32,7 @@
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-15",
     "period_end": "2026-10-21",
-    "selected_at": "2026-10-22T19:09:17.912029+00:00",
+    "selected_at": "2026-10-22T21:36:11.217836+00:00",
     "selection_version": 4,
     "companies": [
       {
@@ -66,7 +66,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-15",
         "period_end": "2026-10-21",
-        "selected_at": "2026-10-22T19:09:17.912029+00:00",
+        "selected_at": "2026-10-22T21:36:11.217836+00:00",
         "selection_version": 4
       },
       {
@@ -100,7 +100,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-15",
         "period_end": "2026-10-21",
-        "selected_at": "2026-10-22T19:09:17.912029+00:00",
+        "selected_at": "2026-10-22T21:36:11.217836+00:00",
         "selection_version": 4
       },
       {
@@ -134,7 +134,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-15",
         "period_end": "2026-10-21",
-        "selected_at": "2026-10-22T19:09:17.912029+00:00",
+        "selected_at": "2026-10-22T21:36:11.217836+00:00",
         "selection_version": 4
       },
       {
@@ -175,7 +175,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-15",
         "period_end": "2026-10-21",
-        "selected_at": "2026-10-22T19:09:17.912029+00:00",
+        "selected_at": "2026-10-22T21:36:11.217836+00:00",
         "selection_version": 4
       },
       {
@@ -209,7 +209,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-15",
         "period_end": "2026-10-21",
-        "selected_at": "2026-10-22T19:09:17.912029+00:00",
+        "selected_at": "2026-10-22T21:36:11.217836+00:00",
         "selection_version": 4
       }
     ],
@@ -895,7 +895,7 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-15",
       "period_end": "2026-10-21",
-      "selected_at": "2026-10-22T19:09:17.912029+00:00",
+      "selected_at": "2026-10-22T21:36:11.217836+00:00",
       "selection_version": 4,
       "companies": [
         {
@@ -929,7 +929,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-15",
           "period_end": "2026-10-21",
-          "selected_at": "2026-10-22T19:09:17.912029+00:00",
+          "selected_at": "2026-10-22T21:36:11.217836+00:00",
           "selection_version": 4
         },
         {
@@ -963,7 +963,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-15",
           "period_end": "2026-10-21",
-          "selected_at": "2026-10-22T19:09:17.912029+00:00",
+          "selected_at": "2026-10-22T21:36:11.217836+00:00",
           "selection_version": 4
         },
         {
@@ -997,7 +997,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-15",
           "period_end": "2026-10-21",
-          "selected_at": "2026-10-22T19:09:17.912029+00:00",
+          "selected_at": "2026-10-22T21:36:11.217836+00:00",
           "selection_version": 4
         },
         {
@@ -1038,7 +1038,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-15",
           "period_end": "2026-10-21",
-          "selected_at": "2026-10-22T19:09:17.912029+00:00",
+          "selected_at": "2026-10-22T21:36:11.217836+00:00",
           "selection_version": 4
         },
         {
@@ -1072,7 +1072,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-15",
           "period_end": "2026-10-21",
-          "selected_at": "2026-10-22T19:09:17.912029+00:00",
+          "selected_at": "2026-10-22T21:36:11.217836+00:00",
           "selection_version": 4
         }
       ],
