@@ -879,6 +879,14 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
 
     rnd = _ROUND.search(text)
     countries = [c.iso2 for c in countries_in_text(text)]
+    # A regulator acronym is strong country evidence when it belongs to the supplied hint
+    # (for example, CBK in a Kenya deal). Do not trust a country hint by itself.
+    hinted_country = get_country(country_hint)
+    if not countries and hinted_country and any(
+        re.search(rf"(?<!\w){re.escape(acronym)}(?!\w)", text, re.IGNORECASE)
+        for acronym in hinted_country.regulator_acronyms
+    ):
+        countries.append(hinted_country.iso2)
     # For cross-border deals, the primary country should describe the target, not simply
     # whichever country appears first (e.g. Kenya's Jiji buying Ghanaian-based Tonaton).
     raw_obj_for_country = (m.groupdict().get("obj") or "")
