@@ -42,6 +42,12 @@ def test_duplicate_matcher_handles_rounded_amounts_and_partial_target_names():
     assert same_transaction(target_a, target_b)
 
 
+def test_explicit_bank_of_industry_aliases_match():
+    a = _deal("a", "Bank of Industry", 200e6, "2026-06-10", "debt_financing")
+    b = _deal("b", "BOI", 200e6, "2026-06-10", "debt_financing")
+    assert same_transaction(a, b)
+
+
 def test_duplicate_matcher_allows_nearby_exact_target_when_amount_is_undisclosed():
     a = _deal("a", "WeLight", None, "2026-06-25", "equity_funding", buyer="IFC")
     b = _deal("b", "WeLight", 27e6, "2026-07-01", "equity_funding", buyer="IFC")
