@@ -376,3 +376,16 @@ def test_review_labelling_api_validates_labels_and_never_sends_the_system_decisi
     assert ok.json()["saved"] is True
     assert client.post("/api/review/label", content=json.dumps({"token": token, "kind": "item", "item_id": "x1"})).status_code == 422
     assert client.post("/api/admin/review/annotators", content=json.dumps({"key": "wrong", "role": "a", "name": "A"})).status_code == 401
+
+def test_undisclosed_amount_can_match_on_strong_headline_overlap_without_buyer():
+    same_a = _deal("a", "Paelon Memorial Hospital", None, "2026-03-10", "acquisition")
+    same_a["headline"] = "Iwosan acquires Paelon Memorial Hospital in Nigeria healthcare sector"
+    same_b = _deal("b", "Paelon Memorial Hospital", None, "2026-03-11", "acquisition")
+    same_b["headline"] = "Iwosan completes Paelon Memorial Hospital acquisition in Nigeria healthcare sector"
+    assert same_transaction(same_a, same_b)
+
+    # Exact target and nearby dates alone must not collapse unrelated transactions.
+    other = _deal("c", "Paelon Memorial Hospital", None, "2026-03-11", "acquisition")
+    other["headline"] = "Hospital board considers a separate ownership restructuring"
+    assert not same_transaction(same_a, other)
+
