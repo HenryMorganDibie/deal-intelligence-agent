@@ -1308,11 +1308,35 @@
  },
  "dedup": {
   "pairs": 100,
-  "sample": "100 labelled report pairs. Historical saved decisions are retained as a baseline. Current-matcher metrics are pending regeneration with the current scorer. This is a development set, not an unbiased production estimate.",
-  "merge_precision": null,
-  "duplicate_recall": null,
-  "missed_duplicate_rate": null,
-  "missed_duplicates_among_lookalikes": null,
+  "sample": "100 labelled report pairs. Metrics rerun the current extractor and matcher on each headline/date/publisher pair; historical saved decisions are retained as a baseline. This is a development set, not an unbiased production estimate.",
+  "merge_precision": {
+   "value": 1,
+   "low": 0.937,
+   "high": 1,
+   "k": 57,
+   "n": 57
+  },
+  "duplicate_recall": {
+   "value": 0.877,
+   "low": 0.775,
+   "high": 0.936,
+   "k": 57,
+   "n": 65
+  },
+  "missed_duplicate_rate": {
+   "value": 0.123,
+   "low": 0.064,
+   "high": 0.225,
+   "k": 8,
+   "n": 65
+  },
+  "missed_duplicates_among_lookalikes": {
+   "value": 0.186,
+   "low": 0.097,
+   "high": 0.326,
+   "k": 8,
+   "n": 43
+  },
   "baseline_saved_decisions": {
    "merge_precision": {
     "value": 0.975,
@@ -1328,6 +1352,12 @@
     "k": 26,
     "n": 60
    }
+  },
+  "confusion": {
+   "true_positive": 57,
+   "false_positive": 0,
+   "false_negative": 8,
+   "true_negative": 35
   }
  },
  "identity": {
