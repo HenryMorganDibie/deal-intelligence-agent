@@ -896,7 +896,9 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     primary_country = target_countries[0] if target_countries else (countries[0] if countries else None)
     # Placement needs evidence from the headline or source context: a named African country,
     # "Africa", or an Africa-based publisher. A search country hint alone is not enough.
-    publisher_has_african_context = bool(countries_in_text(publisher))
+    publisher_has_african_context = bool(countries_in_text(publisher)) or bool(
+        re.search(r"\bafrica|\bafrique|\báfrica", publisher, re.IGNORECASE)
+    )
     if not countries and not (africa_source or publisher_has_african_context
                               or re.search(r"\bafrica|\bafrique|\báfrica", text, re.IGNORECASE)):
         return None
