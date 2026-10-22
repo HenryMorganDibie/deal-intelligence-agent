@@ -183,7 +183,7 @@ def _dedup_pair_diagnostics(pair: dict) -> dict:
         gap = None
 
     types = {a.get("deal_type"), b.get("deal_type")}
-    type_compatible = len(types) <= 1 or any(types <= kinds for kinds in dl._TXN_KINDS)
+    type_compatible = dl._same_transaction_type(a, b)
     name_match = dl._same_transaction_name(a, b)
     ua, ub = a.get("amount_usd"), b.get("amount_usd")
     diagnostics = {
