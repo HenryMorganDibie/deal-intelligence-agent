@@ -1054,6 +1054,17 @@ def _same_transaction_name(a: dict, b: dict) -> bool:
     return len(common_headline) / min(len(ha), len(hb)) >= 0.4
 
 
+def _same_transaction_type(a: dict, b: dict) -> bool:
+    """Allow a narrow IPO-launch/listing type mismatch only when both reports say IPO/listing."""
+    types = {a.get("deal_type"), b.get("deal_type")}
+    if len(types) <= 1 or any(types <= kinds for kinds in _TXN_KINDS):
+        return True
+    if types != {"ipo", "equity_funding"}:
+        return False
+    evidence = re.compile(r"(?i)\b(?:ipo|initial public offering|listing|listed|stock exchange)\b")
+    return bool(evidence.search(a.get("headline") or "") and evidence.search(b.get("headline") or ""))
+
+
 def same_transaction(a: dict, b: dict) -> bool:
     """Conservative duplicate test: compatible type, close dates, and matching transaction identity."""
     try:
@@ -1061,7 +1072,8 @@ def same_transaction(a: dict, b: dict) -> bool:
     except (KeyError, TypeError, ValueError):
         return False
     types = {a.get("deal_type"), b.get("deal_type")}
-    if len(types) > 1 and not any(types <= kinds for kinds in _TXN_KINDS):
+    ipo_pair = types == {"ipo", "equity_funding"} and _same_transaction_type(a, b)
+    if not _same_transaction_type(a, b):
         return False
 
     if not _same_transaction_name(a, b):
@@ -1069,6 +1081,11 @@ def same_transaction(a: dict, b: dict) -> bool:
 
     ua, ub = a.get("amount_usd"), b.get("amount_usd")
     if not ua or not ub:
+        # IPO launch and listing reports can differ in disclosed offer size; accept only
+        # when both headlines explicitly describe an IPO/listing, target identity matches,
+        # and the reports fall within the normal 45-day window.
+        if ipo_pair and gap <= 45:
+            return True
         # When one headline omits the amount, only merge an exact/contained target match
         # reported within a week. This catches brief follow-ups without conflating later deals.
         ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
