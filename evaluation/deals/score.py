@@ -184,6 +184,7 @@ def _dedup_pair_diagnostics(pair: dict) -> dict:
 
     types = {a.get("deal_type"), b.get("deal_type")}
     type_compatible = dl._same_transaction_type(a, b)
+    ipo_pair = types == {"ipo", "equity_funding"} and type_compatible
     name_match = dl._same_transaction_name(a, b)
     ua, ub = a.get("amount_usd"), b.get("amount_usd")
     diagnostics = {
@@ -211,7 +212,7 @@ def _dedup_pair_diagnostics(pair: dict) -> dict:
         ba, bb = dl._name_tokens(a.get("buyer")), dl._name_tokens(b.get("buyer"))
         same_buyer = bool(ba and bb and (ba <= bb or bb <= ba))
         same_target = bool(ta and tb and (ta <= tb or tb <= ta))
-        same = gap <= 7 and same_buyer and same_target
+        same = (ipo_pair and gap <= 45) or (gap <= 7 and same_buyer and same_target)
         if not same:
             diagnostics["blocked_by"] = "undisclosed_amount_fallback"
     elif gap > 45:
