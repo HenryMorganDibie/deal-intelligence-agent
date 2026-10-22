@@ -1025,7 +1025,16 @@ _NAME_NOISE = {"vc", "firm", "fund", "funds", "pan", "african", "africa", "s", "
 
 
 def _name_tokens(name: Optional[str]) -> set[str]:
-    return {t for t in normalise_name(name).split() if t not in _NAME_NOISE and not _is_descriptor(t)}
+    normalized = normalise_name(name)
+    # Explicit institution aliases, not fuzzy acronym expansion.
+    aliases = {
+        "boi": "__bank_of_industry__",
+        "bank of industry": "__bank_of_industry__",
+        "afdb": "__african_development_bank__",
+        "african development bank": "__african_development_bank__",
+    }
+    normalized = aliases.get(normalized, normalized)
+    return {t for t in normalized.split() if t not in _NAME_NOISE and not _is_descriptor(t)}
 
 
 def _same_transaction_name(a: dict, b: dict) -> bool:
