@@ -24,6 +24,23 @@ def test_distinct_transactions_stay_separate():
     assert not same_transaction(base, _deal("f", "Ventures Platform", None, "2026-08-26"))       # no amount
 
 
+def test_duplicate_matcher_handles_rounded_amounts_and_partial_target_names():
+    planned = _deal("a", "Optasia", 375e6, "2025-10-08", "ipo")
+    completed = _deal("b", "Optasia South Africa listing", 345e6, "2025-11-05", "ipo")
+    assert same_transaction(planned, completed)
+
+    target_a = _deal("c", "Kenya Pipeline Company", 327e6, "2026-10-20", "acquisition")
+    target_b = _deal("d", "Kenya Oil Pipeline Network", 327e6, "2026-10-22", "acquisition")
+    assert same_transaction(target_a, target_b)
+
+
+def test_duplicate_matcher_allows_nearby_exact_target_when_amount_is_undisclosed():
+    a = _deal("a", "WeLight", None, "2026-06-25", "equity_funding")
+    b = _deal("b", "WeLight", 27e6, "2026-07-01", "equity_funding")
+    assert same_transaction(a, b)
+    assert not same_transaction(a, _deal("c", "WeLight", 27e6, "2026-07-20", "equity_funding"))
+
+
 def test_resolve_duplicates_rekeys_onto_stored_and_earlier_reports():
     stored = {"a": _deal("a", "Ventures Platform", 84e6, "2026-08-26")}
     new = [
