@@ -1022,12 +1022,22 @@ def _same_transaction_name(a: dict, b: dict) -> bool:
     if ta <= tb or tb <= ta:
         return True
     shared = ta & tb
-    if not shared or not any(len(t) >= 4 for t in shared):
+    if shared:
+        # Partial target-name overlap must be distinctive on both sides.
+        distinctive = {t for t in shared if len(t) >= 4}
+        if len(distinctive) >= 2 and min(len(shared) / len(ta), len(shared) / len(tb)) >= 0.5:
+            return True
+
+    # Extraction can choose different target fragments from equivalent headlines.
+    # Fall back to strong headline overlap; the caller still enforces compatible deal
+    # types, date proximity, and amount agreement before accepting a duplicate.
+    ha = _name_tokens(a.get("headline"))
+    hb = _name_tokens(b.get("headline"))
+    common_headline = ha & hb
+    distinctive_headline = {t for t in common_headline if len(t) >= 4}
+    if len(distinctive_headline) < 3 or not ha or not hb:
         return False
-    # Headlines often add descriptors or omit one part of a company name. Allow a partial overlap
-    # only when at least two distinctive tokens agree and they cover at least half of each name.
-    distinctive = {t for t in shared if len(t) >= 4}
-    return len(distinctive) >= 2 and min(len(shared) / len(ta), len(shared) / len(tb)) >= 0.5
+    return len(common_headline) / min(len(ha), len(hb)) >= 0.45
 
 
 def same_transaction(a: dict, b: dict) -> bool:
