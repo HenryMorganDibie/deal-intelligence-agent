@@ -1067,9 +1067,19 @@ def _same_transaction_name(a: dict, b: dict) -> bool:
 
 
 def _same_transaction_type(a: dict, b: dict) -> bool:
-    """Allow a narrow IPO-launch/listing type mismatch only when both reports say IPO/listing."""
+    """Allow type variants only when the headlines provide transaction-specific evidence."""
     types = {a.get("deal_type"), b.get("deal_type")}
-    if len(types) <= 1 or any(types <= kinds for kinds in _TXN_KINDS):
+    if len(types) <= 1:
+        return True
+    if types == {"debt_financing", "equity_funding"}:
+        # These are usually distinct instruments even when the same company is involved.
+        # Require at least two shared headline tokens beyond the target's name.
+        ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
+        ha = _name_tokens(a.get("headline")) - ta
+        hb = _name_tokens(b.get("headline")) - tb
+        shared = ha & hb
+        return len(shared) >= 2
+    if any(types <= kinds for kinds in _TXN_KINDS):
         return True
     if types != {"ipo", "equity_funding"}:
         return False
