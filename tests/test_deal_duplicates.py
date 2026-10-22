@@ -61,22 +61,28 @@ def test_extractor_and_matcher_cover_clear_reworded_duplicate_reports():
         (
             "Nedbank wins approval to take majority stake in Kenya’s NCBA",
             "Nedbank gets CBK approval to acquire 66pc stake in NCBA",
-            "Kenya",
+            "KE",
+            "Businessday NG",
+            "The Star, Kenya",
         ),
         (
             "SA HR startup Jem raises $8.4m Series A funding round to support product expansion",
             "South Africa’s HR startup Jem raises $8.4M Series A",
-            "South Africa",
+            "ZA",
+            "Disrupt Africa",
+            "Condia",
         ),
         (
             "Canal+ completes takeover of MultiChoice, becomes Africa’s pay-TV leader",
             "Canal+ Completes Acquisition of Multichoice",
-            "South Africa",
+            "ZA",
+            "The Africa Report",
+            "Business Post Nigeria",
         ),
     ]
-    for index, (title_a, title_b, country) in enumerate(cases):
-        a = extract_deal(title_a, published=f"2026-10-{10 + index:02d}", country_hint=country)
-        b = extract_deal(title_b, published=f"2026-10-{12 + index:02d}", country_hint=country)
+    for index, (title_a, title_b, country, publisher_a, publisher_b) in enumerate(cases):
+        a = extract_deal(title_a, published=f"2026-10-{10 + index:02d}", publisher=publisher_a, country_hint=country)
+        b = extract_deal(title_b, published=f"2026-10-{12 + index:02d}", publisher=publisher_b, country_hint=country)
         assert a is not None, title_a
         assert b is not None, title_b
         assert same_transaction(a, b), (title_a, title_b, a, b)
