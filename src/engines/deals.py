@@ -1037,7 +1037,7 @@ def _same_transaction_name(a: dict, b: dict) -> bool:
     # facilities reported in the same country without identifying the same parties.
     headline_noise = {
         "africa", "african", "nigeria", "kenya", "ghana", "ethiopia", "morocco",
-        "south", "african", "million", "billion", "thousand", "usd", "zar", "kes",
+        "south", "million", "billion", "thousand", "usd", "zar", "kes",
         "loan", "loans", "financing", "facility", "facilities", "approve", "approves",
         "approved", "acquire", "acquires", "acquired", "buy", "buys", "bought",
         "stake", "deal", "deals", "investment", "invests", "invested", "project",
