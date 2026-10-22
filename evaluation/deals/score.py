@@ -182,7 +182,6 @@ def _dedup_pair_diagnostics(pair: dict) -> dict:
     except (KeyError, TypeError, ValueError):
         gap = None
 
-    types = {a.get("deal_type"), b.get("deal_type")}
     type_compatible = dl._same_transaction_type(a, b)
     name_match = dl._same_transaction_name(a, b)
     ua, ub = a.get("amount_usd"), b.get("amount_usd")
@@ -213,7 +212,7 @@ def _dedup_pair_diagnostics(pair: dict) -> dict:
             diagnostics["blocked_by"] = "amount_difference_exceeded"
         elif not ua or not ub:
             headlines = (a.get("headline") or "", b.get("headline") or "")
-            if any(re.search(r"(?i)\\b(?:don['’]t|do not|cautions?|warning|warns?|should not|urged to|wants? to buy|plans? to buy|proposes? to buy)\\b", h) for h in headlines):
+            if any(re.search(r"(?i)\b(?:don['’]t|do not|cautions?|warning|warns?|should not|urged to|wants? to buy|plans? to buy|proposes? to buy)\b", h) for h in headlines):
                 diagnostics["blocked_by"] = "hypothetical_or_warning_language"
             else:
                 diagnostics["blocked_by"] = "undisclosed_amount_fallback"
