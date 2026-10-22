@@ -69,7 +69,7 @@ type Extraction = {
 type DataQuality = {
   extraction: Extraction;
   heldout_extraction: Extraction | null;
-  dedup: { pairs: number; sample: string; merge_precision: CI; duplicate_recall: CI; missed_duplicate_rate: CI; missed_duplicates_among_lookalikes: CI };
+  dedup: { pairs: number; sample: string; merge_precision: CI; duplicate_recall: CI; missed_duplicate_rate: CI; missed_duplicates_among_lookalikes: CI; baseline_saved_decisions?: { merge_precision: CI; missed_duplicates_among_lookalikes: CI } };
   identity: { pairs: number; sample: string; join_precision: CI; join_recall: CI; malformed_names_caught: CI; valid_names_kept: CI };
   heldout_names: { names: number; malformed_names_caught: CI; valid_names_resolved_to_the_right_organisation: CI } | null;
   labels: string;
@@ -897,19 +897,29 @@ export default function EvaluationPage() {
               <div className="mt-3">
                 <Table head={["Measure", "Result", "Sample"]} minWidth="48rem">
                   <tr>
-                    <Td>Merged reports that really are one deal</Td>
+                    <Td>Current matcher: merged reports that really are one deal</Td>
                     <Td className="kbd"><Ci x={dq.dedup.merge_precision} /></Td>
-                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Pairs of reports merged into one record</Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Current scorer output; shown as unavailable until results are regenerated</Td>
                   </tr>
                   <tr>
-                    <Td>True duplicate pairs correctly identified (recall)</Td>
+                    <Td>Current matcher: duplicate recall</Td>
                     <Td className="kbd"><Ci x={dq.dedup.duplicate_recall} /></Td>
-                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Share of labelled duplicate pairs caught by the current matcher</Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Share of labelled true duplicate pairs the current matcher catches. Not yet published in the checked-in results.</Td>
                   </tr>
                   <tr>
-                    <Td>Separate records that are actually one deal (missed duplicates)</Td>
-                    <Td className="kbd text-risk"><Ci x={dq.dedup.missed_duplicates_among_lookalikes} /></Td>
-                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Among pairs the matcher kept separate; lower is better. Development sample</Td>
+                    <Td>Current matcher: missed-duplicate rate</Td>
+                    <Td className="kbd text-risk"><Ci x={dq.dedup.missed_duplicate_rate} /></Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Missed true duplicates divided by all true duplicates; lower is better.</Td>
+                  </tr>
+                  <tr>
+                    <Td>Historical saved decisions: merged reports that really are one deal</Td>
+                    <Td className="kbd"><Ci x={dq.dedup.baseline_saved_decisions?.merge_precision} /></Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Pre-refresh baseline: 39 of 40 merged pairs were true duplicates.</Td>
+                  </tr>
+                  <tr>
+                    <Td>Historical saved decisions: duplicates among pairs kept separate</Td>
+                    <Td className="kbd text-risk"><Ci x={dq.dedup.baseline_saved_decisions?.missed_duplicates_among_lookalikes} /></Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">26 of 60 separate look-alike pairs were duplicates: 43% [32 to 56]. Development sample; lower is better.</Td>
                   </tr>
                   <tr>
                     <Td>Name pairs the resolver joins that are one entity (development)</Td>
