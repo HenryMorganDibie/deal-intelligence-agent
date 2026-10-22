@@ -1117,12 +1117,31 @@ def same_transaction(a: dict, b: dict) -> bool:
         # and the reports fall within the normal 45-day window.
         if ipo_pair and gap <= 45:
             return True
-        # When one headline omits the amount, only merge an exact/contained target match
-        # reported within a week. This catches brief follow-ups without conflating later deals.
+        # When an amount is missing, prefer an exact/contained target plus the same buyer.
+        # Some genuine rewordings omit the counterparty in one headline, so also accept
+        # strong overlap in the remaining headline words. Strip target names and generic
+        # transaction vocabulary first; a shared country or "acquires stake" is not enough.
         ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
         ba, bb = _name_tokens(a.get("buyer")), _name_tokens(b.get("buyer"))
         same_buyer = bool(ba and bb and (ba <= bb or bb <= ba))
-        return gap <= 7 and same_buyer and bool(ta and tb and (ta <= tb or tb <= ta))
+        same_target = bool(ta and tb and (ta <= tb or tb <= ta))
+        if gap > 7 or not same_target:
+            return False
+        if same_buyer:
+            return True
+        noise = {
+            "africa", "african", "nigeria", "kenya", "ghana", "ethiopia", "morocco",
+            "south", "million", "billion", "thousand", "usd", "zar", "kes", "rand",
+            "loan", "loans", "financing", "facility", "facilities", "approve", "approves",
+            "approved", "acquire", "acquires", "acquired", "buy", "buys", "bought",
+            "stake", "deal", "deals", "investment", "invests", "invested", "project",
+            "company", "group", "bank", "fund", "funding", "raises", "raised", "raise",
+            "announces", "announced", "completes", "completed", "plans", "planned",
+        }
+        ha = _name_tokens(a.get("headline")) - ta - noise
+        hb = _name_tokens(b.get("headline")) - tb - noise
+        shared = {token for token in ha & hb if len(token) >= 4 and not token.isdigit()}
+        return len(shared) >= 2
 
     # Deal reports may round or revise announced values (for example a planned IPO versus
     # its completed size). Keep the tolerance bounded to avoid merging unrelated rounds.
