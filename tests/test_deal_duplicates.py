@@ -41,6 +41,18 @@ def test_duplicate_matcher_allows_nearby_exact_target_when_amount_is_undisclosed
     assert not same_transaction(a, _deal("c", "WeLight", 27e6, "2026-07-20", "equity_funding"))
 
 
+def test_dedup_evaluation_reruns_current_matcher_and_reports_recall_separately():
+    from evaluation.deals.score import dedup
+
+    result, errors = dedup()
+    assert result["pairs"] == 100
+    assert "duplicate_recall" in result
+    assert "missed_duplicate_rate" in result
+    assert "baseline_saved_decisions" in result
+    assert sum(result["confusion"].values()) == result["pairs"]
+    assert all(error["set"] == "dedup_current" for error in errors)
+
+
 def test_resolve_duplicates_rekeys_onto_stored_and_earlier_reports():
     stored = {"a": _deal("a", "Ventures Platform", 84e6, "2026-08-26")}
     new = [
