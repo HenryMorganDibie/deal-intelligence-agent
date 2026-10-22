@@ -2,12 +2,53 @@
   "horizon": "10 calendar days, market-adjusted",
   "candidate": "Prior-only median by market/signal/severity, with hierarchical backoff",
   "method": "walk-forward, expanding training window, one holdout date at a time",
+  "train_through": "2025-06-15",
+  "holdout_from": "2025-07-15",
+  "holdout_through": "2026-06-15",
+  "train_n": 2664,
+  "evaluated_on": "2026-10-22",
+  "latest_labelled_as_of": "2026-06-15",
+  "data_age_days": 129,
+  "freshness_max_age_days": 180,
+  "freshness_passed": true,
   "qualified": false,
-  "reason": "Not enough distinct dates for a chronological train/holdout split.",
+  "reason": "MAE improvement below 5%; 95% date-clustered improvement interval includes zero; us: MAE improvement below 5%; 95% date-clustered improvement interval includes zero; africa: MAE improvement below 5%; 95% date-clustered improvement interval includes zero",
   "overall": {
-    "holdout_n": 0,
+    "holdout_n": 5503,
+    "holdout_dates": 12,
+    "candidate_mae_pct": 46.7627,
+    "zero_return_baseline_mae_pct": 46.7418,
+    "mae_improvement_pct": -0.045,
+    "absolute_mae_improvement_ci_low_pct_points": -0.0721,
+    "direction_n": 5501,
+    "direction_accuracy": 0.5014,
     "qualified": false,
-    "reason": "No labelled holdout outcomes."
+    "reason": "MAE improvement below 5%; 95% date-clustered improvement interval includes zero"
   },
-  "by_market": {}
+  "by_market": {
+    "us": {
+      "holdout_n": 5133,
+      "holdout_dates": 12,
+      "candidate_mae_pct": 45.5678,
+      "zero_return_baseline_mae_pct": 45.5501,
+      "mae_improvement_pct": -0.039,
+      "absolute_mae_improvement_ci_low_pct_points": -0.0727,
+      "direction_n": 5131,
+      "direction_accuracy": 0.5065,
+      "qualified": false,
+      "reason": "MAE improvement below 5%; 95% date-clustered improvement interval includes zero"
+    },
+    "africa": {
+      "holdout_n": 370,
+      "holdout_dates": 12,
+      "candidate_mae_pct": 63.3396,
+      "zero_return_baseline_mae_pct": 63.2741,
+      "mae_improvement_pct": -0.103,
+      "absolute_mae_improvement_ci_low_pct_points": -0.1801,
+      "direction_n": 370,
+      "direction_accuracy": 0.4297,
+      "qualified": false,
+      "reason": "MAE improvement below 5%; 95% date-clustered improvement interval includes zero"
+    }
+  }
 }
