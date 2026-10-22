@@ -894,9 +894,11 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     # demonym descriptors such as "Ghanaian-based".
     target_countries = [c.iso2 for c in countries_in_text(raw_obj_for_country)]
     primary_country = target_countries[0] if target_countries else (countries[0] if countries else None)
-    # Placement needs the text itself: a named African country, "Africa", or an Africa-only deal outlet.
-    # A search's country is only a hint (Google returns foreign stories for country queries).
-    if not countries and not (africa_source or re.search(r"\bafrica|\bafrique|\báfrica", text, re.IGNORECASE)):
+    # Placement needs evidence from the headline or source context: a named African country,
+    # "Africa", or an Africa-based publisher. A search country hint alone is not enough.
+    publisher_has_african_context = bool(countries_in_text(publisher))
+    if not countries and not (africa_source or publisher_has_african_context
+                              or re.search(r"\bafrica|\bafrique|\báfrica", text, re.IGNORECASE)):
         return None
 
     # A final series numeral is not a fund name; recover the named fund from the headline.
