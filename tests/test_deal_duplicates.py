@@ -106,9 +106,6 @@ def test_extractor_and_matcher_cover_clear_reworded_duplicate_reports():
 
 
 def test_dedup_evaluation_predictions_are_exactly_the_production_matcher():
-    import json
-    from pathlib import Path
-
     from evaluation.deals.score import _dedup_pair_diagnostics, _load
     from src.engines.deals import extract_deal, same_transaction
 

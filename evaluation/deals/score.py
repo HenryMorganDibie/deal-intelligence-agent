@@ -184,7 +184,6 @@ def _dedup_pair_diagnostics(pair: dict) -> dict:
 
     types = {a.get("deal_type"), b.get("deal_type")}
     type_compatible = dl._same_transaction_type(a, b)
-    ipo_pair = types == {"ipo", "equity_funding"} and type_compatible
     name_match = dl._same_transaction_name(a, b)
     ua, ub = a.get("amount_usd"), b.get("amount_usd")
     diagnostics = {
