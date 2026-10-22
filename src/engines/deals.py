@@ -1048,11 +1048,13 @@ def same_transaction(a: dict, b: dict) -> bool:
         # When one headline omits the amount, only merge an exact/contained target match
         # reported within a week. This catches brief follow-ups without conflating later deals.
         ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
-        return gap <= 7 and bool(ta and tb and (ta <= tb or tb <= ta))
+        ba, bb = _name_tokens(a.get("buyer")), _name_tokens(b.get("buyer"))
+        same_buyer = bool(ba and bb and (ba <= bb or bb <= ba))
+        return gap <= 7 and same_buyer and bool(ta and tb and (ta <= tb or tb <= ta))
 
     # Deal reports may round or revise announced values (for example a planned IPO versus
     # its completed size). Keep the tolerance bounded to avoid merging unrelated rounds.
-    if gap > 45 or abs(ua - ub) > 0.35 * max(ua, ub):
+    if gap > 45 or abs(ua - ub) > 0.20 * max(ua, ub):
         return False
     return True
 
