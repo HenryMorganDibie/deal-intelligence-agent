@@ -52,6 +52,9 @@ def test_duplicate_matcher_allows_nearby_exact_target_when_amount_is_undisclosed
     a = _deal("a", "WeLight", None, "2026-06-25", "equity_funding", buyer="IFC")
     b = _deal("b", "WeLight", 27e6, "2026-07-01", "equity_funding", buyer="IFC")
     assert same_transaction(a, b)
+    # A one-week-plus follow-up is still safe when both target and buyer are exact.
+    later = _deal("d", "WeLight", 27e6, "2026-07-03", "equity_funding", buyer="IFC")
+    assert same_transaction(a, later)
     assert not same_transaction(a, _deal("c", "WeLight", 27e6, "2026-07-20", "equity_funding"))
 
 
