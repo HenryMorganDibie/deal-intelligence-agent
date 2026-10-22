@@ -54,6 +54,34 @@ def test_ipo_launch_and_listing_match_when_only_one_report_discloses_offer_size(
     assert not same_transaction(launch, unrelated_stage)
 
 
+def test_extractor_and_matcher_cover_clear_reworded_duplicate_reports():
+    from src.engines.deals import extract_deal
+
+    cases = [
+        (
+            "Nedbank wins approval to take majority stake in Kenya’s NCBA",
+            "Nedbank gets CBK approval to acquire 66pc stake in NCBA",
+            "Kenya",
+        ),
+        (
+            "SA HR startup Jem raises $8.4m Series A funding round to support product expansion",
+            "South Africa’s HR startup Jem raises $8.4M Series A",
+            "South Africa",
+        ),
+        (
+            "Canal+ completes takeover of MultiChoice, becomes Africa’s pay-TV leader",
+            "Canal+ Completes Acquisition of Multichoice",
+            "South Africa",
+        ),
+    ]
+    for index, (title_a, title_b, country) in enumerate(cases):
+        a = extract_deal(title_a, published=f"2026-10-{10 + index:02d}", country_hint=country, africa_source=True)
+        b = extract_deal(title_b, published=f"2026-10-{12 + index:02d}", country_hint=country, africa_source=True)
+        assert a is not None, title_a
+        assert b is not None, title_b
+        assert same_transaction(a, b), (title_a, title_b, a, b)
+
+
 def test_dedup_evaluation_reruns_current_matcher_and_reports_recall_separately():
     from evaluation.deals.score import dedup
 
