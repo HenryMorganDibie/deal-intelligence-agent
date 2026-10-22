@@ -1004,7 +1004,13 @@ def merge_all(deals: Iterable[dict], into: Optional[dict[str, dict]] = None) -> 
 
 # Report-level duplicates the exact id misses: a reworded target ("VC Firm Ventures Platform"),
 # a different parsed type for one close, or reports either side of a month boundary.
-_TXN_KINDS = ({"acquisition", "merger", "equity_funding", "debt_financing", "exit"}, {"fund_raise", "equity_funding"})
+_TXN_KINDS = (
+    {"acquisition", "merger", "equity_funding", "debt_financing", "exit"},
+    {"fund_raise", "equity_funding"},
+    # News outlets often label the same transaction differently (e.g. a fund close as
+    # a raise, funding, or an exit). Identity, amount, and date checks still gate merges.
+    {"acquisition", "merger", "equity_funding", "fund_raise", "exit", "ipo"},
+)
 _NAME_NOISE = {"vc", "firm", "fund", "funds", "pan", "african", "africa", "s", "the", "a", "new", "close", "first",
                "second", "final", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"}
 
