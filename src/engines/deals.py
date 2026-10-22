@@ -1125,10 +1125,12 @@ def same_transaction(a: dict, b: dict) -> bool:
         ba, bb = _name_tokens(a.get("buyer")), _name_tokens(b.get("buyer"))
         same_buyer = bool(ba and bb and (ba <= bb or bb <= ba))
         same_target = bool(ta and tb and (ta <= tb or tb <= ta))
+        # Exact target plus the same buyer can safely cover a slightly later follow-up.
+        # Keep the wider window limited to this strongest identity match.
+        if same_target and same_buyer and gap <= 10:
+            return True
         if gap > 7 or not same_target:
             return False
-        if same_buyer:
-            return True
         # Do not turn commentary or explicit warnings about a hypothetical deal into
         # transaction duplicates merely because the target and topic overlap.
         hypothetical = re.compile(r"(?i)\b(?:don['’]t|do not|cautions?|warning|warns?|should not|urged to|wants? to buy|plans? to buy|proposes? to buy)\b")
