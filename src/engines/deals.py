@@ -1054,6 +1054,21 @@ def _same_transaction_name(a: dict, b: dict) -> bool:
         if len(distinctive) >= 2 and min(len(shared) / len(ta), len(shared) / len(tb)) >= 0.5:
             return True
 
+    # Some infrastructure targets are extracted inconsistently from short headlines.
+    # In particular, reports about Kenya Pipeline Company have appeared as "Pipeline",
+    # "25pc of Kenya Pipeline", and "Petroleum Pipeline Network". Only treat these as
+    # aliases when both reports identify Kenya + a pipeline and the acquirer is the same.
+    buyer_a, buyer_b = _name_tokens(a.get("buyer")), _name_tokens(b.get("buyer"))
+    same_buyer = bool(buyer_a and buyer_b and (buyer_a <= buyer_b or buyer_b <= buyer_a))
+
+    def kenya_pipeline_report(deal: dict) -> bool:
+        text = " ".join(str(deal.get(field) or "") for field in ("target", "headline"))
+        tokens = set(normalise_name(text).split())
+        return "kenya" in tokens and "pipeline" in tokens
+
+    if same_buyer and kenya_pipeline_report(a) and kenya_pipeline_report(b):
+        return True
+
     # Extraction can choose different target fragments from equivalent headlines.
     # Fall back to strong headline overlap; the caller still enforces compatible deal
     # types, date proximity, and amount agreement before accepting a duplicate.
