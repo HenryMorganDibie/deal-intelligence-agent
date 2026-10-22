@@ -105,6 +105,30 @@ def test_extractor_and_matcher_cover_clear_reworded_duplicate_reports():
         assert same_transaction(a, b), (title_a, title_b, a, b)
 
 
+def test_dedup_evaluation_predictions_are_exactly_the_production_matcher():
+    import json
+    from pathlib import Path
+
+    from evaluation.deals.score import _dedup_pair_diagnostics, _load
+    from src.engines.deals import extract_deal, same_transaction
+
+    items = {item["item_id"]: item for item in _load("dedup_items.jsonl")}
+    for item in items.values():
+        extracted = []
+        for side in ("a", "b"):
+            row = item[side]
+            extracted.append(extract_deal(
+                row.get("title", ""),
+                published=row.get("date"),
+                publisher=row.get("publisher") or "",
+                country_hint=row.get("country_hint"),
+                rates=lambda _currency, _year: None,
+            ))
+        prediction = _dedup_pair_diagnostics(item)["same_deal"]
+        expected = bool(extracted[0] and extracted[1] and same_transaction(extracted[0], extracted[1]))
+        assert prediction is expected, item["item_id"]
+
+
 def test_dedup_evaluation_reruns_current_matcher_and_reports_recall_separately():
     from evaluation.deals.score import dedup
 

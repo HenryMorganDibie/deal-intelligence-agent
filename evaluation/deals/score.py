@@ -196,34 +196,30 @@ def _dedup_pair_diagnostics(pair: dict) -> dict:
         "amount_usd": [ua, ub],
     }
 
-    # Keep this gate order aligned with same_transaction(), so the diagnosis identifies
-    # the first reason the production matcher rejects the pair.
-    if gap is None:
-        diagnostics["blocked_by"] = "invalid_or_missing_date"
-        same = False
-    elif not type_compatible:
-        diagnostics["blocked_by"] = "incompatible_deal_types"
-        same = False
-    elif not name_match:
-        diagnostics["blocked_by"] = "transaction_identity_mismatch"
-        same = False
-    elif not ua or not ub:
-        ta, tb = dl._name_tokens(a.get("target")), dl._name_tokens(b.get("target"))
-        ba, bb = dl._name_tokens(a.get("buyer")), dl._name_tokens(b.get("buyer"))
-        same_buyer = bool(ba and bb and (ba <= bb or bb <= ba))
-        same_target = bool(ta and tb and (ta <= tb or tb <= ta))
-        same = (ipo_pair and gap <= 45) or (gap <= 7 and same_buyer and same_target)
-        if not same:
-            diagnostics["blocked_by"] = "undisclosed_amount_fallback"
-    elif gap > 45:
-        diagnostics["blocked_by"] = "date_window_exceeded"
-        same = False
-    elif abs(ua - ub) > 0.20 * max(ua, ub):
-        diagnostics["blocked_by"] = "amount_difference_exceeded"
-        same = False
-    else:
-        same = True
-
+    # The prediction must come from the production matcher itself. The diagnostic
+    # below is explanatory only; it must never independently decide the label.
+    same = dl.same_transaction(a, b)
+    if not same:
+        if gap is None:
+            diagnostics["blocked_by"] = "invalid_or_missing_date"
+        elif not type_compatible:
+            diagnostics["blocked_by"] = "incompatible_deal_types"
+        elif not name_match:
+            diagnostics["blocked_by"] = "transaction_identity_mismatch"
+        elif (not ua or not ub) and gap > 45:
+            diagnostics["blocked_by"] = "date_window_exceeded"
+        elif ua and ub and gap > 45:
+            diagnostics["blocked_by"] = "date_window_exceeded"
+        elif ua and ub and abs(ua - ub) > 0.20 * max(ua, ub):
+            diagnostics["blocked_by"] = "amount_difference_exceeded"
+        elif not ua or not ub:
+            headlines = (a.get("headline") or "", b.get("headline") or "")
+            if any(re.search(r"(?i)\\b(?:don['’]t|do not|cautions?|warning|warns?|should not|urged to|wants? to buy|plans? to buy|proposes? to buy)\\b", h) for h in headlines):
+                diagnostics["blocked_by"] = "hypothetical_or_warning_language"
+            else:
+                diagnostics["blocked_by"] = "undisclosed_amount_fallback"
+        else:
+            diagnostics["blocked_by"] = "production_matcher_rejected"
     diagnostics["same_deal"] = same
     return {"same_deal": same, "diagnostics": diagnostics}
 
