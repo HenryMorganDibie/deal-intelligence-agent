@@ -58,3 +58,5 @@ jobs:
         run: python -m pip install ruff==0.16.9 && ruff check .
       - name: Run full test suite
         run: python -m pytest -q
+      - name: Recompute evaluation metrics
+        run: python -m evaluation.deals.score
