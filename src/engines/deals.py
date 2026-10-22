@@ -1018,12 +1018,12 @@ def _same_transaction_name(a: dict, b: dict) -> bool:
     ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
     if not ta or not tb:
         return False
+    # Exact or contained names are strong evidence, even for short names like Jem or Kofa.
+    if ta <= tb or tb <= ta:
+        return True
     shared = ta & tb
     if not shared or not any(len(t) >= 4 for t in shared):
         return False
-    # Exact or contained names remain the strongest signal (e.g. "Kofa" / "Ghana's Kofa").
-    if ta <= tb or tb <= ta:
-        return True
     # Headlines often add descriptors or omit one part of a company name. Allow a partial overlap
     # only when at least two distinctive tokens agree and they cover at least half of each name.
     distinctive = {t for t in shared if len(t) >= 4}
