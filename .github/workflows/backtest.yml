@@ -329,10 +329,27 @@ jobs:
         run: |
           git config user.name "Henry Dibie"
           git config user.email "henrymorgandibie@gmail.com"
-          git add docs/evaluation_report.json docs/backtest_predictions.csv docs/backtest_summary.json \
-                  docs/BACKTEST.md docs/backtest_universe.csv docs/return_forecast_validation.json \
-                  src/data/measured_outcomes.json
-          if git diff --cached --quiet; then echo "Nothing new to publish."; exit 0; fi
-          git commit -m "backtest: monthly replay ${{ needs.plan.outputs.start }} to ${{ needs.plan.outputs.end }}"
-          git pull --rebase origin "${{ github.ref_name }}"
-          git push origin "HEAD:${{ github.ref_name }}"
+          # Generated result files can conflict with newer commits made while the shards run.
+          # Rebase is unsafe here: these files are outputs, so rebase repeatedly conflicts on them.
+          # Rebase the index to the current remote tree, keep the generated working-tree outputs,
+          # and create a fresh results-only commit on top of the latest branch.
+          branch="${{ github.ref_name }}"
+          for attempt in 1 2 3; do
+            git fetch origin "$branch"
+            git reset --mixed "origin/$branch"
+            git add docs/evaluation_report.json docs/backtest_predictions.csv docs/backtest_summary.json \
+                    docs/BACKTEST.md docs/backtest_universe.csv docs/return_forecast_validation.json \
+                    src/data/measured_outcomes.json
+            if git diff --cached --quiet; then
+              echo "Nothing new to publish against the latest $branch."
+              exit 0
+            fi
+            git commit -m "backtest: monthly replay ${{ needs.plan.outputs.start }} to ${{ needs.plan.outputs.end }}"
+            if git push origin "HEAD:$branch"; then
+              echo "Backtest results published successfully."
+              exit 0
+            fi
+            echo "::warning::Push raced with another commit (attempt $attempt/3); refreshing the base and retrying."
+          done
+          echo "::error::Could not publish after 3 attempts because the branch kept changing."
+          exit 1
