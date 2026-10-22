@@ -155,8 +155,8 @@ def extraction(prefix: str = "") -> tuple[dict, list[dict]]:
     return out, errors
 
 
-def _dedup_pair_prediction(pair: dict) -> bool:
-    """Re-run the current extractor and duplicate matcher on a labelled headline pair."""
+def _dedup_pair_diagnostics(pair: dict) -> dict:
+    """Run the production extractor/matcher and explain the first gate that rejects a pair."""
     extracted = []
     for side in ("a", "b"):
         item = pair[side]
@@ -168,15 +168,75 @@ def _dedup_pair_prediction(pair: dict) -> bool:
             rates=lambda _currency, _year: None,
         )
         if not deal:
-            return False
+            return {
+                "same_deal": False,
+                "diagnostics": {"blocked_by": "extraction_failed", "side": side, "title": item.get("title")},
+            }
         extracted.append(deal)
-    return dl.same_transaction(extracted[0], extracted[1])
+
+    a, b = extracted
+    from datetime import date
+
+    try:
+        gap = abs((date.fromisoformat(a["announced"][:10]) - date.fromisoformat(b["announced"][:10])).days)
+    except (KeyError, TypeError, ValueError):
+        gap = None
+
+    types = {a.get("deal_type"), b.get("deal_type")}
+    type_compatible = len(types) <= 1 or any(types <= kinds for kinds in dl._TXN_KINDS)
+    name_match = dl._same_transaction_name(a, b)
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    diagnostics = {
+        "a_extracted": {k: a.get(k) for k in ("target", "buyer", "deal_type", "announced", "amount_usd", "headline")},
+        "b_extracted": {k: b.get(k) for k in ("target", "buyer", "deal_type", "announced", "amount_usd", "headline")},
+        "date_gap_days": gap,
+        "type_compatible": type_compatible,
+        "name_match": name_match,
+        "amount_usd": [ua, ub],
+    }
+
+    # Keep this gate order aligned with same_transaction(), so the diagnosis identifies
+    # the first reason the production matcher rejects the pair.
+    if gap is None:
+        diagnostics["blocked_by"] = "invalid_or_missing_date"
+        same = False
+    elif not type_compatible:
+        diagnostics["blocked_by"] = "incompatible_deal_types"
+        same = False
+    elif not name_match:
+        diagnostics["blocked_by"] = "transaction_identity_mismatch"
+        same = False
+    elif not ua or not ub:
+        ta, tb = dl._name_tokens(a.get("target")), dl._name_tokens(b.get("target"))
+        ba, bb = dl._name_tokens(a.get("buyer")), dl._name_tokens(b.get("buyer"))
+        same_buyer = bool(ba and bb and (ba <= bb or bb <= ba))
+        same_target = bool(ta and tb and (ta <= tb or tb <= ta))
+        same = gap <= 7 and same_buyer and same_target
+        if not same:
+            diagnostics["blocked_by"] = "undisclosed_amount_fallback"
+    elif gap > 45:
+        diagnostics["blocked_by"] = "date_window_exceeded"
+        same = False
+    elif abs(ua - ub) > 0.20 * max(ua, ub):
+        diagnostics["blocked_by"] = "amount_difference_exceeded"
+        same = False
+    else:
+        same = True
+
+    diagnostics["same_deal"] = same
+    return {"same_deal": same, "diagnostics": diagnostics}
+
+
+def _dedup_pair_prediction(pair: dict) -> bool:
+    """Compatibility wrapper for callers that only need the binary prediction."""
+    return _dedup_pair_diagnostics(pair)["same_deal"]
 
 
 def dedup() -> tuple[dict, list[dict]]:
     items = {i["item_id"]: i for i in _load("dedup_items.jsonl")}
     labels = _load("dedup_labels.jsonl")
-    predictions = {l["item_id"]: _dedup_pair_prediction(items[l["item_id"]]) for l in labels}
+    evaluations = {l["item_id"]: _dedup_pair_diagnostics(items[l["item_id"]]) for l in labels}
+    predictions = {item_id: result["same_deal"] for item_id, result in evaluations.items()}
     tp = sum(predictions[l["item_id"]] and l["same_deal"] for l in labels)
     fp = sum(predictions[l["item_id"]] and not l["same_deal"] for l in labels)
     fn = sum(not predictions[l["item_id"]] and l["same_deal"] for l in labels)
@@ -203,6 +263,7 @@ def dedup() -> tuple[dict, list[dict]]:
                 "a": pair["a"]["title"], "b": pair["b"]["title"],
                 "gold": l, "predicted_same_deal": predicted_same,
                 "historical_system_decision": pair.get("_system"),
+                "diagnostics": evaluations[l["item_id"]]["diagnostics"],
             })
     return {
         "pairs": len(labels),
