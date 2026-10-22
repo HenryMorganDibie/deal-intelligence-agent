@@ -1,8 +1,8 @@
 from src.engines.deals import resolve_duplicates, same_transaction
 
 
-def _deal(id, target, usd, day, deal_type="fund_raise"):
-    return {"id": id, "target": target, "amount_usd": usd, "announced": day, "deal_type": deal_type}
+def _deal(id, target, usd, day, deal_type="fund_raise", buyer=None):
+    return {"id": id, "target": target, "amount_usd": usd, "announced": day, "deal_type": deal_type, "buyer": buyer}
 
 
 def test_reworded_fund_close_across_month_and_type_is_one_transaction():
@@ -18,7 +18,7 @@ def test_reworded_fund_close_across_month_and_type_is_one_transaction():
 def test_distinct_transactions_stay_separate():
     base = _deal("a", "Ventures Platform", 84e6, "2026-08-26")
     assert not same_transaction(base, _deal("b", "Ventures Platform", 64e6, "2026-08-26"))       # amount
-    assert not same_transaction(base, _deal("c", "Ventures Platform", 84e6, "2026-10-15"))       # > 30 days
+    assert not same_transaction(base, _deal("c", "Ventures Platform", 84e6, "2026-10-15"))       # > 45 days
     assert not same_transaction(base, _deal("d", "Moniepoint", 84e6, "2026-08-26"))              # company
     assert not same_transaction(base, _deal("e", "Ventures Platform", 84e6, "2026-08-26", "acquisition"))
     assert not same_transaction(base, _deal("f", "Ventures Platform", None, "2026-08-26"))       # no amount
@@ -35,8 +35,8 @@ def test_duplicate_matcher_handles_rounded_amounts_and_partial_target_names():
 
 
 def test_duplicate_matcher_allows_nearby_exact_target_when_amount_is_undisclosed():
-    a = _deal("a", "WeLight", None, "2026-06-25", "equity_funding")
-    b = _deal("b", "WeLight", 27e6, "2026-07-01", "equity_funding")
+    a = _deal("a", "WeLight", None, "2026-06-25", "equity_funding", buyer="IFC")
+    b = _deal("b", "WeLight", 27e6, "2026-07-01", "equity_funding", buyer="IFC")
     assert same_transaction(a, b)
     assert not same_transaction(a, _deal("c", "WeLight", 27e6, "2026-07-20", "equity_funding"))
 
