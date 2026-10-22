@@ -1129,13 +1129,13 @@ def same_transaction(a: dict, b: dict) -> bool:
         same_target = bool(ta and tb and (ta <= tb or tb <= ta))
         # Exact target plus the same buyer can safely cover a slightly later follow-up.
         # Keep the wider window limited to this strongest identity match.
-        if same_buyer and name_match and gap <= 7:
-            # Distinctive target identity plus the same counterparty is strong
-            # corroboration when one publisher omits the transaction amount.
+        if same_buyer and gap <= 7:
+            # The transaction-name matcher already passed above; a matching buyer
+            # provides strong corroboration when one publisher omits the amount.
             return True
         if same_target and same_buyer and gap <= 10:
             return True
-        if gap > 7 or not name_match:
+        if gap > 7:
             return False
         # Do not turn commentary or explicit warnings about a hypothetical deal into
         # transaction duplicates merely because the target and topic overlap.
