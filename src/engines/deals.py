@@ -1131,7 +1131,7 @@ def same_transaction(a: dict, b: dict) -> bool:
             return True
         # Do not turn commentary or explicit warnings about a hypothetical deal into
         # transaction duplicates merely because the target and topic overlap.
-        hypothetical = re.compile(r"(?i)\\b(?:don['’]t|do not|cautions?|warning|warns?|should not|urged to|wants? to buy|plans? to buy|proposes? to buy)\\b")
+        hypothetical = re.compile(r"(?i)\b(?:don['’]t|do not|cautions?|warning|warns?|should not|urged to|wants? to buy|plans? to buy|proposes? to buy)\b")
         if hypothetical.search(a.get("headline") or "") or hypothetical.search(b.get("headline") or ""):
             return False
         noise = {
