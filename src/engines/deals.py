@@ -1032,7 +1032,7 @@ def _name_tokens(name: Optional[str]) -> set[str]:
         "bank of industry": "__bank_of_industry__",
         "afdb": "__african_development_bank__",
         "african development bank": "__african_development_bank__",
-        "frasers group": "__frasers_group__",
+        "frasers": "__frasers_group__",
         "sports direct parent": "__frasers_group__",
     }
     normalized = aliases.get(normalized, normalized)
