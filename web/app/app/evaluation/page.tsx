@@ -69,7 +69,7 @@ type Extraction = {
 type DataQuality = {
   extraction: Extraction;
   heldout_extraction: Extraction | null;
-  dedup: { pairs: number; sample: string; merge_precision: CI; missed_duplicates_among_lookalikes: CI };
+  dedup: { pairs: number; sample: string; merge_precision: CI; duplicate_recall: CI; missed_duplicate_rate: CI; missed_duplicates_among_lookalikes: CI };
   identity: { pairs: number; sample: string; join_precision: CI; join_recall: CI; malformed_names_caught: CI; valid_names_kept: CI };
   heldout_names: { names: number; malformed_names_caught: CI; valid_names_resolved_to_the_right_organisation: CI } | null;
   labels: string;
@@ -902,9 +902,14 @@ export default function EvaluationPage() {
                     <Td className="text-[0.75rem] text-[color:var(--muted)]">Pairs of reports merged into one record</Td>
                   </tr>
                   <tr>
+                    <Td>True duplicate pairs correctly identified (recall)</Td>
+                    <Td className="kbd"><Ci x={dq.dedup.duplicate_recall} /></Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Share of labelled duplicate pairs caught by the current matcher</Td>
+                  </tr>
+                  <tr>
                     <Td>Separate records that are actually one deal (missed duplicates)</Td>
                     <Td className="kbd text-risk"><Ci x={dq.dedup.missed_duplicates_among_lookalikes} /></Td>
-                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Look-alike pairs: same distinctive name or amount within two months</Td>
+                    <Td className="text-[0.75rem] text-[color:var(--muted)]">Among pairs the matcher kept separate; lower is better. Development sample</Td>
                   </tr>
                   <tr>
                     <Td>Name pairs the resolver joins that are one entity (development)</Td>

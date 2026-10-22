@@ -1,8 +1,8 @@
 from src.engines.deals import resolve_duplicates, same_transaction
 
 
-def _deal(id, target, usd, day, deal_type="fund_raise"):
-    return {"id": id, "target": target, "amount_usd": usd, "announced": day, "deal_type": deal_type}
+def _deal(id, target, usd, day, deal_type="fund_raise", buyer=None):
+    return {"id": id, "target": target, "amount_usd": usd, "announced": day, "deal_type": deal_type, "buyer": buyer}
 
 
 def test_reworded_fund_close_across_month_and_type_is_one_transaction():
@@ -18,10 +18,124 @@ def test_reworded_fund_close_across_month_and_type_is_one_transaction():
 def test_distinct_transactions_stay_separate():
     base = _deal("a", "Ventures Platform", 84e6, "2026-08-26")
     assert not same_transaction(base, _deal("b", "Ventures Platform", 64e6, "2026-08-26"))       # amount
-    assert not same_transaction(base, _deal("c", "Ventures Platform", 84e6, "2026-10-15"))       # > 30 days
+    assert not same_transaction(base, _deal("c", "Ventures Platform", 84e6, "2026-10-15"))       # > 45 days
     assert not same_transaction(base, _deal("d", "Moniepoint", 84e6, "2026-08-26"))              # company
     assert not same_transaction(base, _deal("e", "Ventures Platform", 84e6, "2026-08-26", "acquisition"))
     assert not same_transaction(base, _deal("f", "Ventures Platform", None, "2026-08-26"))       # no amount
+
+
+def test_different_debt_and_equity_transactions_for_same_company_stay_separate():
+    wind_deal = _deal("a", "Standard Bank", 273915186, "2025-02-25", "equity_funding")
+    wind_deal["headline"] = "Standard Bank closes R4.9bn game changer aggregator wind power deal"
+    loan_deal = _deal("b", "Standard Bank", 250e6, "2025-03-13", "debt_financing")
+    loan_deal["headline"] = "Standard Bank secures $250m IFC loan to boost green financing initiatives"
+    assert not same_transaction(wind_deal, loan_deal)
+
+
+def test_duplicate_matcher_handles_rounded_amounts_and_partial_target_names():
+    planned = _deal("a", "Optasia", 375e6, "2025-10-08", "ipo")
+    completed = _deal("b", "Optasia South Africa listing", 345e6, "2025-11-05", "ipo")
+    assert same_transaction(planned, completed)
+
+    target_a = _deal("c", "Kenya Pipeline Company", 327e6, "2026-10-20", "acquisition")
+    target_b = _deal("d", "Kenya Oil Pipeline Network", 327e6, "2026-10-22", "acquisition")
+    assert same_transaction(target_a, target_b)
+
+
+def test_explicit_bank_of_industry_aliases_match():
+    a = _deal("a", "Bank of Industry", 200e6, "2026-06-10", "debt_financing")
+    b = _deal("b", "BOI", 200e6, "2026-06-10", "debt_financing")
+    assert same_transaction(a, b)
+
+
+def test_duplicate_matcher_allows_nearby_exact_target_when_amount_is_undisclosed():
+    a = _deal("a", "WeLight", None, "2026-06-25", "equity_funding", buyer="IFC")
+    b = _deal("b", "WeLight", 27e6, "2026-07-01", "equity_funding", buyer="IFC")
+    assert same_transaction(a, b)
+    # A one-week-plus follow-up is still safe when both target and buyer are exact.
+    later = _deal("d", "WeLight", 27e6, "2026-07-03", "equity_funding", buyer="IFC")
+    assert same_transaction(a, later)
+    assert not same_transaction(a, _deal("c", "WeLight", 27e6, "2026-07-20", "equity_funding"))
+
+
+def test_ipo_launch_and_listing_match_when_only_one_report_discloses_offer_size():
+    launch = _deal("a", "Kasapreko", None, "2026-05-05", "ipo")
+    launch["headline"] = "Kasapreko PLC launches IPO on the Ghana Stock Exchange"
+    listing = _deal("b", "Kasapreko", 120e6, "2026-06-11", "equity_funding")
+    listing["headline"] = "Kasapreko raised $120 million in its IPO and lists on the GSE"
+    assert same_transaction(launch, listing)
+
+    # Do not generalize IPO compatibility to ordinary fundraising reports.
+    unrelated_stage = _deal("c", "Kasapreko", 120e6, "2026-06-11", "equity_funding")
+    unrelated_stage["headline"] = "Kasapreko raises $120 million to expand production"
+    assert not same_transaction(launch, unrelated_stage)
+
+
+def test_extractor_and_matcher_cover_clear_reworded_duplicate_reports():
+    from src.engines.deals import extract_deal
+
+    cases = [
+        (
+            "Nedbank wins approval to take majority stake in Kenya’s NCBA",
+            "Nedbank gets CBK approval to acquire 66pc stake in NCBA",
+            "KE",
+            "Businessday NG",
+            "The Star, Kenya",
+        ),
+        (
+            "SA HR startup Jem raises $8.4m Series A funding round to support product expansion",
+            "South Africa’s HR startup Jem raises $8.4M Series A",
+            "ZA",
+            "Disrupt Africa",
+            "Condia",
+        ),
+        (
+            "Canal+ completes takeover of MultiChoice, becomes Africa’s pay-TV leader",
+            "Canal+ Completes Acquisition of Multichoice",
+            "ZA",
+            "The Africa Report",
+            "Business Post Nigeria",
+        ),
+    ]
+    for index, (title_a, title_b, country, publisher_a, publisher_b) in enumerate(cases):
+        a = extract_deal(title_a, published=f"2026-10-{10 + index:02d}", publisher=publisher_a, country_hint=country)
+        b = extract_deal(title_b, published=f"2026-10-{12 + index:02d}", publisher=publisher_b, country_hint=country)
+        assert a is not None, title_a
+        assert b is not None, title_b
+        assert same_transaction(a, b), (title_a, title_b, a, b)
+
+
+def test_dedup_evaluation_predictions_are_exactly_the_production_matcher():
+    from evaluation.deals.score import _dedup_pair_diagnostics, _load
+    from src.engines.deals import extract_deal, same_transaction
+
+    items = {item["item_id"]: item for item in _load("dedup_items.jsonl")}
+    for item in items.values():
+        extracted = []
+        for side in ("a", "b"):
+            row = item[side]
+            extracted.append(extract_deal(
+                row.get("title", ""),
+                published=row.get("date"),
+                publisher=row.get("publisher") or "",
+                country_hint=row.get("country_hint"),
+                rates=lambda _currency, _year: None,
+            ))
+        prediction = _dedup_pair_diagnostics(item)["same_deal"]
+        expected = bool(extracted[0] and extracted[1] and same_transaction(extracted[0], extracted[1]))
+        assert prediction is expected, item["item_id"]
+
+
+def test_dedup_evaluation_reruns_current_matcher_and_reports_recall_separately():
+    from evaluation.deals.score import dedup
+
+    result, errors = dedup()
+    assert result["pairs"] == 100
+    assert "duplicate_recall" in result
+    assert "missed_duplicate_rate" in result
+    assert "baseline_saved_decisions" in result
+    assert sum(result["confusion"].values()) == result["pairs"]
+    assert all(error["set"] == "dedup_current" for error in errors)
 
 
 def test_resolve_duplicates_rekeys_onto_stored_and_earlier_reports():
@@ -286,3 +400,32 @@ def test_review_labelling_api_validates_labels_and_never_sends_the_system_decisi
     assert ok.json()["saved"] is True
     assert client.post("/api/review/label", content=json.dumps({"token": token, "kind": "item", "item_id": "x1"})).status_code == 422
     assert client.post("/api/admin/review/annotators", content=json.dumps({"key": "wrong", "role": "a", "name": "A"})).status_code == 401
+
+def test_undisclosed_amount_accepts_distinctive_target_and_same_buyer():
+    a = _deal("a", "Chevron Namibia Offshore Block", None, "2026-08-18", "acquisition", buyer="Equinor")
+    a["headline"] = "Equinor Buys Stake in Chevron's Namibia Well"
+    b = _deal("b", "Chevron-Run Namibia Offshore Block", 17.4, "2026-08-19", "acquisition", buyer="Equinor")
+    b["headline"] = "Equinor Buys 17.4% Stake in Chevron-Run Namibia Offshore Block"
+    assert same_transaction(a, b)
+
+
+def test_known_buyer_aliases_match_for_holdsport_reports():
+    a = _deal("a", "Holdsport", None, "2024-11-26", "acquisition", buyer="Frasers Group")
+    a["headline"] = "Frasers Group snaps up Holdsport in South Africa"
+    b = _deal("b", "Holdsport Group", None, "2024-11-26", "acquisition", buyer="Sports Direct Parent")
+    b["headline"] = "Sports Direct Parent Set to Acquire South Africa's Holdsport Group"
+    assert same_transaction(a, b)
+
+
+def test_undisclosed_amount_can_match_on_strong_headline_overlap_without_buyer():
+    same_a = _deal("a", "Paelon Memorial Hospital", None, "2026-03-10", "acquisition")
+    same_a["headline"] = "Iwosan acquires Paelon Memorial Hospital in Nigeria healthcare sector"
+    same_b = _deal("b", "Paelon Memorial Hospital", None, "2026-03-11", "acquisition")
+    same_b["headline"] = "Iwosan completes Paelon Memorial Hospital acquisition in Nigeria healthcare sector"
+    assert same_transaction(same_a, same_b)
+
+    # Exact target and nearby dates alone must not collapse unrelated transactions.
+    other = _deal("c", "Paelon Memorial Hospital", None, "2026-03-11", "acquisition")
+    other["headline"] = "Hospital board considers a separate ownership restructuring"
+    assert not same_transaction(same_a, other)
+

@@ -155,24 +155,120 @@ def extraction(prefix: str = "") -> tuple[dict, list[dict]]:
     return out, errors
 
 
+def _dedup_pair_diagnostics(pair: dict) -> dict:
+    """Run the production extractor/matcher and explain the first gate that rejects a pair."""
+    extracted = []
+    for side in ("a", "b"):
+        item = pair[side]
+        deal = dl.extract_deal(
+            item.get("title", ""),
+            published=item.get("date"),
+            publisher=item.get("publisher") or "",
+            country_hint=item.get("country_hint"),
+            rates=lambda _currency, _year: None,
+        )
+        if not deal:
+            return {
+                "same_deal": False,
+                "diagnostics": {"blocked_by": "extraction_failed", "side": side, "title": item.get("title")},
+            }
+        extracted.append(deal)
+
+    a, b = extracted
+    from datetime import date
+
+    try:
+        gap = abs((date.fromisoformat(a["announced"][:10]) - date.fromisoformat(b["announced"][:10])).days)
+    except (KeyError, TypeError, ValueError):
+        gap = None
+
+    type_compatible = dl._same_transaction_type(a, b)
+    name_match = dl._same_transaction_name(a, b)
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    diagnostics = {
+        "a_extracted": {k: a.get(k) for k in ("target", "buyer", "deal_type", "announced", "amount_usd", "headline")},
+        "b_extracted": {k: b.get(k) for k in ("target", "buyer", "deal_type", "announced", "amount_usd", "headline")},
+        "date_gap_days": gap,
+        "type_compatible": type_compatible,
+        "name_match": name_match,
+        "amount_usd": [ua, ub],
+    }
+
+    # The prediction must come from the production matcher itself. The diagnostic
+    # below is explanatory only; it must never independently decide the label.
+    same = dl.same_transaction(a, b)
+    if not same:
+        if gap is None:
+            diagnostics["blocked_by"] = "invalid_or_missing_date"
+        elif not type_compatible:
+            diagnostics["blocked_by"] = "incompatible_deal_types"
+        elif not name_match:
+            diagnostics["blocked_by"] = "transaction_identity_mismatch"
+        elif (not ua or not ub) and gap > 45:
+            diagnostics["blocked_by"] = "date_window_exceeded"
+        elif ua and ub and gap > 45:
+            diagnostics["blocked_by"] = "date_window_exceeded"
+        elif ua and ub and abs(ua - ub) > 0.20 * max(ua, ub):
+            diagnostics["blocked_by"] = "amount_difference_exceeded"
+        elif not ua or not ub:
+            headlines = (a.get("headline") or "", b.get("headline") or "")
+            if any(re.search(r"(?i)\b(?:don['’]t|do not|cautions?|warning|warns?|should not|urged to|wants? to buy|plans? to buy|proposes? to buy)\b", h) for h in headlines):
+                diagnostics["blocked_by"] = "hypothetical_or_warning_language"
+            else:
+                diagnostics["blocked_by"] = "undisclosed_amount_fallback"
+        else:
+            diagnostics["blocked_by"] = "production_matcher_rejected"
+    diagnostics["same_deal"] = same
+    return {"same_deal": same, "diagnostics": diagnostics}
+
+
+def _dedup_pair_prediction(pair: dict) -> bool:
+    """Compatibility wrapper for callers that only need the binary prediction."""
+    return _dedup_pair_diagnostics(pair)["same_deal"]
+
+
 def dedup() -> tuple[dict, list[dict]]:
     items = {i["item_id"]: i for i in _load("dedup_items.jsonl")}
     labels = _load("dedup_labels.jsonl")
-    merged = [l for l in labels if items[l["item_id"]]["_system"] == "merged"]
-    separate = [l for l in labels if items[l["item_id"]]["_system"] == "separate"]
+    evaluations = {l["item_id"]: _dedup_pair_diagnostics(items[l["item_id"]]) for l in labels}
+    predictions = {item_id: result["same_deal"] for item_id, result in evaluations.items()}
+    tp = sum(predictions[l["item_id"]] and l["same_deal"] for l in labels)
+    fp = sum(predictions[l["item_id"]] and not l["same_deal"] for l in labels)
+    fn = sum(not predictions[l["item_id"]] and l["same_deal"] for l in labels)
+    tn = sum(not predictions[l["item_id"]] and not l["same_deal"] for l in labels)
+
+    # The previous published score used the saved _system decision, not a fresh run of the matcher.
+    # Keep it for comparison, but report current code's metrics as the primary values.
+    baseline_merged = [l for l in labels if items[l["item_id"]]["_system"] == "merged"]
+    baseline_separate = [l for l in labels if items[l["item_id"]]["_system"] == "separate"]
+    baseline = {
+        "merge_precision": wilson(sum(l["same_deal"] for l in baseline_merged), len(baseline_merged)),
+        "missed_duplicates_among_lookalikes": wilson(sum(l["same_deal"] for l in baseline_separate), len(baseline_separate)),
+    }
+
     errors = []
     for l in labels:
-        sys_same = items[l["item_id"]]["_system"] == "merged"
-        if sys_same != l["same_deal"]:
-            errors.append({"set": "dedup", "item_id": l["item_id"],
-                           "error": "merged two different deals" if sys_same else "kept one deal as two records",
-                           "a": items[l["item_id"]]["a"]["title"], "b": items[l["item_id"]]["b"]["title"], "gold": l})
+        predicted_same = predictions[l["item_id"]]
+        if predicted_same != l["same_deal"]:
+            pair = items[l["item_id"]]
+            errors.append({
+                "set": "dedup_current",
+                "item_id": l["item_id"],
+                "error": "merged two different deals" if predicted_same else "missed duplicate",
+                "a": pair["a"]["title"], "b": pair["b"]["title"],
+                "gold": l, "predicted_same_deal": predicted_same,
+                "historical_system_decision": pair.get("_system"),
+                "diagnostics": evaluations[l["item_id"]]["diagnostics"],
+            })
     return {
         "pairs": len(labels),
-        "sample": "40 pairs of reports the deduplicator merged into one record, and 60 pairs of separate records that "
-                  "share a distinctive target word or the same amount and country within about two months.",
-        "merge_precision": wilson(sum(l["same_deal"] for l in merged), len(merged)),
-        "missed_duplicates_among_lookalikes": wilson(sum(l["same_deal"] for l in separate), len(separate)),
+        "sample": "100 labelled report pairs. Metrics rerun the current extractor and matcher on each headline/date/publisher pair; historical saved decisions are retained as a baseline. This is a development set, not an unbiased production estimate.",
+        "merge_precision": wilson(tp, tp + fp),
+        "duplicate_recall": wilson(tp, tp + fn),
+        "missed_duplicate_rate": wilson(fn, tp + fn),
+        "missed_duplicates_among_lookalikes": wilson(fn, fn + tn),
+        "baseline_saved_decisions": baseline,
+        "confusion": {"true_positive": tp, "false_positive": fp, "false_negative": fn, "true_negative": tn},
     }, errors
 
 

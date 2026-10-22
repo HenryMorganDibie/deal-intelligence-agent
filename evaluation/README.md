@@ -115,9 +115,12 @@ convention, not extractor quality.
 Recall is measured on a sample enriched for rejected deal-like headlines, so it measures misses
 among plausible candidates, not coverage of every deal that happened.
 
-Deduplication (development): merged reports that are one deal 98% [87–100] n=40; separate records
-that are actually one deal, among look-alike pairs, 43% [32–56] n=60. Missed duplicates are the main
-deduplication weakness.
+Deduplication (development): the scorer reruns the current extractor and matcher on all 100 labelled
+headline pairs. Merge precision and duplicate recall are reported separately, alongside the false-negative
+rate and the historical saved-decision baseline. The old 43% figure was the share of pairs left separate
+that were actually duplicates (a miss rate among kept-apart look-alikes), so lower is better; it was not
+duplicate recall. The pair set is a development sample, so its post-fix score is not an unbiased estimate
+of production performance.
 
 Identity: name pairs the resolver joins that are one entity rose from 38% [24–53] to 100% [82–100]
 (n=18) on the development set once combined names ("IFC and Proparco") are split and headline
@@ -150,7 +153,7 @@ them. Every error is in `attribution/errors.jsonl` with its source link.
 | `deals/dedup_items.jsonl`, `dedup_labels.jsonl` | 100 report pairs; `_system` records what the deduplicator did |
 | `deals/identity_items.jsonl`, `identity_labels.jsonl` | 80 name pairs |
 | `deals/heldout_names_items.jsonl`, `heldout_names_labels.jsonl` | 80 held-out party names |
-| `deals/score.py`, `results.json`, `results_baseline.json`, `errors.jsonl` | Scorer, results, every error |
+| `deals/score.py`, `results.json`, `results_baseline.json`, `errors.jsonl` | Scorer, current matcher results, saved-decision baseline, every error |
 | `attribution/build_sets.py` | Samplers for the real-headline sets (fixed seed) |
 | `attribution/natural_items.jsonl`, `natural_labels.jsonl` | 400 random real headlines and labels |
 | `attribution/hard_items.jsonl`, `hard_labels.jsonl` | 280 hard-case real headlines and labels |

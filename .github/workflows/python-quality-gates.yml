@@ -58,3 +58,5 @@ jobs:
         run: python -m pip install ruff==0.16.9 && ruff check .
       - name: Run full test suite
         run: python -m pytest -q
+      - name: Recompute duplicate-detection metrics
+        run: python -c "import json; from evaluation.deals.score import dedup; r,e=dedup(); print(json.dumps({\"metrics\":r,\"errors\":e}, indent=2))"

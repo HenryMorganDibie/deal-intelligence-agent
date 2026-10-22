@@ -879,6 +879,14 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
 
     rnd = _ROUND.search(text)
     countries = [c.iso2 for c in countries_in_text(text)]
+    # A regulator acronym is strong country evidence when it belongs to the supplied hint
+    # (for example, CBK in a Kenya deal). Do not trust a country hint by itself.
+    hinted_country = get_country(country_hint)
+    if not countries and hinted_country and any(
+        re.search(rf"(?<!\w){re.escape(acronym)}(?!\w)", text, re.IGNORECASE)
+        for acronym in hinted_country.regulator_acronyms
+    ):
+        countries.append(hinted_country.iso2)
     # For cross-border deals, the primary country should describe the target, not simply
     # whichever country appears first (e.g. Kenya's Jiji buying Ghanaian-based Tonaton).
     raw_obj_for_country = (m.groupdict().get("obj") or "")
@@ -886,9 +894,13 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     # demonym descriptors such as "Ghanaian-based".
     target_countries = [c.iso2 for c in countries_in_text(raw_obj_for_country)]
     primary_country = target_countries[0] if target_countries else (countries[0] if countries else None)
-    # Placement needs the text itself: a named African country, "Africa", or an Africa-only deal outlet.
-    # A search's country is only a hint (Google returns foreign stories for country queries).
-    if not countries and not (africa_source or re.search(r"\bafrica|\bafrique|\báfrica", text, re.IGNORECASE)):
+    # Placement needs evidence from the headline or source context: a named African country,
+    # "Africa", or an Africa-based publisher. A search country hint alone is not enough.
+    publisher_has_african_context = bool(countries_in_text(publisher)) or bool(
+        re.search(r"\bafrica|\bafrique|\báfrica", publisher, re.IGNORECASE)
+    )
+    if not countries and not (africa_source or publisher_has_african_context
+                              or re.search(r"\bafrica|\bafrique|\báfrica", text, re.IGNORECASE)):
         return None
 
     # A final series numeral is not a fund name; recover the named fund from the headline.
@@ -1004,32 +1016,151 @@ def merge_all(deals: Iterable[dict], into: Optional[dict[str, dict]] = None) -> 
 
 # Report-level duplicates the exact id misses: a reworded target ("VC Firm Ventures Platform"),
 # a different parsed type for one close, or reports either side of a month boundary.
-_TXN_KINDS = ({"acquisition", "merger", "equity_funding", "debt_financing", "exit"}, {"fund_raise", "equity_funding"})
+_TXN_KINDS = (
+    {"acquisition", "merger", "equity_funding", "debt_financing", "exit"},
+    {"fund_raise", "equity_funding"},
+)
 _NAME_NOISE = {"vc", "firm", "fund", "funds", "pan", "african", "africa", "s", "the", "a", "new", "close", "first",
                "second", "final", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"}
 
 
 def _name_tokens(name: Optional[str]) -> set[str]:
-    return {t for t in normalise_name(name).split() if t not in _NAME_NOISE and not _is_descriptor(t)}
+    normalized = normalise_name(name)
+    # Explicit institution aliases, not fuzzy acronym expansion.
+    aliases = {
+        "boi": "__bank_of_industry__",
+        "bank of industry": "__bank_of_industry__",
+        "afdb": "__african_development_bank__",
+        "african development bank": "__african_development_bank__",
+        "frasers": "__frasers_group__",
+        "sports direct parent": "__frasers_group__",
+    }
+    normalized = aliases.get(normalized, normalized)
+    return {t for t in normalized.split() if t not in _NAME_NOISE and not _is_descriptor(t)}
+
+
+def _same_transaction_name(a: dict, b: dict) -> bool:
+    """Match target aliases and headline variants without relying on a single exact spelling."""
+    ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
+    if not ta or not tb:
+        return False
+    # Exact or contained names are strong evidence, even for short names like Jem or Kofa.
+    if ta <= tb or tb <= ta:
+        return True
+    shared = ta & tb
+    if shared:
+        # Partial target-name overlap must be distinctive on both sides.
+        distinctive = {t for t in shared if len(t) >= 4}
+        if len(distinctive) >= 2 and min(len(shared) / len(ta), len(shared) / len(tb)) >= 0.5:
+            return True
+
+    # Extraction can choose different target fragments from equivalent headlines.
+    # Fall back to strong headline overlap; the caller still enforces compatible deal
+    # types, date proximity, and amount agreement before accepting a duplicate.
+    ha = _name_tokens(a.get("headline"))
+    hb = _name_tokens(b.get("headline"))
+    # Remove market/transaction vocabulary and amounts: those can match unrelated
+    # facilities reported in the same country without identifying the same parties.
+    headline_noise = {
+        "africa", "african", "nigeria", "kenya", "ghana", "ethiopia", "morocco",
+        "south", "million", "billion", "thousand", "usd", "zar", "kes",
+        "loan", "loans", "financing", "facility", "facilities", "approve", "approves",
+        "approved", "acquire", "acquires", "acquired", "buy", "buys", "bought",
+        "stake", "deal", "deals", "investment", "invests", "invested", "project",
+        "company", "group", "bank", "fund", "funding", "raises", "raised", "raise",
+    }
+    ha = {t for t in ha if t not in headline_noise and not t.isdigit()}
+    hb = {t for t in hb if t not in headline_noise and not t.isdigit()}
+    common_headline = ha & hb
+    if len(common_headline) < 2 or not ha or not hb:
+        return False
+    return len(common_headline) / min(len(ha), len(hb)) >= 0.4
+
+
+def _same_transaction_type(a: dict, b: dict) -> bool:
+    """Allow type variants only when the headlines provide transaction-specific evidence."""
+    types = {a.get("deal_type"), b.get("deal_type")}
+    if len(types) <= 1:
+        return True
+    if types == {"debt_financing", "equity_funding"}:
+        # These are usually distinct instruments even when the same company is involved.
+        # Require at least two shared headline tokens beyond the target's name.
+        ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
+        ha = _name_tokens(a.get("headline")) - ta
+        hb = _name_tokens(b.get("headline")) - tb
+        shared = ha & hb
+        return len(shared) >= 2
+    if any(types <= kinds for kinds in _TXN_KINDS):
+        return True
+    if types != {"ipo", "equity_funding"}:
+        return False
+    evidence = re.compile(r"(?i)\b(?:ipo|initial public offering|listing|listed|stock exchange)\b")
+    return bool(evidence.search(a.get("headline") or "") and evidence.search(b.get("headline") or ""))
 
 
 def same_transaction(a: dict, b: dict) -> bool:
-    """Two reports of one transaction: matching amount, nearby dates, compatible types, one name inside the other."""
-    ua, ub = a.get("amount_usd"), b.get("amount_usd")
-    if not ua or not ub or abs(ua - ub) > 0.01 * max(ua, ub):
-        return False
+    """Conservative duplicate test: compatible type, close dates, and matching transaction identity."""
     try:
         gap = abs((date.fromisoformat(a["announced"][:10]) - date.fromisoformat(b["announced"][:10])).days)
     except (KeyError, TypeError, ValueError):
         return False
-    if gap > 30:
-        return False
     types = {a.get("deal_type"), b.get("deal_type")}
-    if len(types) > 1 and not any(types <= kinds for kinds in _TXN_KINDS):
+    ipo_pair = types == {"ipo", "equity_funding"} and _same_transaction_type(a, b)
+    if not _same_transaction_type(a, b):
         return False
-    ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
-    shared = ta & tb
-    return bool(shared) and (ta <= tb or tb <= ta) and any(len(t) >= 4 for t in shared)
+
+    if not _same_transaction_name(a, b):
+        return False
+
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    if not ua or not ub:
+        # IPO launch and listing reports can differ in disclosed offer size; accept only
+        # when both headlines explicitly describe an IPO/listing, target identity matches,
+        # and the reports fall within the normal 45-day window.
+        if ipo_pair and gap <= 45:
+            return True
+        # When an amount is missing, prefer an exact/contained target plus the same buyer.
+        # Some genuine rewordings omit the counterparty in one headline, so also accept
+        # strong overlap in the remaining headline words. Strip target names and generic
+        # transaction vocabulary first; a shared country or "acquires stake" is not enough.
+        ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
+        ba, bb = _name_tokens(a.get("buyer")), _name_tokens(b.get("buyer"))
+        same_buyer = bool(ba and bb and (ba <= bb or bb <= ba))
+        same_target = bool(ta and tb and (ta <= tb or tb <= ta))
+        # Exact target plus the same buyer can safely cover a slightly later follow-up.
+        # Keep the wider window limited to this strongest identity match.
+        if same_buyer and gap <= 7:
+            # The transaction-name matcher already passed above; a matching buyer
+            # provides strong corroboration when one publisher omits the amount.
+            return True
+        if same_target and same_buyer and gap <= 10:
+            return True
+        if gap > 7:
+            return False
+        # Do not turn commentary or explicit warnings about a hypothetical deal into
+        # transaction duplicates merely because the target and topic overlap.
+        hypothetical = re.compile(r"(?i)\b(?:don['’]t|do not|cautions?|warning|warns?|should not|urged to|wants? to buy|plans? to buy|proposes? to buy)\b")
+        if hypothetical.search(a.get("headline") or "") or hypothetical.search(b.get("headline") or ""):
+            return False
+        noise = {
+            "africa", "african", "nigeria", "kenya", "ghana", "ethiopia", "morocco",
+            "south", "million", "billion", "thousand", "usd", "zar", "kes", "rand",
+            "loan", "loans", "financing", "facility", "facilities", "approve", "approves",
+            "approved", "acquire", "acquires", "acquired", "buy", "buys", "bought",
+            "stake", "deal", "deals", "investment", "invests", "invested", "project",
+            "company", "group", "bank", "fund", "funding", "raises", "raised", "raise",
+            "announces", "announced", "completes", "completed", "plans", "planned",
+        }
+        ha = _name_tokens(a.get("headline")) - ta - noise
+        hb = _name_tokens(b.get("headline")) - tb - noise
+        shared = {token for token in ha & hb if len(token) >= 4 and not token.isdigit()}
+        return len(shared) >= 2
+
+    # Deal reports may round or revise announced values (for example a planned IPO versus
+    # its completed size). Keep the tolerance bounded to avoid merging unrelated rounds.
+    if gap > 45 or abs(ua - ub) > 0.20 * max(ua, ub):
+        return False
+    return True
 
 
 def is_visible(deal: dict) -> bool:
