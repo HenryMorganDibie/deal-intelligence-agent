@@ -41,6 +41,19 @@ def test_duplicate_matcher_allows_nearby_exact_target_when_amount_is_undisclosed
     assert not same_transaction(a, _deal("c", "WeLight", 27e6, "2026-07-20", "equity_funding"))
 
 
+def test_ipo_launch_and_listing_match_when_only_one_report_discloses_offer_size():
+    launch = _deal("a", "Kasapreko", None, "2026-05-05", "ipo")
+    launch["headline"] = "Kasapreko PLC launches IPO on the Ghana Stock Exchange"
+    listing = _deal("b", "Kasapreko", 120e6, "2026-06-11", "equity_funding")
+    listing["headline"] = "Kasapreko raised $120 million in its IPO and lists on the GSE"
+    assert same_transaction(launch, listing)
+
+    # Do not generalize IPO compatibility to ordinary fundraising reports.
+    unrelated_stage = _deal("c", "Kasapreko", 120e6, "2026-06-11", "equity_funding")
+    unrelated_stage["headline"] = "Kasapreko raises $120 million to expand production"
+    assert not same_transaction(launch, unrelated_stage)
+
+
 def test_dedup_evaluation_reruns_current_matcher_and_reports_recall_separately():
     from evaluation.deals.score import dedup
 
