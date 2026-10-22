@@ -24,6 +24,14 @@ def test_distinct_transactions_stay_separate():
     assert not same_transaction(base, _deal("f", "Ventures Platform", None, "2026-08-26"))       # no amount
 
 
+def test_different_debt_and_equity_transactions_for_same_company_stay_separate():
+    wind_deal = _deal("a", "Standard Bank", 273915186, "2025-02-25", "equity_funding")
+    wind_deal["headline"] = "Standard Bank closes R4.9bn game changer aggregator wind power deal"
+    loan_deal = _deal("b", "Standard Bank", 250e6, "2025-03-13", "debt_financing")
+    loan_deal["headline"] = "Standard Bank secures $250m IFC loan to boost green financing initiatives"
+    assert not same_transaction(wind_deal, loan_deal)
+
+
 def test_duplicate_matcher_handles_rounded_amounts_and_partial_target_names():
     planned = _deal("a", "Optasia", 375e6, "2025-10-08", "ipo")
     completed = _deal("b", "Optasia South Africa listing", 345e6, "2025-11-05", "ipo")
