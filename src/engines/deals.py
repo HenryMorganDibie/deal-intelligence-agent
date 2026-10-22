@@ -1033,11 +1033,22 @@ def _same_transaction_name(a: dict, b: dict) -> bool:
     # types, date proximity, and amount agreement before accepting a duplicate.
     ha = _name_tokens(a.get("headline"))
     hb = _name_tokens(b.get("headline"))
+    # Remove market/transaction vocabulary and amounts: those can match unrelated
+    # facilities reported in the same country without identifying the same parties.
+    headline_noise = {
+        "africa", "african", "nigeria", "kenya", "ghana", "ethiopia", "morocco",
+        "south", "african", "million", "billion", "thousand", "usd", "zar", "kes",
+        "loan", "loans", "financing", "facility", "facilities", "approve", "approves",
+        "approved", "acquire", "acquires", "acquired", "buy", "buys", "bought",
+        "stake", "deal", "deals", "investment", "invests", "invested", "project",
+        "company", "group", "bank", "fund", "funding", "raises", "raised", "raise",
+    }
+    ha = {t for t in ha if t not in headline_noise and not t.isdigit()}
+    hb = {t for t in hb if t not in headline_noise and not t.isdigit()}
     common_headline = ha & hb
-    distinctive_headline = {t for t in common_headline if len(t) >= 4}
-    if len(distinctive_headline) < 3 or not ha or not hb:
+    if len(common_headline) < 2 or not ha or not hb:
         return False
-    return len(common_headline) / min(len(ha), len(hb)) >= 0.45
+    return len(common_headline) / min(len(ha), len(hb)) >= 0.4
 
 
 def same_transaction(a: dict, b: dict) -> bool:
