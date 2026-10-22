@@ -401,6 +401,22 @@ def test_review_labelling_api_validates_labels_and_never_sends_the_system_decisi
     assert client.post("/api/review/label", content=json.dumps({"token": token, "kind": "item", "item_id": "x1"})).status_code == 422
     assert client.post("/api/admin/review/annotators", content=json.dumps({"key": "wrong", "role": "a", "name": "A"})).status_code == 401
 
+def test_undisclosed_amount_accepts_distinctive_target_and_same_buyer():
+    a = _deal("a", "Chevron Namibia Offshore Block", None, "2026-08-18", "acquisition", buyer="Equinor")
+    a["headline"] = "Equinor Buys Stake in Chevron's Namibia Well"
+    b = _deal("b", "Chevron-Run Namibia Offshore Block", 17.4, "2026-08-19", "acquisition", buyer="Equinor")
+    b["headline"] = "Equinor Buys 17.4% Stake in Chevron-Run Namibia Offshore Block"
+    assert same_transaction(a, b)
+
+
+def test_known_buyer_aliases_match_for_holdsport_reports():
+    a = _deal("a", "Holdsport", None, "2024-11-26", "acquisition", buyer="Frasers Group")
+    a["headline"] = "Frasers Group snaps up Holdsport in South Africa"
+    b = _deal("b", "Holdsport Group", None, "2024-11-26", "acquisition", buyer="Sports Direct Parent")
+    b["headline"] = "Sports Direct Parent Set to Acquire South Africa's Holdsport Group"
+    assert same_transaction(a, b)
+
+
 def test_undisclosed_amount_can_match_on_strong_headline_overlap_without_buyer():
     same_a = _deal("a", "Paelon Memorial Hospital", None, "2026-03-10", "acquisition")
     same_a["headline"] = "Iwosan acquires Paelon Memorial Hospital in Nigeria healthcare sector"
