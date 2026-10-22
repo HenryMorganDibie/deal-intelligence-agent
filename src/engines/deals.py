@@ -1013,23 +1013,48 @@ def _name_tokens(name: Optional[str]) -> set[str]:
     return {t for t in normalise_name(name).split() if t not in _NAME_NOISE and not _is_descriptor(t)}
 
 
-def same_transaction(a: dict, b: dict) -> bool:
-    """Two reports of one transaction: matching amount, nearby dates, compatible types, one name inside the other."""
-    ua, ub = a.get("amount_usd"), b.get("amount_usd")
-    if not ua or not ub or abs(ua - ub) > 0.01 * max(ua, ub):
+def _same_transaction_name(a: dict, b: dict) -> bool:
+    """Match target aliases and headline variants without relying on a single exact spelling."""
+    ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
+    if not ta or not tb:
         return False
+    shared = ta & tb
+    if not shared or not any(len(t) >= 4 for t in shared):
+        return False
+    # Exact or contained names remain the strongest signal (e.g. "Kofa" / "Ghana's Kofa").
+    if ta <= tb or tb <= ta:
+        return True
+    # Headlines often add descriptors or omit one part of a company name. Allow a partial overlap
+    # only when at least two distinctive tokens agree and they cover at least half of each name.
+    distinctive = {t for t in shared if len(t) >= 4}
+    return len(distinctive) >= 2 and min(len(shared) / len(ta), len(shared) / len(tb)) >= 0.5
+
+
+def same_transaction(a: dict, b: dict) -> bool:
+    """Conservative duplicate test: compatible type, close dates, and matching transaction identity."""
     try:
         gap = abs((date.fromisoformat(a["announced"][:10]) - date.fromisoformat(b["announced"][:10])).days)
     except (KeyError, TypeError, ValueError):
         return False
-    if gap > 30:
-        return False
     types = {a.get("deal_type"), b.get("deal_type")}
     if len(types) > 1 and not any(types <= kinds for kinds in _TXN_KINDS):
         return False
-    ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
-    shared = ta & tb
-    return bool(shared) and (ta <= tb or tb <= ta) and any(len(t) >= 4 for t in shared)
+
+    if not _same_transaction_name(a, b):
+        return False
+
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    if not ua or not ub:
+        # When one headline omits the amount, only merge an exact/contained target match
+        # reported within a week. This catches brief follow-ups without conflating later deals.
+        ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
+        return gap <= 7 and bool(ta and tb and (ta <= tb or tb <= ta))
+
+    # Deal reports may round or revise announced values (for example a planned IPO versus
+    # its completed size). Keep the tolerance bounded to avoid merging unrelated rounds.
+    if gap > 45 or abs(ua - ub) > 0.35 * max(ua, ub):
+        return False
+    return True
 
 
 def is_visible(deal: dict) -> bool:
