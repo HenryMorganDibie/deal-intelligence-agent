@@ -210,7 +210,13 @@ def _is_duplicate_alert(left: dict, right: dict) -> bool:
     # even if both headlines mention the same round name.
     if left_amounts and right_amounts and not (left_amounts & right_amounts):
         return False
-    # Require a shared tracked company and a shared transaction-specific fact.
+    # A same-day, identical normalized headline for the same tracked company,
+    # with compatible country and event type, is strong cross-source evidence
+    # even when the headline omits an amount or named round.
+    if shared_companies and distance == 0 and left_title == right_title:
+        return True
+
+    # Otherwise require a shared tracked company and a shared transaction-specific fact.
     if not shared_companies or not (left_anchors & right_anchors):
         return False
 
