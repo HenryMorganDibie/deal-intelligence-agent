@@ -192,6 +192,33 @@ _cache: dict[str, tuple[float, list]] = {}
 HISTORY_START = date(2010, 1, 1)
 
 
+_RPC_PAGE_SIZE = 500
+_RPC_MAX_PAGES = 100  # Safety stop: at most 50,000 records per full refresh.
+
+
+def _load_rpc_pages(kind: str, since: str) -> list[dict]:
+    """Load complete history in bounded RPC aggregates to avoid one large DB statement."""
+    function = "list_deals_page" if kind == "deals" else "list_events_page"
+    rows: list[dict] = []
+    for page in range(_RPC_MAX_PAGES):
+        response = _rpc_sync(function, {
+            "p_since": since,
+            "p_limit": _RPC_PAGE_SIZE,
+            "p_offset": page * _RPC_PAGE_SIZE,
+        })
+        if response.status_code != 200:
+            log.error("loading %s page %s failed: status=%s body=%s",
+                      kind, page, response.status_code, response.text[:300])
+            raise RuntimeError(f"{kind} page {page} returned HTTP {response.status_code}")
+        batch = response.json()
+        if not isinstance(batch, list):
+            raise ValueError(f"{kind} page {page} did not return a JSON array")
+        rows.extend(batch)
+        if len(batch) < _RPC_PAGE_SIZE:
+            return rows
+    raise RuntimeError(f"{kind} exceeded the {_RPC_MAX_PAGES}-page safety limit")
+
+
 def _load(kind: str) -> list[dict]:
     hit = _cache.get(kind)
     if hit and time.monotonic() - hit[0] < _TTL:
@@ -200,14 +227,8 @@ def _load(kind: str) -> list[dict]:
     if _configured():
         since = HISTORY_START.isoformat()
         try:
-            r = _rpc_sync("list_deals" if kind == "deals" else "list_events", {"p_since": since})
-            if r.status_code != 200:
-                log.error("loading %s failed: status=%s body=%s", kind, r.status_code, r.text[:300])
-                if hit:
-                    return hit[1]
-                raise HTTPException(503, f"Market data store is unavailable for {kind}.")
-            rows = r.json()
-        except (httpx.HTTPError, ValueError) as e:
+            rows = _load_rpc_pages(kind, since)
+        except (httpx.HTTPError, ValueError, RuntimeError) as e:
             log.error("loading %s failed: %s", kind, e)
             if hit:
                 return hit[1]
