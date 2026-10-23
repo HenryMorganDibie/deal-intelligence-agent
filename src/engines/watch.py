@@ -272,14 +272,24 @@ def alert_fingerprint(alert: dict) -> str:
 
 
 
-def delivery_due(frequency: str, now: Optional[datetime] = None) -> bool:
-    """Daily webhooks run every ingestion; weekly digests run on Friday UTC."""
+def delivery_due(frequency: str, now: Optional[datetime] = None,
+                 last_delivered_at: Optional[str] = None) -> bool:
+    """Daily webhooks run every ingestion; weekly digests run once per Friday UTC."""
     if frequency == "daily":
         return True
-    if frequency == "weekly":
-        return (now or datetime.now(timezone.utc)).weekday() == 4
-    return False
-
+    if frequency != "weekly":
+        return False
+    current = now or datetime.now(timezone.utc)
+    if current.weekday() != 4:
+        return False
+    if last_delivered_at:
+        try:
+            previous = datetime.fromisoformat(last_delivered_at.replace("Z", "+00:00"))
+            if previous.isocalendar()[:2] == current.isocalendar()[:2]:
+                return False
+        except ValueError:
+            pass
+    return True
 
 
 def delivery_idempotency_key(wl_id: str, alerts: list[dict]) -> str:
