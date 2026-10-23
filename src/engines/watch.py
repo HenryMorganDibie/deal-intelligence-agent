@@ -18,6 +18,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import html
+import json
 import re
 from datetime import datetime, timezone
 from email.utils import format_datetime
@@ -167,6 +168,29 @@ def rss(wl: dict, alerts: list[dict], link: str) -> str:
             f"<link>{html.escape(link)}</link>"
             "<description>Corporate events and deals matching this watchlist.</description>"
             + "".join(item(a) for a in alerts[:100]) + "</channel></rss>")
+
+
+
+
+def alert_fingerprint(alert: dict) -> str:
+    """Fingerprint meaningful alert facts so material corrections can be re-alerted."""
+    source_count = alert.get("source_count")
+    evidence_bucket = None
+    if isinstance(source_count, int):
+        evidence_bucket = "multiple" if source_count >= 2 else ("single" if source_count == 1 else "none")
+    material = {
+        "kind": alert.get("kind"),
+        "title": alert.get("title"),
+        "day": alert.get("day"),
+        "type": alert.get("signal_type") or alert.get("deal_type"),
+        "amount_usd": alert.get("amount_usd"),
+        "verification": alert.get("verification"),
+        "independent_stories": alert.get("independent_stories"),
+        "evidence_bucket": evidence_bucket,
+        "why": sorted(alert.get("why") or []),
+    }
+    canonical = json.dumps(material, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 
