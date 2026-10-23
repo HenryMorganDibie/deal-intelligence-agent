@@ -1410,7 +1410,7 @@ async def cron_ingest(
     delivered = 0
     # Historical backfills populate the database silently; never send stale alerts.
     for wl in (hooks.json() if hooks.status_code == 200 and not month else []):
-        if not watch.delivery_due(wl.get("delivery_frequency", "daily")):
+        if not watch.delivery_due(wl.get("delivery_frequency", "daily"), last_delivered_at=wl.get("last_delivered_at")):
             continue
         if not _public_host(wl["webhook_url"]):
             continue
