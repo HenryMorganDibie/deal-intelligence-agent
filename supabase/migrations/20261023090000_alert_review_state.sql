@@ -205,3 +205,5 @@ end; $$;
 
 revoke execute on function public.create_watchlist(text, text, text, text[], text[], text[], boolean, text, text) from public;
 grant execute on function public.create_watchlist(text, text, text, text[], text[], text[], boolean, text, text) to anon;
+
+notify pgrst, 'reload schema';
