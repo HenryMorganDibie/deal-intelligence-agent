@@ -23,6 +23,7 @@ import re
 from datetime import datetime, timezone
 from email.utils import format_datetime
 from typing import Iterable, Optional
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import httpx
 
@@ -75,9 +76,15 @@ def _evidence(alert: dict, record: dict) -> dict:
         independent_stories = record.get("independent_stories")
     if not isinstance(independent_stories, int) or independent_stories < 0:
         independent_stories = None
+    if not valid_sources and (alert.get("url") or alert.get("publisher")):
+        valid_sources = [{"publisher": alert.get("publisher"), "url": alert.get("url"),
+                          "date": record.get("published") or record.get("day") or record.get("announced"),
+                          "title": alert.get("title")}]
     return {
         **alert,
-        "source_count": len(valid_sources) if sources else (1 if alert.get("url") else 0),
+        "country": record.get("country"),
+        "countries": record.get("countries") or ([record.get("country")] if record.get("country") else []),
+        "source_count": len(valid_sources),
         "independent_stories": independent_stories,
         "verification": verification_tier,
         "sources": [
@@ -87,10 +94,73 @@ def _evidence(alert: dict, record: dict) -> dict:
     }
 
 
+def _canonical_url(value: Optional[str]) -> Optional[str]:
+    if not value or not isinstance(value, str):
+        return None
+    try:
+        parsed = urlsplit(value.strip())
+        if parsed.scheme.lower() not in ("http", "https") or not parsed.hostname:
+            return None
+        host = parsed.hostname.lower()
+        if host.startswith("www."):
+            host = host[4:]
+        port = parsed.port
+        netloc = host if port is None or (parsed.scheme.lower() == "https" and port == 443) or (parsed.scheme.lower() == "http" and port == 80) else f"{host}:{port}"
+        query = [(k, v) for k, v in parse_qsl(parsed.query, keep_blank_values=True)
+                 if not k.lower().startswith("utm_") and k.lower() not in {"fbclid", "gclid", "mc_cid", "mc_eid", "ref", "source"}]
+        return urlunsplit((parsed.scheme.lower(), netloc, parsed.path.rstrip("/") or "/", urlencode(sorted(query)), ""))
+    except (ValueError, UnicodeError):
+        return None
+
+
+def _identity_keys(alert: dict) -> list[str]:
+    """Conservative cross-source identities: canonical source URL or exact dated headline/type/country."""
+    keys = []
+    kind = alert.get("kind") or ""
+    event_type = alert.get("signal_type") or alert.get("deal_type") or ""
+    day = alert.get("day") or ""
+    url = _canonical_url(alert.get("url"))
+    if url and day and event_type:
+        keys.append(f"url|{kind}|{event_type}|{day}|{url}")
+    title = re.sub(r"[^a-z0-9]+", " ", (alert.get("title") or "").casefold()).strip()
+    countries = sorted({str(x).upper() for x in (alert.get("countries") or []) if x})
+    if title and day and event_type:
+        keys.append(f"title|{kind}|{event_type}|{day}|{','.join(countries)}|{title}")
+    return keys
+
+
+def _merge_alert(prior: dict, incoming: dict) -> None:
+    prior["why"] = sorted(set(prior.get("why", []) + incoming.get("why", [])))
+    sources = prior.get("sources", []) + incoming.get("sources", [])
+    unique = {}
+    for source in sources:
+        key = (_canonical_url(source.get("url")) or source.get("url"), source.get("publisher"), source.get("title"))
+        unique[key] = source
+    prior["sources"] = list(unique.values())[:10]
+    prior["source_count"] = max(prior.get("source_count", 0), incoming.get("source_count", 0), len(unique))
+    prior["countries"] = sorted(set(prior.get("countries", []) + incoming.get("countries", [])))
+    if not prior.get("country"):
+        prior["country"] = incoming.get("country")
+    if not prior.get("url"):
+        prior["url"] = incoming.get("url")
+    if not prior.get("publisher"):
+        prior["publisher"] = incoming.get("publisher")
+    prior_stories = prior.get("independent_stories")
+    incoming_stories = incoming.get("independent_stories")
+    if isinstance(incoming_stories, int) and (not isinstance(prior_stories, int) or incoming_stories > prior_stories):
+        prior["independent_stories"] = incoming_stories
+    tiers = {prior.get("verification"), incoming.get("verification")}
+    if "corroborated" in tiers:
+        prior["verification"] = "corroborated"
+    elif not prior.get("verification"):
+        prior["verification"] = incoming.get("verification")
+
+
 def matches(wl: dict, events: Iterable[dict], deals: Iterable[dict], since: Optional[str] = None,
             limit: int = 200) -> list[dict]:
-    """Matched alerts, newest first; repeated records with the same identity are merged."""
+    """Matched alerts, newest first; same-ID and conservative cross-source duplicates are merged."""
     by_key: dict[str, dict] = {}
+    identity_to_key: dict[str, str] = {}
     for kind, records, date_key in (("event", events, "day"), ("deal", deals, "announced")):
         for record in records:
             day = record.get(date_key) or ""
@@ -115,17 +185,18 @@ def matches(wl: dict, events: Iterable[dict], deals: Iterable[dict], since: Opti
                          "amount_usd": record.get("amount_usd"), "url": primary.get("url"),
                          "publisher": primary.get("publisher"), "why": reasons}
             alert = _evidence(alert, record)
+            identity_key = next((identity_to_key[k] for k in _identity_keys(alert) if k in identity_to_key), None)
             if key in by_key:
-                prior = by_key[key]
-                prior["why"] = sorted(set(prior.get("why", []) + alert["why"]))
-                prior["sources"] = list({(s.get("url"), s.get("publisher")): s for s in prior.get("sources", []) + alert.get("sources", [])}.values())[:10]
-                prior["source_count"] = max(prior.get("source_count", 0), alert.get("source_count", 0), len(prior["sources"]))
-                if prior.get("independent_stories") is None:
-                    prior["independent_stories"] = alert.get("independent_stories")
-                if not prior.get("verification"):
-                    prior["verification"] = alert.get("verification")
+                _merge_alert(by_key[key], alert)
+                continue
+            if identity_key and identity_key in by_key:
+                _merge_alert(by_key[identity_key], alert)
+                for identity in _identity_keys(alert):
+                    identity_to_key[identity] = identity_key
                 continue
             by_key[key] = alert
+            for identity in _identity_keys(alert):
+                identity_to_key[identity] = key
     out = list(by_key.values())
     out.sort(key=lambda a: a.get("day") or "", reverse=True)
     return out[:max(0, limit)]
