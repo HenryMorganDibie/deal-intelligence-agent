@@ -123,3 +123,38 @@ def test_material_changes_get_new_fingerprints_but_retries_are_stable():
     assert alert_fingerprint(original) == alert_fingerprint(dict(original))
     assert alert_fingerprint(original) != alert_fingerprint(revised)
     assert delivery_idempotency_key("watch-1", [original]) != delivery_idempotency_key("watch-1", [revised])
+
+
+
+def test_cross_source_event_duplicates_merge_by_exact_headline_date_type_and_country():
+    first = {
+        "id": "event-a", "day": "2026-10-20", "headline": "Acme secures new funding",
+        "signal_type": "funding", "country": "GH", "url": "https://news-one.example/story",
+        "publisher": "News One",
+    }
+    second = {
+        "id": "event-b", "day": "2026-10-20", "headline": "Acme secures new funding",
+        "signal_type": "funding", "country": "GH", "url": "https://news-two.example/story",
+        "publisher": "News Two",
+    }
+    alerts = matches({"companies": ["Acme"], "countries": ["GH"]}, [first, second], [])
+    assert len(alerts) == 1
+    assert alerts[0]["id"] == "event-a"
+    assert alerts[0]["source_count"] == 2
+    assert {source["publisher"] for source in alerts[0]["sources"]} == {"News One", "News Two"}
+
+
+def test_canonical_url_dedup_ignores_tracking_parameters():
+    first = {
+        "id": "event-a", "day": "2026-10-20", "headline": "Acme funding",
+        "signal_type": "funding", "country": "GH", "url": "https://www.example.com/story?utm_source=a",
+        "publisher": "Example",
+    }
+    second = {
+        "id": "event-b", "day": "2026-10-20", "headline": "Different syndicated title",
+        "signal_type": "funding", "country": "GH", "url": "https://example.com/story?utm_source=b",
+        "publisher": "Example",
+    }
+    alerts = matches({"companies": ["Acme"], "countries": ["GH"]}, [first, second], [])
+    assert len(alerts) == 1
+    assert alerts[0]["source_count"] == 1
