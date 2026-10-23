@@ -196,7 +196,7 @@ def alert_fingerprint(alert: dict) -> str:
 
 def delivery_idempotency_key(wl_id: str, alerts: list[dict]) -> str:
     """Stable key for the same watchlist/event batch across retries."""
-    keys = sorted(f"{a.get('kind', '')}:{a.get('id', '')}" for a in alerts)
+    keys = sorted(f"{a.get('kind', '')}:{a.get('id', '')}:{alert_fingerprint(a)}" for a in alerts)
     digest = hashlib.sha256((str(wl_id) + "|" + "|".join(keys)).encode("utf-8")).hexdigest()
     return "deal-intel-" + digest[:40]
 
