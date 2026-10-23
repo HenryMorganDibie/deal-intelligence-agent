@@ -57,29 +57,92 @@ def matches_deal(deal: dict, wl: dict) -> list[str]:
     return why
 
 
+def _evidence(alert: dict, record: dict) -> dict:
+    """Expose only source evidence already present in the underlying record."""
+    sources = record.get("sources") if isinstance(record.get("sources"), list) else []
+    valid_sources = [s for s in sources if isinstance(s, dict) and (s.get("url") or s.get("publisher"))]
+    verification = record.get("verification")
+    if isinstance(verification, dict):
+        verification_tier = verification.get("tier") or verification.get("tier_label")
+        independent_stories = verification.get("independent_stories")
+    else:
+        verification_tier = verification if isinstance(verification, str) else None
+        independent_stories = record.get("independent_stories")
+    if not isinstance(independent_stories, int) or independent_stories < 0:
+        independent_stories = None
+    return {
+        **alert,
+        "source_count": len(valid_sources) if sources else (1 if alert.get("url") else 0),
+        "independent_stories": independent_stories,
+        "verification": verification_tier,
+        "sources": [
+            {"publisher": s.get("publisher"), "url": s.get("url"), "date": s.get("date"), "title": s.get("title")}
+            for s in valid_sources[:10]
+        ],
+    }
+
+
 def matches(wl: dict, events: Iterable[dict], deals: Iterable[dict], since: Optional[str] = None,
             limit: int = 200) -> list[dict]:
-    """Matched alerts, newest first: {kind, day, title, url, why, item}."""
-    out = []
-    for e in events:
-        if since and (e.get("day") or "") < since:
-            continue
-        why = matches_event(e, wl)
-        if why:
-            out.append({"kind": "event", "id": e["id"], "day": e.get("day"), "title": e["headline"],
-                        "signal_type": e.get("signal_type"), "url": e.get("url"), "publisher": e.get("publisher"),
-                        "why": why})
-    for d in deals:
-        if since and (d.get("announced") or "") < since:
-            continue
-        why = matches_deal(d, wl)
-        if why:
-            src = (d.get("sources") or [{}])[0]
-            out.append({"kind": "deal", "id": d["id"], "day": d.get("announced"), "title": d.get("headline"),
-                        "deal_type": d.get("deal_type"), "amount_usd": d.get("amount_usd"), "url": src.get("url"),
-                        "publisher": src.get("publisher"), "why": why})
+    """Matched alerts, newest first; repeated records with the same identity are merged."""
+    by_key: dict[str, dict] = {}
+    for kind, records, date_key in (("event", events, "day"), ("deal", deals, "announced")):
+        for record in records:
+            day = record.get(date_key) or ""
+            if since and day < since:
+                continue
+            reasons = matches_event(record, wl) if kind == "event" else matches_deal(record, wl)
+            if not reasons:
+                continue
+            record_id = str(record.get("id") or "")
+            if not record_id:
+                continue
+            key = f"{kind}:{record_id}"
+            if kind == "event":
+                alert = {"kind": kind, "id": record_id, "day": record.get("day"),
+                         "title": record.get("headline") or "", "signal_type": record.get("signal_type"),
+                         "url": record.get("url"), "publisher": record.get("publisher"), "why": reasons}
+            else:
+                sources = record.get("sources") if isinstance(record.get("sources"), list) else []
+                primary = next((s for s in sources if isinstance(s, dict) and (s.get("url") or s.get("publisher"))), {})
+                alert = {"kind": kind, "id": record_id, "day": record.get("announced"),
+                         "title": record.get("headline") or "", "deal_type": record.get("deal_type"),
+                         "amount_usd": record.get("amount_usd"), "url": primary.get("url"),
+                         "publisher": primary.get("publisher"), "why": reasons}
+            alert = _evidence(alert, record)
+            if key in by_key:
+                prior = by_key[key]
+                prior["why"] = sorted(set(prior.get("why", []) + alert["why"]))
+                prior["sources"] = list({(s.get("url"), s.get("publisher")): s for s in prior.get("sources", []) + alert.get("sources", [])}.values())[:10]
+                prior["source_count"] = max(prior.get("source_count", 0), alert.get("source_count", 0), len(prior["sources"]))
+                if prior.get("independent_stories") is None:
+                    prior["independent_stories"] = alert.get("independent_stories")
+                if not prior.get("verification"):
+                    prior["verification"] = alert.get("verification")
+                continue
+            by_key[key] = alert
+    out = list(by_key.values())
     out.sort(key=lambda a: a.get("day") or "", reverse=True)
-    return out[:limit]
+    return out[:max(0, limit)]
+
+
+def quality_metrics(alerts: list[dict]) -> dict:
+    """Descriptive coverage metrics, not estimates of precision or factual accuracy."""
+    count = len(alerts)
+    with_source = sum(bool(a.get("url") or a.get("sources")) for a in alerts)
+    with_independent_evidence = sum(
+        isinstance(a.get("independent_stories"), int) and a["independent_stories"] >= 2 for a in alerts
+    )
+    known_verification = sum(bool(a.get("verification")) for a in alerts)
+    return {
+        "alert_count": count,
+        "with_source_evidence": with_source,
+        "source_evidence_coverage_pct": round(100 * with_source / count, 1) if count else None,
+        "with_two_or_more_independent_stories": with_independent_evidence,
+        "with_verification_label": known_verification,
+        "accuracy_estimate": None,
+        "note": "Coverage describes available metadata; it is not a measured accuracy or confidence score.",
+    }
 
 
 def rss(wl: dict, alerts: list[dict], link: str) -> str:
