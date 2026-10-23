@@ -34,7 +34,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     setReview(readReview(params.id));
-    get<{ watchlist: Watchlist; alerts: Alert[] }>(\`/api/watchlists/\${encodeURIComponent(params.id)}\`)
+    get<{ watchlist: Watchlist; alerts: Alert[] }>(`/api/watchlists/${encodeURIComponent(params.id)}`)
       .then(setData)
       .catch((err) => setError(err instanceof ApiError ? err.message : "Could not load the watchlist."));
   }, [params.id]);
@@ -57,7 +57,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
     if (!confirm("Delete this watchlist? Its feed and webhook stop working.")) return;
     try {
       setActionError(null);
-      await del(\`/api/watchlists/\${encodeURIComponent(params.id)}\`);
+      await del(`/api/watchlists/${encodeURIComponent(params.id)}`);
       try {
         const rows: unknown = JSON.parse(localStorage.getItem("deal-intel:watchlists") ?? "[]");
         if (Array.isArray(rows)) localStorage.setItem("deal-intel:watchlists", JSON.stringify(rows.filter((r: { id?: string }) => r.id !== params.id)));
@@ -101,7 +101,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
   if (error) return <Container className="py-14"><ErrorNote message={error} /></Container>;
   if (!data) return <Container className="py-14"><Loading /></Container>;
   const { watchlist: w, alerts } = data;
-  const feed = apiUrl(\`/api/watchlists/\${w.id}/feed.xml\`);
+  const feed = apiUrl(`/api/watchlists/${w.id}/feed.xml`);
   const reviewedCount = alerts.filter((a) => review[a.kind + ":" + a.id] === "reviewed").length;
   const dismissedCount = alerts.filter((a) => review[a.kind + ":" + a.id] === "dismissed").length;
   return (
@@ -111,7 +111,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
         <PageHeader eyebrow="Watchlist" title={w.name}>
           Companies: {w.companies.join(", ") || "none"}. Countries: {w.countries.join(", ") || "none"}. Event types:{" "}
           {w.signal_types.length ? w.signal_types.map(words).join(", ") : "all"}. Deals {w.include_deals ? "included" : "excluded"}.
-          {w.webhook_url ? \` Webhook delivery\${w.last_delivered_at ? \`, last sent \${w.last_delivered_at.slice(0, 10)}\` : ""}.\` : ""}
+          {w.webhook_url ? ` Webhook delivery${w.last_delivered_at ? `, last sent ${w.last_delivered_at.slice(0, 10)}` : ""}.` : ""}
         </PageHeader>
       </div>
       <div className="flex flex-wrap gap-3">
@@ -148,7 +148,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
             const key = a.kind + ":" + a.id;
             const state = review[key] ?? "unreviewed";
             return (
-              <li key={key} className={\`border-b hairline pb-3 text-[0.875rem] \${state === "dismissed" ? "opacity-60" : ""}\`}>
+              <li key={key} className={`border-b hairline pb-3 text-[0.875rem] ${state === "dismissed" ? "opacity-60" : ""}`}>
                 <div className="flex flex-wrap items-center gap-2 text-[0.75rem] text-[color:var(--dim)]">
                   <span className="kbd">{a.day || "Date unavailable"}</span>
                   <Pill value={a.signal_type ?? a.deal_type} />
@@ -158,7 +158,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
                 </div>
                 <p className="mt-1">
                   {a.kind === "deal" ? (
-                    <Link href={\`/app/deals/\${encodeURIComponent(a.id)}\`} className="hover:underline">{a.title}</Link>
+                    <Link href={`/app/deals/${encodeURIComponent(a.id)}`} className="hover:underline">{a.title}</Link>
                   ) : a.url ? (
                     <a href={a.url} target="_blank" rel="noreferrer" className="hover:underline">{a.title}</a>
                   ) : <span>{a.title}</span>}
