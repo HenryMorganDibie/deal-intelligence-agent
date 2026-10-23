@@ -113,3 +113,62 @@ revoke execute on function public.record_watchlist_delivery(text, uuid, boolean,
 revoke execute on function public.latest_watchlist_delivery(text, uuid) from public;
 grant execute on function public.record_watchlist_delivery(text, uuid, boolean, integer, integer, integer, text) to anon;
 grant execute on function public.latest_watchlist_delivery(text, uuid) to anon;
+
+
+-- Track the last successfully delivered fingerprint for each event/deal.
+-- An unchanged item is suppressed; a changed material fingerprint is delivered as an update.
+create table if not exists public.watchlist_delivered_alerts (
+  watchlist_id uuid not null references public.watchlists(id) on delete cascade,
+  alert_key text not null check (length(alert_key) between 3 and 300),
+  fingerprint text not null check (length(fingerprint) = 64),
+  delivered_at timestamptz not null default now(),
+  primary key (watchlist_id, alert_key)
+);
+create index if not exists watchlist_delivered_alerts_recent_idx
+  on public.watchlist_delivered_alerts (watchlist_id, delivered_at desc);
+alter table public.watchlist_delivered_alerts enable row level security;
+
+create or replace function public.unseen_watchlist_alerts(secret text, p_id uuid, p_candidates jsonb)
+returns table(alert_key text, fingerprint text, is_update boolean)
+language plpgsql stable security definer set search_path = '' as $$
+begin
+  perform private.check_secret(secret);
+  if not exists (select 1 from public.watchlists w where w.id = p_id and w.deleted_at is null) then
+    raise exception 'watchlist_not_found';
+  end if;
+  return query
+    select c.alert_key, c.fingerprint, exists (
+      select 1 from public.watchlist_delivered_alerts old
+      where old.watchlist_id = p_id and old.alert_key = c.alert_key
+    ) as is_update
+    from jsonb_to_recordset(coalesce(p_candidates, '[]'::jsonb)) as c(alert_key text, fingerprint text)
+    left join public.watchlist_delivered_alerts old
+      on old.watchlist_id = p_id and old.alert_key = c.alert_key and old.fingerprint = c.fingerprint
+    where old.alert_key is null
+      and c.alert_key ~ '^(event|deal):.+$'
+      and length(c.alert_key) <= 300
+      and c.fingerprint ~ '^[0-9a-f]{64}$';
+end; $$;
+
+create or replace function public.record_watchlist_alerts_delivered(secret text, p_id uuid, p_candidates jsonb)
+returns void language plpgsql security definer set search_path = '' as $$
+begin
+  perform private.check_secret(secret);
+  if not exists (select 1 from public.watchlists w where w.id = p_id and w.deleted_at is null) then
+    raise exception 'watchlist_not_found';
+  end if;
+  insert into public.watchlist_delivered_alerts (watchlist_id, alert_key, fingerprint, delivered_at)
+  select p_id, c.alert_key, c.fingerprint, now()
+  from jsonb_to_recordset(coalesce(p_candidates, '[]'::jsonb)) as c(alert_key text, fingerprint text)
+  where c.alert_key ~ '^(event|deal):.+$'
+    and length(c.alert_key) <= 300
+    and c.fingerprint ~ '^[0-9a-f]{64}$'
+  on conflict (watchlist_id, alert_key)
+  do update set fingerprint = excluded.fingerprint, delivered_at = excluded.delivered_at;
+end; $$;
+
+revoke all on table public.watchlist_delivered_alerts from public, anon, authenticated;
+revoke execute on function public.unseen_watchlist_alerts(text, uuid, jsonb) from public;
+revoke execute on function public.record_watchlist_alerts_delivered(text, uuid, jsonb) from public;
+grant execute on function public.unseen_watchlist_alerts(text, uuid, jsonb) to anon;
+grant execute on function public.record_watchlist_alerts_delivered(text, uuid, jsonb) to anon;
