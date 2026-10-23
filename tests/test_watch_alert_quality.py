@@ -102,6 +102,7 @@ def test_quality_metrics_are_coverage_not_an_accuracy_claim():
         {"url": None, "sources": [], "independent_stories": None, "verification": None},
     ])
     assert metrics["alert_count"] == 2
+    assert metrics["duplicate_reports_merged"] == 0
     assert metrics["source_evidence_coverage_pct"] == 50.0
     assert metrics["with_two_or_more_independent_stories"] == 1
     assert metrics["accuracy_estimate"] is None
@@ -143,6 +144,7 @@ def test_cross_source_event_duplicates_merge_by_exact_headline_date_type_and_cou
     assert len(alerts) == 1
     assert alerts[0]["id"] == "event-a"
     assert alerts[0]["source_count"] == 2
+    assert alerts[0]["duplicate_reports_merged"] == 1
     assert {source["publisher"] for source in alerts[0]["sources"]} == {"News One", "News Two"}
 
 
