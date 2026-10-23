@@ -674,6 +674,7 @@ class WatchlistBody(BaseModel):
     signal_types: list[str] = Field(default_factory=list, max_length=8)
     include_deals: bool = True
     webhook_url: Optional[str] = Field(None, max_length=500)
+    delivery_frequency: Literal["daily", "weekly"] = "daily"
 
     @field_validator("companies")
     @classmethod
@@ -721,7 +722,7 @@ async def create_watchlist(body: WatchlistBody, request: Request) -> dict:
         r = await _rpc(client, "create_watchlist", {
             "p_client_hash": _client_hash(request), "p_name": body.name, "p_companies": body.companies,
             "p_countries": body.countries, "p_signal_types": body.signal_types, "p_include_deals": body.include_deals,
-            "p_webhook_url": body.webhook_url})
+            "p_webhook_url": body.webhook_url, "p_delivery_frequency": body.delivery_frequency})
     if r.status_code != 200:
         if "watchlist_limit" in r.text:
             raise HTTPException(429, "You have created the maximum of 20 watchlists.")
@@ -1409,10 +1410,16 @@ async def cron_ingest(
     delivered = 0
     # Historical backfills populate the database silently; never send stale alerts.
     for wl in (hooks.json() if hooks.status_code == 200 and not month else []):
+        if not watch.delivery_due(wl.get("delivery_frequency", "daily")):
+            continue
         if not _public_host(wl["webhook_url"]):
             continue
-        baseline_since = (wl.get("last_delivered_at") or
-                          (datetime.now(timezone.utc) - timedelta(days=7)).isoformat())[:10]
+        if wl.get("delivery_frequency") == "weekly" and wl.get("last_delivered_at"):
+            last_delivery = datetime.fromisoformat(wl["last_delivered_at"].replace("Z", "+00:00"))
+            baseline_since = (last_delivery - timedelta(days=7)).date().isoformat()
+        else:
+            baseline_since = (wl.get("last_delivered_at") or
+                              (datetime.now(timezone.utc) - timedelta(days=7)).isoformat())[:10]
         # Re-check a rolling 90-day window so material corrections to an older record
         # can be surfaced without re-sending every unchanged alert each day.
         candidates_alerts = watch.matches(
