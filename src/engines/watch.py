@@ -155,8 +155,27 @@ def _company_entities(alert: dict) -> set[str]:
     return {entity for entity in entities if entity}
 
 
+def _transaction_anchors(alert: dict) -> set[str]:
+    """Extract specific transaction facts that help distinguish separate events."""
+    title = (alert.get("title") or "").casefold()
+    anchors = set()
+    # Amounts and named financing rounds are useful event-level anchors.
+    for amount in re.findall(r"(?<![a-z0-9])(?:\$|usd\s*)?\d+(?:\.\d+)?\s*(?:million|mn|m|billion|bn|b|thousand|k)?(?![a-z0-9])", title):
+        normalized = re.sub(r"\s+", "", amount.replace("usd", "").replace("$", ""))
+        if normalized:
+            anchors.add("amount:" + normalized)
+    for round_name in re.findall(r"\b(?:pre[- ]?seed|seed|series\s+[a-f]|series\s+[a-f]\s+extension|bridge round|debt round|ipo)\b", title):
+        anchors.add("round:" + re.sub(r"\s+", " ", round_name))
+    return anchors
+
+
 def _is_duplicate_alert(left: dict, right: dict) -> bool:
-    """Aggressively group syndicated/paraphrased reports of the same underlying event."""
+    """Merge only when there is strong evidence the reports describe one event.
+
+    Shared company, country, event type, date, or generic headline similarity is
+    not enough: without a canonical URL or matching transaction-specific anchors,
+    two distinct events must remain separate.
+    """
     left_url, right_url = _canonical_url(left.get("url")), _canonical_url(right.get("url"))
     if left_url and right_url and left_url == right_url:
         return True
@@ -165,31 +184,32 @@ def _is_duplicate_alert(left: dict, right: dict) -> bool:
     right_title = _normalized_title(right.get("title") or "")
     if not left_title or not right_title:
         return False
-    left_tokens, right_tokens = set(left_title.split()), set(right_title.split())
-    overlap = len(left_tokens & right_tokens) / max(1, len(left_tokens | right_tokens))
-    similarity = SequenceMatcher(None, left_title, right_title).ratio()
 
     left_day, right_day = left.get("day") or "", right.get("day") or ""
     distance = _date_distance(left_day, right_day)
-    if distance is None:
-        return similarity >= 0.88
-    if distance > 3:
+    if distance is None or distance > 3:
         return False
 
     left_countries = {str(x).upper() for x in (left.get("countries") or ([left.get("country")] if left.get("country") else []))}
     right_countries = {str(x).upper() for x in (right.get("countries") or ([right.get("country")] if right.get("country") else []))}
-    same_country = not left_countries or not right_countries or bool(left_countries & right_countries)
-    left_type, right_type = _type_family(left), _type_family(right)
-    same_type = not left_type or not right_type or left_type == right_type
-    shared_companies = _company_entities(left) & _company_entities(right)
+    if left_countries and right_countries and not (left_countries & right_countries):
+        return False
 
-    # Merge strong headline matches even when metadata differs; for paraphrases, combine
-    # a shared tracked company with compatible type/country and meaningful token overlap.
-    if similarity >= 0.72 and (same_country or distance <= 1):
-        return True
-    if shared_companies and same_type and same_country and distance <= 3:
-        return similarity >= 0.34 or overlap >= 0.22
-    return similarity >= 0.58 and overlap >= 0.42 and same_country and distance <= 1
+    left_type, right_type = _type_family(left), _type_family(right)
+    if left_type and right_type and left_type != right_type:
+        return False
+
+    shared_companies = _company_entities(left) & _company_entities(right)
+    left_anchors, right_anchors = _transaction_anchors(left), _transaction_anchors(right)
+    # Require at least one shared transaction-specific fact as well as a shared
+    # tracked company. This avoids merging repeat rounds or unrelated announcements.
+    if not shared_companies or not (left_anchors & right_anchors):
+        return False
+
+    left_tokens, right_tokens = set(left_title.split()), set(right_title.split())
+    overlap = len(left_tokens & right_tokens) / max(1, len(left_tokens | right_tokens))
+    similarity = SequenceMatcher(None, left_title, right_title).ratio()
+    return similarity >= 0.45 or overlap >= 0.30
 
 
 def _merge_alert(prior: dict, incoming: dict) -> None:
