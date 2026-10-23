@@ -12,9 +12,13 @@ declare
   page_rows jsonb;
 begin
   perform private.check_secret(secret);
-  select coalesce(p_max_id, max(d.id)) into upper_id
-  from public.deals d
-  where (d.announced is null or d.announced >= p_since);
+  if p_max_id is null then
+    select max(d.id) into upper_id
+    from public.deals d
+    where (d.announced is null or d.announced >= p_since);
+  else
+    upper_id := p_max_id;
+  end if;
   select coalesce(jsonb_agg(page.data order by page.id asc), '[]'::jsonb)
     into page_rows
   from (
@@ -40,9 +44,13 @@ declare
   page_rows jsonb;
 begin
   perform private.check_secret(secret);
-  select coalesce(p_max_id, max(e.id)) into upper_id
-  from public.events e
-  where (e.day is null or e.day >= p_since);
+  if p_max_id is null then
+    select max(e.id) into upper_id
+    from public.events e
+    where (e.day is null or e.day >= p_since);
+  else
+    upper_id := p_max_id;
+  end if;
   select coalesce(jsonb_agg(page.data order by page.id asc), '[]'::jsonb)
     into page_rows
   from (
