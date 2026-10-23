@@ -1,4 +1,5 @@
-from src.engines.watch import matches, matches_event, matches_deal, rss, webhook_payload
+from src.engines.watch import (delivery_idempotency_key, matches, matches_event, matches_deal,
+                               quality_metrics, rss, webhook_payload)
 
 
 def test_event_match_respects_signal_type_and_country():
@@ -61,3 +62,51 @@ def test_webhook_payload_has_watchlist_identity_and_alerts():
     assert payload["watchlist"] == {"id": "wl-1", "name": "Nigeria", "url": "https://example.com/watch"}
     assert payload["alerts"] == [alert]
     assert payload["generated_at"]
+
+
+
+def test_duplicate_records_merge_reasons_and_expose_only_known_evidence():
+    event = {
+        "id": "event-1",
+        "day": "2026-10-20",
+        "headline": "Acme expands in Ghana",
+        "signal_type": "funding",
+        "country": "GH",
+        "url": "https://example.com/story",
+        "publisher": "Example",
+        "sources": [
+            {"publisher": "Example", "url": "https://example.com/story"},
+            {"publisher": "Wire", "url": "https://wire.example/story"},
+        ],
+        "independent_stories": 2,
+        "verification": "corroborated",
+    }
+    alerts = matches(
+        {"companies": ["Acme"], "countries": ["GH"]},
+        [event, {**event, "country": "NG"}],
+        [],
+    )
+    assert len(alerts) == 1
+    assert alerts[0]["why"] == ["company: Acme", "country: GH"]
+    assert alerts[0]["source_count"] == 2
+    assert alerts[0]["independent_stories"] == 2
+    assert alerts[0]["verification"] == "corroborated"
+    assert len(alerts[0]["sources"]) == 2
+
+
+def test_quality_metrics_are_coverage_not_an_accuracy_claim():
+    metrics = quality_metrics([
+        {"url": "https://example.com", "independent_stories": 2, "verification": "corroborated"},
+        {"url": None, "sources": [], "independent_stories": None, "verification": None},
+    ])
+    assert metrics["alert_count"] == 2
+    assert metrics["source_evidence_coverage_pct"] == 50.0
+    assert metrics["with_two_or_more_independent_stories"] == 1
+    assert metrics["accuracy_estimate"] is None
+
+
+def test_delivery_idempotency_key_is_stable_and_order_independent():
+    a = [{"kind": "event", "id": "e2"}, {"kind": "deal", "id": "d1"}]
+    b = list(reversed(a))
+    assert delivery_idempotency_key("watch-1", a) == delivery_idempotency_key("watch-1", b)
+    assert delivery_idempotency_key("watch-2", a) != delivery_idempotency_key("watch-1", a)
