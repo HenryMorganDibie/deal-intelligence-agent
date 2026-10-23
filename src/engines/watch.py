@@ -122,15 +122,9 @@ def _normalized_title(value: str) -> str:
 
 
 def _identity_keys(alert: dict) -> list[str]:
-    """Identity keys normalize source URLs and exact story titles across alert types and dates."""
-    keys = []
+    """Use canonical URLs as exact keys; headline similarity is date-aware in _is_duplicate_alert."""
     url = _canonical_url(alert.get("url"))
-    if url:
-        keys.append(f"url|{url}")
-    title = _normalized_title(alert.get("title") or "")
-    if title:
-        keys.append(f"title|{title}")
-    return keys
+    return [f"url|{url}"] if url else []
 
 
 def _date_distance(left: str, right: str) -> Optional[int]:
