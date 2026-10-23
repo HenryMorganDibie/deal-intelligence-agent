@@ -7,8 +7,8 @@ import { ErrorNote, Loading, PageHeader, Pill, usd, words } from "../../../../co
 import { ApiError } from "../../../../lib/api";
 import { apiUrl, del, get, post } from "../../../../lib/market";
 
-type Alert = { kind: string; id: string; day: string | null; title: string; signal_type?: string; deal_type?: string; amount_usd?: number | null; url?: string; publisher?: string; why: string[]; source_count?: number; independent_stories?: number | null; verification?: string | null; sources?: { publisher?: string | null; url?: string | null; date?: string | null; title?: string | null }[] };
-type Quality = { alert_count: number; with_source_evidence: number; source_evidence_coverage_pct: number | null; with_two_or_more_independent_stories: number; with_verification_label: number; accuracy_estimate: null; note: string };
+type Alert = { kind: string; id: string; day: string | null; title: string; signal_type?: string; deal_type?: string; amount_usd?: number | null; url?: string; publisher?: string; why: string[]; country?: string | null; countries?: string[]; duplicate_reports_merged?: number; source_count?: number; independent_stories?: number | null; verification?: string | null; sources?: { publisher?: string | null; url?: string | null; date?: string | null; title?: string | null }[] };
+type Quality = { alert_count: number; duplicate_reports_merged: number; with_source_evidence: number; source_evidence_coverage_pct: number | null; with_two_or_more_independent_stories: number; with_verification_label: number; accuracy_estimate: null; note: string };
 type Delivery = { attempted_at: string; delivered: boolean; attempt_count: number; http_status: number | null; alert_count: number; error_code: string | null };
 type Watchlist = { id: string; name: string; companies: string[]; countries: string[]; signal_types: string[]; include_deals: boolean; webhook_url: string | null; delivery_frequency: "daily" | "weekly"; last_delivered_at: string | null };
 type ReviewState = "unreviewed" | "reviewed" | "dismissed";
@@ -146,7 +146,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
         <div>
           <h2 id="alerts-heading" className="eyebrow">Alerts, last 90 days ({alerts.length})</h2>
           <p className="mt-1 text-xs text-[color:var(--dim)]">{reviewedCount} reviewed · {dismissedCount} dismissed · {alerts.length - reviewedCount - dismissedCount} unreviewed</p>
-          {data.quality && <p className="mt-2 text-xs text-[color:var(--dim)]">Source evidence: {data.quality.with_source_evidence}/{data.quality.alert_count}{data.quality.source_evidence_coverage_pct === null ? "" : ` (${data.quality.source_evidence_coverage_pct}%)`} · {data.quality.with_two_or_more_independent_stories} with 2+ independent stories. These are evidence-coverage counts, not an accuracy score.</p>}
+          {data.quality && <p className="mt-2 text-xs text-[color:var(--dim)]">Source evidence: {data.quality.with_source_evidence}/{data.quality.alert_count}{data.quality.source_evidence_coverage_pct === null ? "" : ` (${data.quality.source_evidence_coverage_pct}%)`} · {data.quality.with_two_or_more_independent_stories} with 2+ independent stories. {data.quality.duplicate_reports_merged} duplicate reports merged. These are evidence-coverage counts, not an accuracy score.</p>}
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <label className="text-xs text-[color:var(--muted)]">Search alerts
@@ -174,6 +174,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
                 <div className="flex flex-wrap items-center gap-2 text-[0.75rem] text-[color:var(--dim)]">
                   <span className="kbd">{a.day || "Date unavailable"}</span>
                   <Pill value={a.signal_type ?? a.deal_type} />
+                  {(a.countries?.length || a.country) ? <span>{(a.countries?.length ? a.countries : [a.country]).filter(Boolean).join(", ")}</span> : null}
                   {a.amount_usd ? <span>{usd(a.amount_usd)}</span> : null}
                   <span>matched on {a.why.join("; ")}</span>
                   {typeof a.source_count === "number" && <span>{a.source_count} source{a.source_count === 1 ? "" : "s"}</span>}
