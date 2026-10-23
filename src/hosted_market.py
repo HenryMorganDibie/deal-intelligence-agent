@@ -692,6 +692,19 @@ class WatchlistBody(BaseModel):
         return out
 
 
+
+class AlertReviewBody(BaseModel):
+    alert_key: str = Field(..., min_length=3, max_length=300)
+    state: Literal["unreviewed", "reviewed", "dismissed"]
+
+    @field_validator("alert_key")
+    @classmethod
+    def validate_alert_key(cls, value: str) -> str:
+        if not re.match(r"^(event|deal):.+$", value):
+            raise ValueError("alert_key must start with event: or deal:")
+        return value
+
+
 def _watch_link(wl_id: str) -> str:
     return f"{APP_URL}/app/watchlists/{wl_id}" if APP_URL else f"/app/watchlists/{wl_id}"
 
@@ -742,7 +755,32 @@ async def _get_watchlist(wl_id: str) -> dict:
 async def get_watchlist(wl_id: str, since: Optional[str] = None) -> dict:
     wl = await _get_watchlist(wl_id)
     since = since or (date.today() - timedelta(days=90)).isoformat()
-    return {"watchlist": wl, "alerts": watch.matches(wl, events(), deals(), since=since)}
+    alerts = watch.matches(wl, events(), deals(), since=since)
+    return {"watchlist": wl, "alerts": alerts, "quality": watch.quality_metrics(alerts)}
+
+
+@router.get("/api/watchlists/{wl_id}/reviews")
+async def list_watchlist_reviews(wl_id: str) -> dict:
+    await _get_watchlist(wl_id)
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await _rpc(client, "list_watchlist_reviews", {"p_id": wl_id})
+    if not response.is_success:
+        log.warning("list_watchlist_reviews failed: %s %s", response.status_code, response.text[:300])
+        raise HTTPException(502, "Alert review state could not be loaded.")
+    return {"reviews": response.json() or []}
+
+
+@router.post("/api/watchlists/{wl_id}/reviews")
+async def save_watchlist_review(wl_id: str, body: AlertReviewBody) -> dict:
+    await _get_watchlist(wl_id)
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await _rpc(client, "upsert_watchlist_review", {
+            "p_id": wl_id, "p_alert_key": body.alert_key, "p_state": body.state
+        })
+    if not response.is_success:
+        log.warning("upsert_watchlist_review failed: %s %s", response.status_code, response.text[:300])
+        raise HTTPException(502, "Alert review state could not be saved.")
+    return {"saved": True, "alert_key": body.alert_key, "state": body.state}
 
 
 @router.get("/api/watchlists/{wl_id}/feed.xml")
