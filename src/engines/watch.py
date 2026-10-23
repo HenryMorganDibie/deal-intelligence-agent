@@ -134,7 +134,7 @@ def _merge_alert(prior: dict, incoming: dict) -> None:
     sources = prior.get("sources", []) + incoming.get("sources", [])
     unique = {}
     for source in sources:
-        key = (_canonical_url(source.get("url")) or source.get("url"), source.get("publisher"), source.get("title"))
+        key = _canonical_url(source.get("url")) or source.get("url") or (source.get("publisher"), source.get("title"))
         unique[key] = source
     prior["sources"] = list(unique.values())[:10]
     prior["source_count"] = max(prior.get("source_count", 0), incoming.get("source_count", 0), len(unique))
@@ -188,6 +188,8 @@ def matches(wl: dict, events: Iterable[dict], deals: Iterable[dict], since: Opti
             identity_key = next((identity_to_key[k] for k in _identity_keys(alert) if k in identity_to_key), None)
             if key in by_key:
                 _merge_alert(by_key[key], alert)
+                for identity in _identity_keys(alert):
+                    identity_to_key[identity] = key
                 continue
             if identity_key and identity_key in by_key:
                 _merge_alert(by_key[identity_key], alert)
