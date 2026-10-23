@@ -172,3 +172,36 @@ revoke execute on function public.unseen_watchlist_alerts(text, uuid, jsonb) fro
 revoke execute on function public.record_watchlist_alerts_delivered(text, uuid, jsonb) from public;
 grant execute on function public.unseen_watchlist_alerts(text, uuid, jsonb) to anon;
 grant execute on function public.record_watchlist_alerts_delivered(text, uuid, jsonb) to anon;
+
+
+-- Optional weekly webhook digest cadence; daily remains the default.
+alter table public.watchlists
+  add column if not exists delivery_frequency text not null default 'daily'
+  check (delivery_frequency in ('daily', 'weekly'));
+
+create or replace function public.create_watchlist(
+  secret text, p_client_hash text, p_name text, p_companies text[],
+  p_countries text[], p_signal_types text[], p_include_deals boolean,
+  p_webhook_url text, p_delivery_frequency text
+) returns uuid language plpgsql security definer set search_path = '' as $$
+declare new_id uuid;
+begin
+  perform private.check_secret(secret);
+  if p_delivery_frequency not in ('daily', 'weekly') then
+    raise exception 'invalid_delivery_frequency';
+  end if;
+  if (select count(*) from public.watchlists w where w.client_hash = p_client_hash and w.deleted_at is null) >= 20 then
+    raise exception 'watchlist_limit';
+  end if;
+  insert into public.watchlists
+    (name, companies, countries, signal_types, include_deals, webhook_url, client_hash, delivery_frequency)
+  values
+    (coalesce(nullif(p_name, ''), 'Watchlist'), coalesce(p_companies, '{}'), coalesce(p_countries, '{}'),
+     coalesce(p_signal_types, '{}'), coalesce(p_include_deals, true), nullif(p_webhook_url, ''),
+     p_client_hash, p_delivery_frequency)
+  returning id into new_id;
+  return new_id;
+end; $$;
+
+revoke execute on function public.create_watchlist(text, text, text, text[], text[], text[], boolean, text, text) from public;
+grant execute on function public.create_watchlist(text, text, text, text[], text[], text[], boolean, text, text) to anon;
