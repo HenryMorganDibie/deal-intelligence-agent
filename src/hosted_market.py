@@ -1409,17 +1409,60 @@ async def cron_ingest(
     delivered = 0
     # Historical backfills populate the database silently; never send stale alerts.
     for wl in (hooks.json() if hooks.status_code == 200 and not month else []):
-        since = (wl.get("last_delivered_at") or (datetime.now(timezone.utc) - timedelta(days=2)).isoformat())[:10]
-        alerts = watch.matches(wl, new_events, list(merged.values()), since=since)
-        if not alerts or not _public_host(wl["webhook_url"]):
+        if not _public_host(wl["webhook_url"]):
             continue
+        baseline_since = (wl.get("last_delivered_at") or
+                          (datetime.now(timezone.utc) - timedelta(days=7)).isoformat())[:10]
+        # Re-check a rolling 90-day window so material corrections to an older record
+        # can be surfaced without re-sending every unchanged alert each day.
+        candidates_alerts = watch.matches(
+            wl, new_events, list(merged.values()),
+            since=(date.today() - timedelta(days=90)).isoformat(),
+        )
+        if not candidates_alerts:
+            continue
+        candidates = [
+            {"alert_key": f"{a['kind']}:{a['id']}", "fingerprint": watch.alert_fingerprint(a)}
+            for a in candidates_alerts
+        ]
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                unseen_response = await _rpc(client, "unseen_watchlist_alerts", {
+                    "p_id": wl["id"], "p_candidates": candidates,
+                })
+            if not unseen_response.is_success:
+                log.warning("watchlist duplicate-suppression lookup failed for %s: %s",
+                            wl["id"], unseen_response.status_code)
+                continue
+            unseen_rows = unseen_response.json() or []
+        except httpx.HTTPError as exc:
+            log.warning("watchlist duplicate-suppression lookup failed for %s: %s",
+                        wl["id"], type(exc).__name__)
+            continue
+        changes = {row["alert_key"]: bool(row.get("is_update")) for row in unseen_rows}
+        alerts = []
+        for alert in candidates_alerts:
+            key = f"{alert['kind']}:{alert['id']}"
+            if key not in changes:
+                continue
+            # On first rollout, don't blast the full 90-day history. Existing alert
+            # identities can still reappear if their material fingerprint changed.
+            if not changes[key] and (alert.get("day") or "") < baseline_since:
+                continue
+            alerts.append({**alert, "change_type": "updated" if changes[key] else "new"})
+        if not alerts:
+            continue
+        candidates_to_record = [
+            {"alert_key": f"{a['kind']}:{a['id']}", "fingerprint": watch.alert_fingerprint(a)}
+            for a in alerts
+        ]
         result = await watch.deliver_webhook(
             wl["webhook_url"],
             watch.webhook_payload(wl, alerts, _watch_link(wl["id"])),
             watch.delivery_idempotency_key(wl["id"], alerts),
         )
         try:
-            async with httpx.AsyncClient(timeout=10, follow_redirects=False) as client:
+            async with httpx.AsyncClient(timeout=15) as client:
                 saved = await _rpc(client, "record_watchlist_delivery", {
                     "p_id": wl["id"], "p_delivered": result["delivered"],
                     "p_attempt_count": result["attempts"], "p_http_status": result["status_code"],
@@ -1427,8 +1470,14 @@ async def cron_ingest(
                 })
                 if not saved.is_success:
                     log.warning("watchlist delivery outcome could not be recorded: %s", saved.status_code)
-        except httpx.HTTPError as e:
-            log.warning("watchlist delivery outcome logging failed for %s: %s", wl["id"], type(e).__name__)
+                if result["delivered"]:
+                    recorded = await _rpc(client, "record_watchlist_alerts_delivered", {
+                        "p_id": wl["id"], "p_candidates": candidates_to_record,
+                    })
+                    if not recorded.is_success:
+                        log.warning("delivered alert fingerprints could not be recorded: %s", recorded.status_code)
+        except httpx.HTTPError as exc:
+            log.warning("watchlist delivery outcome logging failed for %s: %s", wl["id"], type(exc).__name__)
         if result["delivered"]:
             delivered += 1
     _cache.clear()
