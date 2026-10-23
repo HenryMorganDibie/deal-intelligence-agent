@@ -289,19 +289,19 @@ def matches(wl: dict, events: Iterable[dict], deals: Iterable[dict], since: Opti
                          "publisher": primary.get("publisher"), "why": reasons}
             alert = _evidence(alert, record)
             alert["duplicate_reports_merged"] = 0
-            identity_key = next((identity_to_key[k] for k in _identity_keys(alert) if k in identity_to_key), None)
+            identity_key = next((identity_to_key[f"{kind}|{k}"] for k in _identity_keys(alert) if f"{kind}|{k}" in identity_to_key), None)
             if not identity_key:
                 identity_key = next((existing_key for existing_key, existing_alert in by_key.items()
                                      if _is_duplicate_alert(existing_alert, alert)), None)
             if key in by_key:
                 _merge_alert(by_key[key], alert)
                 for identity in _identity_keys(alert):
-                    identity_to_key[identity] = key
+                    identity_to_key[f"{kind}|{identity}"] = key
                 continue
             if identity_key and identity_key in by_key:
                 _merge_alert(by_key[identity_key], alert)
                 for identity in _identity_keys(alert):
-                    identity_to_key[identity] = identity_key
+                    identity_to_key[f"{kind}|{identity}"] = identity_key
                 continue
             by_key[key] = alert
             for identity in _identity_keys(alert):
