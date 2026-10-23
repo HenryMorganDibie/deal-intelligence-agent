@@ -20,6 +20,7 @@ import hashlib
 import html
 import json
 import re
+from difflib import SequenceMatcher
 from datetime import datetime, timezone
 from email.utils import format_datetime
 from typing import Iterable, Optional
@@ -113,20 +114,88 @@ def _canonical_url(value: Optional[str]) -> Optional[str]:
         return None
 
 
+def _normalized_title(value: str) -> str:
+    text = re.sub(r"[^a-z0-9]+", " ", (value or "").casefold())
+    # Remove common headline filler that obscures stories syndicated with different wording.
+    stop = {"the", "a", "an", "to", "for", "of", "in", "on", "at", "by", "with", "its", "new", "says"}
+    return " ".join(token for token in text.split() if token not in stop)
+
+
 def _identity_keys(alert: dict) -> list[str]:
-    """Conservative cross-source identities: canonical source URL or exact dated headline/type/country."""
+    """Identity keys normalize source URLs and exact story titles across alert types and dates."""
     keys = []
-    kind = alert.get("kind") or ""
-    event_type = alert.get("signal_type") or alert.get("deal_type") or ""
-    day = alert.get("day") or ""
     url = _canonical_url(alert.get("url"))
-    if url and day and event_type:
-        keys.append(f"url|{kind}|{event_type}|{day}|{url}")
-    title = re.sub(r"[^a-z0-9]+", " ", (alert.get("title") or "").casefold()).strip()
-    countries = sorted({str(x).upper() for x in (alert.get("countries") or []) if x})
-    if title and day and event_type:
-        keys.append(f"title|{kind}|{event_type}|{day}|{','.join(countries)}|{title}")
+    if url:
+        keys.append(f"url|{url}")
+    title = _normalized_title(alert.get("title") or "")
+    if title:
+        keys.append(f"title|{title}")
     return keys
+
+
+def _date_distance(left: str, right: str) -> Optional[int]:
+    try:
+        a = datetime.fromisoformat(str(left)[:10]).date()
+        b = datetime.fromisoformat(str(right)[:10]).date()
+        return abs((a - b).days)
+    except (TypeError, ValueError):
+        return None
+
+
+def _type_family(alert: dict) -> str:
+    raw = str(alert.get("signal_type") or alert.get("deal_type") or "").casefold()
+    aliases = {
+        "fundraising": "funding", "fundraise": "funding", "capital_raise": "funding",
+        "acquisition": "m&a", "merger": "m&a", "mergers_and_acquisitions": "m&a",
+        "investment": "funding", "equity_investment": "funding",
+        "debt_financing": "debt", "loan": "debt", "debt_funding": "debt",
+    }
+    return aliases.get(raw.replace(" ", "_").replace("-", "_"), raw)
+
+
+def _company_entities(alert: dict) -> set[str]:
+    entities = set()
+    for reason in alert.get("why", []):
+        if reason.startswith("company:"):
+            entities.add(_normalized_title(reason.split(":", 1)[1]))
+    return {entity for entity in entities if entity}
+
+
+def _is_duplicate_alert(left: dict, right: dict) -> bool:
+    """Aggressively group syndicated/paraphrased reports of the same underlying event."""
+    left_url, right_url = _canonical_url(left.get("url")), _canonical_url(right.get("url"))
+    if left_url and right_url and left_url == right_url:
+        return True
+
+    left_title = _normalized_title(left.get("title") or "")
+    right_title = _normalized_title(right.get("title") or "")
+    if not left_title or not right_title:
+        return False
+    left_tokens, right_tokens = set(left_title.split()), set(right_title.split())
+    overlap = len(left_tokens & right_tokens) / max(1, len(left_tokens | right_tokens))
+    similarity = SequenceMatcher(None, left_title, right_title).ratio()
+
+    left_day, right_day = left.get("day") or "", right.get("day") or ""
+    distance = _date_distance(left_day, right_day)
+    if distance is None:
+        return similarity >= 0.88
+    if distance > 3:
+        return False
+
+    left_countries = {str(x).upper() for x in (left.get("countries") or ([left.get("country")] if left.get("country") else []))}
+    right_countries = {str(x).upper() for x in (right.get("countries") or ([right.get("country")] if right.get("country") else []))}
+    same_country = not left_countries or not right_countries or bool(left_countries & right_countries)
+    left_type, right_type = _type_family(left), _type_family(right)
+    same_type = not left_type or not right_type or left_type == right_type
+    shared_companies = _company_entities(left) & _company_entities(right)
+
+    # Merge strong headline matches even when metadata differs; for paraphrases, combine
+    # a shared tracked company with compatible type/country and meaningful token overlap.
+    if similarity >= 0.72 and (same_country or distance <= 1):
+        return True
+    if shared_companies and same_type and same_country and distance <= 3:
+        return similarity >= 0.34 or overlap >= 0.22
+    return similarity >= 0.58 and overlap >= 0.42 and same_country and distance <= 1
 
 
 def _merge_alert(prior: dict, incoming: dict) -> None:
@@ -159,7 +228,7 @@ def _merge_alert(prior: dict, incoming: dict) -> None:
 
 def matches(wl: dict, events: Iterable[dict], deals: Iterable[dict], since: Optional[str] = None,
             limit: int = 200) -> list[dict]:
-    """Matched alerts, newest first; same-ID and conservative cross-source duplicates are merged."""
+    """Matched alerts, newest first; same-ID, syndicated, and paraphrased cross-source duplicates are aggressively merged."""
     by_key: dict[str, dict] = {}
     identity_to_key: dict[str, str] = {}
     for kind, records, date_key in (("event", events, "day"), ("deal", deals, "announced")):
@@ -188,6 +257,9 @@ def matches(wl: dict, events: Iterable[dict], deals: Iterable[dict], since: Opti
             alert = _evidence(alert, record)
             alert["duplicate_reports_merged"] = 0
             identity_key = next((identity_to_key[k] for k in _identity_keys(alert) if k in identity_to_key), None)
+            if not identity_key:
+                identity_key = next((existing_key for existing_key, existing_alert in by_key.items()
+                                     if _is_duplicate_alert(existing_alert, alert)), None)
             if key in by_key:
                 _merge_alert(by_key[key], alert)
                 for identity in _identity_keys(alert):
