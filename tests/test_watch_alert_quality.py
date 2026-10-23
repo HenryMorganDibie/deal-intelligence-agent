@@ -1,5 +1,5 @@
 from src.engines.watch import (delivery_idempotency_key, matches, matches_event, matches_deal,
-                               quality_metrics, rss, webhook_payload)
+                               quality_metrics, rss, webhook_payload, alert_fingerprint)
 
 
 def test_event_match_respects_signal_type_and_country():
@@ -110,3 +110,16 @@ def test_delivery_idempotency_key_is_stable_and_order_independent():
     b = list(reversed(a))
     assert delivery_idempotency_key("watch-1", a) == delivery_idempotency_key("watch-1", b)
     assert delivery_idempotency_key("watch-2", a) != delivery_idempotency_key("watch-1", a)
+
+
+
+def test_material_changes_get_new_fingerprints_but_retries_are_stable():
+    original = {
+        "kind": "deal", "id": "deal-1", "day": "2026-10-20",
+        "title": "Acme raises funding", "deal_type": "fundraising",
+        "amount_usd": 1000000, "source_count": 1, "why": ["company: Acme"],
+    }
+    revised = {**original, "amount_usd": 1500000}
+    assert alert_fingerprint(original) == alert_fingerprint(dict(original))
+    assert alert_fingerprint(original) != alert_fingerprint(revised)
+    assert delivery_idempotency_key("watch-1", [original]) != delivery_idempotency_key("watch-1", [revised])
