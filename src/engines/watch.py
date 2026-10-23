@@ -130,6 +130,7 @@ def _identity_keys(alert: dict) -> list[str]:
 
 
 def _merge_alert(prior: dict, incoming: dict) -> None:
+    prior["duplicate_reports_merged"] = prior.get("duplicate_reports_merged", 0) + 1 + incoming.get("duplicate_reports_merged", 0)
     prior["why"] = sorted(set(prior.get("why", []) + incoming.get("why", [])))
     sources = prior.get("sources", []) + incoming.get("sources", [])
     unique = {}
@@ -138,7 +139,7 @@ def _merge_alert(prior: dict, incoming: dict) -> None:
         unique[key] = source
     prior["sources"] = list(unique.values())[:10]
     prior["source_count"] = max(prior.get("source_count", 0), incoming.get("source_count", 0), len(unique))
-    prior["countries"] = sorted(set(prior.get("countries", []) + incoming.get("countries", [])))
+    prior["countries"] = sorted({str(x).upper() for x in prior.get("countries", []) + incoming.get("countries", []) if x})
     if not prior.get("country"):
         prior["country"] = incoming.get("country")
     if not prior.get("url"):
@@ -185,6 +186,7 @@ def matches(wl: dict, events: Iterable[dict], deals: Iterable[dict], since: Opti
                          "amount_usd": record.get("amount_usd"), "url": primary.get("url"),
                          "publisher": primary.get("publisher"), "why": reasons}
             alert = _evidence(alert, record)
+            alert["duplicate_reports_merged"] = 0
             identity_key = next((identity_to_key[k] for k in _identity_keys(alert) if k in identity_to_key), None)
             if key in by_key:
                 _merge_alert(by_key[key], alert)
@@ -212,8 +214,10 @@ def quality_metrics(alerts: list[dict]) -> dict:
         isinstance(a.get("independent_stories"), int) and a["independent_stories"] >= 2 for a in alerts
     )
     known_verification = sum(bool(a.get("verification")) for a in alerts)
+    duplicate_reports_merged = sum(max(0, int(a.get("duplicate_reports_merged") or 0)) for a in alerts)
     return {
         "alert_count": count,
+        "duplicate_reports_merged": duplicate_reports_merged,
         "with_source_evidence": with_source,
         "source_evidence_coverage_pct": round(100 * with_source / count, 1) if count else None,
         "with_two_or_more_independent_stories": with_independent_evidence,
