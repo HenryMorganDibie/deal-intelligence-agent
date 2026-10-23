@@ -148,6 +148,22 @@ def test_cross_source_event_duplicates_merge_by_exact_headline_date_type_and_cou
     assert {source["publisher"] for source in alerts[0]["sources"]} == {"News One", "News Two"}
 
 
+def test_matching_does_not_merge_an_event_with_a_deal():
+    event = {
+        "id": "event-a", "day": "2026-10-20", "headline": "Acme raises $40m Series B",
+        "signal_type": "funding", "country": "GH", "url": "https://news.example/event",
+        "publisher": "News",
+    }
+    deal = {
+        "id": "deal-a", "announced": "2026-10-20", "headline": "Acme raises $40m Series B",
+        "deal_type": "fundraising", "country": "GH", "target": "Acme",
+        "sources": [{"publisher": "News", "url": "https://news.example/deal"}],
+    }
+    alerts = matches({"companies": ["Acme"], "countries": ["GH"]}, [event], [deal])
+    assert {alert["kind"] for alert in alerts} == {"event", "deal"}
+    assert len(alerts) == 2
+
+
 def test_canonical_url_dedup_ignores_tracking_parameters():
     first = {
         "id": "event-a", "day": "2026-10-20", "headline": "Acme funding",
