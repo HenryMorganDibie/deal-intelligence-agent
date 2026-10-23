@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)web' ':(exclude).github'",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- .github",
   "functions": {
     "api/index.py": {
       "maxDuration": 300,
