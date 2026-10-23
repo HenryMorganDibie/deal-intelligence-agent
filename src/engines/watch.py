@@ -162,6 +162,9 @@ def _transaction_anchors(alert: dict) -> set[str]:
     # Amounts and named financing rounds are useful event-level anchors.
     for amount in re.findall(r"(?<![a-z0-9])(?:\$|usd\s*)?\d+(?:\.\d+)?\s*(?:million|mn|m|billion|bn|b|thousand|k)?(?![a-z0-9])", title):
         normalized = re.sub(r"\s+", "", amount.replace("usd", "").replace("$", ""))
+        normalized = re.sub(r"(?:million|mn|m)$", "million", normalized)
+        normalized = re.sub(r"(?:billion|bn|b)$", "billion", normalized)
+        normalized = re.sub(r"(?:thousand|k)$", "thousand", normalized)
         if normalized:
             anchors.add("amount:" + normalized)
     for round_name in re.findall(r"\b(?:pre[- ]?seed|seed|series\s+[a-f]|series\s+[a-f]\s+extension|bridge round|debt round|ipo)\b", title):
@@ -201,8 +204,13 @@ def _is_duplicate_alert(left: dict, right: dict) -> bool:
 
     shared_companies = _company_entities(left) & _company_entities(right)
     left_anchors, right_anchors = _transaction_anchors(left), _transaction_anchors(right)
-    # Require at least one shared transaction-specific fact as well as a shared
-    # tracked company. This avoids merging repeat rounds or unrelated announcements.
+    left_amounts = {a for a in left_anchors if a.startswith("amount:")}
+    right_amounts = {a for a in right_anchors if a.startswith("amount:")}
+    # Conflicting reported amounts are strong evidence these are different events,
+    # even if both headlines mention the same round name.
+    if left_amounts and right_amounts and not (left_amounts & right_amounts):
+        return False
+    # Require a shared tracked company and a shared transaction-specific fact.
     if not shared_companies or not (left_anchors & right_anchors):
         return False
 
