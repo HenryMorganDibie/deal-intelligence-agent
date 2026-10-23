@@ -170,5 +170,7 @@ def test_delivery_cadence_supports_daily_and_friday_weekly():
     thursday = datetime(2026, 10, 22, 12, tzinfo=timezone.utc)
     assert delivery_due("daily", thursday)
     assert delivery_due("weekly", friday)
+    assert delivery_due("weekly", friday, "2026-10-16T12:00:00+00:00")
+    assert not delivery_due("weekly", friday, "2026-10-23T09:00:00+00:00")
     assert not delivery_due("weekly", thursday)
     assert not delivery_due("invalid", friday)
