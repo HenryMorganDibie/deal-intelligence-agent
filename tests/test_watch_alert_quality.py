@@ -1,4 +1,6 @@
-from src.engines.watch import (delivery_idempotency_key, matches, matches_event, matches_deal,
+from datetime import datetime, timezone
+
+from src.engines.watch import (delivery_due, delivery_idempotency_key, matches, matches_event, matches_deal,
                                quality_metrics, rss, webhook_payload, alert_fingerprint)
 
 
@@ -158,3 +160,13 @@ def test_canonical_url_dedup_ignores_tracking_parameters():
     alerts = matches({"companies": ["Acme"], "countries": ["GH"]}, [first, second], [])
     assert len(alerts) == 1
     assert alerts[0]["source_count"] == 1
+
+
+
+def test_delivery_cadence_supports_daily_and_friday_weekly():
+    friday = datetime(2026, 10, 23, 12, tzinfo=timezone.utc)
+    thursday = datetime(2026, 10, 22, 12, tzinfo=timezone.utc)
+    assert delivery_due("daily", thursday)
+    assert delivery_due("weekly", friday)
+    assert not delivery_due("weekly", thursday)
+    assert not delivery_due("invalid", friday)
