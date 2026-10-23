@@ -305,7 +305,7 @@ def matches(wl: dict, events: Iterable[dict], deals: Iterable[dict], since: Opti
                 continue
             by_key[key] = alert
             for identity in _identity_keys(alert):
-                identity_to_key[identity] = key
+                identity_to_key[f"{kind}|{identity}"] = key
     out = list(by_key.values())
     out.sort(key=lambda a: a.get("day") or "", reverse=True)
     return out[:max(0, limit)]
