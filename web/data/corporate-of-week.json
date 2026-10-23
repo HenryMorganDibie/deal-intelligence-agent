@@ -1,26 +1,33 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-23T12:46:32.714830+00:00",
+  "updated_at": "2026-10-23T21:25:38.563314+00:00",
   "current": {
     "company": "Woman",
     "company_url": "/app/companies?name=Woman",
-    "headline": "Zimbabwe woman fined US$300 for WhatsApp harassment",
+    "headline": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
     "deal_type": "regulatory_action",
     "amount_usd": null,
-    "country": "ZW",
+    "country": "NG",
     "sector": null,
     "announced": "2026-10-22",
-    "score": 53.9,
-    "independent_stories": 1,
+    "score": 58.9,
+    "independent_stories": 2,
     "transaction_records": 0,
-    "related_events": 1,
+    "related_events": 2,
     "reasons": [
       "Corporate signal: regulatory action",
       "Event rule confidence: 0.93",
-      "1 distinct source-linked corporate event(s) found in the period",
+      "2 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
+      {
+        "publisher": "Legit News",
+        "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
+        "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
+        "date": "2026-10-22",
+        "kind": "corporate_event"
+      },
       {
         "publisher": "Bulawayo24 News",
         "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
@@ -32,29 +39,36 @@
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-16",
     "period_end": "2026-10-22",
-    "selected_at": "2026-10-23T12:46:32.713735+00:00",
+    "selected_at": "2026-10-23T21:25:38.562266+00:00",
     "selection_version": 4,
     "companies": [
       {
         "company": "Woman",
         "company_url": "/app/companies?name=Woman",
-        "headline": "Zimbabwe woman fined US$300 for WhatsApp harassment",
+        "headline": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
         "deal_type": "regulatory_action",
         "amount_usd": null,
-        "country": "ZW",
+        "country": "NG",
         "sector": null,
         "announced": "2026-10-22",
-        "score": 53.9,
-        "independent_stories": 1,
+        "score": 58.9,
+        "independent_stories": 2,
         "transaction_records": 0,
-        "related_events": 1,
+        "related_events": 2,
         "reasons": [
           "Corporate signal: regulatory action",
           "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period",
+          "2 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
+          {
+            "publisher": "Legit News",
+            "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
+            "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
+            "date": "2026-10-22",
+            "kind": "corporate_event"
+          },
           {
             "publisher": "Bulawayo24 News",
             "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
@@ -66,7 +80,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-16",
         "period_end": "2026-10-22",
-        "selected_at": "2026-10-23T12:46:32.713735+00:00",
+        "selected_at": "2026-10-23T21:25:38.562266+00:00",
         "selection_version": 4
       },
       {
@@ -100,7 +114,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-16",
         "period_end": "2026-10-22",
-        "selected_at": "2026-10-23T12:46:32.713735+00:00",
+        "selected_at": "2026-10-23T21:25:38.562266+00:00",
         "selection_version": 4
       },
       {
@@ -134,7 +148,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-16",
         "period_end": "2026-10-22",
-        "selected_at": "2026-10-23T12:46:32.713735+00:00",
+        "selected_at": "2026-10-23T21:25:38.562266+00:00",
         "selection_version": 4
       },
       {
@@ -168,7 +182,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-16",
         "period_end": "2026-10-22",
-        "selected_at": "2026-10-23T12:46:32.713735+00:00",
+        "selected_at": "2026-10-23T21:25:38.562266+00:00",
         "selection_version": 4
       },
       {
@@ -202,7 +216,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-16",
         "period_end": "2026-10-22",
-        "selected_at": "2026-10-23T12:46:32.713735+00:00",
+        "selected_at": "2026-10-23T21:25:38.562266+00:00",
         "selection_version": 4
       }
     ],
@@ -1102,23 +1116,30 @@
     {
       "company": "Woman",
       "company_url": "/app/companies?name=Woman",
-      "headline": "Zimbabwe woman fined US$300 for WhatsApp harassment",
+      "headline": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
       "deal_type": "regulatory_action",
       "amount_usd": null,
-      "country": "ZW",
+      "country": "NG",
       "sector": null,
       "announced": "2026-10-22",
-      "score": 53.9,
-      "independent_stories": 1,
+      "score": 58.9,
+      "independent_stories": 2,
       "transaction_records": 0,
-      "related_events": 1,
+      "related_events": 2,
       "reasons": [
         "Corporate signal: regulatory action",
         "Event rule confidence: 0.93",
-        "1 distinct source-linked corporate event(s) found in the period",
+        "2 distinct source-linked corporate event(s) found in the period",
         "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
+        {
+          "publisher": "Legit News",
+          "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
+          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
+          "date": "2026-10-22",
+          "kind": "corporate_event"
+        },
         {
           "publisher": "Bulawayo24 News",
           "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
@@ -1130,29 +1151,36 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-16",
       "period_end": "2026-10-22",
-      "selected_at": "2026-10-23T12:46:32.713735+00:00",
+      "selected_at": "2026-10-23T21:25:38.562266+00:00",
       "selection_version": 4,
       "companies": [
         {
           "company": "Woman",
           "company_url": "/app/companies?name=Woman",
-          "headline": "Zimbabwe woman fined US$300 for WhatsApp harassment",
+          "headline": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
           "deal_type": "regulatory_action",
           "amount_usd": null,
-          "country": "ZW",
+          "country": "NG",
           "sector": null,
           "announced": "2026-10-22",
-          "score": 53.9,
-          "independent_stories": 1,
+          "score": 58.9,
+          "independent_stories": 2,
           "transaction_records": 0,
-          "related_events": 1,
+          "related_events": 2,
           "reasons": [
             "Corporate signal: regulatory action",
             "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
+            "2 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
+            {
+              "publisher": "Legit News",
+              "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
+              "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
+              "date": "2026-10-22",
+              "kind": "corporate_event"
+            },
             {
               "publisher": "Bulawayo24 News",
               "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
@@ -1164,7 +1192,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-16",
           "period_end": "2026-10-22",
-          "selected_at": "2026-10-23T12:46:32.713735+00:00",
+          "selected_at": "2026-10-23T21:25:38.562266+00:00",
           "selection_version": 4
         },
         {
@@ -1198,7 +1226,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-16",
           "period_end": "2026-10-22",
-          "selected_at": "2026-10-23T12:46:32.713735+00:00",
+          "selected_at": "2026-10-23T21:25:38.562266+00:00",
           "selection_version": 4
         },
         {
@@ -1232,7 +1260,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-16",
           "period_end": "2026-10-22",
-          "selected_at": "2026-10-23T12:46:32.713735+00:00",
+          "selected_at": "2026-10-23T21:25:38.562266+00:00",
           "selection_version": 4
         },
         {
@@ -1266,7 +1294,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-16",
           "period_end": "2026-10-22",
-          "selected_at": "2026-10-23T12:46:32.713735+00:00",
+          "selected_at": "2026-10-23T21:25:38.562266+00:00",
           "selection_version": 4
         },
         {
@@ -1300,7 +1328,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-16",
           "period_end": "2026-10-22",
-          "selected_at": "2026-10-23T12:46:32.713735+00:00",
+          "selected_at": "2026-10-23T21:25:38.562266+00:00",
           "selection_version": 4
         }
       ],
