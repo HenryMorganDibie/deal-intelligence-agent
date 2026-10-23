@@ -15,11 +15,15 @@ each daily run.
 """
 from __future__ import annotations
 
+import asyncio
+import hashlib
 import html
 import re
 from datetime import datetime, timezone
 from email.utils import format_datetime
 from typing import Iterable, Optional
+
+import httpx
 
 from src.engines.investors import parties
 
@@ -163,6 +167,39 @@ def rss(wl: dict, alerts: list[dict], link: str) -> str:
             f"<link>{html.escape(link)}</link>"
             "<description>Corporate events and deals matching this watchlist.</description>"
             + "".join(item(a) for a in alerts[:100]) + "</channel></rss>")
+
+
+
+def delivery_idempotency_key(wl_id: str, alerts: list[dict]) -> str:
+    """Stable key for the same watchlist/event batch across retries."""
+    keys = sorted(f"{a.get('kind', '')}:{a.get('id', '')}" for a in alerts)
+    digest = hashlib.sha256((str(wl_id) + "|" + "|".join(keys)).encode("utf-8")).hexdigest()
+    return "deal-intel-" + digest[:40]
+
+
+async def deliver_webhook(url: str, payload: dict, idempotency_key: str) -> dict:
+    """Bounded retry for transient webhook errors; never follows redirects."""
+    last_status = None
+    last_error = None
+    for attempt in range(1, 4):
+        try:
+            async with httpx.AsyncClient(timeout=6.0, follow_redirects=False) as client:
+                response = await client.post(
+                    url, json=payload,
+                    headers={"Idempotency-Key": idempotency_key, "X-Deal-Intel-Delivery": idempotency_key},
+                )
+            last_status = response.status_code
+            if 200 <= response.status_code < 300:
+                return {"delivered": True, "attempts": attempt, "status_code": last_status, "error": None}
+            last_error = f"http_{response.status_code}"
+            if response.status_code < 500 and response.status_code not in (408, 425, 429):
+                break
+        except (httpx.TimeoutException, httpx.NetworkError, httpx.ProtocolError) as exc:
+            last_error = type(exc).__name__
+        if attempt < 3:
+            await asyncio.sleep(0.5 * attempt)
+    return {"delivered": False, "attempts": attempt, "status_code": last_status, "error": last_error}
+
 
 
 def webhook_payload(wl: dict, alerts: list[dict], link: str) -> dict:
