@@ -194,7 +194,7 @@ def test_aggressive_dedup_merges_paraphrased_headlines_across_three_days():
     assert alerts[0]["source_count"] == 2
 
 
-def test_aggressive_dedup_merges_same_event_type_across_different_headlines():
+def test_same_company_and_event_type_without_transaction_anchor_stays_separate():
     first = {
         "id": "event-a", "day": "2026-10-20", "headline": "Acme announces major funding round",
         "signal_type": "funding", "country": "GH", "url": "https://news-one.example/acme",
@@ -206,8 +206,23 @@ def test_aggressive_dedup_merges_same_event_type_across_different_headlines():
         "publisher": "News Two",
     }
     alerts = matches({"companies": ["Acme"], "countries": ["GH"]}, [first, second], [])
-    assert len(alerts) == 1
-    assert alerts[0]["duplicate_reports_merged"] == 1
+    assert len(alerts) == 2
+    assert all(alert["duplicate_reports_merged"] == 0 for alert in alerts)
+
+
+def test_different_amounts_for_same_company_stay_separate_even_in_same_round():
+    first = {
+        "id": "event-a", "day": "2026-10-20", "headline": "Acme raises $10m Series B",
+        "signal_type": "funding", "country": "GH", "url": "https://news-one.example/acme",
+        "publisher": "News One",
+    }
+    second = {
+        "id": "event-b", "day": "2026-10-21", "headline": "Acme raises $25m Series B",
+        "signal_type": "funding", "country": "GH", "url": "https://news-two.example/acme",
+        "publisher": "News Two",
+    }
+    alerts = matches({"companies": ["Acme"], "countries": ["GH"]}, [first, second], [])
+    assert len(alerts) == 2
 
 
 def test_duplicate_match_does_not_require_exact_same_calendar_day():
@@ -222,4 +237,4 @@ def test_duplicate_match_does_not_require_exact_same_calendar_day():
         "publisher": "News Two",
     }
     alerts = matches({"companies": ["Acme"], "countries": ["GH"]}, [first, second], [])
-    assert len(alerts) == 1
+    assert len(alerts) == 2
