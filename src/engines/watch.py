@@ -267,6 +267,17 @@ def alert_fingerprint(alert: dict) -> str:
 
 
 
+
+def delivery_due(frequency: str, now: Optional[datetime] = None) -> bool:
+    """Daily webhooks run every ingestion; weekly digests run on Friday UTC."""
+    if frequency == "daily":
+        return True
+    if frequency == "weekly":
+        return (now or datetime.now(timezone.utc)).weekday() == 4
+    return False
+
+
+
 def delivery_idempotency_key(wl_id: str, alerts: list[dict]) -> str:
     """Stable key for the same watchlist/event batch across retries."""
     keys = sorted(f"{a.get('kind', '')}:{a.get('id', '')}:{alert_fingerprint(a)}" for a in alerts)
