@@ -179,6 +179,11 @@ def _is_duplicate_alert(left: dict, right: dict) -> bool:
     not enough: without a canonical URL or matching transaction-specific anchors,
     two distinct events must remain separate.
     """
+    # Events and deals are separate records with different downstream links and
+    # semantics. Similar headlines must not collapse one kind into the other.
+    if left.get("kind") != right.get("kind"):
+        return False
+
     left_url, right_url = _canonical_url(left.get("url")), _canonical_url(right.get("url"))
     if left_url and right_url and left_url == right_url:
         return True
