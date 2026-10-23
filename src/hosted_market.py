@@ -791,6 +791,17 @@ async def watchlist_feed(wl_id: str) -> Response:
     return Response(xml, media_type="application/rss+xml")
 
 
+@router.get("/api/watchlists/{wl_id}/delivery")
+async def watchlist_delivery_history(wl_id: str) -> dict:
+    await _get_watchlist(wl_id)
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await _rpc(client, "latest_watchlist_delivery", {"p_id": wl_id})
+    if not response.is_success:
+        log.warning("latest_watchlist_delivery failed: %s %s", response.status_code, response.text[:300])
+        raise HTTPException(502, "Webhook delivery history could not be loaded.")
+    return {"deliveries": response.json() or []}
+
+
 @router.delete("/api/watchlists/{wl_id}")
 async def delete_watchlist(wl_id: str) -> dict:
     await _get_watchlist(wl_id)
@@ -1402,15 +1413,24 @@ async def cron_ingest(
         alerts = watch.matches(wl, new_events, list(merged.values()), since=since)
         if not alerts or not _public_host(wl["webhook_url"]):
             continue
+        result = await watch.deliver_webhook(
+            wl["webhook_url"],
+            watch.webhook_payload(wl, alerts, _watch_link(wl["id"])),
+            watch.delivery_idempotency_key(wl["id"], alerts),
+        )
         try:
             async with httpx.AsyncClient(timeout=10, follow_redirects=False) as client:
-                resp = await client.post(wl["webhook_url"], json=watch.webhook_payload(wl, alerts, _watch_link(wl["id"])))
-                if resp.status_code < 300:
-                    delivered += 1
-                    await _rpc(client, "mark_delivered", {"p_id": wl["id"],
-                                                          "p_at": datetime.now(timezone.utc).isoformat()})
+                saved = await _rpc(client, "record_watchlist_delivery", {
+                    "p_id": wl["id"], "p_delivered": result["delivered"],
+                    "p_attempt_count": result["attempts"], "p_http_status": result["status_code"],
+                    "p_alert_count": len(alerts), "p_error_code": result["error"],
+                })
+                if not saved.is_success:
+                    log.warning("watchlist delivery outcome could not be recorded: %s", saved.status_code)
         except httpx.HTTPError as e:
-            log.info("webhook for %s failed: %s", wl["id"], e)
+            log.warning("watchlist delivery outcome logging failed for %s: %s", wl["id"], type(e).__name__)
+        if result["delivered"]:
+            delivered += 1
     _cache.clear()
     return {"status": "ok", "mode": f"backfill:{month}" if month else "rolling-7d",
             "refreshed_at": datetime.now(timezone.utc).isoformat(),
