@@ -174,3 +174,52 @@ def test_delivery_cadence_supports_daily_and_friday_weekly():
     assert not delivery_due("weekly", friday, "2026-10-23T09:00:00+00:00")
     assert not delivery_due("weekly", thursday)
     assert not delivery_due("invalid", friday)
+
+
+
+def test_aggressive_dedup_merges_paraphrased_headlines_across_three_days():
+    first = {
+        "id": "event-a", "day": "2026-10-20", "headline": "Acme raises $40m Series B",
+        "signal_type": "funding", "country": "GH", "url": "https://news-one.example/acme",
+        "publisher": "News One",
+    }
+    second = {
+        "id": "event-b", "day": "2026-10-22", "headline": "Acme secures $40 million in Series B funding",
+        "signal_type": "funding", "country": "GH", "url": "https://news-two.example/acme",
+        "publisher": "News Two",
+    }
+    alerts = matches({"companies": ["Acme"], "countries": ["GH"]}, [first, second], [])
+    assert len(alerts) == 1
+    assert alerts[0]["duplicate_reports_merged"] == 1
+    assert alerts[0]["source_count"] == 2
+
+
+def test_aggressive_dedup_merges_same_event_type_across_different_headlines():
+    first = {
+        "id": "event-a", "day": "2026-10-20", "headline": "Acme announces major funding round",
+        "signal_type": "funding", "country": "GH", "url": "https://news-one.example/acme",
+        "publisher": "News One",
+    }
+    second = {
+        "id": "event-b", "day": "2026-10-21", "headline": "Acme closes investment round",
+        "signal_type": "funding", "country": "GH", "url": "https://news-two.example/acme",
+        "publisher": "News Two",
+    }
+    alerts = matches({"companies": ["Acme"], "countries": ["GH"]}, [first, second], [])
+    assert len(alerts) == 1
+    assert alerts[0]["duplicate_reports_merged"] == 1
+
+
+def test_duplicate_match_does_not_require_exact_same_calendar_day():
+    first = {
+        "id": "event-a", "day": "2026-10-20", "headline": "Acme funding round",
+        "signal_type": "funding", "country": "GH", "url": "https://news-one.example/acme",
+        "publisher": "News One",
+    }
+    second = {
+        "id": "event-b", "day": "2026-10-23", "headline": "Acme funding round",
+        "signal_type": "funding", "country": "GH", "url": "https://news-two.example/acme",
+        "publisher": "News Two",
+    }
+    alerts = matches({"companies": ["Acme"], "countries": ["GH"]}, [first, second], [])
+    assert len(alerts) == 1
