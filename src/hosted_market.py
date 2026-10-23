@@ -184,7 +184,7 @@ def _client_hash(request: Request) -> str:
 
 # ── Data store (Supabase when configured, local files otherwise), cached per instance ──
 
-_TTL = 300
+_TTL = 900  # Reduce repeated full-history RPC reads that can time out under load.
 _cache: dict[str, tuple[float, list]] = {}
 
 
