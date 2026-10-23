@@ -10,7 +10,7 @@ import { apiUrl, del, get, post } from "../../../../lib/market";
 type Alert = { kind: string; id: string; day: string | null; title: string; signal_type?: string; deal_type?: string; amount_usd?: number | null; url?: string; publisher?: string; why: string[]; source_count?: number; independent_stories?: number | null; verification?: string | null; sources?: { publisher?: string | null; url?: string | null; date?: string | null; title?: string | null }[] };
 type Quality = { alert_count: number; with_source_evidence: number; source_evidence_coverage_pct: number | null; with_two_or_more_independent_stories: number; with_verification_label: number; accuracy_estimate: null; note: string };
 type Delivery = { attempted_at: string; delivered: boolean; attempt_count: number; http_status: number | null; alert_count: number; error_code: string | null };
-type Watchlist = { id: string; name: string; companies: string[]; countries: string[]; signal_types: string[]; include_deals: boolean; webhook_url: string | null; last_delivered_at: string | null };
+type Watchlist = { id: string; name: string; companies: string[]; countries: string[]; signal_types: string[]; include_deals: boolean; webhook_url: string | null; delivery_frequency: "daily" | "weekly"; last_delivered_at: string | null };
 type ReviewState = "unreviewed" | "reviewed" | "dismissed";
 type ReviewMap = Record<string, ReviewState>;
 
@@ -119,7 +119,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
         <PageHeader eyebrow="Watchlist" title={w.name}>
           Companies: {w.companies.join(", ") || "none"}. Countries: {w.countries.join(", ") || "none"}. Event types:{" "}
           {w.signal_types.length ? w.signal_types.map(words).join(", ") : "all"}. Deals {w.include_deals ? "included" : "excluded"}.
-          {w.webhook_url ? ` Webhook delivery${w.last_delivered_at ? `, last sent ${w.last_delivered_at.slice(0, 10)}` : ""}.` : ""}
+          {w.webhook_url ? ` Webhook ${w.delivery_frequency === "weekly" ? "weekly digest (Friday UTC)" : "daily delivery"}${w.last_delivered_at ? `, last sent ${w.last_delivered_at.slice(0, 10)}` : ""}.` : ""}
         </PageHeader>
       </div>
       <div className="flex flex-wrap gap-3">
