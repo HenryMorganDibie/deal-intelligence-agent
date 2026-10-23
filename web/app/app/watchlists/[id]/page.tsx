@@ -9,19 +9,10 @@ import { apiUrl, del, get, post } from "../../../../lib/market";
 
 type Alert = { kind: string; id: string; day: string | null; title: string; signal_type?: string; deal_type?: string; amount_usd?: number | null; url?: string; publisher?: string; why: string[]; source_count?: number; independent_stories?: number | null; verification?: string | null; sources?: { publisher?: string | null; url?: string | null; date?: string | null; title?: string | null }[] };
 type Quality = { alert_count: number; with_source_evidence: number; source_evidence_coverage_pct: number | null; with_two_or_more_independent_stories: number; with_verification_label: number; accuracy_estimate: null; note: string };
+type Delivery = { attempted_at: string; delivered: boolean; attempt_count: number; http_status: number | null; alert_count: number; error_code: string | null };
 type Watchlist = { id: string; name: string; companies: string[]; countries: string[]; signal_types: string[]; include_deals: boolean; webhook_url: string | null; last_delivered_at: string | null };
 type ReviewState = "unreviewed" | "reviewed" | "dismissed";
 type ReviewMap = Record<string, ReviewState>;
-const REVIEW_KEY = "deal-intel:alert-review:";
-
-function readReview(id: string): ReviewMap {
-  try {
-    const value: unknown = JSON.parse(localStorage.getItem(REVIEW_KEY + id) ?? "{}");
-    return value && typeof value === "object" && !Array.isArray(value) ? value as ReviewMap : {};
-  } catch {
-    return {};
-  }
-}
 
 export default function WatchlistPage({ params }: { params: { id: string } }) {
   const [data, setData] = useState<{ watchlist: Watchlist; alerts: Alert[]; quality?: Quality } | null>(null);
@@ -32,6 +23,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
   const [kindFilter, setKindFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("active");
   const [review, setReview] = useState<ReviewMap>({});
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
 
   useEffect(() => {
     setReview({});
@@ -47,6 +39,9 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
         setReview(next);
       })
       .catch(() => setActionError("Review state could not be loaded. Check that the alert-review database migration has been applied."));
+    get<{ deliveries: Delivery[] }>(`/api/watchlists/${encodeURIComponent(params.id)}/delivery`)
+      .then((result) => setDeliveries(result.deliveries ?? []))
+      .catch(() => setDeliveries([]));
   }, [params.id]);
 
   async function setAlertState(key: string, state: ReviewState) {
@@ -75,7 +70,6 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
       try {
         const rows: unknown = JSON.parse(localStorage.getItem("deal-intel:watchlists") ?? "[]");
         if (Array.isArray(rows)) localStorage.setItem("deal-intel:watchlists", JSON.stringify(rows.filter((r: { id?: string }) => r.id !== params.id)));
-        localStorage.removeItem(REVIEW_KEY + params.id);
       } catch {
         // The server-side deletion succeeded; local browser cleanup is best-effort.
       }
@@ -134,6 +128,19 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
         <button type="button" onClick={remove} className="btn btn-ghost text-risk">Delete</button>
       </div>
       {actionError && <ErrorNote message={actionError} />}
+      {w.webhook_url && (
+        <section className="mt-5 rounded-lg border hairline p-4" aria-label="Webhook delivery health">
+          <h2 className="eyebrow">Webhook delivery</h2>
+          {deliveries.length === 0 ? (
+            <p className="mt-2 text-sm text-[color:var(--dim)]">No recorded delivery attempts yet. History becomes available after the alert-delivery migration is applied and the next ingestion run executes.</p>
+          ) : (
+            <div className="mt-2 text-sm">
+              <p>{deliveries[0].delivered ? "Last delivery succeeded" : "Last delivery failed"} · {new Date(deliveries[0].attempted_at).toLocaleString()}</p>
+              <p className="mt-1 text-xs text-[color:var(--dim)]">{deliveries[0].attempt_count} attempt{deliveries[0].attempt_count === 1 ? "" : "s"} · {deliveries[0].alert_count} alert{deliveries[0].alert_count === 1 ? "" : "s"} · HTTP {deliveries[0].http_status ?? "unavailable"}{deliveries[0].error_code ? " · " + deliveries[0].error_code : ""}</p>
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="mt-10" aria-labelledby="alerts-heading">
         <div>
