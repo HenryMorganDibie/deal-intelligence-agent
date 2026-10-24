@@ -408,7 +408,7 @@ export default function MarketsPortfolioPage() {
             <label className="mt-4 block text-xs text-[color:var(--muted)]" htmlFor="portfolio-csv">Choose CSV file</label>
             <input id="portfolio-csv" className="field mt-2" type="file" accept=".csv,text/csv" onChange={importCsv} />
             <button type="button" className="btn btn-secondary mt-3" onClick={() => {
-              const example = [CSV_HEADERS.join(","), ["Example African Bank", "EXBANK", "Kenya", "Banking", "Stock", "KES", 10, 120, 135, 0.0075].join(",")].join("\\r\\n");
+              const example = [CSV_HEADERS.join(","), ["Example African Bank", "EXBANK", "Kenya", "Banking", "Stock", "KES", 10, 120, 135, 0.0075].join(",")].join("\r\n");
               const blob = new Blob([example + "\r\n"], { type: "text/csv;charset=utf-8" });
               const url = URL.createObjectURL(blob);
               const anchor = document.createElement("a");
