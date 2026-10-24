@@ -637,18 +637,25 @@ export default function MarketsValuationPage() {
                 </div>
                 <div className="mt-4 rounded-xl border hairline p-4">
                   <button type="button" className="btn btn-secondary w-full" onClick={saveValuationLocally}>Save valuation to Portfolio Intelligence</button>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <button type="button" className="btn btn-ghost justify-center" onClick={exportValuationHistory}>Export saved valuation history</button>
-                    <label className="block text-xs leading-relaxed text-[color:var(--muted)]">
-                      Restore valuation history from JSON backup
-                      <input className="field mt-2" type="file" accept=".json,application/json" onChange={importValuationHistory} aria-describedby="valuation-backup-help" />
-                    </label>
-                  </div>
-                  <p id="valuation-backup-help" className="mt-2 text-xs leading-relaxed text-[color:var(--dim)]">Backups include saved valuation snapshots, not portfolio holdings. Restoring replaces this browser&apos;s saved valuation history after confirmation. Files are limited to 2 MB.</p>
                   {savedMessage ? <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status" aria-live="polite">{savedMessage}</p> : <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">Saved valuation scenarios stay in this browser. They are not uploaded to the server. Export a backup before clearing browser data or moving to another device.</p>}
                 </div>
               </>
             )}
+          </section>
+
+          <section className="mt-6 panel p-5 sm:p-6" aria-labelledby="valuation-backup-title">
+            <p className="eyebrow">Local data backup</p>
+            <h2 id="valuation-backup-title" className="h3 mt-2 text-lg">Keep your valuation history portable.</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">Export or restore saved valuation snapshots at any time, even before calculating a new model in this session. These JSON backups include valuation assumptions and source links, not portfolio holdings. Portfolio holdings use the separate CSV/XLSX backup controls in My Portfolio.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <button type="button" className="btn btn-secondary justify-center" onClick={exportValuationHistory}>Export saved valuation history</button>
+              <label className="block text-xs leading-relaxed text-[color:var(--muted)]">
+                Restore valuation history from JSON backup
+                <input className="field mt-2" type="file" accept=".json,application/json" onChange={importValuationHistory} aria-describedby="valuation-backup-help" />
+              </label>
+            </div>
+            <p id="valuation-backup-help" className="mt-2 text-xs leading-relaxed text-[color:var(--dim)]">Import validates the file, is limited to 2 MB, and asks before replacing saved history.</p>
+            {savedMessage ? <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status" aria-live="polite">{savedMessage}</p> : null}
           </section>
 
           <section className="panel p-5" aria-labelledby="method-title">
