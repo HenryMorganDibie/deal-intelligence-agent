@@ -124,7 +124,7 @@ export default function MarketsPage() {
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · African investment intelligence" title="Explore Investments">
-        Research African investment opportunities with the evidence available today. Start with company financials and market context, then move into valuation and portfolio analysis as those capabilities are built. Coverage differs by country, exchange, instrument and company, and Markets will show those limits rather than hide them.
+        Explore African investments using existing company data, market context, transparent valuation models and portfolio analysis. Conclusions are only as reliable as their sources and assumptions; this is decision support, not a promise of returns or an instruction to trade. Coverage differs by country, exchange, instrument and company, and Markets makes those limits visible.
       </PageHeader>
 
       <section className="panel p-5 sm:p-7" aria-labelledby="market-search-title">
@@ -363,10 +363,10 @@ export default function MarketsPage() {
             <p className="eyebrow">Valuation and verdicts</p>
             <h2 id="valuation-title" className="h3 mt-2 text-lg">A clear view, with a countercase.</h2>
             <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Build a transparent bear/base/bull discounted-cash-flow scenario, inspect assumptions and compare a sourced quote with the estimate. The model should be rejected when its assumptions do not fit the company.
+              Compare transparent DCF and dividend-discount scenarios where the company and data fit the method. Inspect assumptions, sensitivity and the sourced quote, and see when the model cannot support an honest conclusion.
             </p>
             <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
-              A complete public-equity valuation model is still being built. Existing transaction valuation marks and trading multiples are not equivalent to a fair-value estimate.
+              These are explicit model outputs, not verified fair value. DCF is restricted to suitable operating companies; unsupported or uncertain profiles do not receive a cheap/expensive verdict. Source quality, currency, quote date and assumptions still require review.
             </p>
             <Link href="/app/markets/valuation" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open Valuation workspace →</Link>
           </section>
