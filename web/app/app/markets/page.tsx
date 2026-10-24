@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pill, Stat, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
-import { get, type CoverageRow } from "../../../lib/market";
+import { get } from "../../../lib/market";
 
 type PulseCountry = { code: string; name: string } | null;
 type PulseDeal = {
@@ -45,18 +45,6 @@ type Pulse = {
   };
   events: { total: number; recent: number; latest: PulseEvent[] };
 };
-type Coverage = {
-  countries: CoverageRow[];
-  summary: {
-    countries: number;
-    by_tier: Record<string, number>;
-    national_news_editions: number;
-    full_country_risk_coverage: number;
-    with_deals: number;
-    with_events: number;
-  };
-  tiers: Record<string, string>;
-};
 
 function compactNumber(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return "Not available";
@@ -74,12 +62,8 @@ function formatDate(value: string | null | undefined): string {
 export default function MarketsPage() {
   const router = useRouter();
   const [company, setCompany] = useState("");
-  const [coverageQuery, setCoverageQuery] = useState("");
-  const [coverageFilter, setCoverageFilter] = useState("all");
   const [pulse, setPulse] = useState<Pulse | null>(null);
-  const [coverage, setCoverage] = useState<Coverage | null>(null);
   const [pulseError, setPulseError] = useState<string | null>(null);
-  const [coverageError, setCoverageError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -88,15 +72,10 @@ export default function MarketsPage() {
       .catch((error) => {
         if (active) setPulseError(error instanceof ApiError ? error.message : "Market activity could not be loaded.");
       });
-    get<Coverage>("/api/coverage")
-      .then((data) => { if (active) setCoverage(data); })
-      .catch((error) => {
-        if (active) setCoverageError(error instanceof ApiError ? error.message : "Coverage information could not be loaded.");
-      });
     return () => { active = false; };
   }, []);
 
-  function searchCompany(event: FormEvent<HTMLFormElement>) {
+  function openCompany(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = company.trim();
     if (!name) return;
@@ -105,118 +84,84 @@ export default function MarketsPage() {
 
   const latestDeals = pulse?.deals.latest ?? [];
   const latestEvents = pulse?.events.latest ?? [];
-  const topDealCountries = pulse?.deals.top_countries.slice(0, 5) ?? [];
-  const maxCountryDeals = Math.max(1, ...topDealCountries.map((country) => country.deals));
-  const researchReady = coverage?.countries.filter((country) => country.prices && country.statements).length ?? 0;
-  const visibleCoverage = (coverage?.countries ?? []).filter((country) => {
-    const q = coverageQuery.trim().toLowerCase();
-    const matchesQuery = !q || [country.country, country.region, country.exchange ?? "", country.currency, country.iso2].some((value) => value.toLowerCase().includes(q));
-    const hasBoth = Boolean(country.prices && country.statements);
-    const hasSomeFinancials = Boolean(country.prices || country.statements);
-    const hasMarketIntelligence = country.deals > 0 || country.events > 0 || Boolean(country.news?.edition);
-    const matchesFilter = coverageFilter === "all" ||
-      (coverageFilter === "research-ready" && hasBoth) ||
-      (coverageFilter === "partial-financials" && hasSomeFinancials && !hasBoth) ||
-      (coverageFilter === "intelligence-only" && !hasSomeFinancials && hasMarketIntelligence);
-    return matchesQuery && matchesFilter;
-  }).sort((a, b) => a.country.localeCompare(b.country));
 
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · African investment intelligence" title="Explore Investments">
-        Explore African investments using existing company data, market context, transparent valuation models and portfolio analysis. Conclusions are only as reliable as their sources and assumptions; this is decision support, not a promise of returns or an instruction to trade. Coverage differs by country, exchange, instrument and company, and Markets makes those limits visible.
+        Discover companies and market developments, evaluate an investment with transparent assumptions, compare opportunities, and monitor your portfolio. Deal records and analytical estimates are evidence to investigate, not a promise of returns or instructions to trade.
       </PageHeader>
 
-      <section className="panel p-5 sm:p-7" aria-labelledby="market-search-title">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="eyebrow">Start with a company</p>
-            <h2 id="market-search-title" className="h3 mt-2 text-xl">Look beyond the ticker.</h2>
-            <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Open an existing company profile to inspect available market data, financial statements, trading multiples, source links and accounting checks.
+      <section className="panel p-5 sm:p-7" aria-labelledby="investment-start-title">
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+          <div>
+            <p className="eyebrow">Start with an investment</p>
+            <h2 id="investment-start-title" className="h3 mt-2 text-xl">Find a company. Then test the case.</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--muted)]">
+              Open an existing company profile, inspect its available financial evidence, then use the valuation and comparison tools to examine assumptions and alternatives. Missing or weak data should remain visible, not be filled with guesses.
             </p>
+            <form onSubmit={openCompany} className="mt-5 flex w-full gap-2" role="search">
+              <label className="sr-only" htmlFor="markets-company-search">Company name or ticker</label>
+              <input
+                id="markets-company-search"
+                value={company}
+                onChange={(event) => setCompany(event.target.value)}
+                placeholder="e.g. Dangote Cement, Safaricom, Naspers"
+                className="field min-w-0 flex-1"
+                required
+              />
+              <button type="submit" className="btn btn-primary shrink-0">View company</button>
+            </form>
           </div>
-          <form onSubmit={searchCompany} className="flex w-full gap-2 lg:max-w-xl" role="search">
-            <label className="sr-only" htmlFor="markets-company-search">Company name or ticker</label>
-            <input
-              id="markets-company-search"
-              value={company}
-              onChange={(event) => setCompany(event.target.value)}
-              placeholder="e.g. Dangote Cement, Safaricom, Naspers"
-              className="field min-w-0 flex-1"
-              required
-            />
-            <button type="submit" className="btn btn-primary shrink-0">Research company</button>
-          </form>
-        </div>
-        <div className="mt-5 flex flex-wrap gap-2 text-xs text-[color:var(--muted)]">
-          <span className="rounded-full border hairline px-3 py-1.5">Africa-wide scope</span>
-          <span className="rounded-full border hairline px-3 py-1.5">Source-linked evidence</span>
-          <span className="rounded-full border hairline px-3 py-1.5">Coverage-aware analysis</span>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+            <Link href="/app/markets/valuation" className="rounded-xl border hairline p-4 transition-colors hover:bg-white/[0.04]">
+              <p className="text-sm font-medium">Evaluate an investment <span aria-hidden="true">→</span></p>
+              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Inspect DCF or dividend-discount scenarios, assumptions and source dates where the model fits.</p>
+            </Link>
+            <Link href="/app/markets/compare" className="rounded-xl border hairline p-4 transition-colors hover:bg-white/[0.04]">
+              <p className="text-sm font-medium">Compare opportunities <span aria-hidden="true">→</span></p>
+              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Compare company evidence and available valuation context without treating missing data as a positive signal.</p>
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section className="mt-8" aria-labelledby="market-overview-title">
+      <section className="mt-8" aria-labelledby="market-activity-title">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="eyebrow">Live intelligence from the existing data store</p>
-            <h2 id="market-overview-title" className="h3 mt-2 text-xl">African market activity</h2>
+            <p className="eyebrow">What has been recorded</p>
+            <h2 id="market-activity-title" className="h3 mt-2 text-xl">Market activity</h2>
+            <p className="mt-1 text-sm text-[color:var(--muted)]">Private-market transactions and corporate developments from the existing intelligence feed.</p>
           </div>
           <p className="text-xs text-[color:var(--dim)]">
-            {pulse?.latest_record ? `Latest dated record: ${formatDate(pulse.latest_record)} · Summary date: ${formatDate(pulse.as_of)}` : pulse?.as_of ? `Summary date: ${formatDate(pulse.as_of)} · No dated record available` : "Summary date appears when data loads"}
+            {pulse?.latest_record ? `Latest dated record: ${formatDate(pulse.latest_record)} · Summary: ${formatDate(pulse.as_of)}` : pulse?.as_of ? `Summary date: ${formatDate(pulse.as_of)} · No dated record available` : "Summary date appears when data loads"}
           </p>
         </div>
         {pulseError && <ErrorNote message={pulseError} />}
-        {!pulse && !pulseError ? <Loading label="Loading African market activity…" /> : null}
+        {!pulse && !pulseError ? <Loading label="Loading market activity…" /> : null}
         {pulse && (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Stat label="Deals in database" value={compactNumber(pulse.deals.total)} note={`Across ${compactNumber(pulse.deals.countries)} countries`} />
-            <Stat label="Deals in last 30 days" value={compactNumber(pulse.deals.recent)} note={`${compactNumber(pulse.deals.recent_countries)} countries represented`} />
+            <Stat label="Recorded transactions" value={compactNumber(pulse.deals.total)} note={`Across ${compactNumber(pulse.deals.countries)} countries`} />
+            <Stat label="Transactions in last 30 days" value={compactNumber(pulse.deals.recent)} note={`${compactNumber(pulse.deals.recent_countries)} countries represented`} />
             <Stat label="Corporate events in last 7 days" value={compactNumber(pulse.events.recent)} note="From the existing event feed" />
-            <Stat label="Recent disclosed deal value" value={pulse.deals.recent_disclosed_n ? usd(pulse.deals.recent_disclosed_usd) : "Not disclosed"} note={`${compactNumber(pulse.deals.recent_disclosed_n)} recent deals with a disclosed amount`} />
+            <Stat label="Recent disclosed deal value" value={pulse.deals.recent_disclosed_n ? usd(pulse.deals.recent_disclosed_usd) : "Not disclosed"} note={`${compactNumber(pulse.deals.recent_disclosed_n)} recent transactions with an amount`} />
           </div>
         )}
-        {pulse && topDealCountries.length > 0 && (
-          <section className="panel mt-4 p-5" aria-labelledby="country-deal-flow-title">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="eyebrow">Recorded deal activity</p>
-                <h3 id="country-deal-flow-title" className="h3 mt-2 text-base">Markets with the most deals in the database</h3>
-              </div>
-              <Link href="/app/deals" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Explore deal records →</Link>
-            </div>
-            <div className="mt-4 space-y-3">
-              {topDealCountries.map((country) => (
-                <div key={country.code}>
-                  <div className="mb-1.5 flex items-baseline justify-between gap-3 text-xs">
-                    <span>{country.name}</span>
-                    <span className="kbd text-[color:var(--muted)]">{country.deals.toLocaleString()} recorded deals</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-white/10" role="img" aria-label={`${country.name}: ${country.deals} recorded deals relative to the top country`}>
-                    <div className="h-full rounded-full bg-[color:var(--accent)]" style={{ width: `${Math.max(0, Math.min(100, (country.deals / maxCountryDeals) * 100))}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">This ranks records in Deal Intelligence&apos;s dataset, not total investment volume, market size or the quality of each country&apos;s investment opportunities. Differences can reflect source availability and reporting coverage.</p>
-          </section>
-        )}
         <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
-          These figures describe Deal Intelligence&apos;s recorded deals and corporate events. They are not stock-market performance, trading volume or a measure of every investment made across Africa.
+          These counts describe records in Deal Intelligence, not total market size, stock-market performance, trading volume, or the quality of an investment opportunity. Disclosed deal values omit transactions whose amounts were not reported.
         </p>
       </section>
 
-      <section className="mt-10 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+      <section className="mt-10 grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="min-w-0">
-          <div className="mb-4 flex items-end justify-between gap-3">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="eyebrow">Recent signals</p>
-              <h2 className="h3 mt-2 text-xl">Company and market developments</h2>
+              <p className="eyebrow">Recent developments</p>
+              <h2 className="h3 mt-2 text-xl">What may deserve attention</h2>
             </div>
-            <Link href="/app/countries" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Explore countries</Link>
+            <Link href="/app/watchlists" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Open alerts and watchlists →</Link>
           </div>
           {pulse && latestEvents.length === 0 && <p className="panel p-4 text-sm text-[color:var(--muted)]">No events were returned for the current seven-day window.</p>}
-          {!pulse && !pulseError && <Loading label="Loading recent events…" />}
+          {!pulse && !pulseError && <Loading label="Loading recent developments…" />}
           <div className="space-y-3">
             {latestEvents.map((event) => (
               <article key={event.id} className="rounded-xl border hairline bg-white/[0.02] p-4">
@@ -233,157 +178,50 @@ export default function MarketsPage() {
               </article>
             ))}
           </div>
-          {pulse && latestDeals.length > 0 && (
-            <div className="mt-8">
-              <div className="mb-3 flex items-end justify-between gap-3">
-                <div>
-                  <p className="eyebrow">Deal flow</p>
-                  <h3 className="mt-2 text-base font-medium">Recent transactions</h3>
-                </div>
-                <Link href="/app/deals" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Browse deals</Link>
-              </div>
-              <div className="space-y-2">
-                {latestDeals.slice(0, 5).map((deal) => (
-                  <article key={deal.id} className="flex flex-col gap-2 rounded-xl border hairline p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium">{deal.target || "Company not identified"}</p>
-                      <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">{deal.headline}</p>
-                      <p className="mt-2 text-xs text-[color:var(--dim)]">{[deal.country?.name, deal.sector ? words(deal.sector) : null, formatDate(deal.announced)].filter(Boolean).join(" · ")}</p>
-                    </div>
-                    <div className="shrink-0 text-left sm:text-right">
-                      <p className="text-sm font-medium">{usd(deal.amount_usd)}</p>
-                      <p className="mt-1 text-xs text-[color:var(--dim)]">{deal.deal_type ? words(deal.deal_type) : "Transaction"}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         <aside className="space-y-6">
-          <section className="panel p-5" aria-labelledby="coverage-title">
+          <section className="panel p-5" aria-labelledby="deal-flow-title">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="eyebrow">Coverage transparency</p>
-                <h2 id="coverage-title" className="h3 mt-2 text-lg">Africa-wide, evidence-led</h2>
+                <p className="eyebrow">Recent deal flow</p>
+                <h2 id="deal-flow-title" className="h3 mt-2 text-lg">Transactions to investigate</h2>
               </div>
-              <span aria-hidden="true" className="text-2xl">◎</span>
+              <Link href="/app/deals" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">All deals →</Link>
             </div>
-            {coverageError && <ErrorNote message={coverageError} />}
-            {!coverage && !coverageError ? <Loading label="Loading coverage map…" /> : null}
-            {coverage && (
-              <>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <Stat label="Countries represented" value={coverage.summary.countries} />
-                  <Stat label="Markets with deals" value={coverage.summary.with_deals} />
-                </div>
-                <div className="mt-4 rounded-lg border hairline p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm">Price + statement coverage</span>
-                    <span className="kbd text-sm">{researchReady} / {coverage.countries.length}</span>
+            {!pulse && !pulseError ? <Loading label="Loading recent transactions…" /> : null}
+            {pulse && latestDeals.length === 0 && <p className="mt-4 text-sm text-[color:var(--muted)]">No recent transactions are available in the current response.</p>}
+            <div className="mt-4 space-y-3">
+              {latestDeals.slice(0, 5).map((deal) => (
+                <article key={deal.id} className="border-b hairline pb-3 last:border-0 last:pb-0">
+                  <p className="text-sm font-medium">{deal.target || "Company not identified"}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">{deal.headline}</p>
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[color:var(--dim)]">
+                    <span>{[deal.country?.name, deal.sector ? words(deal.sector) : null, formatDate(deal.announced)].filter(Boolean).join(" · ")}</span>
+                    <span>{usd(deal.amount_usd)}</span>
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
-                    Count of countries whose coverage metadata lists both prices and financial statements. This is a rough availability indicator, not a claim that every listed company in those countries is research-ready.
-                  </p>
-                </div>
-                <div className="mt-4 space-y-3">
-                  {Object.entries(coverage.tiers).map(([tier, description]) => (
-                    <div key={tier} className="flex items-start gap-2">
-                      <Pill value={tier} />
-                      <p className="text-xs leading-relaxed text-[color:var(--muted)]">{description}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6 border-t hairline pt-5">
-                  <div className="flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                      <p className="eyebrow">Country coverage explorer</p>
-                      <h3 className="mt-2 text-base font-medium">What can we research in each market?</h3>
-                      <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Coverage metadata is not a guarantee that every company has complete or current data. Provider/source labels reflect the existing coverage registry.</p>
-                    </div>
-                    <p className="text-xs text-[color:var(--dim)]">{visibleCoverage.length} of {coverage.countries.length} countries</p>
-                  </div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_0.8fr]">
-                    <div>
-                      <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="markets-country-search">Search country, exchange or currency</label>
-                      <input id="markets-country-search" className="field" value={coverageQuery} onChange={(event) => setCoverageQuery(event.target.value)} placeholder="e.g. Nigeria, NGX, NGN" />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="markets-coverage-filter">Filter by available coverage</label>
-                      <select id="markets-coverage-filter" className="field" value={coverageFilter} onChange={(event) => setCoverageFilter(event.target.value)}>
-                        <option value="all">All registered countries</option>
-                        <option value="research-ready">Prices and statements listed</option>
-                        <option value="partial-financials">Partial financial coverage</option>
-                        <option value="intelligence-only">Intelligence, limited financials</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="mt-4 overflow-x-auto rounded-lg border hairline">
-                    <table className="w-full min-w-[48rem] border-collapse text-left text-xs">
-                      <thead>
-                        <tr className="border-b hairline text-[color:var(--dim)]">
-                          {["Country / region", "Exchange / currency", "Coverage tier", "Price data", "Statements", "Deals / events"].map((heading) => <th key={heading} className="whitespace-nowrap px-3 py-3 font-normal">{heading}</th>)}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {visibleCoverage.map((country) => (
-                          <tr key={country.iso2} className="border-b hairline last:border-0">
-                            <td className="px-3 py-3"><p className="font-medium">{country.country}</p><p className="mt-1 text-[color:var(--dim)]">{country.region}</p></td>
-                            <td className="px-3 py-3"><p>{country.exchange || "No exchange listed"}</p><p className="mt-1 text-[color:var(--dim)]">{country.currency}</p></td>
-                            <td className="px-3 py-3"><Pill value={`Tier ${country.tier}`} /></td>
-                            <td className="px-3 py-3">{country.prices || "Not listed"}</td>
-                            <td className="px-3 py-3">{country.statements || "Not listed"}</td>
-                            <td className="px-3 py-3 kbd">{country.deals.toLocaleString()} / {country.events.toLocaleString()}</td>
-                          </tr>
-                        ))}
-                        {visibleCoverage.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-[color:var(--muted)]">No countries match this search and coverage filter.</td></tr>}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <Link href="/app/coverage" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open detailed coverage registry →</Link>
-              </>
-            )}
+                </article>
+              ))}
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">A reported transaction is a research lead, not necessarily an investment product available to buy.</p>
           </section>
 
           <section className="panel p-5" aria-labelledby="portfolio-title">
             <p className="eyebrow">Personal investing</p>
             <h2 id="portfolio-title" className="h3 mt-2 text-lg">Your portfolio, in context.</h2>
             <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Track holdings, allocation, concentration and currency exposure with manual entry or CSV import. Portfolio data stays in this browser and prices are not presented as live quotes.
+              Review allocation, concentration, currency exposure and saved valuation changes. Holdings remain in this browser; prices and FX rates are entered manually, not live quotes.
             </p>
-            <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
-              Portfolio holdings are stored in this browser only. Prices and FX rates are user-entered, not live market data.
-            </p>
-            <Link href="/app/markets/portfolio" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open Portfolio Intelligence →</Link>
+            <Link href="/app/markets/portfolio" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open My Portfolio →</Link>
           </section>
 
-          <section className="panel p-5" aria-labelledby="valuation-title">
-            <p className="eyebrow">Valuation and verdicts</p>
-            <h2 id="valuation-title" className="h3 mt-2 text-lg">A clear view, with a countercase.</h2>
+          <section className="rounded-xl border hairline p-5" aria-labelledby="coverage-context-title">
+            <p className="eyebrow">Know the limits</p>
+            <h2 id="coverage-context-title" className="h3 mt-2 text-lg">Check the available evidence.</h2>
             <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Compare transparent DCF and dividend-discount scenarios where the company and data fit the method. Inspect assumptions, sensitivity and the sourced quote, and see when the model cannot support an honest conclusion.
+              Data depth varies by country, exchange, instrument and company. Check the existing Coverage registry before relying on missing or incomplete market information.
             </p>
-            <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
-              These are explicit model outputs, not verified fair value. DCF is restricted to suitable operating companies; unsupported or uncertain profiles do not receive a cheap/expensive verdict. Source quality, currency, quote date and assumptions still require review.
-            </p>
-            <Link href="/app/markets/valuation" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open Valuation workspace →</Link>
-          </section>
-
-          <section className="rounded-xl border hairline p-5">
-            <p className="eyebrow">Existing intelligence</p>
-            <h2 className="h3 mt-2 text-lg">Continue your research</h2>
-            <div className="mt-4 grid gap-2">
-              <Link href="/app/markets/valuation" className="btn btn-secondary justify-center">Explore valuation</Link>
-              <Link href="/app/markets/portfolio" className="btn btn-ghost justify-center">Open My Portfolio</Link>
-              <Link href="/app/markets/compare" className="btn btn-ghost justify-center">Compare opportunities</Link>
-              <Link href="/app/markets/monitoring" className="btn btn-ghost justify-center">Monitor portfolio developments</Link>
-              <Link href="/app/research" className="btn btn-ghost justify-center">Open Research</Link>
-              <Link href="/app/watchlists" className="btn btn-ghost justify-center">Open Alerts and watchlists</Link>
-              <Link href="/app/companies" className="btn btn-ghost justify-center">Browse company profiles</Link>
-              <Link href="/app/markets/compare" className="btn btn-ghost justify-center">Compare companies</Link>
-            </div>
+            <Link href="/app/coverage" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">View market coverage →</Link>
           </section>
         </aside>
       </section>
