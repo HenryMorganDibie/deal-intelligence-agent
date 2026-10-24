@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(16);
+select plan(20);
 insert into auth.users(id,aud,role,email,encrypted_password,email_confirmed_at,created_at,updated_at) values
 ('10000000-0000-4000-8000-000000000001','authenticated','authenticated','portfolio-a@test.invalid','',now(),now(),now()),
 ('10000000-0000-4000-8000-000000000002','authenticated','authenticated','portfolio-b@test.invalid','',now(),now(),now()),
@@ -39,5 +39,9 @@ set local request.jwt.claim.sub='10000000-0000-4000-8000-000000000001';
 select throws_ok($$select public.migrate_local_portfolio('30000000-0000-4000-8000-000000000002',gen_random_uuid(),'NGN','[]'::jsonb,'[]'::jsonb)$$,'22023',null,'Local migration rejects a reporting currency that differs from the destination portfolio');
 set local request.jwt.claim.sub='10000000-0000-4000-8000-000000000003';
 select throws_ok($$select public.commit_portfolio_transaction_import('30000000-0000-4000-8000-000000000001',gen_random_uuid(),'viewer.csv','[]'::jsonb)$$,'42501',null,'Viewer cannot import transactions');
+select ok(not has_table_privilege('authenticated','public.portfolio_transactions','update'),'Authenticated clients cannot rewrite ledger transactions');
+select ok(not has_table_privilege('authenticated','public.portfolio_valuations','update'),'Authenticated clients cannot rewrite valuation snapshots');
+select ok(not has_table_privilege('authenticated','public.portfolio_import_jobs','insert'),'Import jobs can only be created by the atomic import RPC');
+select ok(not has_table_privilege('authenticated','public.portfolio_audit_events','insert'),'Clients cannot forge audit events');
 select * from finish();
 rollback;
