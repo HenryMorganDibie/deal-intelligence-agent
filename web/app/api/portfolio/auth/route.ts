@@ -29,7 +29,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  let body: { action?: string; email?: string; password?: string };
+  let body: { action?: string; email?: string; password?: string; refreshToken?: unknown; tokenHash?: unknown; type?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
     const config = portfolioConfig();
 
     if (body.action === "complete-email") {
-      const refreshToken = typeof (body as { refreshToken?: unknown }).refreshToken === "string"
-        ? (body as { refreshToken: string }).refreshToken
+      const refreshToken = typeof body.refreshToken === "string"
+        ? body.refreshToken
         : "";
       if (refreshToken.length < 20 || refreshToken.length > 4096) {
         return NextResponse.json({ error: "The confirmation link is invalid or expired." }, { status: 400 });
@@ -61,11 +61,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (body.action === "verify-email") {
-      const tokenHash = typeof (body as { tokenHash?: unknown }).tokenHash === "string"
-        ? (body as { tokenHash: string }).tokenHash
+      const tokenHash = typeof body.tokenHash === "string"
+        ? body.tokenHash
         : "";
-      const type = typeof (body as { type?: unknown }).type === "string"
-        ? (body as { type: string }).type
+      const type = typeof body.type === "string"
+        ? body.type
         : "";
       if (!/^[a-f0-9]{32,128}$/i.test(tokenHash) || !["signup", "email", "invite"].includes(type)) {
         return NextResponse.json({ error: "The confirmation link is invalid or expired." }, { status: 400 });
