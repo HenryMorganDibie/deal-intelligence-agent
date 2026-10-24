@@ -51,7 +51,7 @@ The database foundation now includes current-price/FX metadata, single-use hashe
 
 ## Required follow-up before enabling cloud portfolios
 
-1. Configure and verify the Supabase Auth email confirmation, recovery, redirect URLs, and web-project environment variables.
+1. Configure and verify the Supabase Auth email confirmation, recovery, redirect URLs (including the web origin's /auth/callback route), and web-project environment variables.
 2. Add automated RLS integration tests for two unrelated users, two separate organizations, same-organization role differences, personal-vs-shared portfolio boundaries, and attempted cross-tenant ID substitution.
 3. Validate the SQL migrations against a disposable/local database and run Supabase security/performance advisors before applying them to the hosted project.
 4. Implement staged CSV/XLSX cloud imports: validate and preview first, then commit in bounded batches; make retries idempotent and keep rejected rows/errors available to the user.

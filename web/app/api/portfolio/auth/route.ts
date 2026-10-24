@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       {
         method: "POST",
         headers: { apikey: config.key, "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(signUp ? { email, password, options: { emailRedirectTo: request.nextUrl.origin + "/auth/callback" } } : { email, password }),
         cache: "no-store",
       },
     );
