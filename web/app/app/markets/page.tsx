@@ -266,8 +266,9 @@ export default function MarketsPage() {
               Portfolio Intelligence will live here inside Markets: holdings, allocation, concentration, currency exposure and valuation context, with manual entry and CSV import first.
             </p>
             <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
-              Portfolio analysis is not available in this release. No holdings are collected or saved by this page.
+              Portfolio holdings are stored in this browser only. Prices and FX rates are user-entered, not live market data.
             </p>
+            <Link href="/app/markets/portfolio" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open Portfolio Intelligence →</Link>
           </section>
 
           <section className="panel p-5" aria-labelledby="valuation-title">
