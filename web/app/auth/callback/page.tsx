@@ -16,11 +16,11 @@ export default function AuthCallbackPage() {
       const oauthError = params.get("error_description") || params.get("error") || "";
       const tokenHash = params.get("token_hash") || "";
       const type = params.get("type") || "";
+      const next = params.get("next") === "password-reset" ? "password-reset" : "";
       const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ""));
       const refreshToken = fragment.get("refresh_token") || "";
       const fragmentType = fragment.get("type") || "";
 
-      // Remove one-time credentials from the visible URL before making any request.
       window.history.replaceState({}, document.title, window.location.pathname);
 
       try {
@@ -40,7 +40,7 @@ export default function AuthCallbackPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: "verify-email", tokenHash, type }),
           });
-        } else if (refreshToken && ["signup", "email", "invite"].includes(fragmentType)) {
+        } else if (refreshToken && ["signup", "email", "invite", "recovery"].includes(fragmentType)) {
           response = await fetch("/api/portfolio/auth", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -56,7 +56,7 @@ export default function AuthCallbackPage() {
           if (active) setMessage(payload.error || "The confirmation link is invalid or expired.");
           return;
         }
-        router.replace("/app/markets/portfolio/cloud");
+        router.replace(type === "recovery" || fragmentType === "recovery" || next === "password-reset" ? "/account/reset-password" : "/app/markets/portfolio/cloud");
       } catch {
         if (active) setMessage("Could not confirm the account. Return to sign in and try again.");
       }
