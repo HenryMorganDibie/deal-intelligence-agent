@@ -1,5 +1,19 @@
 -- Harden archived-tenant access and expose safe workspace administration RPCs.
 begin;
+create or replace function private.has_org_role(p_organization_id uuid,p_minimum_role text default 'viewer')
+returns boolean language sql stable security definer set search_path='' as $
+ select exists(
+  select 1 from public.organization_memberships m
+  join public.organizations o on o.id=m.organization_id
+  where o.archived_at is null
+   and m.organization_id=p_organization_id and m.user_id=(select auth.uid())
+   and case m.role when 'owner' then 5 when 'admin' then 4 when 'manager' then 3 when 'analyst' then 2 when 'viewer' then 1 else 0 end
+     >= case p_minimum_role when 'owner' then 5 when 'admin' then 4 when 'manager' then 3 when 'analyst' then 2 when 'viewer' then 1 else 99 end
+ );
+$;
+revoke all on function private.has_org_role(uuid,text) from public,anon;
+grant execute on function private.has_org_role(uuid,text) to authenticated;
+
 create or replace function private.can_access_portfolio(p_portfolio_id uuid,p_minimum_role text default 'viewer')
 returns boolean language sql stable security definer set search_path='' as $$
  select exists(
@@ -50,7 +64,7 @@ declare actor uuid:=(select auth.uid()); actor_role text;
 begin
  if actor is null then raise exception using errcode='42501',message='Authentication required'; end if;
  select m.role into actor_role from public.organization_memberships m where m.organization_id=p_organization_id and m.user_id=actor;
- if actor_role not in ('owner','admin') then raise exception using errcode='42501',message='Organization administration permission required'; end if;
+ if actor_role is null or actor_role not in ('owner','admin') then raise exception using errcode='42501',message='Organization administration permission required'; end if;
  if p_role not in ('admin','manager','analyst','viewer') then raise exception using errcode='22023',message='Invalid member role'; end if;
  if p_role='admin' and actor_role<>'owner' then raise exception using errcode='42501',message='Only the owner can assign admin role'; end if;
  if not exists(select 1 from public.organization_memberships m where m.organization_id=p_organization_id and m.user_id=p_user_id and m.role<>'owner') then
