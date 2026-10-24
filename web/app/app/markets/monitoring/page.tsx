@@ -6,7 +6,7 @@ import { Container } from "../../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pill } from "../../../../components/app/ui";
 import { get } from "../../../../lib/market";
 import { validHttpUrl } from "../../../../lib/markets-valuation";
-import { calculateValuationChangeAlerts, matchPortfolioEvents, type MonitoringEvent, type MonitoringHolding } from "../../../../lib/markets-monitoring";
+import { calculateValuationChangeAlerts, fetchMonitoringEventHistory, matchPortfolioEvents, type MonitoringEvent, type MonitoringHolding } from "../../../../lib/markets-monitoring";
 import { isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
 
 type StoredPortfolio = { version?: number; holdings?: unknown[] };
@@ -51,6 +51,8 @@ export default function MarketsMonitoringPage() {
   const [portfolioReady, setPortfolioReady] = useState(false);
   const [portfolioError, setPortfolioError] = useState<string | null>(null);
   const [events, setEvents] = useState<MonitoringEvent[]>([]);
+  const [eventsTotal, setEventsTotal] = useState<number | null>(null);
+  const [eventsTruncated, setEventsTruncated] = useState(false);
   const [eventsLoading, setEventsLoading] = useState(false);
   const [eventsError, setEventsError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
@@ -79,8 +81,12 @@ export default function MarketsMonitoringPage() {
     setEventsError(null);
     const since = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
     try {
-      const response = await get<{ events: MonitoringEvent[]; count?: number }>("/api/events", { since, limit: 100, offset: 0 });
-      setEvents(Array.isArray(response.events) ? response.events : []);
+      const history = await fetchMonitoringEventHistory((offset, limit) =>
+        get<{ events: MonitoringEvent[]; count?: number }>("/api/events", { since, limit, offset }),
+      );
+      setEvents(history.events);
+      setEventsTotal(history.totalAvailable);
+      setEventsTruncated(history.truncated);
       setLastUpdated(new Date().toISOString());
     } catch (error) {
       setEventsError(error instanceof Error ? error.message : "Market events could not be loaded.");
@@ -181,7 +187,7 @@ export default function MarketsMonitoringPage() {
         <>
           <section className="grid gap-3 sm:grid-cols-3">
             <div className="panel p-4"><p className="text-xs text-[color:var(--muted)]">Portfolio positions</p><p className="mt-2 text-2xl font-semibold">{holdings.length}</p><p className="mt-1 text-xs text-[color:var(--dim)]">Read locally from this browser</p></div>
-            <div className="panel p-4"><p className="text-xs text-[color:var(--muted)]">Events reviewed</p><p className="mt-2 text-2xl font-semibold">{events.length}</p><p className="mt-1 text-xs text-[color:var(--dim)]">Up to 100 events from the last 90 days</p></div>
+            <div className="panel p-4"><p className="text-xs text-[color:var(--muted)]">Events reviewed</p><p className="mt-2 text-2xl font-semibold">{events.length.toLocaleString()}</p><p className="mt-1 text-xs text-[color:var(--dim)]">{eventsTotal == null ? "Events returned from the last 90 days" : `${eventsTotal.toLocaleString()} available in the last 90 days`}</p></div>
             <div className="panel p-4"><p className="text-xs text-[color:var(--muted)]">Possible portfolio matches</p><p className="mt-2 text-2xl font-semibold">{matches.length}</p><p className="mt-1 text-xs text-[color:var(--dim)]">Name/ticker matches; not confirmed impact</p></div>
           </section>
 
@@ -195,7 +201,12 @@ export default function MarketsMonitoringPage() {
             </div>
 
             {eventsError ? <ErrorNote message={eventsError} /> : null}
-            {eventsLoading && events.length === 0 ? <Loading label="Loading recent corporate events…" /> : null}
+            {eventsTruncated ? (
+              <p className="mb-3 rounded-lg border hairline p-3 text-sm leading-relaxed text-[color:var(--muted)]" role="status">
+                Showing {events.length.toLocaleString()} of {eventsTotal?.toLocaleString() ?? "an unknown number of"} available events. The safety limit was reached, so this monitoring pass may be incomplete. Narrow the period or review the existing Watchlists for broader monitoring.
+              </p>
+            ) : null}
+            {eventsLoading ? <p className="mb-3 text-xs text-[color:var(--muted)]" role="status" aria-live="polite">Loading recent corporate events…</p> : null}
             {!eventsLoading && !eventsError && events.length === 0 ? (
               <div className="rounded-xl border hairline p-5 text-sm text-[color:var(--muted)]">No events were returned for this period. Try refreshing later; the feed may be empty or temporarily unavailable.</div>
             ) : null}
@@ -243,7 +254,7 @@ export default function MarketsMonitoringPage() {
       ) : null}
 
       <div className="mt-8 rounded-xl border hairline p-4 text-xs leading-relaxed text-[color:var(--dim)]">
-        Privacy and reliability: holdings are read from browser-local storage and are never sent to the events API. The page requests only a general 90-day event feed. Matching is conservative but can still miss aliases or produce false positives; this is not a push notification service, an automatic impact score, or a verified alert that a holding&apos;s value has changed.
+        Privacy and reliability: holdings are read from browser-local storage and are never sent to the events API. The page requests a general 90-day event feed in pages of up to 500 records, capped at 5,000 records per refresh; if the cap is reached, the page discloses that the result is incomplete. Matching is conservative but can still miss aliases or produce false positives; this is not a push notification service, an automatic impact score, or a verified alert that a holding&apos;s value has changed.
       </div>
     </Container>
   );
