@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "
 import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader, Stat } from "../../../../components/app/ui";
-import { calculateExposureRows, calculatePortfolioTotals, convertToBase } from "../../../../lib/markets-portfolio";
+import { calculateExposureRows, calculatePortfolioTotals, calculatePortfolioValuationReviews, calculatePortfolioValuationSummary, convertToBase, isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
 
 type Holding = {
   id: string;
@@ -25,9 +25,20 @@ type Holding = {
 type PortfolioState = { version: 1; baseCurrency: string; holdings: Holding[] };
 
 const STORAGE_KEY = "deal-intelligence-markets-portfolio-v1";
+const VALUATION_STORAGE_KEY = "deal-intelligence-markets-valuations-v1";
 const CURRENCIES = ["AOA", "BIF", "BWP", "CDF", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GBP", "GHS", "GMD", "GNF", "KMF", "KES", "LRD", "LSL", "LYD", "MAD", "MGA", "MRU", "MUR", "MWK", "MZN", "NAD", "NGN", "RWF", "SCR", "SDG", "SLE", "SOS", "SSP", "STN", "SZL", "TND", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWG", "ZWL"];
 const ASSET_TYPES = ["Stock", "ETF", "Bond", "Treasury bill", "Money-market fund", "Mutual fund", "REIT", "Fixed deposit", "Other"];
 const CSV_HEADERS = ["name", "ticker", "country", "sector", "asset_type", "currency", "quantity", "cost_per_unit", "current_price", "fx_to_base", "price_as_of", "fx_as_of"];
+const VALUATION_STATUS_LABELS = {
+  "no-saved-valuation": "No saved valuation",
+  "model-not-suitable": "Model fit not accepted",
+  "missing-quote": "Quote missing",
+  "stale-inputs": "Stale valuation inputs",
+  "currency-mismatch": "Currency mismatch",
+  "portfolio-price-mismatch": "Portfolio quote mismatch",
+  "invalid-estimate": "Invalid scenario estimate",
+  ready: "Quality checks passed",
+} as const;
 
 const blankForm = {
   name: "",
@@ -123,6 +134,8 @@ export default function MarketsPortfolioPage() {
   const [ready, setReady] = useState(false);
   const [storageWarning, setStorageWarning] = useState<string | null>(null);
   const [storageLoadFailed, setStorageLoadFailed] = useState(false);
+  const [savedValuations, setSavedValuations] = useState<SavedValuationSnapshot[]>([]);
+  const [valuationStorageWarning, setValuationStorageWarning] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -149,6 +162,20 @@ export default function MarketsPortfolioPage() {
   }, []);
 
   useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(VALUATION_STORAGE_KEY);
+      if (!raw) return;
+      const parsed: unknown = JSON.parse(raw);
+      if (!Array.isArray(parsed) || !parsed.every(isSavedValuation)) {
+        throw new Error("Saved valuation reviews could not be validated. The stored data has been left unchanged.");
+      }
+      setSavedValuations(parsed);
+    } catch (loadError) {
+      setValuationStorageWarning(loadError instanceof Error ? loadError.message : "Saved valuation reviews could not be read from this browser.");
+    }
+  }, []);
+
+  useEffect(() => {
     if (!ready || storageLoadFailed) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, baseCurrency, holdings } satisfies PortfolioState));
@@ -164,6 +191,8 @@ export default function MarketsPortfolioPage() {
   const sectorExposure = useMemo(() => calculateExposureRows(holdings, "sector"), [holdings]);
   const assetTypeExposure = useMemo(() => calculateExposureRows(holdings, "assetType"), [holdings]);
   const currencyExposure = useMemo(() => calculateExposureRows(holdings, "currency"), [holdings]);
+  const valuationReviews = useMemo(() => calculatePortfolioValuationReviews(holdings, savedValuations, baseCurrency), [holdings, savedValuations, baseCurrency]);
+  const valuationSummary = useMemo(() => calculatePortfolioValuationSummary(valuationReviews), [valuationReviews]);
   const largestPosition = useMemo(() => {
     const values = pricedHoldings.map((holding) => ({
       name: holding.name,
@@ -585,6 +614,57 @@ export default function MarketsPortfolioPage() {
         <div className="grid gap-3 md:grid-cols-2">
           {portfolioInsights.map((insight) => <article key={insight.title} className="rounded-xl border hairline p-4"><p className="text-sm font-medium">{insight.title}</p><p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">{insight.detail}</p></article>)}
         </div>
+      </section>
+
+      <section className="mt-8 panel p-5 sm:p-6" aria-labelledby="portfolio-valuations-title">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="eyebrow">Portfolio valuation review</p>
+            <h2 id="portfolio-valuations-title" className="h3 mt-2 text-xl">Saved model estimates versus your holdings</h2>
+          </div>
+          <Link href="/app/markets/valuation" className="text-sm underline-offset-4 hover:underline">Open valuation workspace →</Link>
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
+          Save a DCF or dividend-discount result from the Valuation workspace to review it here. A comparison is counted only when the model profile is suitable, source dates are fresh, currency matches, and the portfolio price/date matches the saved quote. The value-weighted gap also requires a fresh FX rate. These are manual-input scenario comparisons, not expected returns.
+        </p>
+        {valuationStorageWarning ? <div className="mt-3"><ErrorNote message={valuationStorageWarning} /></div> : null}
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <Stat label="Matched valuation reviews" value={`${valuationSummary.matchedCount} / ${holdings.length}`} note="Source, model and quote checks passed" />
+          <Stat label="Value-weighted base-case gap" value={valuationSummary.weightedGapPct == null ? "Not available" : `${valuationSummary.weightedGapPct > 0 ? "+" : ""}${valuationSummary.weightedGapPct.toFixed(1)}%`} note={`${valuationSummary.weightedCount} holding(s) with fresh FX; not expected return`} />
+          <Stat label="Potentially overvalued" value={valuationSummary.potentiallyOvervaluedCount} note="All scenarios below quote; base gap exceeds 15%" />
+          <Stat label="Potentially undervalued" value={valuationSummary.potentiallyUndervaluedCount} note="All scenarios above quote; base gap exceeds 15%" />
+        </div>
+        {holdings.length === 0 ? (
+          <p className="mt-4 rounded-lg border hairline p-4 text-sm text-[color:var(--muted)]">Add a holding to see whether a saved valuation matches your portfolio inputs.</p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {valuationReviews.map((review) => (
+              <article key={review.holdingId} className="rounded-xl border hairline p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-medium">{review.company}</h3>
+                    {review.ticker ? <p className="mt-1 text-xs text-[color:var(--dim)]">{review.ticker}</p> : null}
+                  </div>
+                  <span className="rounded-full border hairline px-2.5 py-1 text-xs">{VALUATION_STATUS_LABELS[review.status]}</span>
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">{review.detail}</p>
+                {review.status === "ready" ? (
+                  <div className="mt-3 rounded-lg border hairline p-3">
+                    <p className="text-sm font-medium">{review.conclusion}</p>
+                    <p className="mt-2 text-xs text-[color:var(--muted)]">
+                      Scenario range: {amount(review.scenarioLow, review.currency)} – {amount(review.scenarioHigh, review.currency)} · Base estimate: {amount(review.basePerShare, review.currency)} · Saved quote: {amount(review.quotePrice, review.currency)} · Gap: {review.gapPct != null ? `${review.gapPct > 0 ? "+" : ""}${review.gapPct.toFixed(1)}%` : "Not available"}
+                    </p>
+                    <p className="mt-2 flex flex-wrap gap-3 text-xs">
+                      {review.statementSourceUrl ? <a href={review.statementSourceUrl} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">Statement source ↗</a> : null}
+                      {review.quoteSourceUrl ? <a href={review.quoteSourceUrl} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">Quote source ↗</a> : null}
+                    </p>
+                  </div>
+                ) : null}
+                <Link href={`/app/markets/valuation?company=${encodeURIComponent(review.company)}${review.ticker ? `&ticker=${encodeURIComponent(review.ticker)}` : ""}`} className="mt-3 inline-flex text-sm underline-offset-4 hover:underline">Review or update valuation →</Link>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="mt-8" aria-labelledby="holdings-title">
