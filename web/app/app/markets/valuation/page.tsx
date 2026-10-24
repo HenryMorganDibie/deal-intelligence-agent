@@ -173,14 +173,14 @@ export default function MarketsValuationPage() {
         cash: value("cash"),
         debt: value("total_debt"),
         shares: inferredShares,
-        price: hasDatedQuote ? String(profile.market!.price) : "",
+        price: hasDatedQuote ? String(profile.market!.price) : "",\n        priceDate: hasDatedQuote ? String(profile.market?.as_at).slice(0, 10) : "",\n        priceSource: "",
       }));
       setHasCalculated(false);
       setProfileMessage([
         `Financial fields loaded from ${financials.source}.`,
         financials.verified ? "The profile reports its available accounting checks as passed." : "The profile does not report all available accounting checks as passed.",
         inferredShares ? "Shares outstanding is inferred from market capitalisation divided by price, not independently verified." : "Shares outstanding was not inferred because market price, market capitalisation or currency alignment was unavailable.",
-        hasDatedQuote ? `A price dated ${profile.market?.as_at} was prefilled from ${profile.market?.source || "the company profile"}.` : "Current price was left blank because the profile did not provide a dated quote in the statement currency.",
+        hasDatedQuote ? `A price dated ${String(profile.market?.as_at).slice(0, 10)} was prefilled from ${profile.market?.source || "the company profile"}; add its source URL before calculating a price comparison.` : "Current price was left blank because the profile did not provide a dated quote in the statement currency.",
         financials.source_url ? "" : "No direct financial statement URL was returned; add a source URL before calculating.",
         "Review every field, especially units, debt, share count and the source period, before calculating.",
       ].filter(Boolean).join(" "));
@@ -217,7 +217,7 @@ export default function MarketsValuationPage() {
     parsed.discountRate != null && parsed.discountRate > 0 && parsed.discountRate <= 60 &&
     parsed.terminalGrowth != null && parsed.terminalGrowth >= -5 && parsed.terminalGrowth <= 8 &&
     parsed.discountRate > parsed.terminalGrowth &&
-    (parsed.price == null || parsed.price > 0) && form.company.trim().length > 0 &&
+    (parsed.price == null || (parsed.price > 0 && form.priceSource.trim().length > 0 && form.priceDate.trim().length > 0)) && form.company.trim().length > 0 &&
     form.source.trim().length > 0 && form.period.trim().length > 0;
 
   function calculate(event: FormEvent<HTMLFormElement>) {
@@ -225,7 +225,7 @@ export default function MarketsValuationPage() {
     setError(null);
     const growths = [parsed.bearGrowth, parsed.baseGrowth, parsed.bullGrowth];
     if (!validInputs || growths.some((value) => value == null || value <= -100 || value > 100)) {
-      setError("Check required inputs: company, source URL, reporting period, positive free cash flow and shares outstanding, non-negative cash/debt, ordered bear ≤ base ≤ bull growth assumptions, and a discount rate above terminal growth.");
+      setError("Check required inputs: company, financial source URL, reporting period, positive free cash flow and shares outstanding, non-negative cash/debt, ordered bear ≤ base ≤ bull growth assumptions, and a discount rate above terminal growth. If you enter a market price, also provide its source URL and date.");
       setHasCalculated(false);
       return;
     }
@@ -315,6 +315,14 @@ export default function MarketsValuationPage() {
                 <NumericField id="valuation-cash" label="Cash and cash equivalents *" value={form.cash} onChange={set("cash")} />
                 <NumericField id="valuation-debt" label="Interest-bearing debt *" value={form.debt} onChange={set("debt")} />
                 <NumericField id="valuation-price" label="Current price per share (optional)" value={form.price} onChange={set("price")} placeholder="Use a dated, sourced quote" />
+                <div>
+                  <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-date">Quote date (required if price entered)</label>
+                  <input id="valuation-price-date" className="field" type="date" value={form.priceDate} onChange={set("priceDate")} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-source">Quote source URL (required if price entered)</label>
+                  <input id="valuation-price-source" className="field" type="url" value={form.priceSource} onChange={set("priceSource")} placeholder="https://... exchange or market-data source" />
+                </div>
               </div>
             </div>
 
