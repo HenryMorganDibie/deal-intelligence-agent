@@ -14,6 +14,8 @@ type Instrument = { id: string; portfolio_id: string; name: string; ticker: stri
 type Transaction = { id: string; portfolio_id: string; instrument_id: string | null; transaction_date: string; transaction_type: string; quantity: number; unit_price: number; cash_amount: number; fees: number; currency: string; fx_to_base: number | null; notes: string | null };
 type PortfolioData = { portfolio: Portfolio; instruments: Instrument[]; transactions: Transaction[] };
 type CloudValuation = { id: string; valuation_date: string; base_currency: string; model: string; snapshot: Record<string, unknown>; notes: string | null; created_at: string };
+type ImportedTransaction = { transaction_date: string; transaction_type: string; instrument_id: string | null; quantity: number; unit_price: number; cash_amount: number; fees: number; currency: string; fx_to_base: number | null; external_id: string | null; notes: string | null };
+type ImportPreview = { filename: string; key: string; rows: ImportedTransaction[]; errors: string[]; sourceRows: number };
 
 const currencies = ["USD", "NGN", "KES", "GHS", "ZAR", "EGP", "XOF", "XAF", "GBP", "EUR"];
 const today = new Date().toISOString().slice(0, 10);
@@ -93,6 +95,10 @@ export default function CloudPortfolioPage() {
   const [selectedId, setSelectedId] = useState("");
   const [data, setData] = useState<PortfolioData | null>(null);
   const [valuations, setValuations] = useState<CloudValuation[]>([]);
+  const [importPreview, setImportPreview] = useState<ImportPreview | null>(null);
+  const [importBusy, setImportBusy] = useState(false);
+  const [migrationBusy, setMigrationBusy] = useState(false);
+  const [migrationComplete, setMigrationComplete] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -252,6 +258,69 @@ export default function CloudPortfolioPage() {
       setMessage("Valuation snapshot saved to cloud history.");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save valuation snapshot."); }
   }
+  async function handleTransactionFile(file: File | null) {
+    setImportPreview(null); setError(""); setMessage("");
+    if (!file) return;
+    try {
+      if (file.size > 5 * 1024 * 1024) throw new Error("Import files must be 5 MB or smaller.");
+      if (!data) throw new Error("Select a portfolio before importing transactions.");
+      const rows = /\.xlsx$/i.test(file.name) ? parsePortfolioWorkbook(await file.arrayBuffer()) : parseCsv(await file.text());
+      if (rows.length < 2) throw new Error("The file must include a header row and at least one transaction.");
+      if (rows.length > 5001) throw new Error("The transaction import is limited to 5,000 data rows.");
+      const headers = rows[0].map((h) => h.trim().toLowerCase().replace(/[ -]+/g, "_"));
+      const required = ["transaction_date", "transaction_type", "currency"];
+      const missing = required.filter((h) => !headers.includes(h));
+      if (missing.length) throw new Error("Missing required columns: " + missing.join(", "));
+      const cell = (row: string[], name: string) => { const i = headers.indexOf(name); return i < 0 ? "" : (row[i] ?? "").trim(); };
+      const imported: ImportedTransaction[] = [];
+      const errors: string[] = [];
+      const types = ["BUY","SELL","DIVIDEND","DEPOSIT","WITHDRAWAL","FEE","SPLIT","TRANSFER_IN","TRANSFER_OUT","ADJUSTMENT"];
+      const instrumentTypes = ["BUY","SELL","SPLIT","TRANSFER_IN","TRANSFER_OUT","ADJUSTMENT"];
+      const externalIds = new Set<string>();
+      for (let i = 1; i < rows.length; i += 1) {
+        const row = rows[i];
+        const date = cell(row, "transaction_date");
+        const type = cell(row, "transaction_type").toUpperCase();
+        const currency = cell(row, "currency").toUpperCase();
+        const quantity = cell(row, "quantity") === "" ? 0 : Number(cell(row, "quantity"));
+        const unitPrice = cell(row, "unit_price") === "" ? 0 : Number(cell(row, "unit_price"));
+        const cashAmount = cell(row, "cash_amount") === "" ? 0 : Number(cell(row, "cash_amount"));
+        const fees = cell(row, "fees") === "" ? 0 : Number(cell(row, "fees"));
+        const fxText = cell(row, "fx_to_base"); const fx = fxText === "" ? null : Number(fxText);
+        const externalId = cell(row, "external_id") || null;
+        let instrumentId = cell(row, "instrument_id");
+        const ticker = cell(row, "ticker").toUpperCase();
+        const instrumentName = cell(row, "instrument_name").toLowerCase();
+        if (!instrumentId && (ticker || instrumentName)) {
+          const matches = data.instruments.filter((item) => ticker ? (item.ticker || "").toUpperCase() === ticker : item.name.toLowerCase() === instrumentName);
+          if (matches.length === 1) instrumentId = matches[0].id;
+          else { errors.push("Row " + (i + 1) + ": instrument name/ticker is missing or ambiguous."); continue; }
+        }
+        if (instrumentId && !data.instruments.some((item) => item.id === instrumentId)) { errors.push("Row " + (i + 1) + ": instrument_id is not in the selected portfolio."); continue; }
+        const dateParsed = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(date + "T00:00:00Z") : null;
+        if (!dateParsed || !Number.isFinite(dateParsed.getTime()) || dateParsed.toISOString().slice(0,10) !== date || date > today || !types.includes(type) || !/^[A-Z]{3}$/.test(currency) || ![quantity,unitPrice,cashAmount,fees].every(Number.isFinite) || quantity < 0 || unitPrice < 0 || fees < 0 || (fx !== null && (!Number.isFinite(fx) || fx <= 0))) { errors.push("Row " + (i + 1) + ": invalid date, type, currency or numeric value."); continue; }
+        if (instrumentTypes.includes(type) && (!instrumentId || quantity <= 0)) { errors.push("Row " + (i + 1) + ": " + type + " requires an instrument and positive quantity."); continue; }
+        const instrumentRow = instrumentId ? data.instruments.find((item) => item.id === instrumentId) : null;
+        if (instrumentRow && instrumentRow.currency !== currency) { errors.push("Row " + (i + 1) + ": currency does not match the instrument."); continue; }
+        if (externalId && externalIds.has(externalId)) { errors.push("Row " + (i + 1) + ": duplicate external_id in this file."); continue; }
+        if (externalId) externalIds.add(externalId);
+        imported.push({ transaction_date: date, transaction_type: type, instrument_id: instrumentId || null, quantity, unit_price: unitPrice, cash_amount: cashAmount, fees, currency, fx_to_base: fx, external_id: externalId, notes: cell(row, "notes") || null });
+      }
+      setImportPreview({ filename: file.name, key: crypto.randomUUID(), rows: imported, errors, sourceRows: rows.length - 1 });
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not read the transaction file."); }
+  }
+
+  async function commitTransactionImport() {
+    if (!importPreview || !selectedId || importPreview.errors.length || !importPreview.rows.length) return;
+    setImportBusy(true); setError(""); setMessage("");
+    try {
+      const result = await postJson<{ total_rows: number; accepted_rows: number; replayed: boolean }>({ action: "import-transactions", portfolioId: selectedId, importKey: importPreview.key, filename: importPreview.filename, rows: importPreview.rows });
+      const [payload, valuationRows] = await Promise.all([readJson<PortfolioData>("/api/portfolio?resource=portfolio-data&portfolioId=" + encodeURIComponent(selectedId)), readJson<CloudValuation[]>("/api/portfolio?resource=valuations&portfolioId=" + encodeURIComponent(selectedId))]);
+      setData(payload); setValuations(valuationRows); setImportPreview(null);
+      setMessage("Transaction import " + (result.replayed ? "was already committed" : "completed") + ": " + result.accepted_rows + " of " + result.total_rows + " rows accepted atomically.");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not import transactions."); }
+    finally { setImportBusy(false); }
+  }
   async function signOut() {
     await fetch("/api/portfolio/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "sign-out" }) });
     window.location.href = "/account";
@@ -377,6 +446,12 @@ export default function CloudPortfolioPage() {
                 <p className="mt-2 text-sm text-[color:var(--muted)]">Save a dated snapshot of ledger-derived positions and manually entered prices/FX. This is not a return calculation or live valuation.</p>
                 <button className="btn btn-secondary mt-3" type="button" disabled={!positions.length || loadingData} onClick={() => { void handleSaveValuation(); }}>Save current snapshot</button>
                 {valuations.length ? <ol className="mt-4 space-y-2">{valuations.slice(0,10).map((item) => <li key={item.id} className="rounded-lg border border-[color:var(--border)] p-3 text-sm"><div className="flex flex-wrap justify-between gap-2"><strong>{item.valuation_date} · {item.model}</strong><span>{item.base_currency}</span></div><p className="mt-1 text-xs text-[color:var(--muted)]">{item.notes || "Saved portfolio snapshot"} · {new Date(item.created_at).toLocaleString()}</p></li>)}</ol> : <p className="mt-3 text-sm text-[color:var(--muted)]">No saved snapshots yet.</p>}
+              </div>
+              <div className="rounded-xl border border-[color:var(--border)] p-5">
+                <h3 className="text-lg font-semibold">Import transaction ledger</h3>
+                <p className="mt-2 text-sm text-[color:var(--muted)]">Upload CSV or XLSX with transaction_date, transaction_type, currency, quantity, unit_price, cash_amount, fees, fx_to_base, external_id, notes and instrument_id, ticker or instrument_name. Trade rows must resolve to an instrument in this portfolio. Every row is checked before the server commits the batch atomically.</p>
+                <input className="mt-4 block w-full text-sm" type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" aria-label="Choose transaction CSV or Excel file" onChange={(event) => { void handleTransactionFile(event.target.files?.[0] || null); event.currentTarget.value = ""; }} />
+                {importPreview ? <div className="mt-4 space-y-3"><p className="text-sm">{importPreview.filename}: {importPreview.rows.length} valid row(s) of {importPreview.sourceRows}; {importPreview.errors.length} error(s).</p>{importPreview.errors.length ? <ul className="max-h-40 list-disc space-y-1 overflow-auto pl-5 text-xs text-red-400">{importPreview.errors.slice(0,50).map((item,index) => <li key={index}>{item}</li>)}{importPreview.errors.length > 50 ? <li>Showing first 50 errors.</li> : null}</ul> : <p className="text-xs text-[color:var(--muted)]">All rows passed client validation. The server validates again before writing.</p>}<button className="btn btn-primary" type="button" disabled={importBusy || importPreview.errors.length > 0 || !importPreview.rows.length} onClick={() => { void commitTransactionImport(); }}>{importBusy ? "Importing…" : "Validate and commit all rows"}</button></div> : null}
               </div>
               <div className="rounded-xl border border-[color:var(--border)] p-5">
                 <h3 className="text-lg font-semibold">Transaction ledger</h3>
