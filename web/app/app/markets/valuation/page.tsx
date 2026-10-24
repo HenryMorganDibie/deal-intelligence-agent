@@ -137,7 +137,7 @@ function ScenarioCard({ scenario, currency, price }: { scenario: Scenario; curre
       <p className="eyebrow">{scenario.name} case</p>
       <p className="mt-2 text-xl font-semibold">{money(scenario.perShare, currency)}</p>
       <p className="mt-1 text-xs text-[color:var(--muted)]">Implied value per share</p>
-      <p className="mt-2 text-xs text-[color:var(--muted)]">Five-year FCF growth assumption: {scenario.growth.toFixed(1)}% annually</p>
+      <p className="mt-2 text-xs text-[color:var(--muted)]">Five-year {scenario.growthLabel} assumption: {scenario.growth.toFixed(1)}% annually</p>
       <div className="mt-4 flex items-center justify-between gap-3 border-t hairline pt-3 text-xs">
         <span className="text-[color:var(--muted)]">{scenario.enterpriseValue == null ? "Enterprise value" : "Implied enterprise value"}</span>
         <span className="kbd">{scenario.enterpriseValue == null ? "Not applicable to DDM" : money(scenario.enterpriseValue, currency)}</span>
@@ -292,7 +292,7 @@ export default function MarketsValuationPage() {
     parsed.terminalGrowth != null && parsed.terminalGrowth >= -5 && parsed.terminalGrowth <= 8 &&
     parsed.discountRate > parsed.terminalGrowth;
   const sourceInputsValid = form.company.trim().length > 0 && validHttpUrl(form.source) && form.period.trim().length > 0 &&
-    (parsed.price == null || (parsed.price > 0 && validHttpUrl(form.priceSource) && /^\\d{4}-\\d{2}-\\d{2}$/.test(form.priceDate)));
+    (parsed.price == null || (parsed.price > 0 && validHttpUrl(form.priceSource) && /^\d{4}-\d{2}-\d{2}$/.test(form.priceDate)));
   const sectorRequiresDdm = /bank|financial services|financial institution|insurance|insurer|microfinance|lender|credit provider/i.test(detectedSector);
   const modelFitAllowsDcf = form.modelFit === "standard-operating-company";
   const modelFitAllowsDdm = form.modelFit === "financial-institution" || form.modelFit === "mature-dividend-payer";
