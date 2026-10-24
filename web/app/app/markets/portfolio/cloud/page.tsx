@@ -472,6 +472,11 @@ export default function CloudPortfolioPage() {
                 <button className="btn btn-secondary mt-3" type="button" disabled={!positions.length || loadingData} onClick={() => { void handleSaveValuation(); }}>Save current snapshot</button>
                 {valuations.length ? <ol className="mt-4 space-y-2">{valuations.slice(0,10).map((item) => <li key={item.id} className="rounded-lg border border-[color:var(--border)] p-3 text-sm"><div className="flex flex-wrap justify-between gap-2"><strong>{item.valuation_date} · {item.model}</strong><span>{item.base_currency}</span></div><p className="mt-1 text-xs text-[color:var(--muted)]">{item.notes || "Saved portfolio snapshot"} · {new Date(item.created_at).toLocaleString()}</p></li>)}</ol> : <p className="mt-3 text-sm text-[color:var(--muted)]">No saved snapshots yet.</p>}
               </div>
+              <section className="rounded-xl border border-[color:var(--border)] p-5">
+                <h3 className="text-lg font-semibold">Migrate existing browser portfolio</h3>
+                <p className="mt-2 text-sm text-[color:var(--muted)]">This copies local holdings into the selected cloud portfolio as opening adjustments and saves local valuation reviews as historical snapshots. The migration is atomic and retry-safe. The original browser data is not deleted. Reporting currencies must match.</p>
+                <button className="btn btn-secondary mt-3" type="button" disabled={migrationBusy || migrationComplete} onClick={() => { void handleMigrateLocalPortfolio(); }}>{migrationBusy ? "Migrating…" : migrationComplete ? "Migration completed in this session" : "Migrate local data to this portfolio"}</button>
+              </section>
               <div className="rounded-xl border border-[color:var(--border)] p-5">
                 <h3 className="text-lg font-semibold">Import transaction ledger</h3>
                 <p className="mt-2 text-sm text-[color:var(--muted)]">Upload CSV or XLSX with transaction_date, transaction_type, currency, quantity, unit_price, cash_amount, fees, fx_to_base, external_id, notes and instrument_id, ticker or instrument_name. Trade rows must resolve to an instrument in this portfolio. Every row is checked before the server commits the batch atomically.</p>
