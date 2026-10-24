@@ -137,8 +137,11 @@ export default function CloudPortfolioPage() {
     if (!selectedId || !user) { setData(null); return; }
     let active = true;
     setLoadingData(true);
-    readJson<PortfolioData>("/api/portfolio?resource=portfolio-data&portfolioId=" + encodeURIComponent(selectedId))
-      .then((payload) => { if (active) setData(payload); })
+    Promise.all([
+      readJson<PortfolioData>("/api/portfolio?resource=portfolio-data&portfolioId=" + encodeURIComponent(selectedId)),
+      readJson<CloudValuation[]>("/api/portfolio?resource=valuations&portfolioId=" + encodeURIComponent(selectedId)),
+    ])
+      .then(([payload, valuationRows]) => { if (active) { setData(payload); setValuations(valuationRows); } })
       .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : "Could not load portfolio."); })
       .finally(() => { if (active) setLoadingData(false); });
     return () => { active = false; };
