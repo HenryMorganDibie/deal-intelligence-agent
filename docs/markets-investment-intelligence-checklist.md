@@ -97,9 +97,9 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Review data flow: portfolio holdings and valuation snapshots stay in browser-local storage and are not sent to the event API; no new secrets, dependencies or database schema changes were introduced.
 - [x] Review dependency, schema and migration changes; the Excel feature adds the maintained, security-hardened `@stackline/xlsx` package, with no backend schema or environment-variable changes.
 - [x] Update this checklist with evidence for each completed automated check; manual and preview-only checks remain open.
-- [x] Update the draft PR with current automated test results and explicit preview limitation. Screenshots/preview URL remain unavailable until Vercel permits a fresh deployment.
-- [x] Verify a READY Vercel preview returns HTTP 200 for `/app/markets`, `/app/markets/valuation`, `/app/markets/portfolio`, `/app/markets/compare` and `/app/markets/monitoring`; API preview `/api/pulse` and `/api/coverage` also return HTTP 200. The preview predates the latest strict CSV-parser commits, so it is not treated as a current-head deployment.
-- [ ] Manually exercise interactive flows in a browser: company search, local persistence, strict CSV and Excel import/export and malformed-file/formula rejection, currency conversion, clear/delete, valuation save/review and monitoring empty/error states. This remains unverified because a fresh current-head preview is blocked by Vercel's Free-plan deployment rate limit.
+- [x] Update the draft PR with current automated test results, the READY current-head preview URL and the remaining manual-interaction limitation.
+- [x] Verify the current-head READY Vercel app preview returns HTTP 200 for `/app/markets`, `/app/markets/valuation`, `/app/markets/portfolio`, `/app/markets/compare` and `/app/markets/monitoring` on commit `551cfef445d7b753610de2f82cbad8728edd5d70`. No backend code changed; the API project's build was correctly skipped by its ignored-build-step rule.
+- [ ] Manually exercise interactive flows in a browser: local persistence, strict CSV and Excel import/export and malformed-file/formula rejection, currency conversion, clear/delete, valuation save/review, keyboard navigation and monitoring empty/error states. The current-head preview is now READY and all five Markets routes return HTTP 200, but route smoke tests do not verify interactive behavior; this manual acceptance remains open.
 - [ ] Obtain explicit approval before merging into `main`.
 - [ ] After approval and merge, verify production status and run a post-deploy smoke check.
 
@@ -133,13 +133,13 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 ## Current verification constraints
 
-- Vercel reported the Free-plan `api-deployments-free-per-day` limit with a 24-hour retry window. Current Vercel check failures are deployment-rate-limit failures, not application build failures. The READY preview predates the latest strict CSV-parser and download-lifecycle changes; the latest source head has passed GitHub quality gates but has not been browser-verified.
-- Full Web quality gates passed on the latest Markets overview correction head `506dfb71d348ec26fad1edf784e3900e63ba6b44` in run `40134574134`: Markets tests, ESLint, TypeScript typecheck and production build all succeeded. The earlier feature-wide run `40110920728` also passed the Markets CSV and Excel regressions.
-- A READY preview at `https://deal-intelligence-3osq8c78t-henry-dibie-s-projects.vercel.app` returned HTTP 200 for all five Markets routes after Compare and Monitoring were added. Its source predates the latest strict CSV-parser commits. New Vercel deployments are rate-limited for 24 hours on the Free plan; a current-head preview is still required before release.
+- The current-head app preview is READY at `https://deal-intelligence-65byuvhkv-henry-dibie-s-projects.vercel.app`. The five Markets routes return HTTP 200. The app preview is a real current-head deployment; interactive keyboard/accessibility, form and persistence behavior still requires manual browser acceptance.
+- Full Web quality gates passed on the latest code head `551cfef445d7b753610de2f82cbad8728edd5d70` in run `40136786937`: Markets tests, ESLint, TypeScript typecheck and production build all succeeded. The earlier feature-wide run `40110920728` also passed the Markets CSV and Excel regressions.
+- Current-head route smoke checks returned HTTP 200 for `/app/markets`, `/app/markets/valuation`, `/app/markets/portfolio`, `/app/markets/compare` and `/app/markets/monitoring`. The API code was unchanged; the API deployment was skipped by Vercel's ignored-build-step rule.
 - Production `main` remains untouched by this correction. The original Markets feature PR #13 has already been merged; the targeted follow-up correction is isolated in draft PR #17 and must not be merged until browser acceptance and explicit approval.
 
 
-| 2026-10-24 | Markets overview correction CI | GitHub Actions run `40134574134` passed on head `506dfb71d348ec26fad1edf784e3900e63ba6b44`: dependency install, Markets unit tests, ESLint, TypeScript typecheck and production build all succeeded. Vercel app/API checks failed only at the plan's build-rate-limit gate; isolated sandbox creation was also blocked by the Hobby snapshot-storage quota. | Code-level quality gates green; running-preview browser acceptance still required before merge |
+| 2026-10-24 | Markets overview correction CI | GitHub Actions run `40134574134` passed on head `506dfb71d348ec26fad1edf784e3900e63ba6b44`: dependency install, Markets unit tests, ESLint, TypeScript typecheck and production build all succeeded. | Code-level quality gates green; preview acceptance followed on the current head |
 
 ## Follow-up verification log
 
@@ -154,3 +154,6 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 
 | 2026-10-24 | Current-head Excel regression and quality gates | GitHub Actions run `40110920728` passed on head `fb51dce79ff0b6d03ec093f8509655b9504c1b45`: Markets tests, ESLint, TypeScript typecheck and production build succeeded. The earlier invalid-workbook test failure was fixed by checking the ZIP signature before parsing. | Automated gates green; interactive browser checks and exact-current-head preview verification remain release gates |
+
+
+| 2026-10-24 | Final Markets overview polish and current-head verification | Removed repeated navigation links and the duplicate “Compare companies” link, leaving a focused Compare opportunities and Monitoring section. GitHub Actions run `40136786937` passed Markets tests, ESLint, TypeScript typecheck and production build on `551cfef445d7b753610de2f82cbad8728edd5d70`. Current-head Vercel app preview is READY; all five Markets routes return HTTP 200. | Code and route smoke checks passed; manual interactive browser acceptance and explicit approval before merge remain open |
