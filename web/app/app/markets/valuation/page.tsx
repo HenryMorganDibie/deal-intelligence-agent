@@ -336,7 +336,7 @@ export default function MarketsValuationPage() {
         existing = parsedStored;
       }
       const next = existing.filter((item) => {
-        const sameCountry = !snapshot.country || !item.country || snapshot.country.trim().toLowerCase() === item.country.trim().toLowerCase();
+        const sameCountry = Boolean(snapshot.country && item.country && snapshot.country.trim().toLowerCase() === item.country.trim().toLowerCase());
         if (snapshot.ticker && item.ticker) return snapshot.ticker !== item.ticker.trim().toUpperCase() || !sameCountry;
         return snapshot.company.trim().toLowerCase() !== item.company.trim().toLowerCase() || !sameCountry;
       });
