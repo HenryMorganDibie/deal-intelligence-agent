@@ -84,8 +84,8 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Add one-time hashed organization invite codes with seven-day expiry and atomic acceptance; invited users join through their own signed-in account.
 - [x] Add a separate cloud workspace for manual instrument and transaction entry, with positions derived from ledger rows. Keep the original localStorage portfolio separate and never upload its contents silently.
 - [ ] Validate migration SQL against a disposable/local database and run Supabase security/performance advisors.
-- [ ] Add automated RLS tests for unrelated users, separate organizations, role boundaries, and cross-tenant ID substitution.
-- [ ] Complete cloud CSV/XLSX staged imports, row-level validation/reconciliation, valuation snapshot persistence and explicit local-data migration.
+- [x] Add pgTAP tests for separate organizations, personal-vs-shared access, invitation acceptance, viewer read/write boundaries, membership administration, and reporting-currency checks. CI execution is still being verified.
+- [x] Add CSV/XLSX transaction import preview and server-side atomic commit, saved cloud valuation snapshots, and explicit idempotent migration of local holdings/reviews. Row-level client errors block commit; server constraints are rechecked before writes.
 - [ ] Verify email confirmation/recovery configuration, session refresh, mobile/keyboard accessibility and browser workflows.
 - [ ] Confirm latest-head preview and API smoke tests after the Vercel build-rate limit resets. Do not merge or deploy without explicit approval.
 

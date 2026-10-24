@@ -35,7 +35,7 @@ Personal portfolio owners can manage their own portfolio. Organization roles do 
 - `portfolio_import_jobs`: import status, row counts, and structured validation errors.
 - `portfolio_audit_events`: append-only actor/action history; database triggers record portfolio, instrument, transaction, valuation, and import-job inserts/updates without copying financial values into audit details.
 
-The database foundation now includes current-price/FX metadata, single-use hashed organization invite codes, a transaction API, and a cloud portfolio workspace UI. Position calculations are derived from recorded transactions, but staged CSV/XLSX cloud imports, automatic reconciliation, localStorage migration, full RLS integration tests, and SQL migration validation remain release gates.
+The database foundation now includes current-price/FX metadata, single-use hashed organization invite codes, atomic CSV/XLSX transaction imports, explicit retry-safe migration of browser-local holdings and valuation reviews, saved cloud valuation snapshots, and organization member/invite administration. Positions are derived from recorded transactions; live market quotes, performance attribution, and asynchronous large-file storage processing remain out of scope.
 
 ## Security controls
 
@@ -54,9 +54,9 @@ The database foundation now includes current-price/FX metadata, single-use hashe
 1. Configure and verify the Supabase Auth email confirmation, recovery, redirect URLs (including the web origin's /auth/callback route), and web-project environment variables.
 2. Add automated RLS integration tests for two unrelated users, two separate organizations, same-organization role differences, personal-vs-shared portfolio boundaries, and attempted cross-tenant ID substitution.
 3. Validate the SQL migrations against a disposable/local database and run Supabase security/performance advisors before applying them to the hosted project.
-4. Implement staged CSV/XLSX cloud imports: validate and preview first, then commit in bounded batches; make retries idempotent and keep rejected rows/errors available to the user.
-5. Provide an explicit, user-controlled import of existing localStorage holdings and valuation snapshots. Never silently upload browser-local financial data.
-6. Add organization member listing and invite revocation, plus explicit handling for archived organizations/portfolios.
+4. Keep the cloud CSV/XLSX transaction importer bounded at 5,000 rows per request; it validates the full file before an atomic commit, rejects duplicate external IDs, and makes retries idempotent.
+5. Keep local-to-cloud migration explicit and preserve the original browser data as a backup. The server checks reporting-currency compatibility and records an idempotency receipt.
+6. Member listing/role changes/removal and invite revocation are implemented through restricted admin RPCs. Verify these workflows in the browser before enabling cloud access.
 7. Test browser interactions, keyboard accessibility, session expiry/refresh, mobile layouts, and regression across existing app areas.
 8. Verify current preview/API deployment tied to the latest source head once Vercel's build-rate limit resets.
 

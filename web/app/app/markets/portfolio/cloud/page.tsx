@@ -103,9 +103,7 @@ export default function CloudPortfolioPage() {
   const [importPreview, setImportPreview] = useState<ImportPreview | null>(null);
   const [importBusy, setImportBusy] = useState(false);
   const [migrationBusy, setMigrationBusy] = useState(false);
-  const [migrationComplete, setMigrationComplete] = useState(false);
-  const [migrationBusy, setMigrationBusy] = useState(false);
-  const [migrationComplete, setMigrationComplete] = useState(false);
+  const [migrationCompleteFor, setMigrationCompleteFor] = useState("");
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -359,7 +357,7 @@ export default function CloudPortfolioPage() {
       if (!migrationKey) { migrationKey = crypto.randomUUID(); window.localStorage.setItem(keyName, migrationKey); }
       const result = await postJson<{ holdings_count: number; valuations_count: number; replayed: boolean }>({ action: "migrate-local-portfolio", portfolioId: selectedId, migrationKey, baseCurrency: local.baseCurrency, holdings: local.holdings, valuations: savedValuations });
       const [portfolioRows, valuationRows] = await Promise.all([readJson<PortfolioData>("/api/portfolio?resource=portfolio-data&portfolioId=" + encodeURIComponent(selectedId)), readJson<CloudValuation[]>("/api/portfolio?resource=valuations&portfolioId=" + encodeURIComponent(selectedId))]);
-      setData(portfolioRows); setValuations(valuationRows); setMigrationComplete(true);
+      setData(portfolioRows); setValuations(valuationRows); setMigrationCompleteFor(selectedId);
       setMessage("Local migration " + (result.replayed ? "was already completed" : "completed") + ": " + result.holdings_count + " holding(s) and " + result.valuations_count + " valuation review(s). The browser-local data remains unchanged as a backup.");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not migrate local portfolio."); }
     finally { setMigrationBusy(false); }
@@ -528,7 +526,7 @@ export default function CloudPortfolioPage() {
               <section className="rounded-xl border border-[color:var(--border)] p-5">
                 <h3 className="text-lg font-semibold">Migrate existing browser portfolio</h3>
                 <p className="mt-2 text-sm text-[color:var(--muted)]">This copies local holdings into the selected cloud portfolio as opening adjustments and saves local valuation reviews as historical snapshots. The migration is atomic and retry-safe. The original browser data is not deleted. Reporting currencies must match.</p>
-                <button className="btn btn-secondary mt-3" type="button" disabled={migrationBusy || migrationComplete} onClick={() => { void handleMigrateLocalPortfolio(); }}>{migrationBusy ? "Migrating…" : migrationComplete ? "Migration completed in this session" : "Migrate local data to this portfolio"}</button>
+                <button className="btn btn-secondary mt-3" type="button" disabled={migrationBusy || migrationCompleteFor === selectedId} onClick={() => { void handleMigrateLocalPortfolio(); }}>{migrationBusy ? "Migrating…" : migrationCompleteFor === selectedId ? "Migration completed in this session" : "Migrate local data to this portfolio"}</button>
               </section>
               <div className="rounded-xl border border-[color:var(--border)] p-5">
                 <h3 className="text-lg font-semibold">Import transaction ledger</h3>
