@@ -116,7 +116,7 @@ test("portfolio valuation review only accepts a fresh, matching quote and suitab
   const summary = calculatePortfolioValuationSummary([review]);
   assert.equal(summary.matchedCount, 1);
   assert.equal(summary.weightedCount, 1);
-  assert.equal(summary.weightedGapPct, 20);
+  assert.ok(summary.weightedGapPct != null && Math.abs(summary.weightedGapPct - 20) < 1e-9);
   assert.equal(summary.potentiallyUndervaluedCount, 1);
 });
 
