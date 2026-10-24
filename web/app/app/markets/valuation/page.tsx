@@ -11,6 +11,7 @@ type ModelFit = "standard-operating-company" | "financial-institution" | "negati
 
 type Inputs = {
   method: "dcf" | "ddm";
+  modelFit: "uncertain" | "standard-operating-company" | "financial-institution" | "mature-dividend-payer" | "negative-or-volatile-fcf" | "early-stage" | "reit-property";
   company: string;
   ticker: string;
   modelFit: ModelFit;
@@ -52,6 +53,7 @@ type CompanyProfile = {
 
 const initial: Inputs = {
   method: "dcf",
+  modelFit: "uncertain",
   company: "",
   ticker: "",
   modelFit: "uncertain",
@@ -220,7 +222,7 @@ export default function MarketsValuationPage() {
       setProfileMessage([
         `Financial fields loaded from ${financials.source}.`,
         sector ? `Company sector reported by the profile: ${sector}.` : "",
-        financialInstitution ? "The sector suggests a bank or financial institution, so the page switched to the dividend discount model. Do not use ordinary-company DCF for banks or insurers." : "",
+        financialInstitution ? "The sector suggests a bank or financial institution, so the page switched to the dividend discount model. Confirm dividend sustainability before calculating; ordinary-company DCF is not suitable for banks or insurers." : "",
         financials.verified ? "The profile reports its available accounting checks as passed." : "The profile does not report all available accounting checks as passed.",
         inferredShares ? "Shares outstanding is inferred from market capitalisation divided by price, not independently verified." : "Shares outstanding was not inferred because a dated price, market capitalisation or currency alignment was unavailable.",
         hasDatedQuote ? `A price dated ${String(profile.market?.as_at).slice(0, 10)} was prefilled from ${profile.market?.source || "the company profile"}; add its source URL before calculating a price comparison.` : "Current price was left blank because the profile did not provide a dated quote in the statement currency.",
@@ -277,7 +279,9 @@ export default function MarketsValuationPage() {
   const sourceInputsValid = form.company.trim().length > 0 && validHttpUrl(form.source) && form.period.trim().length > 0 &&
     (parsed.price == null || (parsed.price > 0 && validHttpUrl(form.priceSource) && /^\\d{4}-\\d{2}-\\d{2}$/.test(form.priceDate)));
   const sectorRequiresDdm = /bank|financial services|financial institution|insurance|insurer|microfinance|lender|credit provider/i.test(detectedSector);
-  const modelChoiceValid = modelFitConfirmed && !(form.method === "dcf" && sectorRequiresDdm);
+  const modelFitAllowsDcf = form.modelFit === "standard-operating-company";
+  const modelFitAllowsDdm = form.modelFit === "financial-institution" || form.modelFit === "mature-dividend-payer";
+  const modelChoiceValid = modelFitConfirmed && (form.method === "dcf" ? modelFitAllowsDcf && !sectorRequiresDdm : modelFitAllowsDdm);
   const modelInputsValid = form.method === "dcf"
     ? parsed.fcf != null && parsed.fcf > 0 && parsed.cash != null && parsed.cash >= 0 && parsed.debt != null && parsed.debt >= 0 && parsed.shares != null && parsed.shares > 0
     : parsed.dividendPerShare != null && parsed.dividendPerShare > 0;
@@ -288,8 +292,8 @@ export default function MarketsValuationPage() {
     setError(null);
     if (!validInputs) {
       setError(form.method === "dcf"
-        ? "Check the source and reporting period, positive FCF and shares, non-negative cash/debt, ordered growth assumptions, discount rate above terminal growth, and model-fit confirmation. If the profile identifies a bank or insurer, use DDM instead of ordinary-company DCF. A market price also needs an HTTP(S) source URL and quote date."
-        : "Check the source and reporting period, positive annual dividend per share, ordered dividend-growth assumptions, discount rate above terminal growth, and confirmation that the dividend is sustainable. A market price also needs an HTTP(S) source URL and quote date.");
+        ? "Check the source and reporting period, positive FCF and shares, non-negative cash/debt, ordered growth assumptions, discount rate above terminal growth, and confirmation that this is a suitable non-financial operating company. If the profile identifies a bank or insurer, use DDM instead of ordinary-company DCF. A market price also needs an HTTP(S) source URL and quote date."
+        : "Check the source and reporting period, positive annual dividend per share, ordered dividend-growth assumptions, discount rate above terminal growth, and confirmation that the company is a mature dividend payer with a sustainable payout. A market price also needs an HTTP(S) source URL and quote date.");
       setHasCalculated(false);
       return;
     }
@@ -306,10 +310,10 @@ export default function MarketsValuationPage() {
   const validScenarioValues = scenarios.map((scenario) => scenario.perShare).filter((value): value is number => value != null && Number.isFinite(value));
   const scenarioLow = validScenarioValues.length ? Math.min(...validScenarioValues) : null;
   const scenarioHigh = validScenarioValues.length ? Math.max(...validScenarioValues) : null;
-  const verdict = hasCalculated && form.modelFit === "standard-operating-company" && base?.perShare != null && price != null
+  const verdict = hasCalculated && base?.perShare != null && price != null
     ? (base.perShare < price * 0.85 ? "Price is more than 15% above the base-case estimate" : base.perShare > price * 1.15 ? "Price is more than 15% below the base-case estimate" : "Price is within 15% of the base-case estimate")
     : null;
-  const rangeConclusion = hasCalculated && form.modelFit === "standard-operating-company" && price != null && validScenarioValues.length === 3
+  const rangeConclusion = hasCalculated && price != null && validScenarioValues.length === 3
     ? validScenarioValues.every((value) => value < price) ? "Entered price is above all three scenario estimates"
       : validScenarioValues.every((value) => value > price) ? "Entered price is below all three scenario estimates"
         : "The conclusion changes across scenarios"
