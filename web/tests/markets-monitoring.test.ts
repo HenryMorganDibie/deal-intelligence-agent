@@ -112,3 +112,9 @@ test("valuation monitoring does not compare different model methods or currencie
   ]);
   assert.equal(alerts.length, 0);
 });
+
+test("portfolio monitoring suppresses duplicate event records with the same identifier", () => {
+  const duplicate = event("duplicate", "Dangote Cement reports quarterly results");
+  const result = matchPortfolioEvents(holdings, [duplicate, { ...duplicate }]);
+  assert.equal(result.length, 1);
+});
