@@ -480,7 +480,7 @@ export default function MarketsPortfolioPage() {
             <p className="eyebrow">Portfolio composition</p>
             <h2 id="exposure-title" className="h3 mt-2 text-lg">Where the priced holdings sit</h2>
             <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
-              Country and sector exposure use manually entered current prices and FX rates. Holdings without either are excluded; these are not live valuations.
+              All four exposure views use manually entered current prices and FX rates. Holdings without either are excluded; these are not live valuations.
             </p>
             <div className="mt-4 grid gap-5 sm:grid-cols-2">
               <ExposureList title="By country" rows={countryExposure} currency={baseCurrency} />
