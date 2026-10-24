@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "
 import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader, Stat } from "../../../../components/app/ui";
+import { calculateExposureRows, calculatePortfolioTotals, convertToBase } from "../../../../lib/markets-portfolio";
 
 type Holding = {
   id: string;
@@ -115,25 +116,6 @@ function amount(value: number | null | undefined, currency: string): string {
   }
 }
 
-function convert(value: number, fxToBase: number | null): number | null {
-  return fxToBase != null && Number.isFinite(fxToBase) && fxToBase > 0 ? value * fxToBase : null;
-}
-
-function exposureRows(holdings: Holding[], key: "country" | "sector" | "assetType" | "currency") {
-  const totals = new Map<string, number>();
-  for (const holding of holdings) {
-    if (holding.currentPrice == null || holding.fxToBase == null) continue;
-    const label = holding[key].trim() || "Unclassified";
-    const value = convert(holding.quantity * holding.currentPrice, holding.fxToBase);
-    if (value != null) totals.set(label, (totals.get(label) ?? 0) + value);
-  }
-  const total = [...totals.values()].reduce((sum, value) => sum + value, 0);
-  return [...totals.entries()]
-    .map(([label, value]) => ({ label, value, share: total > 0 ? value / total : 0 }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 6);
-}
-
 export default function MarketsPortfolioPage() {
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [baseCurrency, setBaseCurrency] = useState("USD");
@@ -176,27 +158,20 @@ export default function MarketsPortfolioPage() {
     }
   }, [baseCurrency, holdings, ready, storageLoadFailed]);
 
-  const pricedHoldings = useMemo(
-    () => holdings.filter((holding) => holding.currentPrice != null && holding.fxToBase != null && holding.fxToBase > 0),
-    [holdings],
-  );
-  const totalCurrentValue = pricedHoldings.reduce((sum, holding) => sum + (convert(holding.quantity * (holding.currentPrice ?? 0), holding.fxToBase) ?? 0), 0);
-  const totalCostOfPriced = pricedHoldings.reduce((sum, holding) => sum + (convert(holding.quantity * holding.costPerUnit, holding.fxToBase) ?? 0), 0);
-  const pricedGain = totalCurrentValue - totalCostOfPriced;
-  const countryExposure = useMemo(() => exposureRows(holdings, "country"), [holdings]);
-  const sectorExposure = useMemo(() => exposureRows(holdings, "sector"), [holdings]);
-  const assetTypeExposure = useMemo(() => exposureRows(holdings, "assetType"), [holdings]);
-  const currencyExposure = useMemo(() => exposureRows(holdings, "currency"), [holdings]);
+  const portfolioTotals = useMemo(() => calculatePortfolioTotals(holdings), [holdings]);
+  const { pricedHoldings, totalCurrentValue, gainLoss: pricedGain, missingPriceCount, missingFxCount } = portfolioTotals;
+  const countryExposure = useMemo(() => calculateExposureRows(holdings, "country"), [holdings]);
+  const sectorExposure = useMemo(() => calculateExposureRows(holdings, "sector"), [holdings]);
+  const assetTypeExposure = useMemo(() => calculateExposureRows(holdings, "assetType"), [holdings]);
+  const currencyExposure = useMemo(() => calculateExposureRows(holdings, "currency"), [holdings]);
   const largestPosition = useMemo(() => {
     const values = pricedHoldings.map((holding) => ({
       name: holding.name,
       ticker: holding.ticker,
-      value: convert(holding.quantity * (holding.currentPrice ?? 0), holding.fxToBase) ?? 0,
+      value: convertToBase(holding.quantity * (holding.currentPrice ?? 0), holding.fxToBase) ?? 0,
     })).sort((a, b) => b.value - a.value);
     return values[0] && totalCurrentValue > 0 ? { ...values[0], share: values[0].value / totalCurrentValue } : null;
   }, [pricedHoldings, totalCurrentValue]);
-  const missingPriceCount = holdings.filter((holding) => holding.currentPrice == null || holding.currentPrice <= 0).length;
-  const missingFxCount = holdings.filter((holding) => holding.fxToBase == null || holding.fxToBase <= 0).length;
   const undatedPrices = holdings.filter((holding) => holding.currentPrice != null && !holding.priceAsOf).length;
   const stalePrices = holdings.filter((holding) => holding.currentPrice != null && Boolean(holding.priceAsOf) && (Date.now() - new Date(`${holding.priceAsOf}T00:00:00Z`).getTime()) > 7 * 86400000).length;
   const undatedFx = holdings.filter((holding) => holding.currency !== baseCurrency && holding.fxToBase != null && !holding.fxAsOf).length;
@@ -639,8 +614,8 @@ export default function MarketsPortfolioPage() {
               </thead>
               <tbody>
                 {holdings.map((holding) => {
-                  const cost = convert(holding.quantity * holding.costPerUnit, holding.fxToBase);
-                  const value = holding.currentPrice == null ? null : convert(holding.quantity * holding.currentPrice, holding.fxToBase);
+                  const cost = convertToBase(holding.quantity * holding.costPerUnit, holding.fxToBase);
+                  const value = holding.currentPrice == null ? null : convertToBase(holding.quantity * holding.currentPrice, holding.fxToBase);
                   const gain = value == null || cost == null ? null : value - cost;
                   return (
                     <tr key={holding.id} className="border-b hairline last:border-0">
