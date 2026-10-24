@@ -24,7 +24,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Record existing functionality versus missing consumer-facing capabilities.
 - [x] Map the actual response contracts used by this feature: `GET /api/pulse` (`Pulse` in `web/lib/pulse.ts`), `GET /api/coverage` (`CoverageRow` and summary in `web/lib/market.ts`), company profile/financial inputs (`/api/companies/profile` through the shared `get` wrapper), and the general `/api/events` feed. Companies and Research remain existing destinations, not duplicated APIs.
 - [x] Verify this feature uses read-only GET requests for pulse, coverage, company profile and event feeds. Portfolio holdings and valuation snapshots remain in browser localStorage; monitoring sends only a general events-feed request, and watchlist handoff sends company names only through sessionStorage.
-- [x] Document supported scope and limitations: coverage explorer reflects returned African country/exchange metadata and unequal coverage tiers; the wider platform has US and African company/outcome coverage. Valuation is limited to suitable operating-company DCF and mature-dividend/financial-institution DDM profiles; REIT/NAV and specialist models are not supported.
+- [x] Document supported scope and limitations: Markets links to the existing Coverage registry rather than duplicating its country/exchange/currency search. The wider platform has US and African company/outcome coverage. Valuation is limited to suitable operating-company DCF and mature-dividend/financial-institution DDM profiles; REIT/NAV and specialist models are not supported.
 
 ## Phase 1 — Safe foundation and Markets information architecture
 
@@ -32,7 +32,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Keep the existing top-level navigation stable; do not add Portfolio as another top-level item.
 - [x] Add internal Markets destinations for Overview, Explore Companies, Valuation, My Portfolio and Investment Monitoring (links into existing Companies and Watchlists for shared capabilities).
 - [x] Reuse existing components and existing `/api/pulse` and `/api/coverage` endpoints; avoid duplicate research or alert systems.
-- [x] Show coverage context, latest available record date, source links for event items, and meaningful empty/error states on the overview.
+- [x] Show latest available record date, source links for event items, and meaningful empty/error states on the overview. Coverage is linked to the existing Coverage registry rather than replicated on Markets.
 - [x] Surface available statement/quote dates and stale-input warnings in valuation/compare, and document that `/api/coverage` does not provide per-source update timestamps. Do not invent source freshness when the API does not return it; per-source freshness in the coverage explorer remains an API-dependent follow-up.
 - [x] Make the implemented overview navigation and company-search actions functional; no decorative or fake data visualisations were added.
 - [x] Build and wire Valuation, My Portfolio and Compare Opportunities destinations; route Investment Monitoring to existing Watchlists rather than duplicate alert infrastructure.
@@ -43,8 +43,8 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 - [x] Present African scope from day one without implying equal data depth across all 54 countries; the overview shows live coverage metadata and explicitly warns that depth differs by country, exchange, instrument and company.
 - [x] Use existing coverage metadata where available; country counts, market counts and tier descriptions come from `/api/coverage`, not hardcoded claims.
-- [x] Show country, exchange, currency, tier, listed price/statement sources and recorded deal/event counts in a searchable coverage explorer; company-level quote/statement freshness is surfaced in Valuation and Compare. Per-source timestamps are unavailable in the current coverage API.
-- [x] Reuse existing `/api/pulse` and `/api/coverage` on the overview and link to existing Companies, Research and Watchlists; source-linked event items use the pulse response.
+- [x] Keep country, exchange, currency, tier, and source-level coverage exploration in the existing Coverage page; Markets provides a link to it instead of duplicating those controls. Company-level quote/statement freshness is surfaced in Valuation and Compare. Per-source timestamps are unavailable in the current coverage API.
+- [x] Reuse existing `/api/pulse` on the overview and link to existing Coverage, Companies, Research and Watchlists; source-linked event items use the pulse response. Markets does not fetch coverage data solely to render a duplicate coverage explorer.
 - [x] Distinguish research readiness using returned country tiers and the actual count of countries with price plus statement metadata; this is country-level availability, not a company-by-company guarantee.
 - [ ] Test empty, stale, unavailable and partially populated markets.
 
