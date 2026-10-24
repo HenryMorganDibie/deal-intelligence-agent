@@ -69,5 +69,8 @@ export function createPortfolioWorkbook(rows: (string | number | null | undefine
   const workbook = XLSX.utils.book_new();
   const worksheet = XLSX.utils.aoa_to_sheet(rows.map((row) => row.map((cell) => cell ?? "")));
   XLSX.utils.book_append_sheet(workbook, worksheet, "Portfolio");
-  return XLSX.write(workbook, { bookType: "xlsx", type: "array", compression: true }) as Uint8Array;
+  const output = XLSX.write(workbook, { bookType: "xlsx", type: "array", compression: true });
+  if (output instanceof ArrayBuffer) return new Uint8Array(output);
+  if (output instanceof Uint8Array) return output;
+  throw new Error("Could not create the Excel workbook.");
 }
