@@ -136,8 +136,8 @@ export default function MarketsValuationPage() {
   const [profileBusy, setProfileBusy] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
-  const set = (key: keyof Inputs) => (event: { target: { value: string } }) => {
-    setForm((current) => ({ ...current, [key]: event.target.value }));
+  const set = <K extends keyof Inputs,>(key: K) => (event: { target: { value: string } }) => {
+    setForm((current) => ({ ...current, [key]: event.target.value as Inputs[K] }));
     setHasCalculated(false);
   };
 
@@ -354,7 +354,7 @@ export default function MarketsValuationPage() {
               <h3 className="text-sm font-medium">Model suitability check</h3>
               <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Choose the closest fit before interpreting the output. The tool cannot independently verify this classification. For financial institutions, early-stage businesses, REITs or unstable cash flows, this DCF may be inappropriate; results stay exploratory and the app will not issue a cheap/expensive verdict.</p>
               <label className="mb-1.5 mt-3 block text-xs text-[color:var(--muted)]" htmlFor="valuation-model-fit">Company / instrument profile</label>
-              <select id="valuation-model-fit" className="field" value={form.modelFit} onChange={set("modelFit") as (event: { target: { value: string } }) => void}>
+              <select id="valuation-model-fit" className="field" value={form.modelFit} onChange={set("modelFit")}>
                 <option value="uncertain">Unsure / not yet assessed</option>
                 <option value="standard-operating-company">Established non-financial operating company with positive, representative FCF</option>
                 <option value="financial-institution">Bank, insurer, lender or other financial institution</option>
