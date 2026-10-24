@@ -18,6 +18,7 @@ type Inputs = {
   method: "dcf" | "ddm";
   company: string;
   ticker: string;
+  country: string;
   modelFit: ModelFit;
   currency: string;
   source: string;
@@ -42,6 +43,8 @@ type Scenario = { name: string; growth: number; growthLabel: string; enterpriseV
 type CompanyProfile = {
   name: string;
   ticker: string | null;
+  country?: { code?: string; name?: string } | string | null;
+  country_name?: string | null;
   identity?: { sector?: string | null; industry?: string | null } | null;
   market?: { price?: number | null; currency?: string | null; market_cap?: number | null; source?: string; as_at?: string | null } | null;
   financials?: {
@@ -59,6 +62,7 @@ const initial: Inputs = {
   method: "dcf",
   company: "",
   ticker: "",
+  country: "",
   modelFit: "uncertain",
   currency: "NGN",
   source: "",
@@ -127,8 +131,9 @@ export default function MarketsValuationPage() {
     const params = new URLSearchParams(window.location.search);
     const company = params.get("company")?.trim() ?? "";
     const ticker = params.get("ticker")?.trim() ?? "";
-    if (company || ticker) {
-      setForm((current) => ({ ...current, company: company || current.company, ticker: ticker || current.ticker }));
+    const country = params.get("country")?.trim() ?? "";
+    if (company || ticker || country) {
+      setForm((current) => ({ ...current, company: company || current.company, ticker: ticker || current.ticker, country: country || current.country }));
     }
   }, []);
   const set = <K extends keyof Inputs,>(key: K) => (event: { target: { value: string } }) => {
@@ -155,6 +160,7 @@ export default function MarketsValuationPage() {
         ticker: form.ticker.trim(),
       });
       const financials = profile.financials;
+      const profileCountry = profile.country_name || (typeof profile.country === "string" ? profile.country : profile.country?.name) || "";
       const sector = String(profile.identity?.sector || profile.identity?.industry || "");
       setDetectedSector(sector);
       const financialInstitution = /bank|financial services|financial institution|insurance|insurer|microfinance|lender|credit provider/i.test(sector);
@@ -329,8 +335,9 @@ export default function MarketsValuationPage() {
         existing = parsedStored;
       }
       const next = existing.filter((item) => {
-        if (snapshot.ticker && item.ticker) return snapshot.ticker !== item.ticker.trim().toUpperCase();
-        return snapshot.company.toLowerCase() !== item.company.trim().toLowerCase();
+        const sameCountry = !snapshot.country || !item.country || snapshot.country.trim().toLowerCase() === item.country.trim().toLowerCase();
+        if (snapshot.ticker && item.ticker) return snapshot.ticker !== item.ticker.trim().toUpperCase() || !sameCountry;
+        return snapshot.company.trim().toLowerCase() !== item.company.trim().toLowerCase() || !sameCountry;
       });
       window.localStorage.setItem(VALUATION_STORAGE_KEY, JSON.stringify([...next, snapshot]));
       setSavedMessage("Saved locally in this browser. Portfolio Intelligence will use it only when the holding has a matching currency, quote date and price, and the saved model passes its quality checks.");
@@ -414,6 +421,10 @@ export default function MarketsValuationPage() {
               <div>
                 <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-ticker">Ticker (optional)</label>
                 <input id="valuation-ticker" className="field" value={form.ticker} onChange={set("ticker")} placeholder="DANGCEM.LG" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-country">Country / market *</label>
+                <input id="valuation-country" className="field" required value={form.country} onChange={set("country")} placeholder="e.g. Nigeria" />
               </div>
               <div>
                 <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-method">Valuation method *</label>
