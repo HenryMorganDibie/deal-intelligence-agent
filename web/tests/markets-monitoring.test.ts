@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import * as assert from "node:assert/strict";
-import { calculateValuationChangeAlerts, matchPortfolioEvents, type MonitoringEvent, type MonitoringHolding } from "../lib/markets-monitoring";
+import { calculateValuationChangeAlerts, fetchMonitoringEventHistory, matchPortfolioEvents, type MonitoringEvent, type MonitoringHolding } from "../lib/markets-monitoring";
 import type { SavedValuationSnapshot } from "../lib/markets-portfolio";
 
 const holdings: MonitoringHolding[] = [
@@ -117,4 +117,44 @@ test("portfolio monitoring suppresses duplicate event records with the same iden
   const duplicate = event("duplicate", "Dangote Cement reports quarterly results");
   const result = matchPortfolioEvents(holdings, [duplicate, { ...duplicate }]);
   assert.equal(result.length, 1);
+});
+
+
+test("monitoring fetches every page when the event feed exceeds one page", async () => {
+  const all = Array.from({ length: 1201 }, (_, index) => event(String(index), `Company event ${index}`));
+  const requests: { offset: number; limit: number }[] = [];
+  const result = await fetchMonitoringEventHistory(async (offset, limit) => {
+    requests.push({ offset, limit });
+    return { count: all.length, events: all.slice(offset, offset + limit) };
+  });
+  assert.equal(result.events.length, 1201);
+  assert.equal(result.totalAvailable, 1201);
+  assert.equal(result.truncated, false);
+  assert.deepEqual(requests, [
+    { offset: 0, limit: 500 },
+    { offset: 500, limit: 500 },
+    { offset: 1000, limit: 500 },
+  ]);
+});
+
+test("monitoring reports a bounded partial result instead of implying complete coverage", async () => {
+  const all = Array.from({ length: 5200 }, (_, index) => event(String(index), `Company event ${index}`));
+  const result = await fetchMonitoringEventHistory(async (offset, limit) => ({
+    count: all.length,
+    events: all.slice(offset, offset + limit),
+  }));
+  assert.equal(result.events.length, 5000);
+  assert.equal(result.totalAvailable, 5200);
+  assert.equal(result.truncated, true);
+});
+
+test("monitoring propagates feed failures and rejects invalid page settings", async () => {
+  await assert.rejects(
+    fetchMonitoringEventHistory(async () => { throw new Error("feed unavailable"); }),
+    /feed unavailable/,
+  );
+  await assert.rejects(
+    fetchMonitoringEventHistory(async () => ({ events: [] }), 501, 1000),
+    /page size/,
+  );
 });
