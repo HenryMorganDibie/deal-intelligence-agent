@@ -8,8 +8,7 @@
     "start": "next start -p 3000",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:markets": "tsc --target ES2020 --module commonjs --moduleResolution node --strict --skipLibCheck --outDir .test-build lib/markets-valuation.ts lib/markets-portfolio.ts tests/markets-valuation.test.ts tests/markets-portfolio.test.ts && node --test .test-build/tests/markets-valuation.test.js .test-build/tests/markets-portfolio.test.js",
-    "test:valuation": "node --test scripts/test-markets-valuation.cjs"
+    "test:markets": "tsc --target ES2020 --module commonjs --moduleResolution node --strict --skipLibCheck --outDir .test-build lib/markets-valuation.ts lib/markets-portfolio.ts tests/markets-valuation.test.ts tests/markets-portfolio.test.ts && node --test .test-build/tests/markets-valuation.test.js .test-build/tests/markets-portfolio.test.js"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
