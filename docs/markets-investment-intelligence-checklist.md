@@ -80,21 +80,21 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 - [x] Reuse existing Watchlists for monitoring by pre-filling a watchlist draft with company names/tickers only; holdings, quantities, prices and FX rates remain in browser storage.
 - [x] Add local portfolio event monitoring that matches exact company-name/ticker tokens against the existing event feed, preserves source links and labels matches as candidates rather than verified material alerts; holdings remain browser-local and are not sent to the API.
-- [ ] Add valuation-change alerts or materiality scoring only when reliable inputs exist; the current event matcher intentionally does not claim financial impact.
-- [ ] Explain why each alert matters and link it to supporting evidence.
-- [x] Avoid generating automatic buy/sell instructions or new noisy alert rules in this initial release; monitoring is handed off to existing Watchlists.
-- [ ] Test duplicate events, stale data, missing coverage and alert failures.
+- [x] Add local valuation-change alerts for at least 10% changes in saved base-case estimates for the same company, country, model method and currency; the alert explicitly describes model-estimate changes, not stock-price moves or expected returns. Live market-price-change scoring remains out of scope until reliable price history exists.
+- [x] Explain what changed using the previous/current estimate, percentage, calculation dates and statement period; link to current statement and quote sources where available. Do not infer a material event impact from headline matching.
+- [x] Avoid automatic buy/sell instructions and duplicate server-side alert rules; use existing Watchlists for broader monitoring and label local portfolio matches as candidates.
+- [x] Add automated tests for duplicate event suppression, empty portfolios/feeds, exact ticker boundaries, material valuation-change thresholds, country separation and incompatible valuation methods.\n- [ ] Manually test stale-data, missing-coverage and event-feed failure states in a running preview.
 
 ## Phase 6 — Quality, regression and release readiness
 
 - [x] Confirm no backend/API/database/schema changes are introduced by this feature branch; backend tests are not applicable to the feature-only diff. Existing backend suites still require their normal independent checks before any unrelated backend changes ship.
-- [x] Run frontend unit tests, ESLint, TypeScript typecheck and production build after the latest valuation and portfolio changes. GitHub Actions Web quality gates passed on head `d3a521990e5d1a2ad0a4297b529efa777e9e5ace` (run `40099627262`).
-- [x] Run standalone frontend ESLint and the Markets unit-test suite; both passed in Web quality gates run `40099627262`. Backend code is unchanged by this PR.
+- [x] Run frontend unit tests, ESLint, TypeScript typecheck and production build after the latest valuation and portfolio changes. GitHub Actions Web quality gates passed on head `cc68b74020f31d2f991ba880664ee29b5ebfa547` (run `40101835044`).
+- [x] Run standalone frontend ESLint and the Markets unit-test suite; both passed in Web quality gates run `40101835044`. Backend code is unchanged by this PR.
 - [ ] Test the Markets pages at mobile and desktop sizes.
 - [ ] Verify Companies, Research, Deals, Alerts, watchlists and other existing areas remain unaffected.
 - [ ] Check accessibility, loading states, empty states, error states and keyboard navigation.
-- [ ] Verify no secrets or private portfolio data are exposed.
-- [ ] Review dependency, schema and migration changes; document any required environment setup.
+- [x] Review data flow: portfolio holdings and valuation snapshots stay in browser-local storage and are not sent to the event API; no new secrets, dependencies or database schema changes were introduced.
+- [x] Review dependency, schema and migration changes; no new package dependencies, backend schema or environment variables are required.
 - [x] Update this checklist with evidence for each completed automated check; manual and preview-only checks remain open.
 - [x] Update the draft PR with current automated test results and explicit preview limitation. Screenshots/preview URL remain unavailable until Vercel permits a fresh deployment.
 - [ ] Confirm latest Vercel preview is READY and `/app/markets`, `/app/markets/valuation` and `/app/markets/portfolio` return HTTP 200.
@@ -130,5 +130,5 @@ This checklist is the source of truth for scope and completion. Mark an item com
 ## Current verification constraints
 
 - Vercel reported the Free-plan `api-deployments-free-per-day` limit and a 24-hour retry window. The current GitHub commit checks show Vercel app/API deployment failures due to this platform rate limit, not a failing source build. No new preview deployment was created; do not infer that the latest branch has been browser-verified.
-- The latest full Web quality-gates run passed on source commit `d3a521990e5d1a2ad0a4297b529efa777e9e5ace`: Markets unit tests, ESLint, TypeScript typecheck and production build are green. Any later feature changes must pass the same checks.
+- The latest full Web quality-gates run passed on source commit `cc68b74020f31d2f991ba880664ee29b5ebfa547` (run `40101835044`): Markets unit tests, ESLint, TypeScript typecheck and production build are green. Any later feature changes must pass the same checks.
 - Production `main` remains untouched. PR #13 stays draft until the feature is verified and explicitly approved.
