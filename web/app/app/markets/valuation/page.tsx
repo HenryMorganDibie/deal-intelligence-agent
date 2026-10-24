@@ -297,8 +297,8 @@ export default function MarketsValuationPage() {
     parsed.discountRate != null && parsed.discountRate > 0 && parsed.discountRate <= 60 &&
     parsed.terminalGrowth != null && parsed.terminalGrowth >= -5 && parsed.terminalGrowth <= 8 &&
     parsed.discountRate > parsed.terminalGrowth;
-  const sourceInputsValid = form.company.trim().length > 0 && validHttpUrl(form.source) && form.period.trim().length > 0 &&
-    (parsed.price == null || (parsed.price > 0 && validHttpUrl(form.priceSource) && /^\d{4}-\d{2}-\d{2}$/.test(form.priceDate)));
+  const sourceInputsValid = form.company.trim().length > 0 && validHttpUrl(form.source) && validPastDate(form.period) &&
+    (parsed.price == null || (parsed.price > 0 && validHttpUrl(form.priceSource) && validPastDate(form.priceDate)));
   const sectorRequiresDdm = /bank|financial services|financial institution|insurance|insurer|microfinance|lender|credit provider/i.test(detectedSector);
   const modelFitAllowsDcf = form.modelFit === "standard-operating-company";
   const modelFitAllowsDdm = form.modelFit === "financial-institution" || form.modelFit === "mature-dividend-payer";
