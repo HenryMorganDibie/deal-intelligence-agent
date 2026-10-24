@@ -60,11 +60,11 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 ## Phase 4 — Portfolio Intelligence inside Markets
 
-- [ ] Design a portfolio data model that supports manual entry and CSV import.
-- [ ] Start with browser-local storage and clear import/export/delete controls; do not upload private holdings to shared storage.
-- [ ] Validate CSV schema, quantities, currencies, duplicate rows and malformed data.
-- [ ] Implement allocation and exposure analysis for available asset, company, sector, country and currency classifications.
-- [ ] Distinguish cost basis, market value, realised/unrealised gain, dividends and FX effects; do not conflate them.
+- [x] Design a portfolio data model that supports manual entry and CSV import.
+- [x] Start with browser-local storage and clear import/export/delete controls; do not upload private holdings to shared storage.
+- [x] Validate CSV headers, required fields, numeric values and malformed quoted CSV; duplicate detection and full currency-code validation remain pending.
+- [x] Implement country and sector exposure for holdings with entered current prices and valid FX conversion.\n- [ ] Add allocation/exposure by asset type, company and currency, with clear handling of incomplete classification.
+- [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings.\n- [ ] Add realised gains, dividends, corporate actions and historical FX effects before presenting comprehensive performance.
 - [ ] Reuse the existing portfolio risk engine only after verifying its assumptions and persistence limitations.
 - [ ] Add portfolio-wide valuation insights only where constituent valuations pass quality gates.
 - [ ] Add understandable concentration/risk explanations and links to company analysis.
@@ -106,4 +106,4 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 | Date | Change | Verification | Status |
 |---|---|---|---|
-| 2026-10-24 | Created working branch and agreed-scope checklist | Branch created from `main`; checklist committed to feature branch | Done |\n| 2026-10-24 | Replaced Markets placeholder with an API-backed overview | Uses `/api/pulse` and `/api/coverage`; includes company-profile search, recent event/source links, deal flow, coverage transparency and explicit status for unbuilt valuation/portfolio capabilities | Code committed; build/preview verification pending |
+| 2026-10-24 | Created working branch and agreed-scope checklist | Branch created from `main`; checklist committed to feature branch | Done |\n| 2026-10-24 | Replaced Markets placeholder with an API-backed overview | Uses `/api/pulse` and `/api/coverage`; includes company-profile search, recent event/source links, deal flow, coverage transparency and explicit status for unbuilt valuation/portfolio capabilities | Code committed; build/preview verification pending |\n| 2026-10-24 | Added initial Portfolio Intelligence workspace | Manual holdings, CSV import/template/export, browser-local storage, clear/delete controls, entered-price valuation and country/sector exposure with FX caveats | Code committed; typecheck and preview verification pending |
