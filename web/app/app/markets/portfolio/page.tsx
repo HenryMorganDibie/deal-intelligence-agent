@@ -39,6 +39,18 @@ const blankForm = {
   fxToBase: "1",
 };
 
+function isHolding(value: unknown): value is Holding {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Partial<Holding>;
+  return typeof item.id === "string" && typeof item.name === "string" && item.name.trim().length > 0 &&
+    typeof item.ticker === "string" && typeof item.country === "string" && typeof item.sector === "string" &&
+    typeof item.assetType === "string" && typeof item.currency === "string" && CURRENCIES.includes(item.currency) &&
+    typeof item.quantity === "number" && Number.isFinite(item.quantity) && item.quantity > 0 &&
+    typeof item.costPerUnit === "number" && Number.isFinite(item.costPerUnit) && item.costPerUnit >= 0 &&
+    (item.currentPrice === null || (typeof item.currentPrice === "number" && Number.isFinite(item.currentPrice) && item.currentPrice >= 0)) &&
+    (item.fxToBase === null || (typeof item.fxToBase === "number" && Number.isFinite(item.fxToBase) && item.fxToBase > 0));
+}
+
 function newId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -126,11 +138,7 @@ export default function MarketsPortfolioPage() {
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<PortfolioState>;
         if (parsed.version === 1 && Array.isArray(parsed.holdings)) {
-          setHoldings(parsed.holdings.filter((item): item is Holding =>
-            Boolean(item && typeof item.id === "string" && typeof item.name === "string" &&
-              typeof item.currency === "string" && Number.isFinite(item.quantity) &&
-              Number.isFinite(item.costPerUnit)),
-          ));
+          setHoldings(parsed.holdings.filter(isHolding));
           if (typeof parsed.baseCurrency === "string" && CURRENCIES.includes(parsed.baseCurrency)) {
             setBaseCurrency(parsed.baseCurrency);
             setForm({ ...blankForm, currency: parsed.baseCurrency, fxToBase: "1" });
