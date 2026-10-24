@@ -163,7 +163,9 @@ export default function MarketsPortfolioPage() {
   const totalCostOfPriced = pricedHoldings.reduce((sum, holding) => sum + (convert(holding.quantity * holding.costPerUnit, holding.fxToBase) ?? 0), 0);
   const pricedGain = totalCurrentValue - totalCostOfPriced;
   const countryExposure = useMemo(() => exposureRows(holdings, "country", baseCurrency), [holdings, baseCurrency]);
-  const sectorExposure = useMemo(() => exposureRows(holdings, "sector", baseCurrency), [holdings, baseCurrency]);\n  const assetTypeExposure = useMemo(() => exposureRows(holdings, "assetType", baseCurrency), [holdings, baseCurrency]);\n  const currencyExposure = useMemo(() => exposureRows(holdings, "currency", baseCurrency), [holdings, baseCurrency]);
+  const sectorExposure = useMemo(() => exposureRows(holdings, "sector", baseCurrency), [holdings, baseCurrency]);
+  const assetTypeExposure = useMemo(() => exposureRows(holdings, "assetType", baseCurrency), [holdings, baseCurrency]);
+  const currencyExposure = useMemo(() => exposureRows(holdings, "currency", baseCurrency), [holdings, baseCurrency]);
 
   function updateForm(key: keyof typeof blankForm, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
