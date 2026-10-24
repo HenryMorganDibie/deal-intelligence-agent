@@ -28,13 +28,13 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 ## Phase 1 — Safe foundation and Markets information architecture
 
-- [ ] Replace the Markets coming-soon page with a responsive Markets landing/overview.
-- [ ] Keep the existing top-level navigation stable; do not add Portfolio as another top-level item.
+- [x] Replace the Markets coming-soon page with a responsive Markets landing/overview backed by existing pulse and coverage endpoints.
+- [x] Keep the existing top-level navigation stable; do not add Portfolio as another top-level item.
 - [ ] Add internal Markets destinations for Overview, Explore Companies, Valuation, My Portfolio and Investment Monitoring.
-- [ ] Reuse existing components and endpoints where verified; avoid duplicate research or alert systems.
-- [ ] Show source/coverage/freshness states and meaningful empty/error states.
-- [ ] Make all navigation and actions functional; do not ship decorative or fake data visualisations.
-- [ ] Preserve accessibility, responsive layouts and existing app design conventions.
+- [x] Reuse existing components and existing `/api/pulse` and `/api/coverage` endpoints; avoid duplicate research or alert systems.
+- [x] Show coverage context, latest available record date, source links for event items, and meaningful empty/error states on the overview.\n- [ ] Extend freshness/source status to each individual data source and company/instrument profile.
+- [x] Make the implemented overview navigation and company-search actions functional; no decorative or fake data visualisations were added.\n- [ ] Build and wire the full internal Markets destinations for Valuation, My Portfolio and Investment Monitoring.
+- [x] Use responsive layouts, labelled company search, semantic sections and existing app design conventions.\n- [ ] Verify accessibility and keyboard navigation in a running preview.
 
 ## Phase 2 — Africa-wide coverage-aware market overview
 
@@ -106,4 +106,4 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 | Date | Change | Verification | Status |
 |---|---|---|---|
-| 2026-10-24 | Created working branch and agreed-scope checklist | Branch created from `main`; checklist committed to feature branch | In progress |
+| 2026-10-24 | Created working branch and agreed-scope checklist | Branch created from `main`; checklist committed to feature branch | Done |\n| 2026-10-24 | Replaced Markets placeholder with an API-backed overview | Uses `/api/pulse` and `/api/coverage`; includes company-profile search, recent event/source links, deal flow, coverage transparency and explicit status for unbuilt valuation/portfolio capabilities | Code committed; build/preview verification pending |
