@@ -166,10 +166,11 @@ export default function MarketsValuationPage() {
         const current = items[key]?.current;
         return typeof current === "number" && Number.isFinite(current) ? String(current) : "";
       };
-      const currency = financials.currency && VALUATION_CURRENCIES.includes(financials.currency.toUpperCase())
+      const statementCurrency = financials.currency && VALUATION_CURRENCIES.includes(financials.currency.toUpperCase())
         ? financials.currency.toUpperCase()
-        : form.currency;
-      const sameCurrency = Boolean(profile.market?.currency && profile.market.currency.toUpperCase() === currency);
+        : null;
+      const currency = statementCurrency || "NGN";
+      const sameCurrency = Boolean(statementCurrency && profile.market?.currency && profile.market.currency.toUpperCase() === statementCurrency);
       const hasDatedQuote = Boolean(profile.market?.as_at && profile.market?.price != null && sameCurrency);
       const inferredShares = hasDatedQuote && profile.market?.market_cap != null && profile.market.market_cap > 0 && profile.market.price != null && profile.market.price > 0
         ? String(profile.market.market_cap / profile.market.price)
@@ -197,6 +198,7 @@ export default function MarketsValuationPage() {
       setProfileMessage([
         `Financial fields loaded from ${financials.source}.`,
         sector ? `Company sector reported by the profile: ${sector}.` : "",
+        statementCurrency ? "" : "The source did not return a supported statement currency; the form defaulted to NGN. Change it to match the cited source before calculating.",
         financialInstitution ? "The sector suggests a bank or financial institution, so the page switched to the dividend discount model. Confirm dividend sustainability before calculating; ordinary-company DCF is not suitable for banks or insurers." : "",
         "A generic free_cash_flow field is not automatically treated as unlevered FCFF. If no explicitly labelled FCFF field is available, verify the correct figure in the source and enter it manually.",
         financials.verified ? "The profile reports its available accounting checks as passed." : "The profile does not report all available accounting checks as passed.",
@@ -261,7 +263,7 @@ export default function MarketsValuationPage() {
     parsed.discountRate != null && parsed.discountRate > 0 && parsed.discountRate <= 60 &&
     parsed.terminalGrowth != null && parsed.terminalGrowth >= -5 && parsed.terminalGrowth <= 8 &&
     parsed.discountRate > parsed.terminalGrowth;
-  const sourceInputsValid = form.company.trim().length > 0 && validHttpUrl(form.source) && validPastDate(form.period) &&
+  const sourceInputsValid = form.company.trim().length > 0 && VALUATION_CURRENCIES.includes(form.currency) && validHttpUrl(form.source) && validPastDate(form.period) &&
     (parsed.price == null || (parsed.price > 0 && validHttpUrl(form.priceSource) && validPastDate(form.priceDate)));
   const sectorRequiresDdm = /bank|financial services|financial institution|insurance|insurer|microfinance|lender|credit provider/i.test(detectedSector);
   const modelFitAllowsDcf = form.modelFit === "standard-operating-company";
@@ -434,7 +436,7 @@ export default function MarketsValuationPage() {
               </select>
               <label className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-[color:var(--muted)]">
                 <input type="checkbox" className="mt-0.5" checked={modelFitConfirmed} onChange={(event) => setModelFitConfirmed(event.target.checked)} />
-                <span>{form.method === "dcf" ? "I have checked that this is a non-financial operating company and the entered free cash flow is positive and reasonably representative." : "I have checked that this is a mature dividend payer and the entered annual dividend is sustainable."}</span>
+                <span>{form.method === "dcf" ? "I have checked that this is a non-financial operating company, the entered free cash flow is positive and representative, and the currency and units match the cited source." : "I have checked that this is a mature dividend payer, the entered annual dividend is sustainable, and the currency matches the cited source."}</span>
               </label>
               {sectorRequiresDdm && form.method === "dcf" ? <p className="mt-2 text-xs text-[color:var(--risk)]">The existing company profile identifies a financial-sector business. This workspace blocks ordinary-company DCF for that profile; switch to DDM and enter a sourced annual dividend per share.</p> : null}
             </div>
