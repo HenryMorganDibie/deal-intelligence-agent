@@ -143,8 +143,8 @@ function latestMatchingValuation<T extends PortfolioPosition & { id: string; nam
       const snapshotTicker = snapshot.ticker.trim().toUpperCase();
       const holdingCountry = holding.country.trim().toLowerCase();
       const snapshotCountry = (snapshot.country ?? "").trim().toLowerCase();
-      if (ticker && snapshotTicker) return ticker === snapshotTicker && (!holdingCountry || !snapshotCountry || holdingCountry === snapshotCountry);
-      return name === snapshot.company.trim().toLowerCase() && (!holdingCountry || !snapshotCountry || holdingCountry === snapshotCountry);
+      if (ticker && snapshotTicker) return ticker === snapshotTicker && holdingCountry.length > 0 && snapshotCountry.length > 0 && holdingCountry === snapshotCountry;
+      return name === snapshot.company.trim().toLowerCase() && holdingCountry.length > 0 && snapshotCountry.length > 0 && holdingCountry === snapshotCountry;
     })
     .sort((a, b) => Date.parse(b.calculatedAt) - Date.parse(a.calculatedAt))[0];
 }
