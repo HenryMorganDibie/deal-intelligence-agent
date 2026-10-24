@@ -51,14 +51,16 @@ The database foundation now includes current-price/FX metadata, single-use hashe
 
 ## Release gates before enabling cloud portfolios
 
-1. [ ] Configure and verify Supabase Auth email confirmation, password recovery, allowed redirect URLs (including the web origin's `/auth/callback` route), Google OAuth provider settings, and web-project environment variables.
-2. [x] Add isolated pgTAP tests for unrelated users, separate organizations, role differences, personal-vs-shared boundaries, cross-tenant ID substitution, viewer restrictions, and ledger immutability. The current Web quality-gate run also applies the migrations to an isolated Supabase stack and passes these tests.
-3. [ ] Review Supabase security/performance advisor findings. Portfolio tables have RLS enabled and anonymous table access is denied; the migration-receipts table is intentionally inaccessible directly. Before production, triage portfolio foreign-key index warnings and enable leaked-password protection. Review broader pre-existing SECURITY DEFINER warnings separately rather than treating all findings as new portfolio defects.
-4. [x] Keep cloud CSV/XLSX transaction imports bounded at 5,000 rows per request; validate the full file before an atomic commit, reject duplicate external IDs, and make retries idempotent.
-5. [x] Keep local-to-cloud migration explicit and preserve original browser data as a backup. The server checks reporting-currency compatibility and records an idempotency receipt.
-6. [ ] Verify organization member listing, role changes/removal, and invite creation/acceptance/revocation in an authenticated browser.
-7. [ ] Test browser interactions, keyboard accessibility, session expiry/refresh, mobile layouts, and regression across existing app areas.
-8. [ ] Verify a current-source preview/API deployment and run interactive smoke tests when Vercel can create a preview. Avoid repeated preview builds while rate-limited; GitHub Actions checks are not a substitute for browser acceptance.
+1. [ ] Configure and verify Supabase Auth email confirmation, password recovery, and allowed redirect URLs for production and the preview origins used for testing. Verify Google OAuth provider credentials and callback configuration in Supabase and Google Cloud.
+2. [x] Add isolated pgTAP tests for unrelated users, separate organizations, role differences, personal-vs-shared boundaries, cross-tenant ID substitution, viewer restrictions, and ledger immutability. The current Web quality-gate run applies migrations to an isolated Supabase stack and passes these tests.
+3. [x] Add migration `20261025010000_portfolio_foreign_key_indexes.sql` covering the 14 portfolio/workspace foreign keys flagged by the performance advisor. [ ] The migration is branch-only until the release is approved and applied; live advisor findings will remain until then.
+4. [ ] Review Supabase security/performance advisor findings after the index migration is applied. The live project has RLS enabled on portfolio tables and anonymous table access is denied; migration receipts are intentionally inaccessible directly. Review broader pre-existing `SECURITY DEFINER` warnings separately rather than treating all findings as new portfolio defects.
+5. [ ] Enable Supabase Auth leaked-password protection if the project plan supports it. The current Supabase organization is on the Free plan; Supabase documents this protection as available on Pro and above, so enabling it requires a plan upgrade. Do not upgrade or incur costs without Henry's explicit approval.
+6. [x] Keep cloud CSV/XLSX transaction imports bounded at 5,000 rows per request; validate the full file before an atomic commit, reject duplicate external IDs, and make retries idempotent.
+7. [x] Keep local-to-cloud migration explicit and preserve original browser data as a backup. The server checks reporting-currency compatibility and records an idempotency receipt.
+8. [ ] Verify organization member listing, role changes/removal, and invite creation/acceptance/revocation in an authenticated browser.
+9. [ ] Test browser interactions, keyboard accessibility, session expiry/refresh, mobile layouts, and regressions across existing app areas.
+10. [ ] Verify a current-source preview/API deployment and run interactive smoke tests when Vercel can create a preview. Avoid repeated preview builds while rate-limited; GitHub Actions checks are not a substitute for browser acceptance.
 
 ## Acceptance matrix
 
