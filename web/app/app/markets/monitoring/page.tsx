@@ -6,11 +6,13 @@ import { Container } from "../../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pill } from "../../../../components/app/ui";
 import { get } from "../../../../lib/market";
 import { validHttpUrl } from "../../../../lib/markets-valuation";
-import { matchPortfolioEvents, type MonitoringEvent, type MonitoringHolding } from "../../../../lib/markets-monitoring";
+import { calculateValuationChangeAlerts, matchPortfolioEvents, type MonitoringEvent, type MonitoringHolding } from "../../../../lib/markets-monitoring";
+import { isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
 
 type StoredPortfolio = { version?: number; holdings?: unknown[] };
 
 const STORAGE_KEY = "deal-intelligence-markets-portfolio-v1";
+const VALUATION_STORAGE_KEY = "deal-intelligence-markets-valuations-v1";
 
 function readHoldings(): MonitoringHolding[] {
   try {
@@ -44,6 +46,8 @@ function displayDate(value: string | null): string {
 
 export default function MarketsMonitoringPage() {
   const [holdings, setHoldings] = useState<MonitoringHolding[]>([]);
+  const [valuations, setValuations] = useState<SavedValuationSnapshot[]>([]);
+  const [valuationWarning, setValuationWarning] = useState<string | null>(null);
   const [portfolioReady, setPortfolioReady] = useState(false);
   const [portfolioError, setPortfolioError] = useState<string | null>(null);
   const [events, setEvents] = useState<MonitoringEvent[]>([]);
@@ -54,6 +58,15 @@ export default function MarketsMonitoringPage() {
   useEffect(() => {
     try {
       setHoldings(readHoldings());
+      const savedValuations = window.localStorage.getItem(VALUATION_STORAGE_KEY);
+      if (savedValuations) {
+        const parsed: unknown = JSON.parse(savedValuations);
+        if (Array.isArray(parsed) && parsed.every(isSavedValuation)) {
+          setValuations(parsed);
+        } else {
+          setValuationWarning("Saved valuation history could not be validated, so valuation-change insights are hidden rather than guessed.");
+        }
+      }
     } catch (error) {
       setPortfolioError(error instanceof Error ? error.message : "The local portfolio could not be read.");
     } finally {
@@ -81,6 +94,14 @@ export default function MarketsMonitoringPage() {
   }, [portfolioReady, holdings.length, loadEvents]);
 
   const matches = useMemo(() => matchPortfolioEvents(holdings, events), [holdings, events]);
+  const valuationAlerts = useMemo(() => calculateValuationChangeAlerts(valuations).filter((alert) =>
+    holdings.some((holding) => {
+      const sameCountry = Boolean(holding.country && alert.country && holding.country.trim().toLowerCase() === alert.country.trim().toLowerCase());
+      if (!sameCountry) return false;
+      if (holding.ticker && alert.ticker) return holding.ticker.trim().toUpperCase() === alert.ticker.trim().toUpperCase();
+      return holding.name.trim().toLowerCase() === alert.company.trim().toLowerCase();
+    }),
+  ), [valuations, holdings]);
 
   return (
     <Container className="py-8 lg:py-12">
@@ -100,6 +121,7 @@ export default function MarketsMonitoringPage() {
       </div>
 
       {portfolioError ? <ErrorNote message={portfolioError} /> : null}
+      {valuationWarning ? <div className="mb-4"><ErrorNote message={valuationWarning} /></div> : null}
 
       {!portfolioReady ? <Loading label="Reading your portfolio from this browser…" /> : null}
 
@@ -111,6 +133,47 @@ export default function MarketsMonitoringPage() {
             Add company names or ticker symbols to My Portfolio first. This page reads those entries in your browser and requests the general market-events feed without uploading your holdings.
           </p>
           <Link href="/app/markets/portfolio" className="btn btn-primary mt-5">Set up My Portfolio</Link>
+        </section>
+      ) : null}
+
+      {portfolioReady && holdings.length > 0 ? (
+        <section className="mt-8" aria-labelledby="valuation-change-title">
+          <div className="mb-4">
+            <p className="eyebrow">Valuation history</p>
+            <h2 id="valuation-change-title" className="h3 mt-2 text-xl">Material changes in saved estimates</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
+              These flags compare the last two locally saved base-case estimates for the same holding and market. A change can reflect new assumptions or financial inputs; it is not a change in the stock price, a forecast of returns or a buy/sell instruction.
+            </p>
+          </div>
+          {valuationAlerts.length === 0 ? (
+            <div className="rounded-xl border hairline p-4 text-sm text-[color:var(--muted)]">
+              No material saved-estimate changes found for these holdings. Save a new valuation after reviewing updated inputs to establish a comparison history. At least two saved snapshots for the same company and country are required.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {valuationAlerts.map((alert) => (
+                <article key={`${alert.country}-${alert.ticker || alert.company}-${alert.calculatedAt}`} className="rounded-xl border hairline p-4 sm:p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-medium">{alert.company}{alert.ticker ? ` · ${alert.ticker}` : ""}</h3>
+                      <p className="mt-1 text-xs text-[color:var(--dim)]">{alert.country} · {alert.method.toUpperCase()} · updated {displayDate(alert.calculatedAt)}</p>
+                    </div>
+                    <span className={`rounded-full border hairline px-2.5 py-1 text-xs ${alert.changePct < 0 ? "text-risk" : "text-verified"}`}>
+                      {alert.changePct > 0 ? "+" : ""}{alert.changePct.toFixed(1)}% model estimate change
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
+                    Base-case estimate changed from {alert.previousBasePerShare.toLocaleString("en", { maximumFractionDigits: 2 })} to {alert.currentBasePerShare.toLocaleString("en", { maximumFractionDigits: 2 })} {alert.currency}. Compared with the previous saved run on {displayDate(alert.previousCalculatedAt)}. Statement period: {alert.previousStatementPeriod} → {alert.statementPeriod}.
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+                    <Link href={`/app/markets/valuation?company=${encodeURIComponent(alert.company)}${alert.ticker ? `&ticker=${encodeURIComponent(alert.ticker)}` : ""}${alert.country ? `&country=${encodeURIComponent(alert.country)}` : ""}`} className="underline-offset-4 hover:underline">Review current model →</Link>
+                    {alert.statementSourceUrl && validHttpUrl(alert.statementSourceUrl) ? <a href={alert.statementSourceUrl} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">Statement source ↗</a> : null}
+                    {alert.quoteSourceUrl && validHttpUrl(alert.quoteSourceUrl) ? <a href={alert.quoteSourceUrl} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">Quote source ↗</a> : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       ) : null}
 
