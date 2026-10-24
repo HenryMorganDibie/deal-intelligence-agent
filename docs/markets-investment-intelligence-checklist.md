@@ -30,12 +30,12 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 - [x] Replace the Markets coming-soon page with a responsive Markets landing/overview backed by existing pulse and coverage endpoints.
 - [x] Keep the existing top-level navigation stable; do not add Portfolio as another top-level item.
-- [ ] Add internal Markets destinations for Overview, Explore Companies, Valuation, My Portfolio and Investment Monitoring.
+- [x] Add internal Markets destinations for Overview, Explore Companies, Valuation, My Portfolio and Investment Monitoring (links into existing Companies and Watchlists for shared capabilities).
 - [x] Reuse existing components and existing `/api/pulse` and `/api/coverage` endpoints; avoid duplicate research or alert systems.
 - [x] Show coverage context, latest available record date, source links for event items, and meaningful empty/error states on the overview.
 - [ ] Extend freshness/source status to each individual data source and company/instrument profile.
 - [x] Make the implemented overview navigation and company-search actions functional; no decorative or fake data visualisations were added.
-- [ ] Build and wire the full internal Markets destinations for Valuation, My Portfolio and Investment Monitoring.
+- [x] Build and wire Valuation and My Portfolio destinations; route Investment Monitoring to existing Watchlists rather than duplicate alert infrastructure.
 - [x] Use responsive layouts, labelled company search, semantic sections and existing app design conventions.
 - [ ] Verify accessibility and keyboard navigation in a running preview.
 
@@ -50,13 +50,13 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 ## Phase 3 — Valuation and honest investment conclusions
 
-- [ ] Define a typed, testable valuation input/output contract.
+- [x] Define typed scenario inputs and deterministic DCF outputs in the valuation workspace; automated unit tests and backend contract are still pending.
 - [ ] Verify market price, currency, share count, reporting period and financial statement provenance before calculation.
-- [ ] Implement valuation methods appropriate to the business and instrument; do not apply a single model indiscriminately.
-- [ ] Produce bear/base/bull scenarios and sensitivity where inputs support them.
-- [ ] Explain key assumptions, risks, countercase and what evidence could change the conclusion.
-- [ ] Support conclusions such as potentially undervalued, broadly fairly valued, potentially overvalued and insufficient evidence.
-- [ ] Return insufficient evidence when data quality or model suitability is inadequate; never fabricate missing financial values.
+- [x] Implement a clearly labelled five-year DCF scenario tool for positive unlevered free cash flow, with explicit model-fit limitations; additional methods and suitability detection remain pending.
+- [x] Produce bear/base/bull scenarios; sensitivity grids and model-calibrated ranges remain pending.
+- [x] Explain assumptions and key limitations; source links are required and countercase research links to the existing Research workspace. Automated countercase synthesis remains pending.
+- [x] Support cautious comparison labels based on entered price versus base DCF estimate; a formal fairly-valued band and automated data-quality/model-suitability gate remain pending.
+- [x] Require manually entered company, source URL, reporting period, FCF, shares, cash and debt; refuse calculation for missing/invalid inputs and explicitly state source/model-fit limitations. Automated source verification and suitability gates remain pending.
 - [ ] Keep deterministic calculations separate from LLM-written explanations.
 - [ ] Add unit tests for calculations, edge cases, stale/missing inputs, currency mismatch and unsupported instruments.
 - [ ] Create a human-reviewed benchmark of representative African listed companies before claiming accuracy.
@@ -67,7 +67,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Start with browser-local storage and clear import/export/delete controls; do not upload private holdings to shared storage.
 - [x] Validate CSV headers, required fields, numeric values and malformed quoted CSV; duplicate detection and full currency-code validation remain pending.
 - [x] Implement country and sector exposure for holdings with entered current prices and valid FX conversion.
-- [ ] Add allocation/exposure by asset type, company and currency, with clear handling of incomplete classification.
+- [x] Add allocation/exposure by country, sector, asset type and holding currency for priced and FX-converted holdings; company positions are visible in the portfolio register. Missing price/FX holdings are excluded and called out.
 - [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings.
 - [ ] Add realised gains, dividends, corporate actions and historical FX effects before presenting comprehensive performance.
 - [ ] Reuse the existing portfolio risk engine only after verifying its assumptions and persistence limitations.
@@ -87,7 +87,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 ## Phase 6 — Quality, regression and release readiness
 
 - [ ] Run relevant backend unit and integration tests.
-- [x] Run frontend typecheck and production build using the repository's supported workflow; Vercel preview is READY for source commit `cd855181010fb3852e0afa7476e87a2403918251`.
+- [ ] Run frontend typecheck and production build after the latest valuation and portfolio changes; earlier preview build was READY for source commit `cd855181010fb3852e0afa7476e87a2403918251`.
 - [ ] Run a standalone lint command and the broader relevant backend/unit integration test suite.
 - [ ] Test the Markets pages at mobile and desktop sizes.
 - [ ] Verify Companies, Research, Deals, Alerts, watchlists and other existing areas remain unaffected.
@@ -96,7 +96,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [ ] Review dependency, schema and migration changes; document any required environment setup.
 - [ ] Update this checklist with evidence for each completed item.
 - [ ] Open/update the PR with test results, screenshots or preview URL when available.
-- [x] Confirm Vercel preview is READY and both `/app/markets` and `/app/markets/portfolio` return HTTP 200.
+- [ ] Confirm latest Vercel preview is READY and `/app/markets`, `/app/markets/valuation` and `/app/markets/portfolio` return HTTP 200.
 - [ ] Manually exercise interactive flows in a browser: company search, local persistence, CSV import/export, currency conversion and clear/delete.
 - [ ] Obtain explicit approval before merging into `main`.
 - [ ] After approval and merge, verify production status and run a post-deploy smoke check.
@@ -117,3 +117,5 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Replaced Markets placeholder with an API-backed overview | Uses `/api/pulse` and `/api/coverage`; includes company-profile search, recent event/source links, deal flow and coverage transparency | Typecheck passed; Vercel preview READY; route returned HTTP 200 |
 | 2026-10-24 | Added initial Portfolio Intelligence workspace | Manual holdings, CSV import/template/export, browser-local storage, clear/delete controls, entered-price valuation and country/sector exposure with FX caveats | Typecheck passed; Vercel preview READY; route returned HTTP 200; interactive browser checks pending |
 | 2026-10-24 | Corrected first portfolio preview build failure | Initial draft had a malformed CSV-template expression; corrected it and verified a subsequent source commit built successfully | Fixed on feature branch; no production merge/deployment |
+| 2026-10-24 | Added valuation workspace and Markets internal navigation | Added a transparent five-year DCF scenario calculator with bear/base/bull assumptions, sourced input requirements, optional dated quote comparison and explicit limitations; connected Markets to Valuation, Portfolio and existing Watchlists | Vercel preview build for the newest commits is pending; automated calculation tests and interactive checks remain |
+| 2026-10-24 | Expanded portfolio allocation | Added country, sector, asset-type and holding-currency exposure; changed initial holding currency to USD and stopped defaulting foreign exchange conversions to 1 | Code committed; latest preview verification pending |
