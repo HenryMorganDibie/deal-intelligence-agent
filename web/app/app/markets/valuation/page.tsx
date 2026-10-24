@@ -328,6 +328,8 @@ export default function MarketsValuationPage() {
 
   const base = scenarios.find((scenario) => scenario.name === "Base");
   const price = parsed.price;
+  const statementAgeDays = validPastDate(form.period) ? Math.floor((Date.now() - new Date(`${form.period}T00:00:00Z`).getTime()) / 86400000) : null;
+  const quoteAgeDays = validPastDate(form.priceDate) ? Math.floor((Date.now() - new Date(`${form.priceDate}T00:00:00Z`).getTime()) / 86400000) : null;
   const validScenarioValues = scenarios.map((scenario) => scenario.perShare).filter((value): value is number => value != null && Number.isFinite(value));
   const scenarioLow = validScenarioValues.length ? Math.min(...validScenarioValues) : null;
   const scenarioHigh = validScenarioValues.length ? Math.max(...validScenarioValues) : null;
@@ -492,6 +494,8 @@ export default function MarketsValuationPage() {
             ) : (
               <>
                 <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]">{form.company}{form.ticker ? ` (${form.ticker})` : ""} · period ended {form.period} · source <a href={form.source} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">open filing ↗</a></p>
+                {statementAgeDays != null && statementAgeDays > 548 ? <p className="mt-2 rounded-lg border hairline p-3 text-xs leading-relaxed text-[color:var(--muted)]">Freshness warning: this financial period is more than 18 months old. Refresh the statements before relying on the valuation.</p> : null}
+                {price != null && quoteAgeDays != null && quoteAgeDays > 7 ? <p className="mt-2 rounded-lg border hairline p-3 text-xs leading-relaxed text-[color:var(--muted)]">Freshness warning: the entered quote is {quoteAgeDays} days old. The comparison may not reflect the current market price.</p> : null}
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {scenarios.map((scenario) => <ScenarioCard key={scenario.name} scenario={scenario} currency={form.currency} price={price} />)}
                 </div>
