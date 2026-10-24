@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Container } from "../../components/primitives";
@@ -49,7 +49,7 @@ export default function AccountPage() {
     setMessage("You have signed out.");
   }
 
-  async function submitEmailAuth(event: React.FormEvent<HTMLFormElement>) {
+  async function submitEmailAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setMessage("");
@@ -79,7 +79,7 @@ export default function AccountPage() {
     }
   }
 
-  async function requestRecovery(event: React.FormEvent<HTMLFormElement>) {
+  async function requestRecovery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setMessage("");
