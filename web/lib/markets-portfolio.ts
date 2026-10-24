@@ -67,6 +67,7 @@ export type SavedValuationSnapshot = {
   id: string;
   company: string;
   ticker: string;
+  country?: string;
   method: "dcf" | "ddm";
   modelFit: string;
   modelFitConfirmed: boolean;
@@ -116,7 +117,7 @@ export function isSavedValuation(value: unknown): value is SavedValuationSnapsho
   const calculatedAt = typeof item.calculatedAt === "string" ? Date.parse(item.calculatedAt) : Number.NaN;
   return typeof item.id === "string" && item.id.length > 0 &&
     typeof item.company === "string" && item.company.trim().length > 0 &&
-    typeof item.ticker === "string" &&
+    typeof item.ticker === "string" && (item.country === undefined || typeof item.country === "string") &&
     (item.method === "dcf" || item.method === "ddm") &&
     typeof item.modelFit === "string" && item.modelFit.length > 0 &&
     item.modelFitConfirmed === true &&
@@ -139,8 +140,10 @@ function latestMatchingValuation<T extends PortfolioPosition & { id: string; nam
   return snapshots
     .filter((snapshot) => {
       const snapshotTicker = snapshot.ticker.trim().toUpperCase();
-      if (ticker && snapshotTicker) return ticker === snapshotTicker;
-      return name === snapshot.company.trim().toLowerCase();
+      const holdingCountry = holding.country.trim().toLowerCase();
+      const snapshotCountry = (snapshot.country ?? "").trim().toLowerCase();
+      if (ticker && snapshotTicker) return ticker === snapshotTicker && (!holdingCountry || !snapshotCountry || holdingCountry === snapshotCountry);
+      return name === snapshot.company.trim().toLowerCase() && (!holdingCountry || !snapshotCountry || holdingCountry === snapshotCountry);
     })
     .sort((a, b) => Date.parse(b.calculatedAt) - Date.parse(a.calculatedAt))[0];
 }
