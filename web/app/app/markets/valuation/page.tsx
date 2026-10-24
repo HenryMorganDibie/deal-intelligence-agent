@@ -97,6 +97,12 @@ function validHttpUrl(value: string): boolean {
   }
 }
 
+function validPastDate(value: string): boolean {
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value && parsed.getTime() <= Date.now();
+}
+
 function dcf(fcf: number, growthPct: number, discountPct: number, terminalPct: number, cash: number, debt: number, shares: number): number | null {
   const growth = growthPct / 100;
   const discount = discountPct / 100;
@@ -307,8 +313,8 @@ export default function MarketsValuationPage() {
     setError(null);
     if (!validInputs) {
       setError(form.method === "dcf"
-        ? "Check the source and reporting period, positive FCF and shares, non-negative cash/debt, ordered growth assumptions, discount rate above terminal growth, and confirmation that this is a suitable non-financial operating company. If the profile identifies a bank or insurer, use DDM instead of ordinary-company DCF. A market price also needs an HTTP(S) source URL and quote date."
-        : "Check the source and reporting period, positive annual dividend per share, ordered dividend-growth assumptions, discount rate above terminal growth, and confirmation that the company is a mature dividend payer with a sustainable payout. A market price also needs an HTTP(S) source URL and quote date.");
+        ? "Check the source URL, a valid past reporting date, positive FCF and shares, non-negative cash/debt, ordered growth assumptions, discount rate above terminal growth, and confirmation that this is a suitable non-financial operating company. If the profile identifies a bank or insurer, use DDM instead of ordinary-company DCF. A market price also needs an HTTP(S) source URL and a valid past quote date."
+        : "Check the source URL, a valid past reporting date, positive annual dividend per share, ordered dividend-growth assumptions, discount rate above terminal growth, and confirmation that the company is a mature dividend payer with a sustainable payout. A market price also needs an HTTP(S) source URL and a valid past quote date.");
       setHasCalculated(false);
       return;
     }
@@ -353,7 +359,7 @@ export default function MarketsValuationPage() {
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · Valuation" title="A valuation with a countercase.">
-        Build an explicit five-year discounted-cash-flow scenario from financial inputs you can trace to a source. The tool does not fetch or invent a current price, financial statement, share count or exchange rate. The conclusion is only as reliable as the inputs and assumptions you enter.
+        Choose a model that fits the business, then compare bear, base and bull estimates against a dated, sourced market price. You can load existing company financials, but missing figures are not invented and sources are not independently verified.
       </PageHeader>
 
       <div className="mb-6 flex flex-wrap gap-3">
@@ -394,7 +400,7 @@ export default function MarketsValuationPage() {
               </div>
               <div>
                 <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-period">Financial period end *</label>
-                <input id="valuation-period" className="field" required value={form.period} onChange={set("period")} placeholder="e.g. 2025-12-31" />
+                <input id="valuation-period" className="field" type="date" required value={form.period} onChange={set("period")} />
               </div>
               <div className="sm:col-span-2">
                 <button type="button" className="btn btn-secondary w-full" onClick={loadCompanyProfile} disabled={profileBusy}>{profileBusy ? "Loading existing company profile…" : "Load financials from Companies"}</button>
