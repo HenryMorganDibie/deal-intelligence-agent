@@ -9,6 +9,7 @@ import { Container, LogoMark } from "../primitives";
 const NAV: [string, string][] = [
   ["/app", "Briefs"],
   ["/app/research", "Research"],
+  ["/app/markets", "Markets"],
   ["/app/deals", "Deals"],
   ["/app/investors", "Investors"],
   ["/app/companies", "Companies"],
