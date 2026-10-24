@@ -176,8 +176,6 @@ export default function MarketsPortfolioPage() {
   }, [pricedHoldings, totalCurrentValue]);
   const missingPriceCount = holdings.filter((holding) => holding.currentPrice == null).length;
   const missingFxCount = holdings.filter((holding) => holding.fxToBase == null || holding.fxToBase <= 0).length;
-  const assetTypeExposure = useMemo(() => exposureRows(holdings, "assetType", baseCurrency), [holdings, baseCurrency]);
-  const currencyExposure = useMemo(() => exposureRows(holdings, "currency", baseCurrency), [holdings, baseCurrency]);
 
   function updateForm(key: keyof typeof blankForm, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -345,8 +343,7 @@ export default function MarketsPortfolioPage() {
               setBaseCurrency(nextCurrency);
               setHoldings((current) => current.map((holding) => ({ ...holding, fxToBase: holding.currency === nextCurrency ? 1 : null })));
               setForm({ ...blankForm, currency: nextCurrency, fxToBase: "1" });
-              if (holdings.length > 0) setMessage("Reporting currency changed. Re-enter FX conversion rates for holdings whose currency differs from the new base currency.");
-              setMessage("Reporting currency changed. FX rates for holdings in other currencies were cleared; re-enter current rates before relying on portfolio totals.");
+              if (holdings.length > 0) setMessage("Reporting currency changed. FX rates for holdings in other currencies were cleared; re-enter current rates before relying on portfolio totals.");
             }}>
               {CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
             </select>
