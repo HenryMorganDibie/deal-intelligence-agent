@@ -1,6 +1,6 @@
 # Markets Investment Intelligence — Implementation Checklist
 
-**Working branch:** `feature/markets-investment-intelligence`  
+**Working branch:** `feature/markets-overview-alignment`  
 **Target base:** `main`  
 **Production safety:** Do not merge this work or push implementation commits to `main` until the pull request has been reviewed and the acceptance checks below pass.
 
