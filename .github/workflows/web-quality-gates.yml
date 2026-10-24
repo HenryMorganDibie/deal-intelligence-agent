@@ -5,9 +5,10 @@ on:
     branches: [main]
     paths:
       - "web/**"
+      - "supabase/**"
       - ".github/workflows/web-quality-gates.yml"
   pull_request:
-    branches: [main]
+    branches: [main, feature/markets-investment-intelligence]
     paths:
       - "web/**"
       - ".github/workflows/web-quality-gates.yml"
