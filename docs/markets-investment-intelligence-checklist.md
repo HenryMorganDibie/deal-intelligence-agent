@@ -12,7 +12,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Markets owns investment discovery, valuation, portfolio intelligence and personal investment insights.
 - [x] Research Copilot and deeper cross-platform investigations remain in the existing Research workspace.
 - [x] Reuse existing company coverage, financials, research, events, watchlists and alert infrastructure where fit is verified.
-- [x] Begin portfolio onboarding with manual entry and CSV import; consider broker connections later.
+- [x] Begin portfolio onboarding with manual entry and CSV and Excel (.xlsx) import/export; consider broker connections later.
 - [x] No trade execution, custody or automatic investment execution in the initial scope.
 - [x] Make data quality, source provenance, freshness, uncertainty and counterarguments visible.
 
@@ -63,9 +63,9 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 ## Phase 4 — Portfolio Intelligence inside Markets
 
-- [x] Design a portfolio data model that supports manual entry and CSV import.
-- [x] Start with browser-local storage and clear import/export/delete controls; do not upload private holdings to shared storage.
-- [x] Validate CSV headers, required fields, numeric values, malformed quoted CSV, supported currency codes, dates and possible duplicate positions.
+- [x] Design a portfolio data model that supports manual entry, CSV import/export and genuine Excel (.xlsx) import/export.
+- [x] Start with browser-local storage and clear import/export/delete controls; do not upload private holdings to shared storage. CSV and Excel exports include the same portfolio fields; Excel templates are available for import.
+- [x] Validate CSV and Excel headers, required fields, numeric values, malformed quoted CSV, supported currency codes, dates and possible duplicate positions. Excel import uses the first worksheet, rejects formula cells, and limits files to 5 MB / 5,000 holding rows.
 - [x] Implement country and sector exposure for holdings with entered current prices and valid FX conversion.
 - [x] Add allocation/exposure by country, sector, asset type and holding currency for priced and FX-converted holdings; company positions are visible in the portfolio register. Missing price/FX holdings are excluded and called out.
 - [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings. Users can edit entered prices and FX rates inline and attach dates; missing or stale values are called out.
@@ -89,17 +89,17 @@ This checklist is the source of truth for scope and completion. Mark an item com
 ## Phase 6 — Quality, regression and release readiness
 
 - [x] Confirm no backend/API/database/schema changes are introduced by this feature branch; backend tests are not applicable to the feature-only diff. Existing backend suites still require their normal independent checks before any unrelated backend changes ship.
-- [x] Run frontend unit tests, ESLint, TypeScript typecheck and production build. Latest full Web quality-gates run `40108213110` is running on current head `6d42d7deb4bd9d1d9af7cf27be7e2f74746b2bad`; unit tests, ESLint and typecheck have passed, with production build still running at last check.
+- [x] Run frontend unit tests, ESLint, TypeScript typecheck and production build. Latest full Web quality-gates run `40108616033` passed on head `6dc0f2b99f6bda45effe21f76b5b234d25bac387`; subsequent Excel changes are awaiting their own CI run.
 - [x] Run standalone frontend ESLint and the Markets unit-test suite; both passed in Web quality gates run `40101835044`. Backend code is unchanged by this PR.
 - [ ] Test the Markets pages at mobile and desktop sizes.
 - [ ] Verify Companies, Research, Deals, Alerts, watchlists and other existing areas remain unaffected.
 - [ ] Check accessibility, loading states, empty states, error states and keyboard navigation.
 - [x] Review data flow: portfolio holdings and valuation snapshots stay in browser-local storage and are not sent to the event API; no new secrets, dependencies or database schema changes were introduced.
-- [x] Review dependency, schema and migration changes; no new package dependencies, backend schema or environment variables are required.
+- [x] Review dependency, schema and migration changes; the Excel feature adds the maintained, security-hardened `@stackline/xlsx` package, with no backend schema or environment-variable changes.
 - [x] Update this checklist with evidence for each completed automated check; manual and preview-only checks remain open.
 - [x] Update the draft PR with current automated test results and explicit preview limitation. Screenshots/preview URL remain unavailable until Vercel permits a fresh deployment.
 - [x] Verify a READY Vercel preview returns HTTP 200 for `/app/markets`, `/app/markets/valuation`, `/app/markets/portfolio`, `/app/markets/compare` and `/app/markets/monitoring`; API preview `/api/pulse` and `/api/coverage` also return HTTP 200. The preview predates the latest strict CSV-parser commits, so it is not treated as a current-head deployment.
-- [ ] Manually exercise interactive flows in a browser: company search, local persistence, strict CSV import/export and malformed-file rejection, currency conversion, clear/delete, valuation save/review and monitoring empty/error states. This remains unverified because a fresh current-head preview is blocked by Vercel's Free-plan deployment rate limit.
+- [ ] Manually exercise interactive flows in a browser: company search, local persistence, strict CSV and Excel import/export and malformed-file/formula rejection, currency conversion, clear/delete, valuation save/review and monitoring empty/error states. This remains unverified because a fresh current-head preview is blocked by Vercel's Free-plan deployment rate limit.
 - [ ] Obtain explicit approval before merging into `main`.
 - [ ] After approval and merge, verify production status and run a post-deploy smoke check.
 
@@ -145,3 +145,5 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Final portfolio UX hardening | Reporting-currency changes now clear stale FX dates; CSV export attaches/removes its download anchor and delays object-URL revocation. | Full Web quality gates run `40108470299` passed: Markets tests, ESLint, TypeScript and production build |
 | 2026-10-24 | Probed the newest available READY Vercel preview | Current feature preview returned HTTP 200 for all five Markets routes; API preview returned HTTP 200 for `/api/pulse` and `/api/coverage`. Preview predates latest CSV parser commits. | Route smoke tests pass for the deployed feature version; current-head browser acceptance remains open |
 | 2026-10-24 | Hardened portfolio CSV import/export | Extracted CSV parsing and serialization into `web/lib/markets-csv.ts`; parser rejects unclosed quotes, quotes inside unquoted fields and unexpected characters after closing quotes. Added six regression tests for BOM, CRLF, escaped quotes, commas, multiline fields, malformed input and round-trip export. CSV tests are included in `test:markets`. Also clear stale FX dates when changing reporting currency and defer download URL revocation to avoid interrupting CSV downloads. | Web quality gates run `40108470299` passed on code head `f7829ee434db1a640b5cc58ecfa05b4ea28b80b5`; current-head preview blocked by Vercel Free-plan deployment rate limit |
+
+| 2026-10-24 | Added Excel (.xlsx) portfolio support | Added workbook import/export, Excel template download, first-sheet validation, formula rejection, 5 MB / 5,000-row limits, and round-trip / malformed-workbook / formula / size regression tests. CSV flow remains supported. | Code committed to feature branch; CI and browser acceptance pending; no deployment or merge |
