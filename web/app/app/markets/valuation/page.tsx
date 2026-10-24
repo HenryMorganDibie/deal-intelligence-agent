@@ -12,7 +12,7 @@ import { isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/m
 type ModelFit = "standard-operating-company" | "financial-institution" | "mature-dividend-payer" | "negative-or-volatile-fcf" | "early-stage" | "reit-property" | "uncertain";
 
 const VALUATION_STORAGE_KEY = "deal-intelligence-markets-valuations-v1";
-const VALUATION_CURRENCIES = ["AOA", "BIF", "BWP", "CDF", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GBP", "GHS", "GMD", "GNF", "KMF", "KES", "LRD", "LSL", "LYD", "MAD", "MGA", "MRU", "MUR", "MWK", "MZN", "NAD", "NGN", "RWF", "SCR", "SDG", "SLE", "SOS", "SSP", "STN", "SZL", "TND", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWG", "ZWL"];
+const VALUATION_CURRENCIES = ["AED", "AOA", "AUD", "BIF", "BRL", "BWP", "CAD", "CDF", "CHF", "CNY", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GBP", "GHS", "GMD", "GNF", "HKD", "IDR", "INR", "JPY", "KES", "KMF", "KRW", "LRD", "LSL", "LYD", "MAD", "MGA", "MXN", "MRU", "MUR", "MWK", "MYR", "MZN", "NAD", "NGN", "NZD", "PHP", "PKR", "RWF", "SAR", "SCR", "SDG", "SGD", "SLE", "SOS", "SSP", "STN", "SZL", "THB", "TND", "TRY", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWG", "ZWL"];
 
 type Inputs = {
   method: "dcf" | "ddm";
