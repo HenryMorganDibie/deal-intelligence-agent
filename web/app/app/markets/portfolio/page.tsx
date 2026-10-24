@@ -95,7 +95,7 @@ function convert(value: number, fxToBase: number | null): number | null {
   return fxToBase != null && Number.isFinite(fxToBase) && fxToBase > 0 ? value * fxToBase : null;
 }
 
-function exposureRows(holdings: Holding[], key: "country" | "sector", baseCurrency: string) {
+function exposureRows(holdings: Holding[], key: "country" | "sector" | "assetType" | "currency", baseCurrency: string) {
   const totals = new Map<string, number>();
   for (const holding of holdings) {
     if (holding.currentPrice == null || holding.fxToBase == null) continue;
@@ -163,7 +163,7 @@ export default function MarketsPortfolioPage() {
   const totalCostOfPriced = pricedHoldings.reduce((sum, holding) => sum + (convert(holding.quantity * holding.costPerUnit, holding.fxToBase) ?? 0), 0);
   const pricedGain = totalCurrentValue - totalCostOfPriced;
   const countryExposure = useMemo(() => exposureRows(holdings, "country", baseCurrency), [holdings, baseCurrency]);
-  const sectorExposure = useMemo(() => exposureRows(holdings, "sector", baseCurrency), [holdings, baseCurrency]);
+  const sectorExposure = useMemo(() => exposureRows(holdings, "sector", baseCurrency), [holdings, baseCurrency]);\n  const assetTypeExposure = useMemo(() => exposureRows(holdings, "assetType", baseCurrency), [holdings, baseCurrency]);\n  const currencyExposure = useMemo(() => exposureRows(holdings, "currency", baseCurrency), [holdings, baseCurrency]);
 
   function updateForm(key: keyof typeof blankForm, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
