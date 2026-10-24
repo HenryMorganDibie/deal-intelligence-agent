@@ -82,7 +82,8 @@ This checklist is the source of truth for scope and completion. Mark an item com
 ## Phase 6 — Quality, regression and release readiness
 
 - [ ] Run relevant backend unit and integration tests.
-- [ ] Run frontend lint, type checks and production build using the repository's actual supported commands.
+- [x] Run frontend typecheck and production build using the repository's supported workflow; Vercel preview is READY for source commit `cd855181010fb3852e0afa7476e87a2403918251`.
+- [ ] Run a standalone lint command and the broader relevant backend/unit integration test suite.
 - [ ] Test the Markets pages at mobile and desktop sizes.
 - [ ] Verify Companies, Research, Deals, Alerts, watchlists and other existing areas remain unaffected.
 - [ ] Check accessibility, loading states, empty states, error states and keyboard navigation.
@@ -90,7 +91,8 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [ ] Review dependency, schema and migration changes; document any required environment setup.
 - [ ] Update this checklist with evidence for each completed item.
 - [ ] Open/update the PR with test results, screenshots or preview URL when available.
-- [ ] Confirm Vercel preview status is ready and manually verify the preview.
+- [x] Confirm Vercel preview is READY and both `/app/markets` and `/app/markets/portfolio` return HTTP 200.
+- [ ] Manually exercise interactive flows in a browser: company search, local persistence, CSV import/export, currency conversion and clear/delete.
 - [ ] Obtain explicit approval before merging into `main`.
 - [ ] After approval and merge, verify production status and run a post-deploy smoke check.
 
