@@ -376,6 +376,18 @@ export default function MarketsValuationPage() {
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {scenarios.map((scenario) => <ScenarioCard key={scenario.name} scenario={scenario} currency={form.currency} price={price} />)}
                 </div>
+                {scenarioLow != null && scenarioHigh != null && (
+                  <div className="mt-4 rounded-xl border hairline p-4">
+                    <p className="eyebrow">Scenario range, not a confidence interval</p>
+                    <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2">
+                      <p className="text-lg font-semibold">{money(scenarioLow, form.currency)} – {money(scenarioHigh, form.currency)}</p>
+                      <p className="text-xs text-[color:var(--muted)]">Across bear/base/bull assumptions</p>
+                    </div>
+                    {price != null && form.priceDate && form.priceSource && (
+                      <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">Compared with quote dated {form.priceDate} from <a href={form.priceSource} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">the entered market-price source ↗</a>. Quote currency is assumed to match {form.currency}; the tool does not independently verify that alignment.</p>
+                    )}
+                  </div>
+                )}
                 <div className="mt-6">
                   <h3 className="text-sm font-medium">Base-case sensitivity</h3>
                   <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Implied value per share when the discount rate moves by ±2 percentage points and terminal growth by ±1 point. Cells where terminal growth meets or exceeds the discount rate are not calculated.</p>
