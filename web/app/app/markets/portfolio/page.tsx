@@ -47,7 +47,7 @@ function isHolding(value: unknown): value is Holding {
     typeof item.assetType === "string" && typeof item.currency === "string" && CURRENCIES.includes(item.currency) &&
     typeof item.quantity === "number" && Number.isFinite(item.quantity) && item.quantity > 0 &&
     typeof item.costPerUnit === "number" && Number.isFinite(item.costPerUnit) && item.costPerUnit >= 0 &&
-    (item.currentPrice === null || (typeof item.currentPrice === "number" && Number.isFinite(item.currentPrice) && item.currentPrice >= 0)) &&
+    (item.currentPrice === null || (typeof item.currentPrice === "number" && Number.isFinite(item.currentPrice) && item.currentPrice > 0)) &&
     (item.fxToBase === null || (typeof item.fxToBase === "number" && Number.isFinite(item.fxToBase) && item.fxToBase > 0));
 }
 
@@ -137,17 +137,18 @@ export default function MarketsPortfolioPage() {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<PortfolioState>;
-        if (parsed.version === 1 && Array.isArray(parsed.holdings)) {
-          setHoldings(parsed.holdings.filter(isHolding));
-          if (typeof parsed.baseCurrency === "string" && CURRENCIES.includes(parsed.baseCurrency)) {
-            setBaseCurrency(parsed.baseCurrency);
-            setForm({ ...blankForm, currency: parsed.baseCurrency, fxToBase: "1" });
-          }
+        if (parsed.version !== 1 || !Array.isArray(parsed.holdings) ||
+            !parsed.holdings.every(isHolding) || typeof parsed.baseCurrency !== "string" ||
+            !CURRENCIES.includes(parsed.baseCurrency)) {
+          throw new Error("The saved portfolio has an unsupported version or invalid rows. It has been left unchanged to avoid losing data; export or recover it before editing.");
         }
+        setHoldings(parsed.holdings);
+        setBaseCurrency(parsed.baseCurrency);
+        setForm({ ...blankForm, currency: parsed.baseCurrency, fxToBase: "1" });
       }
-    } catch {
+    } catch (loadError) {
       setStorageLoadFailed(true);
-      setStorageWarning("This browser could not read the saved portfolio. You can still work with the current session, but changes may not persist.");
+      setStorageWarning(loadError instanceof Error ? loadError.message : "This browser could not read the saved portfolio. It has been left unchanged to avoid data loss.");
     } finally {
       setReady(true);
     }
@@ -182,7 +183,7 @@ export default function MarketsPortfolioPage() {
     })).sort((a, b) => b.value - a.value);
     return values[0] && totalCurrentValue > 0 ? { ...values[0], share: values[0].value / totalCurrentValue } : null;
   }, [pricedHoldings, totalCurrentValue]);
-  const missingPriceCount = holdings.filter((holding) => holding.currentPrice == null).length;
+  const missingPriceCount = holdings.filter((holding) => holding.currentPrice == null || holding.currentPrice <= 0).length;
   const missingFxCount = holdings.filter((holding) => holding.fxToBase == null || holding.fxToBase <= 0).length;
 
   const portfolioInsights = useMemo(() => {
@@ -234,7 +235,7 @@ export default function MarketsPortfolioPage() {
     const costPerUnit = Number(form.costPerUnit);
     const currentPrice = form.currentPrice.trim() === "" ? null : Number(form.currentPrice);
     const fxToBase = form.currency === baseCurrency ? 1 : (form.fxToBase.trim() === "" ? null : Number(form.fxToBase));
-    if (!form.name.trim() || !form.currency.trim() || !Number.isFinite(quantity) || quantity <= 0 ||
+    if (!form.name.trim() || !form.currency.trim() || !form.costPerUnit.trim() || !Number.isFinite(quantity) || quantity <= 0 ||
         !CURRENCIES.includes(form.currency) || !Number.isFinite(costPerUnit) || costPerUnit < 0 ||
         (currentPrice != null && (!Number.isFinite(currentPrice) || currentPrice <= 0)) ||
         (fxToBase != null && (!Number.isFinite(fxToBase) || fxToBase <= 0))) {
@@ -288,12 +289,13 @@ export default function MarketsPortfolioPage() {
         const name = col(row, "name");
         const currency = col(row, "currency").toUpperCase();
         const quantity = Number(col(row, "quantity"));
-        const costPerUnit = Number(col(row, "cost_per_unit"));
+        const costText = col(row, "cost_per_unit");
+        const costPerUnit = Number(costText);
         const currentText = col(row, "current_price");
         const fxText = col(row, "fx_to_base");
         const currentPrice = currentText === "" ? null : Number(currentText);
         const fxToBase = currency === baseCurrency ? 1 : fxText === "" ? null : Number(fxText);
-        if (!name || !CURRENCIES.includes(currency) || !Number.isFinite(quantity) || quantity <= 0 ||
+        if (!name || !CURRENCIES.includes(currency) || !costText || !Number.isFinite(quantity) || quantity <= 0 ||
             !Number.isFinite(costPerUnit) || costPerUnit < 0 ||
             (currentPrice != null && (!Number.isFinite(currentPrice) || currentPrice <= 0)) ||
             (fxToBase != null && (!Number.isFinite(fxToBase) || fxToBase <= 0))) {
