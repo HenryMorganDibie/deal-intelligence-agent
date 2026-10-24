@@ -111,7 +111,7 @@ test("portfolio valuation review only accepts a fresh, matching quote and suitab
   const review = calculatePortfolioValuationReviews([valuationHolding], [savedValuation()], "NGN")[0];
   assert.equal(review.status, "ready");
   assert.equal(review.conclusion, "Potentially undervalued on these assumptions");
-  assert.equal(review.gapPct, 20);
+  assert.ok(review.gapPct != null && Math.abs(review.gapPct - 20) < 1e-9);
   assert.equal(review.weightedEligible, true);
   const summary = calculatePortfolioValuationSummary([review]);
   assert.equal(summary.matchedCount, 1);
