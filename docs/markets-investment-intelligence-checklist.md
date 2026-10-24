@@ -35,7 +35,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Show coverage context, latest available record date, source links for event items, and meaningful empty/error states on the overview.
 - [ ] Extend freshness/source status to each individual data source and company/instrument profile.
 - [x] Make the implemented overview navigation and company-search actions functional; no decorative or fake data visualisations were added.
-- [x] Build and wire Valuation and My Portfolio destinations; route Investment Monitoring to existing Watchlists rather than duplicate alert infrastructure.
+- [x] Build and wire Valuation, My Portfolio and Compare Opportunities destinations; route Investment Monitoring to existing Watchlists rather than duplicate alert infrastructure.
 - [x] Use responsive layouts, labelled company search, semantic sections and existing app design conventions.
 - [ ] Verify accessibility and keyboard navigation in a running preview.
 
@@ -43,7 +43,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 - [x] Present African scope from day one without implying equal data depth across all 54 countries; the overview shows live coverage metadata and explicitly warns that depth differs by country, exchange, instrument and company.
 - [x] Use existing coverage metadata where available; country counts, market counts and tier descriptions come from `/api/coverage`, not hardcoded claims.
-- [ ] Show country/exchange/instrument coverage and data freshness.
+- [x] Show country, exchange, currency, tier, listed price/statement sources and recorded deal/event counts in a searchable coverage explorer; company-level quote/statement freshness is surfaced in Valuation and Compare. Per-source timestamps are unavailable in the current coverage API.
 - [x] Reuse existing `/api/pulse` and `/api/coverage` on the overview and link to existing Companies, Research and Watchlists; source-linked event items use the pulse response.
 - [x] Distinguish research readiness using returned country tiers and the actual count of countries with price plus statement metadata; this is country-level availability, not a company-by-company guarantee.
 - [ ] Test empty, stale, unavailable and partially populated markets.
@@ -54,7 +54,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Require source URLs and valid past dates, gate on selected currency and model fit, require a dated quote plus quote-source URL for comparisons, and disclose inferred share counts. Independent source-document verification and manual quote-currency confirmation remain limitations.
 - [x] Implement a five-year DCF for suitable non-financial operating companies and a dividend discount model for mature dividend payers; unsuitable model profiles are blocked, and bank/insurer sectors detected in existing company profiles default to DDM. REIT/NAV and other specialist models remain out of scope.
 - [x] Produce bear/base/bull scenarios and discount-rate/terminal-growth sensitivity for both DCF and DDM; the range is explicitly not a confidence interval and is not model-calibrated.
-- [x] Explain assumptions and limitations, show source links, flag statements older than 18 months and quotes older than 7 days, and link to the existing Research workspace for countercase research. Automated countercase synthesis remains pending.
+- [x] Explain assumptions and limitations, show source links, flag statements older than 18 months and quotes older than 7 days, and link to the existing Research workspace with a prefilled countercase question. The question is not auto-submitted; automated countercase synthesis remains pending.
 - [x] Support cautious, scenario-dependent potential overvaluation/undervaluation labels only when all three scenarios agree and the base-case gap exceeds 15%; otherwise show a mixed or narrower-gap conclusion. This is a mechanical comparison, not a buy/sell recommendation.
 - [x] Require company, financial source URL, valid reporting date, method-specific inputs and model-fit confirmation; require a dated quote and quote source URL before price comparisons; refuse invalid assumptions and unsupported model profiles. Generic `free_cash_flow` is not auto-labelled as unlevered FCFF.
 - [x] Keep deterministic calculations in a pure typed module; no LLM-generated value is mixed into the valuation arithmetic.
@@ -72,7 +72,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [ ] Add realised gains, dividends, corporate actions and historical FX effects before presenting comprehensive performance.
 - [ ] Reuse the existing portfolio risk engine only after verifying its assumptions and persistence limitations.
 - [ ] Add portfolio-wide valuation insights only where constituent valuations pass quality gates.
-- [x] Add understandable concentration and data-quality explanations, links to company research and per-holding valuation, and a local-only handoff that pre-fills the existing Watchlists page with company names/tickers.
+- [x] Add understandable concentration and data-quality explanations, links to company research and per-holding valuation, and a local-only handoff that pre-fills the existing Watchlists page with company names. Portfolio quantities, prices and FX rates are not copied into the watchlist draft.
 - [x] Add unit tests for arithmetic invariants, missing prices, currency conversion, exposure aggregation and empty portfolios; execution is pending the latest CI run.
 - [ ] Do not implement cloud-saved portfolios or cross-device sync until authentication and row-level ownership protections are implemented and tested.
 
@@ -122,3 +122,10 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Connected valuation to existing company data and quote provenance | Added a profile-prefill action that reuses returned financials where supported; unsupported currencies are rejected for automatic prefill; inferred shares require a dated quote and aligned currency; a price comparison requires quote date and source URL | CI production build passed before the latest quote-provenance changes; latest quality-gate run pending; Vercel deployment rate-limited until its retry window |
 | 2026-10-24 | Strengthened valuation transparency | Added per-scenario FCF growth display, ordered bear/base/bull assumptions and a 3×3 discount-rate/terminal-growth sensitivity grid | Code committed; automated checks for latest commit pending |
 | 2026-10-24 | Added DCF/DDM suitability gates and tested portfolio calculations | Market model unit tests, ESLint and TypeScript typecheck passed on source commit `1df9f8314ccbfd7bad4b7037e0f325d21ad97cb5`; production build was still running at the time of this update | Build and current-source preview verification pending |
+
+
+## Current verification constraints
+
+- Vercel's deployment API reported the Free-plan `api-deployments-free-per-day` limit and a 24-hour retry window. No new preview deployment was created; do not infer that the latest branch has been browser-verified.
+- The last confirmed full Web quality-gates run passed on source commit `ea9a97b8c0950e9a55a59403c4f43e791bb29c1c`; any later feature changes must pass the same checks before this checklist is marked release-ready.
+- Production `main` remains untouched. PR #13 stays draft until the feature is verified and explicitly approved.

@@ -332,6 +332,13 @@ export default function MarketsValuationPage() {
       }))
     : [];
 
+  const countercaseQuestion = [
+    `Challenge, do not confirm, the ${form.method === "dcf" ? "DCF" : "dividend discount"} valuation for ${form.company}${form.ticker ? ` (${form.ticker})` : ""}.`,
+    `Period ${form.period}; assumptions: bear/base/bull ${form.bearGrowth}/${form.baseGrowth}/${form.bullGrowth}% growth, discount ${form.discountRate}%, terminal ${form.terminalGrowth}%.`,
+    price != null ? `Entered quote: ${form.price} ${form.currency}, dated ${form.priceDate}.` : "No market quote was supplied.",
+    "Use current primary evidence to test cash-flow or dividend sustainability, debt and dilution, source freshness, currency, country, sector and regulatory risks. Separate confirmed facts, inference and unknowns; state what would invalidate the model conclusion.",
+  ].join(" ").slice(0, 500);
+
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · Valuation" title="A valuation with a countercase.">
@@ -540,7 +547,7 @@ export default function MarketsValuationPage() {
             <div className="mt-4 grid gap-2">
               <Link href={`/app/companies?name=${encodeURIComponent(form.company)}`} className="btn btn-secondary justify-center">Review company profile</Link>
               <Link href="/app/markets/portfolio" className="btn btn-ghost justify-center">Open Portfolio Intelligence</Link>
-              <Link href="/app/research" className="btn btn-ghost justify-center">Research the countercase</Link>
+              <Link href={`/app/research?question=${encodeURIComponent(countercaseQuestion)}`} className="btn btn-ghost justify-center">Research the countercase</Link>
             </div>
           </section>
         </div>

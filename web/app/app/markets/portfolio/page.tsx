@@ -370,7 +370,7 @@ export default function MarketsPortfolioPage() {
 
   function preparePortfolioWatchlist() {
     const uniqueCompanies = [...new Map(holdings.map((holding) => {
-      const value = holding.ticker.trim() || holding.name.trim();
+      const value = holding.name.trim();
       return [value.toLowerCase(), value] as const;
     })).values()].filter(Boolean);
     if (!uniqueCompanies.length) return;

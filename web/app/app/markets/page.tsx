@@ -378,6 +378,7 @@ export default function MarketsPage() {
               <Link href="/app/research" className="btn btn-secondary justify-center">Open Research</Link>
               <Link href="/app/watchlists" className="btn btn-ghost justify-center">Open Alerts and watchlists</Link>
               <Link href="/app/companies" className="btn btn-ghost justify-center">Browse company profiles</Link>
+              <Link href="/app/markets/compare" className="btn btn-ghost justify-center">Compare companies</Link>
             </div>
           </section>
         </aside>
