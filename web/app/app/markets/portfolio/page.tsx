@@ -22,7 +22,7 @@ type Holding = {
 type PortfolioState = { version: 1; baseCurrency: string; holdings: Holding[] };
 
 const STORAGE_KEY = "deal-intelligence-markets-portfolio-v1";
-const CURRENCIES = ["USD", "NGN", "KES", "ZAR", "GHS", "EGP", "XOF", "XAF", "MAD", "TZS", "UGX", "RWF", "ETB", "MUR"];
+const CURRENCIES = ["AOA", "BIF", "BWP", "CDF", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GHS", "GMD", "GNF", "KMF", "KES", "LRD", "LSL", "LYD", "MAD", "MGA", "MRO", "MUR", "MWK", "MZN", "NAD", "NGN", "RWF", "SCR", "SDG", "SLE", "SOS", "SSP", "STN", "SZL", "TND", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWL"];
 const ASSET_TYPES = ["Stock", "ETF", "Bond", "Treasury bill", "Money-market fund", "Mutual fund", "REIT", "Fixed deposit", "Other"];
 const CSV_HEADERS = ["name", "ticker", "country", "sector", "asset_type", "currency", "quantity", "cost_per_unit", "current_price", "fx_to_base"];
 
@@ -485,8 +485,21 @@ export default function MarketsPortfolioPage() {
             <div className="mt-4 grid gap-5 sm:grid-cols-2">
               <ExposureList title="By country" rows={countryExposure} currency={baseCurrency} />
               <ExposureList title="By sector" rows={sectorExposure} currency={baseCurrency} />
+              <ExposureList title="By asset type" rows={assetTypeExposure} currency={baseCurrency} />
+              <ExposureList title="By holding currency" rows={currencyExposure} currency={baseCurrency} />
             </div>
           </section>
+        </div>
+      </section>
+
+      <section className="mt-8" aria-labelledby="portfolio-insights-title">
+        <div className="mb-4">
+          <p className="eyebrow">Portfolio Intelligence</p>
+          <h2 id="portfolio-insights-title" className="h3 mt-2 text-xl">What stands out in your entered holdings</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">These are transparent concentration and completeness checks calculated from your own entered prices, FX rates and classifications. They are not predictions, live risk scores or buy/sell recommendations.</p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          {portfolioInsights.map((insight) => <article key={insight.title} className="rounded-xl border hairline p-4"><p className="text-sm font-medium">{insight.title}</p><p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">{insight.detail}</p></article>)}
         </div>
       </section>
 
@@ -523,7 +536,7 @@ export default function MarketsPortfolioPage() {
                   return (
                     <tr key={holding.id} className="border-b hairline last:border-0">
                       <td className="px-3 py-3">
-                        <p className="font-medium">{holding.name}</p>
+                        <Link href={`/app/companies?name=${encodeURIComponent(holding.name)}${holding.ticker ? `&ticker=${encodeURIComponent(holding.ticker)}` : ""}`} className="font-medium underline-offset-4 hover:underline">{holding.name}</Link>
                         {holding.ticker ? <p className="mt-1 text-[color:var(--dim)]">{holding.ticker}</p> : null}
                         <p className="mt-1 text-[color:var(--dim)]">{holding.currency}{holding.fxToBase == null ? " · FX missing" : ""}</p>
                         <Link href={`/app/companies?name=${encodeURIComponent(holding.name)}&ticker=${encodeURIComponent(holding.ticker)}`} className="mt-2 inline-flex text-[color:var(--muted)] underline-offset-4 hover:underline">Research →</Link>
