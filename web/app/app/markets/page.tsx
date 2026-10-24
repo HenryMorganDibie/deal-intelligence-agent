@@ -81,28 +81,6 @@ export default function MarketsPage() {
         Explore African investments using existing company data, market context, transparent valuation models and portfolio analysis. Conclusions are only as reliable as their sources and assumptions; this is decision support, not a promise of returns or an instruction to trade. Coverage differs by country, exchange, instrument and company, and Markets makes those limits visible.
       </PageHeader>
 
-      <section className="panel p-5 sm:p-7" aria-labelledby="investment-start-title">
-        <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-          <div>
-            <p className="eyebrow">Investment intelligence</p>
-            <h2 id="investment-start-title" className="h3 mt-2 text-xl">Move from market signals to an investment view.</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--muted)]">
-              Use the existing Research workspace for company investigations. Markets brings investment evaluation, opportunity comparison, portfolio context and relevant market developments together without duplicating the research or coverage tools.
-            </p>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-            <Link href="/app/research" className="rounded-xl border hairline p-4 transition-colors hover:bg-white/[0.04]">
-              <p className="text-sm font-medium">Research a company <span aria-hidden="true">→</span></p>
-              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Investigate a company using the existing Research workspace.</p>
-            </Link>
-            <Link href="/app/markets/valuation" className="rounded-xl border hairline p-4 transition-colors hover:bg-white/[0.04]">
-              <p className="text-sm font-medium">Evaluate an investment <span aria-hidden="true">→</span></p>
-              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Test valuation assumptions, sensitivity and countercases where the model fits.</p>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       <section className="mt-8" aria-labelledby="market-overview-title">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -209,14 +187,6 @@ export default function MarketsPage() {
         </div>
 
         <aside className="space-y-6">
-          <section className="rounded-xl border hairline p-5" aria-labelledby="coverage-context-title">
-            <p className="eyebrow">Coverage and data limits</p>
-            <h2 id="coverage-context-title" className="h3 mt-2 text-lg">Check what the platform covers.</h2>
-            <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Data depth varies by country, exchange, instrument and company. Use the existing Coverage registry for country, exchange, currency, provider and source-availability details.
-            </p>
-            <Link href="/app/coverage" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open Coverage registry →</Link>
-          </section>
 
           <section className="panel p-5" aria-labelledby="portfolio-title">
             <p className="eyebrow">Personal investing</p>
