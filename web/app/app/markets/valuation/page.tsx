@@ -18,6 +18,8 @@ type Inputs = {
   debt: string;
   shares: string;
   price: string;
+  priceDate: string;
+  priceSource: string;
   bearGrowth: string;
   baseGrowth: string;
   bullGrowth: string;
@@ -53,6 +55,8 @@ const initial: Inputs = {
   debt: "",
   shares: "",
   price: "",
+  priceDate: "",
+  priceSource: "",
   bearGrowth: "0",
   baseGrowth: "8",
   bullGrowth: "15",
@@ -75,8 +79,13 @@ function money(value: number | null, currency: string): string {
   }
 }
 
-function compact(value: number): string {
-  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 2 }).format(value);
+function validHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
 }
 
 function dcf(fcf: number, growthPct: number, discountPct: number, terminalPct: number, cash: number, debt: number, shares: number): number | null {
@@ -220,14 +229,15 @@ export default function MarketsValuationPage() {
     parsed.terminalGrowth != null && parsed.terminalGrowth >= -5 && parsed.terminalGrowth <= 8 &&
     parsed.discountRate > parsed.terminalGrowth &&
     (parsed.price == null || (parsed.price > 0 && form.priceSource.trim().length > 0 && form.priceDate.trim().length > 0)) && form.company.trim().length > 0 &&
-    form.source.trim().length > 0 && form.period.trim().length > 0;
+    validHttpUrl(form.source) && form.period.trim().length > 0 &&
+    (parsed.price == null || (validHttpUrl(form.priceSource) && /^\\d{4}-\\d{2}-\\d{2}$/.test(form.priceDate)));
 
   function calculate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     const growths = [parsed.bearGrowth, parsed.baseGrowth, parsed.bullGrowth];
     if (!validInputs || growths.some((value) => value == null || value <= -100 || value > 100)) {
-      setError("Check required inputs: company, financial source URL, reporting period, positive free cash flow and shares outstanding, non-negative cash/debt, ordered bear ≤ base ≤ bull growth assumptions, and a discount rate above terminal growth. If you enter a market price, also provide its source URL and date.");
+      setError("Check required inputs: company, financial source URL, reporting period, positive free cash flow and shares outstanding, non-negative cash/debt, ordered bear ≤ base ≤ bull growth assumptions, and a discount rate above terminal growth. If you enter a market price, also provide a valid HTTP(S) source URL and quote date.");
       setHasCalculated(false);
       return;
     }
@@ -303,7 +313,7 @@ export default function MarketsValuationPage() {
                 <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">This reuses existing company data where available. It will not guess missing figures, and you must review the loaded values and source before calculating.</p>
               </div>
               <div className="sm:col-span-2">
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-source">Source URL for the financial inputs *</label>
+                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-source">Source URL for the financial inputs (HTTP or HTTPS) *</label>
                 <input id="valuation-source" className="field" required type="url" value={form.source} onChange={set("source")} placeholder="https://... official filing or statement" />
               </div>
             </div>
@@ -316,13 +326,13 @@ export default function MarketsValuationPage() {
                 <NumericField id="valuation-shares" label="Shares outstanding *" value={form.shares} onChange={set("shares")} placeholder="Individual shares" />
                 <NumericField id="valuation-cash" label="Cash and cash equivalents *" value={form.cash} onChange={set("cash")} />
                 <NumericField id="valuation-debt" label="Interest-bearing debt *" value={form.debt} onChange={set("debt")} />
-                <NumericField id="valuation-price" label="Current price per share (optional)" value={form.price} onChange={set("price")} placeholder="Use a dated, sourced quote" />
+                <NumericField id="valuation-price" label={`Current price per share in ${form.currency} (optional)`} value={form.price} onChange={set("price")} placeholder="Use a dated, sourced quote" />
                 <div>
                   <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-date">Quote date (required if price entered)</label>
                   <input id="valuation-price-date" className="field" type="date" value={form.priceDate} onChange={set("priceDate")} />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-source">Quote source URL (required if price entered)</label>
+                  <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-source">Quote source URL (HTTP or HTTPS, required if price entered)</label>
                   <input id="valuation-price-source" className="field" type="url" value={form.priceSource} onChange={set("priceSource")} placeholder="https://... exchange or market-data source" />
                 </div>
               </div>
