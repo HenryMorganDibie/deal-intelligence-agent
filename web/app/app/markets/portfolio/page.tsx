@@ -177,6 +177,43 @@ export default function MarketsPortfolioPage() {
   const missingPriceCount = holdings.filter((holding) => holding.currentPrice == null).length;
   const missingFxCount = holdings.filter((holding) => holding.fxToBase == null || holding.fxToBase <= 0).length;
 
+  const portfolioInsights = useMemo(() => {
+    const insights: { title: string; detail: string }[] = [];
+    if (holdings.length === 0) {
+      insights.push({ title: "Start with your holdings", detail: "Add a few positions or import a CSV. These insights use only the prices, FX rates and classifications you enter." });
+      return insights;
+    }
+    if (largestPosition) {
+      insights.push({
+        title: largestPosition.share >= 0.25 ? "Review single-position concentration" : "Largest position",
+        detail: `${largestPosition.name} represents ${(largestPosition.share * 100).toFixed(1)}% of priced and converted portfolio value. This is a simple sizing signal, not a judgement about the investment itself.`,
+      });
+    } else {
+      insights.push({ title: "Portfolio value is not yet measurable", detail: "Enter current prices and valid FX rates before position sizes can be compared." });
+    }
+    if (countryExposure[0]) {
+      insights.push({
+        title: countryExposure[0].share >= 0.6 ? "Review geographic concentration" : "Largest country exposure",
+        detail: `${countryExposure[0].label} accounts for ${(countryExposure[0].share * 100).toFixed(1)}% of priced and converted value. Unpriced holdings are excluded from this share.`,
+      });
+    }
+    if (sectorExposure[0]) {
+      insights.push({
+        title: sectorExposure[0].share >= 0.6 ? "Review sector concentration" : "Largest sector exposure",
+        detail: `${sectorExposure[0].label} accounts for ${(sectorExposure[0].share * 100).toFixed(1)}% of priced and converted value. The labels are user-supplied and may not capture overlapping business risks.`,
+      });
+    }
+    if (missingPriceCount > 0 || missingFxCount > 0) {
+      insights.push({
+        title: "Complete the valuation inputs",
+        detail: `${missingPriceCount} holding(s) lack a current price and ${missingFxCount} lack a usable FX rate. Update these before treating portfolio totals or allocation percentages as complete.`,
+      });
+    } else {
+      insights.push({ title: "Entered holdings are priced and converted", detail: "All listed holdings have a current price and FX conversion, but the results still depend on the accuracy and date of your manual inputs." });
+    }
+    return insights;
+  }, [holdings.length, largestPosition, countryExposure, sectorExposure, missingPriceCount, missingFxCount]);
+
   function updateForm(key: keyof typeof blankForm, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
   }
