@@ -105,6 +105,8 @@ export default function MarketsPage() {
 
   const latestDeals = pulse?.deals.latest ?? [];
   const latestEvents = pulse?.events.latest ?? [];
+  const topDealCountries = pulse?.deals.top_countries.slice(0, 5) ?? [];
+  const maxCountryDeals = Math.max(1, ...topDealCountries.map((country) => country.deals));
   const researchReady = coverage?.countries.filter((country) => country.prices && country.statements).length ?? 0;
   const visibleCoverage = (coverage?.countries ?? []).filter((country) => {
     const q = coverageQuery.trim().toLowerCase();
@@ -173,6 +175,31 @@ export default function MarketsPage() {
             <Stat label="Corporate events in last 7 days" value={compactNumber(pulse.events.recent)} note="From the existing event feed" />
             <Stat label="Recent disclosed deal value" value={pulse.deals.recent_disclosed_n ? usd(pulse.deals.recent_disclosed_usd) : "Not disclosed"} note={`${compactNumber(pulse.deals.recent_disclosed_n)} recent deals with a disclosed amount`} />
           </div>
+        )}
+        {pulse && topDealCountries.length > 0 && (
+          <section className="panel mt-4 p-5" aria-labelledby="country-deal-flow-title">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="eyebrow">Recorded deal activity</p>
+                <h3 id="country-deal-flow-title" className="h3 mt-2 text-base">Markets with the most deals in the database</h3>
+              </div>
+              <Link href="/app/deals" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Explore deal records →</Link>
+            </div>
+            <div className="mt-4 space-y-3">
+              {topDealCountries.map((country) => (
+                <div key={country.code}>
+                  <div className="mb-1.5 flex items-baseline justify-between gap-3 text-xs">
+                    <span>{country.name}</span>
+                    <span className="kbd text-[color:var(--muted)]">{country.deals.toLocaleString()} recorded deals</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-white/10" role="img" aria-label={`${country.name}: ${country.deals} recorded deals relative to the top country`}>
+                    <div className="h-full rounded-full bg-[color:var(--accent)]" style={{ width: `${Math.max(0, Math.min(100, (country.deals / maxCountryDeals) * 100))}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">This ranks records in Deal Intelligence&apos;s dataset, not total investment volume, market size or the quality of each country&apos;s investment opportunities. Differences can reflect source availability and reporting coverage.</p>
+          </section>
         )}
         <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
           These figures describe Deal Intelligence&apos;s recorded deals and corporate events. They are not stock-market performance, trading volume or a measure of every investment made across Africa.
