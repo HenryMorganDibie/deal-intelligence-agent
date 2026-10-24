@@ -6,6 +6,7 @@ import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader, Stat } from "../../../../components/app/ui";
 import { calculateExposureRows, calculatePortfolioTotals, calculatePortfolioValuationReviews, calculatePortfolioValuationSummary, convertToBase, isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
 import { parseCsv, stringifyCsv } from "../../../../lib/markets-csv";
+import { createPortfolioWorkbook, parsePortfolioWorkbook } from "../../../../lib/markets-excel";
 
 type Holding = {
   id: string;
@@ -258,18 +259,14 @@ export default function MarketsPortfolioPage() {
       : "Holding added. Values are based on the prices and FX rates you entered, not live market feeds.");
   }
 
-  async function importCsv(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
+  async function importRows(rows: string[][], format: "CSV" | "Excel") {
     setError(null);
     setMessage(null);
     try {
-      const rows = parseCsv(await file.text());
-      if (rows.length < 2) throw new Error("The CSV must include a header row and at least one holding.");
+      if (rows.length < 2) throw new Error(`The ${format} file must include a header row and at least one holding.`);
       const headers = rows[0].map((header) => header.trim().toLowerCase().replace(/[ -]+/g, "_"));
       const missing = ["name", "currency", "quantity", "cost_per_unit"].filter((header) => !headers.includes(header));
-      if (missing.length) throw new Error(`Missing required CSV columns: ${missing.join(", ")}.`);
+      if (missing.length) throw new Error(`Missing required ${format} columns: ${missing.join(", ")}.`);
       const col = (row: string[], name: string) => {
         const index = headers.indexOf(name);
         return index < 0 ? "" : (row[index] ?? "").trim();
@@ -313,11 +310,34 @@ export default function MarketsPortfolioPage() {
           fxAsOf: currency === baseCurrency || fxToBase == null ? null : (fxAsOf || null),
         });
       }
-      if (!imported.length) throw new Error("No valid holdings were found. Check the required columns and numeric values.");
+      if (!imported.length) throw new Error(`No valid holdings were found in the ${format} file. Check required columns and numeric values.`);
       setHoldings((current) => [...current, ...imported]);
-      setMessage(`Imported ${imported.length} holding(s)${skipped ? `; skipped ${skipped} invalid row(s)` : ""}${duplicateCount ? `; detected ${duplicateCount} possible duplicate position(s)` : ""}. Review duplicates, FX conversion rates and current prices before relying on totals.`);
+      setMessage(`Imported ${imported.length} holding(s) from ${format}${skipped ? `; skipped ${skipped} invalid row(s)` : ""}${duplicateCount ? `; detected ${duplicateCount} possible duplicate position(s)` : ""}. Review duplicates, FX conversion rates and current prices before relying on totals.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not import this CSV.");
+      setError(err instanceof Error ? err.message : `Could not import this ${format} file.`);
+    }
+  }
+
+  async function importCsv(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      await importRows(parseCsv(await file.text()), "CSV");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not import this CSV file.");
+    }
+  }
+
+  async function importExcel(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      if (file.size > 5 * 1024 * 1024) throw new Error("Excel files must be 5 MB or smaller.");
+      await importRows(parsePortfolioWorkbook(await file.arrayBuffer()), "Excel");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not import this Excel workbook.");
     }
   }
 
@@ -334,6 +354,42 @@ export default function MarketsPortfolioPage() {
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = "deal-intelligence-portfolio.csv";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function exportExcel() {
+    const rows = [
+      CSV_HEADERS,
+      ...holdings.map((holding) => [
+        holding.name, holding.ticker, holding.country, holding.sector, holding.assetType, holding.currency,
+        holding.quantity, holding.costPerUnit, holding.currentPrice, holding.fxToBase, holding.priceAsOf ?? "", holding.fxAsOf ?? "",
+      ]),
+    ];
+    const bytes = createPortfolioWorkbook(rows);
+    const exactBuffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+    const url = URL.createObjectURL(new Blob([exactBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "deal-intelligence-portfolio.xlsx";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function downloadExcelTemplate() {
+    const bytes = createPortfolioWorkbook([
+      CSV_HEADERS,
+      ["Example African Bank", "EXBANK", "Kenya", "Banking", "Stock", "KES", 10, 120, 135, 0.0075, "", ""],
+    ]);
+    const exactBuffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+    const url = URL.createObjectURL(new Blob([exactBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "portfolio-import-template.xlsx";
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
@@ -398,6 +454,7 @@ export default function MarketsPortfolioPage() {
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-secondary" onClick={preparePortfolioWatchlist} disabled={holdings.length === 0}>Prepare event watchlist</button>
           <button type="button" className="btn btn-secondary" onClick={exportCsv} disabled={holdings.length === 0}>Export CSV backup</button>
+          <button type="button" className="btn btn-secondary" onClick={exportExcel} disabled={holdings.length === 0}>Export Excel backup</button>
           <button type="button" className="btn btn-ghost" onClick={clearPortfolio} disabled={holdings.length === 0}>Clear portfolio</button>
         </div>
       </div>
@@ -534,23 +591,30 @@ export default function MarketsPortfolioPage() {
 
         <div className="space-y-6">
           <section className="panel p-5" aria-labelledby="csv-title">
-            <p className="eyebrow">Bulk import</p>
-            <h2 id="csv-title" className="h3 mt-2 text-lg">Import a CSV</h2>
+            <p className="eyebrow">Bulk import and backup</p>
+            <h2 id="csv-title" className="h3 mt-2 text-lg">Import CSV or Excel</h2>
             <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Required columns: <code>name</code>, <code>currency</code>, <code>quantity</code>, <code>cost_per_unit</code>. Optional columns include <code>ticker</code>, <code>country</code>, <code>sector</code>, <code>asset_type</code>, <code>current_price</code>, <code>fx_to_base</code>, <code>price_as_of</code> and <code>fx_as_of</code>. Dates must be valid and not in the future.
+              Required columns: <code>name</code>, <code>currency</code>, <code>quantity</code>, <code>cost_per_unit</code>. Optional columns include <code>ticker</code>, <code>country</code>, <code>sector</code>, <code>asset_type</code>, <code>current_price</code>, <code>fx_to_base</code>, <code>price_as_of</code> and <code>fx_as_of</code>. Dates must be valid and not in the future. Excel imports use the first worksheet, reject formulas, and are limited to 5 MB and 5,000 holding rows.
             </p>
             <label className="mt-4 block text-xs text-[color:var(--muted)]" htmlFor="portfolio-csv">Choose CSV file</label>
             <input id="portfolio-csv" className="field mt-2" type="file" accept=".csv,text/csv" onChange={importCsv} />
-            <button type="button" className="btn btn-secondary mt-3" onClick={() => {
-              const example = [CSV_HEADERS.join(","), ["Example African Bank", "EXBANK", "Kenya", "Banking", "Stock", "KES", 10, 120, 135, 0.0075, "", ""].join(",")].join("\r\n");
-              const blob = new Blob([example + "\r\n"], { type: "text/csv;charset=utf-8" });
-              const url = URL.createObjectURL(blob);
-              const anchor = document.createElement("a");
-              anchor.href = url;
-              anchor.download = "portfolio-import-template.csv";
-              anchor.click();
-              URL.revokeObjectURL(url);
-            }}>Download CSV template</button>
+            <label className="mt-4 block text-xs text-[color:var(--muted)]" htmlFor="portfolio-excel">Choose Excel workbook (.xlsx)</label>
+            <input id="portfolio-excel" className="field mt-2" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={importExcel} />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" className="btn btn-secondary" onClick={() => {
+                const example = [CSV_HEADERS.join(","), ["Example African Bank", "EXBANK", "Kenya", "Banking", "Stock", "KES", 10, 120, 135, 0.0075, "", ""].join(",")].join("\r\n");
+                const blob = new Blob([example + "\r\n"], { type: "text/csv;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const anchor = document.createElement("a");
+                anchor.href = url;
+                anchor.download = "portfolio-import-template.csv";
+                document.body.appendChild(anchor);
+                anchor.click();
+                anchor.remove();
+                window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+              }}>Download CSV template</button>
+              <button type="button" className="btn btn-secondary" onClick={downloadExcelTemplate}>Download Excel template</button>
+            </div>
           </section>
 
           <section className="panel p-5" aria-labelledby="exposure-title">
