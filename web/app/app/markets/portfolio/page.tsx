@@ -270,7 +270,7 @@ export default function MarketsPortfolioPage() {
     URL.revokeObjectURL(url);
   }
 
-  function removeHolding(id: string) {
+  function updateHoldingNumber(id: string, key: "currentPrice" | "fxToBase", raw: string) {\n    const value = raw.trim() === "" ? null : Number(raw);\n    if (value != null && (!Number.isFinite(value) || value < 0 || (key === "fxToBase" && value === 0))) return;\n    setHoldings((current) => current.map((holding) => {\n      if (holding.id !== id) return holding;\n      if (key === "fxToBase" && holding.currency === baseCurrency) return { ...holding, fxToBase: 1 };\n      return { ...holding, [key]: value };\n    }));\n  }\n\n  function removeHolding(id: string) {
     setHoldings((current) => current.filter((holding) => holding.id !== id));
     setMessage("Holding removed.");
   }
@@ -308,7 +308,7 @@ export default function MarketsPortfolioPage() {
               const nextCurrency = event.target.value;
               setBaseCurrency(nextCurrency);
               setHoldings((current) => current.map((holding) => ({ ...holding, fxToBase: holding.currency === nextCurrency ? 1 : null })));
-              setForm({ ...blankForm, currency: nextCurrency, fxToBase: "1" });
+              setForm({ ...blankForm, currency: nextCurrency, fxToBase: "1" });\n              setMessage("Reporting currency changed. FX rates for holdings in other currencies were cleared; re-enter current rates before relying on portfolio totals.");
             }}>
               {CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
             </select>
@@ -455,7 +455,7 @@ export default function MarketsPortfolioPage() {
             <table className="w-full min-w-[68rem] border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b hairline text-[color:var(--dim)]">
-                  {["Investment", "Type", "Country / sector", "Units", "Cost / unit", "Entered price", `Value (${baseCurrency})`, "Gain / loss", ""].map((heading) => (
+                  {["Investment", "Type", "Country / sector", "Units", "Cost / unit", "Entered price", `FX to ${baseCurrency}`, `Value (${baseCurrency})`, "Gain / loss", ""].map((heading) => (
                     <th key={heading} className="whitespace-nowrap px-3 py-3 font-normal">{heading}</th>
                   ))}
                 </tr>
