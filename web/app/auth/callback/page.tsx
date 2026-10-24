@@ -26,7 +26,7 @@ export default function AuthCallbackPage() {
       try {
         let response: Response;
         if (oauthError) {
-          if (active) setMessage(decodeURIComponent(oauthError.replace(/\+/g, " ")));
+          if (active) setMessage(oauthError);
           return;
         } else if (oauthCode) {
           response = await fetch("/api/portfolio/auth", {
