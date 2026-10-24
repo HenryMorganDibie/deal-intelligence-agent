@@ -371,7 +371,7 @@ export default function MarketsPortfolioPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="holding-currency">Holding currency</label>
-              <select id="holding-currency" className="field" value={form.currency} onChange={(event) => updateForm("currency", event.target.value)}>
+              <select id="holding-currency" className="field" value={form.currency} onChange={(event) => { const currency = event.target.value; setForm((current) => ({ ...current, currency, fxToBase: currency === baseCurrency ? "1" : "" })); }}>
                 {CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
               </select>
             </div>
