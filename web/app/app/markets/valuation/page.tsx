@@ -363,9 +363,16 @@ export default function MarketsValuationPage() {
                 <input id="valuation-ticker" className="field" value={form.ticker} onChange={set("ticker")} placeholder="DANGCEM.LG" />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-currency">Statement currency</label>
+                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-method">Valuation method *</label>
+                <select id="valuation-method" className="field" value={form.method} onChange={set("method")}>
+                  <option value="dcf">Discounted cash flow (non-financial operating companies)</option>
+                  <option value="ddm">Dividend discount (mature dividend payers)</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-currency">Statement / dividend currency</label>
                 <select id="valuation-currency" className="field" value={form.currency} onChange={set("currency")}>
-                  {["NGN", "KES", "ZAR", "GHS", "EGP", "XOF", "XAF", "MAD", "TZS", "UGX", "RWF", "ETB", "MUR", "USD", "EUR", "GBP"].map((currency) => <option key={currency} value={currency}>{currency}</option>)}
+                  {["NGN", "KES", "ZAR", "GHS", "EGP", "XOF", "XAF", "MAD", "TZS", "UGX", "RWF", "ETB", "MUR", "DZD", "AOA", "BWP", "BIF", "CVE", "KMF", "CDF", "DJF", "ERN", "SZL", "GMD", "GNF", "LSL", "LRD", "LYD", "MGA", "MWK", "MRU", "MZN", "NAD", "STN", "SCR", "SLE", "SOS", "SSP", "SDG", "TND", "ZMW", "ZWG", "USD", "EUR", "GBP"].map((currency) => <option key={currency} value={currency}>{currency}</option>)}
                 </select>
               </div>
               <div>
@@ -383,13 +390,26 @@ export default function MarketsValuationPage() {
             </div>
 
             <div>
-              <h3 className="text-sm font-medium">Financial inputs</h3>
-              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Enter monetary values in the same currency units throughout (do not mix thousands, millions or billions). Shares outstanding must be in individual shares, not millions. Use free cash flow to the firm, not net income or dividends. Cash and debt start blank so missing values cannot silently become zero.</p>
+              <h3 className="text-sm font-medium">{form.method === "dcf" ? "Cash-flow inputs" : "Dividend inputs"}</h3>
+              {form.method === "dcf" ? (
+                <>
+                  <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Use annual unlevered free cash flow from a source you can inspect. Keep cash flow, cash and debt in the same absolute currency units, not mixed thousands, millions or billions. Shares must be individual shares, not millions.</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <NumericField id="valuation-fcf" label="Latest annual unlevered free cash flow *" value={form.fcf} onChange={set("fcf")} placeholder="Positive value required" />
+                    <NumericField id="valuation-shares" label="Shares outstanding *" value={form.shares} onChange={set("shares")} placeholder="Individual shares" />
+                    <NumericField id="valuation-cash" label="Cash and cash equivalents *" value={form.cash} onChange={set("cash")} />
+                    <NumericField id="valuation-debt" label="Interest-bearing debt *" value={form.debt} onChange={set("debt")} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Use the latest annual dividend per share in the same currency as the quoted share price. The model assumes five years of dividend growth followed by a stable terminal growth rate; do not use it where dividends are absent or unsustainable.</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <NumericField id="valuation-dividend" label={`Latest annual dividend per share (${form.currency}) *`} value={form.dividendPerShare} onChange={set("dividendPerShare")} placeholder="Positive annual dividend" />
+                  </div>
+                </>
+              )}
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <NumericField id="valuation-fcf" label="Latest annual unlevered free cash flow *" value={form.fcf} onChange={set("fcf")} placeholder="Positive value required" />
-                <NumericField id="valuation-shares" label="Shares outstanding *" value={form.shares} onChange={set("shares")} placeholder="Individual shares" />
-                <NumericField id="valuation-cash" label="Cash and cash equivalents *" value={form.cash} onChange={set("cash")} />
-                <NumericField id="valuation-debt" label="Interest-bearing debt *" value={form.debt} onChange={set("debt")} />
                 <NumericField id="valuation-price" label={`Current price per share in ${form.currency} (optional)`} value={form.price} onChange={set("price")} placeholder="Use a dated, sourced quote" />
                 <div>
                   <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-date">Quote date (required if price entered)</label>
@@ -404,26 +424,32 @@ export default function MarketsValuationPage() {
 
             <div>
               <h3 className="text-sm font-medium">Model suitability check</h3>
-              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Choose the closest fit before interpreting the output. The tool cannot independently verify this classification. For financial institutions, early-stage businesses, REITs or unstable cash flows, this DCF may be inappropriate; results stay exploratory and the app will not issue a cheap/expensive verdict.</p>
-              <label className="mb-1.5 mt-3 block text-xs text-[color:var(--muted)]" htmlFor="valuation-model-fit">Company / instrument profile</label>
+              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">This is a suitability gate, not a formality. Ordinary-company DCF is limited to established non-financial businesses with positive, representative free cash flow. DDM is limited to mature dividend payers with sustainable payouts. Other business types need different models, which this workspace does not yet provide.</p>
+              <label className="mb-1.5 mt-3 block text-xs text-[color:var(--muted)]" htmlFor="valuation-model-fit">Company / instrument profile *</label>
               <select id="valuation-model-fit" className="field" value={form.modelFit} onChange={set("modelFit")}>
                 <option value="uncertain">Unsure / not yet assessed</option>
                 <option value="standard-operating-company">Established non-financial operating company with positive, representative FCF</option>
                 <option value="financial-institution">Bank, insurer, lender or other financial institution</option>
+                <option value="mature-dividend-payer">Mature dividend payer in another sector</option>
                 <option value="negative-or-volatile-fcf">Negative or highly volatile free cash flow</option>
                 <option value="early-stage">Early-stage / pre-profit business</option>
                 <option value="reit-property">REIT / property investment company</option>
               </select>
+              <label className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-[color:var(--muted)]">
+                <input type="checkbox" className="mt-0.5" checked={modelFitConfirmed} onChange={(event) => setModelFitConfirmed(event.target.checked)} />
+                <span>{form.method === "dcf" ? "I have checked that this is a non-financial operating company and the entered free cash flow is positive and reasonably representative." : "I have checked that this is a mature dividend payer and the entered annual dividend is sustainable."}</span>
+              </label>
+              {sectorRequiresDdm && form.method === "dcf" ? <p className="mt-2 text-xs text-[color:var(--risk)]">The existing company profile identifies a financial-sector business. This workspace blocks ordinary-company DCF for that profile; switch to DDM and enter a sourced annual dividend per share.</p> : null}
             </div>
 
             <div>
               <h3 className="text-sm font-medium">Scenario assumptions</h3>
-              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Growth rates are constant annual free-cash-flow growth for five years. The discount rate should reflect business and country risk. Terminal growth must be below the discount rate.</p>
+              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">{form.method === "dcf" ? "Growth rates are annual free-cash-flow growth for five years. Use a discount rate that reflects business and country risk." : "Growth rates are annual dividend growth for five years. Use the cost of equity, not WACC, for discounting dividends."} Terminal growth must be below the discount rate.</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <NumericField id="valuation-bear" label="Bear-case annual FCF growth (%)" value={form.bearGrowth} onChange={set("bearGrowth")} />
-                <NumericField id="valuation-base" label="Base-case annual FCF growth (%)" value={form.baseGrowth} onChange={set("baseGrowth")} />
-                <NumericField id="valuation-bull" label="Bull-case annual FCF growth (%)" value={form.bullGrowth} onChange={set("bullGrowth")} />
-                <NumericField id="valuation-discount" label="Discount rate / WACC (%)" value={form.discountRate} onChange={set("discountRate")} />
+                <NumericField id="valuation-bear" label={form.method === "dcf" ? "Bear-case annual FCF growth (%)" : "Bear-case annual dividend growth (%)"} value={form.bearGrowth} onChange={set("bearGrowth")} />
+                <NumericField id="valuation-base" label={form.method === "dcf" ? "Base-case annual FCF growth (%)" : "Base-case annual dividend growth (%)"} value={form.baseGrowth} onChange={set("baseGrowth")} />
+                <NumericField id="valuation-bull" label={form.method === "dcf" ? "Bull-case annual FCF growth (%)" : "Bull-case annual dividend growth (%)"} value={form.bullGrowth} onChange={set("bullGrowth")} />
+                <NumericField id="valuation-discount" label={form.method === "dcf" ? "Discount rate / WACC (%)" : "Cost of equity (%)"} value={form.discountRate} onChange={set("discountRate")} />
                 <NumericField id="valuation-terminal" label="Terminal growth (%)" value={form.terminalGrowth} onChange={set("terminalGrowth")} />
               </div>
             </div>
