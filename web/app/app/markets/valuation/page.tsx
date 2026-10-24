@@ -102,7 +102,7 @@ function ScenarioCard({ scenario, currency, price }: { scenario: Scenario; curre
     <article className="rounded-xl border hairline p-4">
       <p className="eyebrow">{scenario.name} case</p>
       <p className="mt-2 text-xl font-semibold">{money(scenario.perShare, currency)}</p>
-      <p className="mt-1 text-xs text-[color:var(--muted)]">Implied value per share</p>
+      <p className="mt-1 text-xs text-[color:var(--muted)]">Implied value per share</p>\n      <p className="mt-2 text-xs text-[color:var(--muted)]">Five-year FCF growth assumption: {scenario.growth.toFixed(1)}% annually</p>
       <div className="mt-4 flex items-center justify-between gap-3 border-t hairline pt-3 text-xs">
         <span className="text-[color:var(--muted)]">Implied enterprise value</span>
         <span className="kbd">{money(scenario.enterpriseValue, currency)}</span>
@@ -158,7 +158,7 @@ export default function MarketsValuationPage() {
         : form.currency;
       const sameCurrency = Boolean(profile.market?.currency && profile.market.currency.toUpperCase() === currency);
       const hasDatedQuote = Boolean(profile.market?.as_at && profile.market?.price != null && sameCurrency);
-      const inferredShares = sameCurrency && profile.market?.market_cap != null && profile.market.price != null && profile.market.price > 0
+      const inferredShares = sameCurrency && profile.market?.market_cap != null && profile.market.market_cap > 0 && profile.market.price != null && profile.market.price > 0
         ? String(profile.market.market_cap / profile.market.price)
         : "";
       setForm((current) => ({
@@ -211,7 +211,7 @@ export default function MarketsValuationPage() {
 
   const validInputs = parsed.fcf != null && parsed.fcf > 0 && parsed.cash != null && parsed.cash >= 0 &&
     parsed.debt != null && parsed.debt >= 0 && parsed.shares != null && parsed.shares > 0 &&
-    parsed.bearGrowth != null && parsed.baseGrowth != null && parsed.bullGrowth != null &&
+    parsed.bearGrowth != null && parsed.baseGrowth != null && parsed.bullGrowth != null &&\n    parsed.bearGrowth <= parsed.baseGrowth && parsed.baseGrowth <= parsed.bullGrowth &&
     parsed.discountRate != null && parsed.discountRate > 0 && parsed.discountRate <= 60 &&
     parsed.terminalGrowth != null && parsed.terminalGrowth >= -5 && parsed.terminalGrowth <= 8 &&
     parsed.discountRate > parsed.terminalGrowth &&
@@ -223,7 +223,7 @@ export default function MarketsValuationPage() {
     setError(null);
     const growths = [parsed.bearGrowth, parsed.baseGrowth, parsed.bullGrowth];
     if (!validInputs || growths.some((value) => value == null || value <= -100 || value > 100)) {
-      setError("Check required inputs: company, source URL, reporting period, positive free cash flow and shares outstanding, non-negative cash/debt, sensible growth rates, and a discount rate above terminal growth.");
+      setError("Check required inputs: company, source URL, reporting period, positive free cash flow and shares outstanding, non-negative cash/debt, ordered bear ≤ base ≤ bull growth assumptions, and a discount rate above terminal growth.");
       setHasCalculated(false);
       return;
     }
