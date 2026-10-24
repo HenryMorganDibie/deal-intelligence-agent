@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader, Stat } from "../../../../components/app/ui";
 import { calculateExposureRows, calculatePortfolioTotals, calculatePortfolioValuationReviews, calculatePortfolioValuationSummary, convertToBase, isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
+import { csvEscape, parseCsv, stringifyCsv } from "../../../../lib/markets-csv";
 
 type Holding = {
   id: string;
@@ -77,45 +78,6 @@ function isHolding(value: unknown): value is Holding {
 
 function newId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = "";
-  let quoted = false;
-  const input = text.replace(/^\uFEFF/, "");
-  for (let i = 0; i < input.length; i += 1) {
-    const char = input[i];
-    if (char === '"') {
-      if (quoted && input[i + 1] === '"') {
-        field += '"';
-        i += 1;
-      } else {
-        quoted = !quoted;
-      }
-    } else if (char === "," && !quoted) {
-      row.push(field.trim());
-      field = "";
-    } else if ((char === "\n" || char === "\r") && !quoted) {
-      if (char === "\r" && input[i + 1] === "\n") i += 1;
-      row.push(field.trim());
-      if (row.some((cell) => cell !== "")) rows.push(row);
-      row = [];
-      field = "";
-    } else {
-      field += char;
-    }
-  }
-  row.push(field.trim());
-  if (row.some((cell) => cell !== "")) rows.push(row);
-  if (quoted) throw new Error("The CSV contains an unclosed quoted field.");
-  return rows;
-}
-
-function csvEscape(value: string | number | null): string {
-  const text = value == null ? "" : String(value);
-  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
 function amount(value: number | null | undefined, currency: string): string {
@@ -367,7 +329,7 @@ export default function MarketsPortfolioPage() {
         holding.quantity, holding.costPerUnit, holding.currentPrice, holding.fxToBase, holding.priceAsOf ?? "", holding.fxAsOf ?? "",
       ]),
     ];
-    const csv = rows.map((row) => row.map(csvEscape).join(",")).join("\r\n");
+    const csv = stringifyCsv(rows);
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
