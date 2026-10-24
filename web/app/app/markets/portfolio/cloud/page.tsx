@@ -353,6 +353,7 @@ export default function CloudPortfolioPage() {
       const valuationRaw = window.localStorage.getItem("deal-intelligence-markets-valuations-v1");
       if (valuationRaw) { const parsed: unknown = JSON.parse(valuationRaw); if (!Array.isArray(parsed)) throw new Error("Local valuation reviews could not be validated. No data was migrated."); savedValuations = parsed; }
       if (local.holdings.length > 5000 || savedValuations.length > 1000) throw new Error("Migration supports up to 5,000 holdings and 1,000 saved valuation reviews.");
+      if (!window.confirm("Copy " + local.holdings.length + " holding(s) and " + savedValuations.length + " valuation review(s) into the selected cloud portfolio? This does not delete or change the browser-local data.")) return;
       const keyName = "deal-intelligence-cloud-migration-v1:" + selectedId;
       let migrationKey = window.localStorage.getItem(keyName);
       if (!migrationKey) { migrationKey = crypto.randomUUID(); window.localStorage.setItem(keyName, migrationKey); }

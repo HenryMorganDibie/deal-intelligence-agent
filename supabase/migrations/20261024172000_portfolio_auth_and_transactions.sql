@@ -26,7 +26,7 @@ create table public.organization_invites (
   token_hash text not null unique check (token_hash ~ '^[a-f0-9]{64}$'),
   role text not null check (role in ('admin', 'manager', 'analyst', 'viewer')),
   expires_at timestamptz not null,
-  max_uses integer not null default 1 check (max_uses between 1 and 50),
+  max_uses integer not null default 1 check (max_uses = 1),
   use_count integer not null default 0 check (use_count >= 0 and use_count <= max_uses),
   revoked_at timestamptz,
   created_by uuid not null references auth.users(id) on delete restrict,
@@ -48,6 +48,9 @@ with check (
   and role <> 'owner'
   and private.has_org_role(organization_id, 'admin')
   and (role <> 'admin' or private.has_org_role(organization_id, 'owner'))
+  and max_uses = 1
+  and expires_at > now()
+  and expires_at <= now() + interval '7 days'
 );
 
 create or replace function public.accept_organization_invite(p_token_hash text)
