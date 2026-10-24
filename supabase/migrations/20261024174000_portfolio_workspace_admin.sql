@@ -1,7 +1,7 @@
 -- Harden archived-tenant access and expose safe workspace administration RPCs.
 begin;
 create or replace function private.has_org_role(p_organization_id uuid,p_minimum_role text default 'viewer')
-returns boolean language sql stable security definer set search_path='' as $
+returns boolean language sql stable security definer set search_path='' as $$
  select exists(
   select 1 from public.organization_memberships m
   join public.organizations o on o.id=m.organization_id
@@ -10,7 +10,7 @@ returns boolean language sql stable security definer set search_path='' as $
    and case m.role when 'owner' then 5 when 'admin' then 4 when 'manager' then 3 when 'analyst' then 2 when 'viewer' then 1 else 0 end
      >= case p_minimum_role when 'owner' then 5 when 'admin' then 4 when 'manager' then 3 when 'analyst' then 2 when 'viewer' then 1 else 99 end
  );
-$;
+$$;
 revoke all on function private.has_org_role(uuid,text) from public,anon;
 grant execute on function private.has_org_role(uuid,text) to authenticated;
 
