@@ -242,18 +242,15 @@ export default function MarketsPage() {
             <Link href="/app/markets/valuation" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open Valuation workspace →</Link>
           </section>
 
-          <section className="rounded-xl border hairline p-5">
-            <p className="eyebrow">Existing intelligence</p>
-            <h2 className="h3 mt-2 text-lg">Continue your research</h2>
+          <section className="rounded-xl border hairline p-5" aria-labelledby="investment-tools-title">
+            <p className="eyebrow">Investment tools</p>
+            <h2 id="investment-tools-title" className="h3 mt-2 text-lg">Compare and monitor.</h2>
+            <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
+              Compare available investment evidence, then monitor relevant developments against your portfolio context.
+            </p>
             <div className="mt-4 grid gap-2">
-              <Link href="/app/markets/valuation" className="btn btn-secondary justify-center">Explore valuation</Link>
-              <Link href="/app/markets/portfolio" className="btn btn-ghost justify-center">Open My Portfolio</Link>
-              <Link href="/app/markets/compare" className="btn btn-ghost justify-center">Compare opportunities</Link>
+              <Link href="/app/markets/compare" className="btn btn-secondary justify-center">Compare opportunities</Link>
               <Link href="/app/markets/monitoring" className="btn btn-ghost justify-center">Monitor portfolio developments</Link>
-              <Link href="/app/research" className="btn btn-ghost justify-center">Open Research</Link>
-              <Link href="/app/watchlists" className="btn btn-ghost justify-center">Open Alerts and watchlists</Link>
-              <Link href="/app/companies" className="btn btn-ghost justify-center">Browse company profiles</Link>
-              <Link href="/app/markets/compare" className="btn btn-ghost justify-center">Compare companies</Link>
             </div>
           </section>
         </aside>
