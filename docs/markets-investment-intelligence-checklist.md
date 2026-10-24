@@ -129,6 +129,8 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Added local portfolio event monitoring and valuation-change insights | `/app/markets/monitoring` reads locally stored holdings, requests only the general 90-day `/api/events` feed, deduplicates and matches exact company names/ticker tokens, links candidate matches to sources, and flags at least 10% changes between saved model estimates. Up to 10 local valuation snapshots per company are retained. | Current-head unit tests, ESLint, TypeScript typecheck and production build passed; Vercel preview and browser verification remain blocked by rate limit |
 
 
+| 2026-10-24 | Corrected Markets overview information architecture | Removed the duplicate country/exchange/currency search and coverage table from Markets; the existing Coverage page remains the source of truth. Reframed the overview around company discovery, valuation, opportunity comparison, recent developments and deal-flow leads. Added links to existing Research for deeper investigation and Markets Monitoring for ongoing developments. The company action is labelled `View company` because it routes to Companies, not Research. | Implemented on `feature/markets-overview-alignment`; automated checks and current-head browser acceptance pending |
+
 ## Current verification constraints
 
 - Vercel reported the Free-plan `api-deployments-free-per-day` limit with a 24-hour retry window. Current Vercel check failures are deployment-rate-limit failures, not application build failures. The READY preview predates the latest strict CSV-parser and download-lifecycle changes; the latest source head has passed GitHub quality gates but has not been browser-verified.
