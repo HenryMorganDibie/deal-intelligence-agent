@@ -2,7 +2,7 @@
 
 ## Status
 
-This is the first implementation slice for database-backed Markets portfolios. The migration is additive and has **not** been applied to the hosted Deal Intelligence database. The existing Markets UI remains browser-local until authentication, API integration, migration verification, and migration of local data are completed.
+This is the implementation record for database-backed Markets portfolios. The six portfolio migrations are recorded in the hosted Deal Intelligence Supabase project as of 2026-10-25, and the live schema was independently checked: the portfolio tables exist, RLS is enabled, anonymous table access is denied, and the expected role-scoped policies are present. This verifies schema state, not end-to-end authentication or browser acceptance. Existing browser-local holdings remain separate until a signed-in user explicitly migrates them.
 
 ## Ownership model
 
@@ -46,19 +46,19 @@ The database foundation now includes current-price/FX metadata, single-use hashe
 - Organization creation inserts the creator's owner membership through a database trigger, so the organization cannot be created without an owner membership.
 - Audit history allows append through database triggers and read by authorized users but exposes no client-side insert/update/delete policy.
 - Portfolio and ledger records are not hard-deleted through the client API. Organization/portfolio archival fields are available so retention can be preserved.
-- The migration does not use a service-role/secret key in the browser and does not touch the hosted schema. Authenticated application requests use HTTP-only, same-site cookies and the signed-in user's access token so database RLS remains in force.
+- No service-role/secret key is used in browser code. Authenticated application requests use HTTP-only, same-site cookies and the signed-in user's access token so database RLS remains in force. The hosted migrations are already applied; do not re-apply them.
 - Organization invite codes are random, hashed before storage, single-use, and expire after seven days. The raw code is returned only when generated; no email is sent by the current implementation.
 
 ## Required follow-up before enabling cloud portfolios
 
 1. Configure and verify the Supabase Auth email confirmation, recovery, redirect URLs (including the web origin's /auth/callback route), and web-project environment variables.
 2. Add automated RLS integration tests for two unrelated users, two separate organizations, same-organization role differences, personal-vs-shared portfolio boundaries, and attempted cross-tenant ID substitution.
-3. Validate the SQL migrations against a disposable/local database and run Supabase security/performance advisors before applying them to the hosted project.
+3. The migrations have passed isolated local Supabase/pgTAP CI and are recorded as applied in the hosted project. Review Supabase security/performance advisor findings before enabling the feature; the current project-level advisor output also includes pre-existing platform-wide findings that need triage.
 4. Keep the cloud CSV/XLSX transaction importer bounded at 5,000 rows per request; it validates the full file before an atomic commit, rejects duplicate external IDs, and makes retries idempotent.
 5. Keep local-to-cloud migration explicit and preserve the original browser data as a backup. The server checks reporting-currency compatibility and records an idempotency receipt.
 6. Member listing/role changes/removal and invite revocation are implemented through restricted admin RPCs. Verify these workflows in the browser before enabling cloud access.
 7. Test browser interactions, keyboard accessibility, session expiry/refresh, mobile layouts, and regression across existing app areas.
-8. Verify current preview/API deployment tied to the latest source head once Vercel's build-rate limit resets.
+8. Verify current preview/API deployment tied to the latest source head when a preview can be created. Avoid repeated preview builds while Vercel is rate-limited; GitHub Actions checks are not a substitute for interactive browser acceptance.
 
 ## Acceptance matrix
 
