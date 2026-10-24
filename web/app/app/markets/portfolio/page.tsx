@@ -660,7 +660,7 @@ export default function MarketsPortfolioPage() {
                     </p>
                   </div>
                 ) : null}
-                <Link href={`/app/markets/valuation?company=${encodeURIComponent(review.company)}${review.ticker ? `&ticker=${encodeURIComponent(review.ticker)}` : ""}`} className="mt-3 inline-flex text-sm underline-offset-4 hover:underline">Review or update valuation →</Link>
+                <Link href={`/app/markets/valuation?company=${encodeURIComponent(review.company)}${review.ticker ? `&ticker=${encodeURIComponent(review.ticker)}` : ""}${review.country ? `&country=${encodeURIComponent(review.country)}` : ""}`} className="mt-3 inline-flex text-sm underline-offset-4 hover:underline">Review or update valuation →</Link>
               </article>
             ))}
           </div>
