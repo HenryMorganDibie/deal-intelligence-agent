@@ -49,16 +49,16 @@ The database foundation now includes current-price/FX metadata, single-use hashe
 - No service-role/secret key is used in browser code. Authenticated application requests use HTTP-only, same-site cookies and the signed-in user's access token so database RLS remains in force. The hosted migrations are already applied; do not re-apply them.
 - Organization invite codes are random, hashed before storage, single-use, and expire after seven days. The raw code is returned only when generated; no email is sent by the current implementation.
 
-## Required follow-up before enabling cloud portfolios
+## Release gates before enabling cloud portfolios
 
-1. Configure and verify the Supabase Auth email confirmation, recovery, redirect URLs (including the web origin's /auth/callback route), and web-project environment variables.
-2. Add automated RLS integration tests for two unrelated users, two separate organizations, same-organization role differences, personal-vs-shared portfolio boundaries, and attempted cross-tenant ID substitution.
-3. The migrations have passed isolated local Supabase/pgTAP CI and are recorded as applied in the hosted project. Review Supabase security/performance advisor findings before enabling the feature; the current project-level advisor output also includes pre-existing platform-wide findings that need triage.
-4. Keep the cloud CSV/XLSX transaction importer bounded at 5,000 rows per request; it validates the full file before an atomic commit, rejects duplicate external IDs, and makes retries idempotent.
-5. Keep local-to-cloud migration explicit and preserve the original browser data as a backup. The server checks reporting-currency compatibility and records an idempotency receipt.
-6. Member listing/role changes/removal and invite revocation are implemented through restricted admin RPCs. Verify these workflows in the browser before enabling cloud access.
-7. Test browser interactions, keyboard accessibility, session expiry/refresh, mobile layouts, and regression across existing app areas.
-8. Verify current preview/API deployment tied to the latest source head when a preview can be created. Avoid repeated preview builds while Vercel is rate-limited; GitHub Actions checks are not a substitute for interactive browser acceptance.
+1. [ ] Configure and verify Supabase Auth email confirmation, password recovery, allowed redirect URLs (including the web origin's `/auth/callback` route), Google OAuth provider settings, and web-project environment variables.
+2. [x] Add isolated pgTAP tests for unrelated users, separate organizations, role differences, personal-vs-shared boundaries, cross-tenant ID substitution, viewer restrictions, and ledger immutability. The current Web quality-gate run also applies the migrations to an isolated Supabase stack and passes these tests.
+3. [ ] Review Supabase security/performance advisor findings. Portfolio tables have RLS enabled and anonymous table access is denied; the migration-receipts table is intentionally inaccessible directly. Before production, triage portfolio foreign-key index warnings and enable leaked-password protection. Review broader pre-existing SECURITY DEFINER warnings separately rather than treating all findings as new portfolio defects.
+4. [x] Keep cloud CSV/XLSX transaction imports bounded at 5,000 rows per request; validate the full file before an atomic commit, reject duplicate external IDs, and make retries idempotent.
+5. [x] Keep local-to-cloud migration explicit and preserve original browser data as a backup. The server checks reporting-currency compatibility and records an idempotency receipt.
+6. [ ] Verify organization member listing, role changes/removal, and invite creation/acceptance/revocation in an authenticated browser.
+7. [ ] Test browser interactions, keyboard accessibility, session expiry/refresh, mobile layouts, and regression across existing app areas.
+8. [ ] Verify a current-source preview/API deployment and run interactive smoke tests when Vercel can create a preview. Avoid repeated preview builds while rate-limited; GitHub Actions checks are not a substitute for browser acceptance.
 
 ## Acceptance matrix
 
