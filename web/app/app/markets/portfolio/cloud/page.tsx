@@ -99,6 +99,8 @@ export default function CloudPortfolioPage() {
   const [importBusy, setImportBusy] = useState(false);
   const [migrationBusy, setMigrationBusy] = useState(false);
   const [migrationComplete, setMigrationComplete] = useState(false);
+  const [migrationBusy, setMigrationBusy] = useState(false);
+  const [migrationComplete, setMigrationComplete] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -320,6 +322,29 @@ export default function CloudPortfolioPage() {
       setMessage("Transaction import " + (result.replayed ? "was already committed" : "completed") + ": " + result.accepted_rows + " of " + result.total_rows + " rows accepted atomically.");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not import transactions."); }
     finally { setImportBusy(false); }
+  }
+  async function handleMigrateLocalPortfolio() {
+    if (!selectedId || !data) return;
+    setError(""); setMessage(""); setMigrationBusy(true);
+    try {
+      const raw = window.localStorage.getItem("deal-intelligence-markets-portfolio-v1");
+      if (!raw) throw new Error("No browser-local portfolio was found in this browser.");
+      const local = JSON.parse(raw) as { version?: unknown; baseCurrency?: unknown; holdings?: unknown };
+      if (local.version !== 1 || !Array.isArray(local.holdings) || typeof local.baseCurrency !== "string" || !/^[A-Z]{3}$/.test(local.baseCurrency)) throw new Error("The local portfolio could not be validated. Its data was left untouched.");
+      if (local.baseCurrency !== data.portfolio.base_currency) throw new Error("The selected cloud portfolio uses " + data.portfolio.base_currency + " but the local portfolio uses " + local.baseCurrency + ". Create a cloud portfolio with the same reporting currency before migrating.");
+      let savedValuations: unknown[] = [];
+      const valuationRaw = window.localStorage.getItem("deal-intelligence-markets-valuations-v1");
+      if (valuationRaw) { const parsed: unknown = JSON.parse(valuationRaw); if (!Array.isArray(parsed)) throw new Error("Local valuation reviews could not be validated. No data was migrated."); savedValuations = parsed; }
+      if (local.holdings.length > 5000 || savedValuations.length > 1000) throw new Error("Migration supports up to 5,000 holdings and 1,000 saved valuation reviews.");
+      const keyName = "deal-intelligence-cloud-migration-v1:" + selectedId;
+      let migrationKey = window.localStorage.getItem(keyName);
+      if (!migrationKey) { migrationKey = crypto.randomUUID(); window.localStorage.setItem(keyName, migrationKey); }
+      const result = await postJson<{ holdings_count: number; valuations_count: number; replayed: boolean }>({ action: "migrate-local-portfolio", portfolioId: selectedId, migrationKey, baseCurrency: local.baseCurrency, holdings: local.holdings, valuations: savedValuations });
+      const [portfolioRows, valuationRows] = await Promise.all([readJson<PortfolioData>("/api/portfolio?resource=portfolio-data&portfolioId=" + encodeURIComponent(selectedId)), readJson<CloudValuation[]>("/api/portfolio?resource=valuations&portfolioId=" + encodeURIComponent(selectedId))]);
+      setData(portfolioRows); setValuations(valuationRows); setMigrationComplete(true);
+      setMessage("Local migration " + (result.replayed ? "was already completed" : "completed") + ": " + result.holdings_count + " holding(s) and " + result.valuations_count + " valuation review(s). The browser-local data remains unchanged as a backup.");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not migrate local portfolio."); }
+    finally { setMigrationBusy(false); }
   }
   async function signOut() {
     await fetch("/api/portfolio/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "sign-out" }) });
