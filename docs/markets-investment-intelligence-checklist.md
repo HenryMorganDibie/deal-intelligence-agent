@@ -84,6 +84,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Explain what changed using the previous/current estimate, percentage, calculation dates and statement period; link to current statement and quote sources where available. Do not infer a material event impact from headline matching.
 - [x] Avoid automatic buy/sell instructions and duplicate server-side alert rules; use existing Watchlists for broader monitoring and label local portfolio matches as candidates.
 - [x] Add automated tests for duplicate event suppression, empty portfolios/feeds, exact ticker boundaries, material valuation-change thresholds, country separation and incompatible valuation methods.
+- [x] Fetch the 90-day monitoring feed in 500-row pages instead of silently stopping at the first 100; cap a single refresh at 5,000 events and visibly disclose when more records exist. Added regression tests for multi-page retrieval, the cap and feed failures. CI validation is pending.
 - [ ] Manually test stale-data, missing-coverage and event-feed failure states in a running preview.
 
 ## Phase 6 — Quality, regression and release readiness
@@ -157,3 +158,6 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 
 | 2026-10-24 | Final Markets overview polish and current-head verification | Removed repeated navigation links and the duplicate “Compare companies” link, leaving a focused Compare opportunities and Monitoring section. GitHub Actions run `40136786937` passed Markets tests, ESLint, TypeScript typecheck and production build on `551cfef445d7b753610de2f82cbad8728edd5d70`. Current-head Vercel app preview is READY; all five Markets routes return HTTP 200. | Code and route smoke checks passed; manual interactive browser acceptance and explicit approval before merge remain open |
+
+
+| 2026-10-24 | Monitoring coverage hardening | Replaced the single-page 100-event request with bounded 500-row pagination, up to 5,000 events per refresh. The page now reports total available events when supplied by the API and warns explicitly when the safety cap leaves the pass incomplete. Added regression tests for pagination, cap disclosure and feed errors. | Code committed on `fix/markets-overview-alignment`; CI is pending. Interactive browser acceptance, mobile/desktop, keyboard/accessibility, persistence and import/export remain open and must not be marked complete from route smoke tests alone. No production merge. |
