@@ -75,6 +75,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Add understandable concentration and data-quality explanations, links to company research and per-holding valuation, and a local-only handoff that pre-fills the existing Watchlists page with company names. Portfolio quantities, prices and FX rates are not copied into the watchlist draft.
 - [x] Add unit tests for arithmetic invariants, missing prices, currency conversion, exposure aggregation and empty portfolios; execution is pending the latest CI run.
 - [x] Keep cloud-saved portfolios and cross-device sync out of scope until authentication and row-level ownership protections exist and are tested; current holdings and valuation snapshots stay local to the browser.
+- [x] Add separate JSON export/restore for saved valuation history with schema/source/date validation, a 2 MB import cap, duplicate-ID rejection, explicit replacement confirmation and local-only storage. Portfolio holdings remain restorable through CSV/XLSX; valuation history is not bundled into those portfolio files.
 
 ## Phase 5 — Personal investment insights and monitoring
 
@@ -161,3 +162,6 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 
 | 2026-10-24 | Monitoring coverage hardening | Replaced the single-page 100-event request with bounded 500-row pagination, up to 5,000 events per refresh. The page now reports total available events when supplied by the API and warns explicitly when the safety cap leaves the pass incomplete. Added regression tests for pagination, cap disclosure and feed errors. | Code committed on `fix/markets-overview-alignment`; CI is pending. Interactive browser acceptance, mobile/desktop, keyboard/accessibility, persistence and import/export remain open and must not be marked complete from route smoke tests alone. No production merge. |
+
+
+| 2026-10-24 | Local valuation-history backup and restore | Added a JSON export for saved valuation snapshots and a guarded restore path that validates version, dates, source URLs, required fields, duplicate IDs and a 5,000-snapshot limit before asking for confirmation. Import is capped at 2 MB and only replaces local valuation history; CSV/XLSX continue to back up holdings. Added regression tests for malformed and duplicate snapshot backups. | Code committed on `fix/markets-overview-alignment`. CI validation and interactive browser acceptance are still required; no production merge. |
