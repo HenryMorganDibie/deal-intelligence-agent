@@ -7,11 +7,10 @@ import { ErrorNote, PageHeader } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get } from "../../../../lib/market";
 
-type ModelFit = "standard-operating-company" | "financial-institution" | "negative-or-volatile-fcf" | "early-stage" | "reit-property" | "uncertain";
+type ModelFit = "standard-operating-company" | "financial-institution" | "mature-dividend-payer" | "negative-or-volatile-fcf" | "early-stage" | "reit-property" | "uncertain";
 
 type Inputs = {
   method: "dcf" | "ddm";
-  modelFit: "uncertain" | "standard-operating-company" | "financial-institution" | "mature-dividend-payer" | "negative-or-volatile-fcf" | "early-stage" | "reit-property";
   company: string;
   ticker: string;
   modelFit: ModelFit;
@@ -53,7 +52,6 @@ type CompanyProfile = {
 
 const initial: Inputs = {
   method: "dcf",
-  modelFit: "uncertain",
   company: "",
   ticker: "",
   modelFit: "uncertain",
@@ -141,8 +139,8 @@ function ScenarioCard({ scenario, currency, price }: { scenario: Scenario; curre
       <p className="mt-1 text-xs text-[color:var(--muted)]">Implied value per share</p>
       <p className="mt-2 text-xs text-[color:var(--muted)]">Five-year FCF growth assumption: {scenario.growth.toFixed(1)}% annually</p>
       <div className="mt-4 flex items-center justify-between gap-3 border-t hairline pt-3 text-xs">
-        <span className="text-[color:var(--muted)]">Implied enterprise value</span>
-        <span className="kbd">{money(scenario.enterpriseValue, currency)}</span>
+        <span className="text-[color:var(--muted)]">{scenario.enterpriseValue == null ? "Enterprise value" : "Implied enterprise value"}</span>
+        <span className="kbd">{scenario.enterpriseValue == null ? "Not applicable to DDM" : money(scenario.enterpriseValue, currency)}</span>
       </div>
       <div className="mt-2 flex items-center justify-between gap-3 text-xs">
         <span className="text-[color:var(--muted)]">vs entered market price</span>
@@ -163,6 +161,7 @@ export default function MarketsValuationPage() {
   const [profileError, setProfileError] = useState<string | null>(null);
   const set = <K extends keyof Inputs,>(key: K) => (event: { target: { value: string } }) => {
     setForm((current) => ({ ...current, [key]: event.target.value as Inputs[K] }));
+    if (key === "method" || key === "modelFit") setModelFitConfirmed(false);
     setHasCalculated(false);
   };
 
@@ -185,6 +184,10 @@ export default function MarketsValuationPage() {
       const sector = String(profile.identity?.sector || profile.identity?.industry || "");
       setDetectedSector(sector);
       const financialInstitution = /bank|financial services|financial institution|insurance|insurer|microfinance|lender|credit provider/i.test(sector);
+      if (financialInstitution) {
+        setForm((current) => ({ ...current, method: "ddm", modelFit: "financial-institution" }));
+        setModelFitConfirmed(false);
+      }
       if (!financials) {
         setProfileError("The existing company profile did not return machine-readable financial statements. You can still enter sourced figures manually.");
         return;
@@ -207,6 +210,8 @@ export default function MarketsValuationPage() {
         ...current,
         company: profile.name || current.company,
         ticker: profile.ticker || current.ticker,
+        method: financialInstitution ? "ddm" : current.method,
+        modelFit: financialInstitution ? "financial-institution" : current.modelFit,
         currency,
         source: financials.source_url || "",
         period: financials.period?.end || "",
@@ -219,6 +224,7 @@ export default function MarketsValuationPage() {
         priceSource: "",
       }));
       setHasCalculated(false);
+      setModelFitConfirmed(false);
       setProfileMessage([
         `Financial fields loaded from ${financials.source}.`,
         sector ? `Company sector reported by the profile: ${sector}.` : "",
@@ -319,16 +325,18 @@ export default function MarketsValuationPage() {
         : "The conclusion changes across scenarios"
     : null;
 
-  const sensitivity = form.method === "dcf" && hasCalculated && parsed.fcf != null && parsed.cash != null && parsed.debt != null &&
-    parsed.shares != null && parsed.baseGrowth != null && parsed.discountRate != null && parsed.terminalGrowth != null
+  const sensitivityInputsValid = form.method === "dcf"
+    ? parsed.fcf != null && parsed.cash != null && parsed.debt != null && parsed.shares != null
+    : parsed.dividendPerShare != null && parsed.dividendPerShare > 0;
+  const sensitivity = hasCalculated && sensitivityInputsValid && parsed.baseGrowth != null && parsed.discountRate != null && parsed.terminalGrowth != null
     ? [-2, 0, 2].map((discountOffset) => ({
         discountRate: parsed.discountRate! + discountOffset,
         cells: [-1, 0, 1].map((terminalOffset) => {
           const terminalGrowth = parsed.terminalGrowth! + terminalOffset;
-          return {
-            terminalGrowth,
-            value: dcf(parsed.fcf!, parsed.baseGrowth!, parsed.discountRate! + discountOffset, terminalGrowth, parsed.cash!, parsed.debt!, parsed.shares!),
-          };
+          const value = form.method === "dcf"
+            ? dcf(parsed.fcf!, parsed.baseGrowth!, parsed.discountRate! + discountOffset, terminalGrowth, parsed.cash!, parsed.debt!, parsed.shares!)
+            : ddm(parsed.dividendPerShare!, parsed.baseGrowth!, parsed.discountRate! + discountOffset, terminalGrowth);
+          return { terminalGrowth, value };
         }),
       }))
     : [];
@@ -472,12 +480,6 @@ export default function MarketsValuationPage() {
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {scenarios.map((scenario) => <ScenarioCard key={scenario.name} scenario={scenario} currency={form.currency} price={price} />)}
                 </div>
-                {form.modelFit !== "standard-operating-company" && (
-                  <div className="mt-4 rounded-xl border hairline p-4">
-                    <p className="text-sm font-medium">Exploratory output only</p>
-                    <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">The selected profile does not pass this tool&apos;s DCF suitability gate. Scenario values are shown to make the assumptions visible, but no undervaluation/overvaluation conclusion is issued. Use a method designed for this business or instrument.</p>
-                  </div>
-                )}
                 {scenarioLow != null && scenarioHigh != null && (
                   <div className="mt-4 rounded-xl border hairline p-4">
                     <p className="eyebrow">Scenario range, not a confidence interval</p>
@@ -492,7 +494,7 @@ export default function MarketsValuationPage() {
                 )}
                 <div className="mt-6">
                   <h3 className="text-sm font-medium">Base-case sensitivity</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Implied value per share when the discount rate moves by ±2 percentage points and terminal growth by ±1 point. Cells where terminal growth meets or exceeds the discount rate are not calculated.</p>
+                  <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Implied value per share when the {form.method === "dcf" ? "discount rate" : "cost of equity"} moves by ±2 percentage points and terminal growth by ±1 point. Cells where terminal growth meets or exceeds the discount rate are not calculated.</p>
                   <div className="mt-3 overflow-x-auto rounded-lg border hairline">
                     <table className="w-full min-w-[28rem] border-collapse text-left text-xs">
                       <thead>
