@@ -229,6 +229,29 @@ export default function CloudPortfolioPage() {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not record transaction."); }
   }
 
+  async function handleSaveValuation() {
+    if (!data || !selectedId) return;
+    setError(""); setMessage("");
+    try {
+      const holdings = positions.map((item) => ({
+        instrumentId: item.instrument.id, name: item.instrument.name, ticker: item.instrument.ticker,
+        currency: item.instrument.currency, quantity: item.quantity, averageCost: item.averageCost,
+        currentPrice: item.currentPrice, fxToBase: item.instrument.currency === data.portfolio.base_currency ? 1 : (item.fx || null),
+        marketValue: item.valueLocal == null ? null : item.valueLocal * (item.instrument.currency === data.portfolio.base_currency ? 1 : item.fx),
+        warnings: item.warnings,
+      }));
+      const totalValue = holdings.reduce((sum, item) => sum + (item.marketValue ?? 0), 0);
+      await postJson({
+        action: "save-valuation", portfolioId: selectedId, valuationDate: today,
+        baseCurrency: data.portfolio.base_currency, model: "ledger-mark-to-market",
+        snapshot: { portfolioName: data.portfolio.name, baseCurrency: data.portfolio.base_currency, holdings, totalValue, note: "Snapshot of recorded transactions and manually entered prices/FX, not a return calculation." },
+        notes: "Saved from the cloud portfolio workspace.",
+      });
+      const rows = await readJson<CloudValuation[]>("/api/portfolio?resource=valuations&portfolioId=" + encodeURIComponent(selectedId));
+      setValuations(rows);
+      setMessage("Valuation snapshot saved to cloud history.");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save valuation snapshot."); }
+  }
   async function signOut() {
     await fetch("/api/portfolio/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "sign-out" }) });
     window.location.href = "/account";
@@ -349,6 +372,12 @@ export default function CloudPortfolioPage() {
                 </div>
               </div>
 
+              <div className="rounded-xl border border-[color:var(--border)] p-5">
+                <h3 className="text-lg font-semibold">Valuation snapshots</h3>
+                <p className="mt-2 text-sm text-[color:var(--muted)]">Save a dated snapshot of ledger-derived positions and manually entered prices/FX. This is not a return calculation or live valuation.</p>
+                <button className="btn btn-secondary mt-3" type="button" disabled={!positions.length || loadingData} onClick={() => { void handleSaveValuation(); }}>Save current snapshot</button>
+                {valuations.length ? <ol className="mt-4 space-y-2">{valuations.slice(0,10).map((item) => <li key={item.id} className="rounded-lg border border-[color:var(--border)] p-3 text-sm"><div className="flex flex-wrap justify-between gap-2"><strong>{item.valuation_date} · {item.model}</strong><span>{item.base_currency}</span></div><p className="mt-1 text-xs text-[color:var(--muted)]">{item.notes || "Saved portfolio snapshot"} · {new Date(item.created_at).toLocaleString()}</p></li>)}</ol> : <p className="mt-3 text-sm text-[color:var(--muted)]">No saved snapshots yet.</p>}
+              </div>
               <div className="rounded-xl border border-[color:var(--border)] p-5">
                 <h3 className="text-lg font-semibold">Transaction ledger</h3>
                 {data.transactions.length ? <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[650px] text-left text-sm"><thead><tr className="border-b border-[color:var(--border)] text-[color:var(--muted)]"><th className="py-2 pr-3">Date</th><th className="py-2 pr-3">Instrument</th><th className="py-2 pr-3">Type</th><th className="py-2 pr-3">Quantity</th><th className="py-2 pr-3">Unit price</th><th className="py-2 pr-3">Fees</th></tr></thead><tbody>{data.transactions.map((item) => <tr key={item.id} className="border-b border-[color:var(--border)]"><td className="py-3 pr-3">{item.transaction_date}</td><td className="py-3 pr-3">{data.instruments.find((instrumentItem) => instrumentItem.id === item.instrument_id)?.name || "Cash movement"}</td><td className="py-3 pr-3">{item.transaction_type}</td><td className="py-3 pr-3">{Number(item.quantity).toLocaleString("en", { maximumFractionDigits: 6 })}</td><td className="py-3 pr-3">{money(Number(item.unit_price), item.currency)}</td><td className="py-3 pr-3">{money(Number(item.fees), item.currency)}</td></tr>)}</tbody></table></div> : <p className="mt-2 text-sm text-[color:var(--muted)]">No transactions recorded.</p>}
