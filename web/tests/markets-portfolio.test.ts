@@ -84,6 +84,7 @@ function savedValuation(overrides: Partial<SavedValuationSnapshot> = {}): SavedV
     id: "valuation-1",
     company: "Example Bank",
     ticker: "EXBANK",
+    country: "Nigeria",
     method: "ddm",
     modelFit: "financial-institution",
     modelFitConfirmed: true,
@@ -152,4 +153,13 @@ test("foreign holdings need fresh FX dates to contribute to weighted portfolio g
   assert.equal(summary.matchedCount, 1);
   assert.equal(summary.weightedCount, 0);
   assert.equal(summary.weightedGapPct, null);
+});
+
+test("saved valuation matching respects African market country context", () => {
+  const otherCountry = calculatePortfolioValuationReviews(
+    [valuationHolding],
+    [savedValuation({ country: "Kenya" })],
+    "NGN",
+  )[0];
+  assert.equal(otherCountry.status, "no-saved-valuation");
 });
