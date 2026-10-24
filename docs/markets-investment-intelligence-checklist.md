@@ -86,16 +86,16 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 ## Phase 6 — Quality, regression and release readiness
 
-- [ ] Run relevant backend unit and integration tests.
-- [ ] Run frontend typecheck and production build after the latest valuation and portfolio changes; earlier preview build was READY for source commit `cd855181010fb3852e0afa7476e87a2403918251`.
-- [ ] Run a standalone lint command and the broader relevant backend/unit integration test suite.
+- [x] Confirm no backend/API/database/schema changes are introduced by this feature branch; backend tests are not applicable to the feature-only diff. Existing backend suites still require their normal independent checks before any unrelated backend changes ship.
+- [x] Run frontend unit tests, ESLint, TypeScript typecheck and production build after the latest valuation and portfolio changes. GitHub Actions Web quality gates passed on head `d3a521990e5d1a2ad0a4297b529efa777e9e5ace` (run `40099627262`).
+- [x] Run standalone frontend ESLint and the Markets unit-test suite; both passed in Web quality gates run `40099627262`. Backend code is unchanged by this PR.
 - [ ] Test the Markets pages at mobile and desktop sizes.
 - [ ] Verify Companies, Research, Deals, Alerts, watchlists and other existing areas remain unaffected.
 - [ ] Check accessibility, loading states, empty states, error states and keyboard navigation.
 - [ ] Verify no secrets or private portfolio data are exposed.
 - [ ] Review dependency, schema and migration changes; document any required environment setup.
-- [ ] Update this checklist with evidence for each completed item.
-- [ ] Open/update the PR with test results, screenshots or preview URL when available.
+- [x] Update this checklist with evidence for each completed automated check; manual and preview-only checks remain open.
+- [x] Update the draft PR with current automated test results and explicit preview limitation. Screenshots/preview URL remain unavailable until Vercel permits a fresh deployment.
 - [ ] Confirm latest Vercel preview is READY and `/app/markets`, `/app/markets/valuation` and `/app/markets/portfolio` return HTTP 200.
 - [ ] Manually exercise interactive flows in a browser: company search, local persistence, CSV import/export, currency conversion and clear/delete.
 - [ ] Obtain explicit approval before merging into `main`.
@@ -121,11 +121,12 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Expanded portfolio allocation | Added country, sector, asset-type and holding-currency exposure; changed initial holding currency to USD, stopped defaulting foreign exchange conversions to 1, and added editable current-price/FX fields | Code committed; latest preview verification pending |
 | 2026-10-24 | Connected valuation to existing company data and quote provenance | Added a profile-prefill action that reuses returned financials where supported; unsupported currencies are rejected for automatic prefill; inferred shares require a dated quote and aligned currency; a price comparison requires quote date and source URL | CI production build passed before the latest quote-provenance changes; latest quality-gate run pending; Vercel deployment rate-limited until its retry window |
 | 2026-10-24 | Strengthened valuation transparency | Added per-scenario FCF growth display, ordered bear/base/bull assumptions and a 3×3 discount-rate/terminal-growth sensitivity grid | Code committed; automated checks for latest commit pending |
-| 2026-10-24 | Added DCF/DDM suitability gates and tested portfolio calculations | Market model unit tests, ESLint and TypeScript typecheck passed on source commit `1df9f8314ccbfd7bad4b7037e0f325d21ad97cb5`; production build was still running at the time of this update | Build and current-source preview verification pending |
+| 2026-10-24 | Added DCF/DDM suitability gates and tested portfolio calculations | Earlier market model unit tests, ESLint and TypeScript typecheck passed on source commit `1df9f8314ccbfd7bad4b7037e0f325d21ad97cb5` | Superseded by current-head verification below |
+| 2026-10-24 | Full current-head frontend quality gates | GitHub Actions run `40099627262` on `d3a521990e5d1a2ad0a4297b529efa777e9e5ace`: Markets unit tests, ESLint, TypeScript typecheck and production build all passed | Automated checks passed; Vercel preview and manual browser verification remain blocked by deployment-rate limit |
 
 
 ## Current verification constraints
 
-- Vercel's deployment API reported the Free-plan `api-deployments-free-per-day` limit and a 24-hour retry window. No new preview deployment was created; do not infer that the latest branch has been browser-verified.
-- The last confirmed full Web quality-gates run passed on source commit `ea9a97b8c0950e9a55a59403c4f43e791bb29c1c`; any later feature changes must pass the same checks before this checklist is marked release-ready.
+- Vercel reported the Free-plan `api-deployments-free-per-day` limit and a 24-hour retry window. The current GitHub commit checks show Vercel app/API deployment failures due to this platform rate limit, not a failing source build. No new preview deployment was created; do not infer that the latest branch has been browser-verified.
+- The latest full Web quality-gates run passed on source commit `d3a521990e5d1a2ad0a4297b529efa777e9e5ace`: Markets unit tests, ESLint, TypeScript typecheck and production build are green. Any later feature changes must pass the same checks.
 - Production `main` remains untouched. PR #13 stays draft until the feature is verified and explicitly approved.
