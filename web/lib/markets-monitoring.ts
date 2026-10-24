@@ -49,7 +49,11 @@ export function matchPortfolioEvents(
   events: readonly MonitoringEvent[],
 ): PortfolioEventMatch[] {
   const matches: PortfolioEventMatch[] = [];
+  const seenEvents = new Set<string>();
   for (const event of events) {
+    const eventKey = event.id.trim() || `${normalise(event.headline)}|${event.day ?? ""}|${event.url ?? ""}`;
+    if (seenEvents.has(eventKey)) continue;
+    seenEvents.add(eventKey);
     const related = new Map<string, { id: string; name: string; ticker: string; country?: string; reason: "ticker" | "company name" }>();
     for (const holding of holdings) {
       const tickerMatch = tickerAppears(event.headline, holding.ticker);
