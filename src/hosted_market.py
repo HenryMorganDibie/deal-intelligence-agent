@@ -184,12 +184,57 @@ def _client_hash(request: Request) -> str:
 
 # ── Data store (Supabase when configured, local files otherwise), cached per instance ──
 
-_TTL = 300
+_TTL = 900  # Reduce repeated full-history RPC reads that can time out under load.
 _cache: dict[str, tuple[float, list]] = {}
 
 
 # Earliest month the store keeps and the product shows; backfills may reach back this far.
 HISTORY_START = date(2010, 1, 1)
+
+
+_RPC_PAGE_SIZE = 500
+_RPC_MAX_PAGES = 100  # Safety stop: at most 50,000 records per full refresh.
+
+
+def _load_rpc_pages(kind: str, since: str) -> list[dict]:
+    """Load complete history with bounded keyset pages and a fixed ID upper bound."""
+    function = "list_deals_page" if kind == "deals" else "list_events_page"
+    rows: list[dict] = []
+    after_id: str | None = None
+    max_id: str | None = None
+    for page in range(_RPC_MAX_PAGES):
+        response = _rpc_sync(function, {
+            "p_since": since,
+            "p_limit": _RPC_PAGE_SIZE,
+            "p_after_id": after_id,
+            "p_max_id": max_id,
+        })
+        if response.status_code != 200:
+            log.error("loading %s page %s failed: status=%s body=%s",
+                      kind, page, response.status_code, response.text[:300])
+            raise RuntimeError(f"{kind} page {page} returned HTTP {response.status_code}")
+        payload = response.json()
+        if not isinstance(payload, dict) or not isinstance(payload.get("rows"), list):
+            raise ValueError(f"{kind} page {page} did not return a paginated object")
+        page_max_id = payload.get("max_id")
+        if page == 0:
+            if page_max_id is not None and not isinstance(page_max_id, str):
+                raise ValueError(f"{kind} page {page} returned an invalid max_id")
+            max_id = page_max_id
+        elif page_max_id != max_id:
+            raise ValueError(f"{kind} page {page} changed the pagination upper bound")
+        batch = payload["rows"]
+        rows.extend(batch)
+        if len(batch) < _RPC_PAGE_SIZE:
+            date_key = "announced" if kind == "deals" else "day"
+            # Preserve the API's historical newest-first ordering after fetching by stable ID.
+            rows.sort(key=lambda row: (row.get(date_key) is not None, row.get(date_key) or ""), reverse=True)
+            return rows
+        last_id = batch[-1].get("id")
+        if not isinstance(last_id, str) or (after_id is not None and last_id <= after_id):
+            raise ValueError(f"{kind} page {page} did not advance the pagination cursor")
+        after_id = last_id
+    raise RuntimeError(f"{kind} exceeded the {_RPC_MAX_PAGES}-page safety limit")
 
 
 def _load(kind: str) -> list[dict]:
@@ -200,14 +245,8 @@ def _load(kind: str) -> list[dict]:
     if _configured():
         since = HISTORY_START.isoformat()
         try:
-            r = _rpc_sync("list_deals" if kind == "deals" else "list_events", {"p_since": since})
-            if r.status_code != 200:
-                log.error("loading %s failed: status=%s body=%s", kind, r.status_code, r.text[:300])
-                if hit:
-                    return hit[1]
-                raise HTTPException(503, f"Market data store is unavailable for {kind}.")
-            rows = r.json()
-        except (httpx.HTTPError, ValueError) as e:
+            rows = _load_rpc_pages(kind, since)
+        except (httpx.HTTPError, ValueError, RuntimeError) as e:
             log.error("loading %s failed: %s", kind, e)
             if hit:
                 return hit[1]
