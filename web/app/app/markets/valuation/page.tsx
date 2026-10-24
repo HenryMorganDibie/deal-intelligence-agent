@@ -6,6 +6,7 @@ import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get } from "../../../../lib/market";
+import { calculateDcfPerShare, calculateDdmPerShare, validHttpUrl, validPastDate } from "../../../../lib/markets-valuation";
 
 type ModelFit = "standard-operating-company" | "financial-institution" | "mature-dividend-payer" | "negative-or-volatile-fcf" | "early-stage" | "reit-property" | "uncertain";
 
@@ -90,52 +91,10 @@ function money(value: number | null, currency: string): string {
   }
 }
 
-function validHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value.trim());
-    return url.protocol === "https:" || url.protocol === "http:";
-  } catch {
-    return false;
-  }
-}
-
 function validPastDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed = new Date(`${value}T00:00:00Z`);
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value && parsed.getTime() <= Date.now();
-}
-
-function dcf(fcf: number, growthPct: number, discountPct: number, terminalPct: number, cash: number, debt: number, shares: number): number | null {
-  const growth = growthPct / 100;
-  const discount = discountPct / 100;
-  const terminal = terminalPct / 100;
-  if (fcf <= 0 || shares <= 0 || discount <= terminal || discount <= -1 || growth <= -1 || terminal <= -1) return null;
-  let enterpriseValue = 0;
-  let projected = fcf;
-  for (let year = 1; year <= 5; year += 1) {
-    projected *= 1 + growth;
-    enterpriseValue += projected / Math.pow(1 + discount, year);
-  }
-  const terminalValue = projected * (1 + terminal) / (discount - terminal);
-  enterpriseValue += terminalValue / Math.pow(1 + discount, 5);
-  const equityValue = enterpriseValue + cash - debt;
-  return equityValue / shares;
-}
-
-function ddm(dividendPerShare: number, growthPct: number, discountPct: number, terminalPct: number): number | null {
-  const growth = growthPct / 100;
-  const discount = discountPct / 100;
-  const terminal = terminalPct / 100;
-  if (dividendPerShare <= 0 || discount <= terminal || discount <= -1 || growth <= -1 || terminal <= -1) return null;
-  let projectedDividend = dividendPerShare;
-  let value = 0;
-  for (let year = 1; year <= 5; year += 1) {
-    projectedDividend *= 1 + growth;
-    value += projectedDividend / Math.pow(1 + discount, year);
-  }
-  const terminalValue = projectedDividend * (1 + terminal) / (discount - terminal);
-  value += terminalValue / Math.pow(1 + discount, 5);
-  return Number.isFinite(value) ? value : null;
 }
 
 function ScenarioCard({ scenario, currency, price }: { scenario: Scenario; currency: string; price: number | null }) {
@@ -278,12 +237,12 @@ export default function MarketsValuationPage() {
         ...scenario,
         enterpriseValue: null,
         equityValue: null,
-        perShare: ddm(dividendPerShare, scenario.growth, discountRate!, terminalGrowth!),
+        perShare: calculateDdmPerShare(dividendPerShare, scenario.growth, discountRate!, terminalGrowth!),
       }));
     }
     if ([fcf, cash, debt, shares].some((value) => value == null)) return [];
     return assumptions.map((scenario) => {
-      const perShare = dcf(fcf!, scenario.growth, discountRate!, terminalGrowth!, cash!, debt!, shares!);
+      const perShare = calculateDcfPerShare(fcf!, scenario.growth, discountRate!, terminalGrowth!, cash!, debt!, shares!);
       return {
         ...scenario,
         perShare,
@@ -352,8 +311,8 @@ export default function MarketsValuationPage() {
         cells: [-1, 0, 1].map((terminalOffset) => {
           const terminalGrowth = parsed.terminalGrowth! + terminalOffset;
           const value = form.method === "dcf"
-            ? dcf(parsed.fcf!, parsed.baseGrowth!, parsed.discountRate! + discountOffset, terminalGrowth, parsed.cash!, parsed.debt!, parsed.shares!)
-            : ddm(parsed.dividendPerShare!, parsed.baseGrowth!, parsed.discountRate! + discountOffset, terminalGrowth);
+            ? calculateDcfPerShare(parsed.fcf!, parsed.baseGrowth!, parsed.discountRate! + discountOffset, terminalGrowth, parsed.cash!, parsed.debt!, parsed.shares!)
+            : calculateDdmPerShare(parsed.dividendPerShare!, parsed.baseGrowth!, parsed.discountRate! + discountOffset, terminalGrowth);
           return { terminalGrowth, value };
         }),
       }))
