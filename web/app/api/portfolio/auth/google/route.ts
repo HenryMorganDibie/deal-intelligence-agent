@@ -12,7 +12,9 @@ export async function GET(request: NextRequest) {
     const config = portfolioConfig();
     const verifier = randomBytes(32).toString("base64url");
     const challenge = createHash("sha256").update(verifier).digest("base64url");
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin).replace(/\/+$/, "");
+    const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    // Preview sign-in must return to the same preview deployment, not production.
+    const siteUrl = (process.env.VERCEL_ENV === "preview" ? request.nextUrl.origin : configuredSiteUrl || request.nextUrl.origin).replace(/\/+$/, "");
     const callbackUrl = siteUrl + "/auth/callback";
     const authorizeUrl = new URL(config.url + "/auth/v1/authorize");
     authorizeUrl.searchParams.set("provider", "google");
