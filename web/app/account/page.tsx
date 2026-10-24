@@ -85,7 +85,10 @@ export default function AccountPage() {
             <button className="btn btn-secondary ml-2" type="button" onClick={signOut}>Sign out</button>
           </div>
         ) : (
-          <form className="mt-6 space-y-4" onSubmit={submit}>
+          <div className="mt-6 space-y-4">
+            <a className="btn btn-secondary inline-flex w-full justify-center" href="/api/portfolio/auth/google">Continue with Google</a>
+            <div className="flex items-center gap-3 text-xs text-[color:var(--muted)]"><span className="h-px flex-1 bg-[color:var(--border)]" />or use email<span className="h-px flex-1 bg-[color:var(--border)]" /></div>
+            <form className="space-y-4" onSubmit={submit}>
             <label className="block text-sm">
               Email
               <input className="mt-1 w-full rounded-lg border border-[color:var(--border)] bg-transparent px-3 py-2" type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
@@ -101,7 +104,8 @@ export default function AccountPage() {
                 {mode === "sign-in" ? "Create an account" : "I already have an account"}
               </button>
             </div>
-          </form>
+            </form>
+          </div>
         )}
 
         {error ? <p role="alert" className="mt-4 text-sm text-red-400">{error}</p> : null}
