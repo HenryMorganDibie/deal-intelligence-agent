@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Container } from "../../../../../components/primitives";
 import { ErrorNote, PageHeader } from "../../../../../components/app/ui";
@@ -69,7 +69,7 @@ function derivePosition(instrument: Instrument, transactions: Transaction[]) {
   const averageCost = quantity > 0 ? cost / quantity : null;
   const currentPrice = instrument.current_price == null ? null : Number(instrument.current_price);
   const valueLocal = currentPrice == null ? null : quantity * currentPrice;
-  const fx = instrument.currency === instrument.currency ? Number(instrument.fx_to_base || 0) : 0;
+  const fx = Number(instrument.fx_to_base || 0);
   return { quantity, averageCost, currentPrice, valueLocal, fx, warnings };
 }
 
@@ -103,7 +103,7 @@ export default function CloudPortfolioPage() {
   const [instrument, setInstrument] = useState({ name: "", ticker: "", country: "", sector: "", assetType: "Stock", currency: "USD", currentPrice: "", priceAsOf: "", fxToBase: "", fxAsOf: "" });
   const [transaction, setTransaction] = useState({ instrumentId: "", transactionType: "BUY", transactionDate: today, quantity: "1", unitPrice: "", fees: "0", notes: "" });
 
-  async function loadLists() {
+  const loadLists = useCallback(async function loadLists() {
     const [portfolioRows, organizationRows] = await Promise.all([
       readJson<Portfolio[]>("/api/portfolio?resource=portfolios"),
       readJson<Organization[]>("/api/portfolio?resource=organizations"),
@@ -111,8 +111,8 @@ export default function CloudPortfolioPage() {
     setPortfolios(portfolioRows);
     setOrganizations(organizationRows);
     setSelectedId((current) => current || portfolioRows[0]?.id || "");
-    setOrganizationId((current) => current || organizationRows.find((item) => !item.archived_at)?.id || "");
-  }
+    setOrganizationId((current) => current || organizationRows.find((item) => !item.archived_at && (item.role === "owner" || item.role === "admin" || item.role === "manager"))?.id || organizationRows.find((item) => !item.archived_at)?.id || "");
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -127,7 +127,7 @@ export default function CloudPortfolioPage() {
       })
       .finally(() => { if (active) setAuthLoading(false); });
     return () => { active = false; };
-  }, []);
+  }, [loadLists]);
 
   useEffect(() => {
     if (!selectedId || !user) { setData(null); return; }
@@ -252,7 +252,7 @@ export default function CloudPortfolioPage() {
 
       {user ? (
         <div className="space-y-6">
-          {error ? <ErrorNote>{error}</ErrorNote> : null}
+          {error ? <ErrorNote message={error} /> : null}
           {message ? <p role="status" className="text-sm text-[color:var(--muted)]">{message}</p> : null}
 
           <section className="grid gap-5 lg:grid-cols-2">
