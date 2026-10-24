@@ -19,7 +19,7 @@ export type MonitoringEvent = {
 
 export type PortfolioEventMatch = {
   event: MonitoringEvent;
-  holdings: { id: string; name: string; ticker: string; reason: "ticker" | "company name" }[];
+  holdings: { id: string; name: string; ticker: string; country?: string; reason: "ticker" | "company name" }[];
 };
 
 function normalise(value: string): string {
@@ -50,7 +50,7 @@ export function matchPortfolioEvents(
 ): PortfolioEventMatch[] {
   const matches: PortfolioEventMatch[] = [];
   for (const event of events) {
-    const related = new Map<string, { id: string; name: string; ticker: string; reason: "ticker" | "company name" }>();
+    const related = new Map<string, { id: string; name: string; ticker: string; country?: string; reason: "ticker" | "company name" }>();
     for (const holding of holdings) {
       const tickerMatch = tickerAppears(event.headline, holding.ticker);
       const company = normalise(holding.name);
@@ -61,6 +61,7 @@ export function matchPortfolioEvents(
           id: holding.id,
           name: holding.name,
           ticker: holding.ticker,
+          country: holding.country,
           reason: tickerMatch ? "ticker" : "company name",
         });
       }
