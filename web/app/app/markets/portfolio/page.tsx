@@ -397,7 +397,7 @@ export default function MarketsPortfolioPage() {
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · Portfolio Intelligence" title="Your portfolio, in context.">
-        Add holdings manually or import a CSV to understand your exposure and review the prices and assumptions behind portfolio totals. Everything is stored in this browser only; no broker connection or server upload is used.
+        Add holdings manually or import a CSV to understand your exposure and review the prices and assumptions behind portfolio totals. Holdings, quantities, cost basis, prices and FX inputs stay in this browser. If you choose Prepare event watchlist, only company names or tickers are passed to the existing Watchlists page so you can decide whether to save a watchlist.
       </PageHeader>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -474,7 +474,7 @@ export default function MarketsPortfolioPage() {
           {countryExposure[0]?.share >= 0.6 ? <p className="rounded-lg border hairline p-3"><strong>Country concentration:</strong> {countryExposure[0].label} represents {(countryExposure[0].share * 100).toFixed(1)}% of priced value. Consider whether this reflects your intended geographic exposure.</p> : null}
           {sectorExposure[0]?.share >= 0.6 ? <p className="rounded-lg border hairline p-3"><strong>Sector concentration:</strong> {sectorExposure[0].label} represents {(sectorExposure[0].share * 100).toFixed(1)}% of priced value. This simple flag does not account for businesses with overlapping sector exposure.</p> : null}
           {holdings.length > 0 && (missingPriceCount > 0 || missingFxCount > 0) ? <p className="rounded-lg border hairline p-3"><strong>Incomplete valuation:</strong> {missingPriceCount} holding(s) have no current price and {missingFxCount} have no usable FX conversion. Portfolio totals and exposures are incomplete until these are resolved.</p> : null}
-          {holdings.length === 0 ? <p className="rounded-lg border hairline p-3">Add holdings to see concentration checks. No portfolio data is sent to the server.</p> : null}
+          {holdings.length === 0 ? <p className="rounded-lg border hairline p-3">Add holdings to see concentration checks. Portfolio values stay local. The optional watchlist action shares company names or tickers only, not prices, quantities, cost basis or FX rates.</p> : null}
           {largestPosition && largestPosition.share < 0.25 && (countryExposure[0]?.share ?? 0) < 0.6 && (sectorExposure[0]?.share ?? 0) < 0.6 && missingPriceCount === 0 && missingFxCount === 0 ? <p className="rounded-lg border hairline p-3">No simple concentration or missing-input flag was triggered by the entered data. This does not mean the portfolio is low-risk.</p> : null}
         </div>
       </section>
