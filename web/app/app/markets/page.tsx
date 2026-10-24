@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pill, Stat, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
@@ -59,8 +58,6 @@ function formatDate(value: string | null | undefined): string {
 }
 
 export default function MarketsPage() {
-  const router = useRouter();
-  const [company, setCompany] = useState("");
   const [pulse, setPulse] = useState<Pulse | null>(null);
   const [pulseError, setPulseError] = useState<string | null>(null);
 
@@ -74,13 +71,6 @@ export default function MarketsPage() {
     return () => { active = false; };
   }, []);
 
-  function searchCompany(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const name = company.trim();
-    if (!name) return;
-    router.push(`/app/companies?name=${encodeURIComponent(name)}`);
-  }
-
   const latestDeals = pulse?.deals.latest ?? [];
   const latestEvents = pulse?.events.latest ?? [];
   const topDealCountries = pulse?.deals.top_countries.slice(0, 5) ?? [];
@@ -91,34 +81,11 @@ export default function MarketsPage() {
         Explore African investments using existing company data, market context, transparent valuation models and portfolio analysis. Conclusions are only as reliable as their sources and assumptions; this is decision support, not a promise of returns or an instruction to trade. Coverage differs by country, exchange, instrument and company. See the Coverage registry for market-by-market availability and limitations.
       </PageHeader>
 
-      <section className="panel p-5 sm:p-7" aria-labelledby="market-search-title">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="eyebrow">Start with a company</p>
-            <h2 id="market-search-title" className="h3 mt-2 text-xl">Look beyond the ticker.</h2>
-            <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Open an existing company profile to inspect available market data, financial statements, trading multiples, source links and accounting checks.
-            </p>
-          </div>
-          <form onSubmit={searchCompany} className="flex w-full gap-2 lg:max-w-xl" role="search">
-            <label className="sr-only" htmlFor="markets-company-search">Company name or ticker</label>
-            <input
-              id="markets-company-search"
-              value={company}
-              onChange={(event) => setCompany(event.target.value)}
-              placeholder="e.g. Dangote Cement, Safaricom, Naspers"
-              className="field min-w-0 flex-1"
-              required
-            />
-            <button type="submit" className="btn btn-primary shrink-0">Research company</button>
-          </form>
-        </div>
-        <div className="mt-5 flex flex-wrap gap-2 text-xs text-[color:var(--muted)]">
-          <span className="rounded-full border hairline px-3 py-1.5">Africa-wide scope</span>
-          <span className="rounded-full border hairline px-3 py-1.5">Source-linked evidence</span>
-          <Link href="/app/coverage" className="rounded-full border hairline px-3 py-1.5 underline-offset-4 hover:underline">View market coverage →</Link>
-        </div>
-      </section>
+      <div className="mb-6 flex flex-wrap gap-2 text-xs text-[color:var(--muted)]">
+        <span className="rounded-full border hairline px-3 py-1.5">Africa-wide market activity</span>
+        <span className="rounded-full border hairline px-3 py-1.5">Source-linked signals</span>
+        <Link href="/app/coverage" className="rounded-full border hairline px-3 py-1.5 underline-offset-4 hover:underline">View market coverage →</Link>
+      </div>
 
       <section className="mt-8" aria-labelledby="market-overview-title">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
