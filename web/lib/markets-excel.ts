@@ -19,6 +19,10 @@ export function parsePortfolioWorkbook(input: ArrayBuffer | Uint8Array): string[
   const bytes = input instanceof Uint8Array ? input.byteLength : input.byteLength;
   if (bytes === 0) throw new Error("The Excel workbook is empty.");
   if (bytes > MAX_WORKBOOK_BYTES) throw new Error("Excel files must be 5 MB or smaller.");
+  const signature = input instanceof Uint8Array ? input : new Uint8Array(input);
+  if (signature.length < 4 || signature[0] !== 0x50 || signature[1] !== 0x4b || signature[2] !== 0x03 || signature[3] !== 0x04) {
+    throw new Error("Could not read this Excel workbook. Use a valid .xlsx file and try again.");
+  }
 
   let workbook: XLSX.WorkBook;
   try {
