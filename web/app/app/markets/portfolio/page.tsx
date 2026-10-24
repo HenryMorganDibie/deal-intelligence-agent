@@ -583,6 +583,7 @@ export default function MarketsPortfolioPage() {
                       <td className="px-3 py-3">
                         <Link href={`/app/companies?name=${encodeURIComponent(holding.name)}${holding.ticker ? `&ticker=${encodeURIComponent(holding.ticker)}` : ""}`} className="font-medium underline-offset-4 hover:underline">{holding.name}</Link>
                         {holding.ticker ? <p className="mt-1 text-[color:var(--dim)]">{holding.ticker}</p> : null}
+                        <Link href={`/app/markets/valuation?company=${encodeURIComponent(holding.name)}${holding.ticker ? `&ticker=${encodeURIComponent(holding.ticker)}` : ""}`} className="mt-1 inline-flex text-[color:var(--muted)] underline-offset-4 hover:underline">Open valuation →</Link>
                         <p className="mt-1 text-[color:var(--dim)]">{holding.currency}{holding.fxToBase == null ? " · FX missing" : ""}</p>
                         <Link href={`/app/companies?name=${encodeURIComponent(holding.name)}&ticker=${encodeURIComponent(holding.ticker)}`} className="mt-2 inline-flex text-[color:var(--muted)] underline-offset-4 hover:underline">Research →</Link>
                       </td>
