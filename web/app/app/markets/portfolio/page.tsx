@@ -95,7 +95,7 @@ function convert(value: number, fxToBase: number | null): number | null {
   return fxToBase != null && Number.isFinite(fxToBase) && fxToBase > 0 ? value * fxToBase : null;
 }
 
-function exposureRows(holdings: Holding[], key: "country" | "sector" | "assetType" | "currency", baseCurrency: string) {
+function exposureRows(holdings: Holding[], key: "country" | "sector" | "assetType" | "currency") {
   const totals = new Map<string, number>();
   for (const holding of holdings) {
     if (holding.currentPrice == null || holding.fxToBase == null) continue;
@@ -162,8 +162,20 @@ export default function MarketsPortfolioPage() {
   const totalCurrentValue = pricedHoldings.reduce((sum, holding) => sum + (convert(holding.quantity * (holding.currentPrice ?? 0), holding.fxToBase) ?? 0), 0);
   const totalCostOfPriced = pricedHoldings.reduce((sum, holding) => sum + (convert(holding.quantity * holding.costPerUnit, holding.fxToBase) ?? 0), 0);
   const pricedGain = totalCurrentValue - totalCostOfPriced;
-  const countryExposure = useMemo(() => exposureRows(holdings, "country", baseCurrency), [holdings, baseCurrency]);
-  const sectorExposure = useMemo(() => exposureRows(holdings, "sector", baseCurrency), [holdings, baseCurrency]);
+  const countryExposure = useMemo(() => exposureRows(holdings, "country"), [holdings]);
+  const sectorExposure = useMemo(() => exposureRows(holdings, "sector"), [holdings]);
+  const assetTypeExposure = useMemo(() => exposureRows(holdings, "assetType"), [holdings]);
+  const currencyExposure = useMemo(() => exposureRows(holdings, "currency"), [holdings]);
+  const largestPosition = useMemo(() => {
+    const values = pricedHoldings.map((holding) => ({
+      name: holding.name,
+      ticker: holding.ticker,
+      value: convert(holding.quantity * (holding.currentPrice ?? 0), holding.fxToBase) ?? 0,
+    })).sort((a, b) => b.value - a.value);
+    return values[0] && totalCurrentValue > 0 ? { ...values[0], share: values[0].value / totalCurrentValue } : null;
+  }, [pricedHoldings, totalCurrentValue]);
+  const missingPriceCount = holdings.filter((holding) => holding.currentPrice == null).length;
+  const missingFxCount = holdings.filter((holding) => holding.fxToBase == null || holding.fxToBase <= 0).length;
   const assetTypeExposure = useMemo(() => exposureRows(holdings, "assetType", baseCurrency), [holdings, baseCurrency]);
   const currencyExposure = useMemo(() => exposureRows(holdings, "currency", baseCurrency), [holdings, baseCurrency]);
 
@@ -181,11 +193,15 @@ export default function MarketsPortfolioPage() {
     const fxToBase = form.currency === baseCurrency ? 1 : (form.fxToBase.trim() === "" ? null : Number(form.fxToBase));
     if (!form.name.trim() || !form.currency.trim() || !Number.isFinite(quantity) || quantity <= 0 ||
         !CURRENCIES.includes(form.currency) || !Number.isFinite(costPerUnit) || costPerUnit < 0 ||
-        (currentPrice != null && (!Number.isFinite(currentPrice) || currentPrice < 0)) ||
+        (currentPrice != null && (!Number.isFinite(currentPrice) || currentPrice <= 0)) ||
         (fxToBase != null && (!Number.isFinite(fxToBase) || fxToBase <= 0))) {
       setError("Check the holding name, positive quantity, cost basis, optional current price and FX conversion rate.");
       return;
     }
+    const duplicate = holdings.some((holding) =>
+      (form.ticker.trim() && holding.ticker.toUpperCase() === form.ticker.trim().toUpperCase()) ||
+      (holding.name.trim().toLowerCase() === form.name.trim().toLowerCase() && holding.country.trim().toLowerCase() === form.country.trim().toLowerCase()),
+    );
     setHoldings((current) => [...current, {
       id: newId(),
       name: form.name.trim(),
@@ -200,7 +216,9 @@ export default function MarketsPortfolioPage() {
       fxToBase,
     }]);
     setForm({ ...blankForm, currency: baseCurrency });
-    setMessage("Holding added. Values are based on the prices and FX rates you entered, not live market feeds.");
+    setMessage(duplicate
+      ? "Holding added, but it matches an existing name/ticker and country. Check whether this is a separate lot or an accidental duplicate. Prices and FX rates are manual, not live."
+      : "Holding added. Values are based on the prices and FX rates you entered, not live market feeds.");
   }
 
   async function importCsv(event: ChangeEvent<HTMLInputElement>) {
@@ -221,6 +239,8 @@ export default function MarketsPortfolioPage() {
       };
       const imported: Holding[] = [];
       let skipped = 0;
+      let duplicateCount = 0;
+      const seen = new Set(holdings.map((holding) => `${holding.ticker.toUpperCase()}|${holding.name.trim().toLowerCase()}|${holding.country.trim().toLowerCase()}`));
       for (const row of rows.slice(1)) {
         const name = col(row, "name");
         const currency = col(row, "currency").toUpperCase();
@@ -232,22 +252,27 @@ export default function MarketsPortfolioPage() {
         const fxToBase = currency === baseCurrency ? 1 : fxText === "" ? null : Number(fxText);
         if (!name || !CURRENCIES.includes(currency) || !Number.isFinite(quantity) || quantity <= 0 ||
             !Number.isFinite(costPerUnit) || costPerUnit < 0 ||
-            (currentPrice != null && (!Number.isFinite(currentPrice) || currentPrice < 0)) ||
+            (currentPrice != null && (!Number.isFinite(currentPrice) || currentPrice <= 0)) ||
             (fxToBase != null && (!Number.isFinite(fxToBase) || fxToBase <= 0))) {
           skipped += 1;
           continue;
         }
+        const ticker = col(row, "ticker").toUpperCase();
+        const country = col(row, "country");
+        const identity = `${ticker}|${name.toLowerCase()}|${country.trim().toLowerCase()}`;
+        if (seen.has(identity) || (ticker && holdings.some((holding) => holding.ticker.toUpperCase() === ticker))) duplicateCount += 1;
+        seen.add(identity);
         imported.push({
           id: newId(), name, currency, quantity, costPerUnit, currentPrice, fxToBase,
-          ticker: col(row, "ticker").toUpperCase(),
-          country: col(row, "country"),
+          ticker,
+          country,
           sector: col(row, "sector"),
           assetType: col(row, "asset_type") || "Other",
         });
       }
       if (!imported.length) throw new Error("No valid holdings were found. Check the required columns and numeric values.");
       setHoldings((current) => [...current, ...imported]);
-      setMessage(`Imported ${imported.length} holding(s)${skipped ? `; skipped ${skipped} invalid row(s)` : ""}. Review the FX conversion rates and current prices before relying on portfolio totals.`);
+      setMessage(`Imported ${imported.length} holding(s)${skipped ? `; skipped ${skipped} invalid row(s)` : ""}${duplicateCount ? `; detected ${duplicateCount} possible duplicate position(s)` : ""}. Review duplicates, FX conversion rates and current prices before relying on totals.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not import this CSV.");
     }
@@ -316,9 +341,11 @@ export default function MarketsPortfolioPage() {
             <label htmlFor="base-currency" className="mb-1.5 block text-xs text-[color:var(--muted)]">Portfolio reporting currency</label>
             <select id="base-currency" className="field" value={baseCurrency} onChange={(event) => {
               const nextCurrency = event.target.value;
+              if (holdings.length > 0 && !window.confirm("Changing the reporting currency resets existing FX conversion rates. Holding prices and cost basis stay unchanged, but you will need to re-enter FX rates for non-base-currency holdings. Continue?")) return;
               setBaseCurrency(nextCurrency);
               setHoldings((current) => current.map((holding) => ({ ...holding, fxToBase: holding.currency === nextCurrency ? 1 : null })));
               setForm({ ...blankForm, currency: nextCurrency, fxToBase: "1" });
+              if (holdings.length > 0) setMessage("Reporting currency changed. Re-enter FX conversion rates for holdings whose currency differs from the new base currency.");
               setMessage("Reporting currency changed. FX rates for holdings in other currencies were cleared; re-enter current rates before relying on portfolio totals.");
             }}>
               {CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
@@ -352,6 +379,26 @@ export default function MarketsPortfolioPage() {
           <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">
             Compared with recorded cost basis for the same priced and FX-converted holdings only. This is an indicative unrealised difference; it excludes fees, taxes, distributions, corporate actions and any FX-rate history.
           </p>
+        </div>
+      </section>
+
+      <section className="mt-6 panel p-5" aria-labelledby="concentration-title">
+        <p className="eyebrow">Portfolio intelligence</p>
+        <h2 id="concentration-title" className="h3 mt-2 text-lg">Concentration and data-quality checks</h2>
+        <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">These checks describe the holdings and manual inputs you supplied. They are not a calibrated risk score, a forecast, or investment advice.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-lg border hairline p-3"><p className="text-xs text-[color:var(--muted)]">Largest priced position</p><p className="mt-2 text-sm font-medium">{largestPosition ? `${(largestPosition.share * 100).toFixed(1)}% · ${largestPosition.name}` : "Not available"}</p><p className="mt-1 text-xs text-[color:var(--dim)]">Based on entered prices and FX only</p></div>
+          <div className="rounded-lg border hairline p-3"><p className="text-xs text-[color:var(--muted)]">Missing current prices</p><p className="mt-2 text-sm font-medium">{missingPriceCount}</p><p className="mt-1 text-xs text-[color:var(--dim)]">Excluded from current value</p></div>
+          <div className="rounded-lg border hairline p-3"><p className="text-xs text-[color:var(--muted)]">Missing FX conversion</p><p className="mt-2 text-sm font-medium">{missingFxCount}</p><p className="mt-1 text-xs text-[color:var(--dim)]">Excluded from base-currency totals</p></div>
+          <div className="rounded-lg border hairline p-3"><p className="text-xs text-[color:var(--muted)]">Priced and converted</p><p className="mt-2 text-sm font-medium">{pricedHoldings.length} of {holdings.length}</p><p className="mt-1 text-xs text-[color:var(--dim)]">Coverage of your entered portfolio</p></div>
+        </div>
+        <div className="mt-4 space-y-2 text-sm">
+          {largestPosition && largestPosition.share >= 0.25 ? <p className="rounded-lg border hairline p-3"><strong>Single-position concentration:</strong> {largestPosition.name} is {(largestPosition.share * 100).toFixed(1)}% of entered, priced portfolio value. A 25% threshold is a simple review trigger, not a universal risk limit.</p> : null}
+          {countryExposure[0]?.share >= 0.6 ? <p className="rounded-lg border hairline p-3"><strong>Country concentration:</strong> {countryExposure[0].label} represents {(countryExposure[0].share * 100).toFixed(1)}% of priced value. Consider whether this reflects your intended geographic exposure.</p> : null}
+          {sectorExposure[0]?.share >= 0.6 ? <p className="rounded-lg border hairline p-3"><strong>Sector concentration:</strong> {sectorExposure[0].label} represents {(sectorExposure[0].share * 100).toFixed(1)}% of priced value. This simple flag does not account for businesses with overlapping sector exposure.</p> : null}
+          {holdings.length > 0 && (missingPriceCount > 0 || missingFxCount > 0) ? <p className="rounded-lg border hairline p-3"><strong>Incomplete valuation:</strong> {missingPriceCount} holding(s) have no current price and {missingFxCount} have no usable FX conversion. Portfolio totals and exposures are incomplete until these are resolved.</p> : null}
+          {holdings.length === 0 ? <p className="rounded-lg border hairline p-3">Add holdings to see concentration checks. No portfolio data is sent to the server.</p> : null}
+          {largestPosition && largestPosition.share < 0.25 && (countryExposure[0]?.share ?? 0) < 0.6 && (sectorExposure[0]?.share ?? 0) < 0.6 && missingPriceCount === 0 && missingFxCount === 0 ? <p className="rounded-lg border hairline p-3">No simple concentration or missing-input flag was triggered by the entered data. This does not mean the portfolio is low-risk.</p> : null}
         </div>
       </section>
 
@@ -481,7 +528,7 @@ export default function MarketsPortfolioPage() {
                       <td className="px-3 py-3">
                         <p className="font-medium">{holding.name}</p>
                         {holding.ticker ? <p className="mt-1 text-[color:var(--dim)]">{holding.ticker}</p> : null}
-                        <p className="mt-1 text-[color:var(--dim)]">{holding.currency}{holding.fxToBase == null ? " · FX missing" : ""}</p>
+                        <p className="mt-1 text-[color:var(--dim)]">{holding.currency}{holding.fxToBase == null ? " · FX missing" : ""}</p>\n                        <Link href={`/app/companies?name=${encodeURIComponent(holding.name)}&ticker=${encodeURIComponent(holding.ticker)}`} className="mt-2 inline-flex text-[color:var(--muted)] underline-offset-4 hover:underline">Research →</Link>
                       </td>
                       <td className="px-3 py-3">{holding.assetType}</td>
                       <td className="px-3 py-3">{[holding.country || "Unclassified", holding.sector || "Unclassified"].join(" · ")}</td>
