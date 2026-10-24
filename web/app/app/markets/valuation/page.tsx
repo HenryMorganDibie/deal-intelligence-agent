@@ -512,7 +512,7 @@ export default function MarketsValuationPage() {
                   <h3 className="mt-2 text-lg font-semibold">{rangeConclusion ?? verdict ?? "No market-price comparison"}</h3>
                   <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
                     {rangeConclusion
-                      ? "This conclusion is mechanical and applies only to the three entered DCF scenarios. It is not a recommendation or proof of mispricing; the output can be wrong if the inputs, accounting basis or assumptions are wrong. Review the source and countercase before acting."
+                      ? "This conclusion is mechanical and applies only to the three entered model scenarios. It is not a recommendation or proof of mispricing; the output can be wrong if the inputs, accounting basis or assumptions are wrong. Review the source and countercase before acting."
                       : verdict
                         ? "This is a mechanical comparison against the entered quote, not a recommendation. A 15% band is a display convention, not a statistical confidence interval."
                         : "Enter a positive current share price from a dated source to compare it with the scenario range. Without a quote, the model will not call the stock cheap or expensive."}
