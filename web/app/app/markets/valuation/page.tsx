@@ -173,7 +173,9 @@ export default function MarketsValuationPage() {
         cash: value("cash"),
         debt: value("total_debt"),
         shares: inferredShares,
-        price: hasDatedQuote ? String(profile.market!.price) : "",\n        priceDate: hasDatedQuote ? String(profile.market?.as_at).slice(0, 10) : "",\n        priceSource: "",
+        price: hasDatedQuote ? String(profile.market!.price) : "",
+        priceDate: hasDatedQuote ? String(profile.market?.as_at).slice(0, 10) : "",
+        priceSource: "",
       }));
       setHasCalculated(false);
       setProfileMessage([
