@@ -71,6 +71,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ portfolio: portfolios[0], instruments, transactions }, { headers: { "Cache-Control": "no-store" } });
     }
 
+    if (resource === "valuations") {
+      const portfolioId = request.nextUrl.searchParams.get("portfolioId") || "";
+      if (!uuidPattern.test(portfolioId)) return jsonError("Invalid portfolio identifier.", 400);
+      const rows = await portfolioRest<unknown[]>(session.accessToken,
+        "portfolio_valuations?select=id,valuation_date,base_currency,model,snapshot,notes,created_at&portfolio_id=eq." + portfolioId + "&order=valuation_date.desc,created_at.desc&limit=100");
+      return NextResponse.json(rows, { headers: { "Cache-Control": "no-store" } });
+    }
+
     return jsonError("Unsupported portfolio resource.", 400);
   } catch (error) {
     const mapped = portfolioErrorResponse(error);
@@ -230,6 +238,66 @@ export async function POST(request: NextRequest) {
         }),
       });
       return NextResponse.json(Array.isArray(created) ? created[0] : created, { status: 201, headers: { "Cache-Control": "no-store" } });
+    }
+
+    if (body.action === "save-valuation") {
+      const portfolioId = typeof body.portfolioId === "string" ? body.portfolioId : "";
+      const valuationDate = typeof body.valuationDate === "string" ? body.valuationDate : "";
+      const baseCurrency = typeof body.baseCurrency === "string" ? body.baseCurrency : "";
+      const model = typeof body.model === "string" ? body.model.trim() : "";
+      const snapshot = body.snapshot;
+      if (!uuidPattern.test(portfolioId) || !isPastOrTodayDate(valuationDate) || !currencyPattern.test(baseCurrency) ||
+          !model || model.length > 100 || !snapshot || typeof snapshot !== "object" || Array.isArray(snapshot) ||
+          JSON.stringify(snapshot).length > 200_000) {
+        return jsonError("Enter a valid dated valuation snapshot.", 400);
+      }
+      const created = await portfolioRest<unknown[]>(session.accessToken, "portfolio_valuations?select=id,valuation_date,base_currency,model,snapshot,notes,created_at", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({
+          portfolio_id: portfolioId, valuation_date: valuationDate, base_currency: baseCurrency,
+          model, snapshot, notes: typeof body.notes === "string" ? body.notes.trim().slice(0, 1000) || null : null,
+          created_by: session.user.id,
+        }),
+      });
+      return NextResponse.json(Array.isArray(created) ? created[0] : created, { status: 201, headers: { "Cache-Control": "no-store" } });
+    }
+
+    if (body.action === "import-transactions") {
+      const portfolioId = typeof body.portfolioId === "string" ? body.portfolioId : "";
+      const importKey = typeof body.importKey === "string" ? body.importKey : "";
+      const filename = typeof body.filename === "string" ? body.filename.trim() : "";
+      const rows = body.rows;
+      if (!uuidPattern.test(portfolioId) || !uuidPattern.test(importKey) || !filename || filename.length > 255 ||
+          !Array.isArray(rows) || rows.length < 1 || rows.length > 5000 || JSON.stringify(body).length > 4_000_000) {
+        return jsonError("The transaction import is invalid or too large. Use a file with at most 5,000 rows and 4 MB of parsed data.", 400);
+      }
+      const result = await portfolioRest<unknown>(session.accessToken, "rpc/commit_portfolio_transaction_import", {
+        method: "POST",
+        body: JSON.stringify({ p_portfolio_id: portfolioId, p_import_key: importKey, p_filename: filename, p_rows: rows }),
+      });
+      return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });
+    }
+
+    if (body.action === "migrate-local-portfolio") {
+      const portfolioId = typeof body.portfolioId === "string" ? body.portfolioId : "";
+      const migrationKey = typeof body.migrationKey === "string" ? body.migrationKey : "";
+      const baseCurrency = typeof body.baseCurrency === "string" ? body.baseCurrency : "";
+      const holdings = body.holdings;
+      const valuations = body.valuations;
+      if (!uuidPattern.test(portfolioId) || !uuidPattern.test(migrationKey) || !currencyPattern.test(baseCurrency) ||
+          !Array.isArray(holdings) || holdings.length > 5000 || !Array.isArray(valuations) || valuations.length > 1000 ||
+          JSON.stringify(body).length > 4_000_000) {
+        return jsonError("The local portfolio migration is invalid or too large. Export a backup and reduce the data size before retrying.", 400);
+      }
+      const result = await portfolioRest<unknown>(session.accessToken, "rpc/migrate_local_portfolio", {
+        method: "POST",
+        body: JSON.stringify({
+          p_portfolio_id: portfolioId, p_migration_key: migrationKey, p_base_currency: baseCurrency,
+          p_holdings: holdings, p_valuations: valuations,
+        }),
+      });
+      return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });
     }
 
     return jsonError("Unsupported portfolio action.", 400);
