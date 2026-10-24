@@ -251,8 +251,16 @@ export default function MarketsValuationPage() {
 
   const base = scenarios.find((scenario) => scenario.name === "Base");
   const price = parsed.price;
+  const validScenarioValues = scenarios.map((scenario) => scenario.perShare).filter((value): value is number => value != null && Number.isFinite(value));
+  const scenarioLow = validScenarioValues.length ? Math.min(...validScenarioValues) : null;
+  const scenarioHigh = validScenarioValues.length ? Math.max(...validScenarioValues) : null;
   const verdict = hasCalculated && base?.perShare != null && price != null
-    ? (base.perShare < price * 0.85 ? "Potentially overvalued on these assumptions" : base.perShare > price * 1.15 ? "Potentially undervalued on these assumptions" : "Within 15% of the base-case estimate")
+    ? (base.perShare < price * 0.85 ? "Price is more than 15% above the base-case estimate" : base.perShare > price * 1.15 ? "Price is more than 15% below the base-case estimate" : "Price is within 15% of the base-case estimate")
+    : null;
+  const rangeConclusion = hasCalculated && price != null && validScenarioValues.length === 3
+    ? validScenarioValues.every((value) => value < price) ? "Entered price is above all three scenario estimates"
+      : validScenarioValues.every((value) => value > price) ? "Entered price is below all three scenario estimates"
+        : "The conclusion changes across scenarios"
     : null;
 
   const sensitivity = hasCalculated && parsed.fcf != null && parsed.cash != null && parsed.debt != null &&
@@ -392,11 +400,13 @@ export default function MarketsValuationPage() {
                 </div>
                 <div className="mt-4 rounded-xl border hairline p-4">
                   <p className="eyebrow">Base-case conclusion</p>
-                  <h3 className="mt-2 text-lg font-semibold">{verdict ?? "No market-price comparison"}</h3>
+                  <h3 className="mt-2 text-lg font-semibold">{rangeConclusion ?? verdict ?? "No market-price comparison"}</h3>
                   <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
-                    {verdict
-                      ? "This is a mechanical comparison against the entered quote, not a recommendation. A 15% band is a display convention, not a statistical confidence interval."
-                      : "Enter a positive current share price from a dated source to compare it with the base-case estimate. Without a quote, the model will not call the stock cheap or expensive."}
+                    {rangeConclusion
+                      ? "This conclusion is mechanical and applies only to the three entered DCF scenarios. It is not a recommendation or proof of mispricing; the output can be wrong if the inputs, accounting basis or assumptions are wrong. Review the source and countercase before acting."
+                      : verdict
+                        ? "This is a mechanical comparison against the entered quote, not a recommendation. A 15% band is a display convention, not a statistical confidence interval."
+                        : "Enter a positive current share price from a dated source to compare it with the scenario range. Without a quote, the model will not call the stock cheap or expensive."}
                   </p>
                 </div>
               </>
