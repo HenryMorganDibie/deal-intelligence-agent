@@ -7,9 +7,12 @@ import { ErrorNote, PageHeader } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get } from "../../../../lib/market";
 
+type ModelFit = "standard-operating-company" | "financial-institution" | "negative-or-volatile-fcf" | "early-stage" | "reit-property" | "uncertain";
+
 type Inputs = {
   company: string;
   ticker: string;
+  modelFit: ModelFit;
   currency: string;
   source: string;
   period: string;
@@ -47,6 +50,7 @@ type CompanyProfile = {
 const initial: Inputs = {
   company: "",
   ticker: "",
+  modelFit: "uncertain",
   currency: "NGN",
   source: "",
   period: "",
@@ -254,10 +258,10 @@ export default function MarketsValuationPage() {
   const validScenarioValues = scenarios.map((scenario) => scenario.perShare).filter((value): value is number => value != null && Number.isFinite(value));
   const scenarioLow = validScenarioValues.length ? Math.min(...validScenarioValues) : null;
   const scenarioHigh = validScenarioValues.length ? Math.max(...validScenarioValues) : null;
-  const verdict = hasCalculated && base?.perShare != null && price != null
+  const verdict = hasCalculated && form.modelFit === "standard-operating-company" && base?.perShare != null && price != null
     ? (base.perShare < price * 0.85 ? "Price is more than 15% above the base-case estimate" : base.perShare > price * 1.15 ? "Price is more than 15% below the base-case estimate" : "Price is within 15% of the base-case estimate")
     : null;
-  const rangeConclusion = hasCalculated && price != null && validScenarioValues.length === 3
+  const rangeConclusion = hasCalculated && form.modelFit === "standard-operating-company" && price != null && validScenarioValues.length === 3
     ? validScenarioValues.every((value) => value < price) ? "Entered price is above all three scenario estimates"
       : validScenarioValues.every((value) => value > price) ? "Entered price is below all three scenario estimates"
         : "The conclusion changes across scenarios"
@@ -347,6 +351,20 @@ export default function MarketsValuationPage() {
             </div>
 
             <div>
+              <h3 className="text-sm font-medium">Model suitability check</h3>
+              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Choose the closest fit before interpreting the output. The tool cannot independently verify this classification. For financial institutions, early-stage businesses, REITs or unstable cash flows, this DCF may be inappropriate; results stay exploratory and the app will not issue a cheap/expensive verdict.</p>
+              <label className="mb-1.5 mt-3 block text-xs text-[color:var(--muted)]" htmlFor="valuation-model-fit">Company / instrument profile</label>
+              <select id="valuation-model-fit" className="field" value={form.modelFit} onChange={set("modelFit") as (event: { target: { value: string } }) => void}>
+                <option value="uncertain">Unsure / not yet assessed</option>
+                <option value="standard-operating-company">Established non-financial operating company with positive, representative FCF</option>
+                <option value="financial-institution">Bank, insurer, lender or other financial institution</option>
+                <option value="negative-or-volatile-fcf">Negative or highly volatile free cash flow</option>
+                <option value="early-stage">Early-stage / pre-profit business</option>
+                <option value="reit-property">REIT / property investment company</option>
+              </select>
+            </div>
+
+            <div>
               <h3 className="text-sm font-medium">Scenario assumptions</h3>
               <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Growth rates are constant annual free-cash-flow growth for five years. The discount rate should reflect business and country risk. Terminal growth must be below the discount rate.</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -376,6 +394,12 @@ export default function MarketsValuationPage() {
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {scenarios.map((scenario) => <ScenarioCard key={scenario.name} scenario={scenario} currency={form.currency} price={price} />)}
                 </div>
+                {form.modelFit !== "standard-operating-company" && (
+                  <div className="mt-4 rounded-xl border hairline p-4">
+                    <p className="text-sm font-medium">Exploratory output only</p>
+                    <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">The selected profile does not pass this tool&apos;s DCF suitability gate. Scenario values are shown to make the assumptions visible, but no undervaluation/overvaluation conclusion is issued. Use a method designed for this business or instrument.</p>
+                  </div>
+                )}
                 {scenarioLow != null && scenarioHigh != null && (
                   <div className="mt-4 rounded-xl border hairline p-4">
                     <p className="eyebrow">Scenario range, not a confidence interval</p>
