@@ -243,7 +243,12 @@ export default function MarketsPortfolioPage() {
   }, [holdings.length, largestPosition, countryExposure, sectorExposure, missingPriceCount, missingFxCount, undatedPrices, stalePrices, undatedFx, staleFx]);
 
   function updateForm(key: keyof typeof blankForm, value: string) {
-    setForm((current) => ({ ...current, [key]: value }));
+    setForm((current) => ({
+      ...current,
+      [key]: value,
+      ...(key === "currentPrice" ? { priceAsOf: "" } : {}),
+      ...(key === "fxToBase" ? { fxAsOf: "" } : {}),
+    }));
   }
 
   function addHolding(event: FormEvent<HTMLFormElement>) {
@@ -257,7 +262,8 @@ export default function MarketsPortfolioPage() {
     if (!form.name.trim() || !form.currency.trim() || !form.costPerUnit.trim() || !Number.isFinite(quantity) || quantity <= 0 ||
         !CURRENCIES.includes(form.currency) || !Number.isFinite(costPerUnit) || costPerUnit < 0 ||
         (currentPrice != null && (!Number.isFinite(currentPrice) || currentPrice <= 0)) ||
-        (fxToBase != null && (!Number.isFinite(fxToBase) || fxToBase <= 0))) {
+        (fxToBase != null && (!Number.isFinite(fxToBase) || fxToBase <= 0)) ||
+        (form.priceAsOf !== "" && !validPastDate(form.priceAsOf)) || (form.fxAsOf !== "" && !validPastDate(form.fxAsOf))) {
       setError("Check the holding name, positive quantity, cost basis, optional current price and FX conversion rate.");
       return;
     }
@@ -378,12 +384,12 @@ export default function MarketsPortfolioPage() {
 
   function updateHoldingNumber(id: string, key: "currentPrice" | "fxToBase", raw: string) {
     const value = raw.trim() === "" ? null : Number(raw);
-    if (value != null && (!Number.isFinite(value) || value < 0 || (key === "fxToBase" && value === 0))) return;
+    if (value != null && (!Number.isFinite(value) || value < 0 || (key === "fxToBase" && value === 0) || (key === "currentPrice" && value === 0))) return;
     setHoldings((current) => current.map((holding) => {
       if (holding.id !== id) return holding;
       if (key === "fxToBase" && holding.currency === baseCurrency) return { ...holding, fxToBase: 1 };
-      if (key === "currentPrice") return { ...holding, currentPrice: value, priceAsOf: value == null ? null : holding.priceAsOf ?? null };
-      return { ...holding, fxToBase: value, fxAsOf: value == null ? null : holding.fxAsOf ?? null };
+      if (key === "currentPrice") return { ...holding, currentPrice: value, priceAsOf: null };
+      return { ...holding, fxToBase: value, fxAsOf: null };
     }));
   }
 
@@ -527,7 +533,7 @@ export default function MarketsPortfolioPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="holding-currency">Holding currency</label>
-              <select id="holding-currency" className="field" value={form.currency} onChange={(event) => { const currency = event.target.value; setForm((current) => ({ ...current, currency, fxToBase: currency === baseCurrency ? "1" : "" })); }}>
+              <select id="holding-currency" className="field" value={form.currency} onChange={(event) => { const currency = event.target.value; setForm((current) => ({ ...current, currency, fxToBase: currency === baseCurrency ? "1" : "", fxAsOf: "" })); }}>
                 {CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
               </select>
             </div>
@@ -568,7 +574,7 @@ export default function MarketsPortfolioPage() {
             <label className="mt-4 block text-xs text-[color:var(--muted)]" htmlFor="portfolio-csv">Choose CSV file</label>
             <input id="portfolio-csv" className="field mt-2" type="file" accept=".csv,text/csv" onChange={importCsv} />
             <button type="button" className="btn btn-secondary mt-3" onClick={() => {
-              const example = [CSV_HEADERS.join(","), ["Example African Bank", "EXBANK", "Kenya", "Banking", "Stock", "KES", 10, 120, 135, 0.0075].join(",")].join("\r\n");
+              const example = [CSV_HEADERS.join(","), ["Example African Bank", "EXBANK", "Kenya", "Banking", "Stock", "KES", 10, 120, 135, 0.0075, "", ""].join(",")].join("\r\n");
               const blob = new Blob([example + "\r\n"], { type: "text/csv;charset=utf-8" });
               const url = URL.createObjectURL(blob);
               const anchor = document.createElement("a");
