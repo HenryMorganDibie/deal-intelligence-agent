@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Container } from "../../components/primitives";
@@ -9,17 +9,19 @@ type User = { id: string; email?: string | null };
 
 export default function AccountPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let active = true;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "oauth_unavailable") {
+      setError("Google sign-in is temporarily unavailable. Please try again.");
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     fetch("/api/portfolio/auth", { cache: "no-store" })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}));
@@ -30,33 +32,6 @@ export default function AccountPage() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitting(true);
-    setError("");
-    setMessage("");
-    try {
-      const response = await fetch("/api/portfolio/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: mode, email, password }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (response.status === 202 && payload.needsEmailConfirmation) {
-        setMessage(payload.message || "Check your email to confirm your account, then sign in.");
-      } else if (!response.ok) {
-        setError(payload.error || "Could not complete authentication.");
-      } else {
-        router.push("/app/markets/portfolio/cloud");
-        router.refresh();
-      }
-    } catch {
-      setError("Could not reach the account service.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   async function signOut() {
     await fetch("/api/portfolio/auth", {
@@ -74,7 +49,7 @@ export default function AccountPage() {
         <Link href="/app/markets" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Back to Markets</Link>
         <h1 className="mt-5 text-2xl font-semibold">Your Deal Intelligence account</h1>
         <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">
-          Sign in to save Markets portfolios across devices or collaborate in an organization workspace. Public research pages remain available without an account.
+          Sign in with Google to save Markets portfolios across devices or collaborate in an organization workspace. Public research pages remain available without an account.
         </p>
 
         {loading ? <p className="mt-6 text-sm text-[color:var(--muted)]">Checking your session…</p> : null}
@@ -85,26 +60,9 @@ export default function AccountPage() {
             <button className="btn btn-secondary ml-2" type="button" onClick={signOut}>Sign out</button>
           </div>
         ) : (
-          <div className="mt-6 space-y-4">
-            <a className="btn btn-secondary inline-flex w-full justify-center" href="/api/portfolio/auth/google">Continue with Google</a>
-            <div className="flex items-center gap-3 text-xs text-[color:var(--muted)]"><span className="h-px flex-1 bg-[color:var(--border)]" />or use email<span className="h-px flex-1 bg-[color:var(--border)]" /></div>
-            <form className="space-y-4" onSubmit={submit}>
-            <label className="block text-sm">
-              Email
-              <input className="mt-1 w-full rounded-lg border border-[color:var(--border)] bg-transparent px-3 py-2" type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
-            </label>
-            <label className="block text-sm">
-              Password
-              <input className="mt-1 w-full rounded-lg border border-[color:var(--border)] bg-transparent px-3 py-2" type="password" autoComplete={mode === "sign-up" ? "new-password" : "current-password"} minLength={10} maxLength={128} required value={password} onChange={(event) => setPassword(event.target.value)} />
-              <span className="mt-1 block text-xs text-[color:var(--muted)]">Use at least 10 characters.</span>
-            </label>
-            <div className="flex flex-wrap gap-2">
-              <button className="btn btn-primary" type="submit" disabled={submitting}>{submitting ? "Please wait…" : mode === "sign-in" ? "Sign in" : "Create account"}</button>
-              <button className="btn btn-secondary" type="button" disabled={submitting} onClick={() => { setMode(mode === "sign-in" ? "sign-up" : "sign-in"); setError(""); setMessage(""); }}>
-                {mode === "sign-in" ? "Create an account" : "I already have an account"}
-              </button>
-            </div>
-            </form>
+          <div className="mt-6">
+            <a className="btn btn-primary inline-flex w-full justify-center" href="/api/portfolio/auth/google">Continue with Google</a>
+            <p className="mt-3 text-xs text-[color:var(--muted)]">Your Google account is used to sign in. You can continue browsing public research without an account.</p>
           </div>
         )}
 
