@@ -59,6 +59,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Require company, financial source URL, valid reporting date, method-specific inputs and model-fit confirmation; require a dated quote and quote source URL before price comparisons; refuse invalid assumptions and unsupported model profiles. Generic `free_cash_flow` is not auto-labelled as unlevered FCFF.
 - [x] Keep deterministic calculations in a pure typed module; no LLM-generated value is mixed into the valuation arithmetic.
 - [x] Add unit tests for DCF/DDM math, invalid assumptions, source URL/date validation, portfolio arithmetic, FX conversion, missing prices and exposure grouping. UI-level currency mismatch and unsupported-instrument flows still need browser verification.
+- [x] Show comparison caveats when financial statement currencies differ, statement periods span more than 180 days, or listed-market quotes are mixed with private-market valuation marks; raw amounts remain explicitly unnormalised.
 - [x] Do not claim valuation accuracy or calibrated fair values. Results are deterministic, assumption-dependent scenarios with source/date gates and explicit limitations. A human-reviewed benchmark is required before any future accuracy claim, but is not represented as complete here.
 
 ## Phase 4 — Portfolio Intelligence inside Markets
@@ -165,3 +166,6 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 
 | 2026-10-24 | Local valuation-history backup and restore | Added a JSON export for saved valuation snapshots and a guarded restore path that validates version, dates, source URLs, required fields, duplicate IDs and a 5,000-snapshot limit before asking for confirmation. Import is capped at 2 MB and only replaces local valuation history; CSV/XLSX continue to back up holdings. Added regression tests for malformed and duplicate snapshot backups. | Code committed on `fix/markets-overview-alignment`. CI validation and interactive browser acceptance are still required; no production merge. |
+
+
+| 2026-10-24 | Comparison and backup UX hardening | Compare Opportunities now surfaces explicit caveats for mixed financial-statement currencies, reporting periods separated by more than 180 days, and comparisons mixing listed quotes with private-market valuation marks. Saved valuation history can be exported/restored independently of the current calculation form, with separate status feedback. | Added on `fix/markets-overview-alignment`; current-head CI and browser interaction acceptance remain release gates. |
