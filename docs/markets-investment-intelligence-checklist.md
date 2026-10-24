@@ -79,7 +79,8 @@ This checklist is the source of truth for scope and completion. Mark an item com
 ## Phase 5 — Personal investment insights and monitoring
 
 - [x] Reuse existing Watchlists for monitoring by pre-filling a watchlist draft with company names/tickers only; holdings, quantities, prices and FX rates remain in browser storage.
-- [ ] Add portfolio-aware material-event and valuation-change alerts only when reliable inputs exist.
+- [x] Add local portfolio event monitoring that matches exact company-name/ticker tokens against the existing event feed, preserves source links and labels matches as candidates rather than verified material alerts; holdings remain browser-local and are not sent to the API.
+- [ ] Add valuation-change alerts or materiality scoring only when reliable inputs exist; the current event matcher intentionally does not claim financial impact.
 - [ ] Explain why each alert matters and link it to supporting evidence.
 - [x] Avoid generating automatic buy/sell instructions or new noisy alert rules in this initial release; monitoring is handed off to existing Watchlists.
 - [ ] Test duplicate events, stale data, missing coverage and alert failures.
@@ -123,6 +124,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Strengthened valuation transparency | Added per-scenario FCF growth display, ordered bear/base/bull assumptions and a 3×3 discount-rate/terminal-growth sensitivity grid | Code committed; automated checks for latest commit pending |
 | 2026-10-24 | Added DCF/DDM suitability gates and tested portfolio calculations | Earlier market model unit tests, ESLint and TypeScript typecheck passed on source commit `1df9f8314ccbfd7bad4b7037e0f325d21ad97cb5` | Superseded by current-head verification below |
 | 2026-10-24 | Full current-head frontend quality gates | GitHub Actions run `40099627262` on `d3a521990e5d1a2ad0a4297b529efa777e9e5ace`: Markets unit tests, ESLint, TypeScript typecheck and production build all passed | Automated checks passed; Vercel preview and manual browser verification remain blocked by deployment-rate limit |\n| 2026-10-24 | Completed portfolio valuation summary and documented release gates | Portfolio-level weighted valuation gap is calculated only from holdings whose model fit, source dates, currency, quote/date match and FX freshness pass checks; checklist and PR now record current verification state | Implemented and automated-tested; manual/preview release gates still open |
+| 2026-10-24 | Added local portfolio event monitoring | New `/app/markets/monitoring` page reads locally stored holdings, requests only the general 90-day `/api/events` feed, matches exact company names/ticker tokens, and links candidate matches to sources and valuation review | Automated checks pending; Vercel preview and browser verification remain blocked by rate limit |
 
 
 ## Current verification constraints
