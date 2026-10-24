@@ -35,7 +35,7 @@ Personal portfolio owners can manage their own portfolio. Organization roles do 
 - `portfolio_import_jobs`: import status, row counts, and structured validation errors.
 - `portfolio_audit_events`: append-only actor/action history; database triggers record portfolio, instrument, transaction, valuation, and import-job inserts/updates without copying financial values into audit details.
 
-The first schema slice does not yet calculate positions from the ledger, process uploads asynchronously, write audit events automatically, or replace the localStorage adapter. Those require application/API integration and explicit tests.
+The database foundation now includes current-price/FX metadata, single-use hashed organization invite codes, a transaction API, and a cloud portfolio workspace UI. Position calculations are derived from recorded transactions, but staged CSV/XLSX cloud imports, automatic reconciliation, localStorage migration, full RLS integration tests, and SQL migration validation remain release gates.
 
 ## Security controls
 
@@ -46,19 +46,19 @@ The first schema slice does not yet calculate positions from the ledger, process
 - Organization creation inserts the creator's owner membership through a database trigger, so the organization cannot be created without an owner membership.
 - Audit history allows append through database triggers and read by authorized users but exposes no client-side insert/update/delete policy.
 - Portfolio and ledger records are not hard-deleted through the client API. Organization/portfolio archival fields are available so retention can be preserved.
-- The migration does not use a service-role key in the browser and does not touch the hosted schema.
+- The migration does not use a service-role/secret key in the browser and does not touch the hosted schema. Authenticated application requests use HTTP-only, same-site cookies and the signed-in user's access token so database RLS remains in force.
+- Organization invite codes are random, hashed before storage, single-use, and expire after seven days. The raw code is returned only when generated; no email is sent by the current implementation.
 
 ## Required follow-up before enabling cloud portfolios
 
-1. Add sign-up/sign-in/session refresh/sign-out for the Markets portfolio experience without requiring accounts to browse public research pages.
-2. Add authenticated server-side portfolio routes and use the caller's Supabase access token so database RLS remains the authorization boundary.
-3. Add organization invitation and membership administration, with safe invitation acceptance and protections against removing or demoting the last owner.
-4. Add portfolio CRUD, transaction-ledger operations, position calculations, valuation snapshot persistence, and append-only audit writes.
-5. Implement staged CSV/XLSX imports: validate and preview first, then commit in bounded batches; make retries idempotent and keep rejected rows/errors available to the user.
-6. Provide an explicit, user-controlled import of existing localStorage holdings and valuation snapshots. Never silently upload browser-local financial data.
-7. Add RLS integration tests for two unrelated users, two separate organizations, same-organization role differences, personal-vs-shared portfolio boundaries, and attempted cross-tenant ID substitution.
-8. Run Supabase security/performance advisors and verify the migration against a disposable/local database before applying it to the hosted project.
-9. Verify account email settings, redirect URLs, environment variables, recovery flow, rate limits, and privacy copy before enabling sign-up.
+1. Configure and verify the Supabase Auth email confirmation, recovery, redirect URLs, and web-project environment variables.
+2. Add automated RLS integration tests for two unrelated users, two separate organizations, same-organization role differences, personal-vs-shared portfolio boundaries, and attempted cross-tenant ID substitution.
+3. Validate the SQL migrations against a disposable/local database and run Supabase security/performance advisors before applying them to the hosted project.
+4. Implement staged CSV/XLSX cloud imports: validate and preview first, then commit in bounded batches; make retries idempotent and keep rejected rows/errors available to the user.
+5. Provide an explicit, user-controlled import of existing localStorage holdings and valuation snapshots. Never silently upload browser-local financial data.
+6. Add organization member listing and invite revocation, plus explicit handling for archived organizations/portfolios.
+7. Test browser interactions, keyboard accessibility, session expiry/refresh, mobile layouts, and regression across existing app areas.
+8. Verify current preview/API deployment tied to the latest source head once Vercel's build-rate limit resets.
 
 ## Acceptance matrix
 
