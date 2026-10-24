@@ -310,6 +310,7 @@ export default function MarketsValuationPage() {
       id: `${form.ticker.trim().toUpperCase() || form.company.trim().toLowerCase()}-${Date.now()}`,
       company: form.company.trim(),
       ticker: form.ticker.trim().toUpperCase(),
+      country: form.country.trim(),
       method: form.method,
       modelFit: form.modelFit,
       modelFitConfirmed,
