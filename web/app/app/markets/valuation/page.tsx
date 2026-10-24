@@ -261,7 +261,7 @@ export default function MarketsValuationPage() {
             <h2 id="method-title" className="h3 mt-2 text-lg">What this model can and cannot say</h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[color:var(--muted)]">
               <li>Discounts five annual free-cash-flow projections and a terminal value; then adds cash, subtracts debt and divides by shares outstanding.</li>
-              <li>It is unsuitable when free cash flow is negative or structurally volatile, or for many banks, insurers, early-stage firms and instruments where this model's assumptions do not fit.</li>
+              <li>It is unsuitable when free cash flow is negative or structurally volatile, or for many banks, insurers, early-stage firms and instruments where this model&apos;s assumptions do not fit.</li>
               <li>It does not independently verify the source, accounting basis, share count, currency, dilution, minority interests or latest price.</li>
               <li>It does not yet adjust for non-operating assets, leases, pension deficits, preferred shares, minority interests, cyclicality or country-specific discount-rate calibration.</li>
               <li>A model output is not a target price or a buy/sell instruction. Review assumptions and contrary evidence before drawing a conclusion.</li>
