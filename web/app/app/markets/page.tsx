@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pill, Stat, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
-import { get, type CoverageRow } from "../../../lib/market";
+import { get } from "../../../lib/market";
 
 type PulseCountry = { code: string; name: string } | null;
 type PulseDeal = {
@@ -45,19 +45,6 @@ type Pulse = {
   };
   events: { total: number; recent: number; latest: PulseEvent[] };
 };
-type Coverage = {
-  countries: CoverageRow[];
-  summary: {
-    countries: number;
-    by_tier: Record<string, number>;
-    national_news_editions: number;
-    full_country_risk_coverage: number;
-    with_deals: number;
-    with_events: number;
-  };
-  tiers: Record<string, string>;
-};
-
 function compactNumber(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return "Not available";
   return value.toLocaleString("en-US");
@@ -74,12 +61,8 @@ function formatDate(value: string | null | undefined): string {
 export default function MarketsPage() {
   const router = useRouter();
   const [company, setCompany] = useState("");
-  const [coverageQuery, setCoverageQuery] = useState("");
-  const [coverageFilter, setCoverageFilter] = useState("all");
   const [pulse, setPulse] = useState<Pulse | null>(null);
-  const [coverage, setCoverage] = useState<Coverage | null>(null);
   const [pulseError, setPulseError] = useState<string | null>(null);
-  const [coverageError, setCoverageError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -87,11 +70,6 @@ export default function MarketsPage() {
       .then((data) => { if (active) setPulse(data); })
       .catch((error) => {
         if (active) setPulseError(error instanceof ApiError ? error.message : "Market activity could not be loaded.");
-      });
-    get<Coverage>("/api/coverage")
-      .then((data) => { if (active) setCoverage(data); })
-      .catch((error) => {
-        if (active) setCoverageError(error instanceof ApiError ? error.message : "Coverage information could not be loaded.");
       });
     return () => { active = false; };
   }, []);
@@ -107,24 +85,10 @@ export default function MarketsPage() {
   const latestEvents = pulse?.events.latest ?? [];
   const topDealCountries = pulse?.deals.top_countries.slice(0, 5) ?? [];
   const maxCountryDeals = Math.max(1, ...topDealCountries.map((country) => country.deals));
-  const researchReady = coverage?.countries.filter((country) => country.prices && country.statements).length ?? 0;
-  const visibleCoverage = (coverage?.countries ?? []).filter((country) => {
-    const q = coverageQuery.trim().toLowerCase();
-    const matchesQuery = !q || [country.country, country.region, country.exchange ?? "", country.currency, country.iso2].some((value) => value.toLowerCase().includes(q));
-    const hasBoth = Boolean(country.prices && country.statements);
-    const hasSomeFinancials = Boolean(country.prices || country.statements);
-    const hasMarketIntelligence = country.deals > 0 || country.events > 0 || Boolean(country.news?.edition);
-    const matchesFilter = coverageFilter === "all" ||
-      (coverageFilter === "research-ready" && hasBoth) ||
-      (coverageFilter === "partial-financials" && hasSomeFinancials && !hasBoth) ||
-      (coverageFilter === "intelligence-only" && !hasSomeFinancials && hasMarketIntelligence);
-    return matchesQuery && matchesFilter;
-  }).sort((a, b) => a.country.localeCompare(b.country));
-
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · African investment intelligence" title="Explore Investments">
-        Explore African investments using existing company data, market context, transparent valuation models and portfolio analysis. Conclusions are only as reliable as their sources and assumptions; this is decision support, not a promise of returns or an instruction to trade. Coverage differs by country, exchange, instrument and company, and Markets makes those limits visible.
+        Explore African investments using existing company data, market context, transparent valuation models and portfolio analysis. Conclusions are only as reliable as their sources and assumptions; this is decision support, not a promise of returns or an instruction to trade. Coverage differs by country, exchange, instrument and company. See the Coverage registry for market-by-market availability and limitations.
       </PageHeader>
 
       <section className="panel p-5 sm:p-7" aria-labelledby="market-search-title">
@@ -152,7 +116,7 @@ export default function MarketsPage() {
         <div className="mt-5 flex flex-wrap gap-2 text-xs text-[color:var(--muted)]">
           <span className="rounded-full border hairline px-3 py-1.5">Africa-wide scope</span>
           <span className="rounded-full border hairline px-3 py-1.5">Source-linked evidence</span>
-          <span className="rounded-full border hairline px-3 py-1.5">Coverage-aware analysis</span>
+          <Link href="/app/coverage" className="rounded-full border hairline px-3 py-1.5 underline-offset-4 hover:underline">View market coverage →</Link>
         </div>
       </section>
 
@@ -262,91 +226,6 @@ export default function MarketsPage() {
         </div>
 
         <aside className="space-y-6">
-          <section className="panel p-5" aria-labelledby="coverage-title">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="eyebrow">Coverage transparency</p>
-                <h2 id="coverage-title" className="h3 mt-2 text-lg">Africa-wide, evidence-led</h2>
-              </div>
-              <span aria-hidden="true" className="text-2xl">◎</span>
-            </div>
-            {coverageError && <ErrorNote message={coverageError} />}
-            {!coverage && !coverageError ? <Loading label="Loading coverage map…" /> : null}
-            {coverage && (
-              <>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <Stat label="Countries represented" value={coverage.summary.countries} />
-                  <Stat label="Markets with deals" value={coverage.summary.with_deals} />
-                </div>
-                <div className="mt-4 rounded-lg border hairline p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm">Price + statement coverage</span>
-                    <span className="kbd text-sm">{researchReady} / {coverage.countries.length}</span>
-                  </div>
-                  <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
-                    Count of countries whose coverage metadata lists both prices and financial statements. This is a rough availability indicator, not a claim that every listed company in those countries is research-ready.
-                  </p>
-                </div>
-                <div className="mt-4 space-y-3">
-                  {Object.entries(coverage.tiers).map(([tier, description]) => (
-                    <div key={tier} className="flex items-start gap-2">
-                      <Pill value={tier} />
-                      <p className="text-xs leading-relaxed text-[color:var(--muted)]">{description}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6 border-t hairline pt-5">
-                  <div className="flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                      <p className="eyebrow">Country coverage explorer</p>
-                      <h3 className="mt-2 text-base font-medium">What can we research in each market?</h3>
-                      <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Coverage metadata is not a guarantee that every company has complete or current data. Provider/source labels reflect the existing coverage registry.</p>
-                    </div>
-                    <p className="text-xs text-[color:var(--dim)]">{visibleCoverage.length} of {coverage.countries.length} countries</p>
-                  </div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_0.8fr]">
-                    <div>
-                      <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="markets-country-search">Search country, exchange or currency</label>
-                      <input id="markets-country-search" className="field" value={coverageQuery} onChange={(event) => setCoverageQuery(event.target.value)} placeholder="e.g. Nigeria, NGX, NGN" />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="markets-coverage-filter">Filter by available coverage</label>
-                      <select id="markets-coverage-filter" className="field" value={coverageFilter} onChange={(event) => setCoverageFilter(event.target.value)}>
-                        <option value="all">All registered countries</option>
-                        <option value="research-ready">Prices and statements listed</option>
-                        <option value="partial-financials">Partial financial coverage</option>
-                        <option value="intelligence-only">Intelligence, limited financials</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="mt-4 overflow-x-auto rounded-lg border hairline">
-                    <table className="w-full min-w-[48rem] border-collapse text-left text-xs">
-                      <thead>
-                        <tr className="border-b hairline text-[color:var(--dim)]">
-                          {["Country / region", "Exchange / currency", "Coverage tier", "Price data", "Statements", "Deals / events"].map((heading) => <th key={heading} className="whitespace-nowrap px-3 py-3 font-normal">{heading}</th>)}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {visibleCoverage.map((country) => (
-                          <tr key={country.iso2} className="border-b hairline last:border-0">
-                            <td className="px-3 py-3"><p className="font-medium">{country.country}</p><p className="mt-1 text-[color:var(--dim)]">{country.region}</p></td>
-                            <td className="px-3 py-3"><p>{country.exchange || "No exchange listed"}</p><p className="mt-1 text-[color:var(--dim)]">{country.currency}</p></td>
-                            <td className="px-3 py-3"><Pill value={`Tier ${country.tier}`} /></td>
-                            <td className="px-3 py-3">{country.prices || "Not listed"}</td>
-                            <td className="px-3 py-3">{country.statements || "Not listed"}</td>
-                            <td className="px-3 py-3 kbd">{country.deals.toLocaleString()} / {country.events.toLocaleString()}</td>
-                          </tr>
-                        ))}
-                        {visibleCoverage.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-[color:var(--muted)]">No countries match this search and coverage filter.</td></tr>}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <Link href="/app/coverage" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open detailed coverage registry →</Link>
-              </>
-            )}
-          </section>
-
           <section className="panel p-5" aria-labelledby="portfolio-title">
             <p className="eyebrow">Personal investing</p>
             <h2 id="portfolio-title" className="h3 mt-2 text-lg">Your portfolio, in context.</h2>
