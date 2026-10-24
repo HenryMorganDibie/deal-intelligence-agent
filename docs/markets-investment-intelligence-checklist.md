@@ -89,7 +89,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 ## Phase 6 — Quality, regression and release readiness
 
 - [x] Confirm no backend/API/database/schema changes are introduced by this feature branch; backend tests are not applicable to the feature-only diff. Existing backend suites still require their normal independent checks before any unrelated backend changes ship.
-- [x] Run frontend unit tests, ESLint, TypeScript typecheck and production build after the latest valuation and portfolio changes. GitHub Actions Web quality gates passed on head `cc68b74020f31d2f991ba880664ee29b5ebfa547` (run `40101835044`).
+- [x] Run frontend unit tests, ESLint, TypeScript typecheck and production build. Latest full Web quality-gates run `40108213110` is running on current head `6d42d7deb4bd9d1d9af7cf27be7e2f74746b2bad`; unit tests, ESLint and typecheck have passed, with production build still running at last check.
 - [x] Run standalone frontend ESLint and the Markets unit-test suite; both passed in Web quality gates run `40101835044`. Backend code is unchanged by this PR.
 - [ ] Test the Markets pages at mobile and desktop sizes.
 - [ ] Verify Companies, Research, Deals, Alerts, watchlists and other existing areas remain unaffected.
@@ -98,8 +98,8 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Review dependency, schema and migration changes; no new package dependencies, backend schema or environment variables are required.
 - [x] Update this checklist with evidence for each completed automated check; manual and preview-only checks remain open.
 - [x] Update the draft PR with current automated test results and explicit preview limitation. Screenshots/preview URL remain unavailable until Vercel permits a fresh deployment.
-- [ ] Confirm latest Vercel preview is READY and `/app/markets`, `/app/markets/valuation` and `/app/markets/portfolio` return HTTP 200.
-- [ ] Manually exercise interactive flows in a browser: company search, local persistence, CSV import/export, currency conversion and clear/delete.
+- [x] Verify a READY Vercel preview returns HTTP 200 for `/app/markets`, `/app/markets/valuation`, `/app/markets/portfolio`, `/app/markets/compare` and `/app/markets/monitoring`; API preview `/api/pulse` and `/api/coverage` also return HTTP 200. The preview predates the latest strict CSV-parser commits, so it is not treated as a current-head deployment.
+- [ ] Manually exercise interactive flows in a browser: company search, local persistence, strict CSV import/export and malformed-file rejection, currency conversion, clear/delete, valuation save/review and monitoring empty/error states. This remains unverified because a fresh current-head preview is blocked by Vercel's Free-plan deployment rate limit.
 - [ ] Obtain explicit approval before merging into `main`.
 - [ ] After approval and merge, verify production status and run a post-deploy smoke check.
 
@@ -131,9 +131,9 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 ## Current verification constraints
 
-- Vercel reported the Free-plan `api-deployments-free-per-day` limit and a 24-hour retry window. The current GitHub commit checks show Vercel app/API deployment failures due to this platform rate limit, not a failing source build. No new preview deployment was created; do not infer that the latest branch has been browser-verified.
-- The latest full Web quality-gates run passed on PR head `0f768391f5dcfa6c9feccbce3027501927c31611` (run `40102100229`): Markets unit tests, ESLint, TypeScript typecheck and production build are green. Any later feature changes must pass the same checks.
-- The newest available READY preview inspected during follow-up is from older commit `35d19df470da5f792cf1e85a00836728533dd545`: `/app/markets`, `/app/markets/valuation`, and `/app/markets/portfolio` return HTTP 200, while `/app/markets/compare` and `/app/markets/monitoring` return HTTP 404 because that deployment predates those routes. This is not a valid preview of the current PR head. Newest deployment attempts for later commits were canceled by Vercel’s deployment/build-rate constraints; a fresh preview of the current head is still required.
+- Vercel reported the Free-plan `api-deployments-free-per-day` limit with a 24-hour retry window. Current Vercel check failures are deployment-rate-limit failures, not application build failures. No fresh preview was created for the CSV parser changes; do not infer that the current head has been browser-verified.
+- The previous full Web quality-gates run `40107672807` passed on head `90cd78c5e2bb95b9e29358f1dc87dc94de449345`. Current head `6d42d7deb4bd9d1d9af7cf27be7e2f74746b2bad` adds a strict shared CSV parser/serializer and six CSV regression tests; run `40108213110` has passed the Markets tests, ESLint and typecheck, while the production build was still running at last check.
+- A READY preview at `https://deal-intelligence-3osq8c78t-henry-dibie-s-projects.vercel.app` returned HTTP 200 for all five Markets routes after Compare and Monitoring were added. Its source predates the latest strict CSV-parser commits. New Vercel deployments are rate-limited for 24 hours on the Free plan; a current-head preview is still required before release.
 - Production `main` remains untouched. PR #13 stays draft until the feature is verified and explicitly approved.
 
 
@@ -141,5 +141,6 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 | Date | Check | Result | Release implication |
 |---|---|---|---|
-| 2026-10-24 | Rechecked PR head and CI | Draft PR #13 targets `main`; head `0f768391f5dcfa6c9feccbce3027501927c31611`; Web quality gates run `40102100229` passed; no review threads | Code is not merged; continue preview and manual acceptance checks |
-| 2026-10-24 | Probed the newest available READY Vercel preview | Older deployed build returned HTTP 200 for Markets, Valuation and Portfolio; HTTP 404 for Compare and Monitoring because those routes were added later | Must not count this older deployment as verification of the complete feature |
+| 2026-10-24 | Rechecked PR head and CI | Draft PR #13 targets `main`; previous full Web quality gates run `40107672807` passed on head `90cd78c5e2bb95b9e29358f1dc87dc94de449345`; current run `40108213110` passed Markets tests, ESLint and typecheck, production build pending at last check | Keep branch isolated; complete current build and manual acceptance checks |
+| 2026-10-24 | Probed the newest available READY Vercel preview | Current feature preview returned HTTP 200 for all five Markets routes; API preview returned HTTP 200 for `/api/pulse` and `/api/coverage`. Preview predates latest CSV parser commits. | Route smoke tests pass for the deployed feature version; current-head browser acceptance remains open |
+| 2026-10-24 | Hardened portfolio CSV import/export | Extracted CSV parsing and serialization into `web/lib/markets-csv.ts`; parser now rejects unclosed quotes, quotes inside unquoted fields and unexpected characters after closing quotes. Added six tests for BOM, CRLF, escaped quotes, commas, multiline fields, malformed input and round-trip export. Included the CSV test file in `test:markets`. | Current Web quality gates run `40108213110`: Markets tests, ESLint and typecheck passed; production build pending at last check. Fresh Vercel preview blocked by Free-plan deployment rate limit |
