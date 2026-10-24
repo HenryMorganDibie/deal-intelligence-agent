@@ -10,6 +10,8 @@ import { parsePortfolioWorkbook } from "../../../../../lib/markets-excel";
 type User = { id: string; email?: string | null };
 type Portfolio = { id: string; name: string; base_currency: string; owner_user_id: string | null; organization_id: string | null; archived_at: string | null };
 type Organization = { id: string; name: string; slug: string; role: string; archived_at: string | null };
+type OrganizationMember = { user_id: string; email: string | null; role: string; joined_at: string };
+type OrganizationInvite = { id: string; role: string; expires_at: string; use_count: number; max_uses: number; revoked_at: string | null; created_at: string };
 type Instrument = { id: string; portfolio_id: string; name: string; ticker: string | null; market: string | null; country: string | null; sector: string | null; asset_type: string; currency: string; current_price: number | null; price_as_of: string | null; fx_to_base: number | null; fx_as_of: string | null };
 type Transaction = { id: string; portfolio_id: string; instrument_id: string | null; transaction_date: string; transaction_type: string; quantity: number; unit_price: number; cash_amount: number; fees: number; currency: string; fx_to_base: number | null; notes: string | null };
 type PortfolioData = { portfolio: Portfolio; instruments: Instrument[]; transactions: Transaction[] };
@@ -92,6 +94,9 @@ export default function CloudPortfolioPage() {
   const [authLoading, setAuthLoading] = useState(true);
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [members, setMembers] = useState<OrganizationMember[]>([]);
+  const [invites, setInvites] = useState<OrganizationInvite[]>([]);
+  const [memberRoleEdits, setMemberRoleEdits] = useState<Record<string, string>>({});
   const [selectedId, setSelectedId] = useState("");
   const [data, setData] = useState<PortfolioData | null>(null);
   const [valuations, setValuations] = useState<CloudValuation[]>([]);
@@ -141,6 +146,17 @@ export default function CloudPortfolioPage() {
     return () => { active = false; };
   }, [loadLists]);
 
+  useEffect(() => {
+    const selectedOrganization = organizations.find((item) => item.id === organizationId && !item.archived_at);
+    if (!user || !selectedOrganization || !["owner", "admin"].includes(selectedOrganization.role)) { setMembers([]); setInvites([]); return; }
+    let active = true;
+    Promise.all([
+      readJson<OrganizationMember[]>("/api/portfolio?resource=members&organizationId=" + encodeURIComponent(organizationId)),
+      readJson<OrganizationInvite[]>("/api/portfolio?resource=invites&organizationId=" + encodeURIComponent(organizationId)),
+    ]).then(([memberRows, inviteRows]) => { if (active) { setMembers(memberRows); setInvites(inviteRows); setMemberRoleEdits(Object.fromEntries(memberRows.map((member) => [member.user_id, member.role]))); } })
+      .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : "Could not load organization members."); });
+    return () => { active = false; };
+  }, [organizationId, organizations, user]);
   useEffect(() => {
     if (!selectedId || !user) { setData(null); return; }
     let active = true;
@@ -346,6 +362,35 @@ export default function CloudPortfolioPage() {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not migrate local portfolio."); }
     finally { setMigrationBusy(false); }
   }
+  async function refreshOrganizationAdmin() {
+    if (!organizationId) return;
+    const [memberRows, inviteRows] = await Promise.all([readJson<OrganizationMember[]>("/api/portfolio?resource=members&organizationId=" + encodeURIComponent(organizationId)), readJson<OrganizationInvite[]>("/api/portfolio?resource=invites&organizationId=" + encodeURIComponent(organizationId))]);
+    setMembers(memberRows); setInvites(inviteRows);
+    setMemberRoleEdits(Object.fromEntries(memberRows.map((member) => [member.user_id, member.role])));
+  }
+
+  async function handleMemberRoleSave(userId: string) {
+    try {
+      await postJson({ action: "change-member-role", organizationId, userId, role: memberRoleEdits[userId] });
+      await refreshOrganizationAdmin(); setMessage("Organization member role updated."); setError("");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not update member role."); }
+  }
+
+  async function handleMemberRemove(userId: string) {
+    if (!window.confirm("Remove this person from the selected organization? Their personal portfolios will not be affected.")) return;
+    try {
+      await postJson({ action: "remove-member", organizationId, userId });
+      await refreshOrganizationAdmin(); setMessage("Organization membership removed."); setError("");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not remove organization member."); }
+  }
+
+  async function handleInviteRevoke(inviteId: string) {
+    if (!window.confirm("Revoke this invitation? Anyone holding the code will no longer be able to use it.")) return;
+    try {
+      await postJson({ action: "revoke-invite", inviteId });
+      await refreshOrganizationAdmin(); setMessage("Invitation revoked."); setError("");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not revoke invitation."); }
+  }
   async function signOut() {
     await fetch("/api/portfolio/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "sign-out" }) });
     window.location.href = "/account";
@@ -408,6 +453,12 @@ export default function CloudPortfolioPage() {
                   {newInvite ? <div className="rounded-lg border border-[color:var(--border)] p-3"><p className="text-xs text-[color:var(--muted)]">Copy this code now. It is not shown again.</p><code className="mt-2 block break-all text-sm">{newInvite}</code><button className="mt-2 text-sm underline" type="button" onClick={() => navigator.clipboard.writeText(newInvite)}>Copy code</button></div> : null}
                 </form>
               ) : null}
+              {organizations.some((item) => item.id === organizationId && !item.archived_at && (item.role === "owner" || item.role === "admin")) ? <div className="mt-5 space-y-4">
+                <div><h3 className="font-medium">Workspace members</h3>
+                  {members.length ? <ul className="mt-2 space-y-2">{members.map((member) => <li key={member.user_id} className="flex flex-wrap items-center gap-2 rounded-lg border border-[color:var(--border)] p-3 text-sm"><div className="min-w-0 flex-1"><strong className="break-all">{member.email || member.user_id}</strong><span className="ml-2 text-xs text-[color:var(--muted)]">{member.role}</span></div>{member.role !== "owner" ? <><select className="rounded-lg border border-[color:var(--border)] bg-transparent px-2 py-1" aria-label={"Role for " + (member.email || member.user_id)} value={memberRoleEdits[member.user_id] || member.role} onChange={(event) => setMemberRoleEdits((current) => ({ ...current, [member.user_id]: event.target.value }))}><option value="admin" disabled={!organizations.some((org) => org.id === organizationId && org.role === "owner")}>Admin</option><option value="manager">Manager</option><option value="analyst">Analyst</option><option value="viewer">Viewer</option></select><button type="button" className="text-xs underline" onClick={() => { void handleMemberRoleSave(member.user_id); }}>Save role</button><button type="button" className="text-xs underline" onClick={() => { void handleMemberRemove(member.user_id); }}>Remove</button></> : <span className="text-xs text-[color:var(--muted)]">Owner</span>}</li>)}</ul> : <p className="mt-2 text-xs text-[color:var(--muted)]">No members loaded yet.</p>}</div>
+                <div><h3 className="font-medium">Invite codes</h3>
+                  {invites.length ? <ul className="mt-2 space-y-2">{invites.map((invite) => <li key={invite.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[color:var(--border)] p-3 text-sm"><span>{invite.role} · {invite.use_count}/{invite.max_uses} used · expires {new Date(invite.expires_at).toLocaleDateString()} {invite.revoked_at ? "· revoked" : invite.use_count >= invite.max_uses ? "· used" : new Date(invite.expires_at) <= new Date() ? "· expired" : "· active"}</span>{!invite.revoked_at && invite.use_count < invite.max_uses && new Date(invite.expires_at) > new Date() ? <button type="button" className="text-xs underline" onClick={() => { void handleInviteRevoke(invite.id); }}>Revoke</button> : null}</li>)}</ul> : <p className="mt-2 text-xs text-[color:var(--muted)]">No invitations yet.</p>}</div>
+              </div> : null}
               <form className="mt-4 flex flex-wrap gap-2" onSubmit={handleAcceptInvite}>
                 <input className="min-w-0 flex-1 rounded-lg border border-[color:var(--border)] bg-transparent px-3 py-2 text-sm" placeholder="Paste an invite code" required value={inviteCode} onChange={(event) => setInviteCode(event.target.value)} />
                 <button className="btn btn-secondary" type="submit">Join workspace</button>
