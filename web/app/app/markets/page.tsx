@@ -111,6 +111,9 @@ export default function MarketsPage() {
               />
               <button type="submit" className="btn btn-primary shrink-0">View company</button>
             </form>
+            <p className="mt-3 text-xs text-[color:var(--muted)]">
+              Need deeper investigation? <Link href="/app/research" className="underline-offset-4 hover:underline">Open Research</Link>.
+            </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
             <Link href="/app/markets/valuation" className="rounded-xl border hairline p-4 transition-colors hover:bg-white/[0.04]">
@@ -212,7 +215,10 @@ export default function MarketsPage() {
             <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
               Review allocation, concentration, currency exposure and saved valuation changes. Holdings remain in this browser; prices and FX rates are entered manually, not live quotes.
             </p>
-            <Link href="/app/markets/portfolio" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open My Portfolio →</Link>
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+              <Link href="/app/markets/portfolio" className="underline-offset-4 hover:underline">Open My Portfolio →</Link>
+              <Link href="/app/markets/monitoring" className="underline-offset-4 hover:underline">Monitor developments →</Link>
+            </div>
           </section>
 
           <section className="rounded-xl border hairline p-5" aria-labelledby="coverage-context-title">
