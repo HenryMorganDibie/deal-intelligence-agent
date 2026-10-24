@@ -335,13 +335,17 @@ export default function MarketsValuationPage() {
         }
         existing = parsedStored;
       }
-      const next = existing.filter((item) => {
+      const sameIssuer = (item: SavedValuationSnapshot) => {
         const sameCountry = Boolean(snapshot.country && item.country && snapshot.country.trim().toLowerCase() === item.country.trim().toLowerCase());
-        if (snapshot.ticker && item.ticker) return snapshot.ticker !== item.ticker.trim().toUpperCase() || !sameCountry;
-        return snapshot.company.trim().toLowerCase() !== item.company.trim().toLowerCase() || !sameCountry;
-      });
-      window.localStorage.setItem(VALUATION_STORAGE_KEY, JSON.stringify([...next, snapshot]));
-      setSavedMessage("Saved locally in this browser. Portfolio Intelligence will use it only when the holding has a matching currency, quote date and price, and the saved model passes its quality checks.");
+        if (snapshot.ticker && item.ticker) return snapshot.ticker === item.ticker.trim().toUpperCase() && sameCountry;
+        return snapshot.company.trim().toLowerCase() === item.company.trim().toLowerCase() && sameCountry;
+      };
+      const history = [...existing.filter(sameIssuer), snapshot]
+        .sort((a, b) => Date.parse(b.calculatedAt) - Date.parse(a.calculatedAt))
+        .slice(0, 10);
+      const otherIssuers = existing.filter((item) => !sameIssuer(item));
+      window.localStorage.setItem(VALUATION_STORAGE_KEY, JSON.stringify([...otherIssuers, ...history]));
+      setSavedMessage("Saved locally in this browser. Up to 10 dated snapshots per company are kept so Markets can flag material changes in your model estimate. Portfolio reviews still require matching currency, quote date and price, and a suitable model.");
     } catch (saveError) {
       setSavedMessage(saveError instanceof Error ? saveError.message : "Could not save this valuation in browser storage.");
     }
