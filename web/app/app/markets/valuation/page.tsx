@@ -126,6 +126,7 @@ export default function MarketsValuationPage() {
   const [detectedSector, setDetectedSector] = useState("");
   const [modelFitConfirmed, setModelFitConfirmed] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [backupMessage, setBackupMessage] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -359,7 +360,7 @@ export default function MarketsValuationPage() {
         throw new Error("Saved valuation history could not be validated. It was left unchanged; check the stored data before exporting.");
       }
       if (parsed.length === 0) {
-        setSavedMessage("There is no saved valuation history to export yet. Calculate and save a valuation first.");
+        setBackupMessage("There is no saved valuation history to export yet. Calculate and save a valuation first.");
         return;
       }
       const backup = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), valuations: parsed }, null, 2);
@@ -371,9 +372,9 @@ export default function MarketsValuationPage() {
       anchor.click();
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setSavedMessage(`Exported ${parsed.length} saved valuation snapshot(s). Keep this file somewhere safe; it contains your financial assumptions and source links.`);
+      setBackupMessage(`Exported ${parsed.length} saved valuation snapshot(s). Keep this file somewhere safe; it contains your financial assumptions and source links.`);
     } catch (backupError) {
-      setSavedMessage(backupError instanceof Error ? backupError.message : "Could not export saved valuation history.");
+      setBackupMessage(backupError instanceof Error ? backupError.message : "Could not export saved valuation history.");
     }
   }
 
@@ -388,13 +389,13 @@ export default function MarketsValuationPage() {
       const snapshots = parseValuationHistoryBackup(parsed);
       if (!snapshots) throw new Error("This is not a valid Deal Intelligence valuation-history backup. No saved data was changed.");
       if (!window.confirm(`Replace the valuation history in this browser with ${snapshots.length} snapshot(s) from this backup? Export the current history first if you need to keep it.`)) {
-        setSavedMessage("Valuation-history restore cancelled. Existing saved data was not changed.");
+        setBackupMessage("Valuation-history restore cancelled. Existing saved data was not changed.");
         return;
       }
       window.localStorage.setItem(VALUATION_STORAGE_KEY, JSON.stringify(snapshots));
-      setSavedMessage(`Restored ${snapshots.length} saved valuation snapshot(s) to this browser. Portfolio holdings were not changed.`);
+      setBackupMessage(`Restored ${snapshots.length} saved valuation snapshot(s) to this browser. Portfolio holdings were not changed.`);
     } catch (backupError) {
-      setSavedMessage(backupError instanceof Error ? backupError.message : "Could not restore valuation history.");
+      setBackupMessage(backupError instanceof Error ? backupError.message : "Could not restore valuation history.");
     }
   }
 
@@ -655,7 +656,7 @@ export default function MarketsValuationPage() {
               </label>
             </div>
             <p id="valuation-backup-help" className="mt-2 text-xs leading-relaxed text-[color:var(--dim)]">Import validates the file, is limited to 2 MB, and asks before replacing saved history.</p>
-            {savedMessage ? <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status" aria-live="polite">{savedMessage}</p> : null}
+            {backupMessage ? <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status" aria-live="polite">{backupMessage}</p> : null}
           </section>
 
           <section className="panel p-5" aria-labelledby="method-title">
