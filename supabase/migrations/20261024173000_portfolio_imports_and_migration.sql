@@ -69,6 +69,7 @@ declare
  u uuid:=(select auth.uid()); prior public.portfolio_migration_receipts%rowtype; h jsonb; v jsonb; inst uuid; n integer:=0; vn integer:=0; nm text; cur text; qty numeric; cost numeric; px numeric; fx numeric;
 begin
  if u is null or not private.can_access_portfolio(p_portfolio_id,'analyst') then raise exception using errcode='42501',message='Portfolio access denied'; end if;
+ if not exists(select 1 from public.portfolios p where p.id=p_portfolio_id and p.base_currency=p_base_currency and p.archived_at is null) then raise exception using errcode='22023',message='Portfolio reporting currency must match the local portfolio'; end if;
  if p_migration_key is null or p_base_currency !~ '^[A-Z]{3}$' or jsonb_typeof(p_holdings)<>'array' or jsonb_array_length(p_holdings)>5000 or jsonb_typeof(p_valuations)<>'array' or jsonb_array_length(p_valuations)>1000 then raise exception using errcode='22023',message='Invalid local portfolio migration payload'; end if;
  select * into prior from public.portfolio_migration_receipts where portfolio_id=p_portfolio_id and migration_key=p_migration_key;
  if found then if prior.user_id<>u then raise exception using errcode='42501',message='Migration receipt access denied'; end if; return jsonb_build_object('holdings_count',prior.holdings_count,'valuations_count',prior.valuations_count,'replayed',true); end if;
