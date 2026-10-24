@@ -29,7 +29,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  let body: { action?: string; email?: string; password?: string; refreshToken?: unknown; tokenHash?: unknown; type?: unknown };
+  let body: { action?: string; email?: string; password?: string; refreshToken?: unknown; tokenHash?: unknown; type?: unknown; code?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -38,6 +38,29 @@ export async function POST(request: NextRequest) {
 
   try {
     const config = portfolioConfig();
+
+    if (body.action === "complete-oauth") {
+      const code = typeof body.code === "string" ? body.code : "";
+      const verifier = request.cookies.get("di_portfolio_oauth_verifier")?.value || "";
+      if (!code || code.length > 4096 || !/^[A-Za-z0-9._~-]{43,128}$/.test(verifier)) {
+        const response = NextResponse.json({ error: "Google sign-in could not be completed. Start again." }, { status: 400 });
+        response.cookies.set("di_portfolio_oauth_verifier", "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 0 });
+        return response;
+      }
+      const exchange = await fetch(config.url + "/auth/v1/token?grant_type=pkce", {
+        method: "POST",
+        headers: { apikey: config.key, "Content-Type": "application/json" },
+        body: JSON.stringify({ auth_code: code, code_verifier: verifier }),
+        cache: "no-store",
+      });
+      const payload = (await exchange.json().catch(() => ({}))) as AuthPayload;
+      const response = !exchange.ok || !payload.access_token || !payload.refresh_token || !payload.user?.id
+        ? NextResponse.json({ error: "Google sign-in failed or the sign-in link expired. Please try again." }, { status: 400 })
+        : NextResponse.json({ ok: true, user: payload.user }, { headers: { "Cache-Control": "no-store" } });
+      if (exchange.ok && payload.access_token && payload.refresh_token && payload.user?.id) setPortfolioAuthCookies(payload);
+      response.cookies.set("di_portfolio_oauth_verifier", "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 0 });
+      return response;
+    }
 
     if (body.action === "complete-email") {
       const refreshToken = typeof body.refreshToken === "string"
