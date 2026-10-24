@@ -203,7 +203,7 @@ export default function MarketsMonitoringPage() {
             {eventsError ? <ErrorNote message={eventsError} /> : null}
             {eventsTruncated ? (
               <p className="mb-3 rounded-lg border hairline p-3 text-sm leading-relaxed text-[color:var(--muted)]" role="status">
-                Showing {events.length.toLocaleString()} of {eventsTotal?.toLocaleString() ?? "an unknown number of"} available events. The safety limit was reached, so this monitoring pass may be incomplete. Narrow the period or review the existing Watchlists for broader monitoring.
+                Showing {events.length.toLocaleString()} of {eventsTotal?.toLocaleString() ?? "an unknown number of"} available events. The 5,000-event safety cap was reached, so this monitoring pass may be incomplete. Review the existing Watchlists for broader monitored-company alerts.
               </p>
             ) : null}
             {eventsLoading ? <p className="mb-3 text-xs text-[color:var(--muted)]" role="status" aria-live="polite">Loading recent corporate events…</p> : null}
