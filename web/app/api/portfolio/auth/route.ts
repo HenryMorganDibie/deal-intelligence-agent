@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
       if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) {
         return NextResponse.json({ error: "Enter a valid account email." }, { status: 400 });
       }
-      const response = await fetch(config.url + "/auth/v1/recover", {
+      const response = await fetch(config.url + "/auth/v1/recover?redirect_to=" + encodeURIComponent(request.nextUrl.origin + "/auth/callback?next=password-reset"), {
         method: "POST",
         headers: { apikey: config.key, "Content-Type": "application/json" },
-        body: JSON.stringify({ email, options: { redirectTo: request.nextUrl.origin + "/auth/callback?next=password-reset" } }),
+        body: JSON.stringify({ email }),
         cache: "no-store",
       });
       if (!response.ok && response.status !== 429) {
