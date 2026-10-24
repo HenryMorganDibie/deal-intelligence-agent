@@ -375,7 +375,11 @@ export default function MarketsPage() {
             <p className="eyebrow">Existing intelligence</p>
             <h2 className="h3 mt-2 text-lg">Continue your research</h2>
             <div className="mt-4 grid gap-2">
-              <Link href="/app/research" className="btn btn-secondary justify-center">Open Research</Link>
+              <Link href="/app/markets/valuation" className="btn btn-secondary justify-center">Explore valuation</Link>
+              <Link href="/app/markets/portfolio" className="btn btn-ghost justify-center">Open My Portfolio</Link>
+              <Link href="/app/markets/compare" className="btn btn-ghost justify-center">Compare opportunities</Link>
+              <Link href="/app/markets/monitoring" className="btn btn-ghost justify-center">Monitor portfolio developments</Link>
+              <Link href="/app/research" className="btn btn-ghost justify-center">Open Research</Link>
               <Link href="/app/watchlists" className="btn btn-ghost justify-center">Open Alerts and watchlists</Link>
               <Link href="/app/companies" className="btn btn-ghost justify-center">Browse company profiles</Link>
               <Link href="/app/markets/compare" className="btn btn-ghost justify-center">Compare companies</Link>
