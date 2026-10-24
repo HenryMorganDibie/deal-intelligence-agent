@@ -10,6 +10,7 @@ import { get } from "../../../../lib/market";
 type ModelFit = "standard-operating-company" | "financial-institution" | "negative-or-volatile-fcf" | "early-stage" | "reit-property" | "uncertain";
 
 type Inputs = {
+  method: "dcf" | "ddm";
   company: string;
   ticker: string;
   modelFit: ModelFit;
@@ -17,6 +18,7 @@ type Inputs = {
   source: string;
   period: string;
   fcf: string;
+  dividendPerShare: string;
   cash: string;
   debt: string;
   shares: string;
@@ -30,11 +32,12 @@ type Inputs = {
   terminalGrowth: string;
 };
 
-type Scenario = { name: string; growth: number; enterpriseValue: number; equityValue: number; perShare: number | null };
+type Scenario = { name: string; growth: number; growthLabel: string; enterpriseValue: number | null; equityValue: number | null; perShare: number | null };
 
 type CompanyProfile = {
   name: string;
   ticker: string | null;
+  identity?: { sector?: string | null; industry?: string | null } | null;
   market?: { price?: number | null; currency?: string | null; market_cap?: number | null; source?: string; as_at?: string | null } | null;
   financials?: {
     source: string;
@@ -48,6 +51,7 @@ type CompanyProfile = {
 };
 
 const initial: Inputs = {
+  method: "dcf",
   company: "",
   ticker: "",
   modelFit: "uncertain",
@@ -55,6 +59,7 @@ const initial: Inputs = {
   source: "",
   period: "",
   fcf: "",
+  dividendPerShare: "",
   cash: "",
   debt: "",
   shares: "",
@@ -109,6 +114,22 @@ function dcf(fcf: number, growthPct: number, discountPct: number, terminalPct: n
   return equityValue / shares;
 }
 
+function ddm(dividendPerShare: number, growthPct: number, discountPct: number, terminalPct: number): number | null {
+  const growth = growthPct / 100;
+  const discount = discountPct / 100;
+  const terminal = terminalPct / 100;
+  if (dividendPerShare <= 0 || discount <= terminal || discount <= -1 || growth <= -1 || terminal <= -1) return null;
+  let projectedDividend = dividendPerShare;
+  let value = 0;
+  for (let year = 1; year <= 5; year += 1) {
+    projectedDividend *= 1 + growth;
+    value += projectedDividend / Math.pow(1 + discount, year);
+  }
+  const terminalValue = projectedDividend * (1 + terminal) / (discount - terminal);
+  value += terminalValue / Math.pow(1 + discount, 5);
+  return Number.isFinite(value) ? value : null;
+}
+
 function ScenarioCard({ scenario, currency, price }: { scenario: Scenario; currency: string; price: number | null }) {
   const upside = price != null && price > 0 && scenario.perShare != null ? (scenario.perShare / price - 1) * 100 : null;
   return (
@@ -135,6 +156,8 @@ export default function MarketsValuationPage() {
   const [hasCalculated, setHasCalculated] = useState(false);
   const [profileBusy, setProfileBusy] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
+  const [detectedSector, setDetectedSector] = useState("");
+  const [modelFitConfirmed, setModelFitConfirmed] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const set = <K extends keyof Inputs,>(key: K) => (event: { target: { value: string } }) => {
     setForm((current) => ({ ...current, [key]: event.target.value as Inputs[K] }));
@@ -157,6 +180,9 @@ export default function MarketsValuationPage() {
         ticker: form.ticker.trim(),
       });
       const financials = profile.financials;
+      const sector = String(profile.identity?.sector || profile.identity?.industry || "");
+      setDetectedSector(sector);
+      const financialInstitution = /bank|financial services|financial institution|insurance|insurer|microfinance|lender|credit provider/i.test(sector);
       if (!financials) {
         setProfileError("The existing company profile did not return machine-readable financial statements. You can still enter sourced figures manually.");
         return;
@@ -193,11 +219,13 @@ export default function MarketsValuationPage() {
       setHasCalculated(false);
       setProfileMessage([
         `Financial fields loaded from ${financials.source}.`,
+        sector ? `Company sector reported by the profile: ${sector}.` : "",
+        financialInstitution ? "The sector suggests a bank or financial institution, so the page switched to the dividend discount model. Do not use ordinary-company DCF for banks or insurers." : "",
         financials.verified ? "The profile reports its available accounting checks as passed." : "The profile does not report all available accounting checks as passed.",
         inferredShares ? "Shares outstanding is inferred from market capitalisation divided by price, not independently verified." : "Shares outstanding was not inferred because a dated price, market capitalisation or currency alignment was unavailable.",
         hasDatedQuote ? `A price dated ${String(profile.market?.as_at).slice(0, 10)} was prefilled from ${profile.market?.source || "the company profile"}; add its source URL before calculating a price comparison.` : "Current price was left blank because the profile did not provide a dated quote in the statement currency.",
         financials.source_url ? "" : "No direct financial statement URL was returned; add a source URL before calculating.",
-        "Review every field, especially units, debt, share count and the source period, before calculating.",
+        "Review every field, especially units, debt, share count, dividend sustainability and the source period, before calculating.",
       ].filter(Boolean).join(" "));
     } catch (err) {
       setProfileError(err instanceof ApiError ? err.message : "Could not load the existing company profile.");
@@ -207,45 +235,65 @@ export default function MarketsValuationPage() {
   }
 
   const parsed = useMemo(() => ({
-    fcf: num(form.fcf), cash: num(form.cash), debt: num(form.debt), shares: num(form.shares), price: num(form.price),
+    fcf: num(form.fcf), dividendPerShare: num(form.dividendPerShare), cash: num(form.cash), debt: num(form.debt), shares: num(form.shares), price: num(form.price),
     bearGrowth: num(form.bearGrowth), baseGrowth: num(form.baseGrowth), bullGrowth: num(form.bullGrowth),
     discountRate: num(form.discountRate), terminalGrowth: num(form.terminalGrowth),
   }), [form]);
 
   const scenarios = useMemo((): Scenario[] => {
-    const { fcf, cash, debt, shares, bearGrowth, baseGrowth, bullGrowth, discountRate, terminalGrowth } = parsed;
-    if ([fcf, cash, debt, shares, bearGrowth, baseGrowth, bullGrowth, discountRate, terminalGrowth].some((v) => v == null)) return [];
-    return [
-      { name: "Bear", growth: bearGrowth!, enterpriseValue: 0, equityValue: 0, perShare: dcf(fcf!, bearGrowth!, discountRate!, terminalGrowth!, cash!, debt!, shares!) },
-      { name: "Base", growth: baseGrowth!, enterpriseValue: 0, equityValue: 0, perShare: dcf(fcf!, baseGrowth!, discountRate!, terminalGrowth!, cash!, debt!, shares!) },
-      { name: "Bull", growth: bullGrowth!, enterpriseValue: 0, equityValue: 0, perShare: dcf(fcf!, bullGrowth!, discountRate!, terminalGrowth!, cash!, debt!, shares!) },
-    ].map((scenario) => {
-      const perShare = scenario.perShare;
-      return { ...scenario, enterpriseValue: perShare == null ? 0 : perShare * shares! - cash! + debt!, equityValue: perShare == null ? 0 : perShare * shares! };
+    const { fcf, dividendPerShare, cash, debt, shares, bearGrowth, baseGrowth, bullGrowth, discountRate, terminalGrowth } = parsed;
+    if ([bearGrowth, baseGrowth, bullGrowth, discountRate, terminalGrowth].some((value) => value == null)) return [];
+    const assumptions = [
+      { name: "Bear", growth: bearGrowth!, growthLabel: form.method === "dcf" ? "FCF growth" : "dividend growth" },
+      { name: "Base", growth: baseGrowth!, growthLabel: form.method === "dcf" ? "FCF growth" : "dividend growth" },
+      { name: "Bull", growth: bullGrowth!, growthLabel: form.method === "dcf" ? "FCF growth" : "dividend growth" },
+    ];
+    if (form.method === "ddm") {
+      if (dividendPerShare == null || dividendPerShare <= 0) return [];
+      return assumptions.map((scenario) => ({
+        ...scenario,
+        enterpriseValue: null,
+        equityValue: null,
+        perShare: ddm(dividendPerShare, scenario.growth, discountRate!, terminalGrowth!),
+      }));
+    }
+    if ([fcf, cash, debt, shares].some((value) => value == null)) return [];
+    return assumptions.map((scenario) => {
+      const perShare = dcf(fcf!, scenario.growth, discountRate!, terminalGrowth!, cash!, debt!, shares!);
+      return {
+        ...scenario,
+        perShare,
+        enterpriseValue: perShare == null ? null : perShare * shares! - cash! + debt!,
+        equityValue: perShare == null ? null : perShare * shares!,
+      };
     });
-  }, [parsed]);
-
-  const validInputs = parsed.fcf != null && parsed.fcf > 0 && parsed.cash != null && parsed.cash >= 0 &&
-    parsed.debt != null && parsed.debt >= 0 && parsed.shares != null && parsed.shares > 0 &&
-    parsed.bearGrowth != null && parsed.baseGrowth != null && parsed.bullGrowth != null &&
+  }, [form.method, parsed]);
+  const growthInputsValid = parsed.bearGrowth != null && parsed.baseGrowth != null && parsed.bullGrowth != null &&
     parsed.bearGrowth <= parsed.baseGrowth && parsed.baseGrowth <= parsed.bullGrowth &&
+    [parsed.bearGrowth, parsed.baseGrowth, parsed.bullGrowth].every((value) => value != null && value > -100 && value <= 100) &&
     parsed.discountRate != null && parsed.discountRate > 0 && parsed.discountRate <= 60 &&
     parsed.terminalGrowth != null && parsed.terminalGrowth >= -5 && parsed.terminalGrowth <= 8 &&
-    parsed.discountRate > parsed.terminalGrowth &&
-    (parsed.price == null || (parsed.price > 0 && form.priceSource.trim().length > 0 && form.priceDate.trim().length > 0)) && form.company.trim().length > 0 &&
-    validHttpUrl(form.source) && form.period.trim().length > 0 &&
-    (parsed.price == null || (validHttpUrl(form.priceSource) && /^\d{4}-\d{2}-\d{2}$/.test(form.priceDate)));
+    parsed.discountRate > parsed.terminalGrowth;
+  const sourceInputsValid = form.company.trim().length > 0 && validHttpUrl(form.source) && form.period.trim().length > 0 &&
+    (parsed.price == null || (parsed.price > 0 && validHttpUrl(form.priceSource) && /^\\d{4}-\\d{2}-\\d{2}$/.test(form.priceDate)));
+  const sectorRequiresDdm = /bank|financial services|financial institution|insurance|insurer|microfinance|lender|credit provider/i.test(detectedSector);
+  const modelChoiceValid = modelFitConfirmed && !(form.method === "dcf" && sectorRequiresDdm);
+  const modelInputsValid = form.method === "dcf"
+    ? parsed.fcf != null && parsed.fcf > 0 && parsed.cash != null && parsed.cash >= 0 && parsed.debt != null && parsed.debt >= 0 && parsed.shares != null && parsed.shares > 0
+    : parsed.dividendPerShare != null && parsed.dividendPerShare > 0;
+  const validInputs = growthInputsValid && sourceInputsValid && modelChoiceValid && modelInputsValid;
 
   function calculate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    const growths = [parsed.bearGrowth, parsed.baseGrowth, parsed.bullGrowth];
-    if (!validInputs || growths.some((value) => value == null || value <= -100 || value > 100)) {
-      setError("Check required inputs: company, financial source URL, reporting period, positive free cash flow and shares outstanding, non-negative cash/debt, ordered bear ≤ base ≤ bull growth assumptions, and a discount rate above terminal growth. If you enter a market price, also provide a valid HTTP(S) source URL and quote date.");
+    if (!validInputs) {
+      setError(form.method === "dcf"
+        ? "Check the source and reporting period, positive FCF and shares, non-negative cash/debt, ordered growth assumptions, discount rate above terminal growth, and model-fit confirmation. If the profile identifies a bank or insurer, use DDM instead of ordinary-company DCF. A market price also needs an HTTP(S) source URL and quote date."
+        : "Check the source and reporting period, positive annual dividend per share, ordered dividend-growth assumptions, discount rate above terminal growth, and confirmation that the dividend is sustainable. A market price also needs an HTTP(S) source URL and quote date.");
       setHasCalculated(false);
       return;
     }
-    if (scenarios.some((scenario) => scenario.perShare == null || !Number.isFinite(scenario.perShare))) {
+    if (scenarios.length !== 3 || scenarios.some((scenario) => scenario.perShare == null || !Number.isFinite(scenario.perShare))) {
       setError("The entered assumptions do not produce a valid valuation. Review the cash flows, discount rate and terminal growth.");
       setHasCalculated(false);
       return;
@@ -267,7 +315,7 @@ export default function MarketsValuationPage() {
         : "The conclusion changes across scenarios"
     : null;
 
-  const sensitivity = hasCalculated && parsed.fcf != null && parsed.cash != null && parsed.debt != null &&
+  const sensitivity = form.method === "dcf" && hasCalculated && parsed.fcf != null && parsed.cash != null && parsed.debt != null &&
     parsed.shares != null && parsed.baseGrowth != null && parsed.discountRate != null && parsed.terminalGrowth != null
     ? [-2, 0, 2].map((discountOffset) => ({
         discountRate: parsed.discountRate! + discountOffset,
