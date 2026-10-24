@@ -78,14 +78,8 @@ export default function MarketsPage() {
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · African investment intelligence" title="Explore Investments">
-        Explore African investments using existing company data, market context, transparent valuation models and portfolio analysis. Conclusions are only as reliable as their sources and assumptions; this is decision support, not a promise of returns or an instruction to trade. Coverage differs by country, exchange, instrument and company. See the Coverage registry for market-by-market availability and limitations.
+        Explore African investments using existing company data, market context, transparent valuation models and portfolio analysis. Conclusions are only as reliable as their sources and assumptions; this is decision support, not a promise of returns or an instruction to trade. Coverage differs by country, exchange, instrument and company, and Markets makes those limits visible.
       </PageHeader>
-
-      <div className="mb-6 flex flex-wrap gap-2 text-xs text-[color:var(--muted)]">
-        <span className="rounded-full border hairline px-3 py-1.5">Africa-wide market activity</span>
-        <span className="rounded-full border hairline px-3 py-1.5">Source-linked signals</span>
-        <Link href="/app/coverage" className="rounded-full border hairline px-3 py-1.5 underline-offset-4 hover:underline">View market coverage →</Link>
-      </div>
 
       <section className="mt-8" aria-labelledby="market-overview-title">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
@@ -193,6 +187,7 @@ export default function MarketsPage() {
         </div>
 
         <aside className="space-y-6">
+
           <section className="panel p-5" aria-labelledby="portfolio-title">
             <p className="eyebrow">Personal investing</p>
             <h2 id="portfolio-title" className="h3 mt-2 text-lg">Your portfolio, in context.</h2>
@@ -217,18 +212,15 @@ export default function MarketsPage() {
             <Link href="/app/markets/valuation" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open Valuation workspace →</Link>
           </section>
 
-          <section className="rounded-xl border hairline p-5">
-            <p className="eyebrow">Existing intelligence</p>
-            <h2 className="h3 mt-2 text-lg">Continue your research</h2>
+          <section className="rounded-xl border hairline p-5" aria-labelledby="investment-tools-title">
+            <p className="eyebrow">Investment tools</p>
+            <h2 id="investment-tools-title" className="h3 mt-2 text-lg">Compare and monitor.</h2>
+            <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
+              Compare available investment evidence, then monitor relevant developments against your portfolio context.
+            </p>
             <div className="mt-4 grid gap-2">
-              <Link href="/app/markets/valuation" className="btn btn-secondary justify-center">Explore valuation</Link>
-              <Link href="/app/markets/portfolio" className="btn btn-ghost justify-center">Open My Portfolio</Link>
-              <Link href="/app/markets/compare" className="btn btn-ghost justify-center">Compare opportunities</Link>
+              <Link href="/app/markets/compare" className="btn btn-secondary justify-center">Compare opportunities</Link>
               <Link href="/app/markets/monitoring" className="btn btn-ghost justify-center">Monitor portfolio developments</Link>
-              <Link href="/app/research" className="btn btn-ghost justify-center">Open Research</Link>
-              <Link href="/app/watchlists" className="btn btn-ghost justify-center">Open Alerts and watchlists</Link>
-              <Link href="/app/companies" className="btn btn-ghost justify-center">Browse company profiles</Link>
-              <Link href="/app/markets/compare" className="btn btn-ghost justify-center">Compare companies</Link>
             </div>
           </section>
         </aside>
