@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     if (body.action === "recover-password") {
       const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
         return NextResponse.json({ error: "Enter a valid account email." }, { status: 400 });
       }
       const response = await fetch(config.url + "/auth/v1/recover?redirect_to=" + encodeURIComponent(request.nextUrl.origin + "/auth/callback?next=password-reset"), {
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
 
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const password = typeof body.password === "string" ? body.password : "";
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || password.length < 10 || password.length > 128) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 10 || password.length > 128) {
       return NextResponse.json({ error: "Enter a valid email and a password between 10 and 128 characters." }, { status: 400 });
     }
 
