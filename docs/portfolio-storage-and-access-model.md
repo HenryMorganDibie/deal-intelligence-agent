@@ -33,7 +33,7 @@ Personal portfolio owners can manage their own portfolio. Organization roles do 
 - `portfolio_transactions`: transaction ledger with typed buys, sells, cash movements, dividends, fees, transfers, splits, and adjustments. This is the source of truth for future position calculations.
 - `portfolio_valuations`: immutable-style dated valuation snapshots and assumptions.
 - `portfolio_import_jobs`: import status, row counts, and structured validation errors.
-- `portfolio_audit_events`: append-only actor/action history.
+- `portfolio_audit_events`: append-only actor/action history; database triggers record portfolio, instrument, transaction, valuation, and import-job inserts/updates without copying financial values into audit details.
 
 The first schema slice does not yet calculate positions from the ledger, process uploads asynchronously, write audit events automatically, or replace the localStorage adapter. Those require application/API integration and explicit tests.
 
@@ -44,7 +44,8 @@ The first schema slice does not yet calculate positions from the ledger, process
 - Organization and portfolio policies use server-verified `auth.uid()`, membership records, and role checks. User-editable metadata is not used for authorization.
 - Role-checking functions live in the non-exposed `private` schema, use a fixed empty search path, and are not executable by anonymous users.
 - Organization creation inserts the creator's owner membership through a database trigger, so the organization cannot be created without an owner membership.
-- Audit history allows append and read by authorized users but exposes no update/delete policy.
+- Audit history allows append through database triggers and read by authorized users but exposes no client-side insert/update/delete policy.
+- Portfolio and ledger records are not hard-deleted through the client API. Organization/portfolio archival fields are available so retention can be preserved.
 - The migration does not use a service-role key in the browser and does not touch the hosted schema.
 
 ## Required follow-up before enabling cloud portfolios
@@ -66,6 +67,6 @@ The first schema slice does not yet calculate positions from the ledger, process
 - A viewer can read shared portfolio data but cannot create or edit it.
 - An analyst can create/update instruments, transactions, valuation snapshots, and import-job status, but cannot administer membership or delete ledger records.
 - A manager can manage portfolio data and read audit history, but cannot promote themselves or another user to organization owner.
-- Only an organization owner can delete the organization; organization membership and portfolio ownership checks must not depend on client-supplied role claims.
+- Organization and portfolio records are not hard-deleted through client permissions; archival preserves their ledger and audit history. Organization membership and portfolio ownership checks must not depend on client-supplied role claims.
 - An import that fails validation does not partially commit holdings or transactions.
 - Existing browser-local data remains untouched until the user explicitly chooses to migrate it.
