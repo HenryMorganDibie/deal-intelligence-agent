@@ -74,6 +74,8 @@ function formatDate(value: string | null | undefined): string {
 export default function MarketsPage() {
   const router = useRouter();
   const [company, setCompany] = useState("");
+  const [coverageQuery, setCoverageQuery] = useState("");
+  const [coverageFilter, setCoverageFilter] = useState("all");
   const [pulse, setPulse] = useState<Pulse | null>(null);
   const [coverage, setCoverage] = useState<Coverage | null>(null);
   const [pulseError, setPulseError] = useState<string | null>(null);
@@ -104,6 +106,18 @@ export default function MarketsPage() {
   const latestDeals = pulse?.deals.latest ?? [];
   const latestEvents = pulse?.events.latest ?? [];
   const researchReady = coverage?.countries.filter((country) => country.prices && country.statements).length ?? 0;
+  const visibleCoverage = (coverage?.countries ?? []).filter((country) => {
+    const q = coverageQuery.trim().toLowerCase();
+    const matchesQuery = !q || [country.country, country.region, country.exchange ?? "", country.currency, country.iso2].some((value) => value.toLowerCase().includes(q));
+    const hasBoth = Boolean(country.prices && country.statements);
+    const hasSomeFinancials = Boolean(country.prices || country.statements);
+    const hasMarketIntelligence = country.deals > 0 || country.events > 0 || Boolean(country.news?.edition);
+    const matchesFilter = coverageFilter === "all" ||
+      (coverageFilter === "research-ready" && hasBoth) ||
+      (coverageFilter === "partial-financials" && hasSomeFinancials && !hasBoth) ||
+      (coverageFilter === "intelligence-only" && !hasSomeFinancials && hasMarketIntelligence);
+    return matchesQuery && matchesFilter;
+  }).sort((a, b) => a.country.localeCompare(b.country));
 
   return (
     <Container className="py-8 lg:py-12">
@@ -254,7 +268,54 @@ export default function MarketsPage() {
                     </div>
                   ))}
                 </div>
-                <Link href="/app/coverage" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Inspect country coverage →</Link>
+                <div className="mt-6 border-t hairline pt-5">
+                  <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <p className="eyebrow">Country coverage explorer</p>
+                      <h3 className="mt-2 text-base font-medium">What can we research in each market?</h3>
+                      <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Coverage metadata is not a guarantee that every company has complete or current data. Provider/source labels reflect the existing coverage registry.</p>
+                    </div>
+                    <p className="text-xs text-[color:var(--dim)]">{visibleCoverage.length} of {coverage.countries.length} countries</p>
+                  </div>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_0.8fr]">
+                    <div>
+                      <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="markets-country-search">Search country, exchange or currency</label>
+                      <input id="markets-country-search" className="field" value={coverageQuery} onChange={(event) => setCoverageQuery(event.target.value)} placeholder="e.g. Nigeria, NGX, NGN" />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="markets-coverage-filter">Filter by available coverage</label>
+                      <select id="markets-coverage-filter" className="field" value={coverageFilter} onChange={(event) => setCoverageFilter(event.target.value)}>
+                        <option value="all">All registered countries</option>
+                        <option value="research-ready">Prices and statements listed</option>
+                        <option value="partial-financials">Partial financial coverage</option>
+                        <option value="intelligence-only">Intelligence, limited financials</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="mt-4 overflow-x-auto rounded-lg border hairline">
+                    <table className="w-full min-w-[48rem] border-collapse text-left text-xs">
+                      <thead>
+                        <tr className="border-b hairline text-[color:var(--dim)]">
+                          {["Country / region", "Exchange / currency", "Coverage tier", "Price data", "Statements", "Deals / events"].map((heading) => <th key={heading} className="whitespace-nowrap px-3 py-3 font-normal">{heading}</th>)}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visibleCoverage.map((country) => (
+                          <tr key={country.iso2} className="border-b hairline last:border-0">
+                            <td className="px-3 py-3"><p className="font-medium">{country.country}</p><p className="mt-1 text-[color:var(--dim)]">{country.region}</p></td>
+                            <td className="px-3 py-3"><p>{country.exchange || "No exchange listed"}</p><p className="mt-1 text-[color:var(--dim)]">{country.currency}</p></td>
+                            <td className="px-3 py-3"><Pill value={`Tier ${country.tier}`} /></td>
+                            <td className="px-3 py-3">{country.prices || "Not listed"}</td>
+                            <td className="px-3 py-3">{country.statements || "Not listed"}</td>
+                            <td className="px-3 py-3 kbd">{country.deals.toLocaleString()} / {country.events.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                        {visibleCoverage.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-[color:var(--muted)]">No countries match this search and coverage filter.</td></tr>}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <Link href="/app/coverage" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open detailed coverage registry →</Link>
               </>
             )}
           </section>
