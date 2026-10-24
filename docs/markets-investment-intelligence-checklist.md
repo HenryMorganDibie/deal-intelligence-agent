@@ -32,9 +32,12 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Keep the existing top-level navigation stable; do not add Portfolio as another top-level item.
 - [ ] Add internal Markets destinations for Overview, Explore Companies, Valuation, My Portfolio and Investment Monitoring.
 - [x] Reuse existing components and existing `/api/pulse` and `/api/coverage` endpoints; avoid duplicate research or alert systems.
-- [x] Show coverage context, latest available record date, source links for event items, and meaningful empty/error states on the overview.\n- [ ] Extend freshness/source status to each individual data source and company/instrument profile.
-- [x] Make the implemented overview navigation and company-search actions functional; no decorative or fake data visualisations were added.\n- [ ] Build and wire the full internal Markets destinations for Valuation, My Portfolio and Investment Monitoring.
-- [x] Use responsive layouts, labelled company search, semantic sections and existing app design conventions.\n- [ ] Verify accessibility and keyboard navigation in a running preview.
+- [x] Show coverage context, latest available record date, source links for event items, and meaningful empty/error states on the overview.
+- [ ] Extend freshness/source status to each individual data source and company/instrument profile.
+- [x] Make the implemented overview navigation and company-search actions functional; no decorative or fake data visualisations were added.
+- [ ] Build and wire the full internal Markets destinations for Valuation, My Portfolio and Investment Monitoring.
+- [x] Use responsive layouts, labelled company search, semantic sections and existing app design conventions.
+- [ ] Verify accessibility and keyboard navigation in a running preview.
 
 ## Phase 2 — Africa-wide coverage-aware market overview
 
@@ -63,8 +66,10 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Design a portfolio data model that supports manual entry and CSV import.
 - [x] Start with browser-local storage and clear import/export/delete controls; do not upload private holdings to shared storage.
 - [x] Validate CSV headers, required fields, numeric values and malformed quoted CSV; duplicate detection and full currency-code validation remain pending.
-- [x] Implement country and sector exposure for holdings with entered current prices and valid FX conversion.\n- [ ] Add allocation/exposure by asset type, company and currency, with clear handling of incomplete classification.
-- [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings.\n- [ ] Add realised gains, dividends, corporate actions and historical FX effects before presenting comprehensive performance.
+- [x] Implement country and sector exposure for holdings with entered current prices and valid FX conversion.
+- [ ] Add allocation/exposure by asset type, company and currency, with clear handling of incomplete classification.
+- [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings.
+- [ ] Add realised gains, dividends, corporate actions and historical FX effects before presenting comprehensive performance.
 - [ ] Reuse the existing portfolio risk engine only after verifying its assumptions and persistence limitations.
 - [ ] Add portfolio-wide valuation insights only where constituent valuations pass quality gates.
 - [ ] Add understandable concentration/risk explanations and links to company analysis.
@@ -108,4 +113,8 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 | Date | Change | Verification | Status |
 |---|---|---|---|
-| 2026-10-24 | Created working branch and agreed-scope checklist | Branch created from `main`; checklist committed to feature branch | Done |\n| 2026-10-24 | Replaced Markets placeholder with an API-backed overview | Uses `/api/pulse` and `/api/coverage`; includes company-profile search, recent event/source links, deal flow, coverage transparency and explicit status for unbuilt valuation/portfolio capabilities | Code committed; build/preview verification pending |\n| 2026-10-24 | Added initial Portfolio Intelligence workspace | Manual holdings, CSV import/template/export, browser-local storage, clear/delete controls, entered-price valuation and country/sector exposure with FX caveats | Code committed; typecheck and preview verification pending |
+| 2026-10-24 | Created working branch and agreed-scope checklist | Branch created from `main`; checklist committed to feature branch | Done |
+| 2026-10-24 | Replaced Markets placeholder with an API-backed overview | Uses `/api/pulse` and `/api/coverage`; includes company-profile search, recent event/source links, deal flow and coverage transparency | Typecheck passed; Vercel preview READY; route returned HTTP 200 |
+| 2026-10-24 | Added initial Portfolio Intelligence workspace | Manual holdings, CSV import/template/export, browser-local storage, clear/delete controls, entered-price valuation and country/sector exposure with FX caveats | Typecheck passed; Vercel preview READY; route returned HTTP 200; interactive browser checks pending |
+
+| 2026-10-24 | Corrected first portfolio preview build failure | Initial draft had a malformed CSV-template expression; corrected it and verified a subsequent source commit built successfully | Fixed on feature branch; no production merge/deployment |
