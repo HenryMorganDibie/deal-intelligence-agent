@@ -41,47 +41,47 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 ## Phase 2 — Africa-wide coverage-aware market overview
 
-- [ ] Present African scope from day one without implying equal data depth across all 54 countries.
-- [ ] Use existing coverage metadata where available; do not hardcode unsupported coverage claims.
+- [x] Present African scope from day one without implying equal data depth across all 54 countries; the overview shows live coverage metadata and explicitly warns that depth differs by country, exchange, instrument and company.
+- [x] Use existing coverage metadata where available; country counts, market counts and tier descriptions come from `/api/coverage`, not hardcoded claims.
 - [ ] Show country/exchange/instrument coverage and data freshness.
-- [ ] Reuse existing market pulse, companies, events and news APIs after response contracts are verified.
-- [ ] Distinguish research-ready, partial coverage and intelligence-only states based on actual available evidence.
+- [x] Reuse existing `/api/pulse` and `/api/coverage` on the overview and link to existing Companies, Research and Watchlists; source-linked event items use the pulse response.
+- [x] Distinguish research readiness using returned country tiers and the actual count of countries with price plus statement metadata; this is country-level availability, not a company-by-company guarantee.
 - [ ] Test empty, stale, unavailable and partially populated markets.
 
 ## Phase 3 — Valuation and honest investment conclusions
 
-- [x] Define typed scenario inputs and deterministic DCF outputs in the valuation workspace; automated unit tests and backend contract are still pending.
-- [ ] Verify market price, currency, share count, reporting period and financial statement provenance before calculation.
-- [x] Implement a clearly labelled five-year DCF scenario tool for positive unlevered free cash flow, with explicit model-fit limitations; additional methods and suitability detection remain pending.
-- [x] Produce bear/base/bull scenarios and a discount-rate/terminal-growth sensitivity grid; model-calibrated ranges remain pending.
-- [x] Explain assumptions and key limitations; source links are required and countercase research links to the existing Research workspace. Automated countercase synthesis remains pending.
-- [x] Support cautious comparison labels based on entered price versus base DCF estimate; a formal fairly-valued band and automated data-quality/model-suitability gate remain pending.
-- [x] Require company, financial source URL, reporting period, FCF, shares, cash and debt; require a dated quote and quote source URL before making a price comparison; refuse calculation for missing/invalid inputs and explicitly state source/model-fit limitations. Automated source verification and suitability gates remain pending.
-- [ ] Keep deterministic calculations separate from LLM-written explanations.
-- [ ] Add unit tests for calculations, edge cases, stale/missing inputs, currency mismatch and unsupported instruments.
+- [x] Define typed scenario inputs and deterministic DCF/DDM outputs in the valuation workspace; automated calculation tests have been added and are awaiting the current CI run.
+- [x] Require source URLs and valid past dates, gate on selected currency and model fit, require a dated quote plus quote-source URL for comparisons, and disclose inferred share counts. Independent source-document verification and manual quote-currency confirmation remain limitations.
+- [x] Implement a five-year DCF for suitable non-financial operating companies and a dividend discount model for mature dividend payers; unsuitable model profiles are blocked, and bank/insurer sectors detected in existing company profiles default to DDM. REIT/NAV and other specialist models remain out of scope.
+- [x] Produce bear/base/bull scenarios and discount-rate/terminal-growth sensitivity for both DCF and DDM; the range is explicitly not a confidence interval and is not model-calibrated.
+- [x] Explain assumptions and limitations, show source links, flag statements older than 18 months and quotes older than 7 days, and link to the existing Research workspace for countercase research. Automated countercase synthesis remains pending.
+- [x] Support cautious, scenario-dependent potential overvaluation/undervaluation labels only when all three scenarios agree and the base-case gap exceeds 15%; otherwise show a mixed or narrower-gap conclusion. This is a mechanical comparison, not a buy/sell recommendation.
+- [x] Require company, financial source URL, valid reporting date, method-specific inputs and model-fit confirmation; require a dated quote and quote source URL before price comparisons; refuse invalid assumptions and unsupported model profiles. Generic `free_cash_flow` is not auto-labelled as unlevered FCFF.
+- [x] Keep deterministic calculations in a pure typed module; no LLM-generated value is mixed into the valuation arithmetic.
+- [x] Add unit tests for DCF/DDM math, invalid assumptions, source URL/date validation, portfolio arithmetic, FX conversion, missing prices and exposure grouping. UI-level currency mismatch and unsupported-instrument flows still need browser verification.
 - [ ] Create a human-reviewed benchmark of representative African listed companies before claiming accuracy.
 
 ## Phase 4 — Portfolio Intelligence inside Markets
 
 - [x] Design a portfolio data model that supports manual entry and CSV import.
 - [x] Start with browser-local storage and clear import/export/delete controls; do not upload private holdings to shared storage.
-- [x] Validate CSV headers, required fields, numeric values and malformed quoted CSV; duplicate detection and full currency-code validation remain pending.
+- [x] Validate CSV headers, required fields, numeric values, malformed quoted CSV, supported currency codes, dates and possible duplicate positions.
 - [x] Implement country and sector exposure for holdings with entered current prices and valid FX conversion.
 - [x] Add allocation/exposure by country, sector, asset type and holding currency for priced and FX-converted holdings; company positions are visible in the portfolio register. Missing price/FX holdings are excluded and called out.
-- [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings. Allow users to refresh holding prices and FX rates in the register.
+- [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings. Users can edit entered prices and FX rates inline and attach dates; missing or stale values are called out.
 - [ ] Add realised gains, dividends, corporate actions and historical FX effects before presenting comprehensive performance.
 - [ ] Reuse the existing portfolio risk engine only after verifying its assumptions and persistence limitations.
 - [ ] Add portfolio-wide valuation insights only where constituent valuations pass quality gates.
-- [ ] Add understandable concentration/risk explanations and links to company analysis.
-- [ ] Test arithmetic invariants, missing prices, currency conversion, unsupported holdings and empty portfolios.
+- [x] Add understandable concentration and data-quality explanations, links to company research and per-holding valuation, and a local-only handoff that pre-fills the existing Watchlists page with company names/tickers.
+- [x] Add unit tests for arithmetic invariants, missing prices, currency conversion, exposure aggregation and empty portfolios; execution is pending the latest CI run.
 - [ ] Do not implement cloud-saved portfolios or cross-device sync until authentication and row-level ownership protections are implemented and tested.
 
 ## Phase 5 — Personal investment insights and monitoring
 
-- [ ] Reuse existing watchlists, events and alert infrastructure where appropriate.
+- [x] Reuse existing Watchlists for monitoring by pre-filling a watchlist draft with company names/tickers only; holdings, quantities, prices and FX rates remain in browser storage.
 - [ ] Add portfolio-aware material-event and valuation-change alerts only when reliable inputs exist.
 - [ ] Explain why each alert matters and link it to supporting evidence.
-- [ ] Avoid noisy alerts and unsupported buy/sell instructions.
+- [x] Avoid generating automatic buy/sell instructions or new noisy alert rules in this initial release; monitoring is handed off to existing Watchlists.
 - [ ] Test duplicate events, stale data, missing coverage and alert failures.
 
 ## Phase 6 — Quality, regression and release readiness
