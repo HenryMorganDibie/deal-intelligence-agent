@@ -263,7 +263,7 @@ export default function MarketsPage() {
             <p className="eyebrow">Personal investing</p>
             <h2 id="portfolio-title" className="h3 mt-2 text-lg">Your portfolio, in context.</h2>
             <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Portfolio Intelligence will live here inside Markets: holdings, allocation, concentration, currency exposure and valuation context, with manual entry and CSV import first.
+              Track holdings, allocation, concentration and currency exposure with manual entry or CSV import. Portfolio data stays in this browser and prices are not presented as live quotes.
             </p>
             <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
               Portfolio holdings are stored in this browser only. Prices and FX rates are user-entered, not live market data.
@@ -275,12 +275,12 @@ export default function MarketsPage() {
             <p className="eyebrow">Valuation and verdicts</p>
             <h2 id="valuation-title" className="h3 mt-2 text-lg">A clear view, with a countercase.</h2>
             <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              The planned valuation experience will show supported fair-value ranges, key assumptions, scenarios and the strongest arguments against a conclusion. When evidence is inadequate, it should say so.
+              Build a transparent bear/base/bull discounted-cash-flow scenario, inspect assumptions and compare a sourced quote with the estimate. The model should be rejected when its assumptions do not fit the company.
             </p>
             <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
               A complete public-equity valuation model is still being built. Existing transaction valuation marks and trading multiples are not equivalent to a fair-value estimate.
             </p>
-            <Link href="/app/companies" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Review available company data →</Link>
+            <Link href="/app/markets/valuation" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open Valuation workspace →</Link>
           </section>
 
           <section className="rounded-xl border hairline p-5">
