@@ -11,6 +11,7 @@ on:
     branches: [main, feature/markets-investment-intelligence]
     paths:
       - "web/**"
+      - "supabase/**"
       - ".github/workflows/web-quality-gates.yml"
 
 permissions:
@@ -21,6 +22,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  database-rls-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Start isolated local Supabase stack
+        run: supabase start -x studio,mailpit,storage-api,imgproxy,edge-runtime,logflare,vector
+      - name: Apply migrations and run pgTAP security tests
+        run: supabase test db
   typecheck:
     runs-on: ubuntu-latest
     timeout-minutes: 15
