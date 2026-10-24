@@ -334,8 +334,10 @@ export default function MarketsPortfolioPage() {
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = "deal-intelligence-portfolio.csv";
+    document.body.appendChild(anchor);
     anchor.click();
-    URL.revokeObjectURL(url);
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   function updateHoldingDate(id: string, key: "priceAsOf" | "fxAsOf", raw: string) {
@@ -412,7 +414,7 @@ export default function MarketsPortfolioPage() {
               const nextCurrency = event.target.value;
               if (holdings.length > 0 && !window.confirm("Changing the reporting currency resets existing FX conversion rates. Holding prices and cost basis stay unchanged, but you will need to re-enter FX rates for non-base-currency holdings. Continue?")) return;
               setBaseCurrency(nextCurrency);
-              setHoldings((current) => current.map((holding) => ({ ...holding, fxToBase: holding.currency === nextCurrency ? 1 : null })));
+              setHoldings((current) => current.map((holding) => ({ ...holding, fxToBase: holding.currency === nextCurrency ? 1 : null, fxAsOf: null })));
               setForm({ ...blankForm, currency: nextCurrency, fxToBase: "1" });
               if (holdings.length > 0) setMessage("Reporting currency changed. FX rates for holdings in other currencies were cleared; re-enter current rates before relying on portfolio totals.");
             }}>
