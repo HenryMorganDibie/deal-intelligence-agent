@@ -42,6 +42,19 @@ export default function WatchlistsPage() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    const webhookValue = webhook.trim();
+    if (webhookValue) {
+      try {
+        const parsedWebhook = new URL(webhookValue);
+        if (parsedWebhook.protocol !== "https:" || !parsedWebhook.hostname) {
+          setError("Webhook URL must use HTTPS.");
+          return;
+        }
+      } catch {
+        setError("Enter a valid HTTPS webhook URL.");
+        return;
+      }
+    }
     setBusy(true);
     setError(null);
     try {
