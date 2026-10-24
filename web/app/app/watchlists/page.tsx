@@ -49,7 +49,7 @@ export default function WatchlistsPage() {
       if (typeof parsed.name === "string") setName(parsed.name);
       if (Array.isArray(parsed.companies)) {
         const names = parsed.companies.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
-        setCompanies(names.join("\\n"));
+        setCompanies(names.join("\n"));
         if (names.length) setPrefillNotice("Portfolio holdings were copied into this draft locally. They are sent to the watchlist service only if you submit this form.");
       }
       window.sessionStorage.removeItem("deal-intelligence:portfolio-watchlist-prefill");
