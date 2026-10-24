@@ -120,6 +120,14 @@ export default function MarketsValuationPage() {
   const [detectedSector, setDetectedSector] = useState("");
   const [modelFitConfirmed, setModelFitConfirmed] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const company = params.get("company")?.trim() ?? "";
+    const ticker = params.get("ticker")?.trim() ?? "";
+    if (company || ticker) {
+      setForm((current) => ({ ...current, company: company || current.company, ticker: ticker || current.ticker }));
+    }
+  }, []);
   const set = <K extends keyof Inputs,>(key: K) => (event: { target: { value: string } }) => {
     setForm((current) => ({ ...current, [key]: event.target.value as Inputs[K] }));
     if (key === "method" || key === "modelFit") setModelFitConfirmed(false);
@@ -287,8 +295,16 @@ export default function MarketsValuationPage() {
   const validScenarioValues = scenarios.map((scenario) => scenario.perShare).filter((value): value is number => value != null && Number.isFinite(value));
   const scenarioLow = validScenarioValues.length ? Math.min(...validScenarioValues) : null;
   const scenarioHigh = validScenarioValues.length ? Math.max(...validScenarioValues) : null;
-  const verdict = hasCalculated && base?.perShare != null && price != null
-    ? (base.perShare < price * 0.85 ? "Price is more than 15% above the base-case estimate" : base.perShare > price * 1.15 ? "Price is more than 15% below the base-case estimate" : "Price is within 15% of the base-case estimate")
+  const verdict = hasCalculated && base?.perShare != null && price != null && validScenarioValues.length === 3
+    ? validScenarioValues.every((value) => value < price) && base.perShare < price * 0.85
+      ? "Potentially overvalued on these assumptions"
+      : validScenarioValues.every((value) => value > price) && base.perShare > price * 1.15
+        ? "Potentially undervalued on these assumptions"
+        : validScenarioValues.every((value) => value < price)
+          ? "Price is above all three scenario estimates, but the base-case gap is under 15%"
+          : validScenarioValues.every((value) => value > price)
+            ? "Price is below all three scenario estimates, but the base-case gap is under 15%"
+            : "Mixed signal: the conclusion changes across scenarios"
     : null;
   const rangeConclusion = hasCalculated && price != null && validScenarioValues.length === 3
     ? validScenarioValues.every((value) => value < price) ? "Entered price is above all three scenario estimates"
