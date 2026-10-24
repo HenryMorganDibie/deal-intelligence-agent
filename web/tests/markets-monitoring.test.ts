@@ -91,7 +91,7 @@ test("valuation monitoring flags material changes in same-company saved estimate
   ]);
   assert.equal(alerts.length, 1);
   assert.equal(alerts[0].company, "Example Bank");
-  assert.equal(alerts[0].changePct, 15);
+  assert.ok(Math.abs(alerts[0].changePct - 15) < 1e-9);
   assert.equal(alerts[0].previousBasePerShare, 100);
   assert.equal(alerts[0].currentBasePerShare, 115);
 });
