@@ -25,7 +25,7 @@ set local request.jwt.claim.sub='10000000-0000-4000-8000-000000000001';
 select is((select count(*)::int from public.organization_memberships where organization_id='20000000-0000-4000-8000-000000000001'),1,'Organization creator becomes owner');
 select is((select count(*)::int from public.portfolios),2,'User A sees personal and shared portfolios');
 select throws_ok($$insert into public.portfolios(id,owner_user_id,name,base_currency,created_by) values('30000000-0000-4000-8000-000000000004','10000000-0000-4000-8000-000000000002','Impersonated','USD','10000000-0000-4000-8000-000000000001')$$,'42501',null,'Cannot create portfolio owned by another user');
-select throws_ok($insert into public.organization_memberships(organization_id,user_id,role,invited_by) values('20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000003','analyst','10000000-0000-4000-8000-000000000001')$,'42501',null,'Membership cannot bypass invite acceptance');
+select throws_ok($$insert into public.organization_memberships(organization_id,user_id,role,invited_by) values('20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000003','analyst','10000000-0000-4000-8000-000000000001')$$,'42501',null,'Membership cannot bypass invite acceptance');
 select is((public.commit_portfolio_transaction_import(
  '30000000-0000-4000-8000-000000000001',
  '60000000-0000-4000-8000-000000000001',
@@ -81,7 +81,7 @@ select is((public.migrate_local_portfolio(
  jsonb_build_array(jsonb_build_object('company','Test Corp','method','dcf','currency','USD','calculatedAt',to_char(current_date,'YYYY-MM-DD'),'perShareValue',15))
 )->>'replayed')::boolean,true,'Retrying the same local migration is idempotent');
 select is((select count(*)::int from public.portfolio_instruments where portfolio_id='30000000-0000-4000-8000-000000000002'),1,'Local migration retry does not duplicate holdings');
-select throws_ok($select public.migrate_local_portfolio('30000000-0000-4000-8000-000000000002',gen_random_uuid(),'NGN','[]'::jsonb,'[]'::jsonb)$,'22023',null,'Local migration rejects a reporting currency that differs from the destination portfolio');
+select throws_ok($$select public.migrate_local_portfolio('30000000-0000-4000-8000-000000000002',gen_random_uuid(),'NGN','[]'::jsonb,'[]'::jsonb)$$,'22023',null,'Local migration rejects a reporting currency that differs from the destination portfolio');
 set local request.jwt.claim.sub='10000000-0000-4000-8000-000000000003';
 select throws_ok($$select public.commit_portfolio_transaction_import('30000000-0000-4000-8000-000000000001',gen_random_uuid(),'viewer.csv','[]'::jsonb)$$,'42501',null,'Viewer cannot import transactions');
 select ok(not has_table_privilege('authenticated','public.portfolio_transactions','update'),'Authenticated clients cannot rewrite ledger transactions');
