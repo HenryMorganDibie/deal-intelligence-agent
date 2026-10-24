@@ -14,12 +14,20 @@ const NAV: [string, string][] = [
   ["/app/companies", "Companies"],
   ["/app/countries", "Countries"],
   ["/app/watchlists", "Alerts"],
+];
+
+const QUALITY_LINKS: [string, string][] = [
   ["/app/coverage", "Coverage"],
   ["/app/evaluation", "Evaluation"],
+  [LINKS.methodology, "Methodology"],
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const qualityActive = QUALITY_LINKS.some(([href]) =>
+    href === "/app" ? pathname === href : pathname.startsWith(href),
+  );
+
   return (
     <>
       <header className="sticky top-0 z-40 border-b hairline bg-[rgba(7,8,10,0.85)] backdrop-blur-xl">
@@ -47,9 +55,39 @@ export function AppShell({ children }: { children: ReactNode }) {
               })}
             </nav>
           </div>
-          <a href={LINKS.methodology} className="btn btn-ghost h-8 shrink-0 px-3 text-[0.8125rem]">
-            Methodology
-          </a>
+          <details className="relative shrink-0">
+            <summary
+              className={`btn btn-ghost flex h-8 cursor-pointer list-none items-center gap-2 px-3 text-[0.8125rem] [&::-webkit-details-marker]:hidden ${
+                qualityActive ? "text-[color:var(--text)]" : ""
+              }`}
+              aria-label="Open Data and Quality menu"
+            >
+              Data &amp; Quality
+              <span aria-hidden="true" className="text-xs">⌄</span>
+            </summary>
+            <nav
+              aria-label="Data and quality"
+              className="absolute right-0 top-full mt-2 w-52 rounded-xl border hairline bg-[rgba(12,14,17,0.98)] p-2 shadow-xl"
+            >
+              {QUALITY_LINKS.map(([href, label]) => {
+                const active = pathname === href || (href !== "/methodology" && pathname.startsWith(href));
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+                      active
+                        ? "bg-white/[0.06] text-[color:var(--text)]"
+                        : "text-[color:var(--muted)] hover:bg-white/[0.04] hover:text-[color:var(--text)]"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </details>
         </Container>
       </header>
       <main id="main">{children}</main>
