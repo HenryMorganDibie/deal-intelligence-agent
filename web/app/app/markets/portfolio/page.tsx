@@ -348,6 +348,20 @@ export default function MarketsPortfolioPage() {
     }));
   }
 
+  function preparePortfolioWatchlist() {
+    const uniqueCompanies = [...new Map(holdings.map((holding) => {
+      const value = holding.ticker.trim() || holding.name.trim();
+      return [value.toLowerCase(), value] as const;
+    })).values()].filter(Boolean);
+    if (!uniqueCompanies.length) return;
+    try {
+      window.sessionStorage.setItem("deal-intelligence:portfolio-watchlist-prefill", JSON.stringify({ name: "Portfolio monitoring", companies: uniqueCompanies }));
+      window.location.href = "/app/watchlists?from=portfolio";
+    } catch {
+      setError("The watchlist draft could not be prefilled in this browser. You can still copy company names into the existing Watchlists page manually.");
+    }
+  }
+
   function removeHolding(id: string) {
     setHoldings((current) => current.filter((holding) => holding.id !== id));
     setMessage("Holding removed.");
@@ -369,6 +383,7 @@ export default function MarketsPortfolioPage() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <Link href="/app/markets" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">← Back to Markets</Link>
         <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn btn-secondary" onClick={preparePortfolioWatchlist} disabled={holdings.length === 0}>Prepare event watchlist</button>
           <button type="button" className="btn btn-secondary" onClick={exportCsv} disabled={holdings.length === 0}>Export CSV backup</button>
           <button type="button" className="btn btn-ghost" onClick={clearPortfolio} disabled={holdings.length === 0}>Clear portfolio</button>
         </div>
