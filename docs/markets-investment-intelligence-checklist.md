@@ -1,6 +1,6 @@
 # Markets Investment Intelligence — Implementation Checklist
 
-**Working branch:** `feature/markets-investment-intelligence`  
+**Working branch:** `fix/markets-overview-alignment`  
 **Target base:** `main`  
 **Production safety:** Do not merge this work or push implementation commits to `main` until the pull request has been reviewed and the acceptance checks below pass.
 
@@ -24,28 +24,28 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Record existing functionality versus missing consumer-facing capabilities.
 - [x] Map the actual response contracts used by this feature: `GET /api/pulse` (`Pulse` in `web/lib/pulse.ts`), `GET /api/coverage` (`CoverageRow` and summary in `web/lib/market.ts`), company profile/financial inputs (`/api/companies/profile` through the shared `get` wrapper), and the general `/api/events` feed. Companies and Research remain existing destinations, not duplicated APIs.
 - [x] Verify this feature uses read-only GET requests for pulse, coverage, company profile and event feeds. Portfolio holdings and valuation snapshots remain in browser localStorage; monitoring sends only a general events-feed request, and watchlist handoff sends company names only through sessionStorage.
-- [x] Document supported scope and limitations: coverage explorer reflects returned African country/exchange metadata and unequal coverage tiers; the wider platform has US and African company/outcome coverage. Valuation is limited to suitable operating-company DCF and mature-dividend/financial-institution DDM profiles; REIT/NAV and specialist models are not supported.
+- [x] Document supported scope and limitations: the existing Coverage registry is the source of truth for country/exchange/currency metadata and unequal coverage tiers; Markets links to it rather than duplicating its explorer. The wider platform has US and African company/outcome coverage. Valuation is limited to suitable operating-company DCF and mature-dividend/financial-institution DDM profiles; REIT/NAV and specialist models are not supported.
 
 ## Phase 1 — Safe foundation and Markets information architecture
 
-- [x] Replace the Markets coming-soon page with a responsive Markets landing/overview backed by existing pulse and coverage endpoints.
+- [x] Replace the Markets coming-soon page with a responsive Markets landing/overview backed by the existing pulse endpoint; link to the Coverage registry instead of reproducing its explorer.
 - [x] Keep the existing top-level navigation stable; do not add Portfolio as another top-level item.
 - [x] Add internal Markets destinations for Overview, Explore Companies, Valuation, My Portfolio and Investment Monitoring (links into existing Companies and Watchlists for shared capabilities).
-- [x] Reuse existing components and existing `/api/pulse` and `/api/coverage` endpoints; avoid duplicate research or alert systems.
-- [x] Show coverage context, latest available record date, source links for event items, and meaningful empty/error states on the overview.
+- [x] Reuse the existing `/api/pulse` endpoint and link to the Coverage registry, Research and Watchlists for shared capabilities; avoid duplicate coverage, research or alert systems.
+- [x] Show latest available record date, source links for event items, data-limit context and meaningful empty/error states on the overview; detailed coverage remains in the Coverage registry.
 - [x] Surface available statement/quote dates and stale-input warnings in valuation/compare, and document that `/api/coverage` does not provide per-source update timestamps. Do not invent source freshness when the API does not return it; per-source freshness in the coverage explorer remains an API-dependent follow-up.
-- [x] Make the implemented overview navigation and company-search actions functional; no decorative or fake data visualisations were added.
+- [x] Route company investigations to the existing Research workspace rather than adding a second company-search workflow to Markets; no decorative or fake data visualisations were added.
 - [x] Build and wire Valuation, My Portfolio and Compare Opportunities destinations; route Investment Monitoring to existing Watchlists rather than duplicate alert infrastructure.
 - [x] Use responsive layouts, labelled company search, semantic sections and existing app design conventions.
 - [ ] Verify accessibility and keyboard navigation in a running preview.
 
 ## Phase 2 — Africa-wide coverage-aware market overview
 
-- [x] Present African scope from day one without implying equal data depth across all 54 countries; the overview shows live coverage metadata and explicitly warns that depth differs by country, exchange, instrument and company.
-- [x] Use existing coverage metadata where available; country counts, market counts and tier descriptions come from `/api/coverage`, not hardcoded claims.
-- [x] Show country, exchange, currency, tier, listed price/statement sources and recorded deal/event counts in a searchable coverage explorer; company-level quote/statement freshness is surfaced in Valuation and Compare. Per-source timestamps are unavailable in the current coverage API.
-- [x] Reuse existing `/api/pulse` and `/api/coverage` on the overview and link to existing Companies, Research and Watchlists; source-linked event items use the pulse response.
-- [x] Distinguish research readiness using returned country tiers and the actual count of countries with price plus statement metadata; this is country-level availability, not a company-by-company guarantee.
+- [x] Present African scope from day one without implying equal data depth across all 54 countries; the overview warns that depth differs by country, exchange, instrument and company and links to the Coverage registry for the detailed metadata.
+- [x] Keep country counts, exchange/currency details, tiers and source availability in the existing Coverage registry; Markets does not duplicate that data or call `/api/coverage` solely to render a second explorer.
+- [x] Link to the existing searchable Coverage registry for country, exchange, currency, tier, listed price/statement sources and recorded deal/event counts; company-level quote/statement freshness is surfaced in Valuation and Compare. Per-source timestamps are unavailable in the current coverage API.
+- [x] Reuse `/api/pulse` on the overview and link to existing Coverage, Research, Companies and Watchlists; source-linked event items use the pulse response.
+- [x] Keep research-readiness detail in the Coverage registry; Markets avoids presenting a duplicate country-level readiness counter as an investment feature.
 - [ ] Test empty, stale, unavailable and partially populated markets.
 
 ## Phase 3 — Valuation and honest investment conclusions
@@ -128,6 +128,8 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Completed portfolio valuation summary and documented release gates | Portfolio-level weighted valuation gap is calculated only from holdings whose model fit, source dates, currency, quote/date match and FX freshness pass checks; checklist and PR now record current verification state | Implemented and automated-tested; manual/preview release gates still open |
 | 2026-10-24 | Added local portfolio event monitoring and valuation-change insights | `/app/markets/monitoring` reads locally stored holdings, requests only the general 90-day `/api/events` feed, deduplicates and matches exact company names/ticker tokens, links candidate matches to sources, and flags at least 10% changes between saved model estimates. Up to 10 local valuation snapshots per company are retained. | Current-head unit tests, ESLint, TypeScript typecheck and production build passed; Vercel preview and browser verification remain blocked by rate limit |
 
+
+| 2026-10-24 | Markets overview information-architecture correction | Removed the duplicate company-search workflow and country/exchange/currency coverage explorer from Markets. The hero now hands company investigations to existing Research; Markets keeps pulse-based deal/event intelligence, valuation, opportunity comparison, portfolio intelligence and monitoring links. The Coverage card is now a simple handoff to the existing Coverage registry. | Implemented on `fix/markets-overview-alignment`; latest-head automated checks and browser acceptance pending |
 
 ## Current verification constraints
 
