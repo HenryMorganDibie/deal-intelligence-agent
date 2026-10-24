@@ -6,12 +6,14 @@ import { Container } from "../../../components/primitives";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
-  const [message, setMessage] = useState("Confirming your account…");
+  const [message, setMessage] = useState("Completing sign-in…");
 
   useEffect(() => {
     let active = true;
     async function complete() {
       const params = new URLSearchParams(window.location.search);
+      const oauthCode = params.get("code") || "";
+      const oauthError = params.get("error_description") || params.get("error") || "";
       const tokenHash = params.get("token_hash") || "";
       const type = params.get("type") || "";
       const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ""));
@@ -23,7 +25,16 @@ export default function AuthCallbackPage() {
 
       try {
         let response: Response;
-        if (tokenHash && type) {
+        if (oauthError) {
+          if (active) setMessage(decodeURIComponent(oauthError.replace(/\+/g, " ")));
+          return;
+        } else if (oauthCode) {
+          response = await fetch("/api/portfolio/auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "complete-oauth", code: oauthCode }),
+          });
+        } else if (tokenHash && type) {
           response = await fetch("/api/portfolio/auth", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
