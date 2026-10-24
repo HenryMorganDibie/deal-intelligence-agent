@@ -71,7 +71,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings. Users can edit entered prices and FX rates inline and attach dates; missing or stale values are called out.
 - [ ] Add realised gains, dividends, corporate actions and historical FX effects before presenting comprehensive performance.
 - [ ] Reuse the existing portfolio risk engine only after verifying its assumptions and persistence limitations.
-- [ ] Add portfolio-wide valuation insights only where constituent valuations pass quality gates.
+- [x] Add portfolio-wide valuation insights only where constituent valuations pass quality gates; unsupported, stale, mismatched and unpriced holdings are excluded and their review status is explained.
 - [x] Add understandable concentration and data-quality explanations, links to company research and per-holding valuation, and a local-only handoff that pre-fills the existing Watchlists page with company names. Portfolio quantities, prices and FX rates are not copied into the watchlist draft.
 - [x] Add unit tests for arithmetic invariants, missing prices, currency conversion, exposure aggregation and empty portfolios; execution is pending the latest CI run.
 - [ ] Do not implement cloud-saved portfolios or cross-device sync until authentication and row-level ownership protections are implemented and tested.
@@ -103,11 +103,11 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 ## Out of scope for the initial release
 
-- [ ] No direct trading, custody, payment execution or automatic investment execution.
-- [ ] No claim of complete/equal financial coverage across all African markets.
-- [ ] No broker integration requirement for the initial portfolio MVP.
-- [ ] No separate top-level Portfolio or Research Copilot navigation item.
-- [ ] No fake market data or unverified valuation claims to fill visual space.
+- [x] No direct trading, custody, payment execution or automatic investment execution.
+- [x] No claim of complete/equal financial coverage across all African markets.
+- [x] No broker integration requirement for the initial portfolio MVP.
+- [x] No separate top-level Portfolio or Research Copilot navigation item.
+- [x] No fake market data or unverified valuation claims to fill visual space.
 
 ## Work log
 
@@ -122,7 +122,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Connected valuation to existing company data and quote provenance | Added a profile-prefill action that reuses returned financials where supported; unsupported currencies are rejected for automatic prefill; inferred shares require a dated quote and aligned currency; a price comparison requires quote date and source URL | CI production build passed before the latest quote-provenance changes; latest quality-gate run pending; Vercel deployment rate-limited until its retry window |
 | 2026-10-24 | Strengthened valuation transparency | Added per-scenario FCF growth display, ordered bear/base/bull assumptions and a 3×3 discount-rate/terminal-growth sensitivity grid | Code committed; automated checks for latest commit pending |
 | 2026-10-24 | Added DCF/DDM suitability gates and tested portfolio calculations | Earlier market model unit tests, ESLint and TypeScript typecheck passed on source commit `1df9f8314ccbfd7bad4b7037e0f325d21ad97cb5` | Superseded by current-head verification below |
-| 2026-10-24 | Full current-head frontend quality gates | GitHub Actions run `40099627262` on `d3a521990e5d1a2ad0a4297b529efa777e9e5ace`: Markets unit tests, ESLint, TypeScript typecheck and production build all passed | Automated checks passed; Vercel preview and manual browser verification remain blocked by deployment-rate limit |
+| 2026-10-24 | Full current-head frontend quality gates | GitHub Actions run `40099627262` on `d3a521990e5d1a2ad0a4297b529efa777e9e5ace`: Markets unit tests, ESLint, TypeScript typecheck and production build all passed | Automated checks passed; Vercel preview and manual browser verification remain blocked by deployment-rate limit |\n| 2026-10-24 | Completed portfolio valuation summary and documented release gates | Portfolio-level weighted valuation gap is calculated only from holdings whose model fit, source dates, currency, quote/date match and FX freshness pass checks; checklist and PR now record current verification state | Implemented and automated-tested; manual/preview release gates still open |
 
 
 ## Current verification constraints
