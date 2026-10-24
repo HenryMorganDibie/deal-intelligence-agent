@@ -206,6 +206,7 @@ export default function CloudPortfolioPage() {
     try {
       const result = await postJson<{ inviteCode: string; expiresAt: string; role: string }>({ action: "create-invite", organizationId, role: inviteRole });
       setNewInvite(result.inviteCode);
+      await refreshOrganizationAdmin();
       setMessage("Invite code created. Copy it now and share it with the intended teammate. It expires in seven days and can be used once.");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not create invite."); }
   }
