@@ -230,7 +230,7 @@ export default function MarketsValuationPage() {
     parsed.discountRate > parsed.terminalGrowth &&
     (parsed.price == null || (parsed.price > 0 && form.priceSource.trim().length > 0 && form.priceDate.trim().length > 0)) && form.company.trim().length > 0 &&
     validHttpUrl(form.source) && form.period.trim().length > 0 &&
-    (parsed.price == null || (validHttpUrl(form.priceSource) && /^\\d{4}-\\d{2}-\\d{2}$/.test(form.priceDate)));
+    (parsed.price == null || (validHttpUrl(form.priceSource) && /^\d{4}-\d{2}-\d{2}$/.test(form.priceDate)));
 
   function calculate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
