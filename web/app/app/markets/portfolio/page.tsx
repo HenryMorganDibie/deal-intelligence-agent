@@ -318,7 +318,8 @@ export default function MarketsPortfolioPage() {
               const nextCurrency = event.target.value;
               setBaseCurrency(nextCurrency);
               setHoldings((current) => current.map((holding) => ({ ...holding, fxToBase: holding.currency === nextCurrency ? 1 : null })));
-              setForm({ ...blankForm, currency: nextCurrency, fxToBase: "1" });\n              setMessage("Reporting currency changed. FX rates for holdings in other currencies were cleared; re-enter current rates before relying on portfolio totals.");
+              setForm({ ...blankForm, currency: nextCurrency, fxToBase: "1" });
+              setMessage("Reporting currency changed. FX rates for holdings in other currencies were cleared; re-enter current rates before relying on portfolio totals.");
             }}>
               {CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
             </select>
