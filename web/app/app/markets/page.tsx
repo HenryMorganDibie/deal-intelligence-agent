@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pill, Stat, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
-import { get, type CoverageRow, type Event } from "../../../lib/market";
+import { get, type CoverageRow } from "../../../lib/market";
 
 type PulseCountry = { code: string; name: string } | null;
 type PulseDeal = {
@@ -147,7 +147,7 @@ export default function MarketsPage() {
             <h2 id="market-overview-title" className="h3 mt-2 text-xl">African market activity</h2>
           </div>
           <p className="text-xs text-[color:var(--dim)]">
-            {pulse?.as_of ? `Summary date: ${formatDate(pulse.as_of)}` : "Summary date appears when data loads"}
+            {pulse?.latest_record ? `Latest dated record: ${formatDate(pulse.latest_record)} · Summary date: ${formatDate(pulse.as_of)}` : pulse?.as_of ? `Summary date: ${formatDate(pulse.as_of)} · No dated record available` : "Summary date appears when data loads"}
           </p>
         </div>
         {pulseError && <ErrorNote message={pulseError} />}
