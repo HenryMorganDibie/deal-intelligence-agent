@@ -38,7 +38,7 @@ export default function MarketsComingSoonPage() {
       </PageHeader>
 
       <section className="panel mt-8 p-5 sm:p-7" aria-labelledby="planned-title">
-        <p className="eyebrow">What we're building</p>
+        <p className="eyebrow">What we&apos;re building</p>
         <h2 id="planned-title" className="h3 mt-2 text-xl">Investment analysis that calls it plainly.</h2>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
           The aim is not to tell you what you want to hear. If the available evidence suggests a stock is overvalued, the analysis should say so and show why, including the assumptions and limitations behind that view. Markets is not live yet, and these capabilities are planned rather than available today.
