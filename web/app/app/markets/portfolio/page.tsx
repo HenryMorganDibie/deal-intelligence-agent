@@ -525,7 +525,8 @@ export default function MarketsPortfolioPage() {
                       <td className="px-3 py-3">
                         <p className="font-medium">{holding.name}</p>
                         {holding.ticker ? <p className="mt-1 text-[color:var(--dim)]">{holding.ticker}</p> : null}
-                        <p className="mt-1 text-[color:var(--dim)]">{holding.currency}{holding.fxToBase == null ? " · FX missing" : ""}</p>\n                        <Link href={`/app/companies?name=${encodeURIComponent(holding.name)}&ticker=${encodeURIComponent(holding.ticker)}`} className="mt-2 inline-flex text-[color:var(--muted)] underline-offset-4 hover:underline">Research →</Link>
+                        <p className="mt-1 text-[color:var(--dim)]">{holding.currency}{holding.fxToBase == null ? " · FX missing" : ""}</p>
+                        <Link href={`/app/companies?name=${encodeURIComponent(holding.name)}&ticker=${encodeURIComponent(holding.ticker)}`} className="mt-2 inline-flex text-[color:var(--muted)] underline-offset-4 hover:underline">Research →</Link>
                       </td>
                       <td className="px-3 py-3">{holding.assetType}</td>
                       <td className="px-3 py-3">{[holding.country || "Unclassified", holding.sector || "Unclassified"].join(" · ")}</td>
