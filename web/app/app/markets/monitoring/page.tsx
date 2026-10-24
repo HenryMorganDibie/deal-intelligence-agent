@@ -180,7 +180,7 @@ export default function MarketsMonitoringPage() {
       ) : null}
 
       <div className="mt-8 rounded-xl border hairline p-4 text-xs leading-relaxed text-[color:var(--dim)]">
-        Privacy and reliability: holdings are read from browser-local storage and are never sent to the events API. The page requests only a general 90-day event feed. Matching is conservative but can still miss aliases or produce false positives; this is not a push notification service, an automatic impact score, or a verified alert that a holding's value has changed.
+        Privacy and reliability: holdings are read from browser-local storage and are never sent to the events API. The page requests only a general 90-day event feed. Matching is conservative but can still miss aliases or produce false positives; this is not a push notification service, an automatic impact score, or a verified alert that a holding&apos;s value has changed.
       </div>
     </Container>
   );
