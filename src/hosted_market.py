@@ -674,6 +674,7 @@ class WatchlistBody(BaseModel):
     signal_types: list[str] = Field(default_factory=list, max_length=8)
     include_deals: bool = True
     webhook_url: Optional[str] = Field(None, max_length=500)
+    delivery_frequency: Literal["daily", "weekly"] = "daily"
 
     @field_validator("companies")
     @classmethod
@@ -692,6 +693,19 @@ class WatchlistBody(BaseModel):
         return out
 
 
+
+class AlertReviewBody(BaseModel):
+    alert_key: str = Field(..., min_length=3, max_length=300)
+    state: Literal["unreviewed", "reviewed", "dismissed"]
+
+    @field_validator("alert_key")
+    @classmethod
+    def validate_alert_key(cls, value: str) -> str:
+        if not re.match(r"^(event|deal):.+$", value):
+            raise ValueError("alert_key must start with event: or deal:")
+        return value
+
+
 def _watch_link(wl_id: str) -> str:
     return f"{APP_URL}/app/watchlists/{wl_id}" if APP_URL else f"/app/watchlists/{wl_id}"
 
@@ -708,7 +722,7 @@ async def create_watchlist(body: WatchlistBody, request: Request) -> dict:
         r = await _rpc(client, "create_watchlist", {
             "p_client_hash": _client_hash(request), "p_name": body.name, "p_companies": body.companies,
             "p_countries": body.countries, "p_signal_types": body.signal_types, "p_include_deals": body.include_deals,
-            "p_webhook_url": body.webhook_url})
+            "p_webhook_url": body.webhook_url, "p_delivery_frequency": body.delivery_frequency})
     if r.status_code != 200:
         if "watchlist_limit" in r.text:
             raise HTTPException(429, "You have created the maximum of 20 watchlists.")
@@ -742,7 +756,32 @@ async def _get_watchlist(wl_id: str) -> dict:
 async def get_watchlist(wl_id: str, since: Optional[str] = None) -> dict:
     wl = await _get_watchlist(wl_id)
     since = since or (date.today() - timedelta(days=90)).isoformat()
-    return {"watchlist": wl, "alerts": watch.matches(wl, events(), deals(), since=since)}
+    alerts = watch.matches(wl, events(), deals(), since=since)
+    return {"watchlist": wl, "alerts": alerts, "quality": watch.quality_metrics(alerts)}
+
+
+@router.get("/api/watchlists/{wl_id}/reviews")
+async def list_watchlist_reviews(wl_id: str) -> dict:
+    await _get_watchlist(wl_id)
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await _rpc(client, "list_watchlist_reviews", {"p_id": wl_id})
+    if not response.is_success:
+        log.warning("list_watchlist_reviews failed: %s %s", response.status_code, response.text[:300])
+        raise HTTPException(502, "Alert review state could not be loaded.")
+    return {"reviews": response.json() or []}
+
+
+@router.post("/api/watchlists/{wl_id}/reviews")
+async def save_watchlist_review(wl_id: str, body: AlertReviewBody) -> dict:
+    await _get_watchlist(wl_id)
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await _rpc(client, "upsert_watchlist_review", {
+            "p_id": wl_id, "p_alert_key": body.alert_key, "p_state": body.state
+        })
+    if not response.is_success:
+        log.warning("upsert_watchlist_review failed: %s %s", response.status_code, response.text[:300])
+        raise HTTPException(502, "Alert review state could not be saved.")
+    return {"saved": True, "alert_key": body.alert_key, "state": body.state}
 
 
 @router.get("/api/watchlists/{wl_id}/feed.xml")
@@ -751,6 +790,17 @@ async def watchlist_feed(wl_id: str) -> Response:
     since = (date.today() - timedelta(days=90)).isoformat()
     xml = watch.rss(wl, watch.matches(wl, events(), deals(), since=since), _watch_link(wl_id))
     return Response(xml, media_type="application/rss+xml")
+
+
+@router.get("/api/watchlists/{wl_id}/delivery")
+async def watchlist_delivery_history(wl_id: str) -> dict:
+    await _get_watchlist(wl_id)
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await _rpc(client, "latest_watchlist_delivery", {"p_id": wl_id})
+    if not response.is_success:
+        log.warning("latest_watchlist_delivery failed: %s %s", response.status_code, response.text[:300])
+        raise HTTPException(502, "Webhook delivery history could not be loaded.")
+    return {"deliveries": response.json() or []}
 
 
 @router.delete("/api/watchlists/{wl_id}")
@@ -1360,19 +1410,83 @@ async def cron_ingest(
     delivered = 0
     # Historical backfills populate the database silently; never send stale alerts.
     for wl in (hooks.json() if hooks.status_code == 200 and not month else []):
-        since = (wl.get("last_delivered_at") or (datetime.now(timezone.utc) - timedelta(days=2)).isoformat())[:10]
-        alerts = watch.matches(wl, new_events, list(merged.values()), since=since)
-        if not alerts or not _public_host(wl["webhook_url"]):
+        if not watch.delivery_due(wl.get("delivery_frequency", "daily"), last_delivered_at=wl.get("last_delivered_at")):
             continue
+        if not _public_host(wl["webhook_url"]):
+            continue
+        if wl.get("delivery_frequency") == "weekly" and wl.get("last_delivered_at"):
+            last_delivery = datetime.fromisoformat(wl["last_delivered_at"].replace("Z", "+00:00"))
+            baseline_since = (last_delivery - timedelta(days=7)).date().isoformat()
+        else:
+            baseline_since = (wl.get("last_delivered_at") or
+                              (datetime.now(timezone.utc) - timedelta(days=7)).isoformat())[:10]
+        # Re-check a rolling 90-day window so material corrections to an older record
+        # can be surfaced without re-sending every unchanged alert each day.
+        candidates_alerts = watch.matches(
+            wl, new_events, list(merged.values()),
+            since=(date.today() - timedelta(days=90)).isoformat(),
+        )
+        if not candidates_alerts:
+            continue
+        candidates = [
+            {"alert_key": f"{a['kind']}:{a['id']}", "fingerprint": watch.alert_fingerprint(a)}
+            for a in candidates_alerts
+        ]
         try:
-            async with httpx.AsyncClient(timeout=10, follow_redirects=False) as client:
-                resp = await client.post(wl["webhook_url"], json=watch.webhook_payload(wl, alerts, _watch_link(wl["id"])))
-                if resp.status_code < 300:
-                    delivered += 1
-                    await _rpc(client, "mark_delivered", {"p_id": wl["id"],
-                                                          "p_at": datetime.now(timezone.utc).isoformat()})
-        except httpx.HTTPError as e:
-            log.info("webhook for %s failed: %s", wl["id"], e)
+            async with httpx.AsyncClient(timeout=15) as client:
+                unseen_response = await _rpc(client, "unseen_watchlist_alerts", {
+                    "p_id": wl["id"], "p_candidates": candidates,
+                })
+            if not unseen_response.is_success:
+                log.warning("watchlist duplicate-suppression lookup failed for %s: %s",
+                            wl["id"], unseen_response.status_code)
+                continue
+            unseen_rows = unseen_response.json() or []
+        except httpx.HTTPError as exc:
+            log.warning("watchlist duplicate-suppression lookup failed for %s: %s",
+                        wl["id"], type(exc).__name__)
+            continue
+        changes = {row["alert_key"]: bool(row.get("is_update")) for row in unseen_rows}
+        alerts = []
+        for alert in candidates_alerts:
+            key = f"{alert['kind']}:{alert['id']}"
+            if key not in changes:
+                continue
+            # On first rollout, don't blast the full 90-day history. Existing alert
+            # identities can still reappear if their material fingerprint changed.
+            if not changes[key] and (alert.get("day") or "") < baseline_since:
+                continue
+            alerts.append({**alert, "change_type": "updated" if changes[key] else "new"})
+        if not alerts:
+            continue
+        candidates_to_record = [
+            {"alert_key": f"{a['kind']}:{a['id']}", "fingerprint": watch.alert_fingerprint(a)}
+            for a in alerts
+        ]
+        result = await watch.deliver_webhook(
+            wl["webhook_url"],
+            watch.webhook_payload(wl, alerts, _watch_link(wl["id"])),
+            watch.delivery_idempotency_key(wl["id"], alerts),
+        )
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                saved = await _rpc(client, "record_watchlist_delivery", {
+                    "p_id": wl["id"], "p_delivered": result["delivered"],
+                    "p_attempt_count": result["attempts"], "p_http_status": result["status_code"],
+                    "p_alert_count": len(alerts), "p_error_code": result["error"],
+                })
+                if not saved.is_success:
+                    log.warning("watchlist delivery outcome could not be recorded: %s", saved.status_code)
+                if result["delivered"]:
+                    recorded = await _rpc(client, "record_watchlist_alerts_delivered", {
+                        "p_id": wl["id"], "p_candidates": candidates_to_record,
+                    })
+                    if not recorded.is_success:
+                        log.warning("delivered alert fingerprints could not be recorded: %s", recorded.status_code)
+        except httpx.HTTPError as exc:
+            log.warning("watchlist delivery outcome logging failed for %s: %s", wl["id"], type(exc).__name__)
+        if result["delivered"]:
+            delivered += 1
     _cache.clear()
     return {"status": "ok", "mode": f"backfill:{month}" if month else "rolling-7d",
             "refreshed_at": datetime.now(timezone.utc).isoformat(),

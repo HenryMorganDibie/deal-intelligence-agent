@@ -34,6 +34,7 @@ export default function WatchlistsPage() {
   const [types, setTypes] = useState<string[]>([]);
   const [deals, setDeals] = useState(true);
   const [webhook, setWebhook] = useState("");
+  const [frequency, setFrequency] = useState<"daily" | "weekly">("daily");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +42,19 @@ export default function WatchlistsPage() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    const webhookValue = webhook.trim();
+    if (webhookValue) {
+      try {
+        const parsedWebhook = new URL(webhookValue);
+        if (parsedWebhook.protocol !== "https:" || !parsedWebhook.hostname) {
+          setError("Webhook URL must use HTTPS.");
+          return;
+        }
+      } catch {
+        setError("Enter a valid HTTPS webhook URL.");
+        return;
+      }
+    }
     setBusy(true);
     setError(null);
     try {
@@ -52,6 +66,7 @@ export default function WatchlistsPage() {
         signal_types: types,
         include_deals: deals,
         webhook_url: webhook.trim() || null,
+        delivery_frequency: frequency,
       });
       const rows = [{ id: r.id, name: name.trim() || "Watchlist", created_at: new Date().toISOString() }, ...readSaved()];
       writeSaved(rows);
@@ -67,7 +82,7 @@ export default function WatchlistsPage() {
       <PageHeader eyebrow="Monitoring and alerts" title="Watch companies and countries.">
         A watchlist matches every corporate event (M&A, credit, distress, leadership, regulatory, earnings, restructuring,
         insider) and every deal in the daily feed. Follow it on its page, subscribe to its RSS feed in any reader, Slack or
-        email-by-RSS service, or give a webhook that receives new matches after each daily run. No account: the
+        email-by-RSS service, or give a webhook that receives new matches daily or as a weekly Friday digest. No account: the
         watchlist&apos;s link is its key, so keep it private.
       </PageHeader>
 
@@ -105,6 +120,12 @@ export default function WatchlistsPage() {
         </label>
         <Field label="Webhook URL (optional, https)">
           <input value={webhook} onChange={(e) => setWebhook(e.target.value)} placeholder="https://hooks.slack.com/..." className="field kbd" />
+        </Field>
+        <Field label="Webhook delivery cadence">
+          <select value={frequency} onChange={(e) => setFrequency(e.target.value as "daily" | "weekly")} className="field">
+            <option value="daily">Daily, after ingestion</option>
+            <option value="weekly">Weekly digest, Friday UTC</option>
+          </select>
         </Field>
         <button type="submit" disabled={busy} className="btn btn-primary">
           {busy ? "Creating..." : "Create watchlist"}
