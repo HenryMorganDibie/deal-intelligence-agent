@@ -87,6 +87,7 @@ export type PortfolioValuationReview = {
   holdingId: string;
   company: string;
   ticker: string;
+  country: string;
   currency: string;
   status: "no-saved-valuation" | "model-not-suitable" | "missing-quote" | "stale-inputs" | "currency-mismatch" | "portfolio-price-mismatch" | "invalid-estimate" | "ready";
   detail: string;
@@ -157,7 +158,7 @@ export function calculatePortfolioValuationReviews<
   now = Date.now(),
 ): PortfolioValuationReview[] {
   return holdings.map((holding) => {
-    const common = { holdingId: holding.id, company: holding.name, ticker: holding.ticker, currency: holding.currency };
+    const common = { holdingId: holding.id, company: holding.name, ticker: holding.ticker, country: holding.country, currency: holding.currency };
     const snapshot = latestMatchingValuation(holding, snapshots);
     if (!snapshot) {
       return { ...common, status: "no-saved-valuation", detail: "No saved valuation review matches this holding. Open the valuation workspace, review the inputs and save the result locally." };
