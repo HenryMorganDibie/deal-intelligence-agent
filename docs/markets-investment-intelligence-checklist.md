@@ -53,10 +53,10 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Define typed scenario inputs and deterministic DCF outputs in the valuation workspace; automated unit tests and backend contract are still pending.
 - [ ] Verify market price, currency, share count, reporting period and financial statement provenance before calculation.
 - [x] Implement a clearly labelled five-year DCF scenario tool for positive unlevered free cash flow, with explicit model-fit limitations; additional methods and suitability detection remain pending.
-- [x] Produce bear/base/bull scenarios; sensitivity grids and model-calibrated ranges remain pending.
+- [x] Produce bear/base/bull scenarios and a discount-rate/terminal-growth sensitivity grid; model-calibrated ranges remain pending.
 - [x] Explain assumptions and key limitations; source links are required and countercase research links to the existing Research workspace. Automated countercase synthesis remains pending.
 - [x] Support cautious comparison labels based on entered price versus base DCF estimate; a formal fairly-valued band and automated data-quality/model-suitability gate remain pending.
-- [x] Require manually entered company, source URL, reporting period, FCF, shares, cash and debt; refuse calculation for missing/invalid inputs and explicitly state source/model-fit limitations. Automated source verification and suitability gates remain pending.
+- [x] Require company, financial source URL, reporting period, FCF, shares, cash and debt; require a dated quote and quote source URL before making a price comparison; refuse calculation for missing/invalid inputs and explicitly state source/model-fit limitations. Automated source verification and suitability gates remain pending.
 - [ ] Keep deterministic calculations separate from LLM-written explanations.
 - [ ] Add unit tests for calculations, edge cases, stale/missing inputs, currency mismatch and unsupported instruments.
 - [ ] Create a human-reviewed benchmark of representative African listed companies before claiming accuracy.
@@ -68,7 +68,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Validate CSV headers, required fields, numeric values and malformed quoted CSV; duplicate detection and full currency-code validation remain pending.
 - [x] Implement country and sector exposure for holdings with entered current prices and valid FX conversion.
 - [x] Add allocation/exposure by country, sector, asset type and holding currency for priced and FX-converted holdings; company positions are visible in the portfolio register. Missing price/FX holdings are excluded and called out.
-- [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings.
+- [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings. Allow users to refresh holding prices and FX rates in the register.
 - [ ] Add realised gains, dividends, corporate actions and historical FX effects before presenting comprehensive performance.
 - [ ] Reuse the existing portfolio risk engine only after verifying its assumptions and persistence limitations.
 - [ ] Add portfolio-wide valuation insights only where constituent valuations pass quality gates.
@@ -118,4 +118,6 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Added initial Portfolio Intelligence workspace | Manual holdings, CSV import/template/export, browser-local storage, clear/delete controls, entered-price valuation and country/sector exposure with FX caveats | Typecheck passed; Vercel preview READY; route returned HTTP 200; interactive browser checks pending |
 | 2026-10-24 | Corrected first portfolio preview build failure | Initial draft had a malformed CSV-template expression; corrected it and verified a subsequent source commit built successfully | Fixed on feature branch; no production merge/deployment |
 | 2026-10-24 | Added valuation workspace and Markets internal navigation | Added a transparent five-year DCF scenario calculator with bear/base/bull assumptions, sourced input requirements, optional dated quote comparison and explicit limitations; connected Markets to Valuation, Portfolio and existing Watchlists | Vercel preview build for the newest commits is pending; automated calculation tests and interactive checks remain |
-| 2026-10-24 | Expanded portfolio allocation | Added country, sector, asset-type and holding-currency exposure; changed initial holding currency to USD and stopped defaulting foreign exchange conversions to 1 | Code committed; latest preview verification pending |
+| 2026-10-24 | Expanded portfolio allocation | Added country, sector, asset-type and holding-currency exposure; changed initial holding currency to USD, stopped defaulting foreign exchange conversions to 1, and added editable current-price/FX fields | Code committed; latest preview verification pending |
+| 2026-10-24 | Connected valuation to existing company data and quote provenance | Added a profile-prefill action that reuses returned financials where supported; unsupported currencies are rejected for automatic prefill; inferred shares require a dated quote and aligned currency; a price comparison requires quote date and source URL | CI production build passed before the latest quote-provenance changes; latest quality-gate run pending; Vercel deployment rate-limited until its retry window |
+| 2026-10-24 | Strengthened valuation transparency | Added per-scenario FCF growth display, ordered bear/base/bull assumptions and a 3×3 discount-rate/terminal-growth sensitivity grid | Code committed; automated checks for latest commit pending |
