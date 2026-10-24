@@ -50,7 +50,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 ## Phase 3 — Valuation and honest investment conclusions
 
-- [x] Define typed scenario inputs and deterministic DCF/DDM outputs in the valuation workspace; automated calculation tests have been added and are awaiting the current CI run.
+- [x] Define typed scenario inputs and deterministic DCF/DDM outputs in the valuation workspace; automated calculation tests passed in current-head Web quality gates run `40110920728`.
 - [x] Require source URLs and valid past dates, gate on selected currency and model fit, require a dated quote plus quote-source URL for comparisons, and disclose inferred share counts. Independent source-document verification and manual quote-currency confirmation remain limitations.
 - [x] Implement a five-year DCF for suitable non-financial operating companies and a dividend discount model for mature dividend payers; unsuitable model profiles are blocked, and bank/insurer sectors detected in existing company profiles default to DDM. REIT/NAV and other specialist models remain out of scope.
 - [x] Produce bear/base/bull scenarios and discount-rate/terminal-growth sensitivity for both DCF and DDM; the range is explicitly not a confidence interval and is not model-calibrated.
@@ -65,7 +65,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 - [x] Design a portfolio data model that supports manual entry, CSV import/export and genuine Excel (.xlsx) import/export.
 - [x] Start with browser-local storage and clear import/export/delete controls; do not upload private holdings to shared storage. CSV and Excel exports include the same portfolio fields; Excel templates are available for import.
-- [x] Validate CSV and Excel headers, required fields, numeric values, malformed quoted CSV, supported currency codes, dates and possible duplicate positions. Excel import uses the first worksheet, rejects formula cells, and limits files to 5 MB / 5,000 holding rows.
+- [x] Validate CSV and Excel headers, required fields, numeric values, malformed quoted CSV, supported currency codes, dates and possible duplicate positions. Excel import uses the first worksheet, rejects formula cells, and limits files to 5 MB / 5,000 holding rows. The row limit is intentionally retained because portfolio holdings persist in browser localStorage; a larger limit needs a different storage design.
 - [x] Implement country and sector exposure for holdings with entered current prices and valid FX conversion.
 - [x] Add allocation/exposure by country, sector, asset type and holding currency for priced and FX-converted holdings; company positions are visible in the portfolio register. Missing price/FX holdings are excluded and called out.
 - [x] Distinguish entered cost basis, entered-price value and indicative gain/loss for the same priced/FX-converted holdings. Users can edit entered prices and FX rates inline and attach dates; missing or stale values are called out.
@@ -89,7 +89,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 ## Phase 6 — Quality, regression and release readiness
 
 - [x] Confirm no backend/API/database/schema changes are introduced by this feature branch; backend tests are not applicable to the feature-only diff. Existing backend suites still require their normal independent checks before any unrelated backend changes ship.
-- [x] Run frontend unit tests, ESLint, TypeScript typecheck and production build. Latest full Web quality-gates run `40108616033` passed on head `6dc0f2b99f6bda45effe21f76b5b234d25bac387`; subsequent Excel changes are awaiting their own CI run.
+- [x] Run frontend unit tests, ESLint, TypeScript typecheck and production build. Latest full Web quality-gates run `40110920728` passed on head `fb51dce79ff0b6d03ec093f8509655b9504c1b45`, including Excel workbook tests, ESLint, TypeScript typecheck and production build.
 - [x] Run standalone frontend ESLint and the Markets unit-test suite; both passed in Web quality gates run `40101835044`. Backend code is unchanged by this PR.
 - [ ] Test the Markets pages at mobile and desktop sizes.
 - [ ] Verify Companies, Research, Deals, Alerts, watchlists and other existing areas remain unaffected.
@@ -132,7 +132,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 ## Current verification constraints
 
 - Vercel reported the Free-plan `api-deployments-free-per-day` limit with a 24-hour retry window. Current Vercel check failures are deployment-rate-limit failures, not application build failures. The READY preview predates the latest strict CSV-parser and download-lifecycle changes; the latest source head has passed GitHub quality gates but has not been browser-verified.
-- Full Web quality gates passed on current code head `f7829ee434db1a640b5cc58ecfa05b4ea28b80b5` in run `40108470299`: Markets tests (including CSV regressions), ESLint, TypeScript typecheck and production build all succeeded.
+- Full Web quality gates passed on current code head `fb51dce79ff0b6d03ec093f8509655b9504c1b45` in run `40110920728`: Markets tests (including CSV and Excel regressions), ESLint, TypeScript typecheck and production build all succeeded.
 - A READY preview at `https://deal-intelligence-3osq8c78t-henry-dibie-s-projects.vercel.app` returned HTTP 200 for all five Markets routes after Compare and Monitoring were added. Its source predates the latest strict CSV-parser commits. New Vercel deployments are rate-limited for 24 hours on the Free plan; a current-head preview is still required before release.
 - Production `main` remains untouched. PR #13 stays draft until the feature is verified and explicitly approved.
 
@@ -146,4 +146,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Probed the newest available READY Vercel preview | Current feature preview returned HTTP 200 for all five Markets routes; API preview returned HTTP 200 for `/api/pulse` and `/api/coverage`. Preview predates latest CSV parser commits. | Route smoke tests pass for the deployed feature version; current-head browser acceptance remains open |
 | 2026-10-24 | Hardened portfolio CSV import/export | Extracted CSV parsing and serialization into `web/lib/markets-csv.ts`; parser rejects unclosed quotes, quotes inside unquoted fields and unexpected characters after closing quotes. Added six regression tests for BOM, CRLF, escaped quotes, commas, multiline fields, malformed input and round-trip export. CSV tests are included in `test:markets`. Also clear stale FX dates when changing reporting currency and defer download URL revocation to avoid interrupting CSV downloads. | Web quality gates run `40108470299` passed on code head `f7829ee434db1a640b5cc58ecfa05b4ea28b80b5`; current-head preview blocked by Vercel Free-plan deployment rate limit |
 
-| 2026-10-24 | Added Excel (.xlsx) portfolio support | Added workbook import/export, Excel template download, first-sheet validation, formula rejection, 5 MB / 5,000-row limits, and round-trip / malformed-workbook / formula / size regression tests. CSV flow remains supported. | Code committed to feature branch; CI and browser acceptance pending; no deployment or merge |
+| 2026-10-24 | Added Excel (.xlsx) portfolio support | Added workbook import/export, Excel template download, first-sheet validation, formula rejection, 5 MB / 5,000-row limits, and round-trip / malformed-workbook / formula / size regression tests. CSV flow remains supported. | Code committed to feature branch; CI passed in run `40110920728`; browser interaction acceptance remains open; no merge |
+
+
+| 2026-10-24 | Current-head Excel regression and quality gates | GitHub Actions run `40110920728` passed on head `fb51dce79ff0b6d03ec093f8509655b9504c1b45`: Markets tests, ESLint, TypeScript typecheck and production build succeeded. The earlier invalid-workbook test failure was fixed by checking the ZIP signature before parsing. | Automated gates green; interactive browser checks and exact-current-head preview verification remain release gates |
