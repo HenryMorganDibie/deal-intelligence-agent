@@ -9,6 +9,8 @@ import { get } from "../../../../lib/market";
 
 type ModelFit = "standard-operating-company" | "financial-institution" | "mature-dividend-payer" | "negative-or-volatile-fcf" | "early-stage" | "reit-property" | "uncertain";
 
+const VALUATION_CURRENCIES = ["AOA", "BIF", "BWP", "CDF", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GBP", "GHS", "GMD", "GNF", "KMF", "KES", "LRD", "LSL", "LYD", "MAD", "MGA", "MRU", "MUR", "MWK", "MZN", "NAD", "NGN", "RWF", "SCR", "SDG", "SLE", "SOS", "SSP", "STN", "SZL", "TND", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWG", "ZWL"];
+
 type Inputs = {
   method: "dcf" | "ddm";
   company: string;
@@ -203,8 +205,7 @@ export default function MarketsValuationPage() {
         const current = items[key]?.current;
         return typeof current === "number" && Number.isFinite(current) ? String(current) : "";
       };
-      const supportedCurrencies = ["NGN", "KES", "ZAR", "GHS", "EGP", "XOF", "XAF", "MAD", "TZS", "UGX", "RWF", "ETB", "MUR", "USD", "EUR", "GBP"];
-      const currency = financials.currency && supportedCurrencies.includes(financials.currency.toUpperCase())
+      const currency = financials.currency && VALUATION_CURRENCIES.includes(financials.currency.toUpperCase())
         ? financials.currency.toUpperCase()
         : form.currency;
       const sameCurrency = Boolean(profile.market?.currency && profile.market.currency.toUpperCase() === currency);
@@ -397,11 +398,11 @@ export default function MarketsValuationPage() {
               <div>
                 <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-currency">Statement / dividend currency</label>
                 <select id="valuation-currency" className="field" value={form.currency} onChange={set("currency")}>
-                  {["NGN", "KES", "ZAR", "GHS", "EGP", "XOF", "XAF", "MAD", "TZS", "UGX", "RWF", "ETB", "MUR", "DZD", "AOA", "BWP", "BIF", "CVE", "KMF", "CDF", "DJF", "ERN", "SZL", "GMD", "GNF", "LSL", "LRD", "LYD", "MGA", "MWK", "MRU", "MZN", "NAD", "STN", "SCR", "SLE", "SOS", "SSP", "SDG", "TND", "ZMW", "ZWG", "USD", "EUR", "GBP"].map((currency) => <option key={currency} value={currency}>{currency}</option>)}
+                  {VALUATION_CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-period">Financial period end *</label>
+                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-period">Financial / dividend period end *</label>
                 <input id="valuation-period" className="field" type="date" required value={form.period} onChange={set("period")} />
               </div>
               <div className="sm:col-span-2">
@@ -409,7 +410,7 @@ export default function MarketsValuationPage() {
                 <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">This reuses existing company data where available. It will not guess missing figures, and you must review the loaded values and source before calculating.</p>
               </div>
               <div className="sm:col-span-2">
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-source">Source URL for the financial inputs (HTTP or HTTPS) *</label>
+                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-source">Source URL for the financial / dividend inputs (HTTP or HTTPS) *</label>
                 <input id="valuation-source" className="field" required type="url" value={form.source} onChange={set("source")} placeholder="https://... official filing or statement" />
               </div>
             </div>
