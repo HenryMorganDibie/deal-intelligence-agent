@@ -26,7 +26,7 @@ type PortfolioState = { version: 1; baseCurrency: string; holdings: Holding[] };
 
 const STORAGE_KEY = "deal-intelligence-markets-portfolio-v1";
 const VALUATION_STORAGE_KEY = "deal-intelligence-markets-valuations-v1";
-const CURRENCIES = ["AOA", "BIF", "BWP", "CDF", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GBP", "GHS", "GMD", "GNF", "KMF", "KES", "LRD", "LSL", "LYD", "MAD", "MGA", "MRU", "MUR", "MWK", "MZN", "NAD", "NGN", "RWF", "SCR", "SDG", "SLE", "SOS", "SSP", "STN", "SZL", "TND", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWG", "ZWL"];
+const CURRENCIES = ["AED", "AOA", "AUD", "BIF", "BRL", "BWP", "CAD", "CDF", "CHF", "CNY", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GBP", "GHS", "GMD", "GNF", "HKD", "IDR", "INR", "JPY", "KES", "KMF", "KRW", "LRD", "LSL", "LYD", "MAD", "MGA", "MXN", "MRU", "MUR", "MWK", "MYR", "MZN", "NAD", "NGN", "NZD", "PHP", "PKR", "RWF", "SAR", "SCR", "SDG", "SGD", "SLE", "SOS", "SSP", "STN", "SZL", "THB", "TND", "TRY", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWG", "ZWL"];
 const ASSET_TYPES = ["Stock", "ETF", "Bond", "Treasury bill", "Money-market fund", "Mutual fund", "REIT", "Fixed deposit", "Other"];
 const CSV_HEADERS = ["name", "ticker", "country", "sector", "asset_type", "currency", "quantity", "cost_per_unit", "current_price", "fx_to_base", "price_as_of", "fx_as_of"];
 const VALUATION_STATUS_LABELS = {
