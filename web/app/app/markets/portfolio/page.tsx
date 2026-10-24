@@ -17,6 +17,8 @@ type Holding = {
   costPerUnit: number;
   currentPrice: number | null;
   fxToBase: number | null;
+  priceAsOf?: string | null;
+  fxAsOf?: string | null;
 };
 
 type PortfolioState = { version: 1; baseCurrency: string; holdings: Holding[] };
@@ -24,7 +26,7 @@ type PortfolioState = { version: 1; baseCurrency: string; holdings: Holding[] };
 const STORAGE_KEY = "deal-intelligence-markets-portfolio-v1";
 const CURRENCIES = ["AOA", "BIF", "BWP", "CDF", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GBP", "GHS", "GMD", "GNF", "KMF", "KES", "LRD", "LSL", "LYD", "MAD", "MGA", "MRU", "MUR", "MWK", "MZN", "NAD", "NGN", "RWF", "SCR", "SDG", "SLE", "SOS", "SSP", "STN", "SZL", "TND", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWG", "ZWL"];
 const ASSET_TYPES = ["Stock", "ETF", "Bond", "Treasury bill", "Money-market fund", "Mutual fund", "REIT", "Fixed deposit", "Other"];
-const CSV_HEADERS = ["name", "ticker", "country", "sector", "asset_type", "currency", "quantity", "cost_per_unit", "current_price", "fx_to_base"];
+const CSV_HEADERS = ["name", "ticker", "country", "sector", "asset_type", "currency", "quantity", "cost_per_unit", "current_price", "fx_to_base", "price_as_of", "fx_as_of"];
 
 const blankForm = {
   name: "",
@@ -37,7 +39,15 @@ const blankForm = {
   costPerUnit: "",
   currentPrice: "",
   fxToBase: "1",
+  priceAsOf: "",
+  fxAsOf: "",
 };
+
+function validPastDate(value: string): boolean {
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value && parsed.getTime() <= Date.now();
+}
 
 function isHolding(value: unknown): value is Holding {
   if (!value || typeof value !== "object") return false;
@@ -48,7 +58,9 @@ function isHolding(value: unknown): value is Holding {
     typeof item.quantity === "number" && Number.isFinite(item.quantity) && item.quantity > 0 &&
     typeof item.costPerUnit === "number" && Number.isFinite(item.costPerUnit) && item.costPerUnit >= 0 &&
     (item.currentPrice === null || (typeof item.currentPrice === "number" && Number.isFinite(item.currentPrice) && item.currentPrice > 0)) &&
-    (item.fxToBase === null || (typeof item.fxToBase === "number" && Number.isFinite(item.fxToBase) && item.fxToBase > 0));
+    (item.fxToBase === null || (typeof item.fxToBase === "number" && Number.isFinite(item.fxToBase) && item.fxToBase > 0)) &&
+    (item.priceAsOf === undefined || item.priceAsOf === null || (typeof item.priceAsOf === "string" && validPastDate(item.priceAsOf))) &&
+    (item.fxAsOf === undefined || item.fxAsOf === null || (typeof item.fxAsOf === "string" && validPastDate(item.fxAsOf)));
 }
 
 function newId(): string {
@@ -185,6 +197,10 @@ export default function MarketsPortfolioPage() {
   }, [pricedHoldings, totalCurrentValue]);
   const missingPriceCount = holdings.filter((holding) => holding.currentPrice == null || holding.currentPrice <= 0).length;
   const missingFxCount = holdings.filter((holding) => holding.fxToBase == null || holding.fxToBase <= 0).length;
+  const undatedPrices = holdings.filter((holding) => holding.currentPrice != null && !holding.priceAsOf).length;
+  const stalePrices = holdings.filter((holding) => holding.currentPrice != null && Boolean(holding.priceAsOf) && (Date.now() - new Date(`${holding.priceAsOf}T00:00:00Z`).getTime()) > 7 * 86400000).length;
+  const undatedFx = holdings.filter((holding) => holding.currency !== baseCurrency && holding.fxToBase != null && !holding.fxAsOf).length;
+  const staleFx = holdings.filter((holding) => holding.currency !== baseCurrency && holding.fxToBase != null && Boolean(holding.fxAsOf) && (Date.now() - new Date(`${holding.fxAsOf}T00:00:00Z`).getTime()) > 7 * 86400000).length;
 
   const portfolioInsights = useMemo(() => {
     const insights: { title: string; detail: string }[] = [];
@@ -220,8 +236,11 @@ export default function MarketsPortfolioPage() {
     } else {
       insights.push({ title: "Entered holdings are priced and converted", detail: "All listed holdings have a current price and FX conversion, but the results still depend on the accuracy and date of your manual inputs." });
     }
+    if (undatedPrices > 0 || stalePrices > 0 || undatedFx > 0 || staleFx > 0) {
+      insights.push({ title: "Check price and FX freshness", detail: `${undatedPrices} holding(s) have no price date, ${stalePrices} have prices older than 7 days, ${undatedFx} foreign-currency holding(s) have no FX date, and ${staleFx} have FX rates older than 7 days. Dates are user-entered and not independently verified.` });
+    }
     return insights;
-  }, [holdings.length, largestPosition, countryExposure, sectorExposure, missingPriceCount, missingFxCount]);
+  }, [holdings.length, largestPosition, countryExposure, sectorExposure, missingPriceCount, missingFxCount, undatedPrices, stalePrices, undatedFx, staleFx]);
 
   function updateForm(key: keyof typeof blankForm, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -258,6 +277,8 @@ export default function MarketsPortfolioPage() {
       costPerUnit,
       currentPrice,
       fxToBase,
+      priceAsOf: currentPrice == null ? null : (form.priceAsOf || null),
+      fxAsOf: form.currency === baseCurrency || fxToBase == null ? null : (form.fxAsOf || null),
     }]);
     setForm({ ...blankForm, currency: baseCurrency });
     setMessage(duplicate
@@ -293,12 +314,15 @@ export default function MarketsPortfolioPage() {
         const costPerUnit = Number(costText);
         const currentText = col(row, "current_price");
         const fxText = col(row, "fx_to_base");
+        const priceAsOf = col(row, "price_as_of");
+        const fxAsOf = col(row, "fx_as_of");
         const currentPrice = currentText === "" ? null : Number(currentText);
         const fxToBase = currency === baseCurrency ? 1 : fxText === "" ? null : Number(fxText);
         if (!name || !CURRENCIES.includes(currency) || !costText || !Number.isFinite(quantity) || quantity <= 0 ||
             !Number.isFinite(costPerUnit) || costPerUnit < 0 ||
             (currentPrice != null && (!Number.isFinite(currentPrice) || currentPrice <= 0)) ||
-            (fxToBase != null && (!Number.isFinite(fxToBase) || fxToBase <= 0))) {
+            (fxToBase != null && (!Number.isFinite(fxToBase) || fxToBase <= 0)) ||
+            (priceAsOf !== "" && !validPastDate(priceAsOf)) || (fxAsOf !== "" && !validPastDate(fxAsOf))) {
           skipped += 1;
           continue;
         }
@@ -313,6 +337,8 @@ export default function MarketsPortfolioPage() {
           country,
           sector: col(row, "sector"),
           assetType: col(row, "asset_type") || "Other",
+          priceAsOf: currentPrice == null ? null : (priceAsOf || null),
+          fxAsOf: currency === baseCurrency || fxToBase == null ? null : (fxAsOf || null),
         });
       }
       if (!imported.length) throw new Error("No valid holdings were found. Check the required columns and numeric values.");
@@ -328,7 +354,7 @@ export default function MarketsPortfolioPage() {
       CSV_HEADERS,
       ...holdings.map((holding) => [
         holding.name, holding.ticker, holding.country, holding.sector, holding.assetType, holding.currency,
-        holding.quantity, holding.costPerUnit, holding.currentPrice, holding.fxToBase,
+        holding.quantity, holding.costPerUnit, holding.currentPrice, holding.fxToBase, holding.priceAsOf ?? "", holding.fxAsOf ?? "",
       ]),
     ];
     const csv = rows.map((row) => row.map(csvEscape).join(",")).join("\r\n");
@@ -340,13 +366,24 @@ export default function MarketsPortfolioPage() {
     URL.revokeObjectURL(url);
   }
 
+  function updateHoldingDate(id: string, key: "priceAsOf" | "fxAsOf", raw: string) {
+    if (raw && !validPastDate(raw)) return;
+    setHoldings((current) => current.map((holding) => {
+      if (holding.id !== id) return holding;
+      if (key === "priceAsOf" && holding.currentPrice == null) return holding;
+      if (key === "fxAsOf" && (holding.currency === baseCurrency || holding.fxToBase == null)) return holding;
+      return { ...holding, [key]: raw || null };
+    }));
+  }
+
   function updateHoldingNumber(id: string, key: "currentPrice" | "fxToBase", raw: string) {
     const value = raw.trim() === "" ? null : Number(raw);
     if (value != null && (!Number.isFinite(value) || value < 0 || (key === "fxToBase" && value === 0))) return;
     setHoldings((current) => current.map((holding) => {
       if (holding.id !== id) return holding;
       if (key === "fxToBase" && holding.currency === baseCurrency) return { ...holding, fxToBase: 1 };
-      return { ...holding, [key]: value };
+      if (key === "currentPrice") return { ...holding, currentPrice: value, priceAsOf: value == null ? null : holding.priceAsOf ?? null };
+      return { ...holding, fxToBase: value, fxAsOf: value == null ? null : holding.fxAsOf ?? null };
     }));
   }
 
@@ -504,11 +541,15 @@ export default function MarketsPortfolioPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="holding-price">Current price ({form.currency})</label>
-              <input id="holding-price" className="field" type="number" min="0" step="any" value={form.currentPrice} onChange={(event) => updateForm("currentPrice", event.target.value)} placeholder="Optional; manually entered" />
+              <input id="holding-price" className="field" type="number" min="0.000000001" step="any" value={form.currentPrice} onChange={(event) => updateForm("currentPrice", event.target.value)} placeholder="Optional; manually entered" />
+              <label className="mb-1.5 mt-2 block text-xs text-[color:var(--muted)]" htmlFor="holding-price-date">Price date</label>
+              <input id="holding-price-date" className="field" type="date" max={new Date().toISOString().slice(0, 10)} value={form.priceAsOf} onChange={(event) => updateForm("priceAsOf", event.target.value)} disabled={!form.currentPrice.trim()} />
             </div>
             <div>
               <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="holding-fx">FX to {baseCurrency}</label>
               <input id="holding-fx" className="field" type="number" min="0.000000001" step="any" value={form.currency === baseCurrency ? "1" : form.fxToBase} disabled={form.currency === baseCurrency} onChange={(event) => updateForm("fxToBase", event.target.value)} placeholder="Base currency per unit" />
+              <label className="mb-1.5 mt-2 block text-xs text-[color:var(--muted)]" htmlFor="holding-fx-date">FX rate date</label>
+              <input id="holding-fx-date" className="field" type="date" max={new Date().toISOString().slice(0, 10)} value={form.fxAsOf} onChange={(event) => updateForm("fxAsOf", event.target.value)} disabled={form.currency === baseCurrency || !form.fxToBase.trim()} />
             </div>
             <p className="sm:col-span-2 text-xs leading-relaxed text-[color:var(--dim)]">
               If the holding currency equals the reporting currency, FX is 1. For another currency, provide a positive conversion rate. Leaving it blank excludes that holding from base-currency totals and exposure charts.
@@ -522,7 +563,7 @@ export default function MarketsPortfolioPage() {
             <p className="eyebrow">Bulk import</p>
             <h2 id="csv-title" className="h3 mt-2 text-lg">Import a CSV</h2>
             <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Required columns: <code>name</code>, <code>currency</code>, <code>quantity</code>, <code>cost_per_unit</code>. Optional columns: <code>ticker</code>, <code>country</code>, <code>sector</code>, <code>asset_type</code>, <code>current_price</code> and <code>fx_to_base</code>.
+              Required columns: <code>name</code>, <code>currency</code>, <code>quantity</code>, <code>cost_per_unit</code>. Optional columns include <code>ticker</code>, <code>country</code>, <code>sector</code>, <code>asset_type</code>, <code>current_price</code>, <code>fx_to_base</code>, <code>price_as_of</code> and <code>fx_as_of</code>. Dates must be valid and not in the future.
             </p>
             <label className="mt-4 block text-xs text-[color:var(--muted)]" htmlFor="portfolio-csv">Choose CSV file</label>
             <input id="portfolio-csv" className="field mt-2" type="file" accept=".csv,text/csv" onChange={importCsv} />
@@ -608,7 +649,16 @@ export default function MarketsPortfolioPage() {
                       <td className="px-3 py-3">{[holding.country || "Unclassified", holding.sector || "Unclassified"].join(" · ")}</td>
                       <td className="px-3 py-3 kbd">{holding.quantity.toLocaleString("en", { maximumFractionDigits: 6 })}</td>
                       <td className="px-3 py-3 kbd">{amount(holding.costPerUnit, holding.currency)}</td>
-                      <td className="px-3 py-3 kbd">{holding.currentPrice == null ? "Not entered" : amount(holding.currentPrice, holding.currency)}</td>
+                      <td className="px-3 py-3">
+                        <input className="field min-w-28" type="number" min="0.000000001" step="any" value={holding.currentPrice ?? ""} onChange={(event) => updateHoldingNumber(holding.id, "currentPrice", event.target.value)} aria-label={`Current price for ${holding.name} in ${holding.currency}`} placeholder="Enter price" />
+                        <input className="field mt-1 min-w-28" type="date" max={new Date().toISOString().slice(0, 10)} value={holding.priceAsOf ?? ""} disabled={holding.currentPrice == null} onChange={(event) => updateHoldingDate(holding.id, "priceAsOf", event.target.value)} aria-label={`Price date for ${holding.name}`} />
+                        <p className="mt-1 text-[color:var(--dim)]">{holding.priceAsOf ? (Date.now() - new Date(`${holding.priceAsOf}T00:00:00Z`).getTime() > 7 * 86400000 ? "Price date is over 7 days old" : `As of ${holding.priceAsOf}`) : holding.currentPrice == null ? "No price entered" : "Price date missing"}</p>
+                      </td>
+                      <td className="px-3 py-3">
+                        {holding.currency === baseCurrency ? <p className="kbd">1.0000</p> : <input className="field min-w-28" type="number" min="0.000000001" step="any" value={holding.fxToBase ?? ""} onChange={(event) => updateHoldingNumber(holding.id, "fxToBase", event.target.value)} aria-label={`FX rate for ${holding.name} to ${baseCurrency}`} placeholder="Enter FX" />}
+                        {holding.currency !== baseCurrency ? <input className="field mt-1 min-w-28" type="date" max={new Date().toISOString().slice(0, 10)} value={holding.fxAsOf ?? ""} disabled={holding.fxToBase == null} onChange={(event) => updateHoldingDate(holding.id, "fxAsOf", event.target.value)} aria-label={`FX rate date for ${holding.name}`} /> : null}
+                        {holding.currency !== baseCurrency ? <p className="mt-1 text-[color:var(--dim)]">{holding.fxAsOf ? (Date.now() - new Date(`${holding.fxAsOf}T00:00:00Z`).getTime() > 7 * 86400000 ? "FX date is over 7 days old" : `As of ${holding.fxAsOf}`) : holding.fxToBase == null ? "FX missing" : "FX date missing"}</p> : null}
+                      </td>
                       <td className="px-3 py-3 kbd">{value == null ? "Not available" : amount(value, baseCurrency)}</td>
                       <td className={`px-3 py-3 kbd ${gain != null && gain > 0 ? "text-verified" : gain != null && gain < 0 ? "text-risk" : ""}`}>{gain == null ? "Not available" : amount(gain, baseCurrency)}</td>
                       <td className="px-3 py-3"><button type="button" className="text-[color:var(--muted)] underline-offset-4 hover:underline" onClick={() => removeHolding(holding.id)} aria-label={`Remove ${holding.name}`}>Remove</button></td>
