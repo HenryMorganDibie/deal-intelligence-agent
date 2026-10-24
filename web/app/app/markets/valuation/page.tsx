@@ -159,7 +159,7 @@ export default function MarketsValuationPage() {
         : form.currency;
       const sameCurrency = Boolean(profile.market?.currency && profile.market.currency.toUpperCase() === currency);
       const hasDatedQuote = Boolean(profile.market?.as_at && profile.market?.price != null && sameCurrency);
-      const inferredShares = sameCurrency && profile.market?.market_cap != null && profile.market.market_cap > 0 && profile.market.price != null && profile.market.price > 0
+      const inferredShares = hasDatedQuote && profile.market?.market_cap != null && profile.market.market_cap > 0 && profile.market.price != null && profile.market.price > 0
         ? String(profile.market.market_cap / profile.market.price)
         : "";
       setForm((current) => ({
@@ -181,7 +181,7 @@ export default function MarketsValuationPage() {
       setProfileMessage([
         `Financial fields loaded from ${financials.source}.`,
         financials.verified ? "The profile reports its available accounting checks as passed." : "The profile does not report all available accounting checks as passed.",
-        inferredShares ? "Shares outstanding is inferred from market capitalisation divided by price, not independently verified." : "Shares outstanding was not inferred because market price, market capitalisation or currency alignment was unavailable.",
+        inferredShares ? "Shares outstanding is inferred from market capitalisation divided by price, not independently verified." : "Shares outstanding was not inferred because a dated price, market capitalisation or currency alignment was unavailable.",
         hasDatedQuote ? `A price dated ${String(profile.market?.as_at).slice(0, 10)} was prefilled from ${profile.market?.source || "the company profile"}; add its source URL before calculating a price comparison.` : "Current price was left blank because the profile did not provide a dated quote in the statement currency.",
         financials.source_url ? "" : "No direct financial statement URL was returned; add a source URL before calculating.",
         "Review every field, especially units, debt, share count and the source period, before calculating.",
