@@ -4,7 +4,11 @@ import {
   calculateExposureRows,
   calculatePortfolioTotals,
   convertToBase,
+  calculatePortfolioValuationReviews,
+  calculatePortfolioValuationSummary,
+  isSavedValuation,
   type PortfolioPosition,
+  type SavedValuationSnapshot,
 } from "../lib/markets-portfolio";
 
 const sample: PortfolioPosition[] = [
@@ -53,4 +57,99 @@ test("exposure grouping supports sector, asset type and holding currency", () =>
   assert.equal(calculateExposureRows(sample, "sector")[0].label, "Banking");
   assert.equal(calculateExposureRows(sample, "assetType").length, 1);
   assert.equal(calculateExposureRows(sample, "currency")[0].label, "KES");
+});
+
+function dayOffset(days: number): string {
+  return new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+}
+
+const valuationHolding = {
+  id: "holding-1",
+  name: "Example Bank",
+  ticker: "EXBANK",
+  country: "Nigeria",
+  sector: "Banking",
+  assetType: "Stock",
+  currency: "NGN",
+  quantity: 10,
+  costPerUnit: 80,
+  currentPrice: 100,
+  fxToBase: 1,
+  priceAsOf: dayOffset(0),
+  fxAsOf: null,
+};
+
+function savedValuation(overrides: Partial<SavedValuationSnapshot> = {}): SavedValuationSnapshot {
+  return {
+    id: "valuation-1",
+    company: "Example Bank",
+    ticker: "EXBANK",
+    method: "ddm",
+    modelFit: "financial-institution",
+    modelFitConfirmed: true,
+    currency: "NGN",
+    statementSourceUrl: "https://example.com/annual-report",
+    statementPeriod: dayOffset(-365),
+    quotePrice: 100,
+    quoteDate: dayOffset(0),
+    quoteSourceUrl: "https://example.com/quote",
+    bearPerShare: 110,
+    basePerShare: 120,
+    bullPerShare: 130,
+    calculatedAt: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
+test("saved valuation is accepted only with a suitable shape and sourced inputs", () => {
+  assert.equal(isSavedValuation(savedValuation()), true);
+  assert.equal(isSavedValuation(savedValuation({ statementSourceUrl: "javascript:alert(1)" })), false);
+  assert.equal(isSavedValuation(savedValuation({ quoteDate: "2099-01-01" })), false);
+});
+
+test("portfolio valuation review only accepts a fresh, matching quote and suitable model", () => {
+  const review = calculatePortfolioValuationReviews([valuationHolding], [savedValuation()], "NGN")[0];
+  assert.equal(review.status, "ready");
+  assert.equal(review.conclusion, "Potentially undervalued on these assumptions");
+  assert.equal(review.gapPct, 20);
+  assert.equal(review.weightedEligible, true);
+  const summary = calculatePortfolioValuationSummary([review]);
+  assert.equal(summary.matchedCount, 1);
+  assert.equal(summary.weightedCount, 1);
+  assert.equal(summary.weightedGapPct, 20);
+  assert.equal(summary.potentiallyUndervaluedCount, 1);
+});
+
+test("portfolio valuation review blocks stale quotes, currency mismatch and price mismatch", () => {
+  const stale = calculatePortfolioValuationReviews([valuationHolding], [savedValuation({ quoteDate: dayOffset(-10) })], "NGN")[0];
+  assert.equal(stale.status, "stale-inputs");
+  const currency = calculatePortfolioValuationReviews([valuationHolding], [savedValuation({ currency: "KES" })], "NGN")[0];
+  assert.equal(currency.status, "currency-mismatch");
+  const price = calculatePortfolioValuationReviews([{ ...valuationHolding, currentPrice: 104 }], [savedValuation()], "NGN")[0];
+  assert.equal(price.status, "portfolio-price-mismatch");
+});
+
+test("portfolio valuation review refuses missing quotes, unsuitable models and non-positive scenarios", () => {
+  const missing = calculatePortfolioValuationReviews([valuationHolding], [savedValuation({ quotePrice: null, quoteDate: null, quoteSourceUrl: null })], "NGN")[0];
+  assert.equal(missing.status, "missing-quote");
+  const unsuitable = calculatePortfolioValuationReviews([valuationHolding], [savedValuation({ method: "dcf", modelFit: "financial-institution" })], "NGN")[0];
+  assert.equal(unsuitable.status, "model-not-suitable");
+  const invalid = calculatePortfolioValuationReviews([valuationHolding], [savedValuation({ bearPerShare: -5 })], "NGN")[0];
+  assert.equal(invalid.status, "invalid-estimate");
+});
+
+test("foreign holdings need fresh FX dates to contribute to weighted portfolio gap", () => {
+  const foreignHolding = {
+    ...valuationHolding,
+    currency: "KES",
+    fxToBase: 0.01,
+    fxAsOf: null,
+  };
+  const review = calculatePortfolioValuationReviews([foreignHolding], [savedValuation({ currency: "KES" })], "NGN")[0];
+  assert.equal(review.status, "ready");
+  assert.equal(review.weightedEligible, false);
+  const summary = calculatePortfolioValuationSummary([review]);
+  assert.equal(summary.matchedCount, 1);
+  assert.equal(summary.weightedCount, 0);
+  assert.equal(summary.weightedGapPct, null);
 });
