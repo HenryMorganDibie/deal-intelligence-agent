@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader } from "../../../../components/app/ui";
@@ -241,6 +241,15 @@ export default function MarketsValuationPage() {
       setProfileBusy(false);
     }
   }
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const company = params.get("company")?.trim() ?? "";
+    const ticker = params.get("ticker")?.trim() ?? "";
+    if (!company && !ticker) return;
+    setForm((current) => ({ ...current, company: company || current.company, ticker: ticker || current.ticker }));
+    setProfileMessage("Company details were prefilled from your portfolio. Load the existing company profile to fetch supported financial fields, then verify all figures and sources before calculating.");
+  }, []);
 
   const parsed = useMemo(() => ({
     fcf: num(form.fcf), dividendPerShare: num(form.dividendPerShare), cash: num(form.cash), debt: num(form.debt), shares: num(form.shares), price: num(form.price),
