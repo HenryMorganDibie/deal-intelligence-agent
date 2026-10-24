@@ -39,6 +39,51 @@ export async function POST(request: NextRequest) {
   try {
     const config = portfolioConfig();
 
+    if (body.action === "complete-email") {
+      const refreshToken = typeof (body as { refreshToken?: unknown }).refreshToken === "string"
+        ? (body as { refreshToken: string }).refreshToken
+        : "";
+      if (refreshToken.length < 20 || refreshToken.length > 4096) {
+        return NextResponse.json({ error: "The confirmation link is invalid or expired." }, { status: 400 });
+      }
+      const response = await fetch(config.url + "/auth/v1/token?grant_type=refresh_token", {
+        method: "POST",
+        headers: { apikey: config.key, "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+        cache: "no-store",
+      });
+      const payload = (await response.json().catch(() => ({}))) as AuthPayload;
+      if (!response.ok || !payload.access_token || !payload.refresh_token || !payload.user?.id) {
+        return NextResponse.json({ error: "The confirmation link is invalid or expired." }, { status: 400 });
+      }
+      setPortfolioAuthCookies(payload);
+      return NextResponse.json({ ok: true, user: payload.user }, { headers: { "Cache-Control": "no-store" } });
+    }
+
+    if (body.action === "verify-email") {
+      const tokenHash = typeof (body as { tokenHash?: unknown }).tokenHash === "string"
+        ? (body as { tokenHash: string }).tokenHash
+        : "";
+      const type = typeof (body as { type?: unknown }).type === "string"
+        ? (body as { type: string }).type
+        : "";
+      if (!/^[a-f0-9]{32,128}$/i.test(tokenHash) || !["signup", "email", "invite"].includes(type)) {
+        return NextResponse.json({ error: "The confirmation link is invalid or expired." }, { status: 400 });
+      }
+      const response = await fetch(config.url + "/auth/v1/verify", {
+        method: "POST",
+        headers: { apikey: config.key, "Content-Type": "application/json" },
+        body: JSON.stringify({ token_hash: tokenHash, type }),
+        cache: "no-store",
+      });
+      const payload = (await response.json().catch(() => ({}))) as AuthPayload;
+      if (!response.ok || !payload.access_token || !payload.refresh_token || !payload.user?.id) {
+        return NextResponse.json({ error: "The confirmation link is invalid or expired." }, { status: 400 });
+      }
+      setPortfolioAuthCookies(payload);
+      return NextResponse.json({ ok: true, user: payload.user }, { headers: { "Cache-Control": "no-store" } });
+    }
+
     if (body.action === "sign-out") {
       const session = await getPortfolioSession().catch(() => null);
       if (session) {
