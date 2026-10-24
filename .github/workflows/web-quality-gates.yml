@@ -31,7 +31,7 @@ jobs:
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: 2.81.3
+          version: 2.122.0
       - name: Start isolated local Supabase stack
         run: supabase start -x studio,mailpit,storage-api,imgproxy,edge-runtime,logflare,vector
       - name: Apply migrations and run pgTAP security tests
