@@ -270,7 +270,17 @@ export default function MarketsPortfolioPage() {
     URL.revokeObjectURL(url);
   }
 
-  function updateHoldingNumber(id: string, key: "currentPrice" | "fxToBase", raw: string) {\n    const value = raw.trim() === "" ? null : Number(raw);\n    if (value != null && (!Number.isFinite(value) || value < 0 || (key === "fxToBase" && value === 0))) return;\n    setHoldings((current) => current.map((holding) => {\n      if (holding.id !== id) return holding;\n      if (key === "fxToBase" && holding.currency === baseCurrency) return { ...holding, fxToBase: 1 };\n      return { ...holding, [key]: value };\n    }));\n  }\n\n  function removeHolding(id: string) {
+  function updateHoldingNumber(id: string, key: "currentPrice" | "fxToBase", raw: string) {
+    const value = raw.trim() === "" ? null : Number(raw);
+    if (value != null && (!Number.isFinite(value) || value < 0 || (key === "fxToBase" && value === 0))) return;
+    setHoldings((current) => current.map((holding) => {
+      if (holding.id !== id) return holding;
+      if (key === "fxToBase" && holding.currency === baseCurrency) return { ...holding, fxToBase: 1 };
+      return { ...holding, [key]: value };
+    }));
+  }
+
+  function removeHolding(id: string) {
     setHoldings((current) => current.filter((holding) => holding.id !== id));
     setMessage("Holding removed.");
   }
