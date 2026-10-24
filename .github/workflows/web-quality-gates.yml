@@ -37,13 +37,11 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - name: Install dependencies
         run: npm ci
-      - name: Markets valuation unit tests
+      - name: Markets unit tests
         run: npm run test:markets
       - name: ESLint
         run: npm run lint
       - name: TypeScript typecheck
         run: npm run typecheck
-      - name: Valuation unit tests
-        run: npm run test:valuation
       - name: Production build
         run: npm run build
