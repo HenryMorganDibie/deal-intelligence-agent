@@ -32,7 +32,7 @@ const blankForm = {
   country: "",
   sector: "",
   assetType: "Stock",
-  currency: "NGN",
+  currency: "USD",
   quantity: "1",
   costPerUnit: "",
   currentPrice: "",
@@ -178,7 +178,7 @@ export default function MarketsPortfolioPage() {
     const currentPrice = form.currentPrice.trim() === "" ? null : Number(form.currentPrice);
     const fxToBase = form.currency === baseCurrency ? 1 : (form.fxToBase.trim() === "" ? null : Number(form.fxToBase));
     if (!form.name.trim() || !form.currency.trim() || !Number.isFinite(quantity) || quantity <= 0 ||
-        !Number.isFinite(costPerUnit) || costPerUnit < 0 ||
+        !CURRENCIES.includes(form.currency) || !Number.isFinite(costPerUnit) || costPerUnit < 0 ||
         (currentPrice != null && (!Number.isFinite(currentPrice) || currentPrice < 0)) ||
         (fxToBase != null && (!Number.isFinite(fxToBase) || fxToBase <= 0))) {
       setError("Check the holding name, positive quantity, cost basis, optional current price and FX conversion rate.");
@@ -228,7 +228,7 @@ export default function MarketsPortfolioPage() {
         const fxText = col(row, "fx_to_base");
         const currentPrice = currentText === "" ? null : Number(currentText);
         const fxToBase = currency === baseCurrency ? 1 : fxText === "" ? null : Number(fxText);
-        if (!name || !currency || !Number.isFinite(quantity) || quantity <= 0 ||
+        if (!name || !CURRENCIES.includes(currency) || !Number.isFinite(quantity) || quantity <= 0 ||
             !Number.isFinite(costPerUnit) || costPerUnit < 0 ||
             (currentPrice != null && (!Number.isFinite(currentPrice) || currentPrice < 0)) ||
             (fxToBase != null && (!Number.isFinite(fxToBase) || fxToBase <= 0))) {
