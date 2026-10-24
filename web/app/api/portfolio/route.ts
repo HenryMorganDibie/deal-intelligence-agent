@@ -79,6 +79,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(rows, { headers: { "Cache-Control": "no-store" } });
     }
 
+    if (resource === "members" || resource === "invites") {
+      const organizationId = request.nextUrl.searchParams.get("organizationId") || "";
+      if (!uuidPattern.test(organizationId)) return jsonError("Invalid organization identifier.", 400);
+      const rpc = resource === "members" ? "list_organization_members" : "list_organization_invites";
+      const rows = await portfolioRest<unknown>(session.accessToken, "rpc/" + rpc, { method: "POST", body: JSON.stringify({ p_organization_id: organizationId }) });
+      return NextResponse.json(rows, { headers: { "Cache-Control": "no-store" } });
+    }
     return jsonError("Unsupported portfolio resource.", 400);
   } catch (error) {
     const mapped = portfolioErrorResponse(error);
@@ -300,6 +307,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });
     }
 
+    if (body.action === "change-member-role") {
+      const organizationId = typeof body.organizationId === "string" ? body.organizationId : "";
+      const userId = typeof body.userId === "string" ? body.userId : "";
+      const role = typeof body.role === "string" ? body.role : "";
+      if (!uuidPattern.test(organizationId) || !uuidPattern.test(userId) || !["admin","manager","analyst","viewer"].includes(role)) return jsonError("Invalid member role change.", 400);
+      const result = await portfolioRest<unknown>(session.accessToken, "rpc/update_organization_member_role", { method: "POST", body: JSON.stringify({ p_organization_id: organizationId, p_user_id: userId, p_role: role }) });
+      return NextResponse.json({ ok: true, result }, { headers: { "Cache-Control": "no-store" } });
+    }
+
+    if (body.action === "remove-member") {
+      const organizationId = typeof body.organizationId === "string" ? body.organizationId : "";
+      const userId = typeof body.userId === "string" ? body.userId : "";
+      if (!uuidPattern.test(organizationId) || !uuidPattern.test(userId)) return jsonError("Invalid member removal request.", 400);
+      const result = await portfolioRest<unknown>(session.accessToken, "rpc/remove_organization_member", { method: "POST", body: JSON.stringify({ p_organization_id: organizationId, p_user_id: userId }) });
+      return NextResponse.json({ ok: true, result }, { headers: { "Cache-Control": "no-store" } });
+    }
+
+    if (body.action === "revoke-invite") {
+      const inviteId = typeof body.inviteId === "string" ? body.inviteId : "";
+      if (!uuidPattern.test(inviteId)) return jsonError("Invalid invitation identifier.", 400);
+      const result = await portfolioRest<unknown>(session.accessToken, "rpc/revoke_organization_invite", { method: "POST", body: JSON.stringify({ p_invite_id: inviteId }) });
+      return NextResponse.json({ ok: true, result }, { headers: { "Cache-Control": "no-store" } });
+    }
     return jsonError("Unsupported portfolio action.", 400);
   } catch (error) {
     const mapped = portfolioErrorResponse(error);
