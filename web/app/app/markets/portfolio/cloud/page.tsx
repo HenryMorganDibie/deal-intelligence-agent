@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import Link from "next/link";
 import { Container } from "../../../../../components/primitives";
 import { ErrorNote, PageHeader } from "../../../../../components/app/ui";
+import { parseCsv } from "../../../../../lib/markets-csv";
+import { parsePortfolioWorkbook } from "../../../../../lib/markets-excel";
 
 type User = { id: string; email?: string | null };
 type Portfolio = { id: string; name: string; base_currency: string; owner_user_id: string | null; organization_id: string | null; archived_at: string | null };
@@ -11,6 +13,7 @@ type Organization = { id: string; name: string; slug: string; role: string; arch
 type Instrument = { id: string; portfolio_id: string; name: string; ticker: string | null; market: string | null; country: string | null; sector: string | null; asset_type: string; currency: string; current_price: number | null; price_as_of: string | null; fx_to_base: number | null; fx_as_of: string | null };
 type Transaction = { id: string; portfolio_id: string; instrument_id: string | null; transaction_date: string; transaction_type: string; quantity: number; unit_price: number; cash_amount: number; fees: number; currency: string; fx_to_base: number | null; notes: string | null };
 type PortfolioData = { portfolio: Portfolio; instruments: Instrument[]; transactions: Transaction[] };
+type CloudValuation = { id: string; valuation_date: string; base_currency: string; model: string; snapshot: Record<string, unknown>; notes: string | null; created_at: string };
 
 const currencies = ["USD", "NGN", "KES", "GHS", "ZAR", "EGP", "XOF", "XAF", "GBP", "EUR"];
 const today = new Date().toISOString().slice(0, 10);
@@ -89,6 +92,7 @@ export default function CloudPortfolioPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [data, setData] = useState<PortfolioData | null>(null);
+  const [valuations, setValuations] = useState<CloudValuation[]>([]);
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
