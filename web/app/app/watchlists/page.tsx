@@ -37,8 +37,26 @@ export default function WatchlistsPage() {
   const [frequency, setFrequency] = useState<"daily" | "weekly">("daily");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [prefillNotice, setPrefillNotice] = useState<string | null>(null);
 
-  useEffect(() => setSaved(readSaved()), []);
+  useEffect(() => {
+    setSaved(readSaved());
+    if (new URLSearchParams(window.location.search).get("from") !== "portfolio") return;
+    try {
+      const raw = window.sessionStorage.getItem("deal-intelligence:portfolio-watchlist-prefill");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { name?: unknown; companies?: unknown };
+      if (typeof parsed.name === "string") setName(parsed.name);
+      if (Array.isArray(parsed.companies)) {
+        const names = parsed.companies.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+        setCompanies(names.join("\n"));
+        if (names.length) setPrefillNotice("Portfolio holdings were copied into this draft locally. They are sent to the watchlist service only if you submit this form.");
+      }
+      window.sessionStorage.removeItem("deal-intelligence:portfolio-watchlist-prefill");
+    } catch {
+      setError("The portfolio watchlist draft could not be loaded. You can enter company names manually.");
+    }
+  }, []);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -86,6 +104,7 @@ export default function WatchlistsPage() {
         watchlist&apos;s link is its key, so keep it private.
       </PageHeader>
 
+      {prefillNotice && <p className="mb-4 rounded-lg border hairline p-3 text-sm leading-relaxed text-[color:var(--muted)]" role="status">{prefillNotice}</p>}
       <form onSubmit={submit} className="space-y-4">
         <Field label="Name">
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Nigerian banks" className="field" />
