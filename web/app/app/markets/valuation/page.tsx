@@ -158,6 +158,20 @@ export default function MarketsValuationPage() {
     ? (base.perShare < price * 0.85 ? "Potentially overvalued on these assumptions" : base.perShare > price * 1.15 ? "Potentially undervalued on these assumptions" : "Within 15% of the base-case estimate")
     : null;
 
+  const sensitivity = hasCalculated && parsed.fcf != null && parsed.cash != null && parsed.debt != null &&
+    parsed.shares != null && parsed.baseGrowth != null && parsed.discountRate != null && parsed.terminalGrowth != null
+    ? [-2, 0, 2].map((discountOffset) => ({
+        discountRate: parsed.discountRate! + discountOffset,
+        cells: [-1, 0, 1].map((terminalOffset) => {
+          const terminalGrowth = parsed.terminalGrowth! + terminalOffset;
+          return {
+            terminalGrowth,
+            value: dcf(parsed.fcf!, parsed.baseGrowth!, parsed.discountRate! + discountOffset, terminalGrowth, parsed.cash!, parsed.debt!, parsed.shares!),
+          };
+        }),
+      }))
+    : [];
+
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · Valuation" title="A valuation with a countercase.">
@@ -242,6 +256,28 @@ export default function MarketsValuationPage() {
                 <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]">{form.company}{form.ticker ? ` (${form.ticker})` : ""} · period ended {form.period} · source <a href={form.source} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">open filing ↗</a></p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {scenarios.map((scenario) => <ScenarioCard key={scenario.name} scenario={scenario} currency={form.currency} price={price} />)}
+                </div>
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium">Base-case sensitivity</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Implied value per share when the discount rate moves by ±2 percentage points and terminal growth by ±1 point. Cells where terminal growth meets or exceeds the discount rate are not calculated.</p>
+                  <div className="mt-3 overflow-x-auto rounded-lg border hairline">
+                    <table className="w-full min-w-[28rem] border-collapse text-left text-xs">
+                      <thead>
+                        <tr className="border-b hairline text-[color:var(--dim)]">
+                          <th className="px-3 py-2 font-normal">Discount rate / Terminal growth</th>
+                          {sensitivity[0]?.cells.map((cell) => <th key={cell.terminalGrowth} className="px-3 py-2 font-normal">{cell.terminalGrowth.toFixed(1)}%</th>)}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sensitivity.map((row) => (
+                          <tr key={row.discountRate} className="border-b hairline last:border-0">
+                            <th className="px-3 py-2 font-normal text-[color:var(--muted)]">{row.discountRate.toFixed(1)}%</th>
+                            {row.cells.map((cell) => <td key={cell.terminalGrowth} className="px-3 py-2 kbd">{cell.value == null ? "N/A" : money(cell.value, form.currency)}</td>)}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
                 <div className="mt-4 rounded-xl border hairline p-4">
                   <p className="eyebrow">Base-case conclusion</p>
