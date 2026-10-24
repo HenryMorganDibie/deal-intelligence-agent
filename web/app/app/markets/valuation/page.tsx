@@ -4,6 +4,8 @@ import { useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader } from "../../../../components/app/ui";
+import { ApiError } from "../../../../lib/api";
+import { get } from "../../../../lib/market";
 
 type Inputs = {
   company: string;
@@ -25,6 +27,21 @@ type Inputs = {
 
 type Scenario = { name: string; growth: number; enterpriseValue: number; equityValue: number; perShare: number | null };
 
+type CompanyProfile = {
+  name: string;
+  ticker: string | null;
+  market?: { price?: number | null; currency?: string | null; market_cap?: number | null; source?: string; as_at?: string | null } | null;
+  financials?: {
+    source: string;
+    source_url?: string;
+    period: { end: string; months: number | null; label?: string } | null;
+    currency?: string;
+    unit?: string;
+    items?: Record<string, { current: number; prior?: number }>;
+    verified: boolean;
+  };
+};
+
 const initial: Inputs = {
   company: "",
   ticker: "",
@@ -32,8 +49,8 @@ const initial: Inputs = {
   source: "",
   period: "",
   fcf: "",
-  cash: "0",
-  debt: "0",
+  cash: "",
+  debt: "",
   shares: "",
   price: "",
   bearGrowth: "0",
@@ -102,10 +119,76 @@ export default function MarketsValuationPage() {
   const [form, setForm] = useState<Inputs>(initial);
   const [error, setError] = useState<string | null>(null);
   const [hasCalculated, setHasCalculated] = useState(false);
+  const [profileBusy, setProfileBusy] = useState(false);
+  const [profileMessage, setProfileMessage] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const set = (key: keyof Inputs) => (event: { target: { value: string } }) => {
     setForm((current) => ({ ...current, [key]: event.target.value }));
     setHasCalculated(false);
   };
+
+  async function loadCompanyProfile() {
+    const name = form.company.trim();
+    if (!name) {
+      setProfileError("Enter a company name before loading its existing profile.");
+      setProfileMessage(null);
+      return;
+    }
+    setProfileBusy(true);
+    setProfileError(null);
+    setProfileMessage(null);
+    try {
+      const profile = await get<CompanyProfile>("/api/companies/profile", {
+        name,
+        ticker: form.ticker.trim(),
+      });
+      const financials = profile.financials;
+      if (!financials) {
+        setProfileError("The existing company profile did not return machine-readable financial statements. You can still enter sourced figures manually.");
+        return;
+      }
+      const items = financials.items ?? {};
+      const value = (key: string) => {
+        const current = items[key]?.current;
+        return typeof current === "number" && Number.isFinite(current) ? String(current) : "";
+      };
+      const supportedCurrencies = ["NGN", "KES", "ZAR", "GHS", "EGP", "XOF", "XAF", "MAD", "TZS", "UGX", "RWF", "ETB", "MUR", "USD", "EUR", "GBP"];
+      const currency = financials.currency && supportedCurrencies.includes(financials.currency.toUpperCase())
+        ? financials.currency.toUpperCase()
+        : form.currency;
+      const sameCurrency = Boolean(profile.market?.currency && profile.market.currency.toUpperCase() === currency);
+      const hasDatedQuote = Boolean(profile.market?.as_at && profile.market?.price != null && sameCurrency);
+      const inferredShares = sameCurrency && profile.market?.market_cap != null && profile.market.price != null && profile.market.price > 0
+        ? String(profile.market.market_cap / profile.market.price)
+        : "";
+      setForm((current) => ({
+        ...current,
+        company: profile.name || current.company,
+        ticker: profile.ticker || current.ticker,
+        currency,
+        source: financials.source_url || "",
+        period: financials.period?.end || "",
+        fcf: value("free_cash_flow"),
+        cash: value("cash"),
+        debt: value("total_debt"),
+        shares: inferredShares,
+        price: hasDatedQuote ? String(profile.market!.price) : "",
+      }));
+      setHasCalculated(false);
+      setProfileMessage([
+        `Financial fields loaded from ${financials.source}.`,
+        financials.verified ? "The profile reports its available accounting checks as passed." : "The profile does not report all available accounting checks as passed.",
+        inferredShares ? "Shares outstanding is inferred from market capitalisation divided by price, not independently verified." : "Shares outstanding was not inferred because market price, market capitalisation or currency alignment was unavailable.",
+        hasDatedQuote ? `A price dated ${profile.market?.as_at} was prefilled from ${profile.market?.source || "the company profile"}.` : "Current price was left blank because the profile did not provide a dated quote in the statement currency.",
+        financials.source_url ? "" : "No direct financial statement URL was returned; add a source URL before calculating.",
+        "Review every field, especially units, debt, share count and the source period, before calculating.",
+      ].filter(Boolean).join(" "));
+    } catch (err) {
+      setProfileError(err instanceof ApiError ? err.message : "Could not load the existing company profile.");
+    } finally {
+      setProfileBusy(false);
+    }
+  }
 
   const parsed = useMemo(() => ({
     fcf: num(form.fcf), cash: num(form.cash), debt: num(form.debt), shares: num(form.shares), price: num(form.price),
@@ -189,6 +272,8 @@ export default function MarketsValuationPage() {
           <p className="eyebrow">Transparent inputs</p>
           <h2 id="inputs-title" className="h3 mt-2 text-xl">Set the evidence and assumptions</h2>
           {error && <div className="mt-4"><ErrorNote message={error} /></div>}
+          {profileError && <div className="mt-4"><ErrorNote message={profileError} /></div>}
+          {profileMessage && <p className="mt-4 text-xs leading-relaxed text-[color:var(--muted)]" role="status">{profileMessage}</p>}
           <form className="mt-5 space-y-5" onSubmit={calculate}>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
@@ -210,6 +295,10 @@ export default function MarketsValuationPage() {
                 <input id="valuation-period" className="field" required value={form.period} onChange={set("period")} placeholder="e.g. 2025-12-31" />
               </div>
               <div className="sm:col-span-2">
+                <button type="button" className="btn btn-secondary w-full" onClick={loadCompanyProfile} disabled={profileBusy}>{profileBusy ? "Loading existing company profile…" : "Load financials from Companies"}</button>
+                <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">This reuses existing company data where available. It will not guess missing figures, and you must review the loaded values and source before calculating.</p>
+              </div>
+              <div className="sm:col-span-2">
                 <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-source">Source URL for the financial inputs *</label>
                 <input id="valuation-source" className="field" required type="url" value={form.source} onChange={set("source")} placeholder="https://... official filing or statement" />
               </div>
@@ -217,7 +306,7 @@ export default function MarketsValuationPage() {
 
             <div>
               <h3 className="text-sm font-medium">Financial inputs</h3>
-              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Enter monetary values in the same currency units throughout (do not mix thousands, millions or billions). Shares outstanding must be in individual shares, not millions. Use free cash flow to the firm, not net income or dividends.</p>
+              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Enter monetary values in the same currency units throughout (do not mix thousands, millions or billions). Shares outstanding must be in individual shares, not millions. Use free cash flow to the firm, not net income or dividends. Cash and debt start blank so missing values cannot silently become zero.</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <NumericField id="valuation-fcf" label="Latest annual unlevered free cash flow *" value={form.fcf} onChange={set("fcf")} placeholder="Positive value required" />
                 <NumericField id="valuation-shares" label="Shares outstanding *" value={form.shares} onChange={set("shares")} placeholder="Individual shares" />
