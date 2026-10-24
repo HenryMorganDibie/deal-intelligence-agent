@@ -193,12 +193,18 @@ function FormattedAnswer({ text }: { text: string }) {
 
 export default function ResearchPage() {
   const [question, setQuestion] = useState("");
+  const [prefillNotice, setPrefillNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ResearchResult | null>(null);
   const [marketExamples, setMarketExamples] = useState<ResearchSuggestion[]>([]);
 
   useEffect(() => {
+    const prefilledQuestion = new URLSearchParams(window.location.search).get("question");
+    if (prefilledQuestion) {
+      setQuestion(prefilledQuestion.slice(0, 500));
+      setPrefillNotice("Markets prepared a draft research question. Review it and press Ask to run the research; it has not been submitted automatically.");
+    }
     let active = true;
     const refreshMarketExamples = async () => {
       try {
@@ -246,6 +252,7 @@ export default function ResearchPage() {
         conflicting, stale or secondary, treat the answer as provisional and verify the underlying documents.
       </PageHeader>
 
+      {prefillNotice && <p className="mb-3 rounded-lg border hairline p-3 text-sm leading-relaxed text-[color:var(--muted)]" role="status">{prefillNotice}</p>}
       <form onSubmit={ask} className="space-y-3">
         <textarea
           value={question}
