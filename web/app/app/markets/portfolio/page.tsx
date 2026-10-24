@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader, Stat } from "../../../../components/app/ui";
 import { calculateExposureRows, calculatePortfolioTotals, calculatePortfolioValuationReviews, calculatePortfolioValuationSummary, convertToBase, isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
-import { csvEscape, parseCsv, stringifyCsv } from "../../../../lib/markets-csv";
+import { parseCsv, stringifyCsv } from "../../../../lib/markets-csv";
 
 type Holding = {
   id: string;
