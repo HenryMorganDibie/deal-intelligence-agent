@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import { Container } from "../../../../components/primitives";
-import { ErrorNote, PageHeader, Stat, usd } from "../../../../components/app/ui";
+import { ErrorNote, PageHeader, Stat } from "../../../../components/app/ui";
 
 type Holding = {
   id: string;
@@ -113,9 +113,10 @@ function exposureRows(holdings: Holding[], key: "country" | "sector", baseCurren
 export default function MarketsPortfolioPage() {
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [baseCurrency, setBaseCurrency] = useState("USD");
-  const [form, setForm] = useState(blankForm);
+  const [form, setForm] = useState({ ...blankForm, currency: "USD" });
   const [ready, setReady] = useState(false);
   const [storageWarning, setStorageWarning] = useState<string | null>(null);
+  const [storageLoadFailed, setStorageLoadFailed] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -132,10 +133,12 @@ export default function MarketsPortfolioPage() {
           ));
           if (typeof parsed.baseCurrency === "string" && CURRENCIES.includes(parsed.baseCurrency)) {
             setBaseCurrency(parsed.baseCurrency);
+            setForm({ ...blankForm, currency: parsed.baseCurrency, fxToBase: "1" });
           }
         }
       }
     } catch {
+      setStorageLoadFailed(true);
       setStorageWarning("This browser could not read the saved portfolio. You can still work with the current session, but changes may not persist.");
     } finally {
       setReady(true);
@@ -143,20 +146,19 @@ export default function MarketsPortfolioPage() {
   }, []);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || storageLoadFailed) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, baseCurrency, holdings } satisfies PortfolioState));
       setStorageWarning(null);
     } catch {
       setStorageWarning("Browser storage is unavailable or full. Export a CSV backup before leaving this page.");
     }
-  }, [baseCurrency, holdings, ready]);
+  }, [baseCurrency, holdings, ready, storageLoadFailed]);
 
   const pricedHoldings = useMemo(
     () => holdings.filter((holding) => holding.currentPrice != null && holding.fxToBase != null && holding.fxToBase > 0),
     [holdings],
   );
-  const unconvertedHoldings = holdings.filter((holding) => holding.fxToBase == null || holding.fxToBase <= 0);
   const totalCurrentValue = pricedHoldings.reduce((sum, holding) => sum + (convert(holding.quantity * (holding.currentPrice ?? 0), holding.fxToBase) ?? 0), 0);
   const totalCostOfPriced = pricedHoldings.reduce((sum, holding) => sum + (convert(holding.quantity * holding.costPerUnit, holding.fxToBase) ?? 0), 0);
   const pricedGain = totalCurrentValue - totalCostOfPriced;
@@ -301,8 +303,10 @@ export default function MarketsPortfolioPage() {
           <div>
             <label htmlFor="base-currency" className="mb-1.5 block text-xs text-[color:var(--muted)]">Portfolio reporting currency</label>
             <select id="base-currency" className="field" value={baseCurrency} onChange={(event) => {
-              setBaseCurrency(event.target.value);
-              setForm((current) => ({ ...current, currency: event.target.value, fxToBase: "1" }));
+              const nextCurrency = event.target.value;
+              setBaseCurrency(nextCurrency);
+              setHoldings((current) => current.map((holding) => ({ ...holding, fxToBase: holding.currency === nextCurrency ? 1 : null })));
+              setForm({ ...blankForm, currency: nextCurrency, fxToBase: "1" });
             }}>
               {CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
             </select>
@@ -404,7 +408,7 @@ export default function MarketsPortfolioPage() {
             <label className="mt-4 block text-xs text-[color:var(--muted)]" htmlFor="portfolio-csv">Choose CSV file</label>
             <input id="portfolio-csv" className="field mt-2" type="file" accept=".csv,text/csv" onChange={importCsv} />
             <button type="button" className="btn btn-secondary mt-3" onClick={() => {
-              const example = [CSV_HEADERS.join(","), "Example African Bank,EXBANK,Kenya,Banking,Stock,KES,10,120,135,0.0075].join(",");
+              const example = [CSV_HEADERS.join(","), ["Example African Bank", "EXBANK", "Kenya", "Banking", "Stock", "KES", 10, 120, 135, 0.0075].join(",")].join("\\r\\n");
               const blob = new Blob([example + "\r\n"], { type: "text/csv;charset=utf-8" });
               const url = URL.createObjectURL(blob);
               const anchor = document.createElement("a");
