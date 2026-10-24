@@ -7,9 +7,11 @@ import { ErrorNote, PageHeader } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get } from "../../../../lib/market";
 import { calculateDcfPerShare, calculateDdmPerShare, validHttpUrl, validPastDate } from "../../../../lib/markets-valuation";
+import { isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
 
 type ModelFit = "standard-operating-company" | "financial-institution" | "mature-dividend-payer" | "negative-or-volatile-fcf" | "early-stage" | "reit-property" | "uncertain";
 
+const VALUATION_STORAGE_KEY = "deal-intelligence-markets-valuations-v1";
 const VALUATION_CURRENCIES = ["AOA", "BIF", "BWP", "CDF", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GBP", "GHS", "GMD", "GNF", "KMF", "KES", "LRD", "LSL", "LYD", "MAD", "MGA", "MRU", "MUR", "MWK", "MZN", "NAD", "NGN", "RWF", "SCR", "SDG", "SLE", "SOS", "SSP", "STN", "SZL", "TND", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWG", "ZWL"];
 
 type Inputs = {
@@ -119,6 +121,7 @@ export default function MarketsValuationPage() {
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [detectedSector, setDetectedSector] = useState("");
   const [modelFitConfirmed, setModelFitConfirmed] = useState(false);
+  const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -131,6 +134,7 @@ export default function MarketsValuationPage() {
   const set = <K extends keyof Inputs,>(key: K) => (event: { target: { value: string } }) => {
     setForm((current) => ({ ...current, [key]: event.target.value as Inputs[K] }));
     if (key === "method" || key === "modelFit") setModelFitConfirmed(false);
+    setSavedMessage(null);
     setHasCalculated(false);
   };
 
@@ -144,6 +148,7 @@ export default function MarketsValuationPage() {
     setProfileBusy(true);
     setProfileError(null);
     setProfileMessage(null);
+    setSavedMessage(null);
     try {
       const profile = await get<CompanyProfile>("/api/companies/profile", {
         name,
@@ -277,6 +282,7 @@ export default function MarketsValuationPage() {
   function calculate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setSavedMessage(null);
     if (!validInputs) {
       setError(form.method === "dcf"
         ? "Check the source URL, a valid past reporting date, positive FCF and shares, non-negative cash/debt, ordered growth assumptions, discount rate above terminal growth, and confirmation that this is a suitable non-financial operating company. If the profile identifies a bank or insurer, use DDM instead of ordinary-company DCF. A market price also needs an HTTP(S) source URL and a valid past quote date."
@@ -290,6 +296,47 @@ export default function MarketsValuationPage() {
       return;
     }
     setHasCalculated(true);
+  }
+
+  function saveValuationLocally() {
+    if (!hasCalculated || scenarios.length !== 3 || scenarios.some((scenario) => scenario.perShare == null)) return;
+    const snapshot: SavedValuationSnapshot = {
+      id: `${form.ticker.trim().toUpperCase() || form.company.trim().toLowerCase()}-${Date.now()}`,
+      company: form.company.trim(),
+      ticker: form.ticker.trim().toUpperCase(),
+      method: form.method,
+      modelFit: form.modelFit,
+      modelFitConfirmed,
+      currency: form.currency,
+      statementSourceUrl: form.source,
+      statementPeriod: form.period,
+      quotePrice: parsed.price,
+      quoteDate: parsed.price == null ? null : form.priceDate,
+      quoteSourceUrl: parsed.price == null ? null : form.priceSource,
+      bearPerShare: scenarios[0].perShare!,
+      basePerShare: scenarios[1].perShare!,
+      bullPerShare: scenarios[2].perShare!,
+      calculatedAt: new Date().toISOString(),
+    };
+    try {
+      const raw = window.localStorage.getItem(VALUATION_STORAGE_KEY);
+      let existing: SavedValuationSnapshot[] = [];
+      if (raw) {
+        const parsedStored: unknown = JSON.parse(raw);
+        if (!Array.isArray(parsedStored) || !parsedStored.every(isSavedValuation)) {
+          throw new Error("Saved valuation data could not be validated. It was left unchanged to avoid data loss.");
+        }
+        existing = parsedStored;
+      }
+      const next = existing.filter((item) => {
+        if (snapshot.ticker && item.ticker) return snapshot.ticker !== item.ticker.trim().toUpperCase();
+        return snapshot.company.toLowerCase() !== item.company.trim().toLowerCase();
+      });
+      window.localStorage.setItem(VALUATION_STORAGE_KEY, JSON.stringify([...next, snapshot]));
+      setSavedMessage("Saved locally in this browser. Portfolio Intelligence will use it only when the holding has a matching currency, quote date and price, and the saved model passes its quality checks.");
+    } catch (saveError) {
+      setSavedMessage(saveError instanceof Error ? saveError.message : "Could not save this valuation in browser storage.");
+    }
   }
 
   const base = scenarios.find((scenario) => scenario.name === "Base");
@@ -525,6 +572,10 @@ export default function MarketsValuationPage() {
                         : "Enter a positive current share price from a dated source to compare it with the scenario range. Without a quote, the model will not call the stock cheap or expensive."}
                   </p>
                 </div>
+                <div className="mt-4 rounded-xl border hairline p-4">
+                  <button type="button" className="btn btn-secondary w-full" onClick={saveValuationLocally}>Save valuation to Portfolio Intelligence</button>
+                  {savedMessage ? <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status">{savedMessage}</p> : <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">Saved valuation scenarios stay in this browser. They are not uploaded to the server.</p>}
+                </div>
               </>
             )}
           </section>
@@ -533,8 +584,8 @@ export default function MarketsValuationPage() {
             <p className="eyebrow">Method and limitations</p>
             <h2 id="method-title" className="h3 mt-2 text-lg">What this model can and cannot say</h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[color:var(--muted)]">
-              <li>Discounts five annual free-cash-flow projections and a terminal value; then adds cash, subtracts debt and divides by shares outstanding.</li>
-              <li>It is unsuitable when free cash flow is negative or structurally volatile, or for many banks, insurers, early-stage firms and instruments where this model&apos;s assumptions do not fit.</li>
+              <li>{form.method === "dcf" ? "Projects five years of unlevered free cash flow, discounts cash flows and terminal value, adds cash, subtracts debt and divides by shares outstanding." : "Projects five years of annual dividends per share and discounts dividends plus terminal value using the cost of equity."}</li>
+              <li>{form.method === "dcf" ? "It is unsuitable for banks, insurers, early-stage businesses, REITs and firms with negative or structurally volatile free cash flow." : "It is unsuitable when dividends are absent, irregular or unsustainable, or when payout policy is likely to change materially."}</li>
               <li>It does not independently verify the source, accounting basis, share count, currency, dilution, minority interests or latest price.</li>
               <li>It does not yet adjust for non-operating assets, leases, pension deficits, preferred shares, minority interests, cyclicality or country-specific discount-rate calibration.</li>
               <li>A model output is not a target price or a buy/sell instruction. Review assumptions and contrary evidence before drawing a conclusion.</li>
