@@ -243,10 +243,10 @@ test("Google sign-in starts a PKCE flow with a same-site callback and protected 
   const response = await request.get("/api/portfolio/auth/google", { maxRedirects: 0 });
   expect(response.status()).toBe(307);
   const location = new URL(response.headers().location);
-  expect(location.origin).toBe("https://auth-test.invalid");
+  expect(location.origin).toBe("https://test-project.supabase.co");
   expect(location.pathname).toBe("/auth/v1/authorize");
   expect(location.searchParams.get("provider")).toBe("google");
-  expect(location.searchParams.get("redirect_to")).toBe("http://127.0.0.1:3000/auth/callback");
+  expect(location.searchParams.get("redirect_to")).toBe("https://test.example/auth/callback");
   expect(location.searchParams.get("code_challenge_method")).toBe("s256");
   expect(location.searchParams.get("code_challenge")).toMatch(/^[A-Za-z0-9_-]{43}$/);
   const cookie = response.headers()["set-cookie"];
@@ -285,20 +285,6 @@ test("OAuth callback rejects a missing PKCE verifier without creating a session"
 
 
 
-test("Google OAuth authorization starts with PKCE and a same-site callback", async ({ request }) => {
-  const response = await request.get("/api/portfolio/auth/google", { maxRedirects: 0 });
-  expect(response.status()).toBe(307);
-  const location = new URL(response.headers().location);
-  expect(location.origin).toBe("https://test-project.supabase.co");
-  expect(location.pathname).toBe("/auth/v1/authorize");
-  expect(location.searchParams.get("provider")).toBe("google");
-  expect(location.searchParams.get("redirect_to")).toBe("https://test.example/auth/callback");
-  expect(location.searchParams.get("code_challenge_method")).toBe("s256");
-  expect(location.searchParams.get("code_challenge")).toMatch(/^[A-Za-z0-9_-]{43}$/);
-  expect(response.headers()["set-cookie"]).toContain("di_portfolio_oauth_verifier=");
-  expect(response.headers()["set-cookie"]).toContain("HttpOnly");
-});
-
 test("password recovery request shows a privacy-preserving confirmation", async ({ page }) => {
   let submitted;
   await page.route("**/api/portfolio/auth", async route => {
@@ -325,7 +311,7 @@ test("password reset page validates confirmation and submits only the new passwo
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
   });
   await page.goto("/account/reset-password");
-  await page.getByLabel("New password").fill("long-test-password-123");
+  await page.getByLabel("New password", { exact: true }).fill("long-test-password-123");
   await page.getByLabel("Confirm new password").fill("different-password-456");
   await page.getByRole("button", { name: "Update password" }).click();
   await expect(page.getByRole("alert")).toContainText("passwords do not match");
