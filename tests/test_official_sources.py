@@ -19,11 +19,11 @@ def test_publisher_name_alone_does_not_make_a_source_official():
     assert result["official_source_verification"]["status"] == "no_official_host_verified"
 
 
-def test_country_audit_exposes_missing_official_source_coverage():
+def test_country_audit_reports_registered_official_source_coverage():
     audit = audit_country("ER", [{"id": "d1", "country": "ER", "sources": [{"url": "https://example.com/a"}]}], [])
     assert audit["deal_records"] == 1
-    assert audit["registered_country_hosts"] == 0
-    assert audit["registry_status"] == "needs_host_review"
+    assert audit["registered_country_hosts"] == 1
+    assert audit["registry_status"] == "host_allowlist_configured"
 
 
 
