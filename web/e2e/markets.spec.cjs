@@ -226,10 +226,17 @@ test("portfolio page remains usable at a narrow mobile viewport", async ({ page 
 
 test("cloud portfolio API does not disclose portfolio data without a session", async ({ request }) => {
   const response = await request.get("/api/portfolio?resource=portfolios");
-  expect([401, 503]).toContain(response.status());
+  expect(response.status()).toBe(401);
   const body = await response.json();
   expect(body).not.toHaveProperty("portfolios");
   expect(body).not.toHaveProperty("user");
+
+  const write = await request.post("/api/portfolio", {
+    data: { action: "create-portfolio", name: "Must Not Be Created", baseCurrency: "USD" },
+  });
+  expect(write.status()).toBe(401);
+  const writeBody = await write.json();
+  expect(writeBody.error).toContain("Sign in");
 });
 
 test("Google sign-in starts a PKCE flow with a same-site callback and protected verifier cookie", async ({ request }) => {
