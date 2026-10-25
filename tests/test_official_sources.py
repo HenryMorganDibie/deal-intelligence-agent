@@ -119,3 +119,8 @@ def test_recognised_news_publisher_is_not_counted_as_official_or_unknown():
     assert result["official_host_matched_links"] == 0
     assert result["recognised_news_publisher_source_urls"] == 1
     assert result["unverified_publisher_source_urls"] == 0
+
+
+
+def test_eritrea_bank_of_eritrea_host_is_registered():
+    assert verify_url("https://www.boe.gov.er/", "ER")["status"] == "official_host_match"
