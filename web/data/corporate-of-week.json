@@ -1,40 +1,108 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-24T20:50:15.897347+00:00",
+  "updated_at": "2026-10-25T12:33:44.098069+00:00",
   "current": {
-    "company": "Impact",
-    "company_url": "/app/companies?name=Impact",
-    "headline": "Fitch outlines impact of Indonesia downgrade by MSCI",
-    "deal_type": "credit_risk",
+    "company": "Birr",
+    "company_url": "/app/companies?name=Birr",
+    "headline": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
+    "deal_type": "regulatory_action",
     "amount_usd": null,
-    "country": "ZW",
+    "country": "ET",
     "sector": null,
-    "announced": "2026-10-23",
-    "score": 53.6,
+    "announced": "2026-10-24",
+    "score": 53.9,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
     "reasons": [
-      "Corporate signal: credit risk",
-      "Event rule confidence: 0.92",
+      "Corporate signal: regulatory action",
+      "Event rule confidence: 0.93",
       "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "IDNFinancials",
-        "title": "Fitch outlines impact of Indonesia downgrade by MSCI",
-        "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPM3hSa1VmREZ3dDZUMkJxbWRFclJacVB3bUo4UFFzT1F0cjhfcHBHR0gxam1GMHB3Q21DTFN1X0xhTU91NmtlcmMteXVsd2VadXY0ei02SzB2cG1LNms1ellDVmJ0azRFdlR1VzhER0R0dlNiWFlSX0ZDT3BuckFnX0ZIcjdnWXhKb2pMZUtHVWdGUTIxNlRRcA?oc=5",
-        "date": "2026-10-23",
+        "publisher": "Borkena",
+        "title": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
+        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNaDJPUUFXUVNReHZpRnRkSlR3bGZ2UUREdk5JRFNWS2VOQ2p5RGtZTXNBNGtBWWZFdGc2Vm10ZXJqa3BYZ2hxb3RqZ0xOZTRHRFNXSGc1VnFyQWpLYnNhVFA4SjRpZEplNXlGUEpIdDhVNWRNb005ZWpScEZQN3g1RWNYSmhZU2lvQkU4dEEzREo?oc=5",
+        "date": "2026-10-24",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-10-17",
-    "period_end": "2026-10-23",
-    "selected_at": "2026-10-24T20:50:15.896383+00:00",
+    "period_start": "2026-10-18",
+    "period_end": "2026-10-24",
+    "selected_at": "2026-10-25T12:33:44.096850+00:00",
     "selection_version": 4,
     "companies": [
+      {
+        "company": "Birr",
+        "company_url": "/app/companies?name=Birr",
+        "headline": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "ET",
+        "sector": null,
+        "announced": "2026-10-24",
+        "score": 53.9,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Borkena",
+            "title": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
+            "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNaDJPUUFXUVNReHZpRnRkSlR3bGZ2UUREdk5JRFNWS2VOQ2p5RGtZTXNBNGtBWWZFdGc2Vm10ZXJqa3BYZ2hxb3RqZ0xOZTRHRFNXSGc1VnFyQWpLYnNhVFA4SjRpZEplNXlGUEpIdDhVNWRNb005ZWpScEZQN3g1RWNYSmhZU2lvQkU4dEEzREo?oc=5",
+            "date": "2026-10-24",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-18",
+        "period_end": "2026-10-24",
+        "selected_at": "2026-10-25T12:33:44.096850+00:00",
+        "selection_version": 4
+      },
+      {
+        "company": "Geregu Power",
+        "company_url": "/app/companies?name=Geregu%20Power",
+        "headline": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+        "deal_type": "earnings_surprise",
+        "amount_usd": null,
+        "country": "NG",
+        "sector": "energy",
+        "announced": "2026-10-24",
+        "score": 52.55,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: earnings surprise",
+          "Event rule confidence: 0.72",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Nairametrics",
+            "title": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+            "url": "https://nairametrics.com/2026/10/24/geregu-power-signs-siemens-transformer-deal-after-sharp-revenue-decline/",
+            "date": "2026-10-24",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-18",
+        "period_end": "2026-10-24",
+        "selected_at": "2026-10-25T12:33:44.096850+00:00",
+        "selection_version": 4
+      },
       {
         "company": "Impact",
         "company_url": "/app/companies?name=Impact",
@@ -44,7 +112,7 @@
         "country": "ZW",
         "sector": null,
         "announced": "2026-10-23",
-        "score": 53.6,
+        "score": 52.17,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-17",
-        "period_end": "2026-10-23",
-        "selected_at": "2026-10-24T20:50:15.896383+00:00",
+        "period_start": "2026-10-18",
+        "period_end": "2026-10-24",
+        "selected_at": "2026-10-25T12:33:44.096850+00:00",
         "selection_version": 4
       },
       {
@@ -78,7 +146,7 @@
         "country": "ZW",
         "sector": null,
         "announced": "2026-10-22",
-        "score": 57.47,
+        "score": 56.04,
         "independent_stories": 2,
         "transaction_records": 0,
         "related_events": 2,
@@ -105,9 +173,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-17",
-        "period_end": "2026-10-23",
-        "selected_at": "2026-10-24T20:50:15.896383+00:00",
+        "period_start": "2026-10-18",
+        "period_end": "2026-10-24",
+        "selected_at": "2026-10-25T12:33:44.096850+00:00",
         "selection_version": 4
       },
       {
@@ -119,7 +187,7 @@
         "country": "GH",
         "sector": null,
         "announced": "2026-10-22",
-        "score": 52.47,
+        "score": 51.04,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -139,105 +207,37 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-17",
-        "period_end": "2026-10-23",
-        "selected_at": "2026-10-24T20:50:15.896383+00:00",
-        "selection_version": 4
-      },
-      {
-        "company": "Allianz",
-        "company_url": "/app/companies?name=Allianz",
-        "headline": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
-        "deal_type": "leadership_change",
-        "amount_usd": null,
-        "country": "KE",
-        "sector": null,
-        "announced": "2026-10-22",
-        "score": 52.02,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.75",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Nairametrics",
-            "title": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
-            "url": "https://nairametrics.com/2026/10/22/sanlam-allianz-kenya-appoints-jacqueline-karasha-as-ceo-from-november-1/",
-            "date": "2026-10-22",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-17",
-        "period_end": "2026-10-23",
-        "selected_at": "2026-10-24T20:50:15.896383+00:00",
-        "selection_version": 4
-      },
-      {
-        "company": "Banks",
-        "company_url": "/app/companies?name=Banks",
-        "headline": "Sudan Revokes Abu Dhabi Islamic Bank’s Licence and Orders Liquidation in Blow to UAE Financial Influence",
-        "deal_type": "distressed_asset",
-        "amount_usd": null,
-        "country": "SD",
-        "sector": "banking",
-        "announced": "2026-10-22",
-        "score": 48.57,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: distressed asset",
-          "Event rule confidence: 0.80",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "دزاير تيوب",
-            "title": "Sudan Revokes Abu Dhabi Islamic Bank’s Licence and Orders Liquidation in Blow to UAE Financial Influence",
-            "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPbFFhQmZpVFdZTmZMQ3l4SzEya0dkWmhFb0I5b05SVVpobzhXUkFEVUhsb3ZMeWFJNHhVRnBTWGE5OWRnX0h0Y0lZSmQ5TGR4VFk1SkEyY0tQQl9FU29scE1Vbm03cHA3bnZ3MHRYR1VSWTNrdV8yQW5fcE90M1BQaVZVLThSamtMeng4VXBPWDlONWNDV2dzeXk1amRRcDRKb2lfRk05SGMtTGp6UktlTWtqdk80NlpkbzUyX25fYi0xQXRXeExncTgxa1VHZw?oc=5",
-            "date": "2026-10-22",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-17",
-        "period_end": "2026-10-23",
-        "selected_at": "2026-10-24T20:50:15.896383+00:00",
+        "period_start": "2026-10-18",
+        "period_end": "2026-10-24",
+        "selected_at": "2026-10-25T12:33:44.096850+00:00",
         "selection_version": 4
       }
     ],
     "runner_ups": [
       {
-        "company": "NGX",
-        "score": 55.99,
+        "company": "Allianz",
+        "score": 50.59,
         "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.75",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       },
       {
-        "company": "Blocks",
-        "score": 51.04,
+        "company": "Banks",
+        "score": 47.14,
         "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Full",
-        "score": 45.71,
-        "reasons": [
-          "Corporate signal: earnings surprise",
+          "Corporate signal: distressed asset",
           "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "NGX",
+        "score": 54.56,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -1592,6 +1592,248 @@
           "reasons": [
             "Corporate signal: earnings surprise",
             "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
+    },
+    {
+      "company": "Birr",
+      "company_url": "/app/companies?name=Birr",
+      "headline": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
+      "deal_type": "regulatory_action",
+      "amount_usd": null,
+      "country": "ET",
+      "sector": null,
+      "announced": "2026-10-24",
+      "score": 53.9,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: regulatory action",
+        "Event rule confidence: 0.93",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Borkena",
+          "title": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
+          "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNaDJPUUFXUVNReHZpRnRkSlR3bGZ2UUREdk5JRFNWS2VOQ2p5RGtZTXNBNGtBWWZFdGc2Vm10ZXJqa3BYZ2hxb3RqZ0xOZTRHRFNXSGc1VnFyQWpLYnNhVFA4SjRpZEplNXlGUEpIdDhVNWRNb005ZWpScEZQN3g1RWNYSmhZU2lvQkU4dEEzREo?oc=5",
+          "date": "2026-10-24",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-10-18",
+      "period_end": "2026-10-24",
+      "selected_at": "2026-10-25T12:33:44.096850+00:00",
+      "selection_version": 4,
+      "companies": [
+        {
+          "company": "Birr",
+          "company_url": "/app/companies?name=Birr",
+          "headline": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ET",
+          "sector": null,
+          "announced": "2026-10-24",
+          "score": 53.9,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Borkena",
+              "title": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
+              "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNaDJPUUFXUVNReHZpRnRkSlR3bGZ2UUREdk5JRFNWS2VOQ2p5RGtZTXNBNGtBWWZFdGc2Vm10ZXJqa3BYZ2hxb3RqZ0xOZTRHRFNXSGc1VnFyQWpLYnNhVFA4SjRpZEplNXlGUEpIdDhVNWRNb005ZWpScEZQN3g1RWNYSmhZU2lvQkU4dEEzREo?oc=5",
+              "date": "2026-10-24",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-18",
+          "period_end": "2026-10-24",
+          "selected_at": "2026-10-25T12:33:44.096850+00:00",
+          "selection_version": 4
+        },
+        {
+          "company": "Geregu Power",
+          "company_url": "/app/companies?name=Geregu%20Power",
+          "headline": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "energy",
+          "announced": "2026-10-24",
+          "score": 52.55,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.72",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+              "url": "https://nairametrics.com/2026/10/24/geregu-power-signs-siemens-transformer-deal-after-sharp-revenue-decline/",
+              "date": "2026-10-24",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-18",
+          "period_end": "2026-10-24",
+          "selected_at": "2026-10-25T12:33:44.096850+00:00",
+          "selection_version": 4
+        },
+        {
+          "company": "Impact",
+          "company_url": "/app/companies?name=Impact",
+          "headline": "Fitch outlines impact of Indonesia downgrade by MSCI",
+          "deal_type": "credit_risk",
+          "amount_usd": null,
+          "country": "ZW",
+          "sector": null,
+          "announced": "2026-10-23",
+          "score": 52.17,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: credit risk",
+            "Event rule confidence: 0.92",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "IDNFinancials",
+              "title": "Fitch outlines impact of Indonesia downgrade by MSCI",
+              "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPM3hSa1VmREZ3dDZUMkJxbWRFclJacVB3bUo4UFFzT1F0cjhfcHBHR0gxam1GMHB3Q21DTFN1X0xhTU91NmtlcmMteXVsd2VadXY0ei02SzB2cG1LNms1ellDVmJ0azRFdlR1VzhER0R0dlNiWFlSX0ZDT3BuckFnX0ZIcjdnWXhKb2pMZUtHVWdGUTIxNlRRcA?oc=5",
+              "date": "2026-10-23",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-18",
+          "period_end": "2026-10-24",
+          "selected_at": "2026-10-25T12:33:44.096850+00:00",
+          "selection_version": 4
+        },
+        {
+          "company": "Woman",
+          "company_url": "/app/companies?name=Woman",
+          "headline": "Zimbabwe woman fined US$300 for WhatsApp harassment",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ZW",
+          "sector": null,
+          "announced": "2026-10-22",
+          "score": 56.04,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Bulawayo24 News",
+              "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
+              "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFBTRUZvNUZwV2VRZGduWEhBNkltR3ZkcXk0bUlONmVJYWxJTXpnWnRWb2RsU3JtV01mbWVDUVlfbjBvTjd5eWZxaHVac3lzSVN4cTFqZFhXMkswUHNxNUhQQV9zZW80N1BMUm5vbkt1Mm10Zw?oc=5",
+              "date": "2026-10-22",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "Legit News",
+              "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
+              "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
+              "date": "2026-10-22",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-18",
+          "period_end": "2026-10-24",
+          "selected_at": "2026-10-25T12:33:44.096850+00:00",
+          "selection_version": 4
+        },
+        {
+          "company": "Data",
+          "company_url": "/app/companies?name=Data",
+          "headline": "Meta Hit With Record $25bn Fine Over Facebook Data Privacy Violations",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "GH",
+          "sector": null,
+          "announced": "2026-10-22",
+          "score": 51.04,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "News Ghana",
+              "title": "Meta Hit With Record $25bn Fine Over Facebook Data Privacy Violations",
+              "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQX184SS0wc18wNkVYbFVUeUJoZzZ5T3UwVlhCMUktU1F5MENmbDFjWmhuc3l1UHlMTHdESHZmazA1RHZxSTBwM1dOYWd1QWp5MjY4RERwNzhwazRPRHJETU13Qm10YlJpZjVHOXR5bjVUakw5QmFmZW9QaTVwREpzNF9rYmZ1bXJBbDgzcEswazJUQWtQUWVMeDZR?oc=5",
+              "date": "2026-10-22",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-18",
+          "period_end": "2026-10-24",
+          "selected_at": "2026-10-25T12:33:44.096850+00:00",
+          "selection_version": 4
+        }
+      ],
+      "runner_ups": [
+        {
+          "company": "Allianz",
+          "score": 50.59,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Banks",
+          "score": 47.14,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "NGX",
+          "score": 54.56,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
         }
