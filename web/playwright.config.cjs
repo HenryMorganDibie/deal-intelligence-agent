@@ -17,7 +17,12 @@ module.exports = defineConfig({
     url: "http://127.0.0.1:3000",
     reuseExistingServer: false,
     timeout: 120_000,
-    env: {\n      NODE_ENV: "production",\n      SUPABASE_URL: "https://auth-test.invalid",\n      SUPABASE_PUBLISHABLE_KEY: "test-publishable-key",\n      NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:3000",\n      VERCEL_ENV: "preview",\n    },
+    env: {
+      NODE_ENV: "production",
+      SUPABASE_URL: "https://test-project.supabase.co",
+      SUPABASE_PUBLISHABLE_KEY: "test-publishable-key",
+      NEXT_PUBLIC_SITE_URL: "https://test.example",
+    },
   },
   timeout: 30_000,
 });
