@@ -1252,7 +1252,7 @@ class DeterministicSignalEngine:
                         "matched_patterns": merged_patterns,
                         "corroborating_source_urls": source_urls,
                         "corroborating_filing_references": filing_references,
-                        "corroboration_count": len(corroboration_tracker[c.signal_type]),
+                        "corroboration_count": len(corroboration_tracker[group_key]),
                     })
 
         # Update corroboration counts
