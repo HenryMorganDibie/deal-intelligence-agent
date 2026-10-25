@@ -69,7 +69,7 @@ OFFICIAL_HOSTS_BY_COUNTRY: dict[str, tuple[str, ...]] = {
     "BI": ("brb.bi",),
     "KM": ("banque-comores.km",),
     "DJ": ("banque-centrale.dj",),
-    "ER": (),
+    "ER": ("boe.gov.er",),
     "ET": ("nbe.gov.et", "ecma.gov.et", "esx.et"),
     "KE": ("centralbank.go.ke", "nse.co.ke", "cma.or.ke"),
     "MG": ("banque-centrale.mg",),
