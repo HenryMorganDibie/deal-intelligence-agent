@@ -394,11 +394,11 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           </div>
           {historyMeta && <p className="mt-4 text-xs leading-relaxed text-[color:var(--dim)]">{historyMeta.method}</p>}
           <div className="mt-5 border-t hairline pt-4">
-            <p className="text-sm font-medium">Archived daily snapshots</p>
+            <p className="text-sm font-medium">Latest archived snapshot</p>
             {historyMeta?.archived_snapshots.length ? (
               <div className="mt-2 overflow-x-auto">
-                <Table head={["Capture date", "Risk score", "Tier", "Source snapshot retrieved"]}>
-                  {historyMeta.archived_snapshots.map((point) => <tr key={point.snapshot_date}>
+                <Table head={["Capture date", "Risk score", "Tier", "Source data as of"]}>
+                  {historyMeta.archived_snapshots.slice().sort((a, b) => b.snapshot_date.localeCompare(a.snapshot_date)).slice(0, 1).map((point) => <tr key={point.snapshot_date}>
                     <Td>{point.snapshot_date}</Td><Td className="kbd">{point.score ?? "n/a"}</Td><Td>{point.tier ?? "n/a"}</Td><Td>{point.data_as_of ?? "n/a"}</Td>
                   </tr>)}
                 </Table>
