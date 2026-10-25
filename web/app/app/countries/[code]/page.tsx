@@ -375,7 +375,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
 
       <h2 className="eyebrow mt-12">Historical country risk</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
-        Reconstructed from World Bank observations, not archived historical scores. Coverage is the share of weighted risk components with usable inputs, not an official data-quality measure. Only years with a complete composite score are plotted; years without a valid annual point are omitted so the chart starts at this country's first complete year. Input years can differ within a row.
+        Reconstructed from World Bank observations, not archived historical scores. Coverage is the share of weighted risk components with usable inputs, not an official data-quality measure. Only years with a complete composite score are plotted; years without a valid annual point are omitted so the chart starts at this country&apos;s first complete year. Input years can differ within a row.
       </p>
       {availableRiskPoints.length > 0 ? (
         <div className="panel mt-4 p-4 sm:p-5">
