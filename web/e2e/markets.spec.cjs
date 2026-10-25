@@ -314,7 +314,7 @@ test("password reset page validates confirmation and submits only the new passwo
   await page.getByLabel("New password", { exact: true }).fill("long-test-password-123");
   await page.getByLabel("Confirm new password").fill("different-password-456");
   await page.getByRole("button", { name: "Update password" }).click();
-  await expect(page.getByRole("alert")).toContainText("passwords do not match");
+  await expect(page.getByText("The passwords do not match.", { exact: true })).toBeVisible();
   expect(submitted).toBeUndefined();
 
   await page.getByLabel("Confirm new password").fill("long-test-password-123");
