@@ -133,6 +133,9 @@ class SignalCandidate(BaseModel):
     The LLM only sees confirmed candidates and explains them.
     """
     signal_type: SignalType
+    # Stable canonical type plus a specific event label for downstream filtering and evaluation.
+    event_subtype: str = Field(default="unspecified", description="Specific event within the canonical signal type")
+    event_attributes: dict[str, Any] = Field(default_factory=dict, description="Deterministically extracted event facts such as amounts and percentages")
     matched_patterns: list[str] = Field(..., description="Exact patterns/keywords that fired")
     source_text: str = Field(..., description="Raw text excerpt that triggered the signal")
     source_url: str = ""
@@ -217,6 +220,8 @@ class DetectedSignal(BaseModel):
     """
     signal_type: SignalType
     severity: Severity
+    event_subtype: str = Field(default="unspecified", description="Specific event within the canonical signal type")
+    event_attributes: dict[str, Any] = Field(default_factory=dict, description="Deterministically extracted event facts")
     headline: str = Field(..., description="One-line signal description")
     evidence: list[str] = Field(..., description="Supporting evidence snippets")
     source_urls: list[str] = Field(default_factory=list)
