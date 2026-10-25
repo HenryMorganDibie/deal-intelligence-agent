@@ -199,7 +199,7 @@ test("monitoring presents explicit empty and feed-error states", async ({ page }
   await page.route(eventsRoute, route => route.fulfill({
     status: 503,
     contentType: "application/json",
-    body: JSON.stringify({ error: "Market event service unavailable" }),
+    body: JSON.stringify({ detail: "Market events temporarily unavailable." }),
   }));
   await page.getByRole("button", { name: "Refresh events" }).click();
   await expect(page.getByText(/service unavailable|temporarily unavailable|market events could not be loaded/i)).toBeVisible();
