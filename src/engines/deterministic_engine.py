@@ -563,6 +563,88 @@ AMOUNT_PATTERN = re.compile(
 PERCENTAGE_PATTERN = re.compile(r'\d+\.?\d*\s*%')
 
 
+def _classify_event_subtype(signal_type: SignalType, text: str) -> str:
+    """Assign a stable, specific event label without changing the canonical signal type."""
+    value = (text or "").lower()
+    rules: dict[SignalType, list[tuple[str, tuple[str, ...]]]] = {
+        SignalType.MA_ACTIVITY: [
+            ("ipo_preparation", ("ipo", "initial public offering", "introduction en bourse", "listing preparations", "roadshow", "prospectus")),
+            ("merger", ("merger", "merges with", "fusion")),
+            ("acquisition", ("acquisition", "acquires", "acquired", "takeover", "rachat", "buyout")),
+            ("strategic_review", ("strategic review", "strategic alternatives", "sale process")),
+            ("exit_process", ("exit process", "exploring a sale", "sale of the company")),
+        ],
+        SignalType.CREDIT_RISK: [
+            ("covenant_breach", ("covenant breach", "breached its covenant", "waiver request")),
+            ("liquidity_stress", ("liquidity crisis", "liquidity shortfall", "cash crunch", "liquidity stress")),
+            ("default", ("defaulted", "event of default", "missed debt payment", "payment default")),
+            ("rating_downgrade", ("downgrade", "rating cut", "credit rating lowered")),
+            ("impairment", ("impairment", "write-down", "write down")),
+        ],
+        SignalType.DISTRESSED_ASSET: [
+            ("insolvency", ("insolvency", "insolvent", "bankruptcy", "bankrupt")),
+            ("liquidation", ("liquidation", "liquidator", "winding-up", "winding up")),
+            ("business_rescue", ("business rescue", "administration", "administrator appointed")),
+            ("going_concern", ("going concern", "material uncertainty")),
+            ("distressed_asset_sale", ("distressed sale", "forced sale", "asset fire sale")),
+        ],
+        SignalType.EARNINGS_SURPRISE: [
+            ("profit_warning", ("profit warning", "earnings warning", "profit alert")),
+            ("earnings_miss", ("missed estimates", "below expectations", "profit fell short", "earnings miss")),
+            ("earnings_beat", ("beat estimates", "above expectations", "earnings beat", "profit jumped")),
+            ("results_update", ("results", "earnings", "revenue", "profit")),
+        ],
+        SignalType.LEADERSHIP_CHANGE: [
+            ("executive_departure", ("resigns", "resigned", "steps down", "stepped down", "quits", "ousted", "fired")),
+            ("executive_appointment", ("appoints", "appointed", "names", "named", "hires", "new ceo", "new cfo")),
+            ("board_change", ("board member", "director", "chairman", "chairwoman", "board of directors")),
+        ],
+        SignalType.REGULATORY_ACTION: [
+            ("listing_rejection", ("rejected the listing", "listing application rejected", "prospectus rejected", "refused listing")),
+            ("listing_approval", ("approved the listing", "listing approved", "prospectus approved", "approved the prospectus")),
+            ("enforcement_or_sanction", ("sanction", "fine", "penalty", "enforcement", "suspended")),
+            ("investigation", ("investigation", "investigates", "probe", "inquiry")),
+        ],
+        SignalType.DEBT_RESTRUCTURE: [
+            ("refinancing", ("refinanc", "refinanced", "refinancing")),
+            ("debt_for_equity", ("debt-for-equity", "debt for equity", "debt conversion")),
+            ("maturity_extension", ("maturity extension", "extends maturities", "extended maturity")),
+            ("bond_issuance", ("bond issuance", "issues bonds", "issued bonds", "bond offering")),
+            ("loan_facility", ("syndicated loan", "loan facility", "credit facility", "term loan")),
+            ("debt_restructuring", ("debt restructuring", "restructures debt", "restructuring agreement")),
+        ],
+        SignalType.INSIDER_ACTIVITY: [
+            ("beneficial_ownership_change", ("beneficial ownership", "disclosure threshold", "voting rights", "shareholding")),
+            ("stake_disposal", ("disposes of stake", "sold its stake", "sells stake", "reduces its stake", "stake sale")),
+            ("stake_acquisition", ("acquires stake", "takes a stake", "buys stake", "increases its stake", "stake acquisition")),
+            ("insider_selling", ("insider selling", "director sells", "insider sold", "director dealing sale")),
+            ("insider_buying", ("insider buying", "director buys", "insider bought", "director dealing purchase")),
+            ("activist_position", ("activist investor", "activist stake", "campaigning shareholder")),
+        ],
+    }
+    for subtype, phrases in rules.get(signal_type, []):
+        if any(phrase in value for phrase in phrases):
+            return subtype
+    return "unspecified"
+
+
+def _extract_event_attributes(text: str) -> dict[str, Any]:
+    """Extract simple, auditable event facts; never infer a value absent from source text."""
+    attributes: dict[str, Any] = {}
+    amounts = [match.group(0).strip() for match in AMOUNT_PATTERN.finditer(text or "")]
+    percentages = [match.group(0).strip() for match in PERCENTAGE_PATTERN.finditer(text or "")]
+    if amounts:
+        attributes["amount_mentions"] = list(dict.fromkeys(amounts))[:5]
+    if percentages:
+        attributes["percentage_mentions"] = list(dict.fromkeys(percentages))[:5]
+    currencies = re.findall(r"\b(?:USD|US\$|EUR|GBP|NGN|ZAR|KES|GHS|EGP|XOF|XAF)\b|[$€£₦]", text or "", re.IGNORECASE)
+    if currencies:
+        attributes["currency_mentions"] = list(dict.fromkeys(currencies))[:5]
+    role_match = re.search(r"\b(CEO|CFO|COO|CTO|chairman|chairwoman|chair|president|managing director)\b", text or "", re.IGNORECASE)
+    if role_match:
+        attributes["role_mentioned"] = role_match.group(0)
+    return attributes
+
 def _extract_entities(text: str) -> list[str]:
     """Extract named entities (companies, amounts, percentages) from text."""
     entities = []
