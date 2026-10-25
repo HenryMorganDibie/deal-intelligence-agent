@@ -231,3 +231,48 @@ test("cloud portfolio API does not disclose portfolio data without a session", a
   expect(body).not.toHaveProperty("portfolios");
   expect(body).not.toHaveProperty("user");
 });
+
+test("Google sign-in starts a PKCE flow with a same-site callback and protected verifier cookie", async ({ request }) => {
+  const response = await request.get("/api/portfolio/auth/google", { maxRedirects: 0 });
+  expect(response.status()).toBe(307);
+  const location = new URL(response.headers().location);
+  expect(location.origin).toBe("https://auth-test.invalid");
+  expect(location.pathname).toBe("/auth/v1/authorize");
+  expect(location.searchParams.get("provider")).toBe("google");
+  expect(location.searchParams.get("redirect_to")).toBe("http://127.0.0.1:3000/auth/callback");
+  expect(location.searchParams.get("code_challenge_method")).toBe("s256");
+  expect(location.searchParams.get("code_challenge")).toMatch(/^[A-Za-z0-9_-]{43}$/);
+  const cookie = response.headers()["set-cookie"];
+  expect(cookie).toContain("di_portfolio_oauth_verifier=");
+  expect(cookie.toLowerCase()).toContain("httponly");
+  expect(cookie.toLowerCase()).toContain("secure");
+  expect(cookie.toLowerCase()).toContain("samesite=lax");
+});
+
+test("password recovery validates email and never confirms whether an account exists", async ({ request }) => {
+  const invalid = await request.post("/api/portfolio/auth", {
+    data: { action: "recover-password", email: "not-an-email" },
+  });
+  expect(invalid.status()).toBe(400);
+  expect(await invalid.json()).toMatchObject({ error: "Enter a valid account email." });
+
+  const expired = await request.post("/api/portfolio/auth", {
+    data: { action: "update-password", password: "LongEnoughPassword123" },
+  });
+  expect(expired.status()).toBe(401);
+  expect(await expired.json()).toMatchObject({
+    error: "Your reset session has expired. Request a new password-reset link.",
+  });
+});
+
+test("OAuth callback rejects a missing PKCE verifier without creating a session", async ({ request }) => {
+  const response = await request.post("/api/portfolio/auth", {
+    data: { action: "complete-oauth", code: "synthetic-oauth-code" },
+  });
+  expect(response.status()).toBe(400);
+  expect(await response.json()).toMatchObject({
+    error: "Google sign-in could not be completed. Start again.",
+  });
+  expect(response.headers()["set-cookie"]).toContain("di_portfolio_oauth_verifier=");
+});
+
