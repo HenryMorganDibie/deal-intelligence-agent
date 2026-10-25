@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 
 from src.data.africa_countries import COUNTRIES, regulator_acronyms
 from src.utils.clock import utcnow
