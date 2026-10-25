@@ -176,3 +176,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BCAP.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BCF.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "BCI.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "BCP.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "BDM.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "BECOPETRO.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "BEG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BEL.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-25", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46449_BERGER_PAINTS_NIGERIA_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "BERGER.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-25", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46515_BETA_GLASS_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "BETAGLAS.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "BFS.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "BHP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "BICB.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "BICC.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BID.JO"}

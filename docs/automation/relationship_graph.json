@@ -159,6 +159,38 @@
     "irrisol": {
       "name": "Irrisol",
       "kind": "organization"
+    },
+    "dangote": {
+      "name": "Dangote",
+      "kind": "organization"
+    },
+    "25pc of kenya pipeline": {
+      "name": "25pc of Kenya Pipeline",
+      "kind": "organization"
+    },
+    "ebrd": {
+      "name": "EBRD",
+      "kind": "organization"
+    },
+    "scatec": {
+      "name": "Scatec",
+      "kind": "organization"
+    },
+    "dicon dana": {
+      "name": "Dicon Dana",
+      "kind": "organization"
+    },
+    "nigeria defence self reliance investment": {
+      "name": "Nigeria defence self-reliance investment",
+      "kind": "organization"
+    },
+    "million deal": {
+      "name": "Million Deal",
+      "kind": "organization"
+    },
+    "arcelormittal": {
+      "name": "ArcelorMittal",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -475,7 +507,63 @@
           "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNYXNyVmJaVU0zX2M5LWxtZDRQekExZDJRbjNBdFdDTElLNllGNWcyVlNqekQzWUZUSjg1bndUWFFoVEFZNVpCTU4xR3dwSTRWYUtvZWRiM3BJaDlzVkpmc05JTWVLczQtN0pKNTNjU3M5SDRLLW1VMEFWdGxEa3d2MVp6UlZXdHJWRzFIQ1JnVWhMQUFaMDZLZFUxTVJWWTE1Tk9YVE8zR2J4dXdjeWlkYm9XLTEya0NP?oc=5"
         }
       ]
+    },
+    "12a4a58d97ac0fd7ebd7": {
+      "id": "12a4a58d97ac0fd7ebd7",
+      "from": "dangote",
+      "to": "25pc of kenya pipeline",
+      "type": "acquisition",
+      "first_seen": "2026-10-22",
+      "sources": [
+        {
+          "title": "Dangote buys 25pc of Kenya Pipeline for Sh42.5b",
+          "publisher": "Standard Media Kenya",
+          "url": "https://www.standardmedia.co.ke/business/article/2001560616/dangote-buys-25pc-of-kenya-pipeline-for-sh42-5b"
+        }
+      ]
+    },
+    "258c35f36bc9ae48f7eb": {
+      "id": "258c35f36bc9ae48f7eb",
+      "from": "ebrd",
+      "to": "scatec",
+      "type": "acquisition",
+      "first_seen": "2026-10-24",
+      "sources": [
+        {
+          "title": "EBRD takes 40% of Scatec’s new Egypt renewables platform",
+          "publisher": "EnterpriseAM",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNZDRuMTU4YktYa3hTcVlTZy1iQ2NmVnVVZ0E0OTZhUXBRMG1GUDVGQ29zanpRdVo3SWJhTUJfRUg0X3RRbXA1Qi1lVEJaZFBrUGZyanpFTlhjWVZ2MEFsYW03cVhXLUU2MUJ1U2VadTRwZDZPcWhleUwxZGdhazJQeGJEU01yRHZyazRjS0lQcWlub29hbTc0NmxoSmpKZw?oc=5"
+        }
+      ]
+    },
+    "de6111e960af53f98f03": {
+      "id": "de6111e960af53f98f03",
+      "from": "dicon dana",
+      "to": "nigeria defence self reliance investment",
+      "type": "equity_funding",
+      "first_seen": "2026-10-24",
+      "sources": [
+        {
+          "title": "Dicon Dana backs Nigeria defence self-reliance investment",
+          "publisher": "Traders Union",
+          "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxNYWlCZG0xUWJTcE5GM0VBdGZnaUZjSUhvVWI2Z1hxOEo3VVpKTUtGTHcwaXg2MGVCUURTRm0xQ2V3cGktVzY3TFVDbUdQMTVSWndCSHA0LUt4M2lPcVRNRWJIU2ZPZC1pQUk3V3NfRG1SakhUblBPOEJkeUhfWkxadUxiWE9UQjNqNFVYdHQ4RUE5OWV6VFE?oc=5"
+        }
+      ]
+    },
+    "8c11c6bc9dab8592370e": {
+      "id": "8c11c6bc9dab8592370e",
+      "from": "million deal",
+      "to": "arcelormittal",
+      "type": "acquisition",
+      "first_seen": "2026-10-24",
+      "sources": [
+        {
+          "title": "South Africa's IDC Nears $610 Million Deal to Take Over ArcelorMittal's Struggling Unit",
+          "publisher": "BigGo Finance",
+          "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE9QajNDM05HTUJkZmxvQ3ZLRUlMay1GRG1leDJHZ3ZBMnhYMW5VUmJHTHJfRDBaNnpDZDFCelRuTXU3Y0lFLXR2R0tyUVpZaUVrZ2tuNnNYUHAxTi1NczZ4am9sd3c3bWpCRWdkTWNFdU5XR3BJYlE?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-21T00:30:59.371826+00:00"
+  "updated_at": "2026-10-25T08:16:23.254105+00:00"
 }

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-21T00:31:01.685248+00:00",
+  "updated_at": "2026-10-25T08:16:27.645448+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 99,
+      "new_review_items_today": 96,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 52,
-      "new_observations_today": 1,
+      "observations_collected": 56,
+      "new_observations_today": 4,
       "unreviewed_flagged_observations": 5,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,36 +57,36 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 21,
-      "entities": 40,
+      "relationships": 25,
+      "entities": 48,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
       "id": "learned_ranking",
       "name": "Learned ranking",
       "status": "promoted",
-      "eligible_backtest_rows": 4136,
+      "eligible_backtest_rows": 5779,
       "holdout_metrics": {
         "learned_ranker": {
-          "n": 988,
-          "positives": 264,
-          "base_rate": 0.267206,
-          "precision_at_20pct": 0.414141,
-          "brier": 0.171874
+          "n": 1437,
+          "positives": 276,
+          "base_rate": 0.192067,
+          "precision_at_20pct": 0.479167,
+          "brier": 0.124496
         },
         "alpha_baseline": {
-          "n": 988,
-          "positives": 264,
-          "base_rate": 0.267206,
-          "precision_at_20pct": 0.247475,
-          "brier": 0.301404
+          "n": 1437,
+          "positives": 276,
+          "base_rate": 0.192067,
+          "precision_at_20pct": 0.340278,
+          "brier": 0.273773
         },
         "prevalence_baseline": {
-          "n": 988,
-          "positives": 264,
-          "base_rate": 0.267206,
-          "precision_at_20pct": 0.267206,
-          "brier": 0.196272
+          "n": 1437,
+          "positives": 276,
+          "base_rate": 0.192067,
+          "precision_at_20pct": 0.192067,
+          "brier": 0.157473
         }
       },
       "promoted": true,
@@ -177,27 +177,24 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 52,
-    "new_rows": 1,
+    "collected_tickers": 56,
+    "new_rows": 4,
     "failures": [
-      "BAMB.NR",
-      "BATK.NR",
-      "BATZA.JO",
-      "BAU.JO",
-      "BAUM.NR",
-      "BAW.JO",
-      "BAWP.JO",
-      "BBGC.BV",
-      "BCAP.CA",
-      "BCF.JO",
-      "BCI.CS"
+      "BCP.CS",
+      "BDM.JO",
+      "BECOPETRO.LG",
+      "BEG.JO",
+      "BFS.JO",
+      "BHP.JO",
+      "BICB.BV",
+      "BICC.BV"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 40,
-    "relationships": 21,
-    "source_links": 25,
+    "nodes": 48,
+    "relationships": 25,
+    "source_links": 29,
     "most_connected": [
       {
         "name": "Amsons Group",
@@ -245,34 +242,34 @@
     "status": "promoted",
     "promoted": true,
     "source": "docs/backtest_predictions.csv",
-    "eligible_rows": 4136,
-    "training_rows": 3148,
-    "holdout_rows": 988,
-    "training_positive_labels": 909,
-    "holdout_positive_labels": 264,
-    "train_through": "2025-02-08",
-    "holdout_from": "2025-03-10",
+    "eligible_rows": 5779,
+    "training_rows": 4342,
+    "holdout_rows": 1437,
+    "training_positive_labels": 1042,
+    "holdout_positive_labels": 276,
+    "train_through": "2026-02-15",
+    "holdout_from": "2026-03-15",
     "metrics": {
       "learned_ranker": {
-        "n": 988,
-        "positives": 264,
-        "base_rate": 0.267206,
-        "precision_at_20pct": 0.414141,
-        "brier": 0.171874
+        "n": 1437,
+        "positives": 276,
+        "base_rate": 0.192067,
+        "precision_at_20pct": 0.479167,
+        "brier": 0.124496
       },
       "alpha_baseline": {
-        "n": 988,
-        "positives": 264,
-        "base_rate": 0.267206,
-        "precision_at_20pct": 0.247475,
-        "brier": 0.301404
+        "n": 1437,
+        "positives": 276,
+        "base_rate": 0.192067,
+        "precision_at_20pct": 0.340278,
+        "brier": 0.273773
       },
       "prevalence_baseline": {
-        "n": 988,
-        "positives": 264,
-        "base_rate": 0.267206,
-        "precision_at_20pct": 0.267206,
-        "brier": 0.196272
+        "n": 1437,
+        "positives": 276,
+        "base_rate": 0.192067,
+        "precision_at_20pct": 0.192067,
+        "brier": 0.157473
       }
     },
     "promotion_rule": "Promote only if holdout precision@top-20% beats alpha by at least 2 percentage points and Brier score beats the prevalence baseline."
