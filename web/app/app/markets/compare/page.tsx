@@ -166,6 +166,31 @@ export default function MarketsComparePage() {
     setMessage(`Removed ${profile.name} from the comparison.`);
   }
 
+  const financialCurrencies = [...new Set(profiles
+    .map((profile) => profile.financials?.currency?.trim().toUpperCase())
+    .filter((currency): currency is string => Boolean(currency)))];
+  const statementTimes = profiles
+    .map((profile) => profile.financials?.period?.end ? Date.parse(profile.financials.period.end) : Number.NaN)
+    .filter((value) => Number.isFinite(value));
+  const statementPeriodSpreadDays = statementTimes.length > 1
+    ? Math.round((Math.max(...statementTimes) - Math.min(...statementTimes)) / 86400000)
+    : 0;
+  const hasListedMarketData = profiles.some((profile) => profile.market?.price != null);
+  const hasPrivateMarketData = profiles.some((profile) =>
+    (profile.private_markets?.deal_count ?? 0) > 0 || profile.valuation?.latest_mark != null,
+  );
+  const comparisonCaveats = [
+    financialCurrencies.length > 1
+      ? `Financial statement amounts use different currencies (${financialCurrencies.join(", ")}) and are not normalised.`
+      : null,
+    statementPeriodSpreadDays > 180
+      ? `Statement periods span ${statementPeriodSpreadDays} days. Refresh the sources or compare like-for-like reporting periods before drawing conclusions.`
+      : null,
+    hasListedMarketData && hasPrivateMarketData
+      ? "This comparison mixes listed-market quotes with private-market valuation marks. Those figures represent different bases and are not directly comparable prices."
+      : null,
+  ].filter((caveat): caveat is string => Boolean(caveat));
+
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · Compare opportunities" title="Compare the evidence, not just the price.">
@@ -239,6 +264,15 @@ export default function MarketsComparePage() {
               </article>
             ))}
           </section>
+
+          {comparisonCaveats.length > 0 ? (
+            <aside className="mt-6 rounded-xl border hairline p-4" aria-label="Comparison limitations" role="status">
+              <h2 className="text-sm font-medium">Check comparability before drawing conclusions</h2>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-[color:var(--muted)]">
+                {comparisonCaveats.map((caveat) => <li key={caveat}>{caveat}</li>)}
+              </ul>
+            </aside>
+          ) : null}
 
           <section className="mt-8" aria-labelledby="comparison-matrix-title">
             <div className="mb-4">

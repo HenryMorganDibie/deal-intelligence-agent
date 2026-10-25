@@ -139,5 +139,5 @@ export function portfolioErrorResponse(error: unknown) {
     if (error.status === 409) return { status: 409, message: "That record conflicts with existing data." };
     if (error.status === 400 || error.status === 422) return { status: 400, message: "The supplied portfolio data is invalid." };
   }
-  return { status: 500, message: "The portfolio service is temporarily unavailable." };
+  return { status: 503, message: "The portfolio service is temporarily unavailable." };
 }
