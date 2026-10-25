@@ -1,7 +1,11 @@
 """Regression tests for the strengthened eight-type signal taxonomy."""
 import re
 
-from src.engines.deterministic_engine import SIGNAL_RULES
+from src.engines.deterministic_engine import (
+    SIGNAL_RULES,
+    _classify_event_subtype,
+    _extract_event_attributes,
+)
 from src.engines.deals import extract_deal
 from src.schemas.models import SignalType
 
@@ -82,3 +86,39 @@ def test_fundraising_and_debt_issuance_stay_in_the_transaction_feed_not_forced_i
     assert SignalType.INSIDER_ACTIVITY not in matched_types(
         "Nigerian fintech Kora raises $20 million Series B funding round"
     )
+
+
+def test_specific_event_subtypes_are_retained_under_existing_canonical_types():
+    assert _classify_event_subtype(
+        SignalType.MA_ACTIVITY,
+        "The board approved IPO preparations and appointed advisers for the listing",
+    ) == "ipo_preparation"
+    assert _classify_event_subtype(
+        SignalType.INSIDER_ACTIVITY,
+        "Investor discloses a change in beneficial ownership after acquiring a significant stake",
+    ) == "beneficial_ownership_change"
+    assert _classify_event_subtype(
+        SignalType.DEBT_RESTRUCTURE,
+        "The company refinances its existing bond facility",
+    ) == "refinancing"
+    assert _classify_event_subtype(
+        SignalType.REGULATORY_ACTION,
+        "The securities regulator approved the prospectus for the initial public offering",
+    ) == "listing_approval"
+
+
+def test_event_attributes_extract_only_facts_present_in_source_text():
+    attributes = _extract_event_attributes(
+        "The company secured a $250 million facility and sold a 12.5% stake; the new CEO confirmed the deal."
+    )
+    assert attributes["amount_mentions"]
+    assert "12.5%" in attributes["percentage_mentions"]
+    assert attributes["role_mentioned"].lower() == "ceo"
+    assert "USD" not in attributes.get("currency_mentions", [])
+
+
+def test_unclassified_event_subtype_is_explicit_not_guessed():
+    assert _classify_event_subtype(
+        SignalType.CREDIT_RISK,
+        "The company reported a material financial development",
+    ) == "unspecified"
