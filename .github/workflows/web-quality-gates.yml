@@ -61,3 +61,9 @@ jobs:
         run: npm run typecheck
       - name: Production build
         run: npm run build
+      - name: Install temporary browser-test dependency
+        run: npm install --no-save --package-lock=false @playwright/test@1.56.1
+      - name: Install Chromium for interactive acceptance tests
+        run: npx playwright install --with-deps chromium
+      - name: Browser acceptance tests
+        run: npx playwright test --config=playwright.config.cjs
