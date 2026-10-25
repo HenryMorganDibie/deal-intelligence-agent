@@ -60,7 +60,7 @@ jobs:
       - name: TypeScript typecheck
         run: npm run typecheck
       - name: Production build
-        run: npm run build
+        run: NEXT_PUBLIC_API_URL=http://127.0.0.1:3000 npm run build
       - name: Install temporary browser-test dependency outside the app workspace
         run: npm install --prefix /tmp/markets-playwright @playwright/test@1.56.1
       - name: Install Chromium for interactive acceptance tests
