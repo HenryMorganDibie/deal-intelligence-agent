@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "exit 1",
+  "ignoreCommand": "git rev-parse --verify HEAD^ >/dev/null 2>&1 || exit 1; git diff --quiet HEAD^ HEAD -- api src docs evaluation requirements.txt pyproject.toml uv.lock Pipfile runtime.txt vercel.json",
   "functions": {
     "api/index.py": {
       "maxDuration": 300,
