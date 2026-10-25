@@ -141,3 +141,21 @@ def test_french_and_portuguese_subtypes_are_normalized_to_the_same_canonical_tax
         SignalType.DEBT_RESTRUCTURE,
         "Banco fecha empréstimo sindicado para refinanciamento",
     ) == "refinancing"
+
+
+def test_french_and_portuguese_headlines_trigger_canonical_signal_rules():
+    french_ipo = matched_types(
+        "La société prépare une introduction en bourse et son prospectus est approuvé"
+    )
+    assert SignalType.MA_ACTIVITY in french_ipo
+    assert SignalType.REGULATORY_ACTION in french_ipo
+
+    french_ownership = matched_types(
+        "Franchissement de seuil et déclaration de participation au capital"
+    )
+    assert SignalType.INSIDER_ACTIVITY in french_ownership
+
+    portuguese_debt = matched_types(
+        "Banco anuncia refinanciamento da dívida através de empréstimo sindicado"
+    )
+    assert SignalType.DEBT_RESTRUCTURE in portuguese_debt
