@@ -1,5 +1,5 @@
 {
- "companies": 1552,
+ "companies": 1591,
  "method": "Confirmation: share of flags followed within 90 days by a confirming filing, disclosure or credible report. Moves: market-adjusted return over 10 calendar days after the flag (first close on or after day 10). Figures with fewer than 10 observations are reported as insufficient history; smaller groups are smoothed toward their parent rate with 5 pseudo-observations.",
  "observations": [
   [
@@ -61442,6 +61442,13 @@
    null
   ],
   [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
    "leadership_change",
    "low",
    false,
@@ -61694,6 +61701,41 @@
    null
   ],
   [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "earnings_surprise",
+   "low",
+   null,
+   null,
+   null
+  ],
+  [
+   "credit_risk",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
    "leadership_change",
    "low",
    false,
@@ -61723,6 +61765,41 @@
   ],
   [
    "m_and_a_activity",
+   "medium",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "distressed_asset",
    "medium",
    false,
    null,
@@ -61792,6 +61869,41 @@
    null
   ],
   [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "regulatory_action",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
    "leadership_change",
    "low",
    false,
@@ -61820,6 +61932,69 @@
    null
   ],
   [
+   "regulatory_action",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "earnings_surprise",
+   "low",
+   null,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "medium",
+   false,
+   null,
+   null
+  ],
+  [
+   "distressed_asset",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
    "earnings_surprise",
    "low",
    null,
@@ -61851,6 +62026,202 @@
    "leadership_change",
    "low",
    false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "regulatory_action",
+   "critical",
+   false,
+   null,
+   null
+  ],
+  [
+   "regulatory_action",
+   "low",
+   true,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "medium",
+   false,
+   null,
+   null
+  ],
+  [
+   "regulatory_action",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "earnings_surprise",
+   "low",
+   null,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "earnings_surprise",
+   "low",
+   null,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "distressed_asset",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "credit_risk",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "earnings_surprise",
+   "low",
+   null,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "high",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "earnings_surprise",
+   "low",
+   null,
    null,
    null
   ],
@@ -61919,6 +62290,20 @@
   ],
   [
    "m_and_a_activity",
+   "medium",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
    "low",
    false,
    null,
@@ -61928,6 +62313,90 @@
    "m_and_a_activity",
    "low",
    false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "earnings_surprise",
+   "low",
+   null,
    null,
    null
   ],
@@ -61954,6 +62423,55 @@
   ],
   [
    "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "medium",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "low",
+   true,
+   null,
+   null
+  ],
+  [
+   "distressed_asset",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
+   "medium",
+   false,
+   null,
+   null
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null
+  ],
+  [
+   "leadership_change",
    "low",
    false,
    null,
@@ -62017,9 +62535,9 @@
   ]
  ],
  "overall_confirmation": {
-  "confirmed": 1318,
-  "labelled": 5779,
-  "rate": 0.2281
+  "confirmed": 1320,
+  "labelled": 5846,
+  "rate": 0.2258
  },
  "period": "2025-01-15 to 2026-06-15",
  "signals": {
@@ -62058,8 +62576,8 @@
     "low": {
      "confirmation": {
       "confirmed": 1,
-      "labelled": 134,
-      "rate": 0.0075
+      "labelled": 136,
+      "rate": 0.0074
      },
      "moves": {
       "median": 0.54,
@@ -62068,7 +62586,7 @@
       "p75": 3.91,
       "share_negative": 0.465
      },
-     "predictions": 134
+     "predictions": 136
     },
     "medium": {
      "confirmation": {
@@ -62089,8 +62607,8 @@
    "type": {
     "confirmation": {
      "confirmed": 5,
-     "labelled": 209,
-     "rate": 0.0239
+     "labelled": 211,
+     "rate": 0.0237
     },
     "moves": {
      "median": 0.05,
@@ -62099,7 +62617,7 @@
      "p75": 3.92,
      "share_negative": 0.497
     },
-    "predictions": 209
+    "predictions": 211
    }
   },
   "debt_restructuring": {
@@ -62201,8 +62719,8 @@
     "low": {
      "confirmation": {
       "confirmed": 4,
-      "labelled": 82,
-      "rate": 0.0488
+      "labelled": 85,
+      "rate": 0.0471
      },
      "moves": {
       "median": 1.72,
@@ -62211,12 +62729,12 @@
       "p75": 4.27,
       "share_negative": 0.387
      },
-     "predictions": 82
+     "predictions": 85
     },
     "medium": {
      "confirmation": {
       "confirmed": 0,
-      "labelled": 8,
+      "labelled": 9,
       "rate": 0.0
      },
      "moves": {
@@ -62226,14 +62744,14 @@
       "p75": 14.63,
       "share_negative": 0.0
      },
-     "predictions": 8
+     "predictions": 9
     }
    },
    "type": {
     "confirmation": {
      "confirmed": 11,
-     "labelled": 132,
-     "rate": 0.0833
+     "labelled": 136,
+     "rate": 0.0809
     },
     "moves": {
      "median": 1.13,
@@ -62242,7 +62760,7 @@
      "p75": 4.19,
      "share_negative": 0.431
     },
-    "predictions": 132
+    "predictions": 136
    }
   },
   "earnings_surprise": {
@@ -62290,7 +62808,7 @@
       "p75": 3.54,
       "share_negative": 0.431
      },
-     "predictions": 357
+     "predictions": 364
     },
     "medium": {
      "direction": {
@@ -62321,7 +62839,7 @@
      "p75": 3.13,
      "share_negative": 0.448
     },
-    "predictions": 948
+    "predictions": 955
    }
   },
   "insider_activity": {
@@ -62407,9 +62925,9 @@
     },
     "low": {
      "confirmation": {
-      "confirmed": 128,
-      "labelled": 525,
-      "rate": 0.2438
+      "confirmed": 129,
+      "labelled": 544,
+      "rate": 0.2371
      },
      "moves": {
       "median": 0.58,
@@ -62418,13 +62936,13 @@
       "p75": 3.77,
       "share_negative": 0.441
      },
-     "predictions": 525
+     "predictions": 544
     },
     "medium": {
      "confirmation": {
       "confirmed": 845,
-      "labelled": 1894,
-      "rate": 0.4461
+      "labelled": 1896,
+      "rate": 0.4457
      },
      "moves": {
       "median": 0.06,
@@ -62433,14 +62951,14 @@
       "p75": 3.05,
       "share_negative": 0.496
      },
-     "predictions": 1894
+     "predictions": 1896
     }
    },
    "type": {
     "confirmation": {
-     "confirmed": 1077,
-     "labelled": 2598,
-     "rate": 0.4145
+     "confirmed": 1078,
+     "labelled": 2619,
+     "rate": 0.4116
     },
     "moves": {
      "median": 0.17,
@@ -62449,7 +62967,7 @@
      "p75": 3.27,
      "share_negative": 0.484
     },
-    "predictions": 2598
+    "predictions": 2619
    }
   },
   "m_and_a_activity": {
@@ -62472,8 +62990,8 @@
     "high": {
      "confirmation": {
       "confirmed": 35,
-      "labelled": 227,
-      "rate": 0.1542
+      "labelled": 228,
+      "rate": 0.1535
      },
      "moves": {
       "median": 0.17,
@@ -62482,13 +63000,13 @@
       "p75": 2.88,
       "share_negative": 0.488
      },
-     "predictions": 227
+     "predictions": 228
     },
     "low": {
      "confirmation": {
       "confirmed": 105,
-      "labelled": 1683,
-      "rate": 0.0624
+      "labelled": 1714,
+      "rate": 0.0613
      },
      "moves": {
       "median": 0.28,
@@ -62497,13 +63015,13 @@
       "p75": 3.53,
       "share_negative": 0.478
      },
-     "predictions": 1683
+     "predictions": 1714
     },
     "medium": {
      "confirmation": {
       "confirmed": 23,
-      "labelled": 238,
-      "rate": 0.0966
+      "labelled": 241,
+      "rate": 0.0954
      },
      "moves": {
       "median": 0.12,
@@ -62512,14 +63030,14 @@
       "p75": 4.06,
       "share_negative": 0.495
      },
-     "predictions": 238
+     "predictions": 241
     }
    },
    "type": {
     "confirmation": {
      "confirmed": 205,
-     "labelled": 2306,
-     "rate": 0.0889
+     "labelled": 2341,
+     "rate": 0.0876
     },
     "moves": {
      "median": 0.29,
@@ -62528,7 +63046,7 @@
      "p75": 3.54,
      "share_negative": 0.477
     },
-    "predictions": 2306
+    "predictions": 2341
    }
   },
   "regulatory_action": {
@@ -62536,8 +63054,8 @@
     "critical": {
      "confirmation": {
       "confirmed": 2,
-      "labelled": 36,
-      "rate": 0.0556
+      "labelled": 37,
+      "rate": 0.0541
      },
      "moves": {
       "median": 0.95,
@@ -62546,7 +63064,7 @@
       "p75": 2.16,
       "share_negative": 0.4
      },
-     "predictions": 36
+     "predictions": 37
     },
     "high": {
      "confirmation": {
@@ -62565,9 +63083,9 @@
     },
     "low": {
      "confirmation": {
-      "confirmed": 14,
-      "labelled": 355,
-      "rate": 0.0394
+      "confirmed": 15,
+      "labelled": 359,
+      "rate": 0.0418
      },
      "moves": {
       "median": 0.29,
@@ -62576,7 +63094,7 @@
       "p75": 3.12,
       "share_negative": 0.47
      },
-     "predictions": 355
+     "predictions": 359
     },
     "medium": {
      "confirmation": {
@@ -62596,9 +63114,9 @@
    },
    "type": {
     "confirmation": {
-     "confirmed": 19,
-     "labelled": 489,
-     "rate": 0.0389
+     "confirmed": 20,
+     "labelled": 494,
+     "rate": 0.0405
     },
     "moves": {
      "median": 0.58,
@@ -62607,7 +63125,7 @@
      "p75": 3.38,
      "share_negative": 0.445
     },
-    "predictions": 489
+    "predictions": 494
    }
   }
  },
