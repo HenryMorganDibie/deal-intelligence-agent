@@ -57,7 +57,7 @@ SIGNAL_REGISTRY: dict[SignalType, SignalSpec] = {
 
     SignalType.MA_ACTIVITY: SignalSpec(
         signal_type=SignalType.MA_ACTIVITY,
-        display_name="M&A / Exit Activity",
+        display_name="M&A Activity",
         description="Merger, acquisition, corporate control, and concrete IPO or exit-process indicators",
         semantic_evidence_types=["merger_language"],
         escalates_with=[SignalType.INSIDER_ACTIVITY, SignalType.LEADERSHIP_CHANGE],
@@ -111,7 +111,7 @@ SIGNAL_REGISTRY: dict[SignalType, SignalSpec] = {
 
     SignalType.REGULATORY_ACTION: SignalSpec(
         signal_type=SignalType.REGULATORY_ACTION,
-        display_name="Regulatory & Listing Decisions",
+        display_name="Regulatory Action",
         description="Material regulatory investigations, enforcement, sanctions, and IPO/listing/prospectus decisions",
         semantic_evidence_types=["litigation_language"],
         min_corroboration_for_critical=2,
@@ -132,7 +132,7 @@ SIGNAL_REGISTRY: dict[SignalType, SignalSpec] = {
 
     SignalType.INSIDER_ACTIVITY: SignalSpec(
         signal_type=SignalType.INSIDER_ACTIVITY,
-        display_name="Insider & Ownership Activity",
+        display_name="Insider Activity",
         description="Insider dealing, activist positions, and material beneficial-ownership or shareholder-stake changes",
         semantic_evidence_types=[],
         escalates_with=[SignalType.MA_ACTIVITY, SignalType.REGULATORY_ACTION],
