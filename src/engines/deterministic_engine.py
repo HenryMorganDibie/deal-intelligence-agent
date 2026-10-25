@@ -1195,6 +1195,8 @@ class DeterministicSignalEngine:
                     continue  # filter very weak news hits
                 candidates.append(SignalCandidate(
                     signal_type=sig_type,
+                    event_subtype=_classify_event_subtype(sig_type, text),
+                    event_attributes=_extract_event_attributes(text),
                     matched_patterns=matched_patterns,
                     source_text=text[:500],
                     source_url=news.url,
