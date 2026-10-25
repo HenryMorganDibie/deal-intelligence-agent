@@ -23,7 +23,7 @@ class SignalSpec:
     signal_type: SignalType
     display_name: str
     description: str
-    version: str = "1.0.0"
+    version: str = "1.1.0"
 
     # Detection patterns (regex strings, case-insensitive)
     trigger_patterns_high: list[str] = field(default_factory=list)   # high-confidence
