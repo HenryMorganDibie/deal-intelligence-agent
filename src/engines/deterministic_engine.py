@@ -318,7 +318,7 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bdebt[-\s](for[-\s]equity|swap)\b",
     ], 0.75),
     (SignalType.DEBT_RESTRUCTURE, [
-        r"\brefinanc(ing|ed?)\b.{0,20}\b(debt|facility|bond|loan|notes?)\b",
+        r"\brefinanc\w*\b.{0,30}\b(debt|facility|bond|loan|notes?)\b",
         r"\b(debt|facility|bond|loan|notes?)\b.{0,35}\b(refinanc\w*|rollover|rolled over|maturity extension)\b",
         r"\b(refinanc\w*)\b.{0,35}\b(existing|maturing|outstanding)\s+(debt|bond|facility|loan|notes?)\b",
         r"\b(loan|bond|debt|notes?)\s+(issuance|issue|offering)\b.{0,40}\b(refinanc\w*|replace existing|retire existing|repay existing)\b",
