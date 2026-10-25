@@ -186,7 +186,8 @@ test("monitoring presents explicit empty and feed-error states", async ({ page }
     baseCurrency: "USD",
     holdings: [{ id: "monitor-h1", name: "Example Bank", ticker: "EXBANK", country: "Nigeria" }],
   })));
-  await page.route("**/api/events?**", route => route.fulfill({
+  const eventsRoute = /\/api\/events(?:\?.*)?$/;
+  await page.route(eventsRoute, route => route.fulfill({
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({ events: [], count: 0 }),
@@ -194,8 +195,8 @@ test("monitoring presents explicit empty and feed-error states", async ({ page }
   await page.goto("/app/markets/monitoring");
   await expect(page.getByText(/No events were returned for this period/i)).toBeVisible();
 
-  await page.unroute("**/api/events?**");
-  await page.route("**/api/events?**", route => route.fulfill({
+  await page.unroute(eventsRoute);
+  await page.route(eventsRoute, route => route.fulfill({
     status: 503,
     contentType: "application/json",
     body: JSON.stringify({ error: "Market event service unavailable" }),
