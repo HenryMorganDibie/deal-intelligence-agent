@@ -335,6 +335,8 @@ def _candidates_to_prompt(candidates: list[SignalCandidate]) -> str:
         lines.append(
             f"CANDIDATE {i}:\n"
             f"  signal_type: {c.signal_type.value}\n"
+            f"  event_subtype: {c.event_subtype}\n"
+            f"  event_attributes: {json.dumps(c.event_attributes, ensure_ascii=False)}\n"
             f"  patterns_fired: {', '.join(c.matched_patterns[:4])}\n"
             f"  source_type: {c.source_type} ({c.source_name})\n"
             f"  corroboration: {c.corroboration_count} independent source(s)\n"
@@ -437,6 +439,8 @@ def _parse_explanations(
                     if item.get("about_company") is False else None
                 ),
                 candidate_patterns=cand.matched_patterns,
+                event_subtype=cand.event_subtype,
+                event_attributes=cand.event_attributes,
                 corroboration_count=cand.corroboration_count,
             ))
         except Exception as e:
@@ -464,6 +468,8 @@ def _fallback_signals(calibrated: list[tuple]) -> list[DetectedSignal]:
             confidence=conf,
             reasoning="LLM explanation unavailable -- deterministic engine output used directly.",
             candidate_patterns=cand.matched_patterns,
+            event_subtype=cand.event_subtype,
+            event_attributes=cand.event_attributes,
             corroboration_count=cand.corroboration_count,
         ))
     return signals
