@@ -89,3 +89,33 @@ def test_audit_separates_unverified_hosts_invalid_urls_and_news_wrappers():
     assert result["invalid_or_non_https_source_urls"] == 1
     assert result["records_without_source_url"] == 1
     assert result["unverified_or_invalid_source_urls"] == 2
+
+
+
+def test_google_news_wrapper_uses_rss_publisher_host_for_official_match():
+    deals = [{
+        "id": "official-source-wrapper", "country": "NG",
+        "sources": [{
+            "publisher": "Nigerian Exchange",
+            "url": "https://news.google.com/rss/articles/CBMiExample",
+            "publisher_url": "https://www.ngxgroup.com/",
+        }],
+    }]
+    result = audit_country("NG", deals, [])
+    assert result["official_host_matched_links"] == 1
+    assert result["news_wrapper_publisher_hosts_checked"] == 1
+    assert result["unresolved_news_wrapper_source_urls"] == 0
+
+
+def test_recognised_news_publisher_is_not_counted_as_official_or_unknown():
+    deals = [{
+        "id": "news-source", "country": "NG",
+        "sources": [{
+            "publisher": "Nairametrics",
+            "url": "https://nairametrics.com/2026/10/25/example/",
+        }],
+    }]
+    result = audit_country("NG", deals, [])
+    assert result["official_host_matched_links"] == 0
+    assert result["recognised_news_publisher_source_urls"] == 1
+    assert result["unverified_publisher_source_urls"] == 0
