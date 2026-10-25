@@ -243,7 +243,7 @@ def to_deals(items: Iterable[dict]) -> list[dict]:
     for it in items:
         d = deals_mod.extract_deal(it["title"], it.get("snippet", ""), published=it.get("date"),
                                    publisher=it.get("publisher", ""), url=it.get("url", ""),
-                                   country_hint=it.get("country_hint"), africa_source=it.get("africa_source", False))
+                                   publisher_url=it.get("publisher_url", ""), country_hint=it.get("country_hint"), africa_source=it.get("africa_source", False))
         if d:
             out.append(d)
     return out
@@ -271,6 +271,7 @@ def to_events(items: Iterable[dict], min_score: float = 0.7) -> list[dict]:
             "headline": title,
             "publisher": it.get("publisher", ""),
             "url": it.get("url", ""),
+            "publisher_url": it.get("publisher_url") or None,
             "signal_type": signal_type.value,
             "rule_score": score,
             "direction": evidence_direction(signal_type, title),
