@@ -138,15 +138,18 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
     unverified_url = 0
     invalid_url = 0
     unresolved_wrapper_url = 0
+    wrapper_with_publisher_host = 0
 
     def check_record(record: dict, record_kind: str) -> bool:
-        nonlocal missing_url, unverified_url, invalid_url, unresolved_wrapper_url
+        nonlocal missing_url, unverified_url, invalid_url, unresolved_wrapper_url, wrapper_with_publisher_host
         sources = record.get("sources") or []
         if not sources:
             url = record.get("url") or record.get("source_url")
-            if url:
+            publisher_url = record.get("publisher_url")
+            if url or publisher_url:
                 sources = [{
                     "url": url,
+                    "publisher_url": publisher_url,
                     "publisher": record.get("publisher") or record.get("source"),
                 }]
             else:
@@ -154,11 +157,28 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
                 return False
         matched = False
         for source in sources:
-            result = verify_url(source.get("url"), code)
+            article_url = source.get("url")
+            publisher_url = source.get("publisher_url")
+            article_host = (urlparse(str(article_url)).hostname or "").lower() if article_url else ""
+            is_google_wrapper = article_host == "news.google.com" or article_host.endswith(".news.google.com")
+            # Google News RSS includes a separate <source url="..."> publisher
+            # domain. Verify that domain instead of treating the wrapper as the
+            # publisher; keep the wrapper URL for traceability.
+            verification_url = publisher_url if is_google_wrapper and publisher_url else article_url
+            if is_google_wrapper and publisher_url:
+                wrapper_with_publisher_host += 1
+            result = verify_url(verification_url, code)
+            if is_google_wrapper and not publisher_url:
+                result = {**result, "status": "news_wrapper_unresolved", "host": article_host,
+                          "publisher_host": None}
+            else:
+                result = {**result, "publisher_host": (urlparse(str(publisher_url)).hostname or "").lower()
+                          if publisher_url else None}
             source_checks.append({
                 **result,
                 "publisher": source.get("publisher") or source.get("source"),
-                "url": source.get("url"),
+                "url": article_url,
+                "publisher_url": publisher_url,
                 "record_kind": record_kind,
             })
             if result["status"] == "official_host_match":
@@ -199,6 +219,7 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
         "unverified_publisher_source_urls": unverified_url,
         "invalid_or_non_https_source_urls": invalid_url,
         "unresolved_news_wrapper_source_urls": unresolved_wrapper_url,
+        "news_wrapper_publisher_hosts_checked": wrapper_with_publisher_host,
         "registered_country_hosts": len(official_hosts),
         "registry_status": "needs_host_review" if not official_hosts else "host_allowlist_configured",
         "verification_scope": "HTTPS hostname matched to an explicit country/regional/global official-institution allowlist. This verifies the publisher domain, not the transaction claim itself.",
