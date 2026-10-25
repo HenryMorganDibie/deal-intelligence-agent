@@ -1154,6 +1154,8 @@ class DeterministicSignalEngine:
                 raw_score = min(base_score * credibility, 1.0)
                 candidates.append(SignalCandidate(
                     signal_type=sig_type,
+                    event_subtype=_classify_event_subtype(sig_type, text),
+                    event_attributes=_extract_event_attributes(text),
                     matched_patterns=matched_patterns,
                     source_text=text[:500],
                     source_url=filing.document_url,
@@ -1206,22 +1208,23 @@ class DeterministicSignalEngine:
                 ))
 
         # ── Corroboration counting ───────────────────────────────────────
-        # Group candidates by signal_type. Count unique source_types confirming.
-        # Merge into one candidate per signal_type, keeping highest raw_score.
-        merged: dict[SignalType, SignalCandidate] = {}
-        corroboration_tracker: dict[SignalType, set[str]] = {}
+        # Merge by canonical type AND subtype so unrelated events (e.g. an IPO
+        # process and an acquisition) do not collapse into one candidate.
+        merged: dict[tuple[SignalType, str], SignalCandidate] = {}
+        corroboration_tracker: dict[tuple[SignalType, str], set[str]] = {}
         stories = _StoryClusters()
 
         for c in candidates:
             key = stories.key(c)
-            if c.signal_type not in merged:
-                merged[c.signal_type] = c
-                corroboration_tracker[c.signal_type] = {key}
+            group_key = (c.signal_type, c.event_subtype)
+            if group_key not in merged:
+                merged[group_key] = c
+                corroboration_tracker[group_key] = {key}
             else:
-                is_new_story = key not in corroboration_tracker[c.signal_type]
-                corroboration_tracker[c.signal_type].add(key)
+                is_new_story = key not in corroboration_tracker[group_key]
+                corroboration_tracker[group_key].add(key)
                 # Take higher raw_score, merge patterns
-                existing = merged[c.signal_type]
+                existing = merged[group_key]
                 merged_patterns = list(dict.fromkeys(existing.matched_patterns + c.matched_patterns))
                 source_urls = list(dict.fromkeys(
                     existing.corroborating_source_urls
@@ -1236,14 +1239,14 @@ class DeterministicSignalEngine:
                     + ([c.filing_reference] if is_new_story and c.filing_reference else [])
                 ))
                 if c.raw_score > existing.raw_score:
-                    merged[c.signal_type] = c.model_copy(update={
+                    merged[group_key] = c.model_copy(update={
                         "matched_patterns": merged_patterns,
                         "corroborating_source_urls": source_urls,
                         "corroborating_filing_references": filing_references,
-                        "corroboration_count": len(corroboration_tracker[c.signal_type]),
+                        "corroboration_count": len(corroboration_tracker[group_key]),
                     })
                 else:
-                    merged[c.signal_type] = existing.model_copy(update={
+                    merged[group_key] = existing.model_copy(update={
                         "matched_patterns": merged_patterns,
                         "corroborating_source_urls": source_urls,
                         "corroborating_filing_references": filing_references,
@@ -1252,7 +1255,7 @@ class DeterministicSignalEngine:
 
         # Update corroboration counts
         final_candidates = []
-        for sig_type, candidate in merged.items():
+        for group_key, candidate in merged.items():
             source_urls = list(dict.fromkeys(
                 candidate.corroborating_source_urls
                 + ([candidate.source_url] if candidate.source_url else [])
@@ -1262,7 +1265,7 @@ class DeterministicSignalEngine:
                 + ([candidate.filing_reference] if candidate.filing_reference else [])
             ))
             final_candidates.append(candidate.model_copy(update={
-                "corroboration_count": len(corroboration_tracker[sig_type]),
+                "corroboration_count": len(corroboration_tracker[group_key]),
                 "corroborating_source_urls": source_urls,
                 "corroborating_filing_references": filing_references,
             }))
