@@ -138,7 +138,14 @@ _AFRICAN_REGULATORS = "|".join(
 
 SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
 
-    # ── M&A Activity ──
+    # ── M&A / Exit Activity ──
+    # IPO and exit-process indicators belong here only when a concrete process is reported.
+    (SignalType.MA_ACTIVITY, [
+        r"\b(board|company|shareholders?)\s+(approved?|approves|authori[sz]ed|authorizes)\b.{0,50}\b(ipo|initial public offering|listing|float)\b",
+        r"\b(appoints?|mandates?|hires?)\b.{0,50}\b(ipo|listing|public offering)\b.{0,30}\b(advisers?|advisors?|underwriters?|banks?)\b",
+        r"\b(prepar(?:es?|ing)|plans?|planning|considering)\b.{0,35}\b(ipo|initial public offering|stock[-\s]market listing|public listing)\b",
+        r"\b(ipo|initial public offering)\s+(preparations?|mandate|filing|prospectus|roadshow)\b",
+    ], 0.82),
     (SignalType.MA_ACTIVITY, [
         r"\bdefinitive\s+(merger|acquisition)\b",
         # Not SEC 8-K Item 1.01 boilerplate ("Material Definitive Agreement"), which covers loans and contracts too.
@@ -185,7 +192,7 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
     (SignalType.CREDIT_RISK, [
         r"\b(credit\s+rating|leverage\s+ratio|debt[-\s]to[-\s]equity)\b",
         r"\bnet\s+debt\b.{0,30}\b(exceeded?|surpassed?|increased?)\b",
-        r"\brefinanc(e|ing|ed)\b",
+        r"\b(refinanc\w*)\b.{0,40}\b(covenant|liquidity|default|distress|higher cost|costlier|deteriorat\w*)\b",
     ], 0.55),
 
     # ── Distressed Asset ──
@@ -271,6 +278,11 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
 
     # ── Regulatory Action ──
     (SignalType.REGULATORY_ACTION, [
+        # Include material listing/prospectus decisions, while keeping ordinary fundraising
+        # announcements out of the regulatory signal category.
+        r"\b(ipo|initial public offering|listing|prospectus|public offering)\b.{0,50}\b(approved?|approval|authori[sz]ed|cleared|registered|rejected|refused)\b",
+        r"\b(approved?|approval|authori[sz]ed|cleared|registered|rejected|refused)\b.{0,50}\b(ipo|initial public offering|listing|prospectus|public offering)\b",
+        r"\b(exchange|securities regulator|capital markets authority)\b.{0,45}\b(approves?|approved|rejects?|rejected|suspends?|suspended)\b.{0,35}\b(listing|prospectus|ipo|public offering)\b",
         r"\b(sec|fsca|cma|cbn|sarb|cbk)\b.{0,30}\b(invest(igat\w*|ment)|probe|enforcement|sanction|fine|penalty|subpoena)\b",
         r"\b(doj|ftc|competition\s+commission)\b.{0,30}\b(invest\w*|antitrust|charge|fine)\b",
         rf"\b({_AFRICAN_REGULATORS})\b.{{0,40}}\b(invest(igat\w*)|probe|sanction\w*|fine[sd]?|penalt\w*|suspend\w*|revok\w*)\b",
@@ -306,12 +318,23 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bdebt[-\s](for[-\s]equity|swap)\b",
     ], 0.75),
     (SignalType.DEBT_RESTRUCTURE, [
-        r"\brefinanc(ing|ed?)\b.{0,20}\b(debt|facility|bond)\b",
+        r"\brefinanc(ing|ed?)\b.{0,20}\b(debt|facility|bond|loan|notes?)\b",
+        r"\b(debt|facility|bond|loan|notes?)\b.{0,35}\b(refinanc\w*|rollover|rolled over|maturity extension)\b",
+        r"\b(refinanc\w*)\b.{0,35}\b(existing|maturing|outstanding)\s+(debt|bond|facility|loan|notes?)\b",
+        r"\b(loan|bond|debt|notes?)\s+(issuance|issue|offering)\b.{0,40}\b(refinanc\w*|replace existing|retire existing|repay existing)\b",
         r"\bmaturity\s+(extension|profile|wall)\b",
-    ], 0.55),
+    ], 0.68),
 
     # ── Insider Activity ──
     (SignalType.INSIDER_ACTIVITY, [
+        # Ownership-change and substantial-shareholder disclosures (not primary fundraising).
+        r"\b(change in|changes to)\s+(beneficial\s+)?ownership\b",
+        r"\bbeneficial ownership\b.{0,50}\b(disclos\w*|cross\w*|increas\w*|reduc\w*|acquir\w*|stake)\b",
+        r"\b(new|largest|major|significant)\s+(?:strategic\s+)?shareholder\b",
+        r"\b(stake|shareholding)\s+(acquisition|sale|disposal|increase|decrease|dilution)\b",
+        r"\b(shareholder|investor)\s+(takes?|acquires?|sells?|exits?|increases?|reduces?)\b.{0,45}\b(stake|shares?|holding|ownership)\b",
+        r"\b(acquir(?:es?|ed|ing)|takes?|took|buys?|bought|sells?|sold|dispos(?:es|ed|ing))\b.{0,45}\b(majority|minority|controlling|significant)\s+(?:share\s+)?stake\b",
+        r"\b(cross(?:es|ed)?|exceeds?|falls?\s+below|increases?|reduces?)\b.{0,35}\b(shareholding|voting rights|beneficial ownership|disclosure threshold)\b",
         r"\b(sc\s+13[dg]|schedule\s+13[dg])\b",
         r"\bform\s+4\b.{0,30}\b(filed|purchase|sale|acquisition|disposal)\b",
         r"\bactivist\s+(investor|shareholder|campaign)\b",
