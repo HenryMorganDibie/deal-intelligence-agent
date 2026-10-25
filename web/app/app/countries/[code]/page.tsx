@@ -13,7 +13,7 @@ type CountryResponse = {
   risk: CountryRisk;
   currency: CurrencyRisk;
   coverage: CoverageRow;
-  source_quality: { deal_records: number; event_records: number; source_links_checked: number; official_host_matched_links: number; deal_records_with_official_host: number; deal_records_without_official_host: number; records_without_source_url: number; unverified_or_invalid_source_urls: number; unverified_publisher_source_urls?: number; invalid_or_non_https_source_urls?: number; unresolved_news_wrapper_source_urls?: number; event_records_with_official_host: number; event_records_without_official_host: number; registered_country_hosts: number; registry_status: string; verification_scope: string };
+  source_quality: { deal_records: number; event_records: number; source_links_checked: number; official_host_matched_links: number; deal_records_with_official_host: number; deal_records_without_official_host: number; records_without_source_url: number; unverified_or_invalid_source_urls: number; unverified_publisher_source_urls?: number; recognised_news_publisher_source_urls?: number; invalid_or_non_https_source_urls?: number; unresolved_news_wrapper_source_urls?: number; news_wrapper_publisher_hosts_checked?: number; event_records_with_official_host: number; event_records_without_official_host: number; registered_country_hosts: number; registry_status: string; verification_scope: string };
   deals: Deal[];
   deals_total: number;
   events: Event[];
@@ -216,9 +216,11 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         <h2 className="text-sm font-medium">Official-source verification</h2>
         <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">{d.source_quality.verification_scope}</p>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Stat label="Official host-matched links" value={d.source_quality.official_host_matched_links} note={`of ${d.source_quality.source_links_checked} source links checked`} />
-          <Stat label="Unverified publishers" value={d.source_quality.unverified_publisher_source_urls ?? d.source_quality.unverified_or_invalid_source_urls} note="Valid HTTPS hosts not in the official registry" />
-          <Stat label="Unresolved Google News links" value={d.source_quality.unresolved_news_wrapper_source_urls ?? "n/a"} note="Wrapper links; underlying publisher not yet checked" />
+          <Stat label="Official publisher hosts matched" value={d.source_quality.official_host_matched_links} note={`of ${d.source_quality.source_links_checked} source links checked`} />
+          <Stat label="Recognised news publishers" value={d.source_quality.recognised_news_publisher_source_urls ?? "n/a"} note="Explicit news-domain registry; not official institutions" />
+          <Stat label="Other publisher hosts" value={d.source_quality.unverified_publisher_source_urls ?? d.source_quality.unverified_or_invalid_source_urls} note="Valid HTTPS hosts not yet recognised in either registry" />
+          <Stat label="Google News publisher hosts checked" value={d.source_quality.news_wrapper_publisher_hosts_checked ?? "n/a"} note="Uses publisher-domain metadata from the RSS feed" />
+          <Stat label="Unresolved Google News links" value={d.source_quality.unresolved_news_wrapper_source_urls ?? "n/a"} note="No publisher-domain metadata available" />
           <Stat label="Invalid or non-HTTPS URLs" value={d.source_quality.invalid_or_non_https_source_urls ?? "n/a"} note="Malformed or non-HTTPS links" />
           <Stat label="Missing source URLs" value={d.source_quality.records_without_source_url} note="Deal/event records without a source URL" />
           <Stat label="Deals with official-host evidence" value={d.source_quality.deal_records_with_official_host} note={`of ${d.source_quality.deal_records} recorded deals`} />
