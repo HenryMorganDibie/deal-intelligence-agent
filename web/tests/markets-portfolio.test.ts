@@ -7,6 +7,7 @@ import {
   calculatePortfolioValuationReviews,
   calculatePortfolioValuationSummary,
   isSavedValuation,
+  parseValuationHistoryBackup,
   type PortfolioPosition,
   type SavedValuationSnapshot,
 } from "../lib/markets-portfolio";
@@ -162,4 +163,15 @@ test("saved valuation matching respects African market country context", () => {
     "NGN",
   )[0];
   assert.equal(otherCountry.status, "no-saved-valuation");
+});
+
+
+test("valuation-history backup accepts valid snapshots and rejects malformed or duplicate records", () => {
+  const snapshot = savedValuation();
+  const backup = { version: 1, exportedAt: new Date().toISOString(), valuations: [snapshot] };
+  assert.deepEqual(parseValuationHistoryBackup(backup), [snapshot]);
+  assert.equal(parseValuationHistoryBackup({ ...backup, version: 2 }), null);
+  assert.equal(parseValuationHistoryBackup({ ...backup, valuations: [] }), null);
+  assert.equal(parseValuationHistoryBackup({ ...backup, valuations: [snapshot, snapshot] }), null);
+  assert.equal(parseValuationHistoryBackup({ ...backup, valuations: [{ ...snapshot, statementSourceUrl: "javascript:alert(1)" }] }), null);
 });

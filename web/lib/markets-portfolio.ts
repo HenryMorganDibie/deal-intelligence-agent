@@ -107,6 +107,21 @@ export type PortfolioValuationReview = {
   weightedEligible?: boolean;
 };
 
+export function parseValuationHistoryBackup(value: unknown): SavedValuationSnapshot[] | null {
+  if (!value || typeof value !== "object") return null;
+  const backup = value as { version?: unknown; exportedAt?: unknown; valuations?: unknown };
+  if (backup.version !== 1 || typeof backup.exportedAt !== "string" ||
+      !Number.isFinite(Date.parse(backup.exportedAt)) || !Array.isArray(backup.valuations) ||
+      backup.valuations.length < 1 || backup.valuations.length > 5000 ||
+      !backup.valuations.every(isSavedValuation)) return null;
+  const ids = new Set<string>();
+  for (const snapshot of backup.valuations) {
+    if (ids.has(snapshot.id)) return null;
+    ids.add(snapshot.id);
+  }
+  return backup.valuations;
+}
+
 export function isSavedValuation(value: unknown): value is SavedValuationSnapshot {
   if (!value || typeof value !== "object") return false;
   const item = value as Partial<SavedValuationSnapshot>;

@@ -1,6 +1,6 @@
 # Markets Investment Intelligence — Implementation Checklist
 
-**Working branch:** `feature/markets-investment-intelligence`  
+**Working branch:** `fix/markets-overview-alignment`  
 **Target base:** `main`  
 **Production safety:** Do not merge this work or push implementation commits to `main` until the pull request has been reviewed and the acceptance checks below pass.
 
@@ -24,28 +24,28 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Record existing functionality versus missing consumer-facing capabilities.
 - [x] Map the actual response contracts used by this feature: `GET /api/pulse` (`Pulse` in `web/lib/pulse.ts`), `GET /api/coverage` (`CoverageRow` and summary in `web/lib/market.ts`), company profile/financial inputs (`/api/companies/profile` through the shared `get` wrapper), and the general `/api/events` feed. Companies and Research remain existing destinations, not duplicated APIs.
 - [x] Verify this feature uses read-only GET requests for pulse, coverage, company profile and event feeds. Portfolio holdings and valuation snapshots remain in browser localStorage; monitoring sends only a general events-feed request, and watchlist handoff sends company names only through sessionStorage.
-- [x] Document supported scope and limitations: coverage explorer reflects returned African country/exchange metadata and unequal coverage tiers; the wider platform has US and African company/outcome coverage. Valuation is limited to suitable operating-company DCF and mature-dividend/financial-institution DDM profiles; REIT/NAV and specialist models are not supported.
+- [x] Document supported scope and limitations: the existing Coverage registry is the source of truth for country/exchange/currency metadata and unequal coverage tiers; Markets links to it rather than duplicating its explorer. The wider platform has US and African company/outcome coverage. Valuation is limited to suitable operating-company DCF and mature-dividend/financial-institution DDM profiles; REIT/NAV and specialist models are not supported.
 
 ## Phase 1 — Safe foundation and Markets information architecture
 
-- [x] Replace the Markets coming-soon page with a responsive Markets landing/overview backed by existing pulse and coverage endpoints.
+- [x] Replace the Markets coming-soon page with a responsive Markets landing/overview backed by the existing pulse endpoint; link to the Coverage registry instead of reproducing its explorer.
 - [x] Keep the existing top-level navigation stable; do not add Portfolio as another top-level item.
 - [x] Add internal Markets destinations for Overview, Explore Companies, Valuation, My Portfolio and Investment Monitoring (links into existing Companies and Watchlists for shared capabilities).
-- [x] Reuse existing components and existing `/api/pulse` and `/api/coverage` endpoints; avoid duplicate research or alert systems.
-- [x] Show coverage context, latest available record date, source links for event items, and meaningful empty/error states on the overview.
+- [x] Reuse the existing `/api/pulse` endpoint and link to the Coverage registry, Research and Watchlists for shared capabilities; avoid duplicate coverage, research or alert systems.
+- [x] Show latest available record date, source links for event items, data-limit context and meaningful empty/error states on the overview; detailed coverage remains in the Coverage registry.
 - [x] Surface available statement/quote dates and stale-input warnings in valuation/compare, and document that `/api/coverage` does not provide per-source update timestamps. Do not invent source freshness when the API does not return it; per-source freshness in the coverage explorer remains an API-dependent follow-up.
-- [x] Make the implemented overview navigation and company-search actions functional; no decorative or fake data visualisations were added.
+- [x] Keep company investigations in the existing Research workspace; Markets has no separate company-search workflow or Research CTA, and no decorative or fake data visualisations were added.
 - [x] Build and wire Valuation, My Portfolio and Compare Opportunities destinations; route Investment Monitoring to existing Watchlists rather than duplicate alert infrastructure.
 - [x] Use responsive layouts, labelled company search, semantic sections and existing app design conventions.
 - [ ] Verify accessibility and keyboard navigation in a running preview.
 
 ## Phase 2 — Africa-wide coverage-aware market overview
 
-- [x] Present African scope from day one without implying equal data depth across all 54 countries; the overview shows live coverage metadata and explicitly warns that depth differs by country, exchange, instrument and company.
-- [x] Use existing coverage metadata where available; country counts, market counts and tier descriptions come from `/api/coverage`, not hardcoded claims.
-- [x] Show country, exchange, currency, tier, listed price/statement sources and recorded deal/event counts in a searchable coverage explorer; company-level quote/statement freshness is surfaced in Valuation and Compare. Per-source timestamps are unavailable in the current coverage API.
-- [x] Reuse existing `/api/pulse` and `/api/coverage` on the overview and link to existing Companies, Research and Watchlists; source-linked event items use the pulse response.
-- [x] Distinguish research readiness using returned country tiers and the actual count of countries with price plus statement metadata; this is country-level availability, not a company-by-company guarantee.
+- [x] Present African scope from day one without implying equal data depth across all 54 countries; the overview warns that depth differs by country, exchange, instrument and company and links to the Coverage registry for the detailed metadata.
+- [x] Keep country counts, exchange/currency details, tiers and source availability in the existing Coverage registry; Markets does not duplicate that data or call `/api/coverage` solely to render a second explorer.
+- [x] Link to the existing searchable Coverage registry for country, exchange, currency, tier, listed price/statement sources and recorded deal/event counts; company-level quote/statement freshness is surfaced in Valuation and Compare. Per-source timestamps are unavailable in the current coverage API.
+- [x] Reuse `/api/pulse` on the overview and link to existing Coverage, Research, Companies and Watchlists; source-linked event items use the pulse response.
+- [x] Keep research-readiness detail in the Coverage registry; Markets avoids presenting a duplicate country-level readiness counter as an investment feature.
 - [ ] Test empty, stale, unavailable and partially populated markets.
 
 ## Phase 3 — Valuation and honest investment conclusions
@@ -59,6 +59,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Require company, financial source URL, valid reporting date, method-specific inputs and model-fit confirmation; require a dated quote and quote source URL before price comparisons; refuse invalid assumptions and unsupported model profiles. Generic `free_cash_flow` is not auto-labelled as unlevered FCFF.
 - [x] Keep deterministic calculations in a pure typed module; no LLM-generated value is mixed into the valuation arithmetic.
 - [x] Add unit tests for DCF/DDM math, invalid assumptions, source URL/date validation, portfolio arithmetic, FX conversion, missing prices and exposure grouping. UI-level currency mismatch and unsupported-instrument flows still need browser verification.
+- [x] Show comparison caveats when financial statement currencies differ, statement periods span more than 180 days, or listed-market quotes are mixed with private-market valuation marks; raw amounts remain explicitly unnormalised.
 - [x] Do not claim valuation accuracy or calibrated fair values. Results are deterministic, assumption-dependent scenarios with source/date gates and explicit limitations. A human-reviewed benchmark is required before any future accuracy claim, but is not represented as complete here.
 
 ## Phase 4 — Portfolio Intelligence inside Markets
@@ -74,20 +75,8 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Add portfolio-wide valuation insights only where constituent valuations pass quality gates; unsupported, stale, mismatched and unpriced holdings are excluded and their review status is explained.
 - [x] Add understandable concentration and data-quality explanations, links to company research and per-holding valuation, and a local-only handoff that pre-fills the existing Watchlists page with company names. Portfolio quantities, prices and FX rates are not copied into the watchlist draft.
 - [x] Add unit tests for arithmetic invariants, missing prices, currency conversion, exposure aggregation and empty portfolios; execution is pending the latest CI run.
-- [x] Keep the original browser-only portfolio local and separate from cloud storage. The multi-user cloud portfolio implementation is isolated in stacked draft PR #14 and is not considered released until migration validation, RLS tests and browser acceptance pass.
-
-## Phase 4b — Multi-user cloud portfolio foundation (stacked draft PR #14)
-
-- [x] Add a database schema for personal portfolios and organization-owned portfolios, with exclusive ownership mode, organization membership roles, instruments, transaction ledger, valuation snapshots, import jobs and audit events.
-- [x] Add row-level security policies and database role checks for personal ownership and organization membership. The migrations remain un-applied to the hosted database.
-- [x] Add Supabase Auth sign-in/sign-up endpoints using HTTP-only same-site cookies; public research browsing remains available without an account.
-- [x] Add one-time hashed organization invite codes with seven-day expiry and atomic acceptance; invited users join through their own signed-in account.
-- [x] Add a separate cloud workspace for manual instrument and transaction entry, with positions derived from ledger rows. Keep the original localStorage portfolio separate and never upload its contents silently.
-- [ ] Validate migration SQL against a disposable/local database and run Supabase security/performance advisors.
-- [x] Add pgTAP tests for separate organizations, personal-vs-shared access, invitation acceptance, viewer read/write boundaries, membership administration, and reporting-currency checks. CI execution is still being verified.
-- [x] Add CSV/XLSX transaction import preview and server-side atomic commit, saved cloud valuation snapshots, and explicit idempotent migration of local holdings/reviews. Row-level client errors block commit; server constraints are rechecked before writes.
-- [ ] Verify email confirmation/recovery configuration, session refresh, mobile/keyboard accessibility and browser workflows.
-- [ ] Confirm latest-head preview and API smoke tests after the Vercel build-rate limit resets. Do not merge or deploy without explicit approval.
+- [x] Keep cloud-saved portfolios and cross-device sync out of scope until authentication and row-level ownership protections exist and are tested; current holdings and valuation snapshots stay local to the browser.
+- [x] Add separate JSON export/restore for saved valuation history with schema/source/date validation, a 2 MB import cap, duplicate-ID rejection, explicit replacement confirmation and local-only storage. Portfolio holdings remain restorable through CSV/XLSX; valuation history is not bundled into those portfolio files.
 
 ## Phase 5 — Personal investment insights and monitoring
 
@@ -97,12 +86,13 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Explain what changed using the previous/current estimate, percentage, calculation dates and statement period; link to current statement and quote sources where available. Do not infer a material event impact from headline matching.
 - [x] Avoid automatic buy/sell instructions and duplicate server-side alert rules; use existing Watchlists for broader monitoring and label local portfolio matches as candidates.
 - [x] Add automated tests for duplicate event suppression, empty portfolios/feeds, exact ticker boundaries, material valuation-change thresholds, country separation and incompatible valuation methods.
+- [x] Fetch the 90-day monitoring feed in 500-row pages instead of silently stopping at the first 100; cap a single refresh at 5,000 events and visibly disclose when more records exist. Added regression tests for multi-page retrieval, the cap and feed failures. Current-head Web quality gates passed in run `40138138623`.
 - [ ] Manually test stale-data, missing-coverage and event-feed failure states in a running preview.
 
 ## Phase 6 — Quality, regression and release readiness
 
 - [x] Confirm no backend/API/database/schema changes are introduced by this feature branch; backend tests are not applicable to the feature-only diff. Existing backend suites still require their normal independent checks before any unrelated backend changes ship.
-- [x] Run frontend unit tests, ESLint, TypeScript typecheck and production build. Latest full Web quality-gates run `40110920728` passed on head `fb51dce79ff0b6d03ec093f8509655b9504c1b45`, including Excel workbook tests, ESLint, TypeScript typecheck and production build.
+- [x] Run frontend Markets unit tests, ESLint, TypeScript typecheck and production build. Current-head Web quality-gates run `40138138623` passed on head `60b95680a737c4a08d7a8146ff6e80cece02dc2c`, including the monitoring pagination and valuation-backup regression tests.
 - [x] Run standalone frontend ESLint and the Markets unit-test suite; both passed in Web quality gates run `40101835044`. Backend code is unchanged by this PR.
 - [ ] Test the Markets pages at mobile and desktop sizes.
 - [ ] Verify Companies, Research, Deals, Alerts, watchlists and other existing areas remain unaffected.
@@ -110,9 +100,9 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Review data flow: portfolio holdings and valuation snapshots stay in browser-local storage and are not sent to the event API; no new secrets, dependencies or database schema changes were introduced.
 - [x] Review dependency, schema and migration changes; the Excel feature adds the maintained, security-hardened `@stackline/xlsx` package, with no backend schema or environment-variable changes.
 - [x] Update this checklist with evidence for each completed automated check; manual and preview-only checks remain open.
-- [x] Update the draft PR with current automated test results and explicit preview limitation. Screenshots/preview URL remain unavailable until Vercel permits a fresh deployment.
-- [x] Verify a READY Vercel preview returns HTTP 200 for `/app/markets`, `/app/markets/valuation`, `/app/markets/portfolio`, `/app/markets/compare` and `/app/markets/monitoring`; API preview `/api/pulse` and `/api/coverage` also return HTTP 200. The preview predates the latest strict CSV-parser commits, so it is not treated as a current-head deployment.
-- [ ] Manually exercise interactive flows in a browser: company search, local persistence, strict CSV and Excel import/export and malformed-file/formula rejection, currency conversion, clear/delete, valuation save/review and monitoring empty/error states. This remains unverified because a fresh current-head preview is blocked by Vercel's Free-plan deployment rate limit.
+- [x] Update the draft PR with current-head automated test results and the remaining manual-interaction limitation; do not claim a current-head preview while Vercel is rate-limited.
+- [x] Verify that the previously READY Vercel preview returned HTTP 200 for `/app/markets`, `/app/markets/valuation`, `/app/markets/portfolio`, `/app/markets/compare` and `/app/markets/monitoring` on commit `551cfef445d7b753610de2f82cbad8728edd5d70`. This is historical route evidence only; it predates the latest code. No backend code changed.
+- [ ] Manually exercise interactive flows in a browser: local persistence, strict CSV and Excel import/export and malformed-file/formula rejection, currency conversion, clear/delete, valuation save/export/restore, keyboard navigation and monitoring pagination/cap/empty/error states. Vercel reports a build-rate-limit failure for the current branch, so a current-head preview is unavailable; manual acceptance remains open.
 - [ ] Obtain explicit approval before merging into `main`.
 - [ ] After approval and merge, verify production status and run a post-deploy smoke check.
 
@@ -142,13 +132,17 @@ This checklist is the source of truth for scope and completion. Mark an item com
 | 2026-10-24 | Added local portfolio event monitoring and valuation-change insights | `/app/markets/monitoring` reads locally stored holdings, requests only the general 90-day `/api/events` feed, deduplicates and matches exact company names/ticker tokens, links candidate matches to sources, and flags at least 10% changes between saved model estimates. Up to 10 local valuation snapshots per company are retained. | Current-head unit tests, ESLint, TypeScript typecheck and production build passed; Vercel preview and browser verification remain blocked by rate limit |
 
 
+| 2026-10-24 | Markets overview information-architecture correction | Removed the duplicate company-search workflow, the Research CTA card and the embedded country/exchange/currency coverage panel. Research and Coverage remain separate workspaces; Markets keeps pulse-based deal/event intelligence, valuation, opportunity comparison, portfolio intelligence and monitoring. | Latest correction committed as `4a7a241`; GitHub Actions run `40143183150` passed Markets tests, ESLint, TypeScript and production build. Current-head preview and interactive browser acceptance remain blocked by Vercel deployment limits. PR #17 remains draft; no merge |
+
 ## Current verification constraints
 
-- Vercel reported the Free-plan `api-deployments-free-per-day` limit with a 24-hour retry window. Current Vercel check failures are deployment-rate-limit failures, not application build failures. The READY preview predates the latest strict CSV-parser and download-lifecycle changes; the latest source head has passed GitHub quality gates but has not been browser-verified.
-- Full Web quality gates passed on current code head `fb51dce79ff0b6d03ec093f8509655b9504c1b45` in run `40110920728`: Markets tests (including CSV and Excel regressions), ESLint, TypeScript typecheck and production build all succeeded.
-- A READY preview at `https://deal-intelligence-3osq8c78t-henry-dibie-s-projects.vercel.app` returned HTTP 200 for all five Markets routes after Compare and Monitoring were added. Its source predates the latest strict CSV-parser commits. New Vercel deployments are rate-limited for 24 hours on the Free plan; a current-head preview is still required before release.
-- Production `main` remains untouched. PR #13 stays draft until the feature is verified and explicitly approved.
+- The previously READY app preview is `https://deal-intelligence-65byuvhkv-henry-dibie-s-projects.vercel.app`; its five Markets routes returned HTTP 200 on an earlier commit. It is not a current-head deployment. Vercel is currently returning a build-rate-limit failure for this branch, so interactive acceptance against the latest code is blocked.
+- Full Web quality gates passed on current code head `60b95680a737c4a08d7a8146ff6e80cece02dc2c` in run `40138138623`: Markets tests, ESLint, TypeScript typecheck and production build all succeeded, including monitoring pagination and valuation-backup tests. Earlier runs cover the CSV/XLSX regressions.
+- The earlier preview's route smoke checks returned HTTP 200 for `/app/markets`, `/app/markets/valuation`, `/app/markets/portfolio`, `/app/markets/compare` and `/app/markets/monitoring`; those checks do not apply to the latest code. The API code was unchanged.
+- Production `main` remains untouched by this correction. The original Markets feature PR #13 has already been merged; the targeted follow-up correction is isolated in draft PR #17 and must not be merged until browser acceptance and explicit approval.
 
+
+| 2026-10-24 | Markets overview correction CI | GitHub Actions run `40134574134` passed on head `506dfb71d348ec26fad1edf784e3900e63ba6b44`: dependency install, Markets unit tests, ESLint, TypeScript typecheck and production build all succeeded. | Code-level quality gates green; preview acceptance followed on the current head |
 
 ## Follow-up verification log
 
@@ -163,3 +157,19 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 
 | 2026-10-24 | Current-head Excel regression and quality gates | GitHub Actions run `40110920728` passed on head `fb51dce79ff0b6d03ec093f8509655b9504c1b45`: Markets tests, ESLint, TypeScript typecheck and production build succeeded. The earlier invalid-workbook test failure was fixed by checking the ZIP signature before parsing. | Automated gates green; interactive browser checks and exact-current-head preview verification remain release gates |
+
+
+| 2026-10-24 | Final Markets overview polish and current-head verification | Removed repeated navigation links and the duplicate “Compare companies” link, leaving a focused Compare opportunities and Monitoring section. GitHub Actions run `40136786937` passed Markets tests, ESLint, TypeScript typecheck and production build on `551cfef445d7b753610de2f82cbad8728edd5d70`. Current-head Vercel app preview is READY; all five Markets routes return HTTP 200. | Code and route smoke checks passed; manual interactive browser acceptance and explicit approval before merge remain open |
+
+
+| 2026-10-24 | Monitoring coverage hardening | Replaced the single-page 100-event request with bounded 500-row pagination, up to 5,000 events per refresh. The page now reports total available events when supplied by the API and warns explicitly when the safety cap leaves the pass incomplete. Added regression tests for pagination, cap disclosure and feed errors. | Current-head Web quality gates passed in run `40138138623`. Interactive browser acceptance, mobile/desktop, keyboard/accessibility, persistence and import/export remain open; no production merge. |
+
+
+| 2026-10-24 | Local valuation-history backup and restore | Added a JSON export for saved valuation snapshots and a guarded restore path that validates version, dates, source URLs, required fields, duplicate IDs and a 5,000-snapshot limit before asking for confirmation. Import is capped at 2 MB and only replaces local valuation history; CSV/XLSX continue to back up holdings. Added regression tests for malformed and duplicate snapshot backups. | Current-head Web quality gates passed in run `40138138623`; interactive browser acceptance is still required. No production merge. |
+
+
+| 2026-10-24 | Comparison and backup UX hardening | Compare Opportunities now surfaces explicit caveats for mixed financial-statement currencies, reporting periods separated by more than 180 days, and comparisons mixing listed quotes with private-market valuation marks. Saved valuation history can be exported/restored independently of the current calculation form, with separate status feedback. | Added on `fix/markets-overview-alignment`; current-head CI passed in run `40138138623`. Browser interaction acceptance remains a release gate. |
+
+
+| 2026-10-24 | Current-head Markets reliability verification | Run `40138138623` passed on head `60b95680a737c4a08d7a8146ff6e80cece02dc2c`: Markets unit tests, ESLint, TypeScript typecheck and Next.js production build all succeeded. This includes the new event-pagination/cap tests and saved valuation-backup validation tests. | Automated code checks complete. Current-head Vercel preview is blocked by build-rate-limit; interactive browser acceptance, mobile/desktop, accessibility and regression checks remain open. PR #17 stays draft and production `main` remains untouched. |
+| 2026-10-24 | Markets information architecture final boundary check | Removed the remaining Research CTA and embedded Coverage summary from Markets so neither workspace is duplicated in the overview. | Automated checks passed on `4a7a241`; newest code still requires a current-head preview and interactive browser acceptance. Production `main` untouched. |

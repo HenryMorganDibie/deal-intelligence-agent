@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get } from "../../../../lib/market";
 import { calculateDcfPerShare, calculateDdmPerShare, validHttpUrl, validPastDate } from "../../../../lib/markets-valuation";
-import { isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
+import { isSavedValuation, parseValuationHistoryBackup, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
 
 type ModelFit = "standard-operating-company" | "financial-institution" | "mature-dividend-payer" | "negative-or-volatile-fcf" | "early-stage" | "reit-property" | "uncertain";
 
@@ -126,6 +126,7 @@ export default function MarketsValuationPage() {
   const [detectedSector, setDetectedSector] = useState("");
   const [modelFitConfirmed, setModelFitConfirmed] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [backupMessage, setBackupMessage] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -348,6 +349,53 @@ export default function MarketsValuationPage() {
       setSavedMessage("Saved locally in this browser. Up to 10 dated snapshots per company are kept so Markets can flag material changes in your model estimate. Portfolio reviews still require matching currency, quote date and price, and a suitable model.");
     } catch (saveError) {
       setSavedMessage(saveError instanceof Error ? saveError.message : "Could not save this valuation in browser storage.");
+    }
+  }
+
+  function exportValuationHistory() {
+    try {
+      const raw = window.localStorage.getItem(VALUATION_STORAGE_KEY);
+      const parsed: unknown = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(parsed) || !parsed.every(isSavedValuation)) {
+        throw new Error("Saved valuation history could not be validated. It was left unchanged; check the stored data before exporting.");
+      }
+      if (parsed.length === 0) {
+        setBackupMessage("There is no saved valuation history to export yet. Calculate and save a valuation first.");
+        return;
+      }
+      const backup = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), valuations: parsed }, null, 2);
+      const url = URL.createObjectURL(new Blob([backup], { type: "application/json;charset=utf-8" }));
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "deal-intelligence-valuation-history.json";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setBackupMessage(`Exported ${parsed.length} saved valuation snapshot(s). Keep this file somewhere safe; it contains your financial assumptions and source links.`);
+    } catch (backupError) {
+      setBackupMessage(backupError instanceof Error ? backupError.message : "Could not export saved valuation history.");
+    }
+  }
+
+  async function importValuationHistory(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      if (file.size > 2 * 1024 * 1024) throw new Error("Valuation-history backups must be 2 MB or smaller.");
+      const raw = await file.text();
+      const parsed: unknown = JSON.parse(raw);
+      const snapshots = parseValuationHistoryBackup(parsed);
+      if (!snapshots) throw new Error("This is not a valid Deal Intelligence valuation-history backup. No saved data was changed.");
+      if (!window.confirm(`Replace the valuation history in this browser with ${snapshots.length} snapshot(s) from this backup? Export the current history first if you need to keep it.`)) {
+        setBackupMessage("Valuation-history restore cancelled. Existing saved data was not changed.");
+        return;
+      }
+      window.localStorage.setItem(VALUATION_STORAGE_KEY, JSON.stringify(snapshots));
+      setBackupMessage(`Restored ${snapshots.length} saved valuation snapshot(s) to this browser. Portfolio holdings were not changed.`);
+    } catch (backupError) {
+      setBackupMessage(backupError instanceof Error ? backupError.message : "Could not restore valuation history.");
     }
   }
 
@@ -590,10 +638,25 @@ export default function MarketsValuationPage() {
                 </div>
                 <div className="mt-4 rounded-xl border hairline p-4">
                   <button type="button" className="btn btn-secondary w-full" onClick={saveValuationLocally}>Save valuation to Portfolio Intelligence</button>
-                  {savedMessage ? <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status">{savedMessage}</p> : <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">Saved valuation scenarios stay in this browser. They are not uploaded to the server.</p>}
+                  {savedMessage ? <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status" aria-live="polite">{savedMessage}</p> : <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">Saved valuation scenarios stay in this browser. They are not uploaded to the server. Export a backup before clearing browser data or moving to another device.</p>}
                 </div>
               </>
             )}
+          </section>
+
+          <section className="mt-6 panel p-5 sm:p-6" aria-labelledby="valuation-backup-title">
+            <p className="eyebrow">Local data backup</p>
+            <h2 id="valuation-backup-title" className="h3 mt-2 text-lg">Keep your valuation history portable.</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">Export or restore saved valuation snapshots at any time, even before calculating a new model in this session. These JSON backups include valuation assumptions and source links, not portfolio holdings. Portfolio holdings use the separate CSV/XLSX backup controls in My Portfolio.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <button type="button" className="btn btn-secondary justify-center" onClick={exportValuationHistory}>Export saved valuation history</button>
+              <label className="block text-xs leading-relaxed text-[color:var(--muted)]">
+                Restore valuation history from JSON backup
+                <input className="field mt-2" type="file" accept=".json,application/json" onChange={importValuationHistory} aria-describedby="valuation-backup-help" />
+              </label>
+            </div>
+            <p id="valuation-backup-help" className="mt-2 text-xs leading-relaxed text-[color:var(--dim)]">Import validates the file, is limited to 2 MB, and asks before replacing saved history.</p>
+            {backupMessage ? <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status" aria-live="polite">{backupMessage}</p> : null}
           </section>
 
           <section className="panel p-5" aria-labelledby="method-title">

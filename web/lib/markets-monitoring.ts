@@ -22,6 +22,62 @@ export type PortfolioEventMatch = {
   holdings: { id: string; name: string; ticker: string; country?: string; reason: "ticker" | "company name" }[];
 };
 
+export type MonitoringEventPage = {
+  events: MonitoringEvent[];
+  count?: number;
+};
+
+export type MonitoringEventHistory = {
+  events: MonitoringEvent[];
+  totalAvailable: number | null;
+  truncated: boolean;
+};
+
+/**
+ * Read the recent event feed in bounded pages. The API caps a single page at
+ * 500 rows, so a one-page request can silently miss a portfolio match.
+ */
+export async function fetchMonitoringEventHistory(
+  fetchPage: (offset: number, limit: number) => Promise<MonitoringEventPage>,
+  pageSize = 500,
+  maxEvents = 5000,
+): Promise<MonitoringEventHistory> {
+  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 500) {
+    throw new RangeError("Monitoring page size must be an integer from 1 to 500.");
+  }
+  if (!Number.isInteger(maxEvents) || maxEvents < pageSize) {
+    throw new RangeError("Monitoring event cap must be an integer at least as large as the page size.");
+  }
+
+  const events: MonitoringEvent[] = [];
+  let totalAvailable: number | null = null;
+  let offset = 0;
+
+  while (offset < maxEvents) {
+    const limit = Math.min(pageSize, maxEvents - offset);
+    const page = await fetchPage(offset, limit);
+    if (!Array.isArray(page.events)) {
+      throw new Error("The events service returned an invalid page.");
+    }
+    if (typeof page.count === "number" && Number.isFinite(page.count) && page.count >= 0) {
+      totalAvailable = Math.floor(page.count);
+    }
+    events.push(...page.events.slice(0, limit));
+    offset += Math.min(page.events.length, limit);
+
+    if (page.events.length === 0 || page.events.length < limit ||
+        (totalAvailable !== null && offset >= totalAvailable)) {
+      break;
+    }
+  }
+
+  return {
+    events,
+    totalAvailable,
+    truncated: totalAvailable !== null ? totalAvailable > events.length : events.length >= maxEvents,
+  };
+}
+
 function normalise(value: string): string {
   return value
     .normalize("NFKD")
