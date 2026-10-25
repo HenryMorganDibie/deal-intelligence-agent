@@ -9,6 +9,29 @@ from __future__ import annotations
 from urllib.parse import urlparse
 from src.data.africa_countries import countries_in_text, resolve as resolve_country
 
+# Explicit publisher-domain registry. This means the domain is a known news outlet,
+# not that the outlet is an official institution or that every article is accurate.
+RECOGNISED_NEWS_HOSTS: tuple[str, ...] = (
+    "nairametrics.com", "techcabal.com", "thisdaylive.com", "guardian.ng",
+    "businessday.ng", "businessday.co.za", "moneyweb.co.za", "theafricareport.com",
+    "disruptafrica.com", "techpoint.africa", "technext24.com", "businesslive.co.za",
+    "theeastafrican.co.ke", "nation.africa", "standardmedia.co.ke", "citizen.digital",
+    "dailytrust.com", "punchng.com", "vanguardngr.com", "premiumtimesng.com",
+    "thecable.ng", "african.business", "financialafrik.com", "agenceecofin.com",
+    "shega.co", "borkena.com", "moneyweb.co.za", "reuters.com", "bloomberg.com",
+    "ft.com", "apnews.com", "bbc.com", "bbc.co.uk",
+)
+
+
+def is_recognised_news_host(url: str | None) -> bool:
+    """True only for HTTPS URLs on the explicit news-publisher host list."""
+    parsed = urlparse((url or "").strip())
+    host = (parsed.hostname or "").lower().removeprefix("www.")
+    return parsed.scheme.lower() == "https" and bool(host) and any(
+        host == domain or host.endswith("." + domain) for domain in RECOGNISED_NEWS_HOSTS
+    )
+
+
 # Domains are allowlisted by institution/country; matching is exact or a true subdomain.
 # The API reports host match, not a guarantee that every page's claims are correct.
 OFFICIAL_HOSTS_BY_COUNTRY: dict[str, tuple[str, ...]] = {
@@ -137,11 +160,12 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
     missing_url = 0
     unverified_url = 0
     invalid_url = 0
+    recognised_news_url = 0
     unresolved_wrapper_url = 0
     wrapper_with_publisher_host = 0
 
     def check_record(record: dict, record_kind: str) -> bool:
-        nonlocal missing_url, unverified_url, invalid_url, unresolved_wrapper_url, wrapper_with_publisher_host
+        nonlocal missing_url, unverified_url, invalid_url, recognised_news_url, unresolved_wrapper_url, wrapper_with_publisher_host
         sources = record.get("sources") or []
         if not sources:
             url = record.get("url") or record.get("source_url")
@@ -189,6 +213,8 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
                 invalid_url += 1
             elif result["status"] == "news_wrapper_unresolved":
                 unresolved_wrapper_url += 1
+            elif is_recognised_news_host(verification_url):
+                recognised_news_url += 1
             else:
                 unverified_url += 1
         return matched
@@ -217,6 +243,7 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
         # Google News wrappers are reported separately instead of being conflated.
         "unverified_or_invalid_source_urls": unverified_url + invalid_url,
         "unverified_publisher_source_urls": unverified_url,
+        "recognised_news_publisher_source_urls": recognised_news_url,
         "invalid_or_non_https_source_urls": invalid_url,
         "unresolved_news_wrapper_source_urls": unresolved_wrapper_url,
         "news_wrapper_publisher_hosts_checked": wrapper_with_publisher_host,
