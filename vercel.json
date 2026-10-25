@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "exit 1",
   "functions": {
     "api/index.py": {
       "maxDuration": 300,
