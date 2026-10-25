@@ -18,7 +18,7 @@ RECOGNISED_NEWS_HOSTS: tuple[str, ...] = (
     "theeastafrican.co.ke", "nation.africa", "standardmedia.co.ke", "citizen.digital",
     "dailytrust.com", "punchng.com", "vanguardngr.com", "premiumtimesng.com",
     "thecable.ng", "african.business", "financialafrik.com", "agenceecofin.com",
-    "shega.co", "borkena.com", "moneyweb.co.za", "reuters.com", "bloomberg.com",
+    "shega.co", "borkena.com", "reuters.com", "bloomberg.com",
     "ft.com", "apnews.com", "bbc.com", "bbc.co.uk",
 )
 
@@ -188,7 +188,7 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
             # Google News RSS includes a separate <source url="..."> publisher
             # domain. Verify that domain instead of treating the wrapper as the
             # publisher; keep the wrapper URL for traceability.
-            verification_url = publisher_url if is_google_wrapper and publisher_url else article_url
+            verification_url = publisher_url if (is_google_wrapper or not article_url) and publisher_url else article_url
             if is_google_wrapper and publisher_url:
                 wrapper_with_publisher_host += 1
             result = verify_url(verification_url, code)
