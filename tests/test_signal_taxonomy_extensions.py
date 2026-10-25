@@ -122,3 +122,22 @@ def test_unclassified_event_subtype_is_explicit_not_guessed():
         SignalType.CREDIT_RISK,
         "The company reported a material financial development",
     ) == "unspecified"
+
+
+def test_french_and_portuguese_subtypes_are_normalized_to_the_same_canonical_taxonomy():
+    assert _classify_event_subtype(
+        SignalType.DEBT_RESTRUCTURE,
+        "La société annonce un refinancement de sa dette obligataire",
+    ) == "refinancing"
+    assert _classify_event_subtype(
+        SignalType.INSIDER_ACTIVITY,
+        "Franchissement de seuil et déclaration de participation",
+    ) == "beneficial_ownership_change"
+    assert _classify_event_subtype(
+        SignalType.MA_ACTIVITY,
+        "A empresa prepara uma oferta pública inicial e abertura de capital",
+    ) == "ipo_preparation"
+    assert _classify_event_subtype(
+        SignalType.DEBT_RESTRUCTURE,
+        "Banco fecha empréstimo sindicado para refinanciamento",
+    ) == "refinancing"
