@@ -45,7 +45,7 @@ def _load_baseline_rules() -> list:
     try:
         source = subprocess.check_output(
             ["git", "show", f"{BASELINE_REF}:src/engines/deterministic_engine.py"],
-            cwd=HERE.parents[2], text=True, stderr=subprocess.PIPE,
+            cwd=HERE.parents[1], text=True, stderr=subprocess.PIPE,
         )
     except subprocess.CalledProcessError as exc:
         raise SystemExit(
@@ -161,7 +161,7 @@ def main() -> None:
     report = {
         "evaluation": "blind paired deterministic-pattern evaluation",
         "baseline_ref": BASELINE_REF,
-        "current_ref": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=HERE.parents[2], text=True).strip(),
+        "current_ref": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=HERE.parents[1], text=True).strip(),
         "sample_size": len(items),
         "primary": "medium/high confidence adjudicated labels; low-confidence items excluded",
         "baseline": {k: v for k, v in previous.items() if k != "errors"},
