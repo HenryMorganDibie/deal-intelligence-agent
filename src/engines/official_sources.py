@@ -97,6 +97,11 @@ def verify_url(url: str | None, country_iso2: str | None = None) -> dict:
         parsed = None
     if not parsed or parsed.scheme.lower() != "https" or not host or parsed.username or parsed.password:
         return {"status": "invalid_or_non_https_url", "host": host or None, "matched_registry": None}
+    # Google News links are article wrappers, not the underlying publisher's host.
+    # Do not call them invalid or infer the publisher from title/metadata. Resolving
+    # them requires a separately bounded, cached ingestion-time resolver.
+    if host == "news.google.com" or host.endswith(".news.google.com"):
+        return {"status": "news_wrapper_unresolved", "host": host, "matched_registry": None}
     code = _iso2(country_iso2)
     candidates = [(d, "country") for d in OFFICIAL_HOSTS_BY_COUNTRY.get(code, ())]
     candidates += [(d, "regional") for d in REGIONAL_OFFICIAL_HOSTS]
@@ -131,9 +136,11 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
     official_event_ids: set[str] = set()
     missing_url = 0
     unverified_url = 0
+    invalid_url = 0
+    unresolved_wrapper_url = 0
 
     def check_record(record: dict, record_kind: str) -> bool:
-        nonlocal missing_url, unverified_url
+        nonlocal missing_url, unverified_url, invalid_url, unresolved_wrapper_url
         sources = record.get("sources") or []
         if not sources:
             url = record.get("url") or record.get("source_url")
@@ -158,6 +165,10 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
                 matched = True
             elif result["status"] == "missing_url":
                 missing_url += 1
+            elif result["status"] == "invalid_or_non_https_url":
+                invalid_url += 1
+            elif result["status"] == "news_wrapper_unresolved":
+                unresolved_wrapper_url += 1
             else:
                 unverified_url += 1
         return matched
@@ -181,7 +192,13 @@ def audit_country(country_iso2: str, deals: list[dict], events: list[dict]) -> d
         "event_records_with_official_host": len(official_event_ids),
         "event_records_without_official_host": max(0, len(country_events) - len(official_event_ids)),
         "records_without_source_url": missing_url,
-        "unverified_or_invalid_source_urls": unverified_url,
+        # Keep the legacy field for existing clients, but define it as valid HTTPS
+        # hosts not present in the official registry. Invalid links and unresolved
+        # Google News wrappers are reported separately instead of being conflated.
+        "unverified_or_invalid_source_urls": unverified_url + invalid_url,
+        "unverified_publisher_source_urls": unverified_url,
+        "invalid_or_non_https_source_urls": invalid_url,
+        "unresolved_news_wrapper_source_urls": unresolved_wrapper_url,
         "registered_country_hosts": len(official_hosts),
         "registry_status": "needs_host_review" if not official_hosts else "host_allowlist_configured",
         "verification_scope": "HTTPS hostname matched to an explicit country/regional/global official-institution allowlist. This verifies the publisher domain, not the transaction claim itself.",
