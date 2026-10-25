@@ -137,6 +137,8 @@ export default function CountryPage({ params }: { params: { code: string } }) {
   }, [params.code]);
 
   const profile = d?.profile;
+  // Plot only years with a complete annual composite score; each country starts at its first valid point.
+  const availableRiskPoints = riskHistory.filter((point) => point.score !== null);
   const monthlyDealFlow = useMemo(() => {
     const now = new Date();
     const counts = new Map((profile?.by_month_last_12 ?? []).map((m) => [m.month, m.deals] as const));
@@ -373,22 +375,22 @@ export default function CountryPage({ params }: { params: { code: string } }) {
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
         Reconstructed from World Bank observations, not archived historical scores. Coverage is the share of weighted risk components with usable inputs, not an official data-quality measure. A composite score is shown only when all seven components are available; otherwise the year and input coverage remain visible without a score. Input years can differ within a row.
       </p>
-      {riskHistory.length > 0 ? (
+      {availableRiskPoints.length > 0 ? (
         <div className="panel mt-4 p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-[color:var(--muted)]">{riskHistory.filter((r) => r.score !== null).length} annual points · source dataset retrieved {historyMeta?.retrieved ?? "date unavailable"}</p>
+            <p className="text-xs text-[color:var(--muted)]">{availableRiskPoints.length} annual points · shown from {availableRiskPoints[0].year}, the first year with a complete score · source dataset retrieved {historyMeta?.retrieved ?? "date unavailable"}</p>
             {historyMeta?.source_url && <a href={historyMeta.source_url} target="_blank" rel="noreferrer noopener" className="text-xs text-verified hover:underline">Open World Bank source API</a>}
           </div>
           <div className="mt-5 grid grid-cols-4 gap-3 sm:grid-cols-8">
-            {riskHistory.map((point) => (
+            {availableRiskPoints.map((point) => (
               <div key={point.year} className="min-w-0">
                 <div className="flex h-32 items-end rounded bg-[color:var(--surface)] p-1">
-                  <div title={point.score === null ? "No score available" : `${point.score}/100 · ${point.tier}`}
+                  <div title={`${point.score}/100 · ${point.tier}`}
                     className="w-full rounded-t bg-[color:var(--accent)]"
-                    style={{ height: `${point.score === null ? 0 : Math.max(3, point.score)}%`, opacity: point.score === null ? 0.15 : 0.85 }} />
+                    style={{ height: `${Math.max(3, point.score ?? 0)}%`, opacity: 0.85 }} />
                 </div>
                 <p className="mt-2 text-center text-xs font-medium">{point.year}</p>
-                <p className="text-center text-xs text-[color:var(--muted)]">{point.score === null ? "n/a" : point.score}</p>
+                <p className="text-center text-xs text-[color:var(--muted)]">{point.score}</p>
               </div>
             ))}
           </div>
@@ -406,7 +408,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
             ) : <p className="mt-1 text-xs text-[color:var(--muted)]">{historyMeta?.snapshot_note ?? "Historical snapshot archive is not currently available."}</p>}
           </div>
         </div>
-      ) : <p className="mt-3 text-sm text-[color:var(--muted)]">Historical risk series is not available for this market yet.</p>}
+      ) : <p className="mt-3 text-sm text-[color:var(--muted)]">No complete annual country-risk scores are available for this market yet. The chart will begin at the first year all seven weighted components can be calculated.</p>}
 
       <h2 className="eyebrow mt-12">Historical market activity</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
