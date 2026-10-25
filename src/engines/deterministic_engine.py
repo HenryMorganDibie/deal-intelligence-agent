@@ -378,6 +378,24 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\b(fusion|acquisition|rachat|absorption)\b",
         r"\bentr[eé]e\s+au\s+capital\b",
     ], 0.55),
+    (SignalType.MA_ACTIVITY, [
+        r"\b(pr[eé]pare|pr[eé]parent|pr[eé]paration)\b.{0,35}\b(introduction en bourse|cotation|offre publique)\b",
+        r"\b(introduction en bourse|cotation)\b.{0,35}\b(projet|pr[eé]paration|mandat|prospectus)\b",
+    ], 0.72),
+    (SignalType.REGULATORY_ACTION, [
+        r"\b(prospectus|introduction en bourse|cotation|offre publique)\b.{0,45}\b(approuv[eé]|valid[eé]|autoris[eé]|rejet[eé]|refus[eé])\b",
+        r"\b(approuve|approuv[eé]|valide|valid[eé]|rejette|rejet[eé])\b.{0,45}\b(prospectus|cotation|introduction en bourse)\b",
+    ], 0.82),
+    (SignalType.INSIDER_ACTIVITY, [
+        r"\b(franchissement|franchit|d[eé]passe|passe sous)\b.{0,35}\b(seuil|participation|droits de vote)\b",
+        r"\b(changement|variation)\s+de\s+(participation|d[eé]tention|propri[eé]t[eé])\b",
+        r"\b(acquiert|c[eè]de|vend|renforce|all[eè]ge)\b.{0,40}\b(participation|part du capital|actions|droits de vote)\b",
+    ], 0.75),
+    (SignalType.DEBT_RESTRUCTURE, [
+        r"\b(refinancement|refinancer|refinance)\b.{0,35}\b(dette|obligations?|cr[eé]dit|pr[eê]t)\b",
+        r"\b([eé]mission obligataire|[eé]mission d['’]?obligations|pr[eê]t syndiqu[eé])\b",
+        r"\b(prolongation|extension)\s+de\s+(la\s+)?maturit[eé]\b",
+    ], 0.72),
 
     (SignalType.CREDIT_RISK, [
         r"\bd[eé]faut\s+de\s+paiement\b",
@@ -479,6 +497,23 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bnegocia[cç][oõ]es\s+exclusivas\b",
         r"\b(aquisi[cç][aã]o|fus[aã]o|incorpora[cç][aã]o)\b",
     ], 0.55),
+    (SignalType.MA_ACTIVITY, [
+        r"\b(prepara|preparam|preparação|preparacao)\b.{0,35}\b(oferta pública inicial|oferta publica inicial|abertura de capital|cotação|cotacao)\b",
+        r"\b(oferta pública inicial|oferta publica inicial|abertura de capital)\b.{0,35}\b(projeto|preparação|preparacao|prospeto|prospecto)\b",
+    ], 0.72),
+    (SignalType.REGULATORY_ACTION, [
+        r"\b(prospeto|prospecto|cotação|cotacao|oferta pública)\b.{0,45}\b(aprovad[oa]|autorizad[oa]|rejeitad[oa])\b",
+        r"\b(aprovad[oa]|autorizad[oa]|rejeitad[oa])\b.{0,45}\b(prospeto|prospecto|cotação|cotacao|oferta pública)\b",
+    ], 0.82),
+    (SignalType.INSIDER_ACTIVITY, [
+        r"\b(participação|participacao|direitos de voto)\b.{0,35}\b(aumenta|reduz|adquire|vende|ultrapassa|abaixo do limiar)\b",
+        r"\b(adquire|vende|cede|aumenta|reduz)\b.{0,40}\b(participação|participacao|ações|acoes|direitos de voto)\b",
+    ], 0.75),
+    (SignalType.DEBT_RESTRUCTURE, [
+        r"\b(refinanciamento|refinanciar|refinancia)\b.{0,35}\b(dívida|divida|obrigações|obrigacoes|crédito|credito|empréstimo|emprestimo)\b",
+        r"\b(emissão de obrigações|emissao de obrigacoes|empréstimo sindicado|emprestimo sindicado)\b",
+        r"\b(prorrogação|prorrogacao|extensão|extensao)\s+do\s+vencimento\b",
+    ], 0.72),
     (SignalType.CREDIT_RISK, [
         r"\b(incumprimento|default)\b.{0,30}\b(pagamento|d[ií]vida|obriga[cç][oõ]es)\b",
         r"\b(rebaixa|rebaixamento|corte)\b.{0,30}\b(rating|nota[cç][aã]o|classifica[cç][aã]o)\b",
