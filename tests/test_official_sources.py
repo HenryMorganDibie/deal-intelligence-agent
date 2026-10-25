@@ -65,3 +65,27 @@ def test_official_registry_covers_all_supported_african_countries():
 
     missing = sorted(country.iso2 for country in COUNTRIES if country.iso2 not in official_sources.OFFICIAL_HOSTS_BY_COUNTRY)
     assert missing == []
+
+
+
+def test_google_news_wrapper_is_not_misclassified_as_invalid_or_official():
+    result = verify_url("https://news.google.com/rss/articles/CBMiExample", "NG")
+    assert result["status"] == "news_wrapper_unresolved"
+    assert result["host"] == "news.google.com"
+
+
+def test_audit_separates_unverified_hosts_invalid_urls_and_news_wrappers():
+    deals = [
+        {"id": "official", "country": "NG", "sources": [{"url": "https://www.ngxgroup.com/market-data/"}]},
+        {"id": "publisher", "country": "NG", "sources": [{"url": "https://example-news.test/article"}]},
+        {"id": "wrapper", "country": "NG", "sources": [{"url": "https://news.google.com/rss/articles/CBMiExample"}]},
+        {"id": "invalid", "country": "NG", "sources": [{"url": "http://example-news.test/article"}]},
+        {"id": "missing", "country": "NG", "sources": []},
+    ]
+    result = audit_country("NG", deals, [])
+    assert result["official_host_matched_links"] == 1
+    assert result["unverified_publisher_source_urls"] == 1
+    assert result["unresolved_news_wrapper_source_urls"] == 1
+    assert result["invalid_or_non_https_source_urls"] == 1
+    assert result["records_without_source_url"] == 1
+    assert result["unverified_or_invalid_source_urls"] == 2
