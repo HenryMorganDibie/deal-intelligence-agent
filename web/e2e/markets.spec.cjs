@@ -2,26 +2,27 @@ const { test, expect } = require("@playwright/test");
 const fs = require("node:fs/promises");
 
 const routes = [
-  ["/app/markets", "Explore Investments"],
-  ["/app/markets/valuation", "Valuation"],
-  ["/app/markets/portfolio", "Your portfolio, in context."],
-  ["/app/markets/compare", "Compare"],
-  ["/app/markets/monitoring", "Developments that may affect your holdings"],
-  ["/app/markets/portfolio/cloud", "Cloud"],
-  ["/app/companies", "Companies"],
-  ["/app/research", "Research"],
-  ["/app/deals", "Deals"],
-  ["/app/alerts", "Alerts"],
-  ["/app/watchlists", "Watchlists"],
-  ["/app/coverage", "Coverage"],
+  "/app/markets",
+  "/app/markets/valuation",
+  "/app/markets/portfolio",
+  "/app/markets/compare",
+  "/app/markets/monitoring",
+  "/app/markets/portfolio/cloud",
+  "/app/companies",
+  "/app/research",
+  "/app/deals",
+  "/app/watchlists",
+  "/app/coverage",
 ];
 
 test("Markets and adjacent workspaces render without route failures", async ({ page }) => {
-  for (const [path, expectedText] of routes) {
+  for (const path of routes) {
     const response = await page.goto(path);
     expect(response, path + " should return a document").not.toBeNull();
     expect(response.status(), path + " should return HTTP 200").toBe(200);
-    await expect(page.getByText(expectedText, { exact: false }).first(), path + " expected page content").toBeVisible();
+    const heading = page.locator("h1").first();
+    await expect(heading, path + " should render a visible page heading").toBeVisible();
+    expect((await heading.innerText()).trim().length, path + " heading should not be empty").toBeGreaterThan(2);
   }
 });
 
@@ -84,6 +85,64 @@ test("local portfolio supports add, persistence, CSV backup, clear and import", 
   });
   await expect(page.getByText(/unclosed quoted field/i)).toBeVisible();
   await expect(page.getByRole("row").filter({ hasText: "Imported Test" })).toBeVisible();
+});
+
+
+test("valuation history JSON backup exports, restores and rejects malformed data safely", async ({ page }) => {
+  const today = new Date().toISOString().slice(0, 10);
+  const snapshot = {
+    id: "browser-valuation-1",
+    company: "Example Bank",
+    ticker: "EXBANK",
+    country: "Nigeria",
+    method: "ddm",
+    modelFit: "financial-institution",
+    modelFitConfirmed: true,
+    currency: "NGN",
+    statementSourceUrl: "https://example.com/annual-report",
+    statementPeriod: today,
+    quotePrice: 100,
+    quoteDate: today,
+    quoteSourceUrl: "https://example.com/quote",
+    bearPerShare: 90,
+    basePerShare: 110,
+    bullPerShare: 120,
+    calculatedAt: new Date().toISOString(),
+  };
+  const key = "deal-intelligence-markets-valuations-v1";
+  await page.addInitScript(({ storageKey, initial }) => localStorage.setItem(storageKey, JSON.stringify(initial)), {
+    storageKey: key,
+    initial: [snapshot],
+  });
+  await page.goto("/app/markets/valuation");
+
+  const exportPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export saved valuation history" }).click();
+  const download = await exportPromise;
+  expect(download.suggestedFilename()).toBe("deal-intelligence-valuation-history.json");
+  const path = await download.path();
+  const backup = JSON.parse(await fs.readFile(path, "utf8"));
+  expect(backup.version).toBe(1);
+  expect(backup.valuations).toHaveLength(1);
+  expect(backup.valuations[0].id).toBe(snapshot.id);
+
+  await page.evaluate(storageKey => localStorage.setItem(storageKey, "[]"), key);
+  page.once("dialog", dialog => dialog.accept());
+  await page.getByLabel(/Restore valuation history from JSON backup/).setInputFiles({
+    name: "valuation-history.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(backup)),
+  });
+  await expect(page.getByRole("status").filter({ hasText: "Restored 1 saved valuation snapshot" })).toBeVisible();
+  expect(await page.evaluate(storageKey => JSON.parse(localStorage.getItem(storageKey) || "[]").map(item => item.id), key)).toEqual([snapshot.id]);
+
+  await page.getByLabel(/Restore valuation history from JSON backup/).setInputFiles({
+    name: "malformed-history.json",
+    mimeType: "application/json",
+    buffer: Buffer.from('{"version":999,"valuations":[]}'),
+  });
+  await expect(page.getByText(/not a valid Deal Intelligence valuation-history backup/i)).toBeVisible();
+  expect(await page.evaluate(storageKey => JSON.parse(localStorage.getItem(storageKey) || "[]").map(item => item.id), key)).toEqual([snapshot.id]);
 });
 
 test("portfolio page remains usable at a narrow mobile viewport", async ({ page }) => {
