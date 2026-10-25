@@ -63,6 +63,14 @@ test("local portfolio supports add, persistence, CSV backup, clear and import", 
   expect(csv).toContain("Browser Test Equity");
   expect(csv).toContain("name,ticker,country,sector,asset_type,currency");
 
+  const excelPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export Excel backup" }).click();
+  const excelDownload = await excelPromise;
+  expect(excelDownload.suggestedFilename()).toBe("deal-intelligence-portfolio.xlsx");
+  const excelPath = await excelDownload.path();
+  expect(excelPath).toBeTruthy();
+  expect((await fs.readFile(excelPath)).byteLength).toBeGreaterThan(1000);
+
   await page.reload();
   await expect(page.getByRole("row").filter({ hasText: "Browser Test Equity" })).toBeVisible();
 
@@ -85,6 +93,10 @@ test("local portfolio supports add, persistence, CSV backup, clear and import", 
   });
   await expect(page.getByText(/unclosed quoted field/i)).toBeVisible();
   await expect(page.getByRole("row").filter({ hasText: "Imported Test" })).toBeVisible();
+
+  await page.getByLabel(/Choose Excel workbook/).setInputFiles(excelPath);
+  await expect(page.getByRole("status").filter({ hasText: "Imported 1 holding" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Browser Test Equity" })).toBeVisible();
 });
 
 
@@ -143,6 +155,64 @@ test("valuation history JSON backup exports, restores and rejects malformed data
   });
   await expect(page.getByText(/not a valid Deal Intelligence valuation-history backup/i)).toBeVisible();
   expect(await page.evaluate(storageKey => JSON.parse(localStorage.getItem(storageKey) || "[]").map(item => item.id), key)).toEqual([snapshot.id]);
+});
+
+
+test("currency conversion inputs update when the reporting currency changes", async ({ page }) => {
+  await page.goto("/app/markets/portfolio");
+  await page.getByLabel("Company or investment name *").fill("FX Test Equity");
+  await page.getByLabel("Holding currency").selectOption("NGN");
+  await page.getByLabel("Quantity / units *").fill("10");
+  await page.getByLabel(/Cost per unit/).fill("50");
+  await page.getByLabel(/Current price/).fill("100");
+  await page.getByLabel(/FX to USD/).fill("0.001");
+  await page.getByRole("button", { name: "Add holding" }).click();
+
+  const before = await page.evaluate(() => JSON.parse(localStorage.getItem("deal-intelligence-markets-portfolio-v1") || "{}"));
+  expect(before.baseCurrency).toBe("USD");
+  expect(before.holdings[0].fxToBase).toBe(0.001);
+
+  page.once("dialog", dialog => dialog.accept());
+  await page.getByLabel("Portfolio reporting currency").selectOption("NGN");
+  await expect.poll(async () => page.evaluate(() => JSON.parse(localStorage.getItem("deal-intelligence-markets-portfolio-v1") || "{}").baseCurrency)).toBe("NGN");
+  const after = await page.evaluate(() => JSON.parse(localStorage.getItem("deal-intelligence-markets-portfolio-v1") || "{}"));
+  expect(after.holdings[0].fxToBase).toBe(1);
+  expect(after.holdings[0].currency).toBe("NGN");
+});
+
+test("monitoring presents explicit empty and feed-error states", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("deal-intelligence-markets-portfolio-v1", JSON.stringify({
+    version: 1,
+    baseCurrency: "USD",
+    holdings: [{ id: "monitor-h1", name: "Example Bank", ticker: "EXBANK", country: "Nigeria" }],
+  })));
+  await page.route("**/api/events?**", route => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ events: [], count: 0 }),
+  }));
+  await page.goto("/app/markets/monitoring");
+  await expect(page.getByText(/No events were returned for this period/i)).toBeVisible();
+
+  await page.unroute("**/api/events?**");
+  await page.route("**/api/events?**", route => route.fulfill({
+    status: 503,
+    contentType: "application/json",
+    body: JSON.stringify({ error: "Market event service unavailable" }),
+  }));
+  await page.getByRole("button", { name: "Refresh events" }).click();
+  await expect(page.getByText(/service unavailable|temporarily unavailable|market events could not be loaded/i)).toBeVisible();
+});
+
+test("portfolio inputs support keyboard focus navigation", async ({ page }) => {
+  await page.goto("/app/markets/portfolio");
+  const name = page.getByLabel("Company or investment name *");
+  const ticker = page.getByLabel("Ticker / identifier");
+  await name.focus();
+  await page.keyboard.press("Tab");
+  await expect(ticker).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByLabel("Asset type")).toBeFocused();
 });
 
 test("portfolio page remains usable at a narrow mobile viewport", async ({ page }) => {
