@@ -451,6 +451,7 @@ export default function MarketsPortfolioPage() {
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <Link href="/app/markets" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">← Back to Markets</Link>
+        <Link href="/app/markets/portfolio/cloud" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Cloud portfolios and team workspaces</Link>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-secondary" onClick={preparePortfolioWatchlist} disabled={holdings.length === 0}>Prepare event watchlist</button>
           <button type="button" className="btn btn-secondary" onClick={exportCsv} disabled={holdings.length === 0}>Export CSV backup</button>

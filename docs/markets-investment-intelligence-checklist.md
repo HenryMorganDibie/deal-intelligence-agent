@@ -74,7 +74,20 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Add portfolio-wide valuation insights only where constituent valuations pass quality gates; unsupported, stale, mismatched and unpriced holdings are excluded and their review status is explained.
 - [x] Add understandable concentration and data-quality explanations, links to company research and per-holding valuation, and a local-only handoff that pre-fills the existing Watchlists page with company names. Portfolio quantities, prices and FX rates are not copied into the watchlist draft.
 - [x] Add unit tests for arithmetic invariants, missing prices, currency conversion, exposure aggregation and empty portfolios; execution is pending the latest CI run.
-- [x] Keep cloud-saved portfolios and cross-device sync out of scope until authentication and row-level ownership protections exist and are tested; current holdings and valuation snapshots stay local to the browser.
+- [x] Keep the original browser-only portfolio local and separate from cloud storage. The multi-user cloud portfolio implementation is isolated in stacked draft PR #14 and is not considered released until migration validation, RLS tests and browser acceptance pass.
+
+## Phase 4b — Multi-user cloud portfolio foundation (stacked draft PR #14)
+
+- [x] Add a database schema for personal portfolios and organization-owned portfolios, with exclusive ownership mode, organization membership roles, instruments, transaction ledger, valuation snapshots, import jobs and audit events.
+- [x] Add row-level security policies and database role checks for personal ownership and organization membership. The migrations remain un-applied to the hosted database.
+- [x] Add Supabase Auth sign-in/sign-up endpoints using HTTP-only same-site cookies; public research browsing remains available without an account.
+- [x] Add one-time hashed organization invite codes with seven-day expiry and atomic acceptance; invited users join through their own signed-in account.
+- [x] Add a separate cloud workspace for manual instrument and transaction entry, with positions derived from ledger rows. Keep the original localStorage portfolio separate and never upload its contents silently.
+- [ ] Validate migration SQL against a disposable/local database and run Supabase security/performance advisors.
+- [x] Add pgTAP tests for separate organizations, personal-vs-shared access, invitation acceptance, viewer read/write boundaries, membership administration, and reporting-currency checks. CI execution is still being verified.
+- [x] Add CSV/XLSX transaction import preview and server-side atomic commit, saved cloud valuation snapshots, and explicit idempotent migration of local holdings/reviews. Row-level client errors block commit; server constraints are rechecked before writes.
+- [ ] Verify email confirmation/recovery configuration, session refresh, mobile/keyboard accessibility and browser workflows.
+- [ ] Confirm latest-head preview and API smoke tests after the Vercel build-rate limit resets. Do not merge or deploy without explicit approval.
 
 ## Phase 5 — Personal investment insights and monitoring
 
