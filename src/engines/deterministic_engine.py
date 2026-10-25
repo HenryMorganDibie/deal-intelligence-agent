@@ -314,7 +314,7 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         rf"\b(fined|sanctioned|penali[sz]ed|suspended|censured|investigated|probed)\s+by\s+(the\s+)?({_AFRICAN_REGULATORS})\b",
         r"\blicen(c|s)e\s+(revoked?|suspended?|cancelled?)\b",
         r"\blicen(c|s)e\s+(has\s+been\s+)?(revoked?|suspended?|cancelled?|not\s+renewed)\b",
-        r"\b(competition|antitrust)\s+(authority|commission|regulator)\b.{0,45}\b(blocks?|blocked|prohibits?|prohibited|prevents?|prevented)\b.{0,35}\b(acquisition|merger|deal|takeover)\b,
+        r"\b(competition|antitrust)\s+(authority|commission|regulator)\b.{0,45}\b(blocks?|blocked|prohibits?|prohibited|prevents?|prevented)\b.{0,35}\b(acquisition|merger|deal|takeover)\b",
         r"\bconsent\s+(order|decree|agreement)\b.{0,30}\b(regulat\w*|enforce\w*|penalt\w*)\b",
         r"\bcriminal\s+(charge|referral|indictment)\b.{0,30}\b(fraud|financ|securi)\b",
     ], 0.93),
