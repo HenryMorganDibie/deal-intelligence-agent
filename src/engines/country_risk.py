@@ -41,9 +41,6 @@ INDICATORS_PATH = _REFERENCE / "country_indicators.json"
 CURRENT_SIGNALS_PATH = _REFERENCE / "current_macro_signals.json"
 WB_API = "https://api.worldbank.org/v2/country/{codes}/indicator/{indicator}"
 FX_API = "https://open.er-api.com/v6/latest/USD"
-CURRENT_SIGNALS_API = "https://api.africa-api.com/v1/countries/{code}/signals"
-_CURRENT_SIGNALS_TTL = 6 * 60 * 60
-_CURRENT_SIGNALS_CACHE: dict[str, tuple[float, dict]] = {}
 
 GOVERNANCE = {
     "GOV_WGI_PV.EST": "Political stability and absence of violence",
@@ -328,9 +325,10 @@ def _normalize_current_macro_payload(country: Country, payload: dict) -> dict:
 _CURRENT_SIGNALS_SNAPSHOT: Optional[dict] = None
 
 
-def load_current_signals_snapshot(path: Path = CURRENT_SIGNALS_PATH) -> dict:
+def load_current_signals_snapshot(path: Optional[Path] = None) -> dict:
     """Read the committed supplemental snapshot; the hosted API needs no provider key."""
     global _CURRENT_SIGNALS_SNAPSHOT
+    path = path or CURRENT_SIGNALS_PATH
     if _CURRENT_SIGNALS_SNAPSHOT is None or path != CURRENT_SIGNALS_PATH:
         try:
             value = json.loads(path.read_text())
