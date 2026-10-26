@@ -23,7 +23,7 @@ const limits = (q: Quality | null) => [
   },
   {
     title: "Country risk uses public data",
-    body: "World Bank indicators are annual and often a year old; sovereign ratings and bond spreads are licensed and not included.",
+    body: "The risk score uses annual World Bank observations. Country pages can separately show source-attributed monthly/current macro signals and daily FX where available; these never overwrite annual inputs. Coverage depends on the supplemental source configuration. Sovereign ratings and bond spreads are licensed and not included.",
   },
   {
     title: "Patterns, not a trained model",
