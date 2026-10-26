@@ -123,8 +123,37 @@ def test_current_macro_signals_are_optional_without_api_key(monkeypatch):
     result = cr.current_macro_signals(ac.get("NG"))
     assert result["status"] == "not_configured"
     assert result["observations"] == []
-    assert "AFRICA_API_KEY" in result["message"]
+    assert "GitHub Actions" in result["message"]
+    assert "AFRICA_API_KEY" not in result["message"]
 
+
+
+def test_current_macro_signals_load_from_committed_snapshot_without_api_key(tmp_path, monkeypatch):
+    import json
+
+    snapshot = {
+        "generated_at": "2026-10-26T00:00:00Z",
+        "countries": {
+            "NG": {
+                "status": "available",
+                "source": "Africa API",
+                "source_url": "https://africa-api.com/docs/signals",
+                "generated_at": "2026-10-26T00:00:00Z",
+                "observations": [{"metric_key": "policy_rate_pct", "value": 27.0,
+                                  "frequency": "ad_hoc", "source": "cbn_ng", "as_of_period": "2026-09-22"}],
+            }
+        },
+    }
+    path = tmp_path / "current_macro_signals.json"
+    path.write_text(json.dumps(snapshot))
+    monkeypatch.setattr(cr, "CURRENT_SIGNALS_PATH", path)
+    monkeypatch.setattr(cr, "_CURRENT_SIGNALS_SNAPSHOT", None)
+    monkeypatch.delenv("AFRICA_API_KEY", raising=False)
+
+    result = cr.current_macro_signals(ac.get("NG"))
+    assert result["status"] == "available"
+    assert result["observations"][0]["value"] == 27.0
+    assert result["observations"][0]["source"] == "cbn_ng"
 
 def test_country_risk_reweights_over_available_components():
     snap = _snapshot(**{"FP.CPI.TOTL.ZG": {"KEN": {"2024": 4.0}}})
