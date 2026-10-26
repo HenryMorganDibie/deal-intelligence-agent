@@ -392,6 +392,7 @@ async def country(code: str) -> dict:
         "country": {k: getattr(c, k) for k in ("iso2", "iso3", "name", "region", "languages", "currency", "exchange",
                                                "yahoo_suffix", "central_bank", "securities_regulator")},
         "risk": await run_in_threadpool(country_risk.assess, c),
+        "current_signals": await run_in_threadpool(country_risk.current_macro_signals, c),
         "currency": await run_in_threadpool(market_risk.currency_risk, c.currency),
         "coverage": coverage.country_row(c, ds, es),
         "source_quality": official_sources.audit_country(c.iso2, ds, es),
