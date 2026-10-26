@@ -84,7 +84,7 @@ Optional configuration:
 | `DEAL_INTEL_ANTHROPIC_MODEL` | `claude-opus-5-5` | Claude model for explanation and synthesis |
 | `DEAL_INTEL_EFFORT` | `high` | Claude effort level (`low`, `medium`, `high`, `xhigh`, `max`) |
 | `DEAL_INTEL_WEBHOOK_URL` | unset | Default webhook for monitoring alerts |
-| `AFRICA_API_KEY` | unset | Optional Africa API key for source-attributed current/monthly country macro signals; these display separately and do not change annual risk scores |
+| `AFRICA_API_KEY` | GitHub Actions secret | Optional Africa API key used by the scheduled country-data workflow to refresh source-attributed current/monthly signals; the key is never needed by Vercel and signals do not change annual risk scores |
 
 If the LLM is unavailable (no key, outage, or a declined request), the brief is still
 produced from the deterministic engine's findings, labelled as such and flagged for
@@ -101,7 +101,7 @@ python main.py deals --upload                       # push to the hosted databas
 python main.py countries                            # risk ranking for the 54 countries
 python main.py countries --country SN               # risk components and currency for one country
 python main.py countries --refresh                  # re-download World Bank indicators (slow)
-# Optional hosted country pages: configure AFRICA_API_KEY on the API service for fresher macro signals
+# Optional: add AFRICA_API_KEY under GitHub repository Settings → Secrets and variables → Actions; the existing scheduled workflow publishes the supplemental snapshot
 python main.py research "Which Kenyan fintechs raised money this year, and from whom?"
 python main.py profile --company "Dangote Cement" --ticker DANGCEM.LG
 python main.py analyse --company Sonatel --country SN
