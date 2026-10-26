@@ -55,6 +55,27 @@ def _resolve_ticker(ticker: str) -> str:
     return ticker  # assume US listed
 
 
+_YAHOO_READY = False
+
+
+def yahoo():
+    """The Yahoo Finance client with its caches in the temporary directory: serverless hosts allow writes only
+    there, and the default cache under the home directory fails on them."""
+    global _YAHOO_READY
+    import yfinance as yf
+    if not _YAHOO_READY:
+        import os
+        import tempfile
+        try:
+            path = os.path.join(tempfile.gettempdir(), "yfinance-cache")
+            os.makedirs(path, exist_ok=True)
+            yf.set_tz_cache_location(path)
+        except Exception:                      # caching is an optimisation; fetching works without it
+            pass
+        _YAHOO_READY = True
+    return yf
+
+
 def _fetch_price_moves(
     ticker: str,
     detection_date: str,
@@ -68,7 +89,7 @@ def _fetch_price_moves(
     results: dict[str, Optional[float]] = {f"{w}d": None for w in windows}
 
     try:
-        import yfinance as yf
+        yf = yahoo()
         det_dt = datetime.strptime(detection_date, "%Y-%m-%d")
         # Fetch 60 days of data from detection date
         end_dt = det_dt + timedelta(days=max(windows) + 10)
@@ -108,7 +129,7 @@ def _fetch_volume_spike(ticker: str, detection_date: str, window_days: int = 5) 
     """Fetch average volume spike % in first window_days after detection vs prior 20d average."""
     resolved = _resolve_ticker(ticker)
     try:
-        import yfinance as yf
+        yf = yahoo()
         det_dt   = datetime.strptime(detection_date, "%Y-%m-%d")
         pre_start = det_dt - timedelta(days=30)
         post_end  = det_dt + timedelta(days=window_days + 5)
@@ -199,7 +220,7 @@ def auto_record_outcome(
 def get_current_price(ticker: str) -> Optional[float]:
     """Fetch latest closing price for a ticker."""
     try:
-        import yfinance as yf
+        yf = yahoo()
         resolved = _resolve_ticker(ticker)
         hist = yf.Ticker(resolved).history(period="5d", auto_adjust=True)
         if hist.empty:
@@ -212,7 +233,7 @@ def get_current_price(ticker: str) -> Optional[float]:
 def get_volatility(ticker: str, days: int = 30) -> Optional[float]:
     """Annualised volatility estimate over `days` trading days."""
     try:
-        import yfinance as yf
+        yf = yahoo()
         resolved = _resolve_ticker(ticker)
         hist = yf.Ticker(resolved).history(
             start=(utcnow() - timedelta(days=days + 10)).strftime("%Y-%m-%d"),

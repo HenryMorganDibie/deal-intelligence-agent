@@ -313,7 +313,8 @@ _YAHOO_INFO = ("longName", "sector", "industry", "country", "website", "fullTime
 def yahoo_financials(ticker: str, years: int = 4) -> Optional[dict]:
     """Annual statements and valuation multiples from Yahoo Finance, or None if Yahoo has no data."""
     try:
-        import yfinance as yf
+        from src.engines.market_data import yahoo
+        yf = yahoo()
         t = yf.Ticker(ticker)
         info = t.info or {}
         frames = [t.income_stmt, t.balance_sheet, t.cashflow]

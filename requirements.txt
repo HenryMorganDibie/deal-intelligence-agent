@@ -10,3 +10,5 @@ groq>=0.9.0
 fastapi>=0.115.0
 pypdf>=4.0
 PyJWT[crypto]>=2.8.0
+# Prices, statements and multiples for US, Johannesburg and Cairo listings (imported only when used).
+yfinance>=0.2.0
