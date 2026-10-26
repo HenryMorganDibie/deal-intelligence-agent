@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-26T01:22:34.986021+00:00",
+  "updated_at": "2026-10-26T12:44:35.910428+00:00",
   "current": {
     "company": "Team",
     "company_url": "/app/companies?name=Team",
@@ -32,7 +32,7 @@
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-19",
     "period_end": "2026-10-25",
-    "selected_at": "2026-10-26T01:22:34.984802+00:00",
+    "selected_at": "2026-10-26T12:44:35.909486+00:00",
     "selection_version": 4,
     "companies": [
       {
@@ -66,7 +66,41 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-19",
         "period_end": "2026-10-25",
-        "selected_at": "2026-10-26T01:22:34.984802+00:00",
+        "selected_at": "2026-10-26T12:44:35.909486+00:00",
+        "selection_version": 4
+      },
+      {
+        "company": "Stock Exchange",
+        "company_url": "/app/companies?name=Stock%20Exchange",
+        "headline": "TOR seeks state debt restructuring, eyes Ghana Stock Exchange listing",
+        "deal_type": "debt_restructuring",
+        "amount_usd": null,
+        "country": "GH",
+        "sector": null,
+        "announced": "2026-10-25",
+        "score": 52.4,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: debt restructuring",
+          "Event rule confidence: 0.88",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "News Ghana",
+            "title": "TOR seeks state debt restructuring, eyes Ghana Stock Exchange listing",
+            "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQajkzSTZRX3FudVdteHlqM251azQ2YWdLNC03dWs4Zk4tMzBZTEtNN3pWWmI0V2FNT0xjSlFTbU1nZnVyemF2TW5DZWU1dVdpa3BHQUFEVm5KTFQxVkVmVnZzeU04MGVOc0tkRVc2MDBJWGJVWE5odWNvVXNORVlpSjFYS1BHUW9scFVkQVU5d1RJV2tiMkpMWVN3?oc=5",
+            "date": "2026-10-25",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-19",
+        "period_end": "2026-10-25",
+        "selected_at": "2026-10-26T12:44:35.909486+00:00",
         "selection_version": 4
       },
       {
@@ -100,7 +134,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-19",
         "period_end": "2026-10-25",
-        "selected_at": "2026-10-26T01:22:34.984802+00:00",
+        "selected_at": "2026-10-26T12:44:35.909486+00:00",
         "selection_version": 4
       },
       {
@@ -134,7 +168,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-19",
         "period_end": "2026-10-25",
-        "selected_at": "2026-10-26T01:22:34.984802+00:00",
+        "selected_at": "2026-10-26T12:44:35.909486+00:00",
         "selection_version": 4
       },
       {
@@ -168,76 +202,35 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-19",
         "period_end": "2026-10-25",
-        "selected_at": "2026-10-26T01:22:34.984802+00:00",
-        "selection_version": 4
-      },
-      {
-        "company": "Woman",
-        "company_url": "/app/companies?name=Woman",
-        "headline": "Zimbabwe woman fined US$300 for WhatsApp harassment",
-        "deal_type": "regulatory_action",
-        "amount_usd": null,
-        "country": "ZW",
-        "sector": null,
-        "announced": "2026-10-22",
-        "score": 54.61,
-        "independent_stories": 2,
-        "transaction_records": 0,
-        "related_events": 2,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "2 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Bulawayo24 News",
-            "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
-            "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFBTRUZvNUZwV2VRZGduWEhBNkltR3ZkcXk0bUlONmVJYWxJTXpnWnRWb2RsU3JtV01mbWVDUVlfbjBvTjd5eWZxaHVac3lzSVN4cTFqZFhXMkswUHNxNUhQQV9zZW80N1BMUm5vbkt1Mm10Zw?oc=5",
-            "date": "2026-10-22",
-            "kind": "corporate_event"
-          },
-          {
-            "publisher": "Legit News",
-            "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
-            "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
-            "date": "2026-10-22",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-19",
-        "period_end": "2026-10-25",
-        "selected_at": "2026-10-26T01:22:34.984802+00:00",
+        "selected_at": "2026-10-26T12:44:35.909486+00:00",
         "selection_version": 4
       }
     ],
     "runner_ups": [
+      {
+        "company": "Congo",
+        "score": 50.14,
+        "reasons": [
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.90",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "Woman",
+        "score": 54.61,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "2 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
       {
         "company": "Data",
         "score": 49.61,
         "reasons": [
           "Corporate signal: regulatory action",
           "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Allianz",
-        "score": 49.16,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.75",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Banks",
-        "score": 45.71,
-        "reasons": [
-          "Corporate signal: distressed asset",
-          "Event rule confidence: 0.80",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -1870,7 +1863,7 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-19",
       "period_end": "2026-10-25",
-      "selected_at": "2026-10-26T01:22:34.984802+00:00",
+      "selected_at": "2026-10-26T12:44:35.909486+00:00",
       "selection_version": 4,
       "companies": [
         {
@@ -1904,7 +1897,41 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-19",
           "period_end": "2026-10-25",
-          "selected_at": "2026-10-26T01:22:34.984802+00:00",
+          "selected_at": "2026-10-26T12:44:35.909486+00:00",
+          "selection_version": 4
+        },
+        {
+          "company": "Stock Exchange",
+          "company_url": "/app/companies?name=Stock%20Exchange",
+          "headline": "TOR seeks state debt restructuring, eyes Ghana Stock Exchange listing",
+          "deal_type": "debt_restructuring",
+          "amount_usd": null,
+          "country": "GH",
+          "sector": null,
+          "announced": "2026-10-25",
+          "score": 52.4,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: debt restructuring",
+            "Event rule confidence: 0.88",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "News Ghana",
+              "title": "TOR seeks state debt restructuring, eyes Ghana Stock Exchange listing",
+              "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQajkzSTZRX3FudVdteHlqM251azQ2YWdLNC03dWs4Zk4tMzBZTEtNN3pWWmI0V2FNT0xjSlFTbU1nZnVyemF2TW5DZWU1dVdpa3BHQUFEVm5KTFQxVkVmVnZzeU04MGVOc0tkRVc2MDBJWGJVWE5odWNvVXNORVlpSjFYS1BHUW9scFVkQVU5d1RJV2tiMkpMWVN3?oc=5",
+              "date": "2026-10-25",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-19",
+          "period_end": "2026-10-25",
+          "selected_at": "2026-10-26T12:44:35.909486+00:00",
           "selection_version": 4
         },
         {
@@ -1938,7 +1965,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-19",
           "period_end": "2026-10-25",
-          "selected_at": "2026-10-26T01:22:34.984802+00:00",
+          "selected_at": "2026-10-26T12:44:35.909486+00:00",
           "selection_version": 4
         },
         {
@@ -1972,7 +1999,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-19",
           "period_end": "2026-10-25",
-          "selected_at": "2026-10-26T01:22:34.984802+00:00",
+          "selected_at": "2026-10-26T12:44:35.909486+00:00",
           "selection_version": 4
         },
         {
@@ -2006,76 +2033,35 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-19",
           "period_end": "2026-10-25",
-          "selected_at": "2026-10-26T01:22:34.984802+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Woman",
-          "company_url": "/app/companies?name=Woman",
-          "headline": "Zimbabwe woman fined US$300 for WhatsApp harassment",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "ZW",
-          "sector": null,
-          "announced": "2026-10-22",
-          "score": 54.61,
-          "independent_stories": 2,
-          "transaction_records": 0,
-          "related_events": 2,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "2 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Bulawayo24 News",
-              "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
-              "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFBTRUZvNUZwV2VRZGduWEhBNkltR3ZkcXk0bUlONmVJYWxJTXpnWnRWb2RsU3JtV01mbWVDUVlfbjBvTjd5eWZxaHVac3lzSVN4cTFqZFhXMkswUHNxNUhQQV9zZW80N1BMUm5vbkt1Mm10Zw?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Legit News",
-              "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
-              "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-19",
-          "period_end": "2026-10-25",
-          "selected_at": "2026-10-26T01:22:34.984802+00:00",
+          "selected_at": "2026-10-26T12:44:35.909486+00:00",
           "selection_version": 4
         }
       ],
       "runner_ups": [
+        {
+          "company": "Congo",
+          "score": 50.14,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Woman",
+          "score": 54.61,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "2 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
         {
           "company": "Data",
           "score": 49.61,
           "reasons": [
             "Corporate signal: regulatory action",
             "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Allianz",
-          "score": 49.16,
-          "reasons": [
-            "Corporate signal: leadership change",
-            "Event rule confidence: 0.75",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Banks",
-          "score": 45.71,
-          "reasons": [
-            "Corporate signal: distressed asset",
-            "Event rule confidence: 0.80",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
         }
