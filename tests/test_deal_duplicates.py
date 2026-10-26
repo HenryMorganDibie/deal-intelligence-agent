@@ -460,3 +460,16 @@ def test_market_briefs_and_newsletters_count_against_the_daily_allowance(monkeyp
     r = client.post("/api/market-briefs/newsletter", json={
         "source_brief_id": "cc96d02b-8cc0-497b-ad17-1c06b056cb52", "selected_items": ["deal:0"]})
     assert r.status_code == 429 and reserved[-1].startswith("[newsletter]") and not research.called
+
+
+def test_listings_french_bonds_sovereigns_and_sector_pledges_are_classified():
+    from src.engines.deals import extract_deal
+    r = extract_deal("Nigeria's Dangote Refinery Aims to Raise $5B With October Listing")
+    assert r["deal_type"] == "ipo" and r["stage"] == "announced"
+    r = extract_deal("MTN Nigeria plans IPO to raise $500m", africa_source=True)
+    assert (r["deal_type"], r["target"], r["stage"]) == ("ipo", "MTN Nigeria", "announced")
+    r = extract_deal("Wema Bank lève 50 milliards de nairas en obligations", africa_source=True)
+    assert r["deal_type"] == "debt_financing"
+    assert extract_deal("L’Égypte lève 1 milliard de dollars en obligations sociales") is None   # a sovereign issue
+    assert extract_deal("Africa's Richest Man Invests $4.6 Billion in Nigeria Farming") is None  # a sector pledge
+    assert extract_deal("Jumia raises $100 million ahead of IPO", africa_source=True)["deal_type"] == "equity_funding"
