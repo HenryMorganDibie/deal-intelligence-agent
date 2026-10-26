@@ -256,7 +256,7 @@ RSS = """<rss><channel>
 <link>https://example.com/a</link><pubDate>Tue, 13 Oct 2026 08:00:00 GMT</pubDate>
 <source url="https://techcabal.com">TechCabal</source><description>&lt;b&gt;MoneyHash&lt;/b&gt; ...</description></item>
 <item><title>Ghana bank fined by Bank of Ghana for breaches</title><link>https://example.com/b</link>
-<pubDate>Mon, 12 Oct 2026 08:00:00 GMT</pubDate></item>
+<pubDate>Mon, 12 Oct 2026 08:00:00 GMT</pubDate><source url="https://bog.gov.gh">Bank of Ghana</source></item>
 </channel></rss>"""
 
 
@@ -265,11 +265,14 @@ def test_parse_feed_and_extract_deals_and_events():
     assert items[0]["title"] == "Egypt's MoneyHash raises $5.2 million in pre-Series A"
     assert items[0]["publisher"] == "TechCabal" and items[0]["date"] == "2026-10-13"
     assert items[0]["publisher_url"] == "https://techcabal.com"
-    assert items[1]["publisher"] == "Feed" and items[1]["snippet"] == ""
+    assert items[1]["publisher"] == "Bank of Ghana" and items[1]["snippet"] == ""
+    assert items[1]["publisher_url"] == "https://bog.gov.gh"
     deals = mf.to_deals(items)
     assert [d["target"] for d in deals] == ["MoneyHash"]
+    assert deals[0]["sources"][0]["publisher_url"] == "https://techcabal.com"
     events = mf.to_events(items)
     assert [(e["signal_type"], e["country"]) for e in events] == [("regulatory_action", "GH")]
+    assert events[0]["publisher_url"] == "https://bog.gov.gh"
 
 
 def test_event_country_uses_story_location_over_search_hint():

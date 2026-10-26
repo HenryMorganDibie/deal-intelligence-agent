@@ -226,6 +226,8 @@ class ReplayEngine:
             sev, conf, _ = adaptive_calibrate(cand, market=market)
             signals.append(DetectedSignal(
                 signal_type=cand.signal_type, severity=sev,
+                event_subtype=cand.event_subtype,
+                event_attributes=cand.event_attributes,
                 headline=f"[REPLAY] {cand.signal_type.value.replace('_',' ').title()}",
                 evidence=[cand.source_text[:200]],
                 source_urls=[cand.source_url] if cand.source_url else [],

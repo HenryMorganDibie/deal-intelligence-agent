@@ -369,7 +369,7 @@ async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
     archived = []
     if _configured():
         try:
-            r = _rpc_sync("list_country_risk_snapshots", {"p_iso2": c.iso2, "p_limit": snapshots})
+            r = _rpc_sync("list_country_risk_snapshots", {"p_iso2": c.iso2, "p_limit": 1})
             if r.status_code == 200:
                 archived = r.json() or []
             else:

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 
 from src.data.africa_countries import COUNTRIES, regulator_acronyms
 from src.utils.clock import utcnow
@@ -138,7 +138,14 @@ _AFRICAN_REGULATORS = "|".join(
 
 SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
 
-    # ── M&A Activity ──
+    # ── M&A / Exit Activity ──
+    # IPO and exit-process indicators belong here only when a concrete process is reported.
+    (SignalType.MA_ACTIVITY, [
+        r"\b(board|company|shareholders?)\s+(approved?|approves|authori[sz]ed|authorizes)\b.{0,50}\b(ipo|initial public offering|listing|float)\b",
+        r"\b(appoints?|mandates?|hires?)\b.{0,50}\b(ipo|listing|public offering)\b.{0,30}\b(advisers?|advisors?|underwriters?|banks?)\b",
+        r"\b(prepar(?:es?|ing)|plans?|planning|considering)\b.{0,35}\b(ipo|initial public offering|stock[-\s]market listing|public listing)\b",
+        r"\b(ipo|initial public offering)\s+(preparations?|mandate|filing|prospectus|roadshow)\b",
+    ], 0.82),
     (SignalType.MA_ACTIVITY, [
         r"\bdefinitive\s+(merger|acquisition)\b",
         # Not SEC 8-K Item 1.01 boilerplate ("Material Definitive Agreement"), which covers loans and contracts too.
@@ -164,6 +171,12 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bpotential\s+(acquirer|buyer|bidder)\b",
     ], 0.55),
 
+    # M&A: divestitures, sale of business units, and withdrawn transactions.
+    (SignalType.MA_ACTIVITY, [
+        r"\b(divest(?:s|ed|ing|iture|itures)?|dispos(?:es|ed|al|als))\b.{0,50}\b(subsidiar(?:y|ies)|business\s+unit|division|stake|operations?)\b",
+        r"\b(agreed|agrees|plans?|planned|announced)\b.{0,30}\b(to\s+)?(sell|sale|dispose\s+of|divest)\b.{0,50}\b(subsidiar(?:y|ies)|business|division|stake|unit)\b",
+        r"\b(merger|acquisition|takeover\s+bid|sale\s+process)\b.{0,35}\b(withdrawn|terminated|abandoned|collapsed)\b",
+    ], 0.78),
     # ── Credit Risk ──
     (SignalType.CREDIT_RISK, [
         r"\bcovenant\s+(breach|violation|default|waiver)\b",
@@ -185,9 +198,14 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
     (SignalType.CREDIT_RISK, [
         r"\b(credit\s+rating|leverage\s+ratio|debt[-\s]to[-\s]equity)\b",
         r"\bnet\s+debt\b.{0,30}\b(exceeded?|surpassed?|increased?)\b",
-        r"\brefinanc(e|ing|ed)\b",
+        r"\b(refinanc\w*)\b.{0,40}\b(covenant|liquidity|default|distress|higher cost|costlier|deteriorat\w*)\b",
     ], 0.55),
 
+    (SignalType.CREDIT_RISK, [
+        r"\b(cash\s+runway|runway)\b.{0,25}\b(under|less\s+than|below|only|just)\s+\d+\s+(months?|weeks?)\b",
+        r"\b(missed|misses|skipped|failed\s+to\s+make)\b.{0,25}\b(debt|loan|bond|interest|coupon)\s+(payment|repayment|installments?|instalments?)\b",
+        r"\b(liquidity|cash\s+flow|debt\s+service)\b.{0,30}\b(deteriorat\w*|weaken\w*|shortfall|pressure)\b",
+    ], 0.88),
     # ── Distressed Asset ──
     (SignalType.DISTRESSED_ASSET, [
         r"\b(chapter\s+11|chapter\s+7|bankruptcy)\s+(fil(ed?|ing)|petition|protect)\b",
@@ -211,6 +229,11 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\basset\s+disposal\b.{0,30}\b(forced|compelled|required)\b",
     ], 0.60),
 
+    (SignalType.DISTRESSED_ASSET, [
+        r"\b(placed|put|entered|enters|goes|went)\b.{0,25}\b(under|into)\b.{0,25}\b(administration|receivership|business\s+rescue|judicial\s+management)\b",
+        r"\b(creditors?|lenders?)\b.{0,35}\b(petition(?:ed)?\s+for|filed\s+for)\b.{0,25}\b(liquidation|winding\s+up|insolvency)\b",
+        r"\b(creditors?'\s+voluntary\s+liquidation|compulsory\s+liquidation)\b",
+    ], 0.88),
     # ── SEC Form 8-K item codes (filed by the company itself) ──
     (SignalType.DISTRESSED_ASSET,  [r"\bitem\s+1\.03\b"], 0.95),   # bankruptcy or receivership
     (SignalType.CREDIT_RISK,       [r"\bitem\s+2\.04\b"], 0.92),   # accelerated obligation
@@ -246,6 +269,11 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bdisappointing\s+(results?|earnings?|revenue)\b",
     ], 0.55),
 
+    (SignalType.EARNINGS_SURPRISE, [
+        r"\b(withdraws?|withdrew|suspends?|suspended)\b.{0,30}\b(guidance|earnings\s+forecast|financial\s+outlook)\b",
+        r"\b(cuts?|cut|lowers?|lowered|reduces?|reduced)\b.{0,30}\b(revenue|profit|earnings|ebitda)\s+(outlook|forecast|guidance|target)\b",
+        r"\b(revenue|profit|earnings|ebitda)\s+(missed|misses|beats?|beat)\s+(analyst\s+)?(estimates?|expectations?|consensus|forecasts?)\b",
+    ], 0.82),
     # ── Leadership Change ──
     (SignalType.LEADERSHIP_CHANGE, [
         r"\b(ceo|cfo|coo|cto|md|managing\s+director|chairman)\b.{0,30}(resign|depart|step.?down|terminat|dismiss)",
@@ -269,13 +297,24 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bsuccession\s+plan\b",
     ], 0.50),
 
+    (SignalType.LEADERSHIP_CHANGE, [
+        r"\b(founder|co[-\s]?founder|chief\s+executive\s+officer|chief\s+financial\s+officer)\b.{0,35}\b(resigns?|resigned|steps?\s+down|stepped\s+down|departs?|departed|quits?|quit|retires?|retired|ousted|fired|dismissed)\b",
+        r"\b(resigns?|resigned|steps?\s+down|stepped\s+down|departs?|departed|quits?|quit)\b.{0,35}\b(founder|co[-\s]?founder|chief\s+executive\s+officer|chief\s+financial\s+officer)\b",
+    ], 0.82),
     # ── Regulatory Action ──
     (SignalType.REGULATORY_ACTION, [
+        # Include material listing/prospectus decisions, while keeping ordinary fundraising
+        # announcements out of the regulatory signal category.
+        r"\b(ipo|initial public offering|listing|prospectus|public offering)\b.{0,50}\b(approved?|approval|authori[sz]ed|cleared|registered|rejected|refused)\b",
+        r"\b(approved?|approval|authori[sz]ed|cleared|registered|rejected|refused)\b.{0,50}\b(ipo|initial public offering|listing|prospectus|public offering)\b",
+        r"\b(exchange|securities regulator|capital markets authority)\b.{0,45}\b(approves?|approved|rejects?|rejected|suspends?|suspended)\b.{0,35}\b(listing|prospectus|ipo|public offering)\b",
         r"\b(sec|fsca|cma|cbn|sarb|cbk)\b.{0,30}\b(invest(igat\w*|ment)|probe|enforcement|sanction|fine|penalty|subpoena)\b",
         r"\b(doj|ftc|competition\s+commission)\b.{0,30}\b(invest\w*|antitrust|charge|fine)\b",
         rf"\b({_AFRICAN_REGULATORS})\b.{{0,40}}\b(invest(igat\w*)|probe|sanction\w*|fine[sd]?|penalt\w*|suspend\w*|revok\w*)\b",
         rf"\b(fined|sanctioned|penali[sz]ed|suspended|censured|investigated|probed)\s+by\s+(the\s+)?({_AFRICAN_REGULATORS})\b",
         r"\blicen(c|s)e\s+(revoked?|suspended?|cancelled?)\b",
+        r"\blicen(c|s)e\s+(has\s+been\s+)?(revoked?|suspended?|cancelled?|not\s+renewed)\b",
+        r"\b(competition|antitrust)\s+(authority|commission|regulator)\b.{0,45}\b(blocks?|blocked|prohibits?|prohibited|prevents?|prevented)\b.{0,35}\b(acquisition|merger|deal|takeover)\b",
         r"\bconsent\s+(order|decree|agreement)\b.{0,30}\b(regulat\w*|enforce\w*|penalt\w*)\b",
         r"\bcriminal\s+(charge|referral|indictment)\b.{0,30}\b(fraud|financ|securi)\b",
     ], 0.93),
@@ -306,12 +345,28 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bdebt[-\s](for[-\s]equity|swap)\b",
     ], 0.75),
     (SignalType.DEBT_RESTRUCTURE, [
-        r"\brefinanc(ing|ed?)\b.{0,20}\b(debt|facility|bond)\b",
+        r"\brefinanc\w*\b.{0,30}\b(debt|facility|bond|loan|notes?)\b",
+        r"\b(debt|facility|bond|loan|notes?)\b.{0,35}\b(refinanc\w*|rollover|rolled over|maturity extension)\b",
+        r"\b(refinanc\w*)\b.{0,35}\b(existing|maturing|outstanding)\s+(debt|bond|facility|loan|notes?)\b",
+        r"\b(loan|bond|debt|notes?)\s+(issuance|issue|offering)\b.{0,40}\b(refinanc\w*|replace existing|retire existing|repay existing)\b",
         r"\bmaturity\s+(extension|profile|wall)\b",
-    ], 0.55),
+    ], 0.68),
 
+    (SignalType.DEBT_RESTRUCTURE, [
+        r"\b(covenant|financial\s+covenant)\s+waiver\b",
+        r"\bamend[-\s]and[-\s]extend\b",
+        r"\b(exchange\s+offer|debt\s+exchange)\b.{0,30}\b(bond|debt|creditor|notes?)\b",
+    ], 0.82),
     # ── Insider Activity ──
     (SignalType.INSIDER_ACTIVITY, [
+        # Ownership-change and substantial-shareholder disclosures (not primary fundraising).
+        r"\b(change in|changes to)\s+(beneficial\s+)?ownership\b",
+        r"\bbeneficial ownership\b.{0,50}\b(disclos\w*|cross\w*|increas\w*|reduc\w*|acquir\w*|stake)\b",
+        r"\b(new|largest|major|significant)\s+(?:strategic\s+)?shareholder\b",
+        r"\b(stake|shareholding)\s+(acquisition|sale|disposal|increase|decrease|dilution)\b",
+        r"\b(shareholder|investor)\s+(takes?|acquires?|sells?|exits?|increases?|reduces?)\b.{0,45}\b(stake|shares?|holding|ownership)\b",
+        r"\b(acquir(?:es?|ed|ing)|takes?|took|buys?|bought|sells?|sold|dispos(?:es|ed|ing))\b.{0,45}\b(majority|minority|controlling|significant)\s+(?:share\s+)?stake\b",
+        r"\b(cross(?:es|ed)?|exceeds?|falls?\s+below|increases?|reduces?)\b.{0,35}\b(shareholding|voting rights|beneficial ownership|disclosure threshold)\b",
         r"\b(sc\s+13[dg]|schedule\s+13[dg])\b",
         r"\bform\s+4\b.{0,30}\b(filed|purchase|sale|acquisition|disposal)\b",
         r"\bactivist\s+(investor|shareholder|campaign)\b",
@@ -334,6 +389,10 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bsignificant\s+beneficial\s+(owner|holding)\b",
     ], 0.52),
 
+    (SignalType.INSIDER_ACTIVITY, [
+        r"\b(founder|director|executive|shareholder|investor|sponsor)\b.{0,40}\b(sold|sells|disposed|disposes|reduced|reduces|trimmed|trims|exited|exits)\b.{0,40}\b(stake|shares?|holding|ownership)\b",
+        r"\b(stake|shareholding|holding)\b.{0,25}\b(reduced|cut|trimmed|sold|disposed|decreased)\b",
+    ], 0.78),
     # ── French: francophone Africa (BRVM, Casablanca, Tunis, Douala) ─────────
     # Same tiers and base scores as the English rules for each signal type.
     # Accent classes ([eé]) also match text with the accents stripped.
@@ -355,6 +414,24 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\b(fusion|acquisition|rachat|absorption)\b",
         r"\bentr[eé]e\s+au\s+capital\b",
     ], 0.55),
+    (SignalType.MA_ACTIVITY, [
+        r"\b(pr[eé]pare|pr[eé]parent|pr[eé]paration)\b.{0,35}\b(introduction en bourse|cotation|offre publique)\b",
+        r"\b(introduction en bourse|cotation)\b.{0,35}\b(projet|pr[eé]paration|mandat|prospectus)\b",
+    ], 0.72),
+    (SignalType.REGULATORY_ACTION, [
+        r"\b(prospectus|introduction en bourse|cotation|offre publique)\b.{0,45}\b(approuv[eé]|valid[eé]|autoris[eé]|rejet[eé]|refus[eé])\b",
+        r"\b(approuve|approuv[eé]|valide|valid[eé]|rejette|rejet[eé])\b.{0,45}\b(prospectus|cotation|introduction en bourse)\b",
+    ], 0.82),
+    (SignalType.INSIDER_ACTIVITY, [
+        r"\b(franchissement|franchit|d[eé]passe|passe sous)\b.{0,35}\b(seuil|participation|droits de vote)\b",
+        r"\b(changement|variation)\s+de\s+(participation|d[eé]tention|propri[eé]t[eé])\b",
+        r"\b(acquiert|c[eè]de|vend|renforce|all[eè]ge)\b.{0,40}\b(participation|part du capital|actions|droits de vote)\b",
+    ], 0.75),
+    (SignalType.DEBT_RESTRUCTURE, [
+        r"\b(refinancement|refinancer|refinance)\b.{0,35}\b(dette|obligations?|cr[eé]dit|pr[eê]t)\b",
+        r"\b([eé]mission obligataire|[eé]mission d['’]?obligations|pr[eê]t syndiqu[eé])\b",
+        r"\b(prolongation|extension)\s+de\s+(la\s+)?maturit[eé]\b",
+    ], 0.72),
 
     (SignalType.CREDIT_RISK, [
         r"\bd[eé]faut\s+de\s+paiement\b",
@@ -456,6 +533,23 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\bnegocia[cç][oõ]es\s+exclusivas\b",
         r"\b(aquisi[cç][aã]o|fus[aã]o|incorpora[cç][aã]o)\b",
     ], 0.55),
+    (SignalType.MA_ACTIVITY, [
+        r"\b(prepara|preparam|preparação|preparacao)\b.{0,35}\b(oferta pública inicial|oferta publica inicial|abertura de capital|cotação|cotacao)\b",
+        r"\b(oferta pública inicial|oferta publica inicial|abertura de capital)\b.{0,35}\b(projeto|preparação|preparacao|prospeto|prospecto)\b",
+    ], 0.72),
+    (SignalType.REGULATORY_ACTION, [
+        r"\b(prospeto|prospecto|cotação|cotacao|oferta pública)\b.{0,45}\b(aprovad[oa]|autorizad[oa]|rejeitad[oa])\b",
+        r"\b(aprovad[oa]|autorizad[oa]|rejeitad[oa])\b.{0,45}\b(prospeto|prospecto|cotação|cotacao|oferta pública)\b",
+    ], 0.82),
+    (SignalType.INSIDER_ACTIVITY, [
+        r"\b(participação|participacao|direitos de voto)\b.{0,35}\b(aumenta|reduz|adquire|vende|ultrapassa|abaixo do limiar)\b",
+        r"\b(adquire|vende|cede|aumenta|reduz)\b.{0,40}\b(participação|participacao|ações|acoes|direitos de voto)\b",
+    ], 0.75),
+    (SignalType.DEBT_RESTRUCTURE, [
+        r"\b(refinanciamento|refinanciar|refinancia)\b.{0,35}\b(dívida|divida|obrigações|obrigacoes|crédito|credito|empréstimo|emprestimo)\b",
+        r"\b(emissão de obrigações|emissao de obrigacoes|empréstimo sindicado|emprestimo sindicado)\b",
+        r"\b(prorrogação|prorrogacao|extensão|extensao)\s+do\s+vencimento\b",
+    ], 0.72),
     (SignalType.CREDIT_RISK, [
         r"\b(incumprimento|default)\b.{0,30}\b(pagamento|d[ií]vida|obriga[cç][oõ]es)\b",
         r"\b(rebaixa|rebaixamento|corte)\b.{0,30}\b(rating|nota[cç][aã]o|classifica[cç][aã]o)\b",
@@ -539,6 +633,97 @@ AMOUNT_PATTERN = re.compile(
 )
 PERCENTAGE_PATTERN = re.compile(r'\d+\.?\d*\s*%')
 
+
+def _classify_event_subtype(signal_type: SignalType, text: str) -> str:
+    """Assign a stable, specific event label without changing the canonical signal type."""
+    value = (text or "").lower()
+    rules: dict[SignalType, list[tuple[str, tuple[str, ...]]]] = {
+        SignalType.MA_ACTIVITY: [
+            ("divestiture", ("divestiture", "divests", "divested", "divesting", "dispose of a subsidiary", "sale of a division", "sells its subsidiary", "agreed to sell", "cession de filiale")),
+            ("transaction_withdrawn", ("acquisition withdrawn", "acquisition was withdrawn", "merger withdrawn", "deal terminated", "takeover bid withdrawn", "acquisition abandoned")),
+            ("ipo_preparation", ("ipo", "initial public offering", "introduction en bourse", "cotation", "oferta pública inicial", "oferta publica inicial", "abertura de capital", "listing preparations", "roadshow", "prospectus")),
+            ("merger", ("merger", "merges with", "fusion")),
+            ("acquisition", ("acquisition", "acquires", "acquired", "takeover", "rachat", "acquiert", "cession de contrôle", "aquisição", "adquire", "buyout")),
+            ("strategic_review", ("strategic review", "strategic alternatives", "sale process")),
+            ("exit_process", ("exit process", "exploring a sale", "sale of the company")),
+        ],
+        SignalType.CREDIT_RISK: [
+            ("cash_runway", ("cash runway", "runway of less than", "runway below")),
+            ("missed_payment", ("missed debt payment", "missed coupon payment", "skipped interest payment", "failed to make a debt payment")),
+            ("covenant_breach", ("covenant breach", "breached its covenant", "waiver request", "bris de covenant", "bris de covenants")),
+            ("liquidity_stress", ("liquidity crisis", "liquidity shortfall", "cash crunch", "liquidity stress", "tensions de trésorerie", "tensions de tresorerie", "problèmes de liquidité", "problemes de liquidite")),
+            ("default", ("defaulted", "event of default", "missed debt payment", "payment default", "défaut de paiement", "defaut de paiement", "incumprimento")),
+            ("rating_downgrade", ("downgrade", "rating cut", "credit rating lowered")),
+            ("impairment", ("impairment", "write-down", "write down")),
+        ],
+        SignalType.DISTRESSED_ASSET: [
+            ("receivership_or_administration", ("receivership", "placed under administration", "entered administration", "business rescue")),
+            ("insolvency", ("insolvency", "insolvent", "bankruptcy", "bankrupt", "insolvabilité", "insolvabilite", "insolvência", "insolvencia")),
+            ("liquidation", ("liquidation", "liquidator", "winding-up", "winding up", "liquidation judiciaire", "liquidação")),
+            ("business_rescue", ("business rescue", "administration", "administrator appointed")),
+            ("going_concern", ("going concern", "material uncertainty")),
+            ("distressed_asset_sale", ("distressed sale", "forced sale", "asset fire sale")),
+        ],
+        SignalType.EARNINGS_SURPRISE: [
+            ("guidance_revision", ("withdraws guidance", "withdrew guidance", "withdraws its full-year earnings guidance", "withdrew its full-year earnings guidance", "cuts guidance", "guidance cut", "lowers outlook")),
+            ("profit_warning", ("profit warning", "earnings warning", "profit alert")),
+            ("earnings_miss", ("missed estimates", "below expectations", "profit fell short", "earnings miss")),
+            ("earnings_beat", ("beat estimates", "above expectations", "earnings beat", "profit jumped")),
+            ("results_update", ("results", "earnings", "revenue", "profit")),
+        ],
+        SignalType.LEADERSHIP_CHANGE: [
+            ("founder_departure", ("founder resigns", "founder resigned", "founder steps down", "founder stepped down", "founder departs", "founder departed", "co-founder resigns", "co-founder steps down")),
+            ("executive_departure", ("resigns", "resigned", "steps down", "stepped down", "quits", "ousted", "fired")),
+            ("executive_appointment", ("appoints", "appointed", "names", "named", "hires", "new ceo", "new cfo")),
+            ("board_change", ("board member", "director", "chairman", "chairwoman", "board of directors")),
+        ],
+        SignalType.REGULATORY_ACTION: [
+            ("licence_action", ("licence revoked", "license revoked", "licence suspended", "license suspended", "licence has been suspended", "license has been suspended", "licence not renewed", "license not renewed")),
+            ("listing_rejection", ("rejected the listing", "listing application rejected", "prospectus rejected", "refused listing", "prospectus rejeté", "prospectus rejete", "cotation refusée", "cotation refusee")),
+            ("listing_approval", ("approved the listing", "listing approved", "prospectus approved", "approved the prospectus", "prospectus approuvé", "prospectus approuve", "admission à la cote", "admission a la cote")),
+            ("enforcement_or_sanction", ("sanction", "fine", "penalty", "enforcement", "suspended")),
+            ("investigation", ("investigation", "investigates", "probe", "inquiry")),
+        ],
+        SignalType.DEBT_RESTRUCTURE: [
+            ("covenant_waiver", ("covenant waiver", "financial covenant waiver", "amend-and-extend")),
+            ("refinancing", ("refinanc", "refinanced", "refinancing", "refinancement", "refinanciamento")),
+            ("debt_for_equity", ("debt-for-equity", "debt for equity", "debt conversion")),
+            ("maturity_extension", ("maturity extension", "extends maturities", "extended maturity")),
+            ("bond_issuance", ("bond issuance", "issues bonds", "issued bonds", "bond offering", "émission obligataire", "emission obligataire", "émission d’obligations", "emissão de obrigações")),
+            ("loan_facility", ("syndicated loan", "loan facility", "credit facility", "term loan", "prêt syndiqué", "pret syndique", "crédit syndiqué", "credito sindicado", "empréstimo sindicado", "emprestimo sindicado")),
+            ("debt_restructuring", ("debt restructuring", "restructures debt", "restructuring agreement")),
+        ],
+        SignalType.INSIDER_ACTIVITY: [
+            ("beneficial_ownership_change", ("beneficial ownership", "disclosure threshold", "voting rights", "shareholding", "franchissement de seuil", "déclaration de participation", "declaracao de participacao", "participação acionista", "participacao acionista")),
+            ("stake_disposal", ("founder sells", "founder sold", "director sells", "director sold", "reduces its stake", "stake reduced", "stake disposal", "disposes of stake", "sold its stake", "sells stake", "stake sale", "cède sa participation", "cede sa participation", "cession de participation", "vende participação", "vende participacao")),
+            ("stake_acquisition", ("acquires stake", "takes a stake", "buys stake", "increases its stake", "stake acquisition", "acquiert une participation", "monte au capital", "adquire participação", "adquire participacao")),
+            ("insider_selling", ("insider selling", "director sells", "insider sold", "director dealing sale")),
+            ("insider_buying", ("insider buying", "director buys", "insider bought", "director dealing purchase")),
+            ("activist_position", ("activist investor", "activist stake", "campaigning shareholder")),
+        ],
+    }
+    for subtype, phrases in rules.get(signal_type, []):
+        if any(phrase in value for phrase in phrases):
+            return subtype
+    return "unspecified"
+
+
+def _extract_event_attributes(text: str) -> dict[str, Any]:
+    """Extract simple, auditable event facts; never infer a value absent from source text."""
+    attributes: dict[str, Any] = {}
+    amounts = [match.group(0).strip() for match in AMOUNT_PATTERN.finditer(text or "")]
+    percentages = [match.group(0).strip() for match in PERCENTAGE_PATTERN.finditer(text or "")]
+    if amounts:
+        attributes["amount_mentions"] = list(dict.fromkeys(amounts))[:5]
+    if percentages:
+        attributes["percentage_mentions"] = list(dict.fromkeys(percentages))[:5]
+    currencies = re.findall(r"\b(?:USD|US\$|EUR|GBP|NGN|ZAR|KES|GHS|EGP|XOF|XAF)\b|[$€£₦]", text or "", re.IGNORECASE)
+    if currencies:
+        attributes["currency_mentions"] = list(dict.fromkeys(currencies))[:5]
+    role_match = re.search(r"\b(CEO|CFO|COO|CTO|chairman|chairwoman|chair|president|managing director)\b", text or "", re.IGNORECASE)
+    if role_match:
+        attributes["role_mentioned"] = role_match.group(0)
+    return attributes
 
 def _extract_entities(text: str) -> list[str]:
     """Extract named entities (companies, amounts, percentages) from text."""
@@ -1049,6 +1234,8 @@ class DeterministicSignalEngine:
                 raw_score = min(base_score * credibility, 1.0)
                 candidates.append(SignalCandidate(
                     signal_type=sig_type,
+                    event_subtype=_classify_event_subtype(sig_type, text),
+                    event_attributes=_extract_event_attributes(text),
                     matched_patterns=matched_patterns,
                     source_text=text[:500],
                     source_url=filing.document_url,
@@ -1088,6 +1275,8 @@ class DeterministicSignalEngine:
                     continue  # filter very weak news hits
                 candidates.append(SignalCandidate(
                     signal_type=sig_type,
+                    event_subtype=_classify_event_subtype(sig_type, text),
+                    event_attributes=_extract_event_attributes(text),
                     matched_patterns=matched_patterns,
                     source_text=text[:500],
                     source_url=news.url,
@@ -1101,22 +1290,23 @@ class DeterministicSignalEngine:
                 ))
 
         # ── Corroboration counting ───────────────────────────────────────
-        # Group candidates by signal_type. Count unique source_types confirming.
-        # Merge into one candidate per signal_type, keeping highest raw_score.
-        merged: dict[SignalType, SignalCandidate] = {}
-        corroboration_tracker: dict[SignalType, set[str]] = {}
+        # Merge by canonical type AND subtype so unrelated events (e.g. an IPO
+        # process and an acquisition) do not collapse into one candidate.
+        merged: dict[tuple[SignalType, str], SignalCandidate] = {}
+        corroboration_tracker: dict[tuple[SignalType, str], set[str]] = {}
         stories = _StoryClusters()
 
         for c in candidates:
             key = stories.key(c)
-            if c.signal_type not in merged:
-                merged[c.signal_type] = c
-                corroboration_tracker[c.signal_type] = {key}
+            group_key = (c.signal_type, c.event_subtype)
+            if group_key not in merged:
+                merged[group_key] = c
+                corroboration_tracker[group_key] = {key}
             else:
-                is_new_story = key not in corroboration_tracker[c.signal_type]
-                corroboration_tracker[c.signal_type].add(key)
+                is_new_story = key not in corroboration_tracker[group_key]
+                corroboration_tracker[group_key].add(key)
                 # Take higher raw_score, merge patterns
-                existing = merged[c.signal_type]
+                existing = merged[group_key]
                 merged_patterns = list(dict.fromkeys(existing.matched_patterns + c.matched_patterns))
                 source_urls = list(dict.fromkeys(
                     existing.corroborating_source_urls
@@ -1131,23 +1321,23 @@ class DeterministicSignalEngine:
                     + ([c.filing_reference] if is_new_story and c.filing_reference else [])
                 ))
                 if c.raw_score > existing.raw_score:
-                    merged[c.signal_type] = c.model_copy(update={
+                    merged[group_key] = c.model_copy(update={
                         "matched_patterns": merged_patterns,
                         "corroborating_source_urls": source_urls,
                         "corroborating_filing_references": filing_references,
-                        "corroboration_count": len(corroboration_tracker[c.signal_type]),
+                        "corroboration_count": len(corroboration_tracker[group_key]),
                     })
                 else:
-                    merged[c.signal_type] = existing.model_copy(update={
+                    merged[group_key] = existing.model_copy(update={
                         "matched_patterns": merged_patterns,
                         "corroborating_source_urls": source_urls,
                         "corroborating_filing_references": filing_references,
-                        "corroboration_count": len(corroboration_tracker[c.signal_type]),
+                        "corroboration_count": len(corroboration_tracker[group_key]),
                     })
 
         # Update corroboration counts
         final_candidates = []
-        for sig_type, candidate in merged.items():
+        for group_key, candidate in merged.items():
             source_urls = list(dict.fromkeys(
                 candidate.corroborating_source_urls
                 + ([candidate.source_url] if candidate.source_url else [])
@@ -1157,7 +1347,7 @@ class DeterministicSignalEngine:
                 + ([candidate.filing_reference] if candidate.filing_reference else [])
             ))
             final_candidates.append(candidate.model_copy(update={
-                "corroboration_count": len(corroboration_tracker[sig_type]),
+                "corroboration_count": len(corroboration_tracker[group_key]),
                 "corroborating_source_urls": source_urls,
                 "corroborating_filing_references": filing_references,
             }))

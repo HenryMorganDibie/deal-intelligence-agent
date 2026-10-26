@@ -13,7 +13,7 @@ type CountryResponse = {
   risk: CountryRisk;
   currency: CurrencyRisk;
   coverage: CoverageRow;
-  source_quality: { deal_records: number; event_records: number; source_links_checked: number; official_host_matched_links: number; deal_records_with_official_host: number; deal_records_without_official_host: number; records_without_source_url: number; unverified_or_invalid_source_urls: number; event_records_with_official_host: number; event_records_without_official_host: number; registered_country_hosts: number; registry_status: string; verification_scope: string };
+  source_quality: { deal_records: number; event_records: number; source_links_checked: number; official_host_matched_links: number; deal_records_with_official_host: number; deal_records_without_official_host: number; records_without_source_url: number; unverified_or_invalid_source_urls: number; unverified_publisher_source_urls?: number; recognised_news_publisher_source_urls?: number; invalid_or_non_https_source_urls?: number; unresolved_news_wrapper_source_urls?: number; news_wrapper_publisher_hosts_checked?: number; event_records_with_official_host: number; event_records_without_official_host: number; registered_country_hosts: number; registry_status: string; verification_scope: string };
   deals: Deal[];
   deals_total: number;
   events: Event[];
@@ -137,6 +137,8 @@ export default function CountryPage({ params }: { params: { code: string } }) {
   }, [params.code]);
 
   const profile = d?.profile;
+  // Plot only years with a complete annual composite score; each country starts at its first valid point.
+  const availableRiskPoints = riskHistory.filter((point) => point.score !== null);
   const monthlyDealFlow = useMemo(() => {
     const now = new Date();
     const counts = new Map((profile?.by_month_last_12 ?? []).map((m) => [m.month, m.deals] as const));
@@ -213,11 +215,15 @@ export default function CountryPage({ params }: { params: { code: string } }) {
       <div className="panel mt-5 p-4">
         <h2 className="text-sm font-medium">Official-source verification</h2>
         <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">{d.source_quality.verification_scope}</p>
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat label="Official host-matched links" value={d.source_quality.official_host_matched_links} note={`of ${d.source_quality.source_links_checked} source links checked`} />
-          <Stat label="Deals with official-host evidence" value={d.source_quality.deal_records_with_official_host} note={`of ${d.source_quality.deal_records} recorded deals`} />
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <Stat label="Official publisher hosts matched" value={d.source_quality.official_host_matched_links} note={`of ${d.source_quality.source_links_checked} source links checked`} />
+          <Stat label="Recognised news publishers" value={d.source_quality.recognised_news_publisher_source_urls ?? "n/a"} note="Explicit news-domain registry; not official institutions" />
+          <Stat label="Other publisher hosts" value={d.source_quality.unverified_publisher_source_urls ?? d.source_quality.unverified_or_invalid_source_urls} note="Valid HTTPS hosts not yet recognised in either registry" />
+          <Stat label="Google News publisher hosts checked" value={d.source_quality.news_wrapper_publisher_hosts_checked ?? "n/a"} note="Uses publisher-domain metadata from the RSS feed" />
+          <Stat label="Unresolved Google News links" value={d.source_quality.unresolved_news_wrapper_source_urls ?? "n/a"} note="No publisher-domain metadata available" />
+          <Stat label="Invalid or non-HTTPS URLs" value={d.source_quality.invalid_or_non_https_source_urls ?? "n/a"} note="Malformed or non-HTTPS links" />
           <Stat label="Missing source URLs" value={d.source_quality.records_without_source_url} note="Deal/event records without a source URL" />
-          <Stat label="Unverified or invalid URLs" value={d.source_quality.unverified_or_invalid_source_urls} note={`${d.source_quality.registered_country_hosts} country hosts registered`} />
+          <Stat label="Deals with official-host evidence" value={d.source_quality.deal_records_with_official_host} note={`of ${d.source_quality.deal_records} recorded deals`} />
         </div>
         <p className="mt-3 text-xs text-[color:var(--dim)]">Registry status: {d.source_quality.registry_status.replaceAll("_", " ")}. A host match verifies the publisher domain against the configured registry, not every claim on the page. Unmatched records remain unverified, not automatically false.</p>
       </div>
@@ -371,34 +377,34 @@ export default function CountryPage({ params }: { params: { code: string } }) {
 
       <h2 className="eyebrow mt-12">Historical country risk</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">
-        Reconstructed from World Bank observations, not archived historical scores. Coverage is the share of weighted risk components with usable inputs, not an official data-quality measure. A composite score is shown only when all seven components are available; otherwise the year and input coverage remain visible without a score. Input years can differ within a row.
+        Reconstructed from World Bank observations, not archived historical scores. Coverage is the share of weighted risk components with usable inputs, not an official data-quality measure. Only years with a complete composite score are plotted; years without a valid annual point are omitted so the chart starts at this country&apos;s first complete year. Input years can differ within a row.
       </p>
-      {riskHistory.length > 0 ? (
+      {availableRiskPoints.length > 0 ? (
         <div className="panel mt-4 p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-[color:var(--muted)]">{riskHistory.filter((r) => r.score !== null).length} annual points · source dataset retrieved {historyMeta?.retrieved ?? "date unavailable"}</p>
+            <p className="text-xs text-[color:var(--muted)]">{availableRiskPoints.length} annual points · shown from {availableRiskPoints[0].year}, the first year with a complete score · source dataset retrieved {historyMeta?.retrieved ?? "date unavailable"}</p>
             {historyMeta?.source_url && <a href={historyMeta.source_url} target="_blank" rel="noreferrer noopener" className="text-xs text-verified hover:underline">Open World Bank source API</a>}
           </div>
           <div className="mt-5 grid grid-cols-4 gap-3 sm:grid-cols-8">
-            {riskHistory.map((point) => (
+            {availableRiskPoints.map((point) => (
               <div key={point.year} className="min-w-0">
                 <div className="flex h-32 items-end rounded bg-[color:var(--surface)] p-1">
-                  <div title={point.score === null ? "No score available" : `${point.score}/100 · ${point.tier}`}
+                  <div title={`${point.score}/100 · ${point.tier}`}
                     className="w-full rounded-t bg-[color:var(--accent)]"
-                    style={{ height: `${point.score === null ? 0 : Math.max(3, point.score)}%`, opacity: point.score === null ? 0.15 : 0.85 }} />
+                    style={{ height: `${Math.max(3, point.score ?? 0)}%`, opacity: 0.85 }} />
                 </div>
                 <p className="mt-2 text-center text-xs font-medium">{point.year}</p>
-                <p className="text-center text-xs text-[color:var(--muted)]">{point.score === null ? "n/a" : point.score}</p>
+                <p className="text-center text-xs text-[color:var(--muted)]">{point.score}</p>
               </div>
             ))}
           </div>
           {historyMeta && <p className="mt-4 text-xs leading-relaxed text-[color:var(--dim)]">{historyMeta.method}</p>}
           <div className="mt-5 border-t hairline pt-4">
-            <p className="text-sm font-medium">Archived daily snapshots</p>
+            <p className="text-sm font-medium">Latest archived snapshot</p>
             {historyMeta?.archived_snapshots.length ? (
               <div className="mt-2 overflow-x-auto">
-                <Table head={["Capture date", "Risk score", "Tier", "Source snapshot retrieved"]}>
-                  {historyMeta.archived_snapshots.map((point) => <tr key={point.snapshot_date}>
+                <Table head={["Capture date", "Risk score", "Tier", "Source data as of"]}>
+                  {historyMeta.archived_snapshots.slice().sort((a, b) => b.snapshot_date.localeCompare(a.snapshot_date)).slice(0, 1).map((point) => <tr key={point.snapshot_date}>
                     <Td>{point.snapshot_date}</Td><Td className="kbd">{point.score ?? "n/a"}</Td><Td>{point.tier ?? "n/a"}</Td><Td>{point.data_as_of ?? "n/a"}</Td>
                   </tr>)}
                 </Table>
@@ -406,7 +412,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
             ) : <p className="mt-1 text-xs text-[color:var(--muted)]">{historyMeta?.snapshot_note ?? "Historical snapshot archive is not currently available."}</p>}
           </div>
         </div>
-      ) : <p className="mt-3 text-sm text-[color:var(--muted)]">Historical risk series is not available for this market yet.</p>}
+      ) : <p className="mt-3 text-sm text-[color:var(--muted)]">No complete annual country-risk scores are available for this market yet. The chart will begin at the first year all seven weighted components can be calculated.</p>}
 
       <h2 className="eyebrow mt-12">Historical market activity</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">

@@ -505,7 +505,7 @@ def _recover_target_from_title(title: str, deal_type: str) -> Optional[str]:
 
 
 def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = None,
-                 publisher: str = "", url: str = "", country_hint: Optional[str] = None,
+                 publisher: str = "", url: str = "", publisher_url: str = "", country_hint: Optional[str] = None,
                  africa_source: bool = False,
                  rates: Optional[Callable[[str, Optional[int]], Optional[float]]] = None) -> Optional[dict]:
     """A structured deal from one headline (and its snippet), or None if it reports no transaction."""
@@ -568,7 +568,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
                 "announced": published,
                 "headline": title,
                 "sources": [{
-                    "publisher": publisher, "url": url, "date": published,
+                    "publisher": publisher, "url": url, "publisher_url": publisher_url or None, "date": published,
                     "title": title, "stage": stage,
                 }],
             }
@@ -931,7 +931,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         "countries": countries,
         "announced": published,
         "headline": title,
-        "sources": [{"publisher": publisher, "url": url, "date": published, "title": title, "stage": stage}],
+        "sources": [{"publisher": publisher, "url": url, "publisher_url": publisher_url or None, "date": published, "title": title, "stage": stage}],
     }
     deal["id"] = deal_id(deal)
     # Last-mile invariant: a series numeral alone is never a valid fund target.

@@ -108,12 +108,9 @@ export default function Dashboard() {
   return (
     <Container className="py-10 lg:py-14">
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
-      <section aria-labelledby="new-title" className="min-w-0">
-        <p className="eyebrow">Company research</p>
-
-
+      <section aria-labelledby="new-title" className="panel min-w-0 p-5 sm:p-6">
         <p className="eyebrow">Company analysis</p>
-        <h1 id="new-title" className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">
+        <h1 id="new-title" className="h2 mt-3 text-xl">
           Analyse a company.
         </h1>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
@@ -214,19 +211,66 @@ export default function Dashboard() {
             Free to use. Up to 1,000 analyses a day per visitor, subject to service capacity. No account needed.
           </p>
         </div>
-      </section>
-      <section aria-labelledby="market-intelligence-title" className="min-w-0">
-        <div className="panel mb-7 p-5 sm:p-6">
-          <p className="eyebrow">Market intelligence</p>
-          <h2 id="market-intelligence-title" className="h3 mt-2 text-xl">Deals &amp; M&amp;A across Africa</h2>
-          <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-            Create an analyst-ready market report with dated transactions, disclosed-value metrics, comparable activity and linked source evidence.
-          </p>
-          <Link href="/app/market-briefs/new" className="btn btn-primary mt-4 inline-flex">
-            Create market brief
-          </Link>
+        <div className="mt-8">
+          <div className="flex items-baseline justify-between">
+            <h2 id="history-title" className="eyebrow">Your company briefs</h2>
+            {rows && rows.length > 0 && <span className="kbd text-[0.75rem] text-[color:var(--dim)]">{rows.length}</span>}
+          </div>
+          <div className="mt-3 border-t hairline">
+            {rows === null ? (
+              <p className="py-6 text-sm text-[color:var(--dim)]">Loading...</p>
+            ) : rows.length === 0 ? (
+              <p className="py-6 text-sm text-[color:var(--muted)]">
+                No company briefs yet. Run a company analysis and it will appear here. This list is kept in your browser only.
+              </p>
+            ) : (
+              <ul>
+                {rows.map((r) => (
+                  <li key={r.id} className="flex items-center gap-2 border-b hairline">
+                    <Link
+                      href={`/app/briefs/${r.id}`}
+                      className="flex min-w-0 flex-1 items-center gap-4 rounded-lg py-4 pl-1 pr-2 transition-colors hover:bg-white/[0.03]"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">
+                          {r.company}
+                          {r.ticker && <span className="kbd ml-2 text-[0.75rem] text-[color:var(--dim)]">{r.ticker}</span>}
+                        </p>
+                        <p className="mt-0.5 text-[0.8125rem] text-[color:var(--muted)]">
+                          {r.signal_count} signal{r.signal_count === 1 ? "" : "s"} · {formatDate(r.created_at)}
+                        </p>
+                      </div>
+                      {r.severity && <SeverityBadge severity={r.severity} />}
+                    </Link>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${r.company} from your briefs`}
+                      title="Remove from your briefs"
+                      onClick={() => {
+                        removeFromHistory(r.id);
+                        setRows(rows.filter((item) => item.id !== r.id));
+                      }}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[color:var(--dim)] transition-colors hover:bg-white/[0.06] hover:text-[color:var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--text)]"
+                    >
+                      <span aria-hidden="true" className="text-lg leading-none">×</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-        <div className="mt-6">
+      </section>
+      <section aria-labelledby="market-intelligence-title" className="panel min-w-0 p-5 sm:p-6">
+        <p className="eyebrow">Market intelligence</p>
+        <h2 id="market-intelligence-title" className="h2 mt-3 text-xl">Deals &amp; M&amp;A across Africa</h2>
+        <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
+          Create an analyst-ready market report with dated transactions, disclosed-value metrics, comparable activity and linked source evidence.
+        </p>
+        <Link href="/app/market-briefs/new" className="btn btn-primary mt-4 inline-flex">
+          Create market brief
+        </Link>
+        <div className="mt-8">
           <div className="flex items-baseline justify-between">
             <p className="eyebrow">Recent market briefs</p>
             <Link href="/app/market-briefs/new" className="text-xs text-[color:var(--muted)] hover:text-[color:var(--text)]">New brief →</Link>
@@ -261,58 +305,6 @@ export default function Dashboard() {
       </section>
       </div>
 
-      <section aria-labelledby="history-title" className="min-w-0">
-        <div className="flex items-baseline justify-between">
-          <h2 id="history-title" className="eyebrow">
-            Your briefs
-          </h2>
-          {rows && rows.length > 0 && <span className="kbd text-[0.75rem] text-[color:var(--dim)]">{rows.length}</span>}
-        </div>
-        <div className="mt-3 border-t hairline">
-          {rows === null ? (
-            <p className="py-6 text-sm text-[color:var(--dim)]">Loading...</p>
-          ) : rows.length === 0 ? (
-            <p className="py-6 text-sm text-[color:var(--muted)]">
-              No briefs yet. Run your first analysis and it will appear here. This list is kept in your
-              browser only.
-            </p>
-          ) : (
-            <ul>
-              {rows.map((r) => (
-                <li key={r.id} className="flex items-center gap-2 border-b hairline">
-                  <Link
-                    href={`/app/briefs/${r.id}`}
-                    className="flex min-w-0 flex-1 items-center gap-4 rounded-lg py-4 pl-1 pr-2 transition-colors hover:bg-white/[0.03]"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">
-                        {r.company}
-                        {r.ticker && <span className="kbd ml-2 text-[0.75rem] text-[color:var(--dim)]">{r.ticker}</span>}
-                      </p>
-                      <p className="mt-0.5 text-[0.8125rem] text-[color:var(--muted)]">
-                        {r.signal_count} signal{r.signal_count === 1 ? "" : "s"} · {formatDate(r.created_at)}
-                      </p>
-                    </div>
-                    {r.severity && <SeverityBadge severity={r.severity} />}
-                  </Link>
-                  <button
-                    type="button"
-                    aria-label={`Remove ${r.company} from your briefs`}
-                    title="Remove from your briefs"
-                    onClick={() => {
-                      removeFromHistory(r.id);
-                      setRows(rows.filter((item) => item.id !== r.id));
-                    }}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[color:var(--dim)] transition-colors hover:bg-white/[0.06] hover:text-[color:var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--text)]"
-                  >
-                    <span aria-hidden="true" className="text-lg leading-none">×</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </section>
     </Container>
   );
 }
