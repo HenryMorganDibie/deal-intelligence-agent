@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Iterable, Optional
 
 from src.data.africa_countries import Country, resolve
