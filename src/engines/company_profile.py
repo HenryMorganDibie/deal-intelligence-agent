@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Iterable, Optional
 
 from src.data.africa_countries import Country, resolve
@@ -173,20 +173,33 @@ def _nse_section(name: str, fetch=None) -> dict:
     return out
 
 
+_MINOR_UNITS = {"ZAc": ("ZAR", 100), "ZAC": ("ZAR", 100), "GBp": ("GBP", 100), "GBX": ("GBP", 100)}
+
+
 def _yahoo_section(ticker: str) -> Optional[dict]:
     y = fin.yahoo_financials(ticker)
     if not y:
         return None
     info = y["info"]
     latest_period, latest = next(iter(y["annual"].items()), (None, {}))
+    # Johannesburg and London quote in cents and pence (ZAc, GBp), market value included; statements are in
+    # rand and pounds, so quotes are converted to the major unit to be comparable with them.
+    currency, divisor = _MINOR_UNITS.get(info.get("currency"), (info.get("currency"), 1))
+    major = lambda v: v / divisor if isinstance(v, (int, float)) else v       # noqa: E731
+    traded = info.get("regularMarketTime")
+    as_at = (datetime.fromtimestamp(traded, tz=timezone.utc).date().isoformat()
+             if isinstance(traded, (int, float)) and traded > 0 else None)
     out = {
         "identity": {"name": info.get("longName"), "sector": info.get("sector"), "industry": info.get("industry"),
                      "business": info.get("longBusinessSummary"), "employees": info.get("fullTimeEmployees"),
                      "website": info.get("website"), "country": info.get("country"), "source": "Yahoo Finance"},
-        "market": {"price": info.get("currentPrice"), "currency": info.get("currency"),
-                   "market_cap": info.get("marketCap"), "enterprise_value": info.get("enterpriseValue"),
-                   "high_52w": info.get("fiftyTwoWeekHigh"), "low_52w": info.get("fiftyTwoWeekLow"),
-                   "exchange": info.get("exchange"), "source": "Yahoo Finance"},
+        "market": {"price": major(info.get("currentPrice") or info.get("regularMarketPrice")), "currency": currency,
+                   "quoted_currency": info.get("currency"),
+                   "market_cap": major(info.get("marketCap")), "enterprise_value": major(info.get("enterpriseValue")),
+                   "high_52w": major(info.get("fiftyTwoWeekHigh")), "low_52w": major(info.get("fiftyTwoWeekLow")),
+                   "exchange": info.get("exchange"), "as_at": as_at,
+                   "as_at_basis": "Date of the latest regular-session price Yahoo Finance reports (UTC)" if as_at else None,
+                   "source": "Yahoo Finance"},
         "multiples": {k: info.get(k) for k in ("trailingPE", "forwardPE", "priceToBook", "enterpriseToRevenue",
                                                "enterpriseToEbitda", "dividendYield", "beta") if info.get(k) is not None},
         "financials": {"source": "Yahoo Finance annual statements", "currency": y.get("unit"),

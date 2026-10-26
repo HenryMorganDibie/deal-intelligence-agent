@@ -307,7 +307,8 @@ _YAHOO_ROWS = {
 _YAHOO_INFO = ("longName", "sector", "industry", "country", "website", "fullTimeEmployees", "longBusinessSummary",
                "currency", "financialCurrency", "marketCap", "enterpriseValue", "trailingPE", "forwardPE",
                "priceToBook", "enterpriseToRevenue", "enterpriseToEbitda", "dividendYield", "beta",
-               "currentPrice", "fiftyTwoWeekHigh", "fiftyTwoWeekLow", "exchange")
+               "currentPrice", "fiftyTwoWeekHigh", "fiftyTwoWeekLow", "exchange", "regularMarketPrice",
+               "regularMarketTime")
 
 
 def yahoo_financials(ticker: str, years: int = 4) -> Optional[dict]:

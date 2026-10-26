@@ -1751,3 +1751,14 @@ def test_market_profiles_state_whole_units_session_dates_and_inclusive_windows()
     deals = [{"id": "d1", "announced": "2026-09-27"}, {"id": "d0", "announced": "2026-09-26"}]
     p = pulse.build(deals, events, {}, today=today)
     assert p["events"]["recent"] == 1 and p["deals"]["recent"] == 1
+
+
+def test_yahoo_quotes_are_dated_and_in_the_statement_currency(monkeypatch):
+    from src.engines import company_profile as cp, financials as fin
+    monkeypatch.setattr(fin, "yahoo_financials", lambda t: {
+        "info": {"currency": "ZAc", "regularMarketPrice": 67723.0, "marketCap": 1.1e15, "regularMarketTime": 1793059200,
+                 "longName": "Naspers Limited"},
+        "annual": {"2026-03-31": {"revenue": 7.0e9}}, "checks": [], "unit": "ZAR"})
+    m = cp._yahoo_section("NPN.JO")["market"]
+    assert m["price"] == 677.23 and m["currency"] == "ZAR" and m["quoted_currency"] == "ZAc"
+    assert m["market_cap"] == 1.1e13 and m["as_at"] == "2026-10-27"
