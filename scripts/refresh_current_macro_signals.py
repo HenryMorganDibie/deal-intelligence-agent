@@ -10,10 +10,16 @@ from __future__ import annotations
 import json
 import logging
 import os
+import sys
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 
 import httpx
+
+# Executing this file as `python scripts/...` puts scripts/, not the repo root,
+# on sys.path. Add the repository root so the src package imports reliably.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.data.africa_countries import COUNTRIES
 from src.engines import country_risk
