@@ -150,6 +150,16 @@ def verify(items: dict, tolerance: float = 0.01) -> list[dict]:
     if pbt is not None and rev:
         checks.append({"check": "profit before tax does not exceed revenue", "passed": pbt <= abs(rev),
                        "lhs": pbt, "rhs": rev, "fields": ["profit_before_tax", "revenue"]})
+    flows = [get(k) for k in ("operating_cash_flow", "investing_cash_flow", "financing_cash_flow")]
+    cash_prior = items["cash"].get("prior") if "cash" in items else None
+    if all(v is not None for v in flows) and get("cash") is not None and cash_prior is not None:
+        # Net flows explain the change in cash up to exchange-rate effects; a dropped bracket (a sign error) on
+        # any of the three lines breaks this by twice that line's size.
+        net, change = sum(flows), get("cash") - cash_prior
+        checks.append({"check": "operating + investing + financing cash flow = change in cash (within 15% of gross flows)",
+                       "passed": abs(net - change) <= 0.15 * sum(abs(v) for v in flows), "lhs": net,
+                       "rhs": round(change, 3),
+                       "fields": ["operating_cash_flow", "investing_cash_flow", "financing_cash_flow", "cash"]})
     if pbt is not None and pat is not None:
         checks.append({"check": "profit after tax does not exceed profit before tax by more than 50%",
                        "passed": pat <= pbt * 1.5 if pbt > 0 else True, "lhs": pat, "rhs": pbt,
@@ -271,6 +281,82 @@ def nse_documents(company: str, client: Optional[httpx.Client] = None) -> list[d
         docs.append({"title": title, "url": r.get("source_url"), "filed": (r.get("date") or "")[:10],
                      "audited": bool(_ANNUAL_TITLE.search(title)) and not re.search(r"(?i)unaudited|six\s+months|half", title)})
     return docs
+
+
+NSE_PRICES_PAGE = "https://www.nse.co.ke/dataservices/market-statistics/"
+NSE_PRICES_AJAX = "https://www.nse.co.ke/dataservices/wp-admin/admin-ajax.php"
+_NSE_EQUITY_SECTORS = ("agric", "auto", "bank", "comm", "const", "energy", "insr", "invest", "investse", "manu",
+                       "tele", "real", "exchange")
+_NSE_PRICE_ROW = re.compile(r"<tr><td>(?P<name>[^<]+)</td>\s*<td>(?P<isin>[A-Z0-9]{12})</td>\s*<td>(?P<volume>[\d,.]*)</td>"
+                            r"\s*<td>(?P<price>[\d,.]+)</td>\s*<td[^>]*>(?:<span>)?\s*(?P<change>[-+]?[\d.]+)?")
+_nse_prices_cache: dict = {"at": 0.0, "value": None}
+
+
+def nse_prices(client: Optional[httpx.Client] = None, max_age: float = 3600) -> Optional[dict]:
+    """NSE Kenya's daily equity price list: {"as_of": ISO date, "rows": [{name, isin, volume, price, change_pct}]}.
+    Read sector by sector from the exchange's market-statistics page, as its own site does; cached for an hour."""
+    import time as _time
+    from datetime import datetime as _dt
+    if _nse_prices_cache["value"] and _time.monotonic() - _nse_prices_cache["at"] < max_age:
+        return _nse_prices_cache["value"]
+    c = client or httpx.Client(timeout=30, headers={**_HEADERS, "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) "
+                               "AppleWebKit/537.36 Chrome/120 Safari/537.36"}, follow_redirects=True)
+    try:
+        page = c.get(NSE_PRICES_PAGE).text
+        nonce = re.search(r'price-cc-js-js-extra">\s*var wp_ajax = \{[^}]*"ajaxnonce":"(\w+)"', page)
+        stamp = re.search(r"Statistics as of (\d{1,2}-[A-Za-z]{3}-\d{4})", page)
+        if not nonce or not stamp:
+            return None
+        rows = []
+        for sector in _NSE_EQUITY_SECTORS:
+            body = c.post(NSE_PRICES_AJAX, data={"action": "display_prices", "security": nonce.group(1),
+                                                 "sector": sector}).text
+            for m in _NSE_PRICE_ROW.finditer(body):
+                rows.append({"name": m["name"].strip(), "isin": m["isin"],
+                             "volume": float(m["volume"].replace(",", "")) if m["volume"] else None,
+                             "price": float(m["price"].replace(",", "")),
+                             "change_pct": float(m["change"]) if m["change"] else None})
+    except Exception as e:
+        log.warning("NSE price list unavailable: %s", e)
+        return None
+    if not rows:
+        return None
+    value = {"as_of": _dt.strptime(stamp.group(1), "%d-%b-%Y").date().isoformat(), "rows": rows}
+    _nse_prices_cache.update(at=_time.monotonic(), value=value)
+    return value
+
+
+_NAME_NOISE = re.compile(r"(?i)\b(ltd|limited|plc|ord|ords|holdings?|group|company|co|the|kenya|kes)\b|[\d.]+")
+
+
+def nse_price_for(company: str, prices: Optional[dict], ticker: Optional[str] = None) -> Optional[dict]:
+    """The price-list row for a company, matched on the distinctive words of its name (the list says
+    "Safaricom Ltd Ord 0.05"), or on initials for names the market abbreviates ("KCB" is listed as Kenya
+    Commercial Bank); None when nothing matches."""
+    def words(text: str) -> list[str]:
+        return [w for w in re.findall(r"[a-z]+", _NAME_NOISE.sub(" ", text.lower())) if len(w) > 1]
+
+    def initials(text: str) -> str:
+        return "".join(w[0] for w in re.findall(r"[a-z]+", re.sub(r"(?i)\b(ltd|limited|plc|ord|the|of|and)\b|[\d.]+",
+                                                                    " ", text.lower())))
+    want = words(company)
+    codes = {w.lower() for w in re.findall(r"\b[A-Z]{2,5}\b", company)}
+    if ticker:
+        codes.add(ticker.split(".")[0].lower())
+    if not prices or not (want or codes):
+        return None
+    best, score = None, 0
+    for row in prices["rows"]:
+        have = words(row["name"])
+        if want and have and have[0] == want[0]:
+            overlap = 1 + len(set(want) & set(have))
+        elif initials(row["name"]) in codes:
+            overlap = 1
+        else:
+            continue
+        if overlap > score:
+            best, score = row, overlap
+    return best
 
 
 def nse_financials(company: str, client: Optional[httpx.Client] = None,

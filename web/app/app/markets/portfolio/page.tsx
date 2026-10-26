@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "
 import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader, Stat } from "../../../../components/app/ui";
-import { calculateExposureRows, calculatePortfolioTotals, calculatePortfolioValuationReviews, calculatePortfolioValuationSummary, convertToBase, isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
+import { calculateExposureRows, calculatePortfolioTotals, calculatePortfolioValuationReviews, calculatePortfolioValuationSummary, convertToBase, isSavedValuation, type SavedValuationSnapshot, ASSET_TYPES, CURRENCIES, normalizeAssetType } from "../../../../lib/markets-portfolio";
 import { parseCsv, stringifyCsv } from "../../../../lib/markets-csv";
 import { createPortfolioWorkbook, parsePortfolioWorkbook } from "../../../../lib/markets-excel";
 
@@ -28,8 +28,6 @@ type PortfolioState = { version: 1; baseCurrency: string; holdings: Holding[] };
 
 const STORAGE_KEY = "deal-intelligence-markets-portfolio-v1";
 const VALUATION_STORAGE_KEY = "deal-intelligence-markets-valuations-v1";
-const CURRENCIES = ["AED", "AOA", "AUD", "BIF", "BRL", "BWP", "CAD", "CDF", "CHF", "CNY", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GBP", "GHS", "GMD", "GNF", "HKD", "IDR", "INR", "JPY", "KES", "KMF", "KRW", "LRD", "LSL", "LYD", "MAD", "MGA", "MXN", "MRU", "MUR", "MWK", "MYR", "MZN", "NAD", "NGN", "NZD", "PHP", "PKR", "RWF", "SAR", "SCR", "SDG", "SGD", "SLE", "SOS", "SSP", "STN", "SZL", "THB", "TND", "TRY", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWG", "ZWL"];
-const ASSET_TYPES = ["Stock", "ETF", "Bond", "Treasury bill", "Money-market fund", "Mutual fund", "REIT", "Fixed deposit", "Other"];
 const CSV_HEADERS = ["name", "ticker", "country", "sector", "asset_type", "currency", "quantity", "cost_per_unit", "current_price", "fx_to_base", "price_as_of", "fx_as_of"];
 const VALUATION_STATUS_LABELS = {
   "no-saved-valuation": "No saved valuation",
@@ -273,6 +271,7 @@ export default function MarketsPortfolioPage() {
       };
       const imported: Holding[] = [];
       let skipped = 0;
+      const unknownTypes = new Set<string>();
       let duplicateCount = 0;
       const seen = new Set(holdings.map((holding) => `${holding.ticker.toUpperCase()}|${holding.name.trim().toLowerCase()}|${holding.country.trim().toLowerCase()}`));
       for (const row of rows.slice(1)) {
@@ -295,6 +294,8 @@ export default function MarketsPortfolioPage() {
           skipped += 1;
           continue;
         }
+        const assetType = normalizeAssetType(col(row, "asset_type"));
+        if (!assetType) unknownTypes.add(col(row, "asset_type"));
         const ticker = col(row, "ticker").toUpperCase();
         const country = col(row, "country");
         const identity = `${ticker}|${name.toLowerCase()}|${country.trim().toLowerCase()}`;
@@ -305,14 +306,14 @@ export default function MarketsPortfolioPage() {
           ticker,
           country,
           sector: col(row, "sector"),
-          assetType: col(row, "asset_type") || "Other",
+          assetType: assetType ?? "Other",
           priceAsOf: currentPrice == null ? null : (priceAsOf || null),
           fxAsOf: currency === baseCurrency || fxToBase == null ? null : (fxAsOf || null),
         });
       }
       if (!imported.length) throw new Error(`No valid holdings were found in the ${format} file. Check required columns and numeric values.`);
       setHoldings((current) => [...current, ...imported]);
-      setMessage(`Imported ${imported.length} holding(s) from ${format}${skipped ? `; skipped ${skipped} invalid row(s)` : ""}${duplicateCount ? `; detected ${duplicateCount} possible duplicate position(s)` : ""}. Review duplicates, FX conversion rates and current prices before relying on totals.`);
+      setMessage(`Imported ${imported.length} holding(s) from ${format}${skipped ? `; skipped ${skipped} invalid row(s)` : ""}${duplicateCount ? `; detected ${duplicateCount} possible duplicate position(s)` : ""}${unknownTypes.size ? `; asset type(s) ${[...unknownTypes].slice(0, 5).map((t) => `"${t}"`).join(", ")} not recognised and recorded as Other` : ""}. Review duplicates, FX conversion rates and current prices before relying on totals.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : `Could not import this ${format} file.`);
     }

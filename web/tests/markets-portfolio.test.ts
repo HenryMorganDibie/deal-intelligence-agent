@@ -7,6 +7,7 @@ import {
   calculatePortfolioValuationReviews,
   calculatePortfolioValuationSummary,
   isSavedValuation,
+  normalizeAssetType,
   parseValuationHistoryBackup,
   type PortfolioPosition,
   type SavedValuationSnapshot,
@@ -174,4 +175,13 @@ test("valuation-history backup accepts valid snapshots and rejects malformed or 
   assert.equal(parseValuationHistoryBackup({ ...backup, valuations: [] }), null);
   assert.equal(parseValuationHistoryBackup({ ...backup, valuations: [snapshot, snapshot] }), null);
   assert.equal(parseValuationHistoryBackup({ ...backup, valuations: [{ ...snapshot, statementSourceUrl: "javascript:alert(1)" }] }), null);
+});
+
+test("asset types from spreadsheets map to the portfolio's types, and unknown ones are reported", () => {
+  assert.equal(normalizeAssetType("Equity"), "Stock");
+  assert.equal(normalizeAssetType(" T-Bills "), "Treasury bill");
+  assert.equal(normalizeAssetType("money market fund"), "Money-market fund");
+  assert.equal(normalizeAssetType("REIT"), "REIT");
+  assert.equal(normalizeAssetType(""), "Other");
+  assert.equal(normalizeAssetType("Crypto"), null);
 });

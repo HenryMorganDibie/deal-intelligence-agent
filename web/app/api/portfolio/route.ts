@@ -7,6 +7,7 @@ import {
   portfolioRest,
   isSameSiteJsonRequest,
 } from "../../../lib/portfolio-server";
+import { ASSET_TYPES, normalizeAssetType } from "../../../lib/markets-portfolio";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +15,11 @@ export const dynamic = "force-dynamic";
 const currencyPattern = /^[A-Z]{3}$/;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const transactionTypes = ["BUY", "SELL", "DIVIDEND", "DEPOSIT", "WITHDRAWAL", "FEE", "SPLIT", "TRANSFER_IN", "TRANSFER_OUT", "ADJUSTMENT"];
+
+/** A trimmed string field capped at `limit` characters, or null. */
+function shortText(value: unknown, limit: number): string | null {
+  return typeof value === "string" ? value.trim().slice(0, limit) || null : null;
+}
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status, headers: { "Cache-Control": "no-store" } });
@@ -182,17 +188,19 @@ export async function POST(request: NextRequest) {
       const priceAsOf = body.priceAsOf ? String(body.priceAsOf) : null;
       const fxAsOf = body.fxAsOf ? String(body.fxAsOf) : null;
       if ((priceAsOf && !isPastOrTodayDate(priceAsOf)) || (fxAsOf && !isPastOrTodayDate(fxAsOf))) return jsonError("Price and FX dates must be valid dates that are not in the future.", 400);
+      const assetType = normalizeAssetType(typeof body.assetType === "string" ? body.assetType : "Stock");
+      if (!assetType) return jsonError("Asset type must be one of: " + ASSET_TYPES.join(", ") + ".", 400);
       const created = await portfolioRest<unknown[]>(session.accessToken, "portfolio_instruments?select=id,portfolio_id,name,ticker,market,country,sector,asset_type,currency,current_price,price_as_of,fx_to_base,fx_as_of", {
         method: "POST",
         headers: { Prefer: "return=representation" },
         body: JSON.stringify({
           portfolio_id: portfolioId,
           name,
-          ticker: typeof body.ticker === "string" ? body.ticker.trim() || null : null,
-          market: typeof body.market === "string" ? body.market.trim() || null : null,
-          country: typeof body.country === "string" ? body.country.trim() || null : null,
-          sector: typeof body.sector === "string" ? body.sector.trim() || null : null,
-          asset_type: typeof body.assetType === "string" ? body.assetType : "Stock",
+          ticker: shortText(body.ticker, 32),
+          market: shortText(body.market, 80),
+          country: shortText(body.country, 80),
+          sector: shortText(body.sector, 80),
+          asset_type: assetType,
           currency,
           current_price: currentPrice,
           price_as_of: priceAsOf,

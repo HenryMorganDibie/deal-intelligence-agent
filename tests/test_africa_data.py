@@ -1770,3 +1770,26 @@ def test_committed_macro_snapshot_serves_every_country():
     countries = snapshot.get("countries", {})
     assert snapshot.get("generated_at") and len(countries) == len(ac.COUNTRIES)
     assert all(v.get("observations") for v in countries.values())
+
+
+def test_cash_flow_reconciliation_catches_a_dropped_bracket():
+    from src.engines.financials import verify
+    item = lambda cur, prior=None: {"current": cur, "prior": prior, "line": ""}    # noqa: E731
+    dangote = {"operating_cash_flow": item(1710762), "investing_cash_flow": item(620354),
+               "financing_cash_flow": item(-2076566), "cash": item(362586, 131716)}
+    check = lambda items: next(c for c in verify(items) if c["check"].startswith("operating + investing"))  # noqa: E731
+    assert check(dangote)["passed"]                                  # as filed: the gap is exchange-rate effects
+    flipped = {**dangote, "financing_cash_flow": item(2076566)}
+    assert not check(flipped)["passed"]
+
+
+def test_nse_price_list_rows_match_names_initials_and_tickers():
+    from src.engines.financials import nse_price_for
+    prices = {"as_of": "2026-10-26", "rows": [
+        {"name": "Safaricom Ltd Ord 0.05", "isin": "KE1000001402", "price": 33.0},
+        {"name": "Kenya Commercial Bank Ltd Ord 1.00", "isin": "KE0000000315", "price": 85.25},
+        {"name": "Kenya Power Lighting  Co Plc Ord 20.00", "isin": "KE0000000349", "price": 21.7}]}
+    assert nse_price_for("Safaricom PLC", prices)["price"] == 33.0
+    assert nse_price_for("KCB Group", prices, "KCB.NR")["price"] == 85.25
+    assert nse_price_for("Kenya Power", prices)["price"] == 21.7
+    assert nse_price_for("Unknown Holdings", prices, "ZZZ.NR") is None

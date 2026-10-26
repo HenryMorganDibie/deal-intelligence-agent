@@ -153,9 +153,16 @@ def _scaled_unit(currency: Optional[str], stated: Optional[str]) -> str:
     return f"{currency or 'currency'} (converted from {stated})" if stated else (currency or "currency units")
 
 
-def _nse_section(name: str, fetch=None) -> dict:
+def _nse_section(name: str, fetch=None, ticker: Optional[str] = None) -> dict:
     data = fin.nse_financials(name, fetch=fetch)
     out: dict = {"filings": data["statements"]}
+    prices = fin.nse_prices() if fetch is None else None      # tests inject documents only
+    row = fin.nse_price_for(name, prices, ticker)
+    if row:
+        out["market"] = {"price": row["price"], "change_pct": row["change_pct"], "volume": row["volume"],
+                         "currency": "KES", "as_at": prices["as_of"], "isin": row["isin"], "listing_name": row["name"],
+                         "as_at_basis": "Last traded price on NSE Kenya's daily equity price list for this date",
+                         "source": "NSE Kenya daily equity price list"}
     annual = data["annual"]
     if annual:
         mult = annual["multiplier"] if annual.get("unit") else 1e6       # Kenyan results are stated in KShs millions
@@ -218,6 +225,9 @@ def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None
     """Full profile. Sections a source cannot fill are absent rather than guessed."""
     deals = list(deals)
     c: Optional[Country] = resolve(country, ticker)
+    # A bare exchange code with a Nigerian or Kenyan country ("SCOM", Kenya) is that exchange's listing.
+    if ticker and "." not in ticker and c and c.iso2 in ("NG", "KE"):
+        ticker = f"{ticker.upper()}{'.LG' if c.iso2 == 'NG' else '.NR'}"
     profile: dict = {"name": name, "ticker": ticker, "country": c.iso2 if c else None,
                      "country_name": c.name if c else None, "exchange": c.exchange if c and ticker else None,
                      "sources": []}
@@ -230,7 +240,7 @@ def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None
             log.exception("NGX profile failed for %s", ticker)
     elif ticker and ticker.upper().endswith(".NR"):
         try:
-            listed = _nse_section(name, fetch)
+            listed = _nse_section(name, fetch, ticker)
             profile["sources"].append("NSE Kenya")
         except Exception:
             log.exception("NSE profile failed for %s", name)
@@ -254,7 +264,8 @@ def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None
         profile["sources"].append("Deals database")
     if not profile.get("financials"):
         profile["financials_note"] = (
-            "No machine-readable statements were found for this listing. Most African exchanges outside NGX and NSE "
-            "Kenya publish results without a data feed; filed documents are linked where available."
+            ("No machine-readable statements were found for this listing. Most African exchanges outside NGX and NSE "
+             "Kenya publish results without a data feed; filed documents are linked where available."
+             if c else "No machine-readable statements were found for this listing.")
             if ticker else "Private company: financial statements are not public; figures come from reported transactions.")
     return profile

@@ -264,3 +264,27 @@ export function calculatePortfolioValuationSummary(reviews: readonly PortfolioVa
   };
 }
 
+
+export const ASSET_TYPES = ["Stock", "ETF", "Bond", "Treasury bill", "Money-market fund", "Mutual fund", "REIT", "Fixed deposit", "Other"] as const;
+
+const ASSET_TYPE_ALIASES: Record<string, (typeof ASSET_TYPES)[number]> = {
+  stock: "Stock", stocks: "Stock", equity: "Stock", equities: "Stock", share: "Stock", shares: "Stock",
+  "ordinary share": "Stock", "ordinary shares": "Stock", "listed equity": "Stock", "common stock": "Stock",
+  etf: "ETF", etfs: "ETF", "exchange traded fund": "ETF", "exchange-traded fund": "ETF",
+  bond: "Bond", bonds: "Bond", "corporate bond": "Bond", "government bond": "Bond", eurobond: "Bond", note: "Bond", notes: "Bond",
+  "treasury bill": "Treasury bill", "treasury bills": "Treasury bill", "t-bill": "Treasury bill", "t-bills": "Treasury bill", tbill: "Treasury bill",
+  "money market": "Money-market fund", "money-market": "Money-market fund", "money market fund": "Money-market fund", "money-market fund": "Money-market fund", mmf: "Money-market fund",
+  "mutual fund": "Mutual fund", "mutual funds": "Mutual fund", fund: "Mutual fund", "unit trust": "Mutual fund", "collective investment scheme": "Mutual fund",
+  reit: "REIT", reits: "REIT", "real estate investment trust": "REIT",
+  "fixed deposit": "Fixed deposit", "term deposit": "Fixed deposit", deposit: "Fixed deposit", "time deposit": "Fixed deposit",
+  other: "Other", cash: "Other",
+};
+
+/** One of ASSET_TYPES for a typed or imported asset type ("Equity" is a Stock), or null when it is not recognised. */
+export function normalizeAssetType(value: string | null | undefined): (typeof ASSET_TYPES)[number] | null {
+  const key = (value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  if (!key) return "Other";
+  return ASSET_TYPE_ALIASES[key] ?? ASSET_TYPES.find((type) => type.toLowerCase() === key) ?? null;
+}
+
+export const CURRENCIES = ["AED", "AOA", "AUD", "BIF", "BRL", "BWP", "CAD", "CDF", "CHF", "CNY", "CVE", "DJF", "DZD", "EGP", "ERN", "ETB", "EUR", "GBP", "GHS", "GMD", "GNF", "HKD", "IDR", "INR", "JPY", "KES", "KMF", "KRW", "LRD", "LSL", "LYD", "MAD", "MGA", "MXN", "MRU", "MUR", "MWK", "MYR", "MZN", "NAD", "NGN", "NZD", "PHP", "PKR", "RWF", "SAR", "SCR", "SDG", "SGD", "SLE", "SOS", "SSP", "STN", "SZL", "THB", "TND", "TRY", "TZS", "UGX", "USD", "XAF", "XOF", "ZAR", "ZMW", "ZWG", "ZWL"];

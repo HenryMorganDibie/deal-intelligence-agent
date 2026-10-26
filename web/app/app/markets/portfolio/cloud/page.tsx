@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { CURRENCIES, normalizeAssetType } from "../../../../../lib/markets-portfolio";
 import Link from "next/link";
 import { Container } from "../../../../../components/primitives";
 import { ErrorNote, PageHeader } from "../../../../../components/app/ui";
@@ -19,7 +20,8 @@ type CloudValuation = { id: string; valuation_date: string; base_currency: strin
 type ImportedTransaction = { transaction_date: string; transaction_type: string; instrument_id: string | null; quantity: number; unit_price: number; cash_amount: number; fees: number; currency: string; fx_to_base: number | null; external_id: string | null; notes: string | null };
 type ImportPreview = { filename: string; key: string; rows: ImportedTransaction[]; errors: string[]; sourceRows: number };
 
-const currencies = ["USD", "NGN", "KES", "GHS", "ZAR", "EGP", "XOF", "XAF", "GBP", "EUR"];
+// The same reporting and holding currencies as the browser portfolio, so any local portfolio can be migrated.
+const currencies = CURRENCIES;
 const today = new Date().toISOString().slice(0, 10);
 
 // Prices older than a week are flagged, as on the browser portfolio page.
@@ -366,10 +368,10 @@ export default function CloudPortfolioPage() {
       const keyName = "deal-intelligence-cloud-migration-v1:" + selectedId;
       let migrationKey = window.localStorage.getItem(keyName);
       if (!migrationKey) { migrationKey = crypto.randomUUID(); window.localStorage.setItem(keyName, migrationKey); }
-      const result = await postJson<{ holdings_count: number; valuations_count: number; replayed: boolean }>({ action: "migrate-local-portfolio", portfolioId: selectedId, migrationKey, baseCurrency: local.baseCurrency, holdings: local.holdings, valuations: savedValuations });
+      const result = await postJson<{ holdings_count: number; valuations_count: number; replayed: boolean }>({ action: "migrate-local-portfolio", portfolioId: selectedId, migrationKey, baseCurrency: local.baseCurrency, holdings: local.holdings.map((holding) => (holding && typeof holding === "object" ? { ...holding, assetType: normalizeAssetType((holding as { assetType?: string }).assetType) ?? "Other" } : holding)), valuations: savedValuations });
       const [portfolioRows, valuationRows] = await Promise.all([readJson<PortfolioData>("/api/portfolio?resource=portfolio-data&portfolioId=" + encodeURIComponent(selectedId)), readJson<CloudValuation[]>("/api/portfolio?resource=valuations&portfolioId=" + encodeURIComponent(selectedId))]);
       setData(portfolioRows); setValuations(valuationRows); setMigrationCompleteFor(selectedId);
-      setMessage("Local migration " + (result.replayed ? "was already completed" : "completed") + ": " + result.holdings_count + " holding(s) and " + result.valuations_count + " valuation review(s). The browser-local data remains unchanged as a backup.");
+      setMessage("Local migration " + (result.replayed ? "was already completed earlier; holdings added in this browser since then were not copied again" : "completed") + ": " + result.holdings_count + " holding(s) and " + result.valuations_count + " valuation review(s). The browser-local data remains unchanged as a backup.");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not migrate local portfolio."); }
     finally { setMigrationBusy(false); }
   }
