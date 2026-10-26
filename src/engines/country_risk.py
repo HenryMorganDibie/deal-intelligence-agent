@@ -38,6 +38,7 @@ log = logging.getLogger(__name__)
 # Committed reference data (not a runtime store under data/): written only by `countries --refresh`.
 _REFERENCE = Path(__file__).resolve().parent.parent / "data"
 INDICATORS_PATH = _REFERENCE / "country_indicators.json"
+CURRENT_SIGNALS_PATH = _REFERENCE / "current_macro_signals.json"
 WB_API = "https://api.worldbank.org/v2/country/{codes}/indicator/{indicator}"
 FX_API = "https://open.er-api.com/v6/latest/USD"
 CURRENT_SIGNALS_API = "https://api.africa-api.com/v1/countries/{code}/signals"
@@ -258,116 +259,122 @@ def spot_fx(currency: str, fetch: Optional[Callable[[], dict]] = None) -> Option
 
 
 
+def _normalize_current_macro_payload(country: Country, payload: dict) -> dict:
+    """Keep only source-attributed, higher-frequency macro and FX observations."""
+    data = payload.get("data", payload) if isinstance(payload, dict) else {}
+    if not isinstance(data, dict):
+        raise ValueError("Unexpected current-signals response")
+    observations = data.get("observations") or []
+    keep = {
+        "inflation_cpi_latest_yoy_pct",
+        "policy_rate_pct",
+        "official_exchange_rate_latest_lcu_per_usd",
+        "overnight_interbank_rate_pct",
+        "interbank_7d_rate_pct",
+    }
+    normalized = []
+    for item in observations:
+        if not isinstance(item, dict) or item.get("metric_key") not in keep:
+            continue
+        value = item.get("value")
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            continue
+        frequency = str(item.get("frequency") or "").lower()
+        # Never relabel annual observations as more current just because the API
+        # returned them in its compact country snapshot.
+        if frequency == "annual":
+            continue
+        normalized.append({
+            "metric_key": item.get("metric_key"),
+            "name": item.get("name") or item.get("metric_key"),
+            "value": value,
+            "unit": item.get("unit"),
+            "frequency": frequency or "unspecified",
+            "source": item.get("source"),
+            "freshness": item.get("freshness"),
+            "as_of_period": item.get("as_of_period"),
+            "retrieved_at": item.get("retrieved_at"),
+            "location_name": item.get("location_name"),
+        })
+    for item in data.get("fx_rates") or []:
+        if not isinstance(item, dict) or item.get("quote_currency") != country.currency:
+            continue
+        value = item.get("rate")
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            continue
+        normalized.append({
+            "metric_key": "fx_usd_daily",
+            "name": f"USD to {country.currency} exchange rate",
+            "value": value,
+            "unit": f"{country.currency} per USD",
+            "frequency": "daily",
+            "source": item.get("source"),
+            "freshness": item.get("freshness"),
+            "as_of_period": item.get("date") or item.get("rate_date"),
+            "retrieved_at": item.get("retrieved_at") or item.get("created_at"),
+            "location_name": None,
+        })
+    normalized.sort(key=lambda row: (row.get("metric_key") or "", row.get("name") or ""))
+    return {
+        "status": "available" if normalized else "no_observations",
+        "source": "Africa API (source attribution retained per observation)",
+        "source_url": "https://africa-api.com/docs/signals",
+        "generated_at": data.get("generated_at"),
+        "observations": normalized,
+        "message": None if normalized else "No higher-frequency macro or FX observations are available for this country from the supplemental source.",
+    }
+
+
+_CURRENT_SIGNALS_SNAPSHOT: Optional[dict] = None
+
+
+def load_current_signals_snapshot(path: Path = CURRENT_SIGNALS_PATH) -> dict:
+    """Read the committed supplemental snapshot; the hosted API needs no provider key."""
+    global _CURRENT_SIGNALS_SNAPSHOT
+    if _CURRENT_SIGNALS_SNAPSHOT is None or path != CURRENT_SIGNALS_PATH:
+        try:
+            value = json.loads(path.read_text())
+            snapshot = value if isinstance(value, dict) else {}
+        except (OSError, ValueError):
+            snapshot = {}
+        if path != CURRENT_SIGNALS_PATH:
+            return snapshot
+        _CURRENT_SIGNALS_SNAPSHOT = snapshot
+    return _CURRENT_SIGNALS_SNAPSHOT
+
+
 def current_macro_signals(country: Country, fetch: Optional[Callable[[Country], dict]] = None) -> dict:
-    """Fetch fresh macro signals separately from the annual World Bank risk score.
+    """Return committed high-frequency signals, separate from annual risk scoring.
 
-    Africa API supplies source-attributed monthly/ad-hoc observations for a subset
-    of countries. It is opt-in because it requires AFRICA_API_KEY; failure never
-    blocks the country page or changes the annual risk score.
+    The scheduled GitHub Actions workflow fetches and commits this snapshot. The
+    hosted API only reads the snapshot, so Africa API credentials stay in Actions.
+    ```fetch``` is retained as an injection point for unit tests and refresh tooling.
     """
-    api_key = os.getenv("AFRICA_API_KEY", "").strip()
-    if fetch is None and not api_key:
-        return {
-            "status": "not_configured",
-            "source": "Africa API",
-            "source_url": "https://africa-api.com/docs/signals",
-            "generated_at": None,
-            "observations": [],
-            "message": "Set AFRICA_API_KEY on the API service to enable current monthly and central-bank signals. Annual World Bank indicators remain the risk-score baseline.",
-        }
+    if fetch is not None:
+        try:
+            return _normalize_current_macro_payload(country, fetch(country))
+        except (httpx.HTTPError, ValueError, TypeError, KeyError) as exc:
+            log.info("Current macro signals unavailable for %s (%s)", country.iso2, type(exc).__name__)
+            return {
+                "status": "unavailable", "source": "Africa API",
+                "source_url": "https://africa-api.com/docs/signals", "generated_at": None,
+                "observations": [],
+                "message": "The supplemental source could not be reached. Annual World Bank indicators remain available; this does not affect the country risk score.",
+            }
 
-    cache_key = country.iso2.upper()
-    now = time.monotonic()
-    cached = _CURRENT_SIGNALS_CACHE.get(cache_key)
-    if fetch is None and cached and now - cached[0] < _CURRENT_SIGNALS_TTL:
-        return cached[1]
-
-    try:
-        if fetch is not None:
-            payload = fetch(country)
-        else:
-            response = httpx.get(
-                CURRENT_SIGNALS_API.format(code=country.iso2.lower()),
-                headers={"Authorization": f"Bearer {api_key}"},
-                timeout=8,
-            )
-            response.raise_for_status()
-            payload = response.json()
-        data = payload.get("data", payload) if isinstance(payload, dict) else {}
-        if not isinstance(data, dict):
-            raise ValueError("Unexpected current-signals response")
-        observations = data.get("observations") or []
-        keep = {
-            "inflation_cpi_latest_yoy_pct",
-            "policy_rate_pct",
-            "official_exchange_rate_latest_lcu_per_usd",
-            "overnight_interbank_rate_pct",
-            "interbank_7d_rate_pct",
-        }
-        normalized = []
-        for item in observations:
-            if not isinstance(item, dict) or item.get("metric_key") not in keep:
-                continue
-            value = item.get("value")
-            if not isinstance(value, (int, float)) or isinstance(value, bool):
-                continue
-            frequency = str(item.get("frequency") or "").lower()
-            # Do not relabel annual values as fresher merely because they came
-            # from the current-signals endpoint.
-            if frequency == "annual":
-                continue
-            normalized.append({
-                "metric_key": item.get("metric_key"),
-                "name": item.get("name") or item.get("metric_key"),
-                "value": value,
-                "unit": item.get("unit"),
-                "frequency": frequency or "unspecified",
-                "source": item.get("source"),
-                "freshness": item.get("freshness"),
-                "as_of_period": item.get("as_of_period"),
-                "retrieved_at": item.get("retrieved_at"),
-                "location_name": item.get("location_name"),
-            })
-        for item in data.get("fx_rates") or []:
-            if not isinstance(item, dict) or item.get("quote_currency") != country.currency:
-                continue
-            value = item.get("rate")
-            if not isinstance(value, (int, float)) or isinstance(value, bool):
-                continue
-            normalized.append({
-                "metric_key": "fx_usd_daily",
-                "name": f"USD to {country.currency} exchange rate",
-                "value": value,
-                "unit": f"{country.currency} per USD",
-                "frequency": "daily",
-                "source": item.get("source"),
-                "freshness": item.get("freshness"),
-                "as_of_period": item.get("date") or item.get("rate_date"),
-                "retrieved_at": item.get("created_at"),
-                "location_name": None,
-            })
-        normalized.sort(key=lambda row: (row.get("metric_key") or "", row.get("name") or ""))
-        result = {
-            "status": "available" if normalized else "no_observations",
-            "source": "Africa API (source attribution retained per observation)",
-            "source_url": "https://africa-api.com/docs/signals",
-            "generated_at": data.get("generated_at"),
-            "observations": normalized,
-            "message": None if normalized else "No monthly or current macro observations are available for this country from the configured source.",
-        }
-        if fetch is None:
-            _CURRENT_SIGNALS_CACHE[cache_key] = (now, result)
-        return result
-    except (httpx.HTTPError, ValueError, TypeError, KeyError) as exc:
-        log.info("Current macro signals unavailable for %s (%s)", country.iso2, type(exc).__name__)
-        return {
-            "status": "unavailable",
-            "source": "Africa API",
-            "source_url": "https://africa-api.com/docs/signals",
-            "generated_at": None,
-            "observations": [],
-            "message": "The supplemental source could not be reached. Annual World Bank indicators remain available; this does not affect the country risk score.",
-        }
+    snapshot = load_current_signals_snapshot()
+    countries = snapshot.get("countries", {}) if isinstance(snapshot, dict) else {}
+    stored = countries.get(country.iso2.upper()) if isinstance(countries, dict) else None
+    if isinstance(stored, dict):
+        return stored
+    return {
+        "status": "not_configured" if not snapshot else "no_observations",
+        "source": "Africa API",
+        "source_url": "https://africa-api.com/docs/signals",
+        "generated_at": snapshot.get("generated_at") if isinstance(snapshot, dict) else None,
+        "observations": [],
+        "message": "Supplemental country signals have not yet been refreshed by GitHub Actions. Annual World Bank indicators remain available; this does not affect the country risk score.",
+    }
 
 
 def assess(country: Country, snapshot: Optional[dict] = None,
