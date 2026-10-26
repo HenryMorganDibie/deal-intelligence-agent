@@ -200,3 +200,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOAB.BV"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOABF.BV"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOAC.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOAM.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOAN.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOAS.BV"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOC.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BONY.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOPP.GH"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-26", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Britam-Holdings-Plc-Audited-Financial-Results-for-the-Year-Ended-31-Dec-2025.pdf", "status": "collected", "ticker": "BRIT.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BRT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BSFR.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BSR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BSS.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BTFH.CA"}
