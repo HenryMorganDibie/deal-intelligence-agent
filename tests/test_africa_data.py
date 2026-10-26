@@ -120,6 +120,7 @@ def test_current_macro_signals_keep_monthly_period_and_ignore_annual_values(monk
 
 def test_current_macro_signals_are_optional_without_api_key(monkeypatch):
     monkeypatch.delenv("AFRICA_API_KEY", raising=False)
+    monkeypatch.setattr(cr, "load_current_signals_snapshot", lambda path=None: {})   # before the first refresh
     result = cr.current_macro_signals(ac.get("NG"))
     assert result["status"] == "not_configured"
     assert result["observations"] == []
@@ -1762,3 +1763,10 @@ def test_yahoo_quotes_are_dated_and_in_the_statement_currency(monkeypatch):
     m = cp._yahoo_section("NPN.JO")["market"]
     assert m["price"] == 677.23 and m["currency"] == "ZAR" and m["quoted_currency"] == "ZAc"
     assert m["market_cap"] == 1.1e15 and m["as_at"] == "2026-10-27"
+
+
+def test_committed_macro_snapshot_serves_every_country():
+    snapshot = cr.load_current_signals_snapshot()
+    countries = snapshot.get("countries", {})
+    assert snapshot.get("generated_at") and len(countries) == len(ac.COUNTRIES)
+    assert all(v.get("observations") for v in countries.values())
