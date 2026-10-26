@@ -18,6 +18,8 @@ data-vendor figures from news-derived deal records.
 from __future__ import annotations
 
 import logging
+import re
+from datetime import date, datetime, timedelta
 from typing import Iterable, Optional
 
 from src.data.africa_countries import Country, resolve
@@ -92,17 +94,21 @@ def _ngx_section(ticker: str, fetch=None) -> dict:
         "market": {
             "price": summ.get("StockPriceCur"), "change_pct": summ.get("StockPricePercChange"),
             "volume": summ.get("Volume"), "high_52w": summ.get("HIGH52WK_PRICE"), "low_52w": summ.get("LOW52WK_PRICE"),
-            "currency": "NGN", "as_at": summ.get("as_at"), "source": "NGX trading summary",
+            "currency": "NGN", "as_at": _ngx_session_date(summ.get("as_at")), "served_at": summ.get("as_at"),
+            "as_at_basis": "Latest NGX session on or before the time the summary was served; NGX does not state the "
+                           "trade date, and exchange holidays are not accounted for",
+            "source": "NGX trading summary",
         } if summ else None,
         "filings": data.get("statements", [])[:12],
     }
     if annual:
         mult = annual["multiplier"]
+        currency = _statement_currency(annual.get("unit"))
         out["financials"] = {
             "source": f"Audited annual statement filed with NGX: {annual.get('document')}",
             "source_url": annual["source_url"], "filed": annual.get("filed"),
-            "period": annual["period"], "currency": "NGN" if (annual.get("unit") or "").strip()[:1] in ("N", "₦", "=") else annual.get("unit"),
-            "unit": annual.get("unit"), "basis": annual["basis"],
+            "period": annual["period"], "currency": currency,
+            "unit": _scaled_unit(currency, annual.get("unit")), "stated_unit": annual.get("unit"), "basis": annual["basis"],
             "items": {k: {"current": v["current"] * (1 if k == "eps" else mult),
                           "prior": v["prior"] * (1 if k == "eps" else mult), "line": v["line"]}
                       for k, v in annual["items"].items()},
@@ -110,6 +116,41 @@ def _ngx_section(ticker: str, fetch=None) -> dict:
             "status": annual.get("status", {}),
         }
     return out
+
+
+def _statement_currency(stated: Optional[str]) -> Optional[str]:
+    """Currency of an NGX statement from its stated unit: naira by default, US dollars where the statement
+    says so (e.g. Seplat's "US$ million"); None when the unit names neither."""
+    text = (stated or "").strip()
+    if re.search(r"US\s*\$|USD|\$", text, re.I):
+        return "USD"
+    if not text or text[:1] in ("N", "₦", "=") or re.search(r"naira|NGN", text, re.I):
+        return "NGN"
+    return None
+
+
+def _ngx_session_date(stamp: Optional[str]) -> Optional[str]:
+    """The NGX trading session a quote belongs to. The trading summary's "as_at" is the time it was served
+    (e.g. "October 26, 2026, 11:50 pm", Lagos time), not when the price traded, so this takes the latest
+    weekday session that had opened by then (sessions open at 10:00). Exchange holidays are not known."""
+    m = re.match(r"\s*([A-Za-z]+ \d{1,2}, \d{4}),?\s*(\d{1,2}):(\d{2})\s*([ap]m)?", stamp or "", re.I)
+    if not m:
+        return None
+    try:
+        day = datetime.strptime(m.group(1), "%B %d, %Y").date()
+    except ValueError:
+        return None
+    hour = int(m.group(2)) % 12 + (12 if (m.group(4) or "").lower() == "pm" else 0)
+    if hour < 10:
+        day -= timedelta(days=1)
+    while day.weekday() >= 5:
+        day -= timedelta(days=1)
+    return day.isoformat()
+
+
+def _scaled_unit(currency: Optional[str], stated: Optional[str]) -> str:
+    """Amounts are multiplied out to whole currency units, so the unit shown is the currency itself."""
+    return f"{currency or 'currency'} (converted from {stated})" if stated else (currency or "currency units")
 
 
 def _nse_section(name: str, fetch=None) -> dict:
@@ -120,7 +161,9 @@ def _nse_section(name: str, fetch=None) -> dict:
         mult = annual["multiplier"] if annual.get("unit") else 1e6       # Kenyan results are stated in KShs millions
         out["financials"] = {
             "source": f"Results filed with NSE Kenya: {annual.get('document')}", "source_url": annual["source_url"],
-            "filed": annual.get("filed"), "period": annual["period"], "currency": "KES", "unit": annual.get("unit") or "KShs million (assumed)",
+            "filed": annual.get("filed"), "period": annual["period"], "currency": "KES",
+            "unit": _scaled_unit("KES", annual.get("unit") or "KShs million (assumed)"),
+            "stated_unit": annual.get("unit") or "KShs million (assumed)",
             "basis": annual["basis"],
             "items": {k: {"current": v["current"] * (1 if k == "eps" else mult),
                           "prior": v["prior"] * (1 if k == "eps" else mult), "line": v["line"]}

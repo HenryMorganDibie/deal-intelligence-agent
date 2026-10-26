@@ -98,15 +98,15 @@ export default function MarketsPage() {
             <Stat label="Deals in database" value={compactNumber(pulse.deals.total)} note={`Across ${compactNumber(pulse.deals.countries)} countries`} />
             <Stat label="Deals in last 30 days" value={compactNumber(pulse.deals.recent)} note={`${compactNumber(pulse.deals.recent_countries)} countries represented`} />
             <Stat label="Corporate events in last 7 days" value={compactNumber(pulse.events.recent)} note="From the existing event feed" />
-            <Stat label="Recent disclosed deal value" value={pulse.deals.recent_disclosed_n ? usd(pulse.deals.recent_disclosed_usd) : "Not disclosed"} note={`${compactNumber(pulse.deals.recent_disclosed_n)} recent deals with a disclosed amount`} />
+            <Stat label="Disclosed deal value, last 30 days" value={pulse.deals.recent_disclosed_n ? usd(pulse.deals.recent_disclosed_usd) : "Not disclosed"} note={`Sum of reported amounts for ${compactNumber(pulse.deals.recent_disclosed_n)} deals; single reports are not verified`} />
           </div>
         )}
         {pulse && topDealCountries.length > 0 && (
           <section className="panel mt-4 p-5" aria-labelledby="country-deal-flow-title">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="eyebrow">Recorded deal activity</p>
-                <h3 id="country-deal-flow-title" className="h3 mt-2 text-base">Markets with the most deals in the database</h3>
+                <p className="eyebrow">Recent deal activity</p>
+                <h3 id="country-deal-flow-title" className="h3 mt-2 text-base">Markets with the most deals in the last 30 days</h3>
               </div>
               <Link href="/app/deals" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Explore deal records →</Link>
             </div>
@@ -115,9 +115,9 @@ export default function MarketsPage() {
                 <div key={country.code}>
                   <div className="mb-1.5 flex items-baseline justify-between gap-3 text-xs">
                     <span>{country.name}</span>
-                    <span className="kbd text-[color:var(--muted)]">{country.deals.toLocaleString()} recorded deals</span>
+                    <span className="kbd text-[color:var(--muted)]">{country.deals.toLocaleString()} deals in 30 days</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-white/10" role="img" aria-label={`${country.name}: ${country.deals} recorded deals relative to the top country`}>
+                  <div className="h-2 overflow-hidden rounded-full bg-white/10" role="img" aria-label={`${country.name}: ${country.deals} deals in the last 30 days relative to the top country`}>
                     <div className="h-full rounded-full bg-[color:var(--accent)]" style={{ width: `${Math.max(0, Math.min(100, (country.deals / maxCountryDeals) * 100))}%` }} />
                   </div>
                 </div>

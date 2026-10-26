@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   clearPortfolioAuthCookies,
   getPortfolioSession,
+  isSameSiteJsonRequest,
   portfolioConfig,
   setPortfolioAuthCookies,
 } from "../../../../lib/portfolio-server";
@@ -29,6 +30,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isSameSiteJsonRequest(request)) return NextResponse.json({ error: "Invalid request." }, { status: 403 });
   let body: { action?: string; email?: string; password?: string; refreshToken?: unknown; tokenHash?: unknown; type?: unknown; code?: unknown };
   try {
     body = await request.json();

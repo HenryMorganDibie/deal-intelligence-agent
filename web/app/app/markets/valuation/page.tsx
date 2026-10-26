@@ -140,6 +140,7 @@ export default function MarketsValuationPage() {
   const set = <K extends keyof Inputs,>(key: K) => (event: { target: { value: string } }) => {
     setForm((current) => ({ ...current, [key]: event.target.value as Inputs[K] }));
     if (key === "method" || key === "modelFit") setModelFitConfirmed(false);
+    if (key === "company" || key === "ticker") setDetectedSector("");   // a loaded sector belongs to the previous company
     setSavedMessage(null);
     setHasCalculated(false);
   };
@@ -159,6 +160,7 @@ export default function MarketsValuationPage() {
       const profile = await get<CompanyProfile>("/api/companies/profile", {
         name,
         ticker: form.ticker.trim(),
+        country: form.country.trim(),
       });
       const financials = profile.financials;
       const profileCountry = profile.country_name || (typeof profile.country === "string" ? profile.country : profile.country?.name) || "";
@@ -194,6 +196,7 @@ export default function MarketsValuationPage() {
         method: financialInstitution ? "ddm" : current.method,
         modelFit: financialInstitution ? "financial-institution" : current.modelFit,
         currency,
+        country: current.country || profileCountry,
         source: financials.source_url || "",
         period: String(financials.period?.end || "").slice(0, 10),
         fcf: value("unlevered_free_cash_flow") || value("fcff"),
@@ -610,7 +613,7 @@ export default function MarketsValuationPage() {
                     <table className="w-full min-w-[28rem] border-collapse text-left text-xs">
                       <thead>
                         <tr className="border-b hairline text-[color:var(--dim)]">
-                          <th className="px-3 py-2 font-normal">Discount rate / Terminal growth</th>
+                          <th className="px-3 py-2 font-normal">{form.method === "dcf" ? "Discount rate" : "Cost of equity"} / Terminal growth</th>
                           {sensitivity[0]?.cells.map((cell) => <th key={cell.terminalGrowth} className="px-3 py-2 font-normal">{cell.terminalGrowth.toFixed(1)}%</th>)}
                         </tr>
                       </thead>
@@ -626,14 +629,12 @@ export default function MarketsValuationPage() {
                   </div>
                 </div>
                 <div className="mt-4 rounded-xl border hairline p-4">
-                  <p className="eyebrow">Base-case conclusion</p>
-                  <h3 className="mt-2 text-lg font-semibold">{rangeConclusion ?? verdict ?? "No market-price comparison"}</h3>
+                  <p className="eyebrow">Conclusion across scenarios</p>
+                  <h3 className="mt-2 text-lg font-semibold">{verdict ?? rangeConclusion ?? "No market-price comparison"}</h3>
                   <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
-                    {rangeConclusion
-                      ? "This conclusion is mechanical and applies only to the three entered model scenarios. It is not a recommendation or proof of mispricing; the output can be wrong if the inputs, accounting basis or assumptions are wrong. Review the source and countercase before acting."
-                      : verdict
-                        ? "This is a mechanical comparison against the entered quote, not a recommendation. A 15% band is a display convention, not a statistical confidence interval."
-                        : "Enter a positive current share price from a dated source to compare it with the scenario range. Without a quote, the model will not call the stock cheap or expensive."}
+                    {verdict || rangeConclusion
+                      ? "This is a mechanical comparison of the entered quote with the three model scenarios, not a recommendation or proof of mispricing; the 15% base-case band is a display convention, not a statistical confidence interval. The output can be wrong if the inputs, accounting basis or assumptions are wrong. Review the source and countercase before acting."
+                      : "Enter a positive current share price from a dated source to compare it with the scenario range. Without a quote, the model will not call the stock cheap or expensive."}
                   </p>
                 </div>
                 <div className="mt-4 rounded-xl border hairline p-4">

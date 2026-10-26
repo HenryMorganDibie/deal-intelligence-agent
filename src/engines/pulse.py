@@ -41,8 +41,9 @@ def _event_card(e: dict) -> dict:
 def build(deals: Iterable[dict], events: Iterable[dict], measured: dict, today: Optional[date] = None) -> dict:
     today = today or date.today()
     deals, events = list(deals), list(events)
-    since = (today - timedelta(days=WINDOW_DAYS)).isoformat()
-    week = (today - timedelta(days=EVENT_DAYS)).isoformat()
+    # Inclusive of today: a 30-day window is today and the 29 days before it.
+    since = (today - timedelta(days=WINDOW_DAYS - 1)).isoformat()
+    week = (today - timedelta(days=EVENT_DAYS - 1)).isoformat()
     recent = [d for d in deals if (d.get("announced") or "") >= since]
     recent.sort(key=lambda d: (d.get("announced") or "", d.get("amount_usd") or 0), reverse=True)
     recent_events = sorted((e for e in events if (e.get("day") or "") >= week),

@@ -1733,3 +1733,21 @@ def test_published_period_is_republished_when_more_predictions_have_returns():
     assert hb.publish_decision(start, end, universe)[0] is False
     hb._checkpoint(run_dir, "PXF0").write_text(json.dumps({**bare, "predictions": [{"price_change_10d_pct": 1.5}]}))
     assert hb.publish_decision(start, end, universe)[0] is True
+
+
+def test_market_profiles_state_whole_units_session_dates_and_inclusive_windows():
+    from datetime import date
+    from src.engines import company_profile as cp, pulse
+
+    assert cp._ngx_session_date("October 26, 2026, 11:50 pm") == "2026-10-26"      # Monday evening: that day
+    assert cp._ngx_session_date("October 26, 2026, 9:15 am") == "2026-10-23"       # before the open: Friday
+    assert cp._ngx_session_date("October 25, 2026, 3:00 pm") == "2026-10-23"       # Sunday: Friday
+    assert cp._ngx_session_date("not a date") is None
+    assert cp._statement_currency("₦'million") == "NGN" and cp._statement_currency("US$ million") == "USD"
+    assert cp._scaled_unit("NGN", "₦'million") == "NGN (converted from ₦'million)"
+
+    today = date(2026, 10, 26)
+    events = [{"id": "in", "day": "2026-10-20"}, {"id": "out", "day": "2026-10-19"}]
+    deals = [{"id": "d1", "announced": "2026-09-27"}, {"id": "d0", "announced": "2026-09-26"}]
+    p = pulse.build(deals, events, {}, today=today)
+    assert p["events"]["recent"] == 1 and p["deals"]["recent"] == 1

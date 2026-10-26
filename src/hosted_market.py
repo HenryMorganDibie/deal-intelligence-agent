@@ -268,8 +268,10 @@ def deals() -> list[dict]:
 
 
 def _visible_events(rows: list[dict]) -> list[dict]:
-    """Events the product shows; reviewed out-of-scope items stay stored for audit."""
-    return [e for e in rows if not e.get("excluded")]
+    """Events the product shows: placed in an African market and not reviewed out of scope. Events with no
+    country are mostly foreign stories the news search returned; they stay stored for audit."""
+    return [e for e in rows if not e.get("excluded") and not e.get("merged_into")
+            and (e.get("country") or e.get("countries"))]
 
 
 def events() -> list[dict]:
@@ -553,7 +555,11 @@ _profile_cache: dict[tuple, tuple[float, dict]] = {}
 @router.get("/api/companies/profile")
 async def company(name: str = Query(..., min_length=1, max_length=120), ticker: Optional[str] = None,
                   country: Optional[str] = None, cik: Optional[int] = None) -> dict:
-    country = _country_or_404(country).iso2 if country else None
+    if country:                                      # an ISO code or a country name ("Kenya")
+        found = ac.get(country) or next(iter(ac.countries_in_text(country)), None)
+        if found is None:
+            raise HTTPException(404, "Unknown country. Use a country name or an ISO code such as NG, KE or SN.")
+        country = found.iso2
     key = (name.lower(), (ticker or "").upper(), (country or "").upper(), cik)
     hit = _profile_cache.get(key)
     if hit and time.monotonic() - hit[0] < 6 * 3600:

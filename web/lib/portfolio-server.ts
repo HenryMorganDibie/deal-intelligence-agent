@@ -141,3 +141,20 @@ export function portfolioErrorResponse(error: unknown) {
   }
   return { status: 503, message: "The portfolio service is temporarily unavailable." };
 }
+
+/**
+ * Whether a state-changing request came from this site. Cross-site forms can only send text/plain, form or
+ * multipart bodies, so requiring JSON forces a CORS preflight that other origins fail; the Origin check covers
+ * browsers that send it. Blocks login CSRF (signing a victim into an attacker's account).
+ */
+export function isSameSiteJsonRequest(request: Request): boolean {
+  const type = (request.headers.get("content-type") || "").split(";", 1)[0].trim().toLowerCase();
+  if (type !== "application/json") return false;
+  const origin = request.headers.get("origin");
+  if (!origin) return true;
+  try {
+    return new URL(origin).host === new URL(request.url).host || new URL(origin).host === request.headers.get("host");
+  } catch {
+    return false;
+  }
+}

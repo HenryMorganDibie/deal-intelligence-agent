@@ -31,6 +31,7 @@ type Profile = {
   financials?: Financials | null;
   private_markets?: { deal_count: number; total_raised_usd: number | null; last_round: string | null } | null;
   valuation?: { latest_mark: { valuation_usd: number; basis: string; announced: string } | null } | null;
+  financials_note?: string | null;
 };
 type Draft = { name: string; ticker: string; country: string };
 
@@ -64,7 +65,8 @@ function statementValue(profile: Profile, key: string): string {
   if (value == null || !Number.isFinite(value)) return "Not available";
   const amount = value.toLocaleString("en", { maximumFractionDigits: 2 });
   const currency = financials?.currency ? ` ${financials.currency}` : "";
-  const unit = financials?.unit ? ` · ${financials.unit}` : "";
+  // Amounts arrive in whole currency units; the stated unit is shown only when the currency is unknown.
+  const unit = !financials?.currency && financials?.unit ? ` · ${financials.unit}` : "";
   return `${amount}${currency}${unit}`;
 }
 
@@ -79,7 +81,7 @@ function dateAgeLabel(value: string | null | undefined, staleAfterDays: number):
 
 function financialQuality(profile: Profile): string {
   const financials = profile.financials;
-  if (!financials) return "No structured financial statements";
+  if (!financials) return profile.financials_note ? `No structured financial statements: ${profile.financials_note}` : "No structured financial statements";
   if (financials.checks?.some((check) => !check.passed)) return "Accounting checks have exceptions";
   return financials.verified ? "Available accounting checks passed" : "Not fully verified";
 }

@@ -5,6 +5,7 @@ import {
   portfolioConfig,
   portfolioErrorResponse,
   portfolioRest,
+  isSameSiteJsonRequest,
 } from "../../../lib/portfolio-server";
 
 export const runtime = "nodejs";
@@ -94,6 +95,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isSameSiteJsonRequest(request)) return NextResponse.json({ error: "Invalid request." }, { status: 403 });
   try {
     const session = await getPortfolioSession();
     if (!session) return jsonError("Sign in to access cloud portfolios.", 401);

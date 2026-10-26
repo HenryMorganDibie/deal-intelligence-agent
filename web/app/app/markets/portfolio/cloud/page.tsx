@@ -13,7 +13,7 @@ type Organization = { id: string; name: string; slug: string; role: string; arch
 type OrganizationMember = { user_id: string; email: string | null; role: string; joined_at: string };
 type OrganizationInvite = { id: string; role: string; expires_at: string; use_count: number; max_uses: number; revoked_at: string | null; created_at: string };
 type Instrument = { id: string; portfolio_id: string; name: string; ticker: string | null; market: string | null; country: string | null; sector: string | null; asset_type: string; currency: string; current_price: number | null; price_as_of: string | null; fx_to_base: number | null; fx_as_of: string | null };
-type Transaction = { id: string; portfolio_id: string; instrument_id: string | null; transaction_date: string; transaction_type: string; quantity: number; unit_price: number; cash_amount: number; fees: number; currency: string; fx_to_base: number | null; notes: string | null };
+type Transaction = { id: string; portfolio_id: string; instrument_id: string | null; transaction_date: string; transaction_type: string; quantity: number; unit_price: number; cash_amount: number; fees: number; currency: string; fx_to_base: number | null; notes: string | null; created_at?: string };
 type PortfolioData = { portfolio: Portfolio; instruments: Instrument[]; transactions: Transaction[] };
 type CloudValuation = { id: string; valuation_date: string; base_currency: string; model: string; snapshot: Record<string, unknown>; notes: string | null; created_at: string };
 type ImportedTransaction = { transaction_date: string; transaction_type: string; instrument_id: string | null; quantity: number; unit_price: number; cash_amount: number; fees: number; currency: string; fx_to_base: number | null; external_id: string | null; notes: string | null };
@@ -21,6 +21,13 @@ type ImportPreview = { filename: string; key: string; rows: ImportedTransaction[
 
 const currencies = ["USD", "NGN", "KES", "GHS", "ZAR", "EGP", "XOF", "XAF", "GBP", "EUR"];
 const today = new Date().toISOString().slice(0, 10);
+
+// Prices older than a week are flagged, as on the browser portfolio page.
+function priceAge(asOf: string | null | undefined): string {
+  if (!asOf) return "Entered price, undated";
+  const age = Math.floor((Date.now() - new Date(`${asOf.slice(0, 10)}T00:00:00Z`).getTime()) / 86400000);
+  return Number.isFinite(age) && age > 7 ? `Entered price is ${age} days old` : "Entered data";
+}
 
 async function readJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { cache: "no-store" });
@@ -47,7 +54,8 @@ function derivePosition(instrument: Instrument, transactions: Transaction[]) {
   const rows = transactions
     .filter((item) => item.instrument_id === instrument.id)
     .slice()
-    .sort((a, b) => a.transaction_date.localeCompare(b.transaction_date));
+    // Same-day rows run in the order they were recorded, so a buy and a later sell on one day net correctly.
+    .sort((a, b) => a.transaction_date.localeCompare(b.transaction_date) || (a.created_at || "").localeCompare(b.created_at || ""));
 
   for (const transaction of rows) {
     const q = Number(transaction.quantity);
@@ -76,7 +84,8 @@ function derivePosition(instrument: Instrument, transactions: Transaction[]) {
   const averageCost = quantity > 0 ? cost / quantity : null;
   const currentPrice = instrument.current_price == null ? null : Number(instrument.current_price);
   const valueLocal = currentPrice == null ? null : quantity * currentPrice;
-  const fx = Number(instrument.fx_to_base || 0);
+  const fxRate = Number(instrument.fx_to_base);
+  const fx = Number.isFinite(fxRate) && fxRate > 0 ? fxRate : null;   // missing FX is unknown, not zero
   return { quantity, averageCost, currentPrice, valueLocal, fx, warnings };
 }
 
@@ -260,14 +269,16 @@ export default function CloudPortfolioPage() {
         instrumentId: item.instrument.id, name: item.instrument.name, ticker: item.instrument.ticker,
         currency: item.instrument.currency, quantity: item.quantity, averageCost: item.averageCost,
         currentPrice: item.currentPrice, fxToBase: item.instrument.currency === data.portfolio.base_currency ? 1 : (item.fx || null),
-        marketValue: item.valueLocal == null ? null : item.valueLocal * (item.instrument.currency === data.portfolio.base_currency ? 1 : item.fx),
+        marketValue: item.valueLocal == null ? null : item.instrument.currency === data.portfolio.base_currency ? item.valueLocal : item.fx == null ? null : item.valueLocal * item.fx,
+        priceAsOf: item.instrument.price_as_of || null,
         warnings: item.warnings,
       }));
       const totalValue = holdings.reduce((sum, item) => sum + (item.marketValue ?? 0), 0);
+      const unvaluedHoldings = holdings.filter((item) => item.quantity > 0 && item.marketValue == null).length;
       await postJson({
         action: "save-valuation", portfolioId: selectedId, valuationDate: today,
         baseCurrency: data.portfolio.base_currency, model: "ledger-mark-to-market",
-        snapshot: { portfolioName: data.portfolio.name, baseCurrency: data.portfolio.base_currency, holdings, totalValue, note: "Snapshot of recorded transactions and manually entered prices/FX, not a return calculation." },
+        snapshot: { portfolioName: data.portfolio.name, baseCurrency: data.portfolio.base_currency, holdings, totalValue, unvaluedHoldings, complete: unvaluedHoldings === 0, note: unvaluedHoldings ? `Snapshot of recorded transactions and manually entered prices/FX, not a return calculation. ${unvaluedHoldings} holding(s) without a price or FX rate are left out of the total.` : "Snapshot of recorded transactions and manually entered prices/FX, not a return calculation." },
         notes: "Saved from the cloud portfolio workspace.",
       });
       const rows = await readJson<CloudValuation[]>("/api/portfolio?resource=valuations&portfolioId=" + encodeURIComponent(selectedId));
@@ -478,7 +489,7 @@ export default function CloudPortfolioPage() {
                 <p className="mt-1 text-sm text-[color:var(--muted)]">Average cost is based on the recorded ledger. Current values use manually entered prices and FX; they are not live quotes or comprehensive performance.</p>
                 {loadingData ? <p className="mt-3 text-sm">Refreshing portfolio…</p> : null}
                 {positions.length ? (
-                  <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead><tr className="border-b border-[color:var(--border)] text-[color:var(--muted)]"><th className="py-2 pr-3">Instrument</th><th className="py-2 pr-3">Quantity</th><th className="py-2 pr-3">Average cost</th><th className="py-2 pr-3">Current price</th><th className="py-2 pr-3">Value</th><th className="py-2 pr-3">Data quality</th></tr></thead><tbody>{positions.map((item) => { const fx = item.instrument.currency === data.portfolio.base_currency ? 1 : item.fx; const valueBase = item.valueLocal == null || !fx ? null : item.valueLocal * fx; return <tr key={item.instrument.id} className="border-b border-[color:var(--border)]"><td className="py-3 pr-3"><strong>{item.instrument.name}</strong><span className="block text-xs text-[color:var(--muted)]">{item.instrument.ticker || item.instrument.country || item.instrument.asset_type}</span></td><td className="py-3 pr-3">{item.quantity.toLocaleString("en", { maximumFractionDigits: 6 })}</td><td className="py-3 pr-3">{money(item.averageCost, item.instrument.currency)}</td><td className="py-3 pr-3">{money(item.currentPrice, item.instrument.currency)}{item.instrument.price_as_of ? <span className="block text-xs text-[color:var(--muted)]">As of {item.instrument.price_as_of}</span> : null}</td><td className="py-3 pr-3">{money(valueBase, data.portfolio.base_currency)}</td><td className="py-3 pr-3">{item.warnings.length ? item.warnings.join(" ") : item.currentPrice == null ? "Price missing" : item.instrument.currency !== data.portfolio.base_currency && !item.fx ? "FX missing" : "Entered data"}</td></tr>; })}</tbody></table></div>
+                  <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead><tr className="border-b border-[color:var(--border)] text-[color:var(--muted)]"><th className="py-2 pr-3">Instrument</th><th className="py-2 pr-3">Quantity</th><th className="py-2 pr-3">Average cost</th><th className="py-2 pr-3">Current price</th><th className="py-2 pr-3">Value</th><th className="py-2 pr-3">Data quality</th></tr></thead><tbody>{positions.map((item) => { const fx = item.instrument.currency === data.portfolio.base_currency ? 1 : item.fx; const valueBase = item.valueLocal == null || !fx ? null : item.valueLocal * fx; return <tr key={item.instrument.id} className="border-b border-[color:var(--border)]"><td className="py-3 pr-3"><strong>{item.instrument.name}</strong><span className="block text-xs text-[color:var(--muted)]">{item.instrument.ticker || item.instrument.country || item.instrument.asset_type}</span></td><td className="py-3 pr-3">{item.quantity.toLocaleString("en", { maximumFractionDigits: 6 })}</td><td className="py-3 pr-3">{money(item.averageCost, item.instrument.currency)}</td><td className="py-3 pr-3">{money(item.currentPrice, item.instrument.currency)}{item.instrument.price_as_of ? <span className="block text-xs text-[color:var(--muted)]">As of {item.instrument.price_as_of}</span> : null}</td><td className="py-3 pr-3">{money(valueBase, data.portfolio.base_currency)}</td><td className="py-3 pr-3">{item.warnings.length ? item.warnings.join(" ") : item.currentPrice == null ? "Price missing" : item.instrument.currency !== data.portfolio.base_currency && !item.fx ? "FX missing" : priceAge(item.instrument.price_as_of)}</td></tr>; })}</tbody></table></div>
                 ) : <p className="mt-3 text-sm text-[color:var(--muted)]">No positions yet. Add an instrument and record a buy transaction below.</p>}
               </div>
 
