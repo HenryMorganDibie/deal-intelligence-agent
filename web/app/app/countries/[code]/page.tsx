@@ -11,6 +11,7 @@ import { get, post, type CountryRisk, type CoverageRow, type CurrencyRisk, type 
 type CountryResponse = {
   country: { iso2: string; name: string; region: string; languages: string[]; currency: string; exchange: string | null; central_bank: string; securities_regulator: string | null };
   risk: CountryRisk;
+  current_signals: { status: string; source: string; source_url: string; generated_at: string | null; observations: { metric_key: string; name: string; value: number; unit: string | null; frequency: string; source: string | null; freshness: string | null; as_of_period: string | null; retrieved_at: string | null; location_name: string | null }[]; message: string | null };
   currency: CurrencyRisk;
   coverage: CoverageRow;
   source_quality: { deal_records: number; event_records: number; source_links_checked: number; official_host_matched_links: number; deal_records_with_official_host: number; deal_records_without_official_host: number; records_without_source_url: number; unverified_or_invalid_source_urls: number; unverified_publisher_source_urls?: number; recognised_news_publisher_source_urls?: number; invalid_or_non_https_source_urls?: number; unresolved_news_wrapper_source_urls?: number; news_wrapper_publisher_hosts_checked?: number; event_records_with_official_host: number; event_records_without_official_host: number; registered_country_hosts: number; registry_status: string; verification_scope: string };
@@ -449,9 +450,39 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           ))}
         </Table>
       </div>
-      <h3 className="eyebrow mt-8">Indicators</h3>
+      <h3 className="eyebrow mt-8">More frequent macro signals</h3>
+      <p className="mt-2 max-w-3xl text-xs leading-relaxed text-[color:var(--muted)]">
+        These observations are shown separately from the annual World Bank risk inputs. Each value keeps its source, frequency and reporting period; current signals do not silently overwrite the annual score.
+      </p>
+      <div className="panel mt-3 p-4">
+        {d.current_signals.observations.length ? (
+          <>
+            <div className="overflow-x-auto">
+              <Table head={["Signal", "Value", "Frequency", "Period", "Source"]} minWidth="42rem">
+                {d.current_signals.observations.map((item, i) => (
+                  <tr key={`${item.metric_key}-${item.as_of_period ?? "unknown"}-${i}`}>
+                    <Td>{item.name}{item.location_name ? <span className="block text-xs text-[color:var(--dim)]">{item.location_name}</span> : null}</Td>
+                    <Td className="kbd">{num(item.value, 2)}{item.unit === "percent" ? "%" : ""}</Td>
+                    <Td>{item.frequency}</Td>
+                    <Td className="kbd">{item.as_of_period ?? "date unavailable"}</Td>
+                    <Td className="text-xs text-[color:var(--muted)]">{item.source ?? d.current_signals.source}</Td>
+                  </tr>
+                ))}
+              </Table>
+            </div>
+            <p className="mt-3 text-xs text-[color:var(--dim)]">
+              Supplemental source: <a href={d.current_signals.source_url} target="_blank" rel="noreferrer noopener" className="text-verified hover:underline">Africa API</a>
+              {d.current_signals.generated_at ? ` · response generated ${d.current_signals.generated_at}` : ""}. Reporting periods may lag retrieval dates.
+            </p>
+          </>
+        ) : (
+          <p className="text-sm leading-relaxed text-[color:var(--muted)]">{d.current_signals.message ?? "No fresher macro observations are currently available."} The live FX figure in the currency section is a separate market-rate reference, not the annual official exchange-rate average.</p>
+        )}
+      </div>
+      <h3 className="eyebrow mt-8">Annual World Bank indicators</h3>
+      <p className="mt-2 text-xs text-[color:var(--dim)]">Latest observation year shown per indicator; the snapshot retrieval date is not the observation date.</p>
       <div className="mt-3">
-        <Table head={["Indicator", "Value", "Year"]} minWidth="28rem">
+        <Table head={["Indicator", "Value", "Observation year"]} minWidth="28rem">
           {Object.entries(risk.indicators).map(([k, v]) => (
             <tr key={k}>
               <Td>{v.label}</Td>

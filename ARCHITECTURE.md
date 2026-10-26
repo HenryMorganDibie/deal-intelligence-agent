@@ -303,10 +303,19 @@ a statement is marked verified only when every check passes. Interim statements 
 but not parsed (their column order varies). Other exchanges have no machine-readable
 filings; Yahoo Finance covers JSE, EGX, Casablanca and foreign listings.
 
-### 14. Country risk: public, annual data
-Scores use World Bank indicators (annual, often a year old) and live spot FX; there is no
-sovereign rating or bond-spread input, which are licensed. Components without data are
-dropped and the weights re-normalised; the coverage figure says how much was available.
+### 14. Country risk: annual baseline plus current signals
+The reproducible 0–100 sovereign-risk score continues to use World Bank WDI and WGI
+observations, preserving each indicator's actual observation year. The country detail
+page separately supports source-attributed monthly/ad-hoc macro signals and daily
+FX observations from Africa API. The existing GitHub Actions country-data workflow uses
+the repository secret `AFRICA_API_KEY` to refresh a committed snapshot weekly; the hosted
+API reads that snapshot and never needs the key at runtime. Signals carry their own
+source/frequency/as-of period and never silently replace annual observations or alter the
+annual risk score. The supplemental refresh is best-effort: a timeout, missing key or
+unsupported country does not block country data. Live FX from ExchangeRate-API remains a separate daily market-rate
+reference, not a central-bank official rate. There is no sovereign-rating or bond-spread
+input, which are licensed. Components without annual data are dropped and weights
+re-normalised; the coverage figure says how much was available.
 
 ### 15. Research answers: grounded, not infallible
 The LLM writes only from numbered evidence, invalid citations are removed and uncited

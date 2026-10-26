@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "scripts/daily_pipeline.py"
+      - "scripts/refresh_current_macro_signals.py"
   schedule:
     # Weekly while Actions allowance is low; the Vercel daily refreshes remain active.
     - cron: "0 3 * * 0"
@@ -19,7 +20,7 @@ concurrency:
 jobs:
   collect-train-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,6 +48,12 @@ jobs:
             echo "Not the first Sunday of the month; annual country indicators remain unchanged."
           fi
 
+      - name: Refresh higher-frequency Africa API country signals
+        if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        env:
+          AFRICA_API_KEY: ${{ secrets.AFRICA_API_KEY }}
+        run: python scripts/refresh_current_macro_signals.py
+
       - name: Collect review data, gather financials, build graph and evaluate models
         run: python scripts/daily_pipeline.py
 
@@ -67,6 +74,7 @@ jobs:
               'docs/automation/event_classifier_evaluation.json',
               'docs/automation/event_classifier.json',
               'src/data/country_indicators.json',
+              'src/data/current_macro_signals.json',
               'docs/automation/entity_match_evaluation.json',
               'docs/automation/entity_matcher.json',
               'web/data/investment_ideas.json',
