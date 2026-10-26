@@ -429,3 +429,33 @@ def test_undisclosed_amount_can_match_on_strong_headline_overlap_without_buyer()
     other["headline"] = "Hospital board considers a separate ownership restructuring"
     assert not same_transaction(same_a, other)
 
+
+
+def test_market_briefs_and_newsletters_count_against_the_daily_allowance(monkeypatch):
+    from unittest.mock import AsyncMock, MagicMock
+    from fastapi import HTTPException
+    from fastapi.testclient import TestClient
+    import api.index as api
+    from src import hosted_market as hm
+
+    monkeypatch.setattr(api, "_configured", lambda: True)
+    monkeypatch.setattr(hm, "_load", lambda kind: [])
+    reserved = []
+
+    async def over_limit(request, label):
+        reserved.append(label)
+        raise HTTPException(429, "You have used today's free requests.")
+    monkeypatch.setattr(hm, "_reserve", over_limit)
+    research = MagicMock()
+    monkeypatch.setattr("src.engines.research.research", research)
+    client = TestClient(api.app)
+
+    assert client.post("/api/market-briefs", json={"lookback_days": 30}).status_code == 429
+    assert reserved[-1].startswith("[brief]") and not research.called
+
+    brief = MagicMock(status_code=200)
+    brief.json.return_value = [{"title": "t", "report": {"key_transactions": [{"id": "d1", "headline": "h"}]}}]
+    monkeypatch.setattr(api, "_rpc", AsyncMock(return_value=brief))
+    r = client.post("/api/market-briefs/newsletter", json={
+        "source_brief_id": "cc96d02b-8cc0-497b-ad17-1c06b056cb52", "selected_items": ["deal:0"]})
+    assert r.status_code == 429 and reserved[-1].startswith("[newsletter]") and not research.called

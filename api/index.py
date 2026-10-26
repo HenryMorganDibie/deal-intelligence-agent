@@ -469,11 +469,11 @@ async def list_market_briefs() -> dict:
 
 
 @app.post("/api/market-briefs")
-async def create_market_brief(body: MarketBriefBody) -> dict:
+async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
     """Build and persist a public, source-linked market brief from the existing deal store."""
     if not _configured():
         raise HTTPException(503, "The API is not configured for saving market briefs.")
-    from src.hosted_market import deals as market_deals, events as market_events, _country_or_404
+    from src.hosted_market import deals as market_deals, events as market_events, _country_or_404, _reserve, _finish
     from src.engines import deals as deals_engine, provenance
     from src.data import africa_countries as ac
 
@@ -484,6 +484,9 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
     if body.country:
         country_obj = _country_or_404(body.country.upper())
         country_code, country_name = country_obj.iso2, country_obj.name
+    # A brief runs live research and the language model, so it counts against the same daily allowance
+    # as the Research page.
+    run_id = await _reserve(request, f"[brief] {country_code or 'Africa'} {body.sector or ''} {body.deal_type or ''}")
     all_deals = market_deals()
     selected = deals_engine.search(
         all_deals, country=country_code, deal_type=body.deal_type,
@@ -591,7 +594,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
     )
     research_question = (
         f"Research {'; '.join(scope_parts)} private-market transactions and M&A for the "
-        f"the last {body.lookback_days} days. "
+        f"last {body.lookback_days} days. "
         f"Audience: {body.audience}. Analyst focus: {focus}. "
         "Use hybrid research: compare the structured transaction database with live web/news results. "
         "Prioritize official company announcements, regulator/exchange filings, and reputable financial press. "
@@ -612,6 +615,7 @@ async def create_market_brief(body: MarketBriefBody) -> dict:
             "validation": {"grounded_share": 0, "invalid_citations_removed": 0},
             "error": "Hybrid web research was unavailable during this run.",
         }
+    await _finish(run_id)
 
     report = {
         "brief_type": "market_deals",
@@ -668,7 +672,7 @@ async def get_market_brief(brief_id: str) -> dict:
 
 
 @app.post("/api/market-briefs/newsletter")
-async def create_market_newsletter(body: NewsletterBody) -> dict:
+async def create_market_newsletter(body: NewsletterBody, request: Request) -> dict:
     """Turn analyst-selected market-brief evidence into a saved deal/advisory newsletter."""
     if not _configured():
         raise HTTPException(503, "The API is not configured for saving newsletters.")
@@ -714,8 +718,9 @@ async def create_market_newsletter(body: NewsletterBody) -> dict:
     if not selected_deals and not selected_web:
         raise HTTPException(422, "Select at least one valid deal or web evidence item.")
 
-    from src.hosted_market import events as market_events
+    from src.hosted_market import events as market_events, _reserve, _finish
     from src.engines import research as research_engine
+    run_id = await _reserve(request, f"[newsletter] {source_id}")
     kind_label = {"deal": "Deal briefing newsletter", "advisory": "Advisory briefing newsletter", "both": "Deal and advisory briefing newsletter"}[body.briefing_type]
     chosen_context = []
     for idx, deal in enumerate(selected_deals, 1):
@@ -760,8 +765,10 @@ async def create_market_newsletter(body: NewsletterBody) -> dict:
     except Exception:
         log.exception("market newsletter research failed")
         raise HTTPException(502, "The research service could not generate this newsletter. Please try again.")
+    finally:
+        await _finish(run_id)
     if research_result.get("mode") != "llm":
-        raise HTTPException(502, "The LLM was unavailable for this run, so no newsletter was saved. Please retry when LLM research is available.")
+        raise HTTPException(502, "The language model was unavailable for this run, so no newsletter was saved. Please try again later.")
     answer = str(research_result.get("answer") or "").strip()
     # Present newsletter copy as readable prose, not Markdown source.
     answer = re.sub(r"(?m)^\s{0,3}#{1,6}\s+", "", answer)
