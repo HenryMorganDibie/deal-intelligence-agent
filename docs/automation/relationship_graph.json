@@ -191,6 +191,22 @@
     "arcelormittal": {
       "name": "ArcelorMittal",
       "kind": "organization"
+    },
+    "scatec egypt": {
+      "name": "Scatec Egypt",
+      "kind": "organization"
+    },
+    "q developments": {
+      "name": "Q Developments",
+      "kind": "organization"
+    },
+    "egp 24bn": {
+      "name": "EGP 24bn",
+      "kind": "organization"
+    },
+    "kenya pipeline shares": {
+      "name": "Kenya Pipeline Shares",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -563,7 +579,49 @@
           "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE9QajNDM05HTUJkZmxvQ3ZLRUlMay1GRG1leDJHZ3ZBMnhYMW5VUmJHTHJfRDBaNnpDZDFCelRuTXU3Y0lFLXR2R0tyUVpZaUVrZ2tuNnNYUHAxTi1NczZ4am9sd3c3bWpCRWdkTWNFdU5XR3BJYlE?oc=5"
         }
       ]
+    },
+    "19ab7091312de5a20032": {
+      "id": "19ab7091312de5a20032",
+      "from": "ebrd",
+      "to": "scatec egypt",
+      "type": "equity_funding",
+      "first_seen": "2026-10-26",
+      "sources": [
+        {
+          "title": "EBRD to invest up to $221mln for 40% stake in Scatec Egypt venture",
+          "publisher": "TradingView",
+          "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPeThoMVdFQTRvRWJYVmlqQXdsVEpjN1MtZ1pwX096NkhtanRtOEpfMnFuNWdjZnpzSl8tdm9UY1FKMUhOT2VlX2QzVVVpVEQ3Rmk5N3A3RG5qTzNadHFmUUdYeXlQby1WS3psQ3pLSl9jb2hTU01HTTN3MDRtWDZyVzJMREZyekxDWDIzWnRXTTV3MXllZGg1cDlwMHE5UEVqWmRQY2FFekZaT0F2UnR6VTVCYk00YWlRclJoNUtxdUdaRGxUYTB6b2FDb3RoYTdqaWk4X0xacw?oc=5"
+        }
+      ]
+    },
+    "56a87933fea0de46cfcf": {
+      "id": "56a87933fea0de46cfcf",
+      "from": "q developments",
+      "to": "egp 24bn",
+      "type": "equity_funding",
+      "first_seen": "2026-10-25",
+      "sources": [
+        {
+          "title": "Q Developments invests EGP 24bn in four real estate projects",
+          "publisher": "Daily News Egypt",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQWTB3UUJmRnUzM0VlNW1WMExiNXRWUUdYbWdwcUUxV3M0b3kzVXhnTWxGdUZfOFdUR2ZNeG9VZ1lDVWY2TGk2MHBpakd5Qmp5ajg1TWp5V214VXRqSkVFMGFaWWNDRUNXb1NVamNPZWRpS3BjV0hkQVItV2dBdUJPNWloVWV4dGstN1JRVnZuakx5TnkxdzExRDlXd2VBZHBUQnRnWFdn?oc=5"
+        }
+      ]
+    },
+    "5aa6fc3967edd452375e": {
+      "id": "5aa6fc3967edd452375e",
+      "from": "dangote",
+      "to": "kenya pipeline shares",
+      "type": "acquisition",
+      "first_seen": "2026-10-25",
+      "sources": [
+        {
+          "title": "Ruto Breaks Silence On Dangote Buying Kenya Pipeline Shares",
+          "publisher": "The Kenya Times",
+          "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE1zQW9kOGliWS1QTkJFRW9Ka3g3bFVIWGVWM0JMc0l2RHU5UjFRaXBoZ0Q0UjIzUEs4bXNjSS1OVmJsSHNrMjlCNkdNZlhPQk02OEVRc0xkOC1Odmd0bzh6UEc2dHZ4eW12bGFPOFg1VzFQUDMwTFFoNmJwQ2ZoTlE?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-25T08:16:23.254105+00:00"
+  "updated_at": "2026-10-26T11:06:04.876922+00:00"
 }

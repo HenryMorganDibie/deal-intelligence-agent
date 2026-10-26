@@ -188,3 +188,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "BICB.BV"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "BICC.BV"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BID.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BIGP.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BIK.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BIOC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BK1P.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BKG.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BLU.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BNBC.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BNT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOA.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOAB.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOABF.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BOAC.BV"}

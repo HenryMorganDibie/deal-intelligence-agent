@@ -1,0 +1,2258 @@
+{
+  "countries": {
+    "AO": {
+      "country_code": "AO",
+      "country_name": "Angola",
+      "generated_at": "2026-10-26T10:58:08.221473Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to AOA exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "AOA per USD",
+          "value": 930.0243
+        },
+        {
+          "as_of_period": "2026-09",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 930.1591
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "BF": {
+      "country_code": "BF",
+      "country_name": "Burkina Faso",
+      "generated_at": "2026-10-26T10:54:46.651568Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XOF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XOF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.82
+        },
+        {
+          "as_of_period": "2026-03-16",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-03-26T03:43:44.195918Z",
+          "source": "bceao_policy_signals",
+          "unit": "percent",
+          "value": 3.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "BI": {
+      "country_code": "BI",
+      "country_name": "Burundi",
+      "generated_at": "2026-10-26T11:00:10.842819Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to BIF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "BIF per USD",
+          "value": 3005.1668
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 2998.338
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "BJ": {
+      "country_code": "BJ",
+      "country_name": "Benin",
+      "generated_at": "2026-10-26T10:54:32.851593Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XOF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XOF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.82
+        },
+        {
+          "as_of_period": "2026-03-16",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-03-26T03:43:44.195918Z",
+          "source": "bceao_policy_signals",
+          "unit": "percent",
+          "value": 3.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "BW": {
+      "country_code": "BW",
+      "country_name": "Botswana",
+      "generated_at": "2026-10-26T11:04:16.924461Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to BWP exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "BWP per USD",
+          "value": 14.1858
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": 9.36357
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 14.08451
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "CD": {
+      "country_code": "CD",
+      "country_name": "Democratic Republic of the Congo",
+      "generated_at": "2026-10-26T10:59:17.169024Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to CDF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "CDF per USD",
+          "value": 2308.5436
+        },
+        {
+          "as_of_period": "2026-09",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 2305.859
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "CF": {
+      "country_code": "CF",
+      "country_name": "Central African Republic",
+      "generated_at": "2026-10-26T10:58:35.889488Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XAF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XAF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 579.288
+        },
+        {
+          "as_of_period": "2025-12-15",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-07-10T18:22:41.634419Z",
+          "source": "beac_policy_signals",
+          "unit": "percent",
+          "value": 4.5
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "CG": {
+      "country_code": "CG",
+      "country_name": "Republic of the Congo",
+      "generated_at": "2026-10-26T10:59:03.207975Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XAF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XAF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-01",
+          "frequency": "monthly",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 2191.659
+        },
+        {
+          "as_of_period": "2025-12-15",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-07-10T18:22:41.634419Z",
+          "source": "beac_policy_signals",
+          "unit": "percent",
+          "value": 4.5
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "CI": {
+      "country_code": "CI",
+      "country_name": "C\u00f4te d'Ivoire",
+      "generated_at": "2026-10-26T10:55:13.596557Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XOF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XOF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 579.288
+        },
+        {
+          "as_of_period": "2026-03-16",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-03-26T03:43:44.195918Z",
+          "source": "bceao_policy_signals",
+          "unit": "percent",
+          "value": 3.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "CM": {
+      "country_code": "CM",
+      "country_name": "Cameroon",
+      "generated_at": "2026-10-26T10:58:22.025752Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XAF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XAF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.82
+        },
+        {
+          "as_of_period": "2025-12-15",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-07-10T18:22:41.634419Z",
+          "source": "beac_policy_signals",
+          "unit": "percent",
+          "value": 4.5
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "CV": {
+      "country_code": "CV",
+      "country_name": "Cabo Verde",
+      "generated_at": "2026-10-26T10:54:59.905104Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to CVE exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "CVE per USD",
+          "value": 98.4428
+        },
+        {
+          "as_of_period": "2026-07",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 96.6337
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "DJ": {
+      "country_code": "DJ",
+      "country_name": "Djibouti",
+      "generated_at": "2026-10-26T11:00:37.089260Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to DJF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "DJF per USD",
+          "value": 177.721
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 177.721
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "DZ": {
+      "country_code": "DZ",
+      "country_name": "Algeria",
+      "generated_at": "2026-10-26T10:53:06.977415Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to DZD exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "DZD per USD",
+          "value": 134.6431
+        },
+        {
+          "as_of_period": "2026-07",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": 6.69967
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 133.847
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "EG": {
+      "country_code": "EG",
+      "country_name": "Egypt",
+      "generated_at": "2026-10-26T10:53:23.600287Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to EGP exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "EGP per USD",
+          "value": 55.2887
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": 14.57109
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 51.985
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "ER": {
+      "country_code": "ER",
+      "country_name": "Eritrea",
+      "generated_at": "2026-10-26T11:00:52.385016Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to ERN exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "ERN per USD",
+          "value": 15.0
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 15.075
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "ET": {
+      "country_code": "ET",
+      "country_name": "Ethiopia",
+      "generated_at": "2026-10-26T11:01:05.630565Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to ETB exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "ETB per USD",
+          "value": 161.6744
+        },
+        {
+          "as_of_period": "2026-09",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 161.0605
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "GA": {
+      "country_code": "GA",
+      "country_name": "Gabon",
+      "generated_at": "2026-10-26T10:59:44.145108Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XAF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XAF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.82
+        },
+        {
+          "as_of_period": "2025-12-15",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-07-10T18:22:41.634419Z",
+          "source": "beac_policy_signals",
+          "unit": "percent",
+          "value": 4.5
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "GH": {
+      "country_code": "GH",
+      "country_name": "Ghana",
+      "generated_at": "2026-10-26T10:55:41.030502Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to GHS exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "GHS per USD",
+          "value": 11.6715
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": 4.997866
+        },
+        {
+          "as_of_period": "2026-10-22",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-23T05:56:39.230112Z",
+          "source": "bog_gh_signals",
+          "unit": "lcu_per_usd",
+          "value": 11.605
+        },
+        {
+          "as_of_period": "2026-10-22",
+          "frequency": "ad_hoc",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-10-23T05:56:39.230112Z",
+          "source": "bog_gh_signals",
+          "unit": "percent",
+          "value": 14.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "GM": {
+      "country_code": "GM",
+      "country_name": "Gambia",
+      "generated_at": "2026-10-26T10:55:27.145243Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to GMD exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "GMD per USD",
+          "value": 74.6564
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 73.794
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "GN": {
+      "country_code": "GN",
+      "country_name": "Guinea",
+      "generated_at": "2026-10-26T10:55:54.238572Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to GNF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "GNF per USD",
+          "value": 8844.053
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 8794.41
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "GQ": {
+      "country_code": "GQ",
+      "country_name": "Equatorial Guinea",
+      "generated_at": "2026-10-26T10:59:30.643231Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XAF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XAF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.82
+        },
+        {
+          "as_of_period": "2025-12-15",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-07-10T18:22:41.634419Z",
+          "source": "beac_policy_signals",
+          "unit": "percent",
+          "value": 4.5
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "GW": {
+      "country_code": "GW",
+      "country_name": "Guinea-Bissau",
+      "generated_at": "2026-10-26T10:56:07.314488Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XOF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XOF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.817
+        },
+        {
+          "as_of_period": "2026-03-16",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-03-26T03:43:44.195918Z",
+          "source": "bceao_policy_signals",
+          "unit": "percent",
+          "value": 3.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "KE": {
+      "country_code": "KE",
+      "country_name": "Kenya",
+      "generated_at": "2026-10-26T11:01:18.367003Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to KES exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "KES per USD",
+          "value": 129.8479
+        },
+        {
+          "as_of_period": "2026-09",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-22T16:21:45.022466Z",
+          "source": "cbk_ke_signals",
+          "unit": "percent",
+          "value": 6.76
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 129.74
+        },
+        {
+          "as_of_period": "2026-10-21",
+          "frequency": "ad_hoc",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "overnight_interbank_rate_pct",
+          "name": "overnight_interbank_rate_pct",
+          "retrieved_at": "2026-10-22T16:21:45.022466Z",
+          "source": "cbk_ke_signals",
+          "unit": "percent",
+          "value": 8.7499
+        },
+        {
+          "as_of_period": "2026-10-07",
+          "frequency": "ad_hoc",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-10-22T16:21:45.022466Z",
+          "source": "cbk_ke_signals",
+          "unit": "percent",
+          "value": 8.75
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "KM": {
+      "country_code": "KM",
+      "country_name": "Comoros",
+      "generated_at": "2026-10-26T11:00:23.880505Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to KMF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "KMF per USD",
+          "value": 439.2208
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 434.466
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "LR": {
+      "country_code": "LR",
+      "country_name": "Liberia",
+      "generated_at": "2026-10-26T10:56:20.519641Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to LRD exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "LRD per USD",
+          "value": 170.6128
+        },
+        {
+          "as_of_period": "2025-08",
+          "frequency": "monthly",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 201.17
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "LS": {
+      "country_code": "LS",
+      "country_name": "Lesotho",
+      "generated_at": "2026-10-26T11:04:44.928539Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to LSL exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "LSL per USD",
+          "value": 16.578
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": 2.575614
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 16.427
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "LY": {
+      "country_code": "LY",
+      "country_name": "Libya",
+      "generated_at": "2026-10-26T10:53:37.670190Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to LYD exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "LYD per USD",
+          "value": 6.4175
+        },
+        {
+          "as_of_period": "2026-04",
+          "frequency": "monthly",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 6.3528
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "MA": {
+      "country_code": "MA",
+      "country_name": "Morocco",
+      "generated_at": "2026-10-26T10:53:52.292747Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to MAD exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "MAD per USD",
+          "value": 9.8147
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": -0.417711
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 9.71
+        },
+        {
+          "as_of_period": "2026-03-19",
+          "frequency": "ad_hoc",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-10-23T19:52:24.826829Z",
+          "source": "bkam_ma_policy_signals",
+          "unit": "percent",
+          "value": 2.25
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "MG": {
+      "country_code": "MG",
+      "country_name": "Madagascar",
+      "generated_at": "2026-10-26T11:01:31.863494Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to MGA exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "MGA per USD",
+          "value": 4582.8692
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 4406.86
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "ML": {
+      "country_code": "ML",
+      "country_name": "Mali",
+      "generated_at": "2026-10-26T10:56:34.175056Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XOF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XOF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.82
+        },
+        {
+          "as_of_period": "2026-03-16",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-03-26T03:43:44.195918Z",
+          "source": "bceao_policy_signals",
+          "unit": "percent",
+          "value": 3.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "MR": {
+      "country_code": "MR",
+      "country_name": "Mauritania",
+      "generated_at": "2026-10-26T10:56:48.063792Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to MRU exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "MRU per USD",
+          "value": 40.1267
+        },
+        {
+          "as_of_period": "2024-08",
+          "frequency": "monthly",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-07-23T05:39:22.814352Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 39.17266
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "MU": {
+      "country_code": "MU",
+      "country_name": "Mauritius",
+      "generated_at": "2026-10-26T11:01:59.161709Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to MUR exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "MUR per USD",
+          "value": 47.1575
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": 4.893813
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 47.809
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "MW": {
+      "country_code": "MW",
+      "country_name": "Malawi",
+      "generated_at": "2026-10-26T11:01:45.634638Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to MWK exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "MWK per USD",
+          "value": 1745.418
+        },
+        {
+          "as_of_period": "2026-09",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 1735.039
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "MZ": {
+      "country_code": "MZ",
+      "country_name": "Mozambique",
+      "generated_at": "2026-10-26T11:02:12.470106Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to MZN exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "MZN per USD",
+          "value": 63.7494
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": 6.439114
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 63.939
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "NA": {
+      "country_code": "NA",
+      "country_name": "Namibia",
+      "generated_at": null,
+      "message": "The supplemental source could not be reached during the last refresh; annual World Bank indicators remain available.",
+      "observations": [],
+      "source": "Africa API",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "unavailable"
+    },
+    "NE": {
+      "country_code": "NE",
+      "country_name": "Niger",
+      "generated_at": "2026-10-26T10:57:01.606424Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XOF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XOF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.82
+        },
+        {
+          "as_of_period": "2026-03-16",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-03-26T03:43:44.195918Z",
+          "source": "bceao_policy_signals",
+          "unit": "percent",
+          "value": 3.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "NG": {
+      "country_code": "NG",
+      "country_name": "Nigeria",
+      "generated_at": "2026-10-26T10:57:14.517240Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to NGN exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "NGN per USD",
+          "value": 1329.7997
+        },
+        {
+          "as_of_period": "2026-09",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-23T19:52:15.597223Z",
+          "source": "cbn_ng_signals",
+          "unit": "percent",
+          "value": 14.63
+        },
+        {
+          "as_of_period": "2026-10-23",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-23T19:52:15.597223Z",
+          "source": "cbn_ng_signals",
+          "unit": "lcu_per_usd",
+          "value": 1361.3394
+        },
+        {
+          "as_of_period": "2026-09-01",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-10-23T19:52:15.597223Z",
+          "source": "cbn_ng_signals",
+          "unit": "percent",
+          "value": 23.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "RW": {
+      "country_code": "RW",
+      "country_name": "Rwanda",
+      "generated_at": "2026-10-26T11:02:27.304154Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to RWF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "RWF per USD",
+          "value": 1478.5942
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 1474.522
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "SC": {
+      "country_code": "SC",
+      "country_name": "Seychelles",
+      "generated_at": "2026-10-26T11:02:40.307941Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to SCR exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "SCR per USD",
+          "value": 13.9104
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 14.353
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "SD": {
+      "country_code": "SD",
+      "country_name": "Sudan",
+      "generated_at": "2026-10-26T10:54:05.545307Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to SDG exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "SDG per USD",
+          "value": 510.8381
+        },
+        {
+          "as_of_period": "2023-10",
+          "frequency": "monthly",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 635.6141
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "SL": {
+      "country_code": "SL",
+      "country_name": "Sierra Leone",
+      "generated_at": "2026-10-26T10:57:41.214023Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to SLE exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "SLE per USD",
+          "value": 22.9714
+        },
+        {
+          "as_of_period": "2026-09",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 24.13481
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "SN": {
+      "country_code": "SN",
+      "country_name": "Senegal",
+      "generated_at": "2026-10-26T10:57:27.886777Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XOF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XOF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.82
+        },
+        {
+          "as_of_period": "2026-03-16",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-03-26T03:43:44.195918Z",
+          "source": "bceao_policy_signals",
+          "unit": "percent",
+          "value": 3.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "SO": {
+      "country_code": "SO",
+      "country_name": "Somalia",
+      "generated_at": "2026-10-26T11:02:53.636941Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to SOS exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "SOS per USD",
+          "value": 571.7034
+        },
+        {
+          "as_of_period": "2018-06",
+          "frequency": "monthly",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 23581.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "SS": {
+      "country_code": "SS",
+      "country_name": "South Sudan",
+      "generated_at": "2026-10-26T11:03:08.701550Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to SSP exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "SSP per USD",
+          "value": 5750.8144
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "ST": {
+      "country_code": "ST",
+      "country_name": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
+      "generated_at": "2026-10-26T10:59:57.283032Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to STN exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "STN per USD",
+          "value": 21.8732
+        },
+        {
+          "as_of_period": "2026-05",
+          "frequency": "monthly",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 20.984
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "SZ": {
+      "country_code": "SZ",
+      "country_name": "Eswatini",
+      "generated_at": "2026-10-26T11:04:31.501646Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to SZL exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "SZL per USD",
+          "value": 16.578
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 16.427
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "TD": {
+      "country_code": "TD",
+      "country_name": "Chad",
+      "generated_at": "2026-10-26T10:58:49.397967Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XAF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XAF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.82
+        },
+        {
+          "as_of_period": "2025-12-15",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-07-10T18:22:41.634419Z",
+          "source": "beac_policy_signals",
+          "unit": "percent",
+          "value": 4.5
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "TG": {
+      "country_code": "TG",
+      "country_name": "Togo",
+      "generated_at": "2026-10-26T10:57:54.700222Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to XOF exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "XOF per USD",
+          "value": 585.6278
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 565.82
+        },
+        {
+          "as_of_period": "2026-03-16",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-03-26T03:43:44.195918Z",
+          "source": "bceao_policy_signals",
+          "unit": "percent",
+          "value": 3.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "TN": {
+      "country_code": "TN",
+      "country_name": "Tunisia",
+      "generated_at": "2026-10-26T10:54:19.046694Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to TND exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "TND per USD",
+          "value": 3.0016
+        },
+        {
+          "as_of_period": "2026-08",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": 5.389541
+        },
+        {
+          "as_of_period": "2026-10-20",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-22T00:15:51.095076Z",
+          "source": "bct_tn_signals",
+          "unit": "lcu_per_usd",
+          "value": 2.9969
+        },
+        {
+          "as_of_period": "2026-10-21",
+          "frequency": "ad_hoc",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-10-22T00:15:51.095076Z",
+          "source": "bct_tn_signals",
+          "unit": "percent",
+          "value": 7.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "TZ": {
+      "country_code": "TZ",
+      "country_name": "Tanzania",
+      "generated_at": "2026-10-26T11:03:22.265368Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to TZS exchange rate",
+          "retrieved_at": null,
+          "source": "bot_tz_fx_rates",
+          "unit": "TZS per USD",
+          "value": 2637.81655
+        },
+        {
+          "as_of_period": "2026-09",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-23T12:30:03.543540Z",
+          "source": "bot_tz_signals",
+          "unit": "percent",
+          "value": 4.3
+        },
+        {
+          "as_of_period": "2026-06-19",
+          "frequency": "ad_hoc",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "interbank_7d_rate_pct",
+          "name": "interbank_7d_rate_pct",
+          "retrieved_at": "2026-06-21T23:50:01.273844Z",
+          "source": "bot_tz_signals",
+          "unit": "percent",
+          "value": 6.4
+        },
+        {
+          "as_of_period": "2026-10-23",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-23T12:30:03.543540Z",
+          "source": "bot_tz_signals",
+          "unit": "lcu_per_usd",
+          "value": 2636.7419
+        },
+        {
+          "as_of_period": "2026-Q4",
+          "frequency": "ad_hoc",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "policy_rate_pct",
+          "name": "policy_rate_pct",
+          "retrieved_at": "2026-10-23T12:30:03.543540Z",
+          "source": "bot_tz_signals",
+          "unit": "percent",
+          "value": 6.25
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "UG": {
+      "country_code": "UG",
+      "country_name": "Uganda",
+      "generated_at": "2026-10-26T11:03:36.372141Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to UGX exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "UGX per USD",
+          "value": 4166.1686
+        },
+        {
+          "as_of_period": "2026-09",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": 4.591762
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 3925.0
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "ZA": {
+      "country_code": "ZA",
+      "country_name": "South Africa",
+      "generated_at": null,
+      "message": "The supplemental source could not be reached during the last refresh; annual World Bank indicators remain available.",
+      "observations": [],
+      "source": "Africa API",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "unavailable"
+    },
+    "ZM": {
+      "country_code": "ZM",
+      "country_name": "Zambia",
+      "generated_at": "2026-10-26T11:03:49.887630Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-10-24",
+          "frequency": "daily",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "fx_usd_daily",
+          "name": "USD to ZMW exchange rate",
+          "retrieved_at": null,
+          "source": "fx_usd_daily",
+          "unit": "ZMW per USD",
+          "value": 20.1405
+        },
+        {
+          "as_of_period": "2026-09",
+          "frequency": "monthly",
+          "freshness": "recent",
+          "location_name": null,
+          "metric_key": "inflation_cpi_latest_yoy_pct",
+          "name": "inflation_cpi_latest_yoy_pct",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "percent",
+          "value": 6.099829
+        },
+        {
+          "as_of_period": "2026-10",
+          "frequency": "monthly",
+          "freshness": "current",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 19.617
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    },
+    "ZW": {
+      "country_code": "ZW",
+      "country_name": "Zimbabwe",
+      "generated_at": "2026-10-26T11:04:03.383611Z",
+      "message": null,
+      "observations": [
+        {
+          "as_of_period": "2026-06",
+          "frequency": "monthly",
+          "freshness": "historical",
+          "location_name": null,
+          "metric_key": "official_exchange_rate_latest_lcu_per_usd",
+          "name": "official_exchange_rate_latest_lcu_per_usd",
+          "retrieved_at": "2026-10-02T17:29:20.574753Z",
+          "source": "world_bank_gem_signals",
+          "unit": "lcu_per_usd",
+          "value": 60497.17
+        }
+      ],
+      "source": "Africa API (source attribution retained per observation)",
+      "source_url": "https://africa-api.com/docs/signals",
+      "status": "available"
+    }
+  },
+  "countries_failed": 2,
+  "countries_refreshed": 52,
+  "countries_requested": 54,
+  "generated_at": "2026-10-26T11:05:40Z",
+  "source": "Africa API country signals endpoint",
+  "source_url": "https://africa-api.com/docs/signals"
+}
