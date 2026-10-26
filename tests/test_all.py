@@ -3873,8 +3873,7 @@ class TestHostedApi:
             "/api/events?country=ZZ",
             "/api/comparables?country=ZZ",
             "/api/sectors/banking/risk?country=ZZ",
-            "/api/companies/profile?name=Example&country=ZZ",
-        )
+        )   # a company profile's country is a hint, not a filter: a non-African market is ignored
         for url in urls:
             assert client.get(url).status_code == 404, url
         assert client.post("/api/reports/sector/fintech?country=ZZ").status_code == 404

@@ -557,9 +557,8 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
                   country: Optional[str] = None, cik: Optional[int] = None) -> dict:
     if country:                                      # an ISO code or a country name ("Kenya")
         found = ac.get(country) or next(iter(ac.countries_in_text(country)), None)
-        if found is None:
-            raise HTTPException(404, "Unknown country. Use a country name or an ISO code such as NG, KE or SN.")
-        country = found.iso2
+        # A market outside Africa (e.g. "United States") is not an error: the listing is found from the ticker.
+        country = found.iso2 if found else None
     key = (name.lower(), (ticker or "").upper(), (country or "").upper(), cik)
     hit = _profile_cache.get(key)
     if hit and time.monotonic() - hit[0] < 6 * 3600:

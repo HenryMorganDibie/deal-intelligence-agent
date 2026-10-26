@@ -182,8 +182,8 @@ def _yahoo_section(ticker: str) -> Optional[dict]:
         return None
     info = y["info"]
     latest_period, latest = next(iter(y["annual"].items()), (None, {}))
-    # Johannesburg and London quote in cents and pence (ZAc, GBp), market value included; statements are in
-    # rand and pounds, so quotes are converted to the major unit to be comparable with them.
+    # Johannesburg and London quote prices in cents and pence (ZAc, GBp); statements are in rand and pounds,
+    # so prices and the 52-week range are converted to the major unit to be comparable with them.
     currency, divisor = _MINOR_UNITS.get(info.get("currency"), (info.get("currency"), 1))
     major = lambda v: v / divisor if isinstance(v, (int, float)) else v       # noqa: E731
     traded = info.get("regularMarketTime")
@@ -195,7 +195,8 @@ def _yahoo_section(ticker: str) -> Optional[dict]:
                      "website": info.get("website"), "country": info.get("country"), "source": "Yahoo Finance"},
         "market": {"price": major(info.get("currentPrice") or info.get("regularMarketPrice")), "currency": currency,
                    "quoted_currency": info.get("currency"),
-                   "market_cap": major(info.get("marketCap")), "enterprise_value": major(info.get("enterpriseValue")),
+                   # Yahoo states market value and enterprise value in the major unit already.
+                   "market_cap": info.get("marketCap"), "enterprise_value": info.get("enterpriseValue"),
                    "high_52w": major(info.get("fiftyTwoWeekHigh")), "low_52w": major(info.get("fiftyTwoWeekLow")),
                    "exchange": info.get("exchange"), "as_at": as_at,
                    "as_at_basis": "Date of the latest regular-session price Yahoo Finance reports (UTC)" if as_at else None,

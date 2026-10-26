@@ -1761,4 +1761,4 @@ def test_yahoo_quotes_are_dated_and_in_the_statement_currency(monkeypatch):
         "annual": {"2026-03-31": {"revenue": 7.0e9}}, "checks": [], "unit": "ZAR"})
     m = cp._yahoo_section("NPN.JO")["market"]
     assert m["price"] == 677.23 and m["currency"] == "ZAR" and m["quoted_currency"] == "ZAc"
-    assert m["market_cap"] == 1.1e13 and m["as_at"] == "2026-10-27"
+    assert m["market_cap"] == 1.1e15 and m["as_at"] == "2026-10-27"
