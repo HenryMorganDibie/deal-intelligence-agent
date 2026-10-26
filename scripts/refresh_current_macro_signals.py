@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("refresh-current-macro-signals")
 OUTPUT = country_risk.CURRENT_SIGNALS_PATH
 API_URL = "https://api.africa-api.com/v1/countries/{code}/signals"
-REQUEST_INTERVAL_SECONDS = 12.2
+REQUEST_INTERVAL_SECONDS = 12.5
 
 
 def main() -> int:
