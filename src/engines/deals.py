@@ -413,6 +413,14 @@ _NOT_A_DEAL = re.compile(r"\b(black\s+stars|super\s+eagles|super\s+falcons|bafan
                          r"questions?|prices?|tariffs?|rates?|fears?|hopes?|the\s+bar|bursary|igr|revenue\s+target))\b"
                          r"|\braise[sd]?\s+(?:\S+\s+){0,3}(cap|ceiling|limit|investment|capital|budget|allocation|target|commitment)\s+to\b",
                          re.IGNORECASE)
+# A target that is only a description of equipment ("First Next-Generation MRI Scanner", "New Equipment",
+# "EVs and CNG Vehicles") is an asset purchase, not a company. Brand names ("Peach Cars") are not caught:
+# every word before the noun must be descriptive.
+_ASSET_TARGET = re.compile(
+    r"(?i)^(?:(?:the|a|an|its|first|new|next-generation|state-of-the-art|modern|additional|more|used|electric|"
+    r"evs?|cng|lng|mri|ct|x-ray|ultrasound|field|fuel|mobile|solar|diesel|\d+|two|three|four|five|ten|and|&)\s+)*"
+    r"(?:scanners?|machines?|equipment|vehicles?|ambulances?|tractors?|drones?|computers?|laptops?|generators?|"
+    r"transformers?|locomotives?|vessels?|buses|trucks?|cars?|aircraft|planes?)$")
 # Money raised to fight hunger, disease or poverty is aid or philanthropy, not a company transaction.
 _CHARITABLE = re.compile(
     r"(?i)\b(?:to\s+(?:tackle|fight|combat|end|address|reduce|eradicate|curb|alleviate)|against)\s+(?:\S+\s+){0,2}?"
@@ -425,7 +433,8 @@ _GENERIC_PARTY = re.compile(
 # State expropriation, court cases, renamings and football transfers use deal verbs but are not deals.
 _NON_TRANSACTION = re.compile(
     r"(?i)\bcompulsory\s+(?:land\s+)?acquisition|\bin\s+court\b|\bby\s+mistake\b|\bacquires?\s+(?:a\s+)?new\s+name\b"
-    r"|\bsnap(?:s|ped)?\s+up\b.{0,60}\bfrom\b|\bsigns?\s+(?:striker|midfielder|defender|goalkeeper|winger)\b")
+    r"|\bsnap(?:s|ped)?\s+up\b.{0,60}\bfrom\b|\bsigns?\s+(?:striker|midfielder|defender|goalkeeper|winger)\b"
+    r"|\b(?:drug\s+)?traffickers?\b|\bfraudsters?\b|\bkidnappers?\b|\bterrorists?\b")
 _SOVEREIGN = re.compile(
     r"(?i)^(?:the\s+)?(?:China|Chinese\s+government|Beijing|Saudi\s+Arabia|Saudi|Riyadh|Qatar|UAE|United\s+Arab\s+Emirates|"
     r"Kuwait|Japan|India|Turkey|Türkiye|Russia|United\s+States|U\.?S\.?|USA|America|UK|U\.K\.|Britain|United\s+Kingdom|France|"
@@ -724,6 +733,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         target = subj
     elif deal_type == "joint_venture":
         buyer, target = subj, obj
+    if target and _ASSET_TARGET.match(target.strip()):
+        return None
     # Neither side identified: a generic noun as the company and no named counterparty.
     if target and _GENERIC_PARTY.match(target.strip()) and not (buyer or investors or seller):
         return None

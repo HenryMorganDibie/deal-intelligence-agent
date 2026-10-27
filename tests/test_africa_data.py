@@ -1971,3 +1971,13 @@ def test_checkpoint_made_by_other_detection_code_is_rerun(tmp_path):
     assert hb._checkpoint_state(path) == "run"
     path.write_text(json.dumps({k: v for k, v in done.items() if k != "detection_version"}))
     assert hb._checkpoint_state(path) == "run"              # made before versions were recorded
+
+
+def test_equipment_purchases_and_crime_stories_are_not_deals_but_brands_are():
+    for title in ["Kisubi Hospital acquires Uganda's first next-generation MRI scanner",
+                  "Drug Trafficker Acquires Scanner to Test Security in Kenya",
+                  "Liberia's LTA Acquires New Equipment for Internet Exchange Point"]:
+        assert dl.extract_deal(title, published="2026-10-27") is None, title
+    assert dl.extract_deal("Kenya’s Peach Cars Raises $11M to Build Africa’s Most Trusted Used Car Marketplace",
+                           published="2026-10-27")["target"] == "Peach Cars"
+    assert dl.extract_deal("Stucky Motors buys Swazi Truck in Eswatini", published="2026-10-27")["target"] == "Swazi Truck"
