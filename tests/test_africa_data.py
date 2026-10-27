@@ -363,7 +363,7 @@ def test_parse_feed_and_extract_deals_and_events():
 
 
 def test_event_country_uses_story_location_over_search_hint():
-    items = [{"title": "IEBC officials face Sh2 million fine, five years in jail over ungazetted polling stations",
+    items = [{"title": "Kenyan insurer fined Sh2 million by IRA over delayed claims settlement",
               "country_hint": "ET"}]
 
     events = mf.to_events(items)
@@ -2309,3 +2309,45 @@ def test_raises_that_are_not_funding_rounds_take_their_real_type():
         assert k(genuine) is None, genuine
     deal = extract_deal("Advans Nigeria raises N6 billion in debut commercial paper to boost SME financing", published="2026-10-01")
     assert deal["deal_type"] == "debt_financing"
+
+
+def test_market_events_must_be_about_a_company():
+    from src.engines.event_filters import is_corporate_event as ok, named_company
+    reg = "regulatory_action"
+    for headline in ("Trump Mocks Ilhan Omar With iPhone Scammer Meme as Fraud Probe Heats Up",
+                     "IPOA launches probe into arrest of journalist Francis Odee while covering protests",
+                     "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
+                     "Zimbabwe woman fined US$300 for WhatsApp harassment",
+                     "Alakija, Billionaire Businesswoman Threatens Legal Action over Alleged EFCC Probe Report",
+                     "Mossel Bay man who posed as Sanlam broker fined R4m, banned for 25 years",
+                     "Importers of unregulated pesticides face Sh1m fine, jail"):
+        assert not ok(headline, reg), headline
+    for headline in ("Top bank in South Africa fined R1 million for not protecting customer data",
+                     "NGX fines 15 companies N123.17 million for late filings",
+                     "EXCLUSIVE: Court dismisses Intels’ bid to restrain EFCC probe over alleged $74 million NPA debt"):
+        assert ok(headline, reg), headline
+    assert not ok("Le président du Mali annonce sa démission à la télévision", "leadership_change")
+    assert not ok("Nigeria: APC suffers setback as ex-National Chairman's ally resigns", "leadership_change")
+    assert ok("Somelec : Thiam Tidjani officiellement nommé Directeur Général", "leadership_change")
+    assert ok("Kakuzi Issues Profit Warning Amid Macadamia Slump", "earnings_surprise")
+    assert not ok("النفط الليبي رهينة الاضطرابات.. خسائر متجددة", "earnings_surprise")
+    # Deals are left to the deal extractor, whatever their subject.
+    assert ok("Africa's richest man acquires 25% of Kenya Pipeline Company for $327 million", "m_and_a_activity")
+    assert named_company("Sudan Revokes Abu Dhabi Islamic Bank’s Licence") == "Abu Dhabi Islamic Bank"
+    assert named_company("Court dismisses Intels’ bid to restrain EFCC probe") == "Intels"
+
+
+def test_corporate_of_week_considers_listed_and_self_named_companies():
+    import sys
+    sys.path.insert(0, "scripts")
+    import corporate_of_week as cw
+    events = [{"headline": "EXCLUSIVE: Court dismisses Intels’ bid to restrain EFCC probe over alleged $74 million NPA debt",
+               "signal_type": "regulatory_action", "day": "2026-10-24", "url": "https://x/1", "rule_score": 0.8,
+               "credibility": 0.7, "publisher": "Premium Times"},
+              {"headline": "Kakuzi Issues Profit Warning Amid Macadamia Slump", "signal_type": "earnings_surprise",
+               "day": "2026-10-25", "url": "https://x/2", "rule_score": 0.8, "credibility": 0.7, "publisher": "Business Daily"},
+              {"headline": "Ilhan Omar's sister questioned by investigators amid US citizenship fraud probe",
+               "signal_type": "regulatory_action", "day": "2026-10-25", "url": "https://x/3", "rule_score": 0.9}]
+    from datetime import date
+    picked = cw.select_company([], events, date(2026, 10, 20), date(2026, 10, 26))
+    assert {c["company"] for c in picked["companies"]} == {"Intels", "Kakuzi"}

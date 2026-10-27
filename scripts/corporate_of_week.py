@@ -17,6 +17,7 @@ from urllib.request import Request, urlopen
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.data.african_companies import AFRICAN_COMPANIES  # noqa: E402  (standard library only)
 from src.data.africa_countries import countries_in_text, regulator_acronyms  # noqa: E402
+from src.engines.event_filters import is_corporate_event, listed_names, named_company  # noqa: E402
 
 DEFAULT_API = "https://deal-intelligence-api.vercel.app"
 DEFAULT_OUTPUT = Path("web/data/corporate-of-week.json")
@@ -115,8 +116,10 @@ def matched_events(company: str, events: list[dict]) -> list[dict]:
     else:
         pattern = re.compile(r"(?<![\w-])" + name + r"(?:['’]s)?(?![\w-])")
     plain = company.strip()
+    # A name the headline itself establishes as a company ("Court dismisses Intels' bid") matches anywhere.
     return [event for event in events
-            if plain in str(event.get("headline") or "") and pattern.search(str(event.get("headline") or ""))]
+            if plain in str(event.get("headline") or "") and (pattern.search(str(event.get("headline") or ""))
+                                                              or named_company(str(event.get("headline") or "")) == plain)]
 
 
 def is_african_event(event: dict) -> bool:
@@ -126,8 +129,9 @@ def is_african_event(event: dict) -> bool:
     return True
 
 
-def company_universe(deals: list[dict], corpus: list[str]) -> dict[str, str]:
-    """Names that identify a company: deal parties and the curated African list, minus generic nouns,
+def company_universe(deals: list[dict], corpus: list[str], events: list[dict] | None = None) -> dict[str, str]:
+    """Names that identify a company: deal targets, every listed African company, the curated list, and a
+    company an event headline names itself ("Lafarge Africa Plc", "Intels' bid"), minus generic nouns,
     institutions and currencies. A one-word "name" the corpus also writes in lowercase is a word."""
     counts: dict[str, int] = {}
     display: dict[str, str] = {}
@@ -142,6 +146,19 @@ def company_universe(deals: list[dict], corpus: list[str]) -> dict[str, str]:
     curated = {normalise(name): name for name in AFRICAN_COMPANIES}
     text = " ".join(corpus)
     out = dict(curated)
+    # Listed companies and names an event gives itself are companies without a deal on record; a one-word
+    # listed name still has to pass the lowercase test ("Equity", "Transcorp" is fine).
+    named = {normalise(n): n for n in listed_names()}
+    for event in events or []:
+        if (n := named_company(str(event.get("headline") or ""))):
+            named.setdefault(normalise(n), n)
+    for key, name in named.items():
+        if key in out or is_generic_company(name) or INSTITUTIONS.match(name) or key in CURRENCIES \
+                or key in _INSTITUTIONAL_NOUNS or all(w in _PLACE_WORDS for w in key.split()):
+            continue
+        if " " not in key and re.search(r"(?<![\w])" + re.escape(key) + r"(?![\w])", text):
+            continue
+        out[key] = name
     for key, n in counts.items():
         name = display[key]
         if key in curated or is_generic_company(name) or INSTITUTIONS.match(name) or key in CURRENCIES \
@@ -252,7 +269,7 @@ def _headline_overlap(left: str, right: str) -> bool:
 def select_company(deals: list[dict], events: list[dict], start: date, end: date) -> dict:
     """Select companies with notable non-transaction events, not another copy of the deal feed."""
     corpus = [str(d.get("headline") or "") for d in deals] + [str(e.get("headline") or "") for e in events]
-    company_names = company_universe(deals, corpus)
+    company_names = company_universe(deals, corpus, events)
     company_deals: dict[str, list[dict]] = {}
     for deal in deals:
         key = normalise(deal.get("target"))
@@ -266,6 +283,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
         and str(event.get("signal_type") or "").casefold() not in {"ma_activity", "m_and_a_activity", "m&a", "merger", "acquisition"}
         and event.get("url")
         and not NON_CORPORATE_HEADLINE.search(str(event.get("headline") or ""))
+        and is_corporate_event(str(event.get("headline") or ""), str(event.get("signal_type") or ""))
     ]
     ranked = []
     for key, company in company_names.items():

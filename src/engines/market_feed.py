@@ -32,6 +32,7 @@ from src.data.africa_countries import COUNTRIES, Country, countries_in_text
 from src.engines import deals as deals_mod
 from src.engines.alpha_scorer import evidence_direction
 from src.engines.deterministic_engine import _match_rules, _source_credibility
+from src.engines.event_filters import is_corporate_event
 
 log = logging.getLogger(__name__)
 
@@ -262,6 +263,8 @@ def to_events(items: Iterable[dict], min_score: float = 0.7) -> list[dict]:
         if not hits:
             continue
         signal_type, score = max(hits, key=lambda h: h[1])
+        if not is_corporate_event(title, signal_type.value):
+            continue                                    # a fine, probe or resignation about people or politics
         countries = [c.iso2 for c in countries_in_text(f"{title} {it.get('snippet', '')}")]
         if not countries and it.get("country_hint"):
             countries.append(it["country_hint"])

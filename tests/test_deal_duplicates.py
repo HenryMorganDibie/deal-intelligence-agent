@@ -169,8 +169,11 @@ def test_merged_and_excluded_records_are_hidden_and_new_reports_follow_the_merge
 def test_excluded_events_are_hidden():
     from src.hosted_market import _visible_events
 
-    rows = [{"id": "a", "country": "NG"}, {"id": "b", "country": "KE", "excluded": "no African party"},
-            {"id": "c", "countries": ["GH"]}, {"id": "d", "country": None}]   # d: a foreign story with no market
+    ev = {"headline": "Zenith Bank appoints new chief executive", "signal_type": "leadership_change"}
+    rows = [{"id": "a", "country": "NG", **ev}, {"id": "b", "country": "KE", "excluded": "no African party", **ev},
+            {"id": "c", "countries": ["GH"], **ev}, {"id": "d", "country": None, **ev},   # d: a foreign story
+            {"id": "e", "country": "NG", "headline": "EFCC probes governor's son over land deal",
+             "signal_type": "regulatory_action"}]                                       # e: not about a company
     assert [e["id"] for e in _visible_events(rows)] == ["a", "c"]
 
 

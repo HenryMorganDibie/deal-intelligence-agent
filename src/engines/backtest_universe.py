@@ -25,6 +25,9 @@ import httpx
 log = logging.getLogger(__name__)
 
 UNIVERSE_PATH = Path(__file__).resolve().parents[2] / "docs" / "backtest_universe.csv"
+# The African names alone, bundled with the service (docs/ is not): the corporate-event filter and Corporate
+# of the Week recognise a listed company by them.
+LISTED_NAMES_PATH = Path(__file__).resolve().parents[1] / "data" / "african_listed_companies.json"
 N_US = 1000
 SEC_HEADERS = {"User-Agent": "DealIntelligence research henrymorgandibie@gmail.com"}
 BROWSER = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36"}
@@ -146,12 +149,19 @@ def build() -> list[dict]:
         seen.add(r["ticker"])
         names.add(r["company"].lower())
         rows.append(r)
+    write_listed_names(rows)
     UNIVERSE_PATH.parent.mkdir(parents=True, exist_ok=True)
     with UNIVERSE_PATH.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=COLUMNS)
         w.writeheader()
         w.writerows(rows)
     return rows
+
+
+def write_listed_names(rows: list[dict]) -> None:
+    import json
+    names = sorted({r["company"] for r in rows if r.get("market") == "africa" and r.get("company")})
+    LISTED_NAMES_PATH.write_text(json.dumps(names, ensure_ascii=False, indent=0) + "\n", encoding="utf-8")
 
 
 def load(path: Optional[Path] = None) -> list[tuple]:

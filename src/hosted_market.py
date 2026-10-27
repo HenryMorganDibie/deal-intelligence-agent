@@ -270,10 +270,13 @@ def deals() -> list[dict]:
 
 
 def _visible_events(rows: list[dict]) -> list[dict]:
-    """Events the product shows: placed in an African market and not reviewed out of scope. Events with no
-    country are mostly foreign stories the news search returned; they stay stored for audit."""
+    """Events the product shows: placed in an African market, not reviewed out of scope, and about a company
+    (event_filters). Events with no country are mostly foreign stories the news search returned, and political
+    or personal stories matched by a signal rule; both stay stored for audit."""
+    from src.engines.event_filters import is_corporate_event
     return [e for e in rows if not e.get("excluded") and not e.get("merged_into")
-            and (e.get("country") or e.get("countries"))]
+            and (e.get("country") or e.get("countries"))
+            and is_corporate_event(e.get("headline") or "", e.get("signal_type"))]
 
 
 def events() -> list[dict]:
