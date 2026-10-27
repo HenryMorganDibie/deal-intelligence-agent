@@ -241,7 +241,7 @@ _GENERIC_TAIL = re.compile(r"\b(firms?|company|companies|startups?|producer|agen
                            r"licen[cs]e|subsidiary|unit|assets?|portfolio|stake|schools?|communities|programme|program|youth|"
                            r"farmers|smes|women|deadline|offer|forecast|target|bank|lender|insurer|telco|miner|bottler|brewer|"
                            r"retailer|distributor|carrier|airline|maker)$", re.IGNORECASE)
-_ALWAYS_GENERIC_TAIL = re.compile(r"\b(schools?|communities|students|scholarships?|scheme|programmes?|programs?|youth|farming|agriculture|agribusiness|economy|"
+_ALWAYS_GENERIC_TAIL = re.compile(r"\b(plan|machinery|youths|maserati|schools?|communities|students|scholarships?|scheme|programmes?|programs?|youth|farming|agriculture|agribusiness|economy|"
                                   r"farmers|women|summit|conference|forum|awards?|event|week|plant|factory|now|today|campus|hostel|game|"
                                   r"etfs?|etns?|aircraft|jets?|king|giant|leader|champion|rights?|licen[cs]es?|title|tour|datacent(?:er|re)s?|data\s+cent(?:er|re)s?|"
                                   r"facilities|infrastructure|hospitals|roads?|devices)$",
@@ -328,6 +328,120 @@ def _clean_name(name: Optional[str]) -> Optional[str]:
     return n
 
 
+_DEMONYM_WORDS = {"african", "south", "pan-african", "nigerian", "kenyan", "ghanaian", "egyptian", "moroccan", "ethiopian",
+                  "ugandan", "tanzanian", "rwandan", "zambian", "zimbabwean", "senegalese", "ivorian", "tunisian",
+                  "cameroonian", "malawian", "namibian", "mozambican", "algerian", "angolan", "congolese", "somali",
+                  "sudanese", "liberian", "gambian", "mauritian", "australian", "canadian", "american", "british",
+                  "chinese", "indian", "french", "german", "u.s", "u.s.", "us", "uk", "london", "lagos", "nairobi"}
+# Words that describe a company without naming it ("Kenyan Private Equity Firm", "Mobile Payments Platform").
+_SECTOR_WORDS = {"private", "equity", "venture", "capital", "supply", "chain", "outsourcing", "education", "manufacturing",
+                 "construction", "materials", "cement", "dairy", "minting", "rig", "design", "production", "tyre",
+                 "distribution", "consumer", "goods", "data", "centre", "center", "motorbike", "microfinance",
+                 "football", "consultancy", "tour", "travel", "mobile", "network", "money", "transfer", "cross-border",
+                 "shea", "natural", "cosmetic", "social", "enterprise", "biocontrols", "macadamia", "nut", "mini-grid",
+                 "cloud", "computing", "space", "technology", "delivery", "crypto", "ecommerce", "parent", "high-growth",
+                 "flower", "security", "biotech", "medtech", "climate", "agri", "farming", "media", "entertainment",
+                 "hospitality", "hotel", "water", "waste", "recycling", "housing", "transport", "shipping", "freight"}
+_ROLE_WORDS = {"startup", "start-up", "startups", "firm", "firms", "company", "companies", "platform", "fintech",
+               "lender", "entrepreneur", "founder", "operator", "businessman", "businesswoman", "billionaire",
+               "insurer", "agritech", "healthtech", "edtech", "insurtech", "proptech", "unicorn", "manufacturer",
+               "provider", "developer", "producer", "retailer", "distributor"}
+_LEAD_WORDS = {"this", "that", "a", "an", "another", "the", "rare", "solo", "best", "oldest", "local", "new",
+               "undisclosed", "unnamed", "leading", "women-led", "female-led"}
+_STAKE_PREFIX = re.compile(r"(?i)^(?:a\s+)?(?:(?:\d+(?:[.,]\d+)?\s*(?:%|per\s?cent|percent)|majority|minority|controlling)\s+)?"
+                           r"(?:equity\s+)?stake\s+in\s+")
+_MODIFIER = r"\S+-(?i:born|based|backed|led|owner|owned|founded|focused|headquartered|listed|managed)"
+_MODIFIER_PREFIX = re.compile(r"^(?:\S+\s+){0,3}?" + _MODIFIER + r"\s+(?=\S)")
+_HEADLINE_STOP = {"raises", "raised", "secures", "secured", "lands", "landed", "gets", "nets", "bags", "closes", "acquires",
+                  "acquired", "buys", "sells", "in", "for", "to", "with", "from", "now", "valued", "has", "is", "and", "as",
+                  "at", "by", "on", "of", "after", "receives", "launches", "expands", "invests", "just", "the", "a", "an",
+                  "seed", "series", "round", "funding", "million", "billion", "rethink", "help", "turn", "build", "scale",
+                  "behind", "raise", "secure", "make", "makes", "gets", "takes", "will", "says", "leads", "lead", "led",
+                  "backs", "plans", "weighs", "purchases", "invest", "buy", "acquire", "take", "over", "move", "bid"}
+_NAME_TOKEN = r"(?:[A-Z][\w.&'’-]*|[a-z][a-z0-9]*\.[a-z]{2,4})"
+
+
+def _is_description_word(word: str) -> bool:
+    w = word.lower().strip(",.:")
+    return w in _DEMONYM_WORDS or w in _SECTOR_WORDS or w in _ROLE_WORDS or w in _LEAD_WORDS or _is_descriptor(word)
+
+
+def _name_after(text: str) -> Optional[str]:
+    """The proper name at the start of text ("OPay, Now Valued..." -> "OPay"), stopping at a verb or a function word."""
+    words = []
+    for token in re.findall(r"\S+", text):
+        bare = token.strip(",.:;!?\"'’“”()")
+        if not bare or bare.lower() in _HEADLINE_STOP or not re.fullmatch(_NAME_TOKEN, bare) or len(words) == 4:
+            break
+        words.append(bare)
+        if token != bare and not token.endswith(("'s", "’s")):
+            break                                    # a comma or colon ends the name
+    name = " ".join(words)
+    return name if name and not all(_is_description_word(w) for w in words) else None
+
+
+def repair_target(target: Optional[str], headline: str) -> Optional[str]:
+    """A target that is a description rather than a name, repaired from the headline.
+
+    "South African Fintech Tyme Bank" -> "Tyme Bank"; "Egypt-born DXwand" -> "DXwand"; "majority stake in
+    DRC-based lender Trust Merchant Bank" -> "Trust Merchant Bank". A description alone ("Kenyan FinTech") takes
+    the name the headline gives it ("Paylend, a Kenyan FinTech raises..."), else becomes "Undisclosed kenyan
+    fintech" so it is never shown as a company. Names that only contain such words ("African Gold Group",
+    "Kenya Pipeline Company") are kept."""
+    if not target or re.match(r"(?i)(?:undisclosed|unnamed)\b", target) or "(unnamed)" in target:
+        return target
+    t = target.strip()
+    after = re.split(r"(?<=[a-z]{3})\.\s+(?=(?:This|That|A|An|Another)\s)", t)
+    t = after[-1]                                    # "Trouble. This Startup Just" (a headline's previous sentence)
+    t = re.split(r"\s+to\s+[a-z]", t)[0]               # "ecommerce firm to expand frontier"
+    t = re.split(r"\s+With\s+", t)[0]                 # "Africa50 With $20 Million"
+    t = described = _STAKE_PREFIX.sub("", t)
+    while _MODIFIER_PREFIX.match(t):
+        t = _MODIFIER_PREFIX.sub("", t, count=1)
+    words = t.split()
+    while words and words[-1].lower() in _HEADLINE_STOP:   # "South African Fintech Just" (Raised...)
+        words.pop()
+    t = " ".join(words)
+    run = 0
+    while run < len(words) and _is_description_word(words[run]):
+        run += 1
+    stripped_role = any(w.lower().strip(",.") in _ROLE_WORDS for w in words[:run])
+    rest = words[run:]
+    if rest and stripped_role and rest[0][:1].isupper() and rest[0].lower() not in _HEADLINE_STOP:
+        return " ".join(rest)
+    if rest and t[:1].islower():
+        rest = []                                    # "rooftop solar firm": a description in lower case
+        words = t.split()
+    elif rest:
+        return t if run == 0 else target.strip()
+    # Only a description. Is the company named next to it in the headline?
+    if not any(w.lower().strip(",.") in _ROLE_WORDS for w in words):
+        return target.strip()
+    head = headline or ""
+    desc = re.escape(t).replace(r"\ ", r"\s+")
+    lead = re.match(rf"^\s*({_NAME_TOKEN}(?:\s+{_NAME_TOKEN}){{0,3}}),\s+(?:a|an|the)?\s*(?:(?:\S+\s+)?\S+['’]s\s+)?{desc}", head, re.I)
+    if lead and _name_after(lead.group(1)):
+        return _name_after(lead.group(1))
+    before = re.search(rf"((?:{_NAME_TOKEN}\s+){{1,3}}){desc}\b", head)
+    if before:                                       # "Tanzania Electric Supply Company" cut to "Supply Company"
+        prefix = [w for w in before.group(1).split() if w.lower() not in _HEADLINE_STOP
+                  and not re.fullmatch(_MODIFIER, w) and not w.endswith(("'s", "’s"))]
+        if prefix and len(prefix) == len(before.group(1).split()) and not all(_is_description_word(w) for w in prefix):
+            return f"{' '.join(prefix)} {t}"
+    for m in re.finditer(rf"{desc}\b[,:]?\s+", head, re.I):
+        name = _name_after(head[m.end():])
+        if name:
+            return name
+    for m in re.finditer(r"(?i)\b(?:startup|start-up|firm|company|platform|fintech|behind)\b[,:]?\s+", head):
+        name = _name_after(head[m.end():])
+        if name:
+            return name
+    words = [w for w in described.split() if w.lower() not in _HEADLINE_STOP or w.lower() in ("a", "an", "the", "and")]
+    words = [w if w.lower() in _DEMONYM_WORDS or not _is_description_word(w) else w.lower()
+             for w in words if w.lower() not in _LEAD_WORDS]
+    return "Undisclosed " + " ".join(words) if words else None
+
+
 def normalise_name(name: Optional[str]) -> str:
     if not name:
         return ""
@@ -411,6 +525,7 @@ _NOT_A_DEAL = re.compile(r"\b(black\s+stars|super\s+eagles|super\s+falcons|bafan
                          r"to\s+buy\s+now|stocks?\s+to\s+buy|shares\s+to\s+buy|altcoins?|price\s+prediction|"
                          r"raises?\s+(?:its\s+|the\s+)?(?:\S+\s+)?(?:outlook|forecast|rating|alarm|concerns?|awareness|"
                          r"questions?|prices?|tariffs?|rates?|fears?|hopes?|the\s+bar|bursary|igr|revenue\s+target))\b"
+                         r"|\bnets?\s+(?:\S+\s+){0,2}dividend\b"
                          r"|\braise[sd]?\s+(?:\S+\s+){0,3}(cap|ceiling|limit|investment|capital|budget|allocation|target|commitment)\s+to\b",
                          re.IGNORECASE)
 _LEADING_RAISE = re.compile(
@@ -1005,6 +1120,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     # Checked on the final target, after descriptors such as "Ghanaian-based" have been resolved.
     if target and (_PLACE_OR_SECTOR_TARGET.match(target.strip()) or _is_place_only(target)):
         return None
+    target = repair_target(target, title)               # "South African Fintech Tyme Bank" -> "Tyme Bank"
     deal = {
         "deal_type": deal_type,
         "stage": stage,

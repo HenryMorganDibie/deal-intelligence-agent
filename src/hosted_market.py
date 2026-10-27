@@ -1447,9 +1447,11 @@ async def cron_country_snapshot(request: Request) -> dict:
 
 
 def _needs_round_parties(d: dict) -> bool:
-    """A visible equity round that names no investor and whose articles have not been read yet."""
-    return (d.get("deal_type") == "equity_funding" and deals_mod.is_visible(d) and not d.get("parties_checked")
-            and not investors.parties(d))
+    """A visible equity round that names no investor, whose articles have not been read yet, or whose own
+    articles were read without a result before other reports of the round were searched."""
+    checked = d.get("parties_checked")
+    unread = not checked or (checked.get("status") != "investors_found" and not checked.get("searched"))
+    return d.get("deal_type") == "equity_funding" and deals_mod.is_visible(d) and unread and not investors.parties(d)
 
 
 @router.get("/api/cron/enrich-rounds")
@@ -1478,7 +1480,7 @@ async def cron_enrich_rounds(request: Request, limit: int = Query(40, ge=1, le=8
             if time.monotonic() > deadline:
                 return None                     # left for the next call
             try:
-                return await asyncio.wait_for(run_in_threadpool(work, deal), timeout=60)
+                return await asyncio.wait_for(run_in_threadpool(work, deal), timeout=80)
             except Exception as e:
                 log.info("round enrichment failed for %s: %r", deal.get("id"), e)
                 return None

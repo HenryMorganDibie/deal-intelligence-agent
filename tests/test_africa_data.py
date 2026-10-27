@@ -2159,3 +2159,57 @@ def test_round_parties_bracketed_and_misspelt_names():
     r = extract("The round was led by Factor[e] Ventures, with participation from Persistent Energy.", "SunFi", 2026)
     assert [inv.canonical(n) for n in r["lead"]] == ["Factor[e] Ventures"]
     assert inv.canonical("International Financing Corporation") == "International Finance Corporation"
+
+
+def test_round_investors_fall_back_to_other_reports_read_strictly():
+    import re
+    from src.engines import round_parties as rp
+    deal = {"id": "d1", "deal_type": "equity_funding", "announced": "2024-10-29", "target": "Moniepoint",
+            "sources": [{"url": "https://paywalled.example/story", "title": "Moniepoint raises $110m"}]}
+    report = ("African fintech Moniepoint just closed $110 million in new financing. The company did not disclose "
+              "its valuation. The Series C round was led by Development Partners International’s African Development "
+              "Partners (ADP) III fund.")
+    pages = {"https://paywalled.example/story": {"content_status": "snippet_only"},
+             "https://readable.example/story": {"content_status": "article_text_retrieved", "content_text": report}}
+    searched = []
+
+    def search(d, client, tried):
+        searched.append(set(tried))
+        return [{"url": "https://readable.example/story", "title": "Moniepoint raises $110m Series C"}]
+    out, status = rp.enrich(deal, client=None, fetch=lambda item: pages[item["url"]], search=search)
+    assert status == "investors_found" and out["lead_investors"] == ["Development Partners International"]
+    assert out["parties_checked"]["via"] == "other_coverage" and searched == [{"https://paywalled.example/story"}]
+    none, status = rp.enrich(deal, client=None, fetch=lambda item: {"content_status": "snippet_only"},
+                             search=lambda d, c, t: [])
+    assert status == "article_unreadable" and none["parties_checked"]["searched"] is True
+
+    # A digest covering several companies: a round sentence far from the company's name is not read as its round.
+    digest = ("Kuda Bank raised a Series B this week. Elsewhere, Payhippo joined Y Combinator. MTN named new executives. "
+              "The round was led by Tiger Global.")
+    assert rp.extract(digest, "Kuda", 2021, strict=True)["lead"] == []
+    assert rp._ROUNDUP.search("Kuda Bank's Series B, Catalyst Fund's fintech programme, MTN Nigeria's new execs")
+    assert not rp._ROUNDUP.search("Kuda Bank closes $55 million Series B round led by Paypal backers")
+    assert rp.extract("The round was led by Jeff Bezos' Bezos Expeditions.", "Terra", 2026)["lead"] == ["Bezos Expeditions"]
+
+
+def test_described_targets_are_repaired_from_the_headline():
+    from src.engines.deals import extract_deal, repair_target as r
+    assert r("South African Fintech Tyme Bank", "") == "Tyme Bank"
+    assert r("Egypt-born DXwand", "") == "DXwand" and r("Uganda-Born Rwazi", "") == "Rwazi"
+    assert r("YC-backed Remedial Health", "") == "Remedial Health"
+    assert r("majority stake in DRC-based lender Trust Merchant Bank", "") == "Trust Merchant Bank"
+    assert r("Kenyan FinTech", "Paylend, a Kenyan FinTech raises $2 Million from Next Chymia Consulting") == "Paylend"
+    assert r("Insurtech", "Naked, South Africa’s Insurtech Secures USD 38M Funding") == "Naked"
+    assert r("Mobile Payments Platform", "SoftBank Makes First Move in Africa with $400 Million Investment in "
+             "Mobile Payments Platform, OPay, Now Valued") == "OPay"
+    assert r("Rare African Solo Founder", "Rare African Solo Founder Behind Better Auth Raises $5M") == "Better Auth"
+    assert r("Supply Company", "Tanzania Electric Supply Company Receives EUR 41.6 Million") == "Tanzania Electric Supply Company"
+    assert r("This Startup", "This Startup Raised $9 Million To Make Better Quality Quantum Computers") == "Undisclosed startup"
+    assert r("African Outsourcing Startup", "Al Gore’s Firm Leads $100 Million Investment in African Outsourcing "
+             "Startup") == "Undisclosed African outsourcing startup"
+    assert r("Africa50 With $20 Million", "") == "Africa50"
+    for name in ("African Gold Group", "Kenya Pipeline Company", "Egyptian Fertilizers Company", "Absa Group",
+                 "Mr. Eazi", "A.P. Moller Capital", "Undisclosed African travel company", "Ventures Platform"):
+        assert r(name, "x") == name, name
+    deal = extract_deal("South African Startup Orca Fraud Raises USD 550 K Pre-Seed Round", published="2026-10-01")
+    assert deal and deal["target"] == "Orca Fraud"

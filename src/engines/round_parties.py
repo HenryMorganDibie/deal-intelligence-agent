@@ -109,7 +109,16 @@ def _names(fragment: str, target: str) -> list[str]:
         part = re.sub(r"^[A-Z][\w.]*(?:\s+[A-Z][\w.]*)?-based\s+", "", part)
         part = re.sub(r"\s*\([^)]*\)$", "", part).strip(" '\"’”")
         # "Jeff Bezos' Bezos Expeditions" is the fund; "Ken Njoroge of PANI" is the person, not the company he runs.
-        part = re.sub(r"^[A-Z][\w.-]*(?:\s+[A-Z][\w.-]*){0,2}(?:'s|’s|'|’)\s+(?=[A-Z])", "", part)
+        owned = re.match(r"^([A-Z][\w.-]*(?:\s+[A-Z][\w.-]*){0,2})(?:'s|’s|'|’)\s+(?=[A-Z])(.*)$", part)
+        if owned:
+            owner, held = owned.groups()
+            # A firm's own fund is credited to the firm ("Development Partners International's ADP III fund").
+            if re.search(r"\s(?:fund|vehicle|arm)$", held) or _ORG_WORD.search(owner) or inv.registry_entry(owner):
+                part = owner
+            elif held.split()[0] in ("Africa", "African", "Global", "Impact", "Venture", "Ventures", "Investment"):
+                part = f"{owner}'s {held}"              # "Google's Africa Investment Fund" names Google's fund
+            else:
+                part = held                             # "Jeff Bezos' Bezos Expeditions"
         person_of = re.match(r"^([A-Z][a-z]+\s+[A-Z][a-z]+)\s+of\s+[A-Z]", part)
         if person_of and not _ORG_WORD.search(person_of.group(1)):
             part = person_of.group(1)
@@ -127,21 +136,30 @@ def _names(fragment: str, target: str) -> list[str]:
     return out
 
 
-def extract(text: str, target: str, deal_year: Optional[int] = None) -> dict:
-    """{"lead": [...], "participants": [...], "round": str|None, "evidence": [{"name", "role", "sentence"}]}."""
+def extract(text: str, target: str, deal_year: Optional[int] = None, strict: bool = False) -> dict:
+    """{"lead": [...], "participants": [...], "round": str|None, "evidence": [{"name", "role", "sentence"}]}.
+
+    Strict reading (for reports found by search, which may cover several companies) takes a sentence about
+    "the round" only when it or one of the two sentences before it names the company."""
     lead: list[str] = []
     participants: list[str] = []
     evidence: list[dict] = []
     stage = None
     target_key = inv.normalise_name(target or "")
     text = re.sub(r"(\w)\[(\w)\]", r"\1\2", text or "")    # "Factor[e] Ventures": a bracket would end the list
+    recent: list[bool] = []
     for sentence in _sentences(text):
+        named_here = bool(target_key) and target_key.split()[0] in inv.normalise_name(sentence)
+        named_before = any(recent[-2:])
+        recent.append(named_here)
         if not _ROUND_WORDS.search(sentence) or _OTHER_ROUND.search(sentence):
             continue
         years = {int(y) for y in re.findall(r"\b(20\d{2})\b", sentence)}
         if deal_year and years and deal_year not in years:
             continue                                    # a sentence about another year's round
-        mentions_target = bool(target_key) and target_key.split()[0] in inv.normalise_name(sentence)
+        mentions_target = named_here
+        if strict and not (named_here or named_before):
+            continue
         if not mentions_target and not re.search(
                 r"(?i)\b(?:the|this|its)\s+(?:\S*\d\S*\s+(?:million\s+|billion\s+)?)?(?:round|raise|funding|investment|deal|"
                 r"company|startup|series\s+[a-f]|seed|pre-seed|financing)\b", sentence):
@@ -168,6 +186,66 @@ def extract(text: str, target: str, deal_year: Optional[int] = None) -> dict:
 _ARTICLE_CLIENT: Optional[httpx.Client] = None
 
 
+# Publishers whose round reports are usually readable and name the investors; tried first.
+_READABLE_PUBLISHERS = ("techcabal.com", "techcrunch.com", "disrupt-africa.com", "weetracker.com", "techpoint.africa",
+                        "techmoran.com", "condia.com", "launchbaseafrica.com", "wamda.com", "businessday.ng",
+                        "techeconomy.ng", "itnewsafrica.com", "ventureburn.com", "africabusinesscommunities.com",
+                        "thebigdeal.substack.com", "techafricanews.com", "benjamindada.com", "innovation-village.com")
+# A digest headline covers several companies ("Kuda's Series B, Catalyst Fund's programme, MTN's new execs").
+_ROUNDUP = re.compile(r"(?i)\b(?:round-?up|weekly|this\s+week|week\s+in|newsletter|digest|funding\s+tracker|"
+                      r"startups?\s+that\s+raised)\b|,[^,]+,[^,]+")
+COVERAGE_WINDOW_DAYS = 45
+MAX_COVERAGE = 4
+
+
+def other_coverage(deal: dict, client: httpx.Client, tried: set[str]) -> list[dict]:
+    """Other reports of the same round: a news search for the company's name with funding words, kept only when
+    the headline names the company and a round, and it was published within six weeks of the deal."""
+    from datetime import timedelta
+    from email.utils import parsedate_to_datetime
+    from xml.etree import ElementTree
+    target = (deal.get("target") or "").strip()
+    if len(target) < 3 or not deal.get("announced") or re.match(r"(?i)(?:undisclosed|unnamed)\b", target):
+        return []                                   # an unnamed company cannot be searched for
+    day = date.fromisoformat(deal["announced"][:10])
+    window = timedelta(days=COVERAGE_WINDOW_DAYS)
+    query = (f'"{target}" (raises OR raised OR funding OR round OR investment OR secures) '
+             f"after:{(day - window).isoformat()} before:{(day + window).isoformat()}")
+    try:
+        resp = client.get("https://news.google.com/rss/search?q=" + urllib.parse.quote(query) +
+                          "&hl=en-US&gl=US&ceid=US:en", headers=_BROWSER, timeout=10)
+        resp.raise_for_status()
+        root = ElementTree.fromstring(resp.content)
+    except Exception as e:                              # noqa: BLE001 - the search is a best effort
+        log.info("coverage search failed for %s: %s", target, e)
+        return []
+    name = re.compile(r"(?i)(?<![\w])" + re.escape(target) + r"(?![\w])")
+    found = []
+    for item in root.iter("item"):
+        title = (item.findtext("title") or "").strip()
+        link = (item.findtext("link") or "").strip()
+        source = item.find("source")
+        publisher = (source.get("url") if source is not None else "") or ""
+        if not link or link in tried or not name.search(title) or not _ROUND_WORDS.search(title) or _ROUNDUP.search(title):
+            continue
+        try:
+            published = parsedate_to_datetime(item.findtext("pubDate") or "").date()
+        except (TypeError, ValueError):
+            continue
+        if abs((published - day).days) > COVERAGE_WINDOW_DAYS:
+            continue
+        host = urllib.parse.urlparse(publisher).hostname or ""
+        rank = 0 if any(host.endswith(p) for p in _READABLE_PUBLISHERS) else 1
+        found.append((rank, abs((published - day).days), {"url": link, "title": title, "publisher": host}))
+    found.sort(key=lambda r: (r[0], r[1]))
+    hosts, out = set(), []
+    for _, _, item in found:                            # one report per publisher
+        if item["publisher"] not in hosts:
+            hosts.add(item["publisher"])
+            out.append(item)
+    return out[:MAX_COVERAGE]
+
+
 def _article_client() -> httpx.Client:
     """The research fetcher's safety checks apply; this client adds a browser identity and a longer wait,
     since many publishers refuse or time out on a bot agent with a 4-second limit."""
@@ -177,23 +255,35 @@ def _article_client() -> httpx.Client:
     return _ARTICLE_CLIENT
 
 
-def enrich(deal: dict, client: httpx.Client, fetch=None) -> tuple[dict, str]:
-    """The deal with investors read from its articles (up to two sources tried), and a status."""
+def enrich(deal: dict, client: httpx.Client, fetch=None, search=None) -> tuple[dict, str]:
+    """The deal with investors read from its articles, and a status. The deal's own sources (up to two) are read
+    first; when none is readable or names an investor, other reports of the same round are read."""
     from src.engines.research import _fetch_article_content
     if fetch is None:
         def fetch(item: dict) -> dict:                  # noqa: E306
             return _fetch_article_content(item, client=_article_client())
+    if search is None:
+        search = other_coverage
     year = int(deal["announced"][:4]) if deal.get("announced") else None
     status = "no_article"
-    for source in (deal.get("sources") or [])[:2]:
-        url = resolve_google_news(source.get("url") or "", client)
+    own = [{"url": s.get("url") or "", "title": s.get("title")} for s in (deal.get("sources") or [])[:2]]
+    tried = {s["url"] for s in own}
+    queue, searched = list(own), False
+    while queue or not searched:
+        if not queue:
+            searched = True
+            queue = search(deal, client, tried)
+            tried |= {s["url"] for s in queue}
+            continue
+        source = queue.pop(0)
+        url = resolve_google_news(source["url"], client)
         if not url:
             continue
         page = fetch({"url": url, "title": source.get("title")})
         if page.get("content_status") != "article_text_retrieved":
-            status = "article_unreadable"
+            status = "article_unreadable" if status != "no_investors_named" else status
             continue
-        found = extract(page.get("content_text") or "", deal.get("target") or "", year)
+        found = extract(page.get("content_text") or "", deal.get("target") or "", year, strict=searched)
         if not (found["lead"] or found["participants"]):
             status = "no_investors_named"
             continue
@@ -204,6 +294,9 @@ def enrich(deal: dict, client: httpx.Client, fetch=None) -> tuple[dict, str]:
         out["investor_evidence"] = [{**e, "url": page.get("content_url") or url} for e in found["evidence"]]
         if found["round"] and not deal.get("round"):
             out["round"] = found["round"]
-        out["parties_checked"] = {"on": date.today().isoformat(), "status": "investors_found"}
+        checked = {"on": date.today().isoformat(), "status": "investors_found"}
+        if searched:
+            checked["via"] = "other_coverage"
+        out["parties_checked"] = checked
         return out, "investors_found"
-    return {**deal, "parties_checked": {"on": date.today().isoformat(), "status": status}}, status
+    return {**deal, "parties_checked": {"on": date.today().isoformat(), "status": status, "searched": True}}, status
