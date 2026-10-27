@@ -210,6 +210,7 @@ export type Event = {
 export type InvestorRow = {
   name: string;
   type: string | null;
+  type_inferred?: boolean;
   hq: string | null;
   deal_count: number;
   roles: Record<string, number>;

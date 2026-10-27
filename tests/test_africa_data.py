@@ -2016,3 +2016,32 @@ def test_research_recognises_companies_whose_names_contain_sector_words():
     for question, (companies, sectors) in cases.items():
         p = rs.parse_question(question, date(2026, 10, 27))
         assert (p["companies"], p["sectors"]) == (companies, sectors), question
+
+
+def test_same_buyer_and_seller_in_different_markets_are_different_deals():
+    gambia = {"deal_type": "acquisition", "announced": "2025-06-14", "buyer": "Access Bank", "target": "Standard Chartered",
+              "countries": ["GM", "TZ"], "headline": "Access Bank takes over Standard Chartered in The Gambia"}
+    gambia2 = {"deal_type": "acquisition", "announced": "2025-06-18", "buyer": "Access Holdings",
+               "target": "Standard Chartered Bank Gambia", "countries": ["GM"],
+               "headline": "Access Holdings Completes Acquisition of Standard Chartered Bank Gambia"}
+    tanzania = {"deal_type": "acquisition", "announced": "2025-06-24", "buyer": "Access Bank",
+                "target": "Standard Chartered Tanzania", "countries": ["TZ"],
+                "headline": "Access Bank acquires Standard Chartered Tanzania operations"}
+    assert dl.same_transaction(gambia, gambia2)
+    assert not dl.same_transaction(gambia, tanzania) and not dl.same_transaction(gambia2, tanzania)
+
+
+def test_investor_names_are_cleaned_and_unregistered_types_inferred():
+    from collections import Counter
+    from src.engines import investors as inv
+    cases = {"Billionaire Joe Lonsdale": ["Joe Lonsdale"], "South African PE Firm Harith": ["Harith"],
+             "African VC LoftyInc Capital": ["LoftyInc Capital"], "Total": ["TotalEnergies"],
+             "Access Holdings": ["Access Bank"], "Equity Group": ["Equity Bank"], "French DFI Proparco": ["Proparco"],
+             "Kenya": [], "Lagos": [], "USD 180m": [], "New York investment firm": [], "Foreign FIs": [],
+             "Kenya-based": [], "Kenya Power": ["Kenya Power"], "Ethiopian Airlines": ["Ethiopian Airlines"]}
+    for raw, expected in cases.items():
+        assert inv.split_names(raw) == expected, raw
+    assert inv._inferred_kind("Base10 Partners", Counter()) == "investment_firm"
+    assert inv._inferred_kind("Equity Bank", Counter()) == "bank"
+    assert inv._inferred_kind("Shell", Counter()) == "corporate"
+    assert inv.registry_entry("AgDevCo").kind == "dfi"

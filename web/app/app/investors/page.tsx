@@ -97,7 +97,7 @@ export default function InvestorsPage() {
           <Loading />
         ) : (
           <>
-          <Table head={["Name", "Type", "Deals", "Roles", "Disclosed value", "Countries", "Last seen"]}>
+          <Table head={["Name", "Type", "Deals", "Roles", "Value of deals involved", "Countries", "Last seen"]}>
             {rows.map((r) => (
               <tr key={r.name}>
                 <Td>
@@ -106,10 +106,17 @@ export default function InvestorsPage() {
                   </Link>
                   {r.hq && <span className="block text-[0.75rem] text-[color:var(--dim)]">{r.hq}</span>}
                 </Td>
-                <Td>{words(r.type) || "n/a"}</Td>
+                <Td>
+                  {words(r.type) || "n/a"}
+                  {r.type_inferred && (
+                    <span className="block text-[0.75rem] text-[color:var(--dim)]" title="Not in the curated investor registry; inferred from the name">inferred</span>
+                  )}
+                </Td>
                 <Td>{r.deal_count}</Td>
                 <Td className="text-[color:var(--muted)]">{Object.entries(r.roles).map(([k, v]) => `${k} ${v}`).join(", ")}</Td>
-                <Td className="whitespace-nowrap">{usd(r.disclosed_usd)}</Td>
+                <Td className="whitespace-nowrap">
+                  <span title="Total disclosed size of the deals this party took part in, not its own contribution">{usd(r.disclosed_usd)}</span>
+                </Td>
                 <Td className="text-[color:var(--muted)]">{Object.keys(r.countries).slice(0, 5).join(", ")}</Td>
                 <Td className="kbd whitespace-nowrap text-[0.75rem] text-[color:var(--muted)]">{r.last_seen ?? ""}</Td>
               </tr>

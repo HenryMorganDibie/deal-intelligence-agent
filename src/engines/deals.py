@@ -1191,6 +1191,17 @@ def same_transaction(a: dict, b: dict) -> bool:
 
     if not _same_transaction_name(a, b):
         return False
+    # The same buyer and seller can do separate deals in different markets (Access Bank buying Standard
+    # Chartered's Gambia and Tanzania units): reports placed in disjoint countries are different deals.
+    ca, cb = set(a.get("countries") or [a.get("country")]) - {None}, set(b.get("countries") or [b.get("country")]) - {None}
+    if ca and cb and not ca & cb:
+        return False
+    # Stored country lists can carry a stray market from an earlier merge; the countries the headlines
+    # themselves name are the sharper test.
+    ha = {c.iso2 for c in countries_in_text(a.get("headline") or "")}
+    hb = {c.iso2 for c in countries_in_text(b.get("headline") or "")}
+    if ha and hb and not ha & hb:
+        return False
 
     # A rumour and the later agreed or completed deal between the same buyer and target are one
     # transaction, even months apart and at a different price: talks rarely end at the first figure.

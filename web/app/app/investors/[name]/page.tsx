@@ -49,7 +49,7 @@ export default function InvestorPage({ params }: { params: { name: string } }) {
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <Stat label="Deals" value={p.deal_count} note={Object.entries(p.roles).map(([k, v]) => `${k} ${v}`).join(", ")} />
-        <Stat label="Disclosed value" value={usd(p.disclosed_usd)} />
+        <Stat label="Value of deals involved" value={usd(p.disclosed_usd)} />
         <Stat label="Top co-investors" value={p.co_investors?.[0]?.name ?? "n/a"} note={p.co_investors?.slice(1, 4).map((c) => c.name).join(", ")} />
       </div>
       <p className="mt-6 text-[0.875rem] text-[color:var(--muted)]">Sectors: {top(p.sectors)}</p>

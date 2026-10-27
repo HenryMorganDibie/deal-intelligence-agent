@@ -52,6 +52,7 @@ REGISTRY: tuple[Investor, ...] = (
     Investor("Shelter Afrique", "multilateral", "Nairobi, Kenya"),
     Investor("Trade and Development Bank", "multilateral", "Nairobi, Kenya", ("TDB Group", "TDB")),
     Investor("Islamic Development Bank", "multilateral", "Jeddah, Saudi Arabia", ("IsDB",)),
+    Investor("AgDevCo", "dfi", "London, United Kingdom"),
     # Private equity and growth
     Investor("Helios Investment Partners", "private_equity", "London, United Kingdom", ("Helios",)),
     Investor("Development Partners International", "private_equity", "London, United Kingdom", ("DPI",)),
@@ -112,6 +113,13 @@ def canonical(name: Optional[str]) -> Optional[str]:
         tail = normalise_name(" ".join(words[-k:])) if len(words) > k else ""
         if tail in _ALIAS and len(tail) >= 4:
             return _ALIAS[tail].name
+    # A description before a name: "Billionaire Joe Lonsdale", "South African PE Firm Harith".
+    described = _DESCRIPTOR.match(name.strip())
+    if described and described.group("rest")[:1].isupper() and len(described.group("rest")) >= 3:
+        return canonical(described.group("rest"))
+    corporate = _CORPORATE_ALIASES.get(key)
+    if corporate:
+        return corporate
     # Unknown parties: one display form per company ("Standard Bank Group" and "Standard Bank" are one,
     # "NATCO Pharma" and "Natco Pharma" are one). A lone remaining word is kept only if distinctive.
     stripped = re.sub(r"(?:\s+(?:Group|Holdings?|Plc|PLC|Limited|Ltd\.?|Inc\.?|S\.?A\.?))+$", "", name.strip())
@@ -121,6 +129,18 @@ def canonical(name: Optional[str]) -> Optional[str]:
 
 
 _DISPLAY: dict[str, str] = {}
+_DESCRIPTOR = re.compile(
+    r"^(?:(?:South\s+African|Nigerian|Kenyan|Ghanaian|Egyptian|Moroccan|Ethiopian|Ugandan|Tanzanian|Rwandan|"
+    r"Zambian|Zimbabwean|Senegalese|Ivorian|Tunisian|African|Pan-African|American|US|U\.S\.|UK|British|French|German|"
+    r"Dutch|Chinese|Indian|Emirati|Saudi|Japanese|Swiss|Norwegian|Swedish|Danish|Canadian|Israeli|Mauritian)\s+)?"
+    r"(?:billionaire|tycoon|businessman|businesswoman|investor|entrepreneur|PE\s+firm|private\s+equity\s+firm|VC|"
+    r"VC\s+firm|venture\s+capital\s+firm|venture\s+firm|fund\s+manager|asset\s+manager|lender|DFI|"
+    r"development\s+finance\s+institution|insurer|bank|miner|telco|operator)\s+(?P<rest>.+)$", re.IGNORECASE)
+# One company reported under two names (a rename, or a holding company and its bank).
+# Keys are normalised names ("Access Holdings" and "Equity Group" normalise to "access" and "equity").
+_CORPORATE_ALIASES = {"total": "TotalEnergies", "totalenergies": "TotalEnergies",
+                      "access": "Access Bank", "access bank": "Access Bank",
+                      "equity": "Equity Bank", "equity bank": "Equity Bank"}
 _COMMON_WORDS = {"access", "equity", "standard", "first", "union", "national", "united", "sterling", "fidelity",
                  "heritage", "premier", "prime", "summit", "diamond", "royal", "liberty", "imperial", "capital",
                  "africa", "african", "global", "international"}
@@ -138,6 +158,27 @@ _GENERIC_PARTY_KEYS = {"public", "first", "million", "millions", "billion", "bil
                        "company", "unknown", "president", "presidente", "une", "fund", "n a", "na"}
 
 
+# Amounts, unnamed descriptions and markets are not parties: "USD 180m", "New York investment firm",
+# "African Venture Capital Firm", "Foreign FIs", "Kenya-based", "LP".
+_NOT_AN_ENTITY = re.compile(
+    r"(?i)^(?:(?:US\$|USD|NGN|KES|ZAR|GHS|EUR|N|R|\$|€|£)\s*[\d.,]+\s*(?:m|bn|b|k|million|billion)?|[\d.,]+\s*(?:m|bn|million|billion))$"
+    r"|^(?:(?:new\s+york|london|dubai|us|uk|african|foreign|local|global|international|unnamed|undisclosed)\s+)?"
+    r"(?:investment\s+firm|venture\s+capital\s+firm|vc|vc\s+firm|pe\s+firm|investors?|fis?|lenders?|banks?|"
+    r"funds?|consortium|firm|lp|lps|gp)$"
+    r"|-based$|^(?:debt-strained|cash-strapped|struggling)\s")
+
+
+def _is_place(name: str) -> bool:
+    """A country or city on its own ("Kenya", "Lagos", "US") is not an investor."""
+    from src.data.africa_countries import countries_in_text
+    key = normalise_name(name)
+    if key in {"us", "u s", "usa", "uk", "u k", "eu", "uae", "lagos", "nairobi", "johannesburg", "cairo", "accra",
+               "abuja", "kigali", "dakar", "casablanca", "addis ababa", "dar es salaam", "kampala", "london", "dubai"}:
+        return True
+    found = countries_in_text(name)
+    return bool(found) and normalise_name(" ".join(c.name for c in found)) == key
+
+
 def split_names(name: Optional[str]) -> list[str]:
     """Canonical parties in an extracted party string: combined names are split ("IFC and Proparco" ->
     IFC, Proparco); headline fragments and generic phrases yield nothing, so no deal is credited to them."""
@@ -150,6 +191,8 @@ def split_names(name: Optional[str]) -> list[str]:
         if any(registry_entry(p) for p in parts):
             return [c for p in parts for c in split_names(p)]
     if _GENERIC_PARTY.match(raw) or not normalise_name(raw) or normalise_name(raw) in _GENERIC_PARTY_KEYS or _FRAGMENT.search(raw):
+        return []
+    if _NOT_AN_ENTITY.search(raw) or _is_place(raw):
         return []
     c = canonical(raw)
     return [c] if c else []
@@ -204,6 +247,19 @@ def profiles(deals: Iterable[dict]) -> dict[str, dict]:
     return out
 
 
+_INVESTMENT_FIRM = re.compile(r"(?i)\b(capital|ventures?|partners|fund|private\s+equity|equity\s+partners|"
+                              r"investments?|asset\s+management|angels?|accelerator|vc)\b")
+_BANK = re.compile(r"(?i)\b(bank|banque|banco)\b")
+
+
+def _inferred_kind(name: str, roles: Counter) -> str:
+    """Unregistered parties: an investment firm when the name says so, else a corporate (strategic buyer,
+    seller or borrower). Marked as inferred, never presented as registry data."""
+    if _BANK.search(name) and not _INVESTMENT_FIRM.search(name):
+        return "bank"
+    return "investment_firm" if _INVESTMENT_FIRM.search(name) else "corporate"
+
+
 def _profile(name: str, rows: list[tuple[dict, str]]) -> dict:
     entry = registry_entry(name)
     roles = Counter(role for _, role in rows)
@@ -216,7 +272,8 @@ def _profile(name: str, rows: list[tuple[dict, str]]) -> dict:
     recent = sorted(rows, key=lambda r: r[0].get("announced") or "", reverse=True)
     return {
         "name": name,
-        "type": entry.kind if entry else None,
+        "type": entry.kind if entry else _inferred_kind(name, roles),
+        "type_inferred": entry is None,
         "hq": entry.hq if entry else None,
         "in_registry": entry is not None,
         "deal_count": len({d["id"] for d, _ in rows}),
@@ -259,7 +316,8 @@ def leaderboard(deals: Iterable[dict], role: Optional[str] = None, kind: Optiona
             continue
         rows.append(p)
     rows.sort(key=lambda p: (p["roles"].get(role, 0) if role else p["deal_count"], p["disclosed_usd"]), reverse=True)
-    return [{k: p[k] for k in ("name", "type", "hq", "deal_count", "roles", "disclosed_usd", "countries", "last_seen")}
+    return [{k: p[k] for k in ("name", "type", "type_inferred", "hq", "deal_count", "roles", "disclosed_usd", "countries",
+                               "last_seen")}
             for p in rows[:limit]]
 
 
