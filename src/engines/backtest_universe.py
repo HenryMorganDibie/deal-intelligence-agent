@@ -160,8 +160,14 @@ def build() -> list[dict]:
 
 def write_listed_names(rows: list[dict]) -> None:
     import json
-    names = sorted({r["company"] for r in rows if r.get("market") == "africa" and r.get("company")})
-    LISTED_NAMES_PATH.write_text(json.dumps(names, ensure_ascii=False, indent=0) + "\n", encoding="utf-8")
+    # Each name with its home market, from its exchange (BRVM listings are mostly Ivorian).
+    by_exchange = {"JSE": "ZA", "NGX": "NG", "EGX": "EG", "Casablanca": "MA", "NSE Kenya": "KE", "GSE": "GH", "BRVM": "CI"}
+    by_suffix = {sfx: by_exchange[label] for sfx, label in AFRICAN_EXCHANGES.values()}
+    names = {r["company"]: by_exchange.get(r.get("exchange") or "") or next(
+                 (iso for sfx, iso in by_suffix.items() if (r.get("ticker") or "").upper().endswith(sfx)), None)
+             for r in rows if r.get("market") == "africa" and r.get("company")}
+    LISTED_NAMES_PATH.write_text(json.dumps(dict(sorted(names.items())), ensure_ascii=False, indent=0) + "\n",
+                                 encoding="utf-8")
 
 
 def load(path: Optional[Path] = None) -> list[tuple]:

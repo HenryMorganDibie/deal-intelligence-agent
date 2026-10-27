@@ -1549,6 +1549,10 @@ async def cron_ingest(
             if reason:
                 e["excluded"] = reason
     merged = deals_mod.merge_all(new_deals, into={k: existing[k] for k in {d["id"] for d in new_deals} if k in existing})
+    # Each publisher's wording of a story is one event: later reports point at the first.
+    from src.engines import event_dedup
+    stored_events = {e["id"]: e for e in await run_in_threadpool(_load, "events")}
+    new_events = await run_in_threadpool(event_dedup.resolve, new_events, stored_events)
     async with httpx.AsyncClient(timeout=60) as client:
         r1 = await _rpc(client, "upsert_deals", {"p_rows": list(merged.values())})
         if r1.status_code != 200:

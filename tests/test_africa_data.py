@@ -2385,3 +2385,31 @@ def test_a_deals_announcement_approval_and_completion_are_one_transaction():
     u2 = d("UAC Of Nigeria Enters Deal To Sell 73.29% Stake In Livestock Feeds", "2026-09-30", target="Livestock Feeds",
            stake_pct=73.29)
     assert not same(u1, u2)
+
+
+def test_one_story_is_one_event_and_described_targets_join_the_named_deal():
+    from src.engines import event_dedup as ed
+    from src.engines.deals import extract_deal as e, same_transaction as same
+    named = e("Helios to acquire up to 49% of Mozambican flour miller Merec Industries", published="2026-10-21")
+    assert (named["target"], named["stake_pct"], named["countries"]) == ("Merec Industries", 49.0, ["MZ"])
+    described = e("Helios to buy up to 49% of Mozambique’s largest flour miller", published="2026-10-27")
+    assert described["target"] == "Undisclosed flour miller" and same(named, described)
+    assert e("Kisubi Hospital acquires Uganda's first next-generation MRI scanner", published="2026-10-27") is None
+    glass = e("Helios to acquire Nigerian glass business", published="2025-12-11", publisher="Africa Private Equity News")
+    beta = e("Helios Investment Partners Acquires Beta Glass from Frigoglass Group", published="2026-02-10")
+    assert beta["countries"] == ["NG"] and same(glass, beta)      # a listed NGX company places the deal
+
+    ev = [{"id": str(i), "day": d, "signal_type": t, "publisher": "p", "headline": h} for i, (d, t, h) in enumerate([
+        ("2026-10-21", "m_and_a_activity", "Helios to acquire up to 49% of Mozambican flour miller Merec Industries"),
+        ("2026-10-21", "m_and_a_activity", "Helios Investment Partners acquires 49% stake in Merec to scale agro-food operations in Africa"),
+        ("2026-10-27", "m_and_a_activity", "Helios to buy up to 49% of Mozambique’s largest flour miller"),
+        ("2026-10-27", "m_and_a_activity", "Helios to acquire Mozambique milling company stake"),
+        ("2026-10-25", "earnings_surprise", "Kakuzi Issues Profit Warning Amid Macadamia Slump"),
+        ("2026-10-26", "earnings_surprise", "Kakuzi issues profit warning as macadamia prices slump"),
+        ("2026-10-26", "earnings_surprise", "Famous Brands raises interim dividend despite profit decline")])]
+    out = {x["id"]: x.get("merged_into") for x in ed.resolve(ev, {})}
+    assert out == {"0": None, "1": "0", "2": "0", "3": "0", "4": None, "5": "4", "6": None}
+    # A stored event keeps the merge it already had when a re-scan upserts it again.
+    stored = {"9": {"id": "9", "merged_into": "0"}}
+    assert ed.resolve([{"id": "9", "day": "2026-10-27", "signal_type": "m_and_a_activity", "headline": "x"}],
+                      stored)[0]["merged_into"] == "0"

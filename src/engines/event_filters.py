@@ -59,6 +59,8 @@ _PERSON_CUE = re.compile(
 # Ownership changes are checked by the deal extractor; "Africa's richest man acquires 25% of Kenya Pipeline"
 # is a deal whatever its subject.
 _TRANSACTION_TYPES = {"m_and_a_activity", "insider_activity"}
+_ARMS = re.compile(r"(?i)\b(fighter\s+jets?|warplanes?|attack\s+helicopters?|helicopters?|weapons?|missiles?|drones?\s+for\s+"
+                   r"(?:the\s+)?(?:army|military)|jf-17|tanks?\s+for|armou?red\s+vehicles?)\b")
 
 
 @lru_cache(maxsize=1)
@@ -110,7 +112,8 @@ def is_corporate_event(headline: str, signal_type: Optional[str] = None) -> bool
     A political or personal headline counts only when a listed company is its subject. Any other headline
     must name a company or describe one ("a top bank was fined", "profit warning")."""
     if signal_type in _TRANSACTION_TYPES:
-        return True                                     # deal rules require transaction wording already
+        # Deal rules require transaction wording already; a state buying weapons is not a deal.
+        return not _ARMS.search(headline or "")
     text = headline or ""
     name = named_company(text)
     listed = _listed_pattern()

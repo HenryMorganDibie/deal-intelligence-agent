@@ -341,11 +341,13 @@ _SECTOR_WORDS = {"private", "equity", "venture", "capital", "supply", "chain", "
                  "shea", "natural", "cosmetic", "social", "enterprise", "biocontrols", "macadamia", "nut", "mini-grid",
                  "cloud", "computing", "space", "technology", "delivery", "crypto", "ecommerce", "parent", "high-growth",
                  "flower", "security", "biotech", "medtech", "climate", "agri", "farming", "media", "entertainment",
-                 "hospitality", "hotel", "water", "waste", "recycling", "housing", "transport", "shipping", "freight"}
+                 "hospitality", "hotel", "water", "waste", "recycling", "housing", "transport", "shipping", "freight",
+                 "flour", "milling", "grain", "sugar", "dairy", "cocoa", "coffee", "tea", "poultry", "feed", "edible", "oil"}
 _ROLE_WORDS = {"startup", "start-up", "startups", "firm", "firms", "company", "companies", "platform", "fintech",
                "lender", "entrepreneur", "founder", "operator", "businessman", "businesswoman", "billionaire",
                "insurer", "agritech", "healthtech", "edtech", "insurtech", "proptech", "unicorn", "manufacturer",
-               "provider", "developer", "producer", "retailer", "distributor"}
+               "provider", "developer", "producer", "retailer", "distributor", "miller", "millers", "processor",
+               "bottler", "brewer", "refiner", "maker"}
 _LEAD_WORDS = {"this", "that", "a", "an", "another", "the", "rare", "solo", "best", "oldest", "local", "new",
                "undisclosed", "unnamed", "leading", "women-led", "female-led"}
 _STAKE_PREFIX = re.compile(r"(?i)^(?:a\s+)?(?:(?:\d+(?:[.,]\d+)?\s*(?:%|per\s?cent|percent)|majority|minority|controlling)\s+)?"
@@ -485,7 +487,8 @@ _AUX = (r"(?:\s+(?:has|have|will|is|are|to|set\s+to|agrees?\s+to|agreed\s+to|mov
         r"aims?\s+to|looks?\s+to|hopes?\s+to|wants?\s+to|seeks?\s+to|targets?\s+to|is\s+considering|considers|mulls|"
         r"weighs|(?:wins?|gets?|receives?|secures?|obtains?)\s+(?:\S+\s+){0,2}?(?:approval|nod|clearance)\s+to))*")
 _STAKE_IN = (r"(?:(?:an?\s+|the\s+)?(?:\S+\s+){0,3}?(?:stake|interest|shareholding|holding)\s+in\s+"
-             r"|\d{1,3}(?:[.,]\d+)?\s?%\s+(?:of\s+|da\s+|do\s+|de\s+|du\s+|des\s+|in\s+))")
+             r"|(?:up\s+to\s+|about\s+|nearly\s+|around\s+|almost\s+|over\s+)?\d{1,3}(?:[.,]\d+)?\s?%\s+"
+             r"(?:of\s+|da\s+|do\s+|de\s+|du\s+|des\s+|in\s+))")
 
 # Verbs, auxiliaries and prepositions are lowercased before matching, so Title Case
 # headlines ("Zenith Bank Completes Acquisition Of Paramount Bank") parse like
@@ -813,6 +816,21 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
             deal_type, m = "equity_funding", lead_raise
     subj = _clean_name(m.groupdict().get("subj"))
     obj = _clean_name(m.groupdict().get("obj"))
+    # "acquire 49% of Mozambican flour miller Merec Industries": the capitalised object stopped at the demonym;
+    # the company is the name after its lowercase description.
+    raw = m.groupdict().get("obj") or ""
+    if raw and (not obj or _is_place(raw) or raw.lower() in _DEMONYM_WORDS or _is_place_only(raw)):
+        after = re.match(rf"\s+(?P<d>(?:[a-z][\w'’-]*\s+){{1,4}})(?P<n>{NAME})", norm[m.end("obj"):])
+        described = after and any(w in _ROLE_WORDS or w in _DESCRIPTOR_WORDS for w in after.group("d").split())
+        if described and _clean_name(after.group("n")):
+            obj = _clean_name(after.group("n"))
+        else:
+            # "49% of Mozambique's largest flour miller": described, not named.
+            only = re.match(r"(?:['’]s)?\s+((?:[a-z][\w'’-]*\s*){1,4})", norm[m.end("obj"):])
+            words = [w for w in (only.group(1).split() if only else [])
+                     if not w.endswith("est") and w not in ("stake", "stakes", "shares", "in", "of", "the", "a")]
+            if words and (words[-1] in _ROLE_WORDS or words[-1] in ("business", "businesses", "subsidiary", "unit")):
+                obj = "Undisclosed " + " ".join(words)
     if not subj and not obj:
         return None
 
@@ -1412,7 +1430,7 @@ def _lifecycle_match(a: dict, b: dict, gap: int) -> bool:
         x, y = a.get(field), b.get(field)
         return bool(x and y and abs(float(x) - float(y)) > tolerance * max(float(x), float(y)))
 
-    if not (same("seller") or same("buyer")) or conflicts("stake_pct", 0.0) or conflicts("amount_usd", 0.2):
+    if not (same("seller") or same("buyer")) or _stakes_differ(a, b) or conflicts("amount_usd", 0.2):
         return False
     if a.get("currency") and a.get("currency") == b.get("currency") and conflicts("amount", 0.2):
         return False                                    # N6.95bn and N16.35bn are different deals
@@ -1421,6 +1439,45 @@ def _lifecycle_match(a: dict, b: dict, gap: int) -> bool:
         if a.get(field) and b.get(field) and not same(field):
             return False
     return True
+
+
+UNDISCLOSED_WINDOW_DAYS = 30
+
+
+def _stakes_differ(a: dict, b: dict) -> bool:
+    """Disclosed stakes more than a point apart ("24.76 per cent" and "25%" are one stake, rounded)."""
+    x, y = a.get("stake_pct"), b.get("stake_pct")
+    return bool(x and y and abs(float(x) - float(y)) > 1.0)
+
+
+def _undisclosed_match(a: dict, b: dict, gap: int) -> bool:
+    """A report that describes the company ("Helios to buy 49% of Mozambique's largest flour miller") and one
+    that names it ("...of Mozambican flour miller Merec Industries") are one deal: same buyer or seller, same
+    country, within a month, and no stake that disagrees."""
+    undisclosed = [bool(re.match(r"(?i)undisclosed\b", str(d.get("target") or ""))) for d in (a, b)]
+    if undisclosed.count(True) != 1 or gap > LIFECYCLE_WINDOW_DAYS:
+        return False
+    if gap > UNDISCLOSED_WINDOW_DAYS:
+        # Months apart only when the description fits the named company ("Nigerian glass business" and
+        # "Beta Glass") and a report marks a stage of the deal.
+        hidden, named = (a, b) if undisclosed[0] else (b, a)
+        described = _name_tokens(hidden.get("target")) - {"undisclosed"} - _GENERIC_ASSET_WORDS
+        described -= {"business", "company", "firm", "group", "startup", "operator", "nigerian", "kenyan", "ghanaian",
+                      "south", "african", "egyptian", "moroccan"}
+        if not (described & _name_tokens(named.get("target"))) or not (
+                _LIFECYCLE.search(a.get("headline") or "") or _LIFECYCLE.search(b.get("headline") or "")):
+            return False
+    ca = set(a.get("countries") or [a.get("country")]) - {None}
+    cb = set(b.get("countries") or [b.get("country")]) - {None}
+    if not (ca & cb):
+        return False
+    if _stakes_differ(a, b):
+        return False
+    for field in ("buyer", "seller"):
+        x, y = _name_tokens(a.get(field)), _name_tokens(b.get(field))
+        if x and y and (x <= y or y <= x):
+            return True
+    return False
 
 
 def same_transaction(a: dict, b: dict) -> bool:
@@ -1434,9 +1491,11 @@ def same_transaction(a: dict, b: dict) -> bool:
     if not _same_transaction_type(a, b):
         return False
 
+    if _undisclosed_match(a, b, gap):
+        return True
     if not _same_transaction_name(a, b):
         return False
-    if a.get("stake_pct") and b.get("stake_pct") and float(a["stake_pct"]) != float(b["stake_pct"]):
+    if _stakes_differ(a, b):
         return False                                    # 43% and 73.29% stakes are different deals
     # The same buyer and seller can do separate deals in different markets (Access Bank buying Standard
     # Chartered's Gambia and Tanzania units): reports placed in disjoint countries are different deals.
