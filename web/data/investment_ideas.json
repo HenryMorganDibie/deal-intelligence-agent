@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-26T11:32:36.145888+00:00",
+  "updated_at": "2026-10-27T00:16:12.562796+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 12,
+      "new_review_items_today": 64,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 61,
-      "new_observations_today": 3,
+      "observations_collected": 70,
+      "new_observations_today": 9,
       "unreviewed_flagged_observations": 7,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 28,
-      "entities": 52,
+      "relationships": 34,
+      "entities": 63,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,25 +177,19 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 61,
-    "new_rows": 3,
+    "collected_tickers": 70,
+    "new_rows": 9,
     "failures": [
-      "BOAM.BV",
-      "BOAN.BV",
-      "BOAS.BV",
-      "BOC.NR",
-      "BONY.CA",
-      "BOPP.GH",
-      "BSFR.CA",
-      "BSR.JO",
-      "BSS.JO"
+      "BUC.JO",
+      "BWZ.JO",
+      "CABC.BV"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 52,
-    "relationships": 28,
-    "source_links": 33,
+    "nodes": 63,
+    "relationships": 34,
+    "source_links": 39,
     "most_connected": [
       {
         "name": "Amsons Group",
@@ -211,6 +205,10 @@
       },
       {
         "name": "EBRD",
+        "degree": 2
+      },
+      {
+        "name": "Den VC",
         "degree": 2
       },
       {
@@ -231,10 +229,6 @@
       },
       {
         "name": "Renaissance",
-        "degree": 1
-      },
-      {
-        "name": "Local Oil Contractors",
         "degree": 1
       }
     ]

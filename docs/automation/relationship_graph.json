@@ -207,6 +207,50 @@
     "kenya pipeline shares": {
       "name": "Kenya Pipeline Shares",
       "kind": "organization"
+    },
+    "den vc": {
+      "name": "Den VC",
+      "kind": "organization"
+    },
+    "turuq innovations": {
+      "name": "Turuq Innovations",
+      "kind": "organization"
+    },
+    "turuq": {
+      "name": "Turuq",
+      "kind": "organization"
+    },
+    "agrifi": {
+      "name": "AgriFI",
+      "kind": "organization"
+    },
+    "vitara": {
+      "name": "Vitara",
+      "kind": "organization"
+    },
+    "gcb bank and aki ola": {
+      "name": "GCB Bank and Aki-Ola",
+      "kind": "organization"
+    },
+    "getfund": {
+      "name": "GETFund",
+      "kind": "organization"
+    },
+    "lagos": {
+      "name": "Lagos",
+      "kind": "organization"
+    },
+    "msmes": {
+      "name": "MSMEs",
+      "kind": "organization"
+    },
+    "apex global energy": {
+      "name": "Apex Global Energy",
+      "kind": "organization"
+    },
+    "aenr": {
+      "name": "AENR",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -626,7 +670,91 @@
           "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE1zQW9kOGliWS1QTkJFRW9Ka3g3bFVIWGVWM0JMc0l2RHU5UjFRaXBoZ0Q0UjIzUEs4bXNjSS1OVmJsSHNrMjlCNkdNZlhPQk02OEVRc0xkOC1Odmd0bzh6UEc2dHZ4eW12bGFPOFg1VzFQUDMwTFFoNmJwQ2ZoTlE?oc=5"
         }
       ]
+    },
+    "d9e8ef6876c5c519fd82": {
+      "id": "d9e8ef6876c5c519fd82",
+      "from": "den vc",
+      "to": "turuq innovations",
+      "type": "equity_funding",
+      "first_seen": "2026-10-26",
+      "sources": [
+        {
+          "title": "Egypt's Turuq Innovations Attracts Seed Investment from Den VC to Strengthen E-commerce Logistics",
+          "publisher": "Tech In Africa",
+          "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNNXV4eXZqQ2xLNkJ6dzBnMGExaUZYUmpfMzZLSDFQbzJkU0s3M1FWTm9yQzFTNTZTVTVfMVBQRkgtWWhQSngzeVJUMDV6Ym1wandQSXZ3S2oybVI3MW9KZFhzd21kWmRNajZyUUNfYXFlZ1hQWVc4b0NTeHdPSHBLZEVsVUpHQnV6aDlXcGE5bTZDX2U2Z2FWN09idm9SWTBZNFA0MlVBejd1bU9US1Bfdm1ELTV6aWxyNHluS3hUaXFaOHdi?oc=5"
+        }
+      ]
+    },
+    "9bc094c07938147eac87": {
+      "id": "9bc094c07938147eac87",
+      "from": "den vc",
+      "to": "turuq",
+      "type": "equity_funding",
+      "first_seen": "2026-10-26",
+      "sources": [
+        {
+          "title": "Egypt’s Turuq Raises Seed Funding From Den VC To Scale E-commerce Logistics",
+          "publisher": "Tech Build Africa",
+          "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTE9HWmFkYi0zd3ZtdlR5bWNwUXdEWHBWWHlCNXN2dy00bkVhdzB2bEN0T0RHMWNYR2MtbVdHUkJiRlNlcGp0ak80NTRZSnZEa0J1QmVscktrT3l4c3MzODBIU3RMVE5zSTN6bkRhQURZUmd2RDZwZENvSQ?oc=5"
+        }
+      ]
+    },
+    "aa20e2cbc17eb93afc56": {
+      "id": "aa20e2cbc17eb93afc56",
+      "from": "agrifi",
+      "to": "vitara",
+      "type": "equity_funding",
+      "first_seen": "2026-10-26",
+      "sources": [
+        {
+          "title": "Ghanaian Agritech Vitara Bags $2M From EU-Backed AgriFI and Acumen to Digitise Shea Supply Chain",
+          "publisher": "Launch Base Africa",
+          "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE81X0xVMGZZamh5cHJDMXhMM0RENHRxX1hPZ2Mwd0NpVWk4THZGTHB6RlBXVDFnQXByeXVzTS16YlN6RmdiSXJVYUl6Rm1vbmRhY0otU2tUaWJUeEt5REdDZmRNZk8yaldXd2hyZV9lbzdyQQ?oc=5"
+        }
+      ]
+    },
+    "fce4af20245fb2f5e5e0": {
+      "id": "fce4af20245fb2f5e5e0",
+      "from": "gcb bank and aki ola",
+      "to": "getfund",
+      "type": "equity_funding",
+      "first_seen": "2026-10-26",
+      "sources": [
+        {
+          "title": "GCB Bank and Aki-Ola back GETFund’s private funding drive",
+          "publisher": "News Ghana",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxQampDdjZ5a3gyWUoxanNrOHVoOGdkRXlaRUt3bHdZMEhKTlZMM3djOExlclYyc3VPbGp3YjE1RTJ6SXhfQTItYVB1UnJ0N3BBUXlYT0xZMUlUUUEyUjRrbEJLZkM3OFFrbnp2bWZmaDZfV3FrcmNBc3NnSl9nOXNQSl9hUlR4ZmdfNUE?oc=5"
+        }
+      ]
+    },
+    "dd733bd1087dae4ecb65": {
+      "id": "dd733bd1087dae4ecb65",
+      "from": "lagos",
+      "to": "msmes",
+      "type": "equity_funding",
+      "first_seen": "2026-10-27",
+      "sources": [
+        {
+          "title": "Lagos backs MSMEs with N5bn financing, grants, export opportunities",
+          "publisher": "Nigerian NewsDirect",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxOQjBfUFl6ajB5N1ZzOU5yTnhtN1FHamhsM0c5dktBS1dVZW1mN3NUby1IaThadmZnbjY0NTd2RlVOemd6TGVmVk5zWi1OTEs1c1hSVl9fMnFxU3RaWmVfRGNub2dnaVI0dmpWRXljRW0xWjFvaFd0amk0alRzQ3lYU0pJM1kxaVcyeW1uRjR2YURFUXMwSnZtcFN2VURRUQ?oc=5"
+        }
+      ]
+    },
+    "ac0dbb087f4bd4cf64ed": {
+      "id": "ac0dbb087f4bd4cf64ed",
+      "from": "apex global energy",
+      "to": "aenr",
+      "type": "exit",
+      "first_seen": "2026-10-26",
+      "sources": [
+        {
+          "title": "Eni Divests AENR Stake To Apex Global Energy In Nigeria Restructuring",
+          "publisher": "Ocean News & Technology",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQX0QycF9xUFIwTUtJaWo3dWN6N0tpS2pYRFFWRU5BSHpGR2o3eXd2aUU3UVd2Q25uQW9hdDgzel9UT0x6LTdPQnZPbzN4Sk9UbG5yOFlYbWpiY1VpaDZZMURYa0FPaWR6WVBRUlk4YkpmRmhBVmJQUjRoam5jcUhYcWFkMy12YU5HZGpSdmY5ektsSlZLdUxqbkx1OXdya0dMcEw3UFp3WQ?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-26T11:32:31.716261+00:00"
+  "updated_at": "2026-10-27T00:16:08.190008+00:00"
 }

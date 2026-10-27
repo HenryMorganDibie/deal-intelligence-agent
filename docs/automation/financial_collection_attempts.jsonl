@@ -212,3 +212,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BSR.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "BSS.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-26", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BTFH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BTI.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/BUA_Cement_-_2025_AFS.pdf", "status": "collected", "ticker": "BUACEMENT.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46386_BUA_FOODS_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "BUAFOODS.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "BUC.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BVT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BWN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "BWZ.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "BYI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "CABC.BV"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/East-African-Cables-Plc-Full-Year-results-for-the-Year-Ended-31-Dec-2023.pdf", "status": "collected", "ticker": "CABL.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CAC.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46461_CADBURY_NIGERIA_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "CADBURY.LG"}
