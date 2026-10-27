@@ -1896,7 +1896,8 @@ def test_sens_log_parses_feed_appends_new_only_and_confirms_completed_events(tmp
     assert hits[0]["signal_types"] == ["m_and_a_activity"] and hits[0]["official"]
     assert sl.events_for("Anglo American", "AGL.JO", entries=held) == []      # cautionary: talks, not the event
     assert sl.classify_headline("Directorate Change") == {"leadership_change"}
-    assert sl.classify_headline("Dealings in Securities by a Director") == set()
+    assert sl.classify_headline("Dealings in Securities by a Director") == {"insider_activity"}
+    assert sl.classify_headline("Trading Statement") == {"earnings_surprise"}
 
 
 def test_research_reports_absent_investor_kind_and_ranks_superlatives_by_size():
@@ -1981,3 +1982,37 @@ def test_equipment_purchases_and_crime_stories_are_not_deals_but_brands_are():
     assert dl.extract_deal("Kenya’s Peach Cars Raises $11M to Build Africa’s Most Trusted Used Car Marketplace",
                            published="2026-10-27")["target"] == "Peach Cars"
     assert dl.extract_deal("Stucky Motors buys Swazi Truck in Eswatini", published="2026-10-27")["target"] == "Swazi Truck"
+
+
+
+def test_brief_engine_reads_sens_wording_and_research_cites_logged_sens(tmp_path, monkeypatch):
+    import json
+    from src.engines import research as rs, sens_log
+    from src.engines.deterministic_engine import DeterministicSignalEngine
+    from src.schemas.models import AgentState, AnalysisRequest, SECFiling
+    state = AgentState(request=AnalysisRequest(company_name="MTN Group", ticker="MTN.JO"))
+    state.filings = [SECFiling(accession_number="SENS-1", form_type="JSE SENS", filing_date="2026-10-26",
+                               company_name="MTN GROUP LIMITED", cik="JSE", document_url="https://example.com/s1",
+                               description="MTN: MTN GROUP LIMITED - Directorate Change")]
+    found = {c.signal_type.value for c in DeterministicSignalEngine().run(state).signal_candidates}
+    assert "leadership_change" in found
+
+    log = tmp_path / "sens.jsonl"
+    log.write_text(json.dumps({"id": "20261026-5", "date": "2026-10-26", "time": "09:00", "issuer": "MTN GROUP LIMITED",
+                               "code": "MTN", "headline": "Firm intention announcement",
+                               "url": "https://example.com/sens"}) + "\n")
+    monkeypatch.setattr(sens_log, "LOG_PATH", log)
+    monkeypatch.setattr(sens_log, "_LOG", None)
+    _, evidence = rs.retrieve("What is MTN Group doing in 2026?", live_news=False, today=date(2026, 10, 27))
+    sens = [e for e in evidence if e["kind"] == "exchange_disclosure"]
+    assert sens and "Firm intention announcement" in sens[0]["text"] and "m and a activity" in sens[0]["text"]
+    assert sens[0]["source_quality"] == "Official / primary"
+
+
+def test_research_recognises_companies_whose_names_contain_sector_words():
+    cases = {"What is MTN Group doing in 2026?": (["MTN Group"], []), "Safaricom deals this year": (["Safaricom"], []),
+             "Dangote Cement acquisitions": (["Dangote Cement"], []), "Airtel Africa IPO": (["Airtel Africa"], []),
+             "MTN fintech deals": (["MTN"], ["fintech"]), "Fintech deals in Nigeria": ([], ["fintech"])}
+    for question, (companies, sectors) in cases.items():
+        p = rs.parse_question(question, date(2026, 10, 27))
+        assert (p["companies"], p["sectors"]) == (companies, sectors), question

@@ -1263,6 +1263,9 @@ def _source_credibility(source_name: str) -> float:
 # Form types the exchange tools emit (see africa_tool); everything else in state.filings is from SEC EDGAR.
 # Official exchange disclosure systems (see africa_tool) -> credibility source name.
 # Results found by news search arrive as news items credited to their publisher.
+# Rule score for an event classified from a SENS headline: an issuer's own announcement under the JSE
+# Listings Requirements, as specific as the strongest news rules.
+SENS_RULE_SCORE = 0.80
 _EXCHANGE_FORM_TYPES = {"JSE SENS": "JSE SENS", "NGX Disclosure": "NGX Group", "NSE Disclosure": "NSE Kenya"}
 
 
@@ -1335,6 +1338,13 @@ class DeterministicSignalEngine:
                 off_target += 1
                 continue
             hits = _match_rules(text)
+            if filing.form_type == "JSE SENS":
+                # SENS headlines use the Listings Requirements' standard wording ("Directorate change",
+                # "Firm intention announcement"), which the news rules were not written for.
+                from src.engines.sens_log import classify_headline
+                found = {t for t, _, _ in hits}
+                hits = hits + [(SignalType(t), [f"JSE SENS: {t}"], SENS_RULE_SCORE)
+                               for t in sorted(classify_headline(filing.description or "")) if SignalType(t) not in found]
             credibility = candidate_credibility("filing", filing.form_type)
 
             for sig_type, matched_patterns, base_score in hits:

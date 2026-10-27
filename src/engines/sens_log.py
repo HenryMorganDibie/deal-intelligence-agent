@@ -59,6 +59,10 @@ _SENS_EVENTS: dict[str, list[str]] = {
         r"\bdebt restructur", r"\brestructur\w* of (the |its )?(debt|notes|bonds|facilit|loans?)", r"\bstandstill\b",
         r"\b(covenant|payment) (waiver|breach|default)\b", r"\bevent of default\b",
     ],
+    # The JSE's equivalent of a Form 4, and the trading statement the Listings Requirements demand when
+    # earnings will differ by at least 20% from the prior period.
+    "insider_activity": [r"\bdealings?\s+in\s+securities\b", r"\bdealing\s+by\s+(?:a\s+)?(?:director|prescribed\s+officer)"],
+    "earnings_surprise": [r"\btrading\s+statement\b"],
     "regulatory_action": [
         r"\b(public )?censure\b", r"\badministrative penalty\b", r"\b(fine|penalty) (imposed|levied)\b",
         r"\bsanction(s|ed) (by|imposed)\b", r"\bregulatory (action|sanction)\b",

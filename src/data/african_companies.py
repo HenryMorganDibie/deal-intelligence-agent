@@ -29,7 +29,7 @@ AFRICAN_COMPANIES: dict[str, str] = {
     "Fawry": "EG", "Talaat Moustafa": "EG", "Elsewedy Electric": "EG", "Orascom Construction": "EG",
     "Attijariwafa": "MA", "Maroc Telecom": "MA", "OCP Group": "MA",
     # Pan-African and other markets
-    "Ecobank": "TG", "Afreximbank": "EG", "Ethio Telecom": "ET",
+    "Airtel Africa": "NG", "Ecobank": "TG", "Afreximbank": "EG", "Ethio Telecom": "ET",
 }
 
 

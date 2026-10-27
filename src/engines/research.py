@@ -31,6 +31,8 @@ from urllib.parse import quote, urljoin, urlparse
 
 import httpx
 
+from src.data.african_companies import countries_of_companies
+
 from src.data.africa_countries import COUNTRIES, countries_in_text, get as get_country
 from src.engines import country_risk as cr
 from src.engines import deals as deals_mod
@@ -167,6 +169,13 @@ def _terms(q: str) -> list[str]:
     return [t for t in re.findall(r"[a-z0-9&'-]{3,}", q.lower()) if t not in _STOP]
 
 
+def _is_sector_phrase(phrase: str) -> bool:
+    """A phrase made only of sector vocabulary ("Fintech", "Telecom Sector"), not a company whose name contains
+    a sector word ("Dangote Cement", "Access Bank")."""
+    words = [w for w in re.findall(r"[\w&'-]+", phrase) if w.lower() not in _STOP]
+    return bool(words) and all(any(rx.search(w) for rx in _SECTOR_WORDS.values()) for w in words)
+
+
 def parse_question(q: str, today: Optional[date] = None) -> dict:
     today = today or date.today()
     regions = [region for region, pattern in _REGION_ALIASES.items() if re.search(pattern, q, re.IGNORECASE)]
@@ -217,14 +226,21 @@ def parse_question(q: str, today: Optional[date] = None) -> dict:
         words = re.findall(r"[a-z0-9]+", phrase.lower())
         if (inv.canonical(phrase) in investors or not words
                 or all(word in _STOP for word in words)
-                or any(pattern.search(phrase) for pattern in _SECTOR_WORDS.values())
+                or (_is_sector_phrase(phrase) and not countries_of_companies(phrase))
                 or any(re.fullmatch(pattern, phrase, re.IGNORECASE) for pattern in _REGION_ALIASES.values())):
             continue
+        phrase = re.sub(r"(?:\s+(?:IPO|M&A|SPAC|Deal|Deals))+$", "", phrase)     # "Airtel Africa IPO"
         companies.append(phrase)
     kinds = [k for k, rx in (("dfi", r"\b(dfis?|development\s+finance)\b"), ("multilateral", r"\bmultilateral"),
                              ("private_equity", r"\bprivate\s+equity\b|\bpe\s+firms?\b"),
                              ("venture_capital", r"\bventure\s+capital|\bvcs?\b"), ("sovereign", r"\bsovereign\s+wealth"))
              if re.search(rx, q, re.IGNORECASE)]
+    if companies:
+        # A sector implied only by a company's own name ("MTN" is telecom) must not filter out its other deals.
+        rest = q
+        for name in companies:
+            rest = re.sub(re.escape(name), " ", rest, flags=re.IGNORECASE)
+        sectors = [sector for sector in sectors if _SECTOR_WORDS[sector].search(rest)]
     return {"countries": countries, "regions": regions, "deal_types": types, "sectors": sectors,
             "investors": investors, "investor_kinds": kinds,
             "companies": companies[:4], "since": since.isoformat() if since else None,
@@ -787,6 +803,31 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
         src = (d.get("sources") or [{}])[0]
         add("deal", d.get("headline") or d.get("target") or "deal", _deal_text(d), src.get("url"), d.get("announced"),
             src.get("publisher") or "news")
+
+    # JSE SENS announcements from the daily capture log: a named company's own announcements, or, for a
+    # question about South Africa, recent announcements that report a deal-relevant event.
+    try:
+        from src.engines import sens_log
+        logged = [e for e in sens_log.load() if _date_in_scope(e.get("date"), p)]
+        if p["companies"]:
+            picked = [e for c in p["companies"][:2] for e in sens_log.announcements_for(c, entries=logged)]
+        elif "ZA" in p["countries"]:
+            picked = [e for e in logged if sens_log.classify_headline(e.get("headline") or "")]
+        else:
+            picked = []
+        seen_ids = set()
+        for e in sorted(picked, key=lambda e: (e.get("date") or "", e.get("time") or ""), reverse=True):
+            if e["id"] in seen_ids or len(seen_ids) >= 8:
+                continue
+            seen_ids.add(e["id"])
+            kinds = sorted(sens_log.classify_headline(e.get("headline") or ""))
+            add("exchange_disclosure", f"{e.get('issuer')}: {e.get('headline')}",
+                f"JSE SENS announcement by {e.get('issuer')}" + (f" (share code {e['code']})" if e.get("code") else "")
+                + f" on {e.get('date')} at {e.get('time')}: {e.get('headline')}"
+                + (f". Event type: {', '.join(k.replace('_', ' ') for k in kinds)}." if kinds else "."),
+                e.get("url"), e.get("date"), "JSE SENS (company announcement)")
+    except Exception as e:                     # the log is supplementary evidence; never fail research on it
+        log.warning("SENS evidence unavailable: %s", e)
 
     # Corporate events.
     ev = [e for e in events
