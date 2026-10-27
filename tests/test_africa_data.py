@@ -2259,3 +2259,37 @@ def test_a_long_lead_list_is_not_claimed_as_leads():
     from src.engines.round_parties import extract
     r = extract("The round was led by LocalGlobe, Enza Capital, Logos Ventures, FirstCheck Africa and Speedinvest.", "Jumba", 2026)
     assert r["lead"] == [] and r["participants"][:2] == ["LocalGlobe", "Enza Capital"]
+
+
+def test_round_extraction_reads_more_phrasings_french_and_headlines():
+    from src.engines import round_parties as rp
+    x = rp.extract
+    assert x("The startup has also received financing from Ada VC and Culture Capital.", "Jendaya", 2022)["participants"] \
+        == ["Ada VC", "Culture Capital"]
+    r = x("Led by Pangea Africa, the funding round included Root Capital, RDF Ghana and Sahel Capital.", "Oyster", 2024)
+    assert r["lead"] == ["Pangea Africa"] and r["participants"] == ["Root Capital", "RDF Ghana", "Sahel Capital"]
+    assert x("ZirooPay has raised an $11.4 million Series A round led by Lagos-based VC fund Zrosk Investment "
+             "Management.", "ZirooPay", 2021)["lead"] == ["Zrosk Investment Management"]
+    assert x("The pre-Series A round includes equity funding led by Old Mutual subsidiary Next176.", "Jem HR", 2025)["lead"] \
+        == ["Next176"]
+    assert x("The $1.7-million capital raise was led by 4Di Capital, an independent venture capital fund manager.",
+             "Bfree", 2024)["lead"] == ["4Di Capital"]
+    assert x("Local and international investors participated in the round. They include Alitheia IDF and 4DX Ventures.",
+             "Jetstream", 2021)["participants"] == ["Alitheia IDF", "4DX Ventures"]
+    assert x("Led by Nigerian entrepreneurs Ladi Delano and Jide Odunsi, Moove secures $20mn financing from British "
+             "International Investment.", "Moove", 2022)["lead"] == []
+    # French
+    assert x("Mené par 4DX Ventures avec la participation d’autres investisseurs, le tour de table vise la région.",
+             "Eskab", 2022)["lead"] == ["4DX Ventures"]
+    assert x("Ces fonds, obtenus suite au tour de table mené conjointement par Costanoa et Norrsken22, permettront "
+             "d’étendre son équipe.", "Smile Identity", 2022)["lead"] == ["Costanoa", "Norrsken22"]
+    assert x("Camusat lève 12 milliards FCFA auprès de SCB Cameroun et de la BICEC pour financer le projet.", "Camusat",
+             2022)["participants"] == ["SCB Cameroun", "BICEC"]
+    # The headline alone
+    deal = {"target": "MAX", "announced": "2026-10-12", "sources": [],
+            "headline": "Nigerian E-Mobility Startup MAX Secures Nithio Funding, Raises Series B3 Round to $29 Million"}
+    out, status = rp.enrich(deal, None, fetch=lambda i: {}, search=lambda d, c, t: [])
+    assert status == "investors_found" and out["investors"] == ["Nithio"] and out["parties_checked"]["via"] == "headline"
+    deal = {"target": "Maplerad", "announced": "2022-06-01", "sources": [],
+            "headline": "Nigerian banking-as-a-service platform Maplerad raises $6M, led by Peter Thiel’s Valar Ventures"}
+    assert rp.enrich(deal, None, fetch=lambda i: {}, search=lambda d, c, t: [])[0]["lead_investors"] == ["Valar Ventures"]

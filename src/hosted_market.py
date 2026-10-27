@@ -1447,10 +1447,12 @@ async def cron_country_snapshot(request: Request) -> dict:
 
 
 def _needs_round_parties(d: dict) -> bool:
-    """A visible equity round that names no investor, whose articles have not been read yet, or whose own
-    articles were read without a result before other reports of the round were searched."""
+    """A visible equity round that names no investor, whose articles have not been read yet, or were read
+    without a result before other reports were searched or by an older version of the extractor."""
+    from src.engines import round_parties
     checked = d.get("parties_checked")
-    unread = not checked or (checked.get("status") != "investors_found" and not checked.get("searched"))
+    unread = not checked or (checked.get("status") != "investors_found" and (
+        not checked.get("searched") or (checked.get("v") or 1) < round_parties.EXTRACTOR_VERSION))
     return d.get("deal_type") == "equity_funding" and deals_mod.is_visible(d) and unread and not investors.parties(d)
 
 

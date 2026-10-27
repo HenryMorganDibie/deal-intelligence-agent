@@ -27,15 +27,20 @@ log = logging.getLogger(__name__)
 _BROWSER = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"}
 
 # Where a list of names ends: punctuation, or a word that starts another clause.
-_LIST_END = (r"(?=[.;:!?()\[\]]|,?\s+(?:to|in|at|for|which|who|that|as|bringing|taking|valuing|according|"
-             r"after|while|following|this|its|their|with|alongside|joined|backed|plus)\b|$)")
+_LIST_END = (r"(?=[.;:!?()\[\]]|,\s+(?:the|a|an|which|while)\s|,?\s+(?:to|in|at|for|which|who|that|as|bringing|taking|valuing|according|"
+             r"after|while|following|this|its|their|with|alongside|joined|backed|plus|pour|qui|afin|dont|ainsi|avec|permettr\w*)\b|$)")
 # An optional description before the names ("pan-African venture capital firm Norrsken22").
-_NAMES = (r"(?:the\s+)?(?:(?:a|an|[a-z][\w-]*|[A-Z][a-z]+)\s+(?:[\w-]+\s+){0,3}?"
-          r"(?:firm|investor|fund\s+manager|investment\s+arm|lender|bank)\s+)?(?P<names>[A-Z0-9][^.;:!?]{1,240}?)")
+# ("pan-African venture capital firm Norrsken22", "Lagos-based VC fund Zrosk", "Old Mutual subsidiary Next176",
+# "le sud-africain PIC"). The role word is lower case, so a capitalised "Fund" stays part of a name.
+_NAMES = (r"(?:the\s+|(?:le|la|les|l['’]|des|du)\s*(?:[a-zéèêç-]+\s+){0,2}?|[a-zéèêç]+(?:-[a-zéèêç]+)+\s+)?"
+          r"(?:(?:a|an|[A-Za-z][\w'’-]*)\s+(?:[\w'’-]+\s+){0,3}?(?:firm|investor|fund\s+manager|fund|VC|investment\s+arm|"
+          r"lender|bank|subsidiary|arm),?\s+)?(?P<names>[A-Z0-9][^.;:!?]{1,240}?)")
 # "a manufacturer led by its founder" names management, not a round's lead investor.
 _LEAD = [re.compile(r"(?<!manufacturer )(?<!company )(?<!firm )(?<!startup )(?<!business )(?<!platform )(?<!group )"
                     r"(?<!operator )(?<!developer )(?<!maker )(?<!producer )(?<!provider )(?<!team )(?<!bank )"
-                    r"\b(?:co-)?led\s+by\s+" + _NAMES + _LIST_END),
+                    r"\b(?:[Cc]o-)?[Ll]ed\s+by\s+(?!(?:[\w-]+\s+){0,2}(?:entrepreneurs?|founders?|co-founders?|CEOs?|chief)\b)"
+                    + _NAMES + _LIST_END),
+         re.compile(r"(?i:\b(?:men[ée]e?s?|conduite?s?|pilot[ée]e?s?)\s+(?:conjointement\s+)?par)\s+" + _NAMES + _LIST_END),
          re.compile(_NAMES + r"\s+(?:led|co-led|spearheaded|anchored)\s+the\s+(?:round|raise|investment|funding|deal)\b")]
 _PARTICIPANT = [
     re.compile(r"\b(?:with\s+)?(?:participation|participating)\s+(?:from|of|by)\s+" + _NAMES + _LIST_END),
@@ -43,14 +48,28 @@ _PARTICIPANT = [
     re.compile(r"(?<!sits )(?<!sit )(?<!operates )(?<!works )(?<!stands )(?<!listed )\balongside\s+(?:existing\s+|new\s+)?"
                r"(?:investors?\s+)?" + _NAMES + _LIST_END),
     re.compile(r"\b(?:also\s+)?(?:joined|backed)\s+by\s+(?:existing\s+|new\s+)?(?:investors?\s+)?" + _NAMES + _LIST_END),
-    re.compile(r"\binvestors?\s+(?:including|include|included|such\s+as|like)\s+" + _NAMES + _LIST_END),
+    re.compile(r"\b(?:investors?|backers|VC\s+firms?)\s+(?:[\w-]+\s+){0,5}?(?:including|include|included|such\s+as|like)\s+"
+               r"(?:(?:existing|new)\s+ones\s+(?:such\s+as|like)\s+)?" + _NAMES + _LIST_END),
+    # "received financing from Ada VC", "investment from 500 Startups"
+    re.compile(r"\b(?:financing|funding|investment|backing|capital\s+injection)\s+from\s+" + _NAMES + _LIST_END),
+    # "Local and international investors participated in the round. They include A, B and C."
+    re.compile(r"\b(?:They|These)\s+(?:include|included|are|were)\s+" + _NAMES + _LIST_END),
+    # "Led by A, the funding round included B and C"
+    re.compile(r"\b(?:round|financing|raise|investment)\s+(?:also\s+)?(?:included|includes|drew|attracted)\s+"
+               r"(?:participation\s+from\s+|investors?\s+)?" + _NAMES + _LIST_END),
+    re.compile(r"(?i:\b(?:avec\s+la\s+participation\s+d[e'’]\s*|auprès\s+d(?:e|u|es)\s+|aux\s+côtés\s+d(?:e|u|es)\s+|"
+               r"réunit\s+(?:également\s+)?|soutenue?s?\s+par\s+))" + _NAMES + _LIST_END),
     re.compile(_NAMES + r"\s+(?:also\s+)?(?:participated|joined\s+the\s+round|took\s+part)\b"),
     re.compile(r"\b(?:raised|raises|raising|secured|secures|closed|closes|bagged|lands|landed)\s+(?:a\s+|an\s+)?"
                r"(?:\S+\s+){0,6}?(?:US\$|\$|€|£|₦|N|R|KSh|USD)\s?[\d.,]+\s*(?:million|billion|m|bn|k)?\s+"
                r"(?:\S+\s+){0,4}?from\s+(?:investors?\s+(?:including|such\s+as)\s+)?" + _NAMES + _LIST_END),
 ]
 _ROUND_WORDS = re.compile(r"(?i)\b(round|raise[ds]?|raising|funding|investment|financing|seed|series|backers?|"
-                          r"investors?|capital|secured|closes?|closed)\b")
+                          r"investors?|capital|secured|closes?|closed|tour\s+de\s+table|lev[ée]e?|lève|financement|"
+                          r"investissement|investisseurs)\b")
+# A headline that names the investor: "MAX Secures Nithio Funding".
+_HEADLINE_INVESTOR = re.compile(r"\b(?:[Ss]ecures?|[Gg]ets|[Ll]ands|[Rr]eceives?|[Ww]ins|[Bb]ags)\s+"
+                                r"(?P<names>[A-Z][\w&.'’-]*(?:\s+[A-Z][\w&.'’-]*){0,3})\s+(?:[Ff]unding|[Ii]nvestment|[Bb]acking)\b")
 _OTHER_ROUND = re.compile(r"(?i)\b(previously|previous|earlier|prior|past|last\s+year|last\s+round|had\s+raised|"
                           r"has\s+raised\s+a\s+total|to\s+date|in\s+total|since\s+(?:its\s+)?(?:launch|founding|inception)|"
                           r"portfolio\s+includes?|follows?\s+an?\b|following\s+an?\b|comes?\s+(?:\S+\s+){0,4}after|"
@@ -61,6 +80,8 @@ _NOT_A_NAME = {"however", "also", "meanwhile", "additionally", "moreover", "this
                "new", "other", "others", "several", "various", "local", "global", "international", "angel", "angels",
                "ceo", "founder", "founders", "co-founder", "management", "the company", "the startup", "both"}
 MAX_NAMES_PER_SENTENCE = 10
+# Raised when extraction improves, so rounds left without investors are read again.
+EXTRACTOR_VERSION = 2
 MAX_LEADS = 3
 # Lowercase role words, or a capitalised title after another word ("Mono CEOs X"); a capitalised first word is
 # part of a name ("Founders Factory Africa").
@@ -112,9 +133,9 @@ def _names(fragment: str, target: str) -> list[str]:
     out = []
     for name in _AND_NAMES:
         fragment = fragment.replace(name, name.replace(" and ", " \x00 "))
-    for part in re.split(r",\s*(?:and\s+)?|\s+and\s+|\s+as\s+well\s+as\s+", fragment):
+    for part in re.split(r",\s*(?:and\s+|et\s+)?|\s+and\s+|\s+et\s+|\s+as\s+well\s+as\s+|\s+ainsi\s+que\s+", fragment):
         part = part.replace(" \x00 ", " and ")
-        part = re.sub(r"^(?:the\s+)?(?:existing\s+|new\s+|returning\s+)?(?:investors?\s+|backers?\s+)?", "", part.strip(), flags=re.I)
+        part = re.sub(r"^(?:the\s+|la\s+|le\s+|les\s+|l['’]|du\s+|des\s+|de\s+la\s+)?(?:existing\s+|new\s+|returning\s+)?(?:investors?\s+|backers?\s+)?", "", part.strip(), flags=re.I)
         # Descriptions before a name: "Angel investors X", "Hollywood actor X", "Silicon Valley investors including X",
         # "Mono CEOs X", "California-based X".
         part = _PERSON_OR_ROLE.sub("", part)
@@ -160,7 +181,11 @@ def extract(text: str, target: str, deal_year: Optional[int] = None, strict: boo
     target_key = inv.normalise_name(target or "")
     text = re.sub(r"(\w)\[(\w)\]", r"\1\2", text or "")    # "Factor[e] Ventures": a bracket would end the list
     recent: list[bool] = []
+    previous = ""
     for sentence in _sentences(text):
+        if re.match(r"(?:They|These)\s+(?:include|included|are|were)\b", sentence) and re.search(r"(?i)\binvestors?\b", previous):
+            sentence = f"{previous} {sentence}"             # "...investors participated in the round. They include A, B."
+        previous = sentence
         named_here = bool(target_key) and target_key.split()[0] in inv.normalise_name(sentence)
         named_before = any(recent[-2:])
         recent.append(named_here)
@@ -173,8 +198,9 @@ def extract(text: str, target: str, deal_year: Optional[int] = None, strict: boo
         if strict and not (named_here or named_before):
             continue
         if not mentions_target and not re.search(
-                r"(?i)\b(?:the|this|its)\s+(?:\S*\d\S*\s+(?:million\s+|billion\s+)?)?(?:round|raise|funding|investment|deal|"
-                r"company|startup|series\s+[a-f]|seed|pre-seed|financing)\b", sentence):
+                r"(?i)\b(?:the|this|its)\s+(?:\S+\s+){0,3}?(?:round|raise|funding|investment|deal|company|startup|"
+                r"series\s+[a-f]|seed|pre-seed|financing)\b|\b(?:le|la|ce|cette|du|au|un|une)\s+(?:\S+\s+){0,2}?(?:tour\s+de\s+table|"
+                r"lev[ée]e|financement)\b|^(?:Led|Co-led|Men[ée]e?)\s+(?:by|par)\b", sentence):
             continue
         found: list[tuple[str, str]] = []
         for role, patterns in (("lead", _LEAD), ("participant", _PARTICIPANT)):
@@ -281,6 +307,11 @@ def enrich(deal: dict, client: httpx.Client, fetch=None, search=None) -> tuple[d
         search = other_coverage
     year = int(deal["announced"][:4]) if deal.get("announced") else None
     status = "no_article"
+    headline = deal.get("headline") or ""
+    from_headline = extract(headline, deal.get("target") or "", year)
+    named = [_names(m.group("names"), deal.get("target") or "") for m in _HEADLINE_INVESTOR.finditer(headline)]
+    from_headline["participants"] += [n for ns in named for n in ns if n not in from_headline["participants"]]
+    from_headline["evidence"] += [{"name": n, "role": "participant", "sentence": headline[:400]} for ns in named for n in ns]
     own = [{"url": s.get("url") or "", "title": s.get("title")} for s in (deal.get("sources") or [])[:2]]
     tried = {s["url"] for s in own}
     queue, searched = list(own), False
@@ -306,13 +337,24 @@ def enrich(deal: dict, client: httpx.Client, fetch=None, search=None) -> tuple[d
         names = found["lead"] + found["participants"]
         names = [n for n in names if not any(o != n and o.startswith(n + " ") for o in names)]   # "A15" in "A15 Ventures"
         out["investors"] = list(dict.fromkeys((deal.get("investors") or []) + names))[:12]
-        out["lead_investors"] = found["lead"]
+        out["lead_investors"] = found["lead"] or from_headline["lead"]
         out["investor_evidence"] = [{**e, "url": page.get("content_url") or url} for e in found["evidence"]]
+        if not found["lead"] and from_headline["lead"]:
+            out["investors"] = list(dict.fromkeys(from_headline["lead"] + out["investors"]))[:12]
+            out["investor_evidence"] += from_headline["evidence"]
         if found["round"] and not deal.get("round"):
             out["round"] = found["round"]
-        checked = {"on": date.today().isoformat(), "status": "investors_found"}
+        checked = {"on": date.today().isoformat(), "v": EXTRACTOR_VERSION, "status": "investors_found"}
         if searched:
             checked["via"] = "other_coverage"
         out["parties_checked"] = checked
         return out, "investors_found"
-    return {**deal, "parties_checked": {"on": date.today().isoformat(), "status": status, "searched": True}}, status
+    if from_headline["lead"] or from_headline["participants"]:     # the headline names them; no article added any
+        out = dict(deal)
+        names = from_headline["lead"] + from_headline["participants"]
+        out["investors"] = list(dict.fromkeys((deal.get("investors") or []) + names))[:12]
+        out["lead_investors"] = from_headline["lead"]
+        out["investor_evidence"] = from_headline["evidence"]
+        out["parties_checked"] = {"on": date.today().isoformat(), "v": EXTRACTOR_VERSION, "status": "investors_found", "via": "headline"}
+        return out, "investors_found"
+    return {**deal, "parties_checked": {"on": date.today().isoformat(), "v": EXTRACTOR_VERSION, "status": status, "searched": True}}, status
