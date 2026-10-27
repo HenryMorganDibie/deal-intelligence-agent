@@ -1364,6 +1364,13 @@ async def return_forecast_estimate(market: str = Query(..., pattern="^(us|africa
                                     market, signal_type, severity)
 
 
+def signal_track_records() -> list[dict]:
+    """Every signal type at every severity, graded against how often its event happens with no flag."""
+    from src.engines import measured
+    from src.schemas.models import Severity, SignalType
+    return [measured.track_record(t.value, sev.value) for t in SignalType for sev in (Severity.LOW, Severity.MEDIUM, Severity.HIGH)]
+
+
 @router.get("/api/evaluation")
 async def evaluation() -> dict:
     try:
@@ -1382,6 +1389,7 @@ async def evaluation() -> dict:
             "attribution": _read_json(_ROOT / "evaluation" / "attribution" / "results.json"),
             "attribution_before": _read_json(_ROOT / "evaluation" / "attribution" / "results_before_rule_changes.json"),
             "independent_review": _independent_review(),
+            "track_records": signal_track_records(),
             "method": "Historical: walk-forward replay, 30-day lookback, 90-day horizon, confirmation strictly after "
                       "each as-of date. Live: every hosted brief's signals labelled daily against later filings, "
                       "credible news and abnormal price moves."}

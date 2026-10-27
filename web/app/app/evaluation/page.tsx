@@ -213,6 +213,7 @@ type Evaluation = {
   return_forecast_validation: ReturnForecastValidation | null;
   live_outcomes: Record<string, { confirmed: number; refuted: number }> | null;
   measured_now?: { backtest_observations: number; live_observations: number };
+  track_records?: { signal_type: string; severity: string; grade: string; label: string; basis: string; n: number; rate: number | null; base_rate: number | null; lift?: number }[];
 };
 
 const pct = (v: number | null | undefined) => (v === null || v === undefined ? "n/a" : `${Math.round(v * 100)}%`);
@@ -728,6 +729,24 @@ export default function EvaluationPage() {
                   })}
                 </Table>
               </div>
+            </Section>
+          )}
+
+          {e?.track_records && e.track_records.length > 0 && (
+            <Section id="track-record" title="Which signals have earned trust" lede="Each signal type and severity, graded against how often the event happens anyway for companies with no flag. Proven means the lower end of the 95% interval beats that base rate by half again, on at least five confirmed events. Briefs show the same grade on every signal and list proven signals first.">
+              <Table head={["Signal", "Severity", "Track record", "Measured", "Base rate", "Sample"]} minWidth="52rem">
+                {e.track_records.map((t) => (
+                  <tr key={`${t.signal_type}-${t.severity}`}>
+                    <Td>{t.signal_type.replace(/_/g, " ")}</Td>
+                    <Td className="text-[color:var(--muted)]">{t.severity}</Td>
+                    <Td className={t.grade === "proven" ? "text-verified" : t.grade === "chance" ? "text-[color:var(--dim)]" : ""}><span title={t.basis}>{t.label}</span></Td>
+                    <Td className="kbd">{pct(t.rate)}</Td>
+                    <Td className="kbd text-[color:var(--muted)]">{pct(t.base_rate)}</Td>
+                    <Td className="kbd text-[color:var(--muted)]">{t.n.toLocaleString()}</Td>
+                  </tr>
+                ))}
+              </Table>
+              <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">Earnings and insider signals are price-only: they are graded on whether the 10-day market-adjusted move went the expected way, against a coin flip. African confirmations are under-measured because few African exchange disclosures are machine-readable, so African flags lean on the all-market grade.</p>
             </Section>
           )}
 

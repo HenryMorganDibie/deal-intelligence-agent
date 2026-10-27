@@ -1,4 +1,4 @@
-import { expectedMove, formatDate, label, SEVERITY_STYLE, type Brief, type Severity, type Signal } from "../../lib/brief";
+import { expectedMove, formatDate, label, SEVERITY_STYLE, type Brief, type Severity, type Signal, type TrackRecord } from "../../lib/brief";
 import { ResultFeedback } from "./ResultFeedback";
 
 export function SeverityBadge({ severity }: { severity: Severity }) {
@@ -19,6 +19,26 @@ function hostOf(url: string): string {
   }
 }
 
+const TRACK_STYLE: Record<TrackRecord["grade"], string> = {
+  proven: "border-[color:var(--verified)] text-verified",
+  indicative: "border-[color:var(--line)] text-[color:var(--text)]",
+  insufficient: "border-[color:var(--line)] text-[color:var(--muted)]",
+  chance: "border-[color:var(--line)] text-[color:var(--dim)]",
+};
+
+// How flags like this one have performed against how often the event happens anyway (walk-forward backtest
+// pooled with live outcomes). The basis is in the tooltip.
+function TrackRecordBadge({ record }: { record: TrackRecord }) {
+  return (
+    <span
+      className={`kbd inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[0.6875rem] ${TRACK_STYLE[record.grade]}`}
+      title={`Track record. ${record.basis}`}
+    >
+      {record.label}
+    </span>
+  );
+}
+
 function SignalCard({ s }: { s: Signal }) {
   const move = expectedMove(s.alpha_score);
   return (
@@ -26,6 +46,7 @@ function SignalCard({ s }: { s: Signal }) {
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-verified">{label(s.signal_type)}</span>
         <SeverityBadge severity={s.severity} />
+        {s.track_record && <TrackRecordBadge record={s.track_record} />}
         <span
           className="kbd text-[0.75rem] text-[color:var(--muted)]"
           title="Calibrated probability that this signal's event materialises"

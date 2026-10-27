@@ -4279,7 +4279,7 @@ def test_historical_metrics_precision_base_rate_lift():
     m = compute_metrics(preds, truth, {"m_and_a_activity": {"us": 2}}, {"us": 20})["m_and_a_activity"]["all"]
     assert (m["precision"], m["base_rate"], m["lift"]) == (0.5, 0.1, 5.0)
     assert (m["recall"], m["events"]) == (0.5, 2)          # A's event was preceded by a prediction, C's was not
-    assert m["hit_rate"] == 0.5 and m["mean_abnormal_return_10d_pct"] == 1.0
+    assert m["hit_rate"] == 0.5 and m["median_abnormal_return_10d_pct"] == 1.0
 
 
 class TestRelationshipExtraction:
@@ -4310,3 +4310,27 @@ class TestRelationshipExtraction:
         assert g["Seplat Energy"]["Mobil Producing Nigeria"]["edge_type"] == "acquired"
         assert g["Afreximbank"]["Seplat Energy"]["edge_type"] == "lends_to"
         assert g.has_edge("exec:Roger Brown", "Seplat Energy")
+
+
+def test_signal_track_records_compare_with_the_base_rate_and_need_enough_events():
+    from src.engines import measured
+    measured.set_tables({"signals": {
+        "m_and_a_activity": {"type": {"confirmation": {"labelled": 300, "confirmed": 30}},
+                             "by_severity": {"high": {"confirmation": {"labelled": 200, "confirmed": 32}}}},
+        "debt_restructuring": {"type": {"confirmation": {"labelled": 45, "confirmed": 1}}, "by_severity": {}},
+        "leadership_change": {"type": {"confirmation": {"labelled": 500, "confirmed": 120}}, "by_severity": {}},
+        "insider_activity": {"type": {"direction": {"labelled": 400, "correct": 200}}, "by_severity": {}}},
+        "overall_confirmation": {"labelled": 0, "confirmed": 0, "rate": None}})
+    measured.set_base_rates({"m_and_a_activity": {"base_rate": 0.05}, "debt_restructuring": {"base_rate": 0.001},
+                             "leadership_change": {"base_rate": 0.28}})
+    try:
+        hi = measured.track_record("m_and_a_activity", "high")
+        assert hi["grade"] == "proven" and hi["lift"] == 3.2 and "32 of 200 high flags" in hi["basis"]
+        assert measured.track_record("m_and_a_activity", "low")["grade"] == "indicative"   # falls back to the type
+        assert measured.track_record("debt_restructuring", "high")["grade"] == "indicative"   # one event proves nothing
+        assert measured.track_record("leadership_change", "low")["grade"] == "chance"
+        assert measured.track_record("insider_activity", "high")["label"] == "Price direction no better than a coin flip"
+        assert measured.track_record("credit_risk", "high")["grade"] == "insufficient"
+    finally:
+        measured.set_tables(None)
+        measured.set_base_rates(None)

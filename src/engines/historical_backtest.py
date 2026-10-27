@@ -21,7 +21,7 @@ For each company and each as-of date (monthly by default):
 Reported per signal type and market: precision (official filings only, and all
 sources), recall against every confirmed event, base rate (how often a random
 company-month is followed by that event) and lift (precision / base rate),
-directional hit rate and mean abnormal return. Results are written to
+directional hit rate and median abnormal return. Results are written to
 docs/BACKTEST.md and data/historical_backtest.json.
 
 HTTP responses are cached under data/hist_cache, so a rerun resumes cheaply.
@@ -687,7 +687,9 @@ def compute_metrics(predictions: list[dict], truth: list[dict], base: dict, mont
                 "price_only": price_only,
                 "hit_rate": _rate(sum(directional), len(directional)),
                 "directional_n": len(directional),
-                "mean_abnormal_return_10d_pct": round(statistics.mean(abn), 2) if abn else None,
+                # The median: a handful of thinly traded listings with three- and four-digit moves made the
+                # mean read +108% for M&A, which describes no typical flag.
+                "median_abnormal_return_10d_pct": round(statistics.median(abn), 2) if abn else None,
             }
     return out
 
@@ -832,7 +834,7 @@ def render_report(result: dict) -> str:
         "a prediction preceded. *Hit rate*: price moved in the predicted direction net of the market "
         "(10 calendar days: first close on or after day 10). Earnings surprises and insider trades are judged on price only.",
         "",
-        "| Signal type | Predictions | Precision | Official | Base rate | Lift | Recall | Hit rate | Abn. return 10d |",
+        "| Signal type | Predictions | Precision | Official | Base rate | Lift | Recall | Hit rate | Median abn. return 10d |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for st, by in sorted(m.items()):
@@ -842,7 +844,7 @@ def render_report(result: dict) -> str:
             f"{_fmt(a['precision_official_filings'])} ({a['official_labelled']}) | {_fmt(a['base_rate'])} | "
             f"{a['lift'] if a['lift'] is not None else '–'}x | {_fmt(a['recall'])} ({a['events']}) | "
             f"{_fmt(a['hit_rate'])} ({a['directional_n']}) | "
-            f"{(str(a['mean_abnormal_return_10d_pct']) + '%') if a['mean_abnormal_return_10d_pct'] is not None else '–'} |")
+            f"{(str(a['median_abnormal_return_10d_pct']) + '%') if a.get('median_abnormal_return_10d_pct') is not None else '–'} |")
     lines += ["", "Counts in brackets are the sample behind each figure.", ""]
     sev = result.get("by_severity") or by_severity(result.get("predictions", []))
     if sev:

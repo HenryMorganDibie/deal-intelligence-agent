@@ -241,6 +241,9 @@ class DetectedSignal(BaseModel):
     # mentions this one. The signal is kept (the LLM cannot remove signals) and
     # flagged for human review.
     attribution_doubt: Optional[str] = None
+    # How flags of this type and severity have performed in the walk-forward backtest and live outcomes,
+    # against how often the event happens with no flag: grade, rate, base rate, interval and basis.
+    track_record: Optional[dict[str, Any]] = None
 
 
 # ─────────────────────────────────────────────

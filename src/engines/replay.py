@@ -236,7 +236,8 @@ class ReplayEngine:
                 candidate_patterns=cand.matched_patterns,
                 corroboration_count=cand.corroboration_count,
             ))
-        state.detected_signals = score_all_signals(signals, state.signal_candidates, ticker=ticker)
+        from src.agents.signal_agent import attach_track_records
+        state.detected_signals = attach_track_records(score_all_signals(signals, state.signal_candidates, ticker=ticker))
         state = SignalInteractionEngine().run(state)
         replay_signals = state.detected_signals
 

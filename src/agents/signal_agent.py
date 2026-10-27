@@ -450,6 +450,14 @@ def _parse_explanations(
     return signals
 
 
+def attach_track_records(signals: list[DetectedSignal]) -> list[DetectedSignal]:
+    """Each signal with its measured track record (see measured.track_record), proven signals first."""
+    from src.engines.measured import track_record
+    order = {"proven": 0, "indicative": 1, "insufficient": 2, "chance": 3}
+    out = [s.model_copy(update={"track_record": track_record(s.signal_type.value, s.severity.value)}) for s in signals]
+    return sorted(out, key=lambda s: order.get((s.track_record or {}).get("grade"), 2))
+
+
 def _fallback_signals(calibrated: list[tuple]) -> list[DetectedSignal]:
     signals = []
     for cand, sev, conf, _ in calibrated:
@@ -583,6 +591,7 @@ class AlphaScoringNode:
             if s.signal_type in cand_map else s
             for s in state.detected_signals
         ]
+        state.detected_signals = attach_track_records(state.detected_signals)
         log_state(state, "alpha_scoring", "Alpha scores attached")
         return state
 

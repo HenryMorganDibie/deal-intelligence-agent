@@ -251,3 +251,91 @@ def describe_move(low: Optional[float], high: Optional[float], median: Optional[
 
 def move_confidence(n: int) -> str:
     return "insufficient" if n < MIN_N else "low" if n < 30 else "medium" if n < 100 else "high"
+
+
+# ── Track record: measured performance against how often the event happens anyway ─────────────
+
+_PUBLISHED_SUMMARY = Path(__file__).resolve().parents[2] / "docs" / "backtest_summary.json"   # read only
+_BASE_RATES: Optional[dict] = None
+PROVEN_LIFT = 1.5        # the lower end of the 95% interval must clear the base rate by half again
+TRACK_MIN_N = 30         # fewer labelled flags than this is too little history to grade
+PROVEN_MIN_EVENTS = 5    # and a rare event is not proven by one or two confirmations, whatever the ratio
+DIRECTION_PROVEN = 0.55  # price-only types: the interval's lower end must clear 55% right
+DIRECTION_INDICATIVE = 0.53
+
+
+def _base_rates() -> dict:
+    """{signal_type: {"base_rate", "company_months"}} from the published backtest (all markets): the share
+    of company-months in which the event happened within the horizon with no flag."""
+    global _BASE_RATES
+    if _BASE_RATES is None:
+        try:
+            metrics = json.loads(_PUBLISHED_SUMMARY.read_text()).get("metrics", {})
+        except (OSError, ValueError):
+            metrics = {}
+        _BASE_RATES = {st: (by.get("all") or {}) for st, by in metrics.items() if isinstance(by, dict)}
+    return _BASE_RATES
+
+
+def set_base_rates(rates: Optional[dict]) -> None:
+    """Use these base rates instead of the published summary (tests; None reloads the file)."""
+    global _BASE_RATES
+    _BASE_RATES = rates
+
+
+def _wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    if not n:
+        return 0.0, 1.0
+    p = k / n
+    centre = (p + z * z / (2 * n)) / (1 + z * z / n)
+    half = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / (1 + z * z / n)
+    return max(0.0, centre - half), min(1.0, centre + half)
+
+
+def track_record(signal_type: str, severity: str) -> dict:
+    """How flags of this type and severity have performed: the measured confirmation rate (or, for price-only
+    types, how often the 10-day move went the expected way), its 95% interval, the base rate it is compared
+    with, and a grade an analyst can act on:
+
+      proven        the interval's lower end beats the base rate by at least half again, on at least
+                    PROVEN_MIN_EVENTS confirmed events (price-only: the lower end clears 55% right)
+      indicative    the measured rate beats the base rate, but the interval does not rule out chance
+      no better than chance   the rate does not beat the base rate (or, for price-only types, a coin flip)
+      insufficient history    fewer than TRACK_MIN_N labelled flags, or no base rate to compare with
+    """
+    t = load()
+    sig = (t.get("signals") or {}).get(signal_type) or {}
+    price_only = signal_type in PRICE_ONLY
+    key = "direction" if price_only else "confirmation"
+    stats = ((sig.get("by_severity") or {}).get(severity) or {}).get(key) or {}
+    scope = f"{severity} " if stats.get("labelled") else ""
+    if (stats.get("labelled") or 0) < TRACK_MIN_N:          # too few at this severity: grade the whole type
+        stats, scope = (sig.get("type") or {}).get(key) or {}, ""
+    n = int(stats.get("labelled") or 0)
+    k = int(stats.get("confirmed", stats.get("correct", 0)) or 0)
+    base = 0.5 if price_only else (_base_rates().get(signal_type) or {}).get("base_rate")
+    out = {"signal_type": signal_type, "severity": severity, "measure": key, "n": n,
+           "rate": round(k / n, 4) if n else None, "base_rate": base}
+    if n < TRACK_MIN_N or not base:
+        return {**out, "grade": "insufficient", "label": "Insufficient history",
+                "basis": f"{n} labelled {scope}flags; {TRACK_MIN_N} are needed to grade a signal"}
+    low, high = _wilson(k, n)
+    lift = (k / n) / base
+    out.update(interval=[round(low, 4), round(high, 4)], lift=round(lift, 2))
+    what = ("moved the expected way over 10 days" if price_only
+            else "were followed within 90 days by a confirming filing, disclosure or credible report")
+    versus = "a coin flip (50%)" if price_only else f"a {base:.1%} base rate for companies with no flag"
+    basis = f"{k} of {n} {scope}flags ({k / n:.0%}) {what}, against {versus}."
+    if price_only:
+        if low >= DIRECTION_PROVEN:
+            return {**out, "grade": "proven", "label": f"Proven: right {k / n:.0%} of the time", "basis": basis}
+        if k / n >= DIRECTION_INDICATIVE:
+            return {**out, "grade": "indicative", "label": f"Indicative: right {k / n:.0%} of the time, not yet conclusive",
+                    "basis": basis}
+        return {**out, "grade": "chance", "label": "Price direction no better than a coin flip", "basis": basis}
+    if low / base >= PROVEN_LIFT and k >= PROVEN_MIN_EVENTS:
+        return {**out, "grade": "proven", "label": f"Proven: {lift:.1f}x the base rate", "basis": basis}
+    if lift > 1.1:
+        return {**out, "grade": "indicative", "label": f"Indicative: {lift:.1f}x the base rate, not yet conclusive",
+                "basis": basis}
+    return {**out, "grade": "chance", "label": "No better than chance so far", "basis": basis}

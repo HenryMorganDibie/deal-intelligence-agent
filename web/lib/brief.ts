@@ -28,6 +28,18 @@ export type Signal = {
   corroboration_count: number;
   alpha_score?: AlphaScore | null;
   attribution_doubt?: string | null;
+  track_record?: TrackRecord | null;
+};
+
+export type TrackRecord = {
+  grade: "proven" | "indicative" | "chance" | "insufficient";
+  label: string;
+  basis: string;
+  n: number;
+  rate: number | null;
+  base_rate: number | null;
+  lift?: number;
+  interval?: [number, number];
 };
 
 export type CompoundSignal = {
