@@ -5,15 +5,26 @@ import { useEffect, useState } from "react";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pagination, Table, Td, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
-import { get, type InvestorRow } from "../../../lib/market";
+import { SECTORS, get, type InvestorRow } from "../../../lib/market";
 
 type Fund = { id: string; fund_or_manager: string; stage: string; amount_usd: number | null; lps: string[]; announced: string | null; headline: string };
 const ROLES = ["", "investor", "lender", "acquirer", "seller", "lp", "gp"];
-const KINDS = ["", "dfi", "multilateral", "private_equity", "venture_capital", "growth", "sovereign", "pension", "bank", "accelerator"];
+const KINDS = ["", "dfi", "multilateral", "private_equity", "private_credit", "venture_capital", "growth", "impact",
+  "sovereign", "pension", "bank", "foundation", "corporate_venture", "accelerator", "investment_firm", "corporate"];
+const STAGES = ["", "pre-seed", "seed", "series a", "series b", "series c", "series d", "growth", "bridge"];
+const MIN_SIZES: [string, string][] = [["", "Any round size"], ["1000000", "$1m+"], ["5000000", "$5m+"], ["20000000", "$20m+"],
+  ["100000000", "$100m+"]];
 
 export default function InvestorsPage() {
   const [role, setRole] = useState("");
   const [kind, setKind] = useState("");
+  const [sector, setSector] = useState("");
+  const [country, setCountry] = useState("");
+  const [stage, setStage] = useState("");
+  const [since, setSince] = useState("");
+  const [minUsd, setMinUsd] = useState("");
+  const [leadOnly, setLeadOnly] = useState(false);
+  const [dealsInScope, setDealsInScope] = useState<number | null>(null);
   const [rows, setRows] = useState<InvestorRow[] | null>(null);
   const [funds, setFunds] = useState<Fund[] | null>(null);
   const [investorTotal, setInvestorTotal] = useState(0);
@@ -29,8 +40,12 @@ export default function InvestorsPage() {
     let active = true;
     const load = () => {
       setError(null);
-      get<{ investors: InvestorRow[]; total_matching: number }>("/api/investors", { role, kind, limit: investorLimit, offset: investorOffset })
-        .then((r) => { if (active) { setRows(r.investors); setInvestorTotal(r.total_matching); } })
+      get<{ investors: InvestorRow[]; total_matching: number; deals_in_scope: number }>("/api/investors", {
+        role, kind, sector: sector || undefined, country: country.trim() || undefined, stage: stage || undefined,
+        since: since || undefined, min_usd: minUsd || undefined, lead_only: leadOnly ? "true" : undefined,
+        limit: investorLimit, offset: investorOffset,
+      })
+        .then((r) => { if (active) { setRows(r.investors); setInvestorTotal(r.total_matching); setDealsInScope(r.deals_in_scope); } })
         .catch((err) => {
           if (!active) return;
           setError(err instanceof ApiError ? err.message : "Could not load investors.");
@@ -45,7 +60,7 @@ export default function InvestorsPage() {
       window.clearInterval(interval);
       window.removeEventListener("focus", load);
     };
-  }, [role, kind, investorOffset, investorLimit]);
+  }, [role, kind, sector, country, stage, since, minUsd, leadOnly, investorOffset, investorLimit]);
 
   useEffect(() => {
     let active = true;
@@ -90,14 +105,38 @@ export default function InvestorsPage() {
             </option>
           ))}
         </select>
+        <select value={sector} onChange={(e) => { setSector(e.target.value); setInvestorOffset(0); }} className="field w-auto" aria-label="Sector">
+          <option value="">All sectors</option>
+          {SECTORS.map((x) => <option key={x} value={x}>{words(x)}</option>)}
+        </select>
+        <input value={country} onChange={(e) => { setCountry(e.target.value); setInvestorOffset(0); }} placeholder="Country (e.g. Kenya)"
+          className="field w-auto" aria-label="Country" />
+        <select value={stage} onChange={(e) => { setStage(e.target.value); setInvestorOffset(0); }} className="field w-auto" aria-label="Round stage">
+          {STAGES.map((x) => <option key={x} value={x}>{x ? words(x) : "Any stage"}</option>)}
+        </select>
+        <select value={minUsd} onChange={(e) => { setMinUsd(e.target.value); setInvestorOffset(0); }} className="field w-auto" aria-label="Round size">
+          {MIN_SIZES.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+        </select>
+        <input type="date" value={since} onChange={(e) => { setSince(e.target.value); setInvestorOffset(0); }} className="field w-auto"
+          aria-label="Deals since" title="Only deals announced on or after this date" />
+        <label className="flex items-center gap-2 text-[0.875rem] text-[color:var(--muted)]">
+          <input type="checkbox" checked={leadOnly} onChange={(e) => { setLeadOnly(e.target.checked); setInvestorOffset(0); }} />
+          Led a round
+        </label>
       </div>
+      {dealsInScope !== null && (
+        <p className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">
+          Ranked on {dealsInScope.toLocaleString()} matching deal{dealsInScope === 1 ? "" : "s"}. Lead investors and round stages
+          come from the article text where it names them.
+        </p>
+      )}
       {error && <ErrorNote message={error} />}
       <div className="mt-6">
         {rows === null ? (
           <Loading />
         ) : (
           <>
-          <Table head={["Name", "Type", "Deals", "Roles", "Value of deals involved", "Countries", "Last seen"]}>
+          <Table head={["Name", "Type", "Deals", "Led", "Roles", "Typical round", "Value of deals involved", "Countries", "Last seen"]}>
             {rows.map((r) => (
               <tr key={r.name}>
                 <Td>
@@ -113,7 +152,11 @@ export default function InvestorsPage() {
                   )}
                 </Td>
                 <Td>{r.deal_count}</Td>
+                <Td>{r.lead_count ? r.lead_count : ""}</Td>
                 <Td className="text-[color:var(--muted)]">{Object.entries(r.roles).map(([k, v]) => `${k} ${v}`).join(", ")}</Td>
+                <Td className="whitespace-nowrap">
+                  <span title="Median disclosed size of the rounds this party joined, not its own cheque">{usd(r.typical_round_usd)}</span>
+                </Td>
                 <Td className="whitespace-nowrap">
                   <span title="Total disclosed size of the deals this party took part in, not its own contribution">{usd(r.disclosed_usd)}</span>
                 </Td>

@@ -211,6 +211,8 @@ export type InvestorRow = {
   name: string;
   type: string | null;
   type_inferred?: boolean;
+  lead_count?: number;
+  typical_round_usd?: number | null;
   hq: string | null;
   deal_count: number;
   roles: Record<string, number>;

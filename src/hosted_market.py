@@ -524,7 +524,10 @@ async def investor_board(role: Optional[str] = None, kind: Optional[str] = None,
                          offset: int = Query(0, ge=0, le=100000)) -> dict:
     """Investor screener: parties ranked on the deals that match the filters (sector, country, round stage,
     deal type, dates, round size), optionally only those that led a round."""
-    country = _country_or_404(country).iso2 if country else None
+    if country:
+        # The screener accepts a name ("Kenya", "Ivory Coast") as well as an ISO code.
+        named = ac.get(country) or next(iter(ac.countries_in_text(country)), None)
+        country = (named or _country_or_404(country)).iso2
     scope = investors.filter_deals(deals(), sector=sector, country=country, stage=stage, deal_type=type,
                                    since=since, until=until, min_usd=min_usd, max_usd=max_usd)
     matching = investors.leaderboard(scope, role=role, kind=kind, lead_only=lead_only,

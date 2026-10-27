@@ -2072,3 +2072,29 @@ def test_round_investors_are_read_from_article_text_with_evidence():
     assert out["parties_checked"]["status"] == "investors_found"
     empty, status = enrich(deal, client=None, fetch=lambda item: {"content_status": "snippet_only"})
     assert status == "article_unreadable" and not empty.get("investors")
+
+
+def test_investor_screener_portfolio_and_fund_lifecycle():
+    from src.engines import investors as inv
+    deals = [
+        {"id": "a", "deal_type": "equity_funding", "announced": "2025-03-01", "target": "Kuda", "buyer": "Partech Africa",
+         "investors": ["Partech Africa", "Novastar Ventures"], "lead_investors": ["Partech Africa"], "round": "series a",
+         "amount_usd": 10e6, "country": "NG", "countries": ["NG"], "sector": "fintech"},
+        {"id": "b", "deal_type": "equity_funding", "announced": "2026-01-10", "target": "Kuda", "investors": ["Lightrock"],
+         "amount_usd": 40e6, "country": "NG", "countries": ["NG"], "sector": "fintech", "round": "series b"},
+        {"id": "c", "deal_type": "equity_funding", "announced": "2025-06-01", "target": "Twiga", "investors": ["Novastar Ventures"],
+         "amount_usd": 2e6, "country": "KE", "countries": ["KE"], "sector": "agriculture", "round": "seed"},
+        {"id": "d", "deal_type": "fund_raise", "announced": "2020-05-01", "target": "Partech Africa", "amount_usd": 143e6,
+         "investors": ["International Finance Corporation"]},
+    ]
+    scope = inv.filter_deals(deals, sector="fintech", stage="series a")
+    assert [d["id"] for d in scope] == ["a"]
+    board = inv.leaderboard(scope, lead_only=True)
+    assert [r["name"] for r in board] == ["Partech Africa"] and board[0]["lead_count"] == 1
+    assert inv.filter_deals(deals, country="KE", min_usd=1e6)[0]["id"] == "c"
+    kuda = next(p for p in inv.portfolio(deals, "Partech Africa") if p["company"] == "Kuda")
+    assert kuda["status"] == "raised again" and kuda["status_date"] == "2026-01-10"
+    life = inv.fund_lifecycle(deals, "Partech Africa", today="2026-10-27")
+    assert life["phase"] == "harvesting" and life["years_since"] == 6.5
+    profile = inv.profile(deals, "Novastar Ventures")
+    assert profile["typical_round_usd"] == 6e6 and profile["activity_by_year"] == {"2025": 2}
