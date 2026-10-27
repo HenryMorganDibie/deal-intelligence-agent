@@ -17,7 +17,8 @@ def test_uncovered_historical_checkpoint_is_retried(tmp_path):
     checkpoint.write_text(json.dumps({"covered": False}), encoding="utf-8")
     assert historical_backtest._checkpoint_needs_run(checkpoint)
 
-    checkpoint.write_text(json.dumps({"covered": True}), encoding="utf-8")
+    checkpoint.write_text(json.dumps({"covered": True, "detection_version": historical_backtest.detection_version()}),
+                          encoding="utf-8")
     assert not historical_backtest._checkpoint_needs_run(checkpoint)
 
 

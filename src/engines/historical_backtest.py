@@ -405,7 +405,8 @@ def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_
                                 "direction_correct": o.get("direction_correct")})
     return {"company": company, "ticker": ticker, "market": market, "as_of_dates": len(dates),
             "headlines": headlines, "filings": len(sec_rows), "covered": bool(headlines or sec_rows),
-            "predictions": predictions, "truth": truth, "base": base, "prices_version": PRICES_VERSION}
+            "predictions": predictions, "truth": truth, "base": base, "prices_version": PRICES_VERSION,
+            "detection_version": detection_version()}
 
 
 def _merger_control_market(ticker: str, signal_type: str) -> bool:
@@ -437,6 +438,26 @@ def rolling_period(today: date, months: int = 17) -> tuple[date, date]:
     return date(y, m + 1, 15), end
 
 
+# What a checkpoint's predictions and labels were computed with. A checkpoint made by different detection
+# code or ground-truth data is re-run (its fetched news and filings stay cached, so this costs computation,
+# not downloads); otherwise new rules, sub-signals or confirmation sources would never reach the results.
+_DETECTION_INPUTS = ("src/engines/deterministic_engine.py", "src/engines/event_sources.py",
+                     "src/engines/outcome_labeller.py", "src/engines/merger_filings.py", "src/engines/sens_log.py",
+                     "src/engines/historical_backtest.py", "src/data/merger_filings.json")
+
+
+def detection_version() -> str:
+    import hashlib
+    root = Path(__file__).resolve().parents[2]
+    h = hashlib.sha256()
+    for rel in _DETECTION_INPUTS:
+        try:
+            h.update((root / rel).read_bytes())
+        except OSError:
+            h.update(b"missing:" + rel.encode())
+    return h.hexdigest()[:16]
+
+
 def _checkpoint(run_dir: Path, ticker: str) -> Path:
     import re
     return run_dir / (re.sub(r"[^A-Za-z0-9.]+", "_", ticker) + ".json")
@@ -449,7 +470,8 @@ def _checkpoint_needs_run(path: Path) -> bool:
 
 
 def _checkpoint_state(path: Path) -> str:
-    """'run' (no usable checkpoint), 'prices' (finished, but its price outcomes need filling) or 'done'."""
+    """'run' (no usable checkpoint, or one made by other detection code or data), 'prices' (finished, but
+    its price outcomes need filling) or 'done'."""
     if not path.exists():
         return "run"
     try:
@@ -457,6 +479,8 @@ def _checkpoint_state(path: Path) -> str:
     except (OSError, ValueError, TypeError):
         return "run"
     if not data.get("covered", True):
+        return "run"
+    if data.get("detection_version") != detection_version():
         return "run"
     if data.get("predictions") and data.get("prices_version", 1) < PRICES_VERSION:
         return "prices"

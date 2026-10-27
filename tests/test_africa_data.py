@@ -1615,12 +1615,13 @@ def test_headline_event_patterns_do_not_transfer_other_companies_events():
 
 
 def test_shard_plan_splits_only_unfinished_companies():
+    import json
     from datetime import date
     from src.engines import historical_backtest as hb
     universe = [(f"Fictional Co {i}", f"FIC{i}", "us") for i in range(7)]
     run_dir = hb.RUNS_DIR / "2024-01-15_2025-06-15"
     run_dir.mkdir(parents=True, exist_ok=True)
-    hb._checkpoint(run_dir, "FIC0").write_text("{}")
+    hb._checkpoint(run_dir, "FIC0").write_text(json.dumps({"detection_version": hb.detection_version()}))
     plan = hb.plan_shards(date(2024, 1, 15), date(2025, 6, 15), universe, 4)
     assert plan["remaining"] == 6
     shards = [s["tickers"].split(",") for s in plan["shards"]]
@@ -1718,7 +1719,7 @@ def test_finished_companies_get_missing_prices_filled_without_a_rerun(tmp_path, 
 
     pred = {"ticker": "FIC0", "as_of": "2025-01-15", "direction": "negative", "event_confirmed": True,
             "price_change_10d_pct": None, "abnormal_return_10d_pct": None, "direction_correct": None}
-    stale = {"covered": True, "predictions": [pred, {**pred, "ticker": "NOPX"}]}
+    stale = {"covered": True, "detection_version": hb.detection_version(), "predictions": [pred, {**pred, "ticker": "NOPX"}]}
     path = tmp_path / "c.json"
     path.write_text(json.dumps(stale))
     assert hb._checkpoint_state(path) == "prices" and hb._checkpoint_needs_run(path)
@@ -1748,7 +1749,8 @@ def test_published_period_is_republished_when_more_predictions_have_returns():
     hb.SUMMARY_PATH.parent.mkdir(parents=True, exist_ok=True)
     hb.SUMMARY_PATH.write_text(json.dumps({"start": "2023-01-15", "end": "2024-06-15", "companies": 2,
                                            "missing_companies": 1, "predictions_with_returns": 0}))
-    bare = {"covered": True, "prices_version": hb.PRICES_VERSION, "predictions": [{"price_change_10d_pct": None}]}
+    bare = {"covered": True, "prices_version": hb.PRICES_VERSION, "detection_version": hb.detection_version(),
+            "predictions": [{"price_change_10d_pct": None}]}
     for t in ("PXF0", "PXF1"):
         hb._checkpoint(run_dir, t).write_text(json.dumps(bare))
     assert hb.publish_decision(start, end, universe)[0] is False
@@ -1954,3 +1956,18 @@ def test_charitable_fundraising_and_unnamed_parties_are_not_deals():
     # A company tackling a market gap is still a deal.
     assert dl.extract_deal("Kenyan fintech Pezesha raises $11m to tackle SME credit gap",
                            published="2026-10-27")["target"] == "Pezesha"
+
+
+
+def test_checkpoint_made_by_other_detection_code_is_rerun(tmp_path):
+    import json
+    from src.engines import historical_backtest as hb
+    path = tmp_path / "c.json"
+    done = {"covered": True, "prices_version": hb.PRICES_VERSION, "detection_version": hb.detection_version(),
+            "predictions": []}
+    path.write_text(json.dumps(done))
+    assert hb._checkpoint_state(path) == "done"
+    path.write_text(json.dumps({**done, "detection_version": "older-rules"}))
+    assert hb._checkpoint_state(path) == "run"
+    path.write_text(json.dumps({k: v for k, v in done.items() if k != "detection_version"}))
+    assert hb._checkpoint_state(path) == "run"              # made before versions were recorded
