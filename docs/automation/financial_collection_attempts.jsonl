@@ -224,3 +224,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/East-African-Cables-Plc-Full-Year-results-for-the-Year-Ended-31-Dec-2023.pdf", "status": "collected", "ticker": "CABL.NR"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CAC.JO"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46461_CADBURY_NIGERIA_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "CADBURY.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "CAED.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "CAL.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CANA.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "CAP.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "CAPHOTEL.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "CAPMA.CS"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "CAPOIL.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Carbacid-Investments-Plc-Audited-Group-Results-for-the-Year-Ended-31st-July-2025-1.pdf", "status": "collected", "ticker": "CARB.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CAT.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47443_CAVERTON_OFFSHORE_SUPPORT_GROUP_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_JULY_2026.pdf", "status": "collected", "ticker": "CAVERTON.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "CBIBF.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CCAP.CA"}

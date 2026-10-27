@@ -251,6 +251,38 @@
     "aenr": {
       "name": "AENR",
       "kind": "organization"
+    },
+    "ebid": {
+      "name": "EBID",
+      "kind": "organization"
+    },
+    "topaz multi industries sa": {
+      "name": "Topaz Multi-Industries SA",
+      "kind": "organization"
+    },
+    "binding agreement": {
+      "name": "Binding Agreement",
+      "kind": "organization"
+    },
+    "petroquest": {
+      "name": "PetroQuest",
+      "kind": "organization"
+    },
+    "bounty oil gas": {
+      "name": "Bounty Oil & Gas",
+      "kind": "organization"
+    },
+    "liberia deepwater prospect": {
+      "name": "Liberia Deepwater Prospect",
+      "kind": "organization"
+    },
+    "go": {
+      "name": "Go",
+      "kind": "organization"
+    },
+    "shares": {
+      "name": "Shares",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -754,7 +786,77 @@
           "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQX0QycF9xUFIwTUtJaWo3dWN6N0tpS2pYRFFWRU5BSHpGR2o3eXd2aUU3UVd2Q25uQW9hdDgzel9UT0x6LTdPQnZPbzN4Sk9UbG5yOFlYbWpiY1VpaDZZMURYa0FPaWR6WVBRUlk4YkpmRmhBVmJQUjRoam5jcUhYcWFkMy12YU5HZGpSdmY5ektsSlZLdUxqbkx1OXdya0dMcEw3UFp3WQ?oc=5"
         }
       ]
+    },
+    "c5abded6d5f6ee94ad77": {
+      "id": "c5abded6d5f6ee94ad77",
+      "from": "ebid",
+      "to": "topaz multi industries sa",
+      "type": "debt_financing",
+      "first_seen": "2026-10-14",
+      "sources": [
+        {
+          "title": "EBID signs $25 million revolving credit facility with Topaz Multi-Industries SA to boost manufacturing in Guinea",
+          "publisher": "African Business",
+          "url": "https://african.business/2026/10/quick-reads/ebid-signs-25-million-revolving-credit-facility-with-topaz-multi-industries-sa-to-boost-manufacturing-in-guinea"
+        }
+      ]
+    },
+    "b3daf260b092e65c87b8": {
+      "id": "b3daf260b092e65c87b8",
+      "from": "rmbv",
+      "to": "atco pharma",
+      "type": "equity_funding",
+      "first_seen": "2026-10-27",
+      "sources": [
+        {
+          "title": "RMBV invests in ATCO Pharma to expand presence in Egypt’s healthcare sector",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPU1p3Q2UwcW5xTHpvRVNFck1kQUF2T2tQdUVCVU5QODdHYktocVFDNXFCNmZSSXNobmRjVTBaWXpwUlRTb2RVZ0dfdnlWNV95QkJJQ1g5Q3FkM0FZYWRoV0xKR0psRWFLT1UwbmpOd2NscndUbnlBZGE5NEptVWJWb1JWZEE2RTJWdFdvdnJEaWJYN09hakVWX1p2WUZLMGhGVS1fdENNTHJxUQ?oc=5"
+        }
+      ]
+    },
+    "b3f53e786bf46594c861": {
+      "id": "b3f53e786bf46594c861",
+      "from": "binding agreement",
+      "to": "petroquest",
+      "type": "acquisition",
+      "first_seen": "2026-10-27",
+      "sources": [
+        {
+          "title": "Bounty Oil & Gas Signs Binding Agreement to Acquire PetroQuest for Liberia Block LB-32, Raises $3.5 Million",
+          "publisher": "Kalkine",
+          "url": "https://news.google.com/rss/articles/CBMi3AFBVV95cUxNR2VQY2lFTzJoT0l4UDZZRkdhUlpqeFN6STg2SUxhTzNzNkQ0ODZadHo4clZWUmtnTWY1eFNvMTREUVpRckh0dXpqNE1JVnhDbTJYWGpQaGpmczV6U1phMmtIaER5aXJEa2NNWFozWlJaTTBNVmtfdDFoSVpObjFPQmp2bVA3eUd5WjBaelBoUkJHUGhOaE0wRU83T25ka2h6elVtSURKMGpVQjdHdkIxZm1VLWJILUY1Zk5yeFVYUkZTVGRwZ2FCLXJ1eVh3Qk1STUM0dUd1YkZLTnJv?oc=5"
+        }
+      ]
+    },
+    "69486b8c322e15dbb18e": {
+      "id": "69486b8c322e15dbb18e",
+      "from": "bounty oil gas",
+      "to": "liberia deepwater prospect",
+      "type": "acquisition",
+      "first_seen": "2026-10-27",
+      "sources": [
+        {
+          "title": "Bounty Oil & Gas Acquires Liberia Deepwater Prospect, Secures $3.5 Million Placement",
+          "publisher": "Sharecafe",
+          "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNM3JDb2lEYUMwWEJzb01NbW1NaENseTkwcjZLLUI3S29SanlSTHgxT1hfaE1wZEN1UjFpZHNoTm9pQ25VTHB3QmszUkJzcExMbWNpVDRYYV9xazVGYlRPUmJsc3BKU21vQlVGZXBNSFNTMEFXcXd2QWM2TG5LekppeHRFZ3M1LXdyclhFOERnSW40Y3FUeFdGQmpfZjVYNDZxZmZMRnNPZ3Nua05LQXNwMXJUdl84QlBNT3prdmRB?oc=5"
+        }
+      ]
+    },
+    "4fa3a31e8007e9b427b3": {
+      "id": "4fa3a31e8007e9b427b3",
+      "from": "go",
+      "to": "shares",
+      "type": "acquisition",
+      "first_seen": "2026-10-27",
+      "sources": [
+        {
+          "title": "‘Go Buy Shares’: Ruto Defends Dangote’s 24.76% Stake in Kenya Pipeline",
+          "publisher": "Uzalendo News",
+          "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPOFE1SkZXTExOdnhXeWs1WEpsT1lsaUhUZnZ1T3JfMEd5SkdYZk8xTUZOalRZdUUtSzhtMUQ2ck40Vmx5V25TdnFSVkpyZ05KcVoxX3B4dWVXTl9VTHNXRTFGYTFXWFl4R21FWEJHdzZWOTExQ2xaaVJZdGIwZTdfckI5TU1CUU5CcWpiVzVNaG5FdmpGMGc?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-27T00:16:08.190008+00:00"
+  "updated_at": "2026-10-27T17:20:29.812382+00:00"
 }
