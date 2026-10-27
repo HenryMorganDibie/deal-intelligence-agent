@@ -194,3 +194,23 @@ def test_non_corporate_transaction_and_sports_headlines_are_excluded():
     assert NON_CORPORATE_HEADLINE.search("Botswana nears agreement to increase stake in De Beers as Anglo American advances exit plans")
     assert NON_CORPORATE_HEADLINE.search("Real Madrid réclame la démission du président de la Liga")
     assert not NON_CORPORATE_HEADLINE.search("Company appoints a new chief executive")
+
+
+def test_headline_words_places_institutions_and_foreign_buyers_are_not_companies():
+    deals = [{"target": name, "headline": f"{name} deal", "deal_type": "acquisition", "announced": "2026-01-01"}
+             for name in ("Team", "Team", "Woman", "Woman", "Kenya", "Kenya", "NGX", "IFC", "Birr", "Birr", "U.S", "U.S",
+                          "Stock Exchange", "Geregu Power")]
+    deals.append({"target": "Startup", "buyer": "Meta", "headline": "Meta buys Startup", "deal_type": "acquisition",
+                  "announced": "2026-01-01"})
+    events = [
+        {"headline": "Kano ACF chair resigns, three-member interim leadership team appointed", "day": "2026-10-25"},
+        {"headline": "Nigeria's Richest Woman Releases Statement", "day": "2026-10-22"},
+        {"headline": "NGX fines 15 companies N123.17 million for late filings", "day": "2026-10-21"},
+        {"headline": "Meta Hit With Record $25bn Fine Over Facebook Data Privacy Violations", "day": "2026-10-22"},
+        {"headline": "Fitch outlines impact of Indonesia downgrade by MSCI", "day": "2026-10-23"},
+        {"headline": "Geregu Power signs Siemens transformer deal after sharp revenue decline", "day": "2026-10-24"},
+    ]
+    events = [{**e, "signal_type": "regulatory_action", "rule_score": 0.9, "url": f"https://example.com/{i}",
+               "publisher": "News", "country": "NG"} for i, e in enumerate(events)]
+    result = select_company(deals, events, date(2026, 10, 19), date(2026, 10, 25))
+    assert [row["company"] for row in result["companies"]] == ["Geregu Power"]

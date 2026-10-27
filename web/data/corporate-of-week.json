@@ -1,142 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-26T22:40:28.703736+00:00",
+  "updated_at": "2026-10-27T12:25:35.469481+00:00",
   "current": {
-    "company": "Team",
-    "company_url": "/app/companies?name=Team",
-    "headline": "Kano ACF chair resigns, three-member interim leadership team appointed",
-    "deal_type": "leadership_change",
+    "company": "Geregu Power",
+    "company_url": "/app/companies?name=Geregu%20Power",
+    "headline": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+    "deal_type": "earnings_surprise",
     "amount_usd": null,
     "country": "NG",
-    "sector": null,
-    "announced": "2026-10-25",
-    "score": 57.05,
+    "sector": "energy",
+    "announced": "2026-10-24",
+    "score": 49.69,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
     "reasons": [
-      "Corporate signal: leadership change",
-      "Event rule confidence: 0.90",
+      "Corporate signal: earnings surprise",
+      "Event rule confidence: 0.72",
       "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "Premium Times Nigeria",
-        "title": "Kano ACF chair resigns, three-member interim leadership team appointed",
-        "url": "https://www.premiumtimesng.com/news/more-news/920027-kano-acf-chair-resigns-three-member-interim-leadership-team-appointed.html",
-        "date": "2026-10-25",
+        "publisher": "Nairametrics",
+        "title": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+        "url": "https://nairametrics.com/2026/10/24/geregu-power-signs-siemens-transformer-deal-after-sharp-revenue-decline/",
+        "date": "2026-10-24",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-10-19",
-    "period_end": "2026-10-25",
-    "selected_at": "2026-10-26T22:40:28.702462+00:00",
-    "selection_version": 4,
+    "period_start": "2026-10-20",
+    "period_end": "2026-10-26",
+    "selected_at": "2026-10-27T12:25:35.467699+00:00",
+    "selection_version": 5,
     "companies": [
-      {
-        "company": "Team",
-        "company_url": "/app/companies?name=Team",
-        "headline": "Kano ACF chair resigns, three-member interim leadership team appointed",
-        "deal_type": "leadership_change",
-        "amount_usd": null,
-        "country": "NG",
-        "sector": null,
-        "announced": "2026-10-25",
-        "score": 57.05,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.90",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Premium Times Nigeria",
-            "title": "Kano ACF chair resigns, three-member interim leadership team appointed",
-            "url": "https://www.premiumtimesng.com/news/more-news/920027-kano-acf-chair-resigns-three-member-interim-leadership-team-appointed.html",
-            "date": "2026-10-25",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-19",
-        "period_end": "2026-10-25",
-        "selected_at": "2026-10-26T22:40:28.702462+00:00",
-        "selection_version": 4
-      },
-      {
-        "company": "Stock Exchange",
-        "company_url": "/app/companies?name=Stock%20Exchange",
-        "headline": "TOR seeks state debt restructuring, eyes Ghana Stock Exchange listing",
-        "deal_type": "debt_restructuring",
-        "amount_usd": null,
-        "country": "GH",
-        "sector": null,
-        "announced": "2026-10-25",
-        "score": 52.4,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: debt restructuring",
-          "Event rule confidence: 0.88",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "News Ghana",
-            "title": "TOR seeks state debt restructuring, eyes Ghana Stock Exchange listing",
-            "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQajkzSTZRX3FudVdteHlqM251azQ2YWdLNC03dWs4Zk4tMzBZTEtNN3pWWmI0V2FNT0xjSlFTbU1nZnVyemF2TW5DZWU1dVdpa3BHQUFEVm5KTFQxVkVmVnZzeU04MGVOc0tkRVc2MDBJWGJVWE5odWNvVXNORVlpSjFYS1BHUW9scFVkQVU5d1RJV2tiMkpMWVN3?oc=5",
-            "date": "2026-10-25",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-19",
-        "period_end": "2026-10-25",
-        "selected_at": "2026-10-26T22:40:28.702462+00:00",
-        "selection_version": 4
-      },
-      {
-        "company": "Birr",
-        "company_url": "/app/companies?name=Birr",
-        "headline": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
-        "deal_type": "regulatory_action",
-        "amount_usd": null,
-        "country": "ET",
-        "sector": null,
-        "announced": "2026-10-24",
-        "score": 52.47,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Borkena",
-            "title": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
-            "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNaDJPUUFXUVNReHZpRnRkSlR3bGZ2UUREdk5JRFNWS2VOQ2p5RGtZTXNBNGtBWWZFdGc2Vm10ZXJqa3BYZ2hxb3RqZ0xOZTRHRFNXSGc1VnFyQWpLYnNhVFA4SjRpZEplNXlGUEpIdDhVNWRNb005ZWpScEZQN3g1RWNYSmhZU2lvQkU4dEEzREo?oc=5",
-            "date": "2026-10-24",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-19",
-        "period_end": "2026-10-25",
-        "selected_at": "2026-10-26T22:40:28.702462+00:00",
-        "selection_version": 4
-      },
       {
         "company": "Geregu Power",
         "company_url": "/app/companies?name=Geregu%20Power",
@@ -146,7 +44,7 @@
         "country": "NG",
         "sector": "energy",
         "announced": "2026-10-24",
-        "score": 51.12,
+        "score": 49.69,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -166,306 +64,243 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-19",
-        "period_end": "2026-10-25",
-        "selected_at": "2026-10-26T22:40:28.702462+00:00",
-        "selection_version": 4
+        "period_start": "2026-10-20",
+        "period_end": "2026-10-26",
+        "selected_at": "2026-10-27T12:25:35.467699+00:00",
+        "selection_version": 5
       },
       {
-        "company": "Impact",
-        "company_url": "/app/companies?name=Impact",
-        "headline": "Fitch outlines impact of Indonesia downgrade by MSCI",
-        "deal_type": "credit_risk",
+        "company": "Sanlam",
+        "company_url": "/app/companies?name=Sanlam",
+        "headline": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+        "deal_type": "leadership_change",
         "amount_usd": null,
-        "country": "ZW",
+        "country": "KE",
         "sector": null,
-        "announced": "2026-10-23",
-        "score": 50.74,
+        "announced": "2026-10-22",
+        "score": 47.74,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
         "reasons": [
-          "Corporate signal: credit risk",
-          "Event rule confidence: 0.92",
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.75",
           "1 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "IDNFinancials",
-            "title": "Fitch outlines impact of Indonesia downgrade by MSCI",
-            "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPM3hSa1VmREZ3dDZUMkJxbWRFclJacVB3bUo4UFFzT1F0cjhfcHBHR0gxam1GMHB3Q21DTFN1X0xhTU91NmtlcmMteXVsd2VadXY0ei02SzB2cG1LNms1ellDVmJ0azRFdlR1VzhER0R0dlNiWFlSX0ZDT3BuckFnX0ZIcjdnWXhKb2pMZUtHVWdGUTIxNlRRcA?oc=5",
-            "date": "2026-10-23",
+            "publisher": "Nairametrics",
+            "title": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+            "url": "https://nairametrics.com/2026/10/22/sanlam-allianz-kenya-appoints-jacqueline-karasha-as-ceo-from-november-1/",
+            "date": "2026-10-22",
             "kind": "corporate_event"
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-19",
-        "period_end": "2026-10-25",
-        "selected_at": "2026-10-26T22:40:28.702462+00:00",
-        "selection_version": 4
+        "period_start": "2026-10-20",
+        "period_end": "2026-10-26",
+        "selected_at": "2026-10-27T12:25:35.467699+00:00",
+        "selection_version": 5
+      },
+      {
+        "company": "De Beers",
+        "company_url": "/app/companies?name=De%20Beers",
+        "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+        "deal_type": "earnings_surprise",
+        "amount_usd": null,
+        "country": "BW",
+        "sector": "mining",
+        "announced": "2026-10-20",
+        "score": 41.43,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: earnings surprise",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Mining Weekly",
+            "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+            "date": "2026-10-20",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-20",
+        "period_end": "2026-10-26",
+        "selected_at": "2026-10-27T12:25:35.467699+00:00",
+        "selection_version": 5
       }
     ],
-    "runner_ups": [
-      {
-        "company": "Congo",
-        "score": 50.14,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.90",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Woman",
-        "score": 54.61,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "2 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Data",
-        "score": 49.61,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      }
-    ]
+    "runner_ups": []
   },
   "history": [
     {
       "company": "Kenya Airways",
       "company_url": "/app/companies?name=Kenya%20Airways",
-      "headline": "Kenya Airways secures $350m state loan to shore up finances",
-      "deal_type": "debt_financing",
-      "amount_usd": 350000000.0,
+      "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+      "deal_type": "debt_restructuring",
+      "amount_usd": null,
       "country": "KE",
       "sector": null,
-      "announced": "2026-10-12",
-      "score": 56.78,
-      "independent_stories": 3,
-      "transaction_records": 1,
+      "announced": "2026-10-13",
+      "score": 51.69,
+      "independent_stories": 2,
+      "transaction_records": 0,
       "related_events": 2,
       "reasons": [
-        "Transaction category: debt financing",
-        "Disclosed transaction size contributes 12.7/18 significance points",
-        "Corroborated by 3 independent stories matching the transaction headline",
-        "Recency: 5 day(s) before the selection period ended",
-        "2 related corporate-event signal(s) found in the same period",
-        "At least one inspectable source link is available"
+        "Corporate signal: debt restructuring",
+        "Event rule confidence: 0.88",
+        "2 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "FlightGlobal",
-          "title": "Kenya Airways secures $350m state loan to shore up finances",
-          "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNcmVpT0FLNW9MdC1WaF9FUnBuaGxhLVFIc0E3MGdwUGVQYzNKTnZuX0ZyNVBvOUdLb045R2IzMmlfdjJuMHZRYTh2Q0ZxV0txa3VtRVZMWHlWUVdWTXVxUmhvR3M0RVNndVNYM3IxM244cWhiU2pObFU0NWFVRk9mbEttNDhYYlBzMHNMSDVGNVBGVUJuQ285TzRwZm93a0tTWllXOGhja3M?oc=5",
-          "date": "2026-10-12",
-          "kind": "deal"
-        },
-        {
-          "publisher": "ad-hoc-news.de",
-          "title": "Kenya Airways secures $350m state loan to shore up finances",
-          "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPZnpyN1d0Nmo4Y0VIYUVVTzR4MHNzTG5nblNKX0tnblRZSzlEVjF4NWhvbkNqQ3Rjd2k4Ny1pOG5YbDFuOFo2TkY2M1pZYlBFUmpHWEJiQ09WOU1uRXhnSzM4c0dveTZHUXZwWms0Y05Ma0lBVGtaVTJnUGZZRXBRWm9saWFYWE1mVzAtQVZQNXRSWV9zNDc5ZjZEZWhTVjdFZDdobm9uSEhsT0hXWThlUWRxZ011ZVNjcUxKLVIwQVVwcTVN?oc=5",
-          "date": "2026-10-14",
-          "kind": "deal"
-        },
-        {
           "publisher": "aviationtoday.in",
-          "title": "Kenya Airways secures $350m state loan to shore up finances",
+          "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
           "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
           "date": "2026-10-13",
-          "kind": "deal"
-        },
-        {
-          "publisher": "Ecofin Agency",
-          "title": "Kenya Airways Secures $1.3 Billion State Rescue Through New Funding and Debt Conversion",
-          "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbDBxRm8xZ2JiQlM4b1pCNjRwZVlmX1FXcjZUMUtCTGQ4dVh2VUZiOEt2S1dvLTZFQzNBb0R6QXpmZ3l4ZmhCMVl0R0stNjBwY1ROYUIzSXhhWmlzT1NjUEc3NXd2NE9tREdhZ19HU28talZNeU5OQ3ptSFB2WXVmaDNkNWU4ZUpaSlNMck5TSzE3TmtRSVYyMFRpSEh6ZXo1M0p2Q21LcWZjRDFrUVZWOE5KMy1JQUNpQ1JGc0xYeTlNSVhZNlppakUweDJxb1R2Si1pNVlUaw?oc=5",
-          "date": "2026-10-15",
-          "kind": "related_company_coverage"
+          "kind": "corporate_event"
         },
         {
           "publisher": "People Daily",
           "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
           "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
           "date": "2026-10-12",
-          "kind": "related_company_coverage"
+          "kind": "corporate_event"
         }
       ],
-      "method": "Deterministic ranking of eligible companies with a dated transaction and at least one inspectable source. Factors: transaction category, disclosed size, independent reporting, recency, matching corporate-event signals, and source availability. The score is a ranking aid, not a probability or investment recommendation.",
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-11",
       "period_end": "2026-10-17",
-      "selected_at": "2026-10-18T22:57:23.769186+00:00",
-      "selection_version": 1,
-      "runner_ups": [
+      "selected_at": "2026-10-27T12:24:01.836135+00:00",
+      "selection_version": 5,
+      "companies": [
         {
-          "company": "Portek",
-          "score": 42.82,
+          "company": "Kenya Airways",
+          "company_url": "/app/companies?name=Kenya%20Airways",
+          "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+          "deal_type": "debt_restructuring",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": null,
+          "announced": "2026-10-13",
+          "score": 51.69,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
           "reasons": [
-            "Transaction category: acquisition",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-            "Recency: 1 day(s) before the selection period ended"
-          ]
+            "Corporate signal: debt restructuring",
+            "Event rule confidence: 0.88",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "aviationtoday.in",
+              "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+              "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
+              "date": "2026-10-13",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "People Daily",
+              "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
+              "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
+              "date": "2026-10-12",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-11",
+          "period_end": "2026-10-17",
+          "selected_at": "2026-10-27T12:24:01.836135+00:00",
+          "selection_version": 5
         },
         {
-          "company": "Local Oil Contractors",
-          "score": 41.57,
+          "company": "OPay",
+          "company_url": "/app/companies?name=OPay",
+          "headline": "OPay Gets Shareholder Approval For NGX Listing Ahead Of US IPO",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": null,
+          "announced": "2026-10-12",
+          "score": 46.76,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
           "reasons": [
-            "Transaction category: equity funding",
-            "Disclosed transaction size contributes 18.0/18 significance points",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration"
-          ]
-        },
-        {
-          "company": "Portek International",
-          "score": 39.82,
-          "reasons": [
-            "Transaction category: acquisition",
-            "Only one source link directly matches the transaction headline; broader company coverage is not counted as corroboration",
-            "Recency: 1 day(s) before the selection period ended"
-          ]
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "LEADERSHIP Newspapers",
+              "title": "OPay Gets Shareholder Approval For NGX Listing Ahead Of US IPO",
+              "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPdFNKVUxiYTg0cUhjYUduZFdQZkNmWW9mUnVVYTh6LWpldllsXzdXSGRVcFdJTkk4dHpuZFVMNEEyR3B6NGN0NHNVR21PTHZEQ0ZRNkh4MHV0VnE4SUpIRkRRM1dnNFBLUktEY04yUkZqUFBadGhrVjRQc2pwMVpnbExJVERoa1JId1VNRDVB?oc=5",
+              "date": "2026-10-12",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-11",
+          "period_end": "2026-10-17",
+          "selected_at": "2026-10-27T12:24:01.836135+00:00",
+          "selection_version": 5
         }
-      ]
+      ],
+      "runner_ups": []
     },
     {
-      "company": "IFC",
-      "company_url": "/app/companies?name=IFC",
-      "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-      "deal_type": "distressed_asset",
+      "company": "Kenya Airways",
+      "company_url": "/app/companies?name=Kenya%20Airways",
+      "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+      "deal_type": "debt_restructuring",
       "amount_usd": null,
-      "country": "MA",
-      "sector": "media_tech",
-      "announced": "2026-10-16",
-      "score": 52.24,
-      "independent_stories": 1,
+      "country": "KE",
+      "sector": null,
+      "announced": "2026-10-13",
+      "score": 50.26,
+      "independent_stories": 2,
       "transaction_records": 0,
-      "related_events": 1,
+      "related_events": 2,
       "reasons": [
-        "Corporate signal: distressed asset",
-        "Event rule confidence: 0.80",
-        "1 distinct source-linked corporate event(s) found in the period",
+        "Corporate signal: debt restructuring",
+        "Event rule confidence: 0.88",
+        "2 distinct source-linked corporate event(s) found in the period",
         "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "Medias24",
-          "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-          "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
-          "date": "2026-10-16",
+          "publisher": "aviationtoday.in",
+          "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+          "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
+          "date": "2026-10-13",
+          "kind": "corporate_event"
+        },
+        {
+          "publisher": "People Daily",
+          "title": "Kenya Airways gets Ksh45B bailout as government approves debt restructuring",
+          "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQVDRVdnJfay0yaVdZQk51akNCX24wU1dwV00wS3JNYkYyVUg0U3haQmI5X1pUQXN4UHZZLWNCdEhBSFpNTUFJcmc2R2ZQU19lNE43ZHM1SXVoYlpHQjlqdHlwcVp6TFdlcXpsR2xrS1V1YU5OZjlNSWMzSzFyX2RRTVpTcXYtU1E0akQ1UXpmTVJCZThvS3NyX2l3SnN0LS1pWmQ5S0E1c0ZoT253eTM3ZlZB?oc=5",
+          "date": "2026-10-12",
           "kind": "corporate_event"
         }
       ],
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-12",
       "period_end": "2026-10-18",
-      "selected_at": "2026-10-19T14:53:48.129126+00:00",
-      "selection_version": 3,
+      "selected_at": "2026-10-27T12:24:12.647064+00:00",
+      "selection_version": 5,
       "companies": [
-        {
-          "company": "IFC",
-          "company_url": "/app/companies?name=IFC",
-          "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-          "deal_type": "distressed_asset",
-          "amount_usd": null,
-          "country": "MA",
-          "sector": "media_tech",
-          "announced": "2026-10-16",
-          "score": 52.24,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: distressed asset",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Medias24",
-              "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-              "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
-              "date": "2026-10-16",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T14:53:48.129126+00:00",
-          "selection_version": 3
-        },
-        {
-          "company": "Président",
-          "company_url": "/app/companies?name=Pr%C3%A9sident",
-          "headline": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
-          "deal_type": "leadership_change",
-          "amount_usd": null,
-          "country": "ML",
-          "sector": "media_tech",
-          "announced": "2026-10-14",
-          "score": 47.29,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: leadership change",
-            "Event rule confidence: 0.90",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Orange Actualités",
-              "title": "\"Ai-je réellement le choix ?\": sous la contrainte des militaires, le président du Mali annonce sa démission à la télévision",
-              "url": "https://news.google.com/rss/articles/CBMihAJBVV95cUxPN2Q4ckRPT3pKVVY5d2dVUC1UTFJma3p2THRpZ0JjVThFMTJwT1VtWXpSby1hS2ItZmxFd3RpTHNHc3JPZlFuaG1JQnUzSUdjcGV5M3NNYmNqaEdKOTZVM3djY2Nmd043QTM2V3VpNFI5MTgzWkFxT2ZmUTZhTFNORWp5NTdvYkhHa1hZYjBaVzBLaU00allTUF94cUVuUDdTU1hVSzNNU2JJWFByWXhRekFQVWRtUkhMQXdqX0s2THRMdkFvSzh1bDNlb2ZSR0NrMGtCMTVPNHl4SVVOZjFVaW1FMDhlemlCTlhTOHNwSW5yOEZIR2FjaXVsMi1NNXFHNTc4MQ?oc=5",
-              "date": "2026-10-14",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T14:53:48.129126+00:00",
-          "selection_version": 3
-        },
-        {
-          "company": "First",
-          "company_url": "/app/companies?name=First",
-          "headline": "First-year students stranded as Obuasi SHTS remains closed over misconduct probe",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "GH",
-          "sector": null,
-          "announced": "2026-10-14",
-          "score": 44.29,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "MyJoyOnline",
-              "title": "First-year students stranded as Obuasi SHTS remains closed over misconduct probe",
-              "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPMFk5NWExOEdpWS0xT2NuODZ1RWR6elZJaEtvc1lTbWI5emxjTGNrMnlseEw5YmxPSUF1NUZHbUljOFVZdDcta3Q4amMxalYydDN0R09wd0g0NmRVZEtrS19MZ0xCSjZMVzZRNEhsejJpSE5vM1p4cUozMUJXeVZGc0JQZkpiSFdNbk1PdGJsYzFMX3A1MGtIR2RZWlUyNE10Vnd1cjJYa1IxZUNkaFE?oc=5",
-              "date": "2026-10-14",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-12",
-          "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T14:53:48.129126+00:00",
-          "selection_version": 3
-        },
         {
           "company": "Kenya Airways",
           "company_url": "/app/companies?name=Kenya%20Airways",
@@ -504,80 +339,80 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-12",
           "period_end": "2026-10-18",
-          "selected_at": "2026-10-19T14:53:48.129126+00:00",
-          "selection_version": 3
+          "selected_at": "2026-10-27T12:24:12.647064+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "OPay",
+          "company_url": "/app/companies?name=OPay",
+          "headline": "OPay Gets Shareholder Approval For NGX Listing Ahead Of US IPO",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": null,
+          "announced": "2026-10-12",
+          "score": 45.33,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "LEADERSHIP Newspapers",
+              "title": "OPay Gets Shareholder Approval For NGX Listing Ahead Of US IPO",
+              "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPdFNKVUxiYTg0cUhjYUduZFdQZkNmWW9mUnVVYTh6LWpldllsXzdXSGRVcFdJTkk4dHpuZFVMNEEyR3B6NGN0NHNVR21PTHZEQ0ZRNkh4MHV0VnE4SUpIRkRRM1dnNFBLUktEY04yUkZqUFBadGhrVjRQc2pwMVpnbExJVERoa1JId1VNRDVB?oc=5",
+              "date": "2026-10-12",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-12",
+          "period_end": "2026-10-18",
+          "selected_at": "2026-10-27T12:24:12.647064+00:00",
+          "selection_version": 5
         }
       ],
       "runner_ups": []
     },
     {
-      "company": "IFC",
-      "company_url": "/app/companies?name=IFC",
-      "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-      "deal_type": "distressed_asset",
+      "company": "Kenya Airways",
+      "company_url": "/app/companies?name=Kenya%20Airways",
+      "headline": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+      "deal_type": "debt_restructuring",
       "amount_usd": null,
-      "country": "MA",
-      "sector": "media_tech",
-      "announced": "2026-10-16",
-      "score": 50.81,
+      "country": "KE",
+      "sector": null,
+      "announced": "2026-10-13",
+      "score": 43.83,
       "independent_stories": 1,
       "transaction_records": 0,
       "related_events": 1,
       "reasons": [
-        "Corporate signal: distressed asset",
-        "Event rule confidence: 0.80",
+        "Corporate signal: debt restructuring",
+        "Event rule confidence: 0.88",
         "1 distinct source-linked corporate event(s) found in the period",
         "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "Medias24",
-          "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-          "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
-          "date": "2026-10-16",
+          "publisher": "aviationtoday.in",
+          "title": "Kenya Airways Gets $350 Million Government Loan Amid Debt Restructuring Plan",
+          "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOeHRVbU80Z3MxT3dCWUZKbzJUNVBRMXJSVFBNT09rMnlpYzNVcDBFOVhWeXNNTldkOUZfOUZwbEhpUy1fWjZueEJFV2Frdm5RRHRkdWdBX0d6MDFxeEZpdVRvYXM3dHROOG1jbUdRMDVzMlBpUk9DR0wwSzJJM2NmRnRsVHdNTjNQdndpY21vY2RvY01NTGxGSmNkUFlRdzJCY1RKWkVENEFuUUZwQnVuU2FkeWJMdVBRbzQ0dFBXN180UQ?oc=5",
+          "date": "2026-10-13",
           "kind": "corporate_event"
         }
       ],
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-13",
       "period_end": "2026-10-19",
-      "selected_at": "2026-10-20T21:53:05.077991+00:00",
-      "selection_version": 4,
+      "selected_at": "2026-10-27T12:24:23.792570+00:00",
+      "selection_version": 5,
       "companies": [
-        {
-          "company": "IFC",
-          "company_url": "/app/companies?name=IFC",
-          "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-          "deal_type": "distressed_asset",
-          "amount_usd": null,
-          "country": "MA",
-          "sector": "media_tech",
-          "announced": "2026-10-16",
-          "score": 50.81,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: distressed asset",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Medias24",
-              "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-              "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
-              "date": "2026-10-16",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-13",
-          "period_end": "2026-10-19",
-          "selected_at": "2026-10-20T21:53:05.077991+00:00",
-          "selection_version": 4
-        },
         {
           "company": "Kenya Airways",
           "company_url": "/app/companies?name=Kenya%20Airways",
@@ -609,15 +444,15 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-13",
           "period_end": "2026-10-19",
-          "selected_at": "2026-10-20T21:53:05.077991+00:00",
-          "selection_version": 4
+          "selected_at": "2026-10-27T12:24:23.792570+00:00",
+          "selection_version": 5
         }
       ],
       "runner_ups": []
     },
     {
-      "company": "Full",
-      "company_url": "/app/companies?name=Full",
+      "company": "De Beers",
+      "company_url": "/app/companies?name=De%20Beers",
       "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
       "deal_type": "earnings_surprise",
       "amount_usd": null,
@@ -646,12 +481,12 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-14",
       "period_end": "2026-10-20",
-      "selected_at": "2026-10-21T23:08:26.938513+00:00",
-      "selection_version": 4,
+      "selected_at": "2026-10-27T12:24:35.167257+00:00",
+      "selection_version": 5,
       "companies": [
         {
-          "company": "Full",
-          "company_url": "/app/companies?name=Full",
+          "company": "De Beers",
+          "company_url": "/app/companies?name=De%20Beers",
           "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
           "deal_type": "earnings_surprise",
           "amount_usd": null,
@@ -680,288 +515,49 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-14",
           "period_end": "2026-10-20",
-          "selected_at": "2026-10-21T23:08:26.938513+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Education",
-          "company_url": "/app/companies?name=Education",
-          "headline": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "KE",
-          "sector": "education",
-          "announced": "2026-10-19",
-          "score": 53.57,
-          "independent_stories": 2,
-          "transaction_records": 0,
-          "related_events": 2,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.80",
-            "2 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "The Eastleigh Voice",
-              "title": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
-              "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPOG5pclRGbEdPaWNPQ2FlSmN2WWF5YzhvN1lqMjduY19DV2hjNnFmcDhXdUFUb1dZS19OVU5NTDdJUnFhRHdnT1o4MXpHUldfcjJiNDBSTjE5LS0xVjBOekhzbTRGSHp5NnZ5MEJMY2pHWnJHdmNZNFp2b0FFVi1vTFhrck1XYmJySGcwTjF2NzR0eVpCbEdzeEVDV0psUkE5WlU5X0NIQnBMY2ZIUXRucVM2SFVGVXBvay1vX0x4Qy1KMThmblpQMXlwVktTVUdocUhXSk9Yc2Z4aWh2MnNYQ1ZyVQ?oc=5",
-              "date": "2026-10-19",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Sifa FM Kenya",
-              "title": "Education Ministry orders mandatory staff verification as Sh6.2 billion payroll fraud probe deepens",
-              "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNZHFhaExJS0o2YXh4c2F4V2F4Slh1UEpJN0F6NWczN2p4MS14Y2QtM3BjWHJkV0h6M19rZFdtSnlOUTJBY1lIVWY3RldmSW9OMGtrM0JoekgwcEVhWHhkNzhvZ0hCU3U2MGtuNGt0QzUxS1VWUTkySkU3NEFrSm9oZ3JWdkpmWDh6OXcyUTlvSDJxYjJSMlg3RU9Bd2NXcjlxclFJQnRyam9DQVVBQ0RNTkZwX0F3UmViZzYwcHp3?oc=5",
-              "date": "2026-10-19",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-14",
-          "period_end": "2026-10-20",
-          "selected_at": "2026-10-21T23:08:26.938513+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Bond",
-          "company_url": "/app/companies?name=Bond",
-          "headline": "Cameroon bond yields spike as Fitch cuts rating on politics and funding strain",
-          "deal_type": "credit_risk",
-          "amount_usd": null,
-          "country": "CM",
-          "sector": null,
-          "announced": "2026-10-19",
-          "score": 52.17,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: credit risk",
-            "Event rule confidence: 0.92",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Briefs Finance",
-              "title": "Cameroon bond yields spike as Fitch cuts rating on politics and funding strain",
-              "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQUElNaDMyTE1lS0dfXzJrY1NEWjhOYXRzYjVnbXFMcDVncnhSXzVUVGhJVlFsWHpkT3RrSTlVS3Fkb20ycEpwWkRmWUJXWjR2ZHRWMlZwY0NKUmRRbVZoVUxscnl0c2Rvby0yRG11aks0cjV3VzktZTVWZDJJOU9RbkZRQmFpWkRsRTNPcUNxd3I?oc=5",
-              "date": "2026-10-19",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-14",
-          "period_end": "2026-10-20",
-          "selected_at": "2026-10-21T23:08:26.938513+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Out",
-          "company_url": "/app/companies?name=Out",
-          "headline": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "NA",
-          "sector": null,
-          "announced": "2026-10-17",
-          "score": 49.61,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Herald.co.zw",
-              "title": "ZRP rolls out digital traffic fine notifications: 4,8 million violators caught on camera",
-              "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNMXFyV0ZIajlLaFdFWmlGZDNYOTNIWU9BOXZIRWtTQ09ibFNJTVBKTTFnRTdpbU1hbGNnNE9fRWN1elJlQmVEb0RrM0ZiVmNaeDNFaW5rRTlTalhHaVBDZmM3WXdHZjJYVGJxaldJNUpDZk5ZbjFpS1U2czNlbGJ1TUlUc0FLQnZNbDI5T3NWOE16UWJNS2FDMm00XzA2ZEttWTFQelVnVnY1eFVZTXZVZ0txSlVlS1NPd0E?oc=5",
-              "date": "2026-10-17",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-14",
-          "period_end": "2026-10-20",
-          "selected_at": "2026-10-21T23:08:26.938513+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "IFC",
-          "company_url": "/app/companies?name=IFC",
-          "headline": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-          "deal_type": "distressed_asset",
-          "amount_usd": null,
-          "country": "MA",
-          "sector": "media_tech",
-          "announced": "2026-10-16",
-          "score": 49.39,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: distressed asset",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Medias24",
-              "title": "Créances en souffrance. Avant la loi 02-26, une voie déjà ouverte au premier véhicule IFC",
-              "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQc0FFcUg4Z0U2QVRtazlWTjZtd3FlNnVFMnVteER2YmJYQS11c3dsdnlVNEFQMFFZMnllQjVQa0M1eG52algzVzk2NVptMk8zUERjRjVkNjNxSWRuQ3VKbFpBSlFCR0dFbDRXbXhBUUh0eGhNVWVmM3lUUzhqY1VvWHFKNEZCT0pZZFE0VXBQN2Zqbnc2dFlXVzhGUjhLRVhuTy1MTmlHc2dRTEJqeEJRZHlsYVJuWVJMU29uam94ZzFWLXotU0g0?oc=5",
-              "date": "2026-10-16",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-14",
-          "period_end": "2026-10-20",
-          "selected_at": "2026-10-21T23:08:26.938513+00:00",
-          "selection_version": 4
+          "selected_at": "2026-10-27T12:24:35.167257+00:00",
+          "selection_version": 5
         }
       ],
-      "runner_ups": [
-        {
-          "company": "Back",
-          "score": 49.39,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "South",
-          "score": 41.43,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Operations",
-          "score": 39.93,
-          "reasons": [
-            "Corporate signal: leadership change",
-            "Event rule confidence: 0.75",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        }
-      ]
+      "runner_ups": []
     },
     {
-      "company": "NGX",
-      "company_url": "/app/companies?name=NGX",
-      "headline": "NGX fines 15 companies N123.17 million for late filings, experts seek tougher sanctions",
-      "deal_type": "regulatory_action",
+      "company": "De Beers",
+      "company_url": "/app/companies?name=De%20Beers",
+      "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+      "deal_type": "earnings_surprise",
       "amount_usd": null,
-      "country": "NG",
-      "sector": null,
-      "announced": "2026-10-21",
-      "score": 58.85,
+      "country": "BW",
+      "sector": "mining",
+      "announced": "2026-10-20",
+      "score": 48.57,
       "independent_stories": 1,
       "transaction_records": 0,
       "related_events": 1,
       "reasons": [
-        "Corporate signal: regulatory action",
-        "Event rule confidence: 0.93",
+        "Corporate signal: earnings surprise",
+        "Event rule confidence: 0.80",
         "1 distinct source-linked corporate event(s) found in the period",
         "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "Nairametrics",
-          "title": "NGX fines 15 companies N123.17 million for late filings, experts seek tougher sanctions",
-          "url": "https://nairametrics.com/2026/10/21/ngx-fines-15-companies-n123-17-million-for-late-filings-experts-seek-tougher-sanctions/",
-          "date": "2026-10-21",
+          "publisher": "Mining Weekly",
+          "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+          "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+          "date": "2026-10-20",
           "kind": "corporate_event"
         }
       ],
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-15",
       "period_end": "2026-10-21",
-      "selected_at": "2026-10-22T21:36:11.217836+00:00",
-      "selection_version": 4,
+      "selected_at": "2026-10-27T12:24:45.009933+00:00",
+      "selection_version": 5,
       "companies": [
         {
-          "company": "NGX",
-          "company_url": "/app/companies?name=NGX",
-          "headline": "NGX fines 15 companies N123.17 million for late filings, experts seek tougher sanctions",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "NG",
-          "sector": null,
-          "announced": "2026-10-21",
-          "score": 58.85,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Nairametrics",
-              "title": "NGX fines 15 companies N123.17 million for late filings, experts seek tougher sanctions",
-              "url": "https://nairametrics.com/2026/10/21/ngx-fines-15-companies-n123-17-million-for-late-filings-experts-seek-tougher-sanctions/",
-              "date": "2026-10-21",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-15",
-          "period_end": "2026-10-21",
-          "selected_at": "2026-10-22T21:36:11.217836+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Blocks",
-          "company_url": "/app/companies?name=Blocks",
-          "headline": "London/Paris Club Refunds: Court Blocks EFCC Probe Report",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "NG",
-          "sector": "logistics",
-          "announced": "2026-10-21",
-          "score": 53.9,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Independent Newspaper Nigeria",
-              "title": "London/Paris Club Refunds: Court Blocks EFCC Probe Report",
-              "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPLUlYeVdlVEstRXZBUkQyeUExRk1Fa1FvVC05SDBXTzdmZUFTY29LNFNUbW1jaW5pSHAtek4wdXFlay1MX3FaTVlZTGZKRWJJcndITkVUVWZPQlZPYmdFZWtPQno0dExCb2tMcENfVmNVVGRTUjQ4R2lEZGRsa2pFY1Z1RFlfNFU?oc=5",
-              "date": "2026-10-21",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-15",
-          "period_end": "2026-10-21",
-          "selected_at": "2026-10-22T21:36:11.217836+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Full",
-          "company_url": "/app/companies?name=Full",
+          "company": "De Beers",
+          "company_url": "/app/companies?name=De%20Beers",
           "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
           "deal_type": "earnings_surprise",
           "amount_usd": null,
@@ -990,146 +586,36 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-15",
           "period_end": "2026-10-21",
-          "selected_at": "2026-10-22T21:36:11.217836+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Education",
-          "company_url": "/app/companies?name=Education",
-          "headline": "Education Ministry orders mandatory staff verification as Sh6.2 billion payroll fraud probe deepens",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "KE",
-          "sector": "education",
-          "announced": "2026-10-19",
-          "score": 52.14,
-          "independent_stories": 2,
-          "transaction_records": 0,
-          "related_events": 2,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.80",
-            "2 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Sifa FM Kenya",
-              "title": "Education Ministry orders mandatory staff verification as Sh6.2 billion payroll fraud probe deepens",
-              "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNZHFhaExJS0o2YXh4c2F4V2F4Slh1UEpJN0F6NWczN2p4MS14Y2QtM3BjWHJkV0h6M19rZFdtSnlOUTJBY1lIVWY3RldmSW9OMGtrM0JoekgwcEVhWHhkNzhvZ0hCU3U2MGtuNGt0QzUxS1VWUTkySkU3NEFrSm9oZ3JWdkpmWDh6OXcyUTlvSDJxYjJSMlg3RU9Bd2NXcjlxclFJQnRyam9DQVVBQ0RNTkZwX0F3UmViZzYwcHp3?oc=5",
-              "date": "2026-10-19",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "The Eastleigh Voice",
-              "title": "Education staff ordered to present documents for fresh headcount amid Sh6.2 billion payroll fraud probe",
-              "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPOG5pclRGbEdPaWNPQ2FlSmN2WWF5YzhvN1lqMjduY19DV2hjNnFmcDhXdUFUb1dZS19OVU5NTDdJUnFhRHdnT1o4MXpHUldfcjJiNDBSTjE5LS0xVjBOekhzbTRGSHp5NnZ5MEJMY2pHWnJHdmNZNFp2b0FFVi1vTFhrck1XYmJySGcwTjF2NzR0eVpCbEdzeEVDV0psUkE5WlU5X0NIQnBMY2ZIUXRucVM2SFVGVXBvay1vX0x4Qy1KMThmblpQMXlwVktTVUdocUhXSk9Yc2Z4aWh2MnNYQ1ZyVQ?oc=5",
-              "date": "2026-10-19",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-15",
-          "period_end": "2026-10-21",
-          "selected_at": "2026-10-22T21:36:11.217836+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Bond",
-          "company_url": "/app/companies?name=Bond",
-          "headline": "Cameroon bond yields spike as Fitch cuts rating on politics and funding strain",
-          "deal_type": "credit_risk",
-          "amount_usd": null,
-          "country": "CM",
-          "sector": null,
-          "announced": "2026-10-19",
-          "score": 50.74,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: credit risk",
-            "Event rule confidence: 0.92",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Briefs Finance",
-              "title": "Cameroon bond yields spike as Fitch cuts rating on politics and funding strain",
-              "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQUElNaDMyTE1lS0dfXzJrY1NEWjhOYXRzYjVnbXFMcDVncnhSXzVUVGhJVlFsWHpkT3RrSTlVS3Fkb20ycEpwWkRmWUJXWjR2ZHRWMlZwY0NKUmRRbVZoVUxscnl0c2Rvby0yRG11aks0cjV3VzktZTVWZDJJOU9RbkZRQmFpWkRsRTNPcUNxd3I?oc=5",
-              "date": "2026-10-19",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-15",
-          "period_end": "2026-10-21",
-          "selected_at": "2026-10-22T21:36:11.217836+00:00",
-          "selection_version": 4
+          "selected_at": "2026-10-27T12:24:45.009933+00:00",
+          "selection_version": 5
         }
       ],
-      "runner_ups": [
-        {
-          "company": "Out",
-          "score": 48.19,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "IFC",
-          "score": 47.96,
-          "reasons": [
-            "Corporate signal: distressed asset",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Back",
-          "score": 47.96,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        }
-      ]
+      "runner_ups": []
     },
     {
-      "company": "Woman",
-      "company_url": "/app/companies?name=Woman",
-      "headline": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
-      "deal_type": "regulatory_action",
+      "company": "Sanlam",
+      "company_url": "/app/companies?name=Sanlam",
+      "headline": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+      "deal_type": "leadership_change",
       "amount_usd": null,
-      "country": "NG",
+      "country": "KE",
       "sector": null,
       "announced": "2026-10-22",
-      "score": 58.9,
-      "independent_stories": 2,
+      "score": 53.45,
+      "independent_stories": 1,
       "transaction_records": 0,
-      "related_events": 2,
+      "related_events": 1,
       "reasons": [
-        "Corporate signal: regulatory action",
-        "Event rule confidence: 0.93",
-        "2 distinct source-linked corporate event(s) found in the period",
+        "Corporate signal: leadership change",
+        "Event rule confidence: 0.75",
+        "1 distinct source-linked corporate event(s) found in the period",
         "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "Legit News",
-          "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
-          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
-          "date": "2026-10-22",
-          "kind": "corporate_event"
-        },
-        {
-          "publisher": "Bulawayo24 News",
-          "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
-          "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFBTRUZvNUZwV2VRZGduWEhBNkltR3ZkcXk0bUlONmVJYWxJTXpnWnRWb2RsU3JtV01mbWVDUVlfbjBvTjd5eWZxaHVac3lzSVN4cTFqZFhXMkswUHNxNUhQQV9zZW80N1BMUm5vbkt1Mm10Zw?oc=5",
+          "publisher": "Nairametrics",
+          "title": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+          "url": "https://nairametrics.com/2026/10/22/sanlam-allianz-kenya-appoints-jacqueline-karasha-as-ceo-from-november-1/",
           "date": "2026-10-22",
           "kind": "corporate_event"
         }
@@ -1137,87 +623,12 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-16",
       "period_end": "2026-10-22",
-      "selected_at": "2026-10-23T21:25:38.562266+00:00",
-      "selection_version": 4,
+      "selected_at": "2026-10-27T12:24:55.593587+00:00",
+      "selection_version": 5,
       "companies": [
         {
-          "company": "Woman",
-          "company_url": "/app/companies?name=Woman",
-          "headline": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "NG",
-          "sector": null,
-          "announced": "2026-10-22",
-          "score": 58.9,
-          "independent_stories": 2,
-          "transaction_records": 0,
-          "related_events": 2,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "2 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Legit News",
-              "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
-              "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Bulawayo24 News",
-              "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
-              "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFBTRUZvNUZwV2VRZGduWEhBNkltR3ZkcXk0bUlONmVJYWxJTXpnWnRWb2RsU3JtV01mbWVDUVlfbjBvTjd5eWZxaHVac3lzSVN4cTFqZFhXMkswUHNxNUhQQV9zZW80N1BMUm5vbkt1Mm10Zw?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-16",
-          "period_end": "2026-10-22",
-          "selected_at": "2026-10-23T21:25:38.562266+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Data",
-          "company_url": "/app/companies?name=Data",
-          "headline": "Meta Hit With Record $25bn Fine Over Facebook Data Privacy Violations",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "GH",
-          "sector": null,
-          "announced": "2026-10-22",
-          "score": 53.9,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "News Ghana",
-              "title": "Meta Hit With Record $25bn Fine Over Facebook Data Privacy Violations",
-              "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQX184SS0wc18wNkVYbFVUeUJoZzZ5T3UwVlhCMUktU1F5MENmbDFjWmhuc3l1UHlMTHdESHZmazA1RHZxSTBwM1dOYWd1QWp5MjY4RERwNzhwazRPRHJETU13Qm10YlJpZjVHOXR5bjVUakw5QmFmZW9QaTVwREpzNF9rYmZ1bXJBbDgzcEswazJUQWtQUWVMeDZR?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-16",
-          "period_end": "2026-10-22",
-          "selected_at": "2026-10-23T21:25:38.562266+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Allianz",
-          "company_url": "/app/companies?name=Allianz",
+          "company": "Sanlam",
+          "company_url": "/app/companies?name=Sanlam",
           "headline": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
           "deal_type": "leadership_change",
           "amount_usd": null,
@@ -1246,254 +657,83 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-16",
           "period_end": "2026-10-22",
-          "selected_at": "2026-10-23T21:25:38.562266+00:00",
-          "selection_version": 4
+          "selected_at": "2026-10-27T12:24:55.593587+00:00",
+          "selection_version": 5
         },
         {
-          "company": "Banks",
-          "company_url": "/app/companies?name=Banks",
-          "headline": "Sudan Revokes Abu Dhabi Islamic Bank’s Licence and Orders Liquidation in Blow to UAE Financial Influence",
-          "deal_type": "distressed_asset",
+          "company": "De Beers",
+          "company_url": "/app/companies?name=De%20Beers",
+          "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+          "deal_type": "earnings_surprise",
           "amount_usd": null,
-          "country": "SD",
-          "sector": "banking",
-          "announced": "2026-10-22",
-          "score": 50.0,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: distressed asset",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "دزاير تيوب",
-              "title": "Sudan Revokes Abu Dhabi Islamic Bank’s Licence and Orders Liquidation in Blow to UAE Financial Influence",
-              "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPbFFhQmZpVFdZTmZMQ3l4SzEya0dkWmhFb0I5b05SVVpobzhXUkFEVUhsb3ZMeWFJNHhVRnBTWGE5OWRnX0h0Y0lZSmQ5TGR4VFk1SkEyY0tQQl9FU29scE1Vbm03cHA3bnZ3MHRYR1VSWTNrdV8yQW5fcE90M1BQaVZVLThSamtMeng4VXBPWDlONWNDV2dzeXk1amRRcDRKb2lfRk05SGMtTGp6UktlTWtqdk80NlpkbzUyX25fYi0xQXRXeExncTgxa1VHZw?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-16",
-          "period_end": "2026-10-22",
-          "selected_at": "2026-10-23T21:25:38.562266+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "NGX",
-          "company_url": "/app/companies?name=NGX",
-          "headline": "NGX fines 15 companies N123.17 million for late filings, experts seek tougher sanctions",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "NG",
-          "sector": null,
-          "announced": "2026-10-21",
-          "score": 57.42,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Nairametrics",
-              "title": "NGX fines 15 companies N123.17 million for late filings, experts seek tougher sanctions",
-              "url": "https://nairametrics.com/2026/10/21/ngx-fines-15-companies-n123-17-million-for-late-filings-experts-seek-tougher-sanctions/",
-              "date": "2026-10-21",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-16",
-          "period_end": "2026-10-22",
-          "selected_at": "2026-10-23T21:25:38.562266+00:00",
-          "selection_version": 4
-        }
-      ],
-      "runner_ups": [
-        {
-          "company": "Blocks",
-          "score": 52.47,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Full",
+          "country": "BW",
+          "sector": "mining",
+          "announced": "2026-10-20",
           "score": 47.14,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
           "reasons": [
             "Corporate signal: earnings surprise",
             "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Education",
-          "score": 50.71,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.80",
-            "2 distinct source-linked corporate event(s) found in the period"
-          ]
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Mining Weekly",
+              "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+              "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+              "date": "2026-10-20",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-16",
+          "period_end": "2026-10-22",
+          "selected_at": "2026-10-27T12:24:55.593587+00:00",
+          "selection_version": 5
         }
-      ]
+      ],
+      "runner_ups": []
     },
     {
-      "company": "Impact",
-      "company_url": "/app/companies?name=Impact",
-      "headline": "Fitch outlines impact of Indonesia downgrade by MSCI",
-      "deal_type": "credit_risk",
+      "company": "Sanlam",
+      "company_url": "/app/companies?name=Sanlam",
+      "headline": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+      "deal_type": "leadership_change",
       "amount_usd": null,
-      "country": "ZW",
+      "country": "KE",
       "sector": null,
-      "announced": "2026-10-23",
-      "score": 53.6,
+      "announced": "2026-10-22",
+      "score": 52.02,
       "independent_stories": 1,
       "transaction_records": 0,
       "related_events": 1,
       "reasons": [
-        "Corporate signal: credit risk",
-        "Event rule confidence: 0.92",
+        "Corporate signal: leadership change",
+        "Event rule confidence: 0.75",
         "1 distinct source-linked corporate event(s) found in the period",
         "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "IDNFinancials",
-          "title": "Fitch outlines impact of Indonesia downgrade by MSCI",
-          "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPM3hSa1VmREZ3dDZUMkJxbWRFclJacVB3bUo4UFFzT1F0cjhfcHBHR0gxam1GMHB3Q21DTFN1X0xhTU91NmtlcmMteXVsd2VadXY0ei02SzB2cG1LNms1ellDVmJ0azRFdlR1VzhER0R0dlNiWFlSX0ZDT3BuckFnX0ZIcjdnWXhKb2pMZUtHVWdGUTIxNlRRcA?oc=5",
-          "date": "2026-10-23",
+          "publisher": "Nairametrics",
+          "title": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+          "url": "https://nairametrics.com/2026/10/22/sanlam-allianz-kenya-appoints-jacqueline-karasha-as-ceo-from-november-1/",
+          "date": "2026-10-22",
           "kind": "corporate_event"
         }
       ],
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-17",
       "period_end": "2026-10-23",
-      "selected_at": "2026-10-24T20:50:15.896383+00:00",
-      "selection_version": 4,
+      "selected_at": "2026-10-27T12:25:06.181613+00:00",
+      "selection_version": 5,
       "companies": [
         {
-          "company": "Impact",
-          "company_url": "/app/companies?name=Impact",
-          "headline": "Fitch outlines impact of Indonesia downgrade by MSCI",
-          "deal_type": "credit_risk",
-          "amount_usd": null,
-          "country": "ZW",
-          "sector": null,
-          "announced": "2026-10-23",
-          "score": 53.6,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: credit risk",
-            "Event rule confidence: 0.92",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "IDNFinancials",
-              "title": "Fitch outlines impact of Indonesia downgrade by MSCI",
-              "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPM3hSa1VmREZ3dDZUMkJxbWRFclJacVB3bUo4UFFzT1F0cjhfcHBHR0gxam1GMHB3Q21DTFN1X0xhTU91NmtlcmMteXVsd2VadXY0ei02SzB2cG1LNms1ellDVmJ0azRFdlR1VzhER0R0dlNiWFlSX0ZDT3BuckFnX0ZIcjdnWXhKb2pMZUtHVWdGUTIxNlRRcA?oc=5",
-              "date": "2026-10-23",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-17",
-          "period_end": "2026-10-23",
-          "selected_at": "2026-10-24T20:50:15.896383+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Woman",
-          "company_url": "/app/companies?name=Woman",
-          "headline": "Zimbabwe woman fined US$300 for WhatsApp harassment",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "ZW",
-          "sector": null,
-          "announced": "2026-10-22",
-          "score": 57.47,
-          "independent_stories": 2,
-          "transaction_records": 0,
-          "related_events": 2,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "2 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Bulawayo24 News",
-              "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
-              "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFBTRUZvNUZwV2VRZGduWEhBNkltR3ZkcXk0bUlONmVJYWxJTXpnWnRWb2RsU3JtV01mbWVDUVlfbjBvTjd5eWZxaHVac3lzSVN4cTFqZFhXMkswUHNxNUhQQV9zZW80N1BMUm5vbkt1Mm10Zw?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Legit News",
-              "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
-              "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-17",
-          "period_end": "2026-10-23",
-          "selected_at": "2026-10-24T20:50:15.896383+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Data",
-          "company_url": "/app/companies?name=Data",
-          "headline": "Meta Hit With Record $25bn Fine Over Facebook Data Privacy Violations",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "GH",
-          "sector": null,
-          "announced": "2026-10-22",
-          "score": 52.47,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "News Ghana",
-              "title": "Meta Hit With Record $25bn Fine Over Facebook Data Privacy Violations",
-              "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQX184SS0wc18wNkVYbFVUeUJoZzZ5T3UwVlhCMUktU1F5MENmbDFjWmhuc3l1UHlMTHdESHZmazA1RHZxSTBwM1dOYWd1QWp5MjY4RERwNzhwazRPRHJETU13Qm10YlJpZjVHOXR5bjVUakw5QmFmZW9QaTVwREpzNF9rYmZ1bXJBbDgzcEswazJUQWtQUWVMeDZR?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-17",
-          "period_end": "2026-10-23",
-          "selected_at": "2026-10-24T20:50:15.896383+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Allianz",
-          "company_url": "/app/companies?name=Allianz",
+          "company": "Sanlam",
+          "company_url": "/app/companies?name=Sanlam",
           "headline": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
           "deal_type": "leadership_change",
           "amount_usd": null,
@@ -1522,98 +762,70 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-17",
           "period_end": "2026-10-23",
-          "selected_at": "2026-10-24T20:50:15.896383+00:00",
-          "selection_version": 4
+          "selected_at": "2026-10-27T12:25:06.181613+00:00",
+          "selection_version": 5
         },
         {
-          "company": "Banks",
-          "company_url": "/app/companies?name=Banks",
-          "headline": "Sudan Revokes Abu Dhabi Islamic Bank’s Licence and Orders Liquidation in Blow to UAE Financial Influence",
-          "deal_type": "distressed_asset",
+          "company": "De Beers",
+          "company_url": "/app/companies?name=De%20Beers",
+          "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+          "deal_type": "earnings_surprise",
           "amount_usd": null,
-          "country": "SD",
-          "sector": "banking",
-          "announced": "2026-10-22",
-          "score": 48.57,
+          "country": "BW",
+          "sector": "mining",
+          "announced": "2026-10-20",
+          "score": 45.71,
           "independent_stories": 1,
           "transaction_records": 0,
           "related_events": 1,
           "reasons": [
-            "Corporate signal: distressed asset",
+            "Corporate signal: earnings surprise",
             "Event rule confidence: 0.80",
             "1 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "دزاير تيوب",
-              "title": "Sudan Revokes Abu Dhabi Islamic Bank’s Licence and Orders Liquidation in Blow to UAE Financial Influence",
-              "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPbFFhQmZpVFdZTmZMQ3l4SzEya0dkWmhFb0I5b05SVVpobzhXUkFEVUhsb3ZMeWFJNHhVRnBTWGE5OWRnX0h0Y0lZSmQ5TGR4VFk1SkEyY0tQQl9FU29scE1Vbm03cHA3bnZ3MHRYR1VSWTNrdV8yQW5fcE90M1BQaVZVLThSamtMeng4VXBPWDlONWNDV2dzeXk1amRRcDRKb2lfRk05SGMtTGp6UktlTWtqdk80NlpkbzUyX25fYi0xQXRXeExncTgxa1VHZw?oc=5",
-              "date": "2026-10-22",
+              "publisher": "Mining Weekly",
+              "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+              "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+              "date": "2026-10-20",
               "kind": "corporate_event"
             }
           ],
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-17",
           "period_end": "2026-10-23",
-          "selected_at": "2026-10-24T20:50:15.896383+00:00",
-          "selection_version": 4
+          "selected_at": "2026-10-27T12:25:06.181613+00:00",
+          "selection_version": 5
         }
       ],
-      "runner_ups": [
-        {
-          "company": "NGX",
-          "score": 55.99,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Blocks",
-          "score": 51.04,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Full",
-          "score": 45.71,
-          "reasons": [
-            "Corporate signal: earnings surprise",
-            "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        }
-      ]
+      "runner_ups": []
     },
     {
-      "company": "Birr",
-      "company_url": "/app/companies?name=Birr",
-      "headline": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
-      "deal_type": "regulatory_action",
+      "company": "Geregu Power",
+      "company_url": "/app/companies?name=Geregu%20Power",
+      "headline": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+      "deal_type": "earnings_surprise",
       "amount_usd": null,
-      "country": "ET",
-      "sector": null,
+      "country": "NG",
+      "sector": "energy",
       "announced": "2026-10-24",
-      "score": 53.9,
+      "score": 52.55,
       "independent_stories": 1,
       "transaction_records": 0,
       "related_events": 1,
       "reasons": [
-        "Corporate signal: regulatory action",
-        "Event rule confidence: 0.93",
+        "Corporate signal: earnings surprise",
+        "Event rule confidence: 0.72",
         "1 distinct source-linked corporate event(s) found in the period",
         "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "Borkena",
-          "title": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
-          "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNaDJPUUFXUVNReHZpRnRkSlR3bGZ2UUREdk5JRFNWS2VOQ2p5RGtZTXNBNGtBWWZFdGc2Vm10ZXJqa3BYZ2hxb3RqZ0xOZTRHRFNXSGc1VnFyQWpLYnNhVFA4SjRpZEplNXlGUEpIdDhVNWRNb005ZWpScEZQN3g1RWNYSmhZU2lvQkU4dEEzREo?oc=5",
+          "publisher": "Nairametrics",
+          "title": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+          "url": "https://nairametrics.com/2026/10/24/geregu-power-signs-siemens-transformer-deal-after-sharp-revenue-decline/",
           "date": "2026-10-24",
           "kind": "corporate_event"
         }
@@ -1621,43 +833,9 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-18",
       "period_end": "2026-10-24",
-      "selected_at": "2026-10-25T20:51:42.908762+00:00",
-      "selection_version": 4,
+      "selected_at": "2026-10-27T12:25:16.200416+00:00",
+      "selection_version": 5,
       "companies": [
-        {
-          "company": "Birr",
-          "company_url": "/app/companies?name=Birr",
-          "headline": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "ET",
-          "sector": null,
-          "announced": "2026-10-24",
-          "score": 53.9,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Borkena",
-              "title": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
-              "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNaDJPUUFXUVNReHZpRnRkSlR3bGZ2UUREdk5JRFNWS2VOQ2p5RGtZTXNBNGtBWWZFdGc2Vm10ZXJqa3BYZ2hxb3RqZ0xOZTRHRFNXSGc1VnFyQWpLYnNhVFA4SjRpZEplNXlGUEpIdDhVNWRNb005ZWpScEZQN3g1RWNYSmhZU2lvQkU4dEEzREo?oc=5",
-              "date": "2026-10-24",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-18",
-          "period_end": "2026-10-24",
-          "selected_at": "2026-10-25T20:51:42.908762+00:00",
-          "selection_version": 4
-        },
         {
           "company": "Geregu Power",
           "company_url": "/app/companies?name=Geregu%20Power",
@@ -1689,285 +867,114 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-18",
           "period_end": "2026-10-24",
-          "selected_at": "2026-10-25T20:51:42.908762+00:00",
-          "selection_version": 4
+          "selected_at": "2026-10-27T12:25:16.200416+00:00",
+          "selection_version": 5
         },
         {
-          "company": "Impact",
-          "company_url": "/app/companies?name=Impact",
-          "headline": "Fitch outlines impact of Indonesia downgrade by MSCI",
-          "deal_type": "credit_risk",
+          "company": "Sanlam",
+          "company_url": "/app/companies?name=Sanlam",
+          "headline": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+          "deal_type": "leadership_change",
           "amount_usd": null,
-          "country": "ZW",
-          "sector": null,
-          "announced": "2026-10-23",
-          "score": 52.17,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: credit risk",
-            "Event rule confidence: 0.92",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "IDNFinancials",
-              "title": "Fitch outlines impact of Indonesia downgrade by MSCI",
-              "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPM3hSa1VmREZ3dDZUMkJxbWRFclJacVB3bUo4UFFzT1F0cjhfcHBHR0gxam1GMHB3Q21DTFN1X0xhTU91NmtlcmMteXVsd2VadXY0ei02SzB2cG1LNms1ellDVmJ0azRFdlR1VzhER0R0dlNiWFlSX0ZDT3BuckFnX0ZIcjdnWXhKb2pMZUtHVWdGUTIxNlRRcA?oc=5",
-              "date": "2026-10-23",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-18",
-          "period_end": "2026-10-24",
-          "selected_at": "2026-10-25T20:51:42.908762+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Woman",
-          "company_url": "/app/companies?name=Woman",
-          "headline": "Zimbabwe woman fined US$300 for WhatsApp harassment",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "ZW",
+          "country": "KE",
           "sector": null,
           "announced": "2026-10-22",
-          "score": 56.04,
-          "independent_stories": 2,
-          "transaction_records": 0,
-          "related_events": 2,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "2 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Bulawayo24 News",
-              "title": "Zimbabwe woman fined US$300 for WhatsApp harassment",
-              "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFBTRUZvNUZwV2VRZGduWEhBNkltR3ZkcXk0bUlONmVJYWxJTXpnWnRWb2RsU3JtV01mbWVDUVlfbjBvTjd5eWZxaHVac3lzSVN4cTFqZFhXMkswUHNxNUhQQV9zZW80N1BMUm5vbkt1Mm10Zw?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            },
-            {
-              "publisher": "Legit News",
-              "title": "\"Removed, Delete\": Nigeria’s Richest Woman Releases Statement after Allegation of EFCC Investigation",
-              "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSEdFODkzODVCLW5jZGFDVnFIWnhJNVlIUFUySFRNTk5vQlNMemh0eW9HT0hBNlZYUlpob1lZS3A3OTE5UjVpZTFHRm9pTVF3VE05QUhXLU15aWRNbklkZXZ5SXB0OVJIQ2Z4MkplQy1uN1pQWDZPak9ZRzVLaWhLdWlWMTJqX0lpdjNER1k3X2VOalEwNC1zQ1dPSmttUnlPNHVTV2puVjZSdnhCN0RTU05zZU5EbFdyU01VWQ?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-18",
-          "period_end": "2026-10-24",
-          "selected_at": "2026-10-25T20:51:42.908762+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Data",
-          "company_url": "/app/companies?name=Data",
-          "headline": "Meta Hit With Record $25bn Fine Over Facebook Data Privacy Violations",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "GH",
-          "sector": null,
-          "announced": "2026-10-22",
-          "score": 51.04,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "News Ghana",
-              "title": "Meta Hit With Record $25bn Fine Over Facebook Data Privacy Violations",
-              "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQX184SS0wc18wNkVYbFVUeUJoZzZ5T3UwVlhCMUktU1F5MENmbDFjWmhuc3l1UHlMTHdESHZmazA1RHZxSTBwM1dOYWd1QWp5MjY4RERwNzhwazRPRHJETU13Qm10YlJpZjVHOXR5bjVUakw5QmFmZW9QaTVwREpzNF9rYmZ1bXJBbDgzcEswazJUQWtQUWVMeDZR?oc=5",
-              "date": "2026-10-22",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-18",
-          "period_end": "2026-10-24",
-          "selected_at": "2026-10-25T20:51:42.908762+00:00",
-          "selection_version": 4
-        }
-      ],
-      "runner_ups": [
-        {
-          "company": "Allianz",
           "score": 50.59,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
           "reasons": [
             "Corporate signal: leadership change",
             "Event rule confidence: 0.75",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+              "url": "https://nairametrics.com/2026/10/22/sanlam-allianz-kenya-appoints-jacqueline-karasha-as-ceo-from-november-1/",
+              "date": "2026-10-22",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-18",
+          "period_end": "2026-10-24",
+          "selected_at": "2026-10-27T12:25:16.200416+00:00",
+          "selection_version": 5
         },
         {
-          "company": "Banks",
-          "score": 47.14,
+          "company": "De Beers",
+          "company_url": "/app/companies?name=De%20Beers",
+          "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "BW",
+          "sector": "mining",
+          "announced": "2026-10-20",
+          "score": 44.29,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
           "reasons": [
-            "Corporate signal: distressed asset",
+            "Corporate signal: earnings surprise",
             "Event rule confidence: 0.80",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "NGX",
-          "score": 54.56,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Mining Weekly",
+              "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+              "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+              "date": "2026-10-20",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-18",
+          "period_end": "2026-10-24",
+          "selected_at": "2026-10-27T12:25:16.200416+00:00",
+          "selection_version": 5
         }
-      ]
+      ],
+      "runner_ups": []
     },
     {
-      "company": "Team",
-      "company_url": "/app/companies?name=Team",
-      "headline": "Kano ACF chair resigns, three-member interim leadership team appointed",
-      "deal_type": "leadership_change",
+      "company": "Geregu Power",
+      "company_url": "/app/companies?name=Geregu%20Power",
+      "headline": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+      "deal_type": "earnings_surprise",
       "amount_usd": null,
       "country": "NG",
-      "sector": null,
-      "announced": "2026-10-25",
-      "score": 57.05,
+      "sector": "energy",
+      "announced": "2026-10-24",
+      "score": 51.12,
       "independent_stories": 1,
       "transaction_records": 0,
       "related_events": 1,
       "reasons": [
-        "Corporate signal: leadership change",
-        "Event rule confidence: 0.90",
+        "Corporate signal: earnings surprise",
+        "Event rule confidence: 0.72",
         "1 distinct source-linked corporate event(s) found in the period",
         "Selected from corporate-event monitoring, not the transaction headline feed"
       ],
       "sources": [
         {
-          "publisher": "Premium Times Nigeria",
-          "title": "Kano ACF chair resigns, three-member interim leadership team appointed",
-          "url": "https://www.premiumtimesng.com/news/more-news/920027-kano-acf-chair-resigns-three-member-interim-leadership-team-appointed.html",
-          "date": "2026-10-25",
+          "publisher": "Nairametrics",
+          "title": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+          "url": "https://nairametrics.com/2026/10/24/geregu-power-signs-siemens-transformer-deal-after-sharp-revenue-decline/",
+          "date": "2026-10-24",
           "kind": "corporate_event"
         }
       ],
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-19",
       "period_end": "2026-10-25",
-      "selected_at": "2026-10-26T22:40:28.702462+00:00",
-      "selection_version": 4,
+      "selected_at": "2026-10-27T12:25:25.693643+00:00",
+      "selection_version": 5,
       "companies": [
-        {
-          "company": "Team",
-          "company_url": "/app/companies?name=Team",
-          "headline": "Kano ACF chair resigns, three-member interim leadership team appointed",
-          "deal_type": "leadership_change",
-          "amount_usd": null,
-          "country": "NG",
-          "sector": null,
-          "announced": "2026-10-25",
-          "score": 57.05,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: leadership change",
-            "Event rule confidence: 0.90",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Premium Times Nigeria",
-              "title": "Kano ACF chair resigns, three-member interim leadership team appointed",
-              "url": "https://www.premiumtimesng.com/news/more-news/920027-kano-acf-chair-resigns-three-member-interim-leadership-team-appointed.html",
-              "date": "2026-10-25",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-19",
-          "period_end": "2026-10-25",
-          "selected_at": "2026-10-26T22:40:28.702462+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Stock Exchange",
-          "company_url": "/app/companies?name=Stock%20Exchange",
-          "headline": "TOR seeks state debt restructuring, eyes Ghana Stock Exchange listing",
-          "deal_type": "debt_restructuring",
-          "amount_usd": null,
-          "country": "GH",
-          "sector": null,
-          "announced": "2026-10-25",
-          "score": 52.4,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: debt restructuring",
-            "Event rule confidence: 0.88",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "News Ghana",
-              "title": "TOR seeks state debt restructuring, eyes Ghana Stock Exchange listing",
-              "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQajkzSTZRX3FudVdteHlqM251azQ2YWdLNC03dWs4Zk4tMzBZTEtNN3pWWmI0V2FNT0xjSlFTbU1nZnVyemF2TW5DZWU1dVdpa3BHQUFEVm5KTFQxVkVmVnZzeU04MGVOc0tkRVc2MDBJWGJVWE5odWNvVXNORVlpSjFYS1BHUW9scFVkQVU5d1RJV2tiMkpMWVN3?oc=5",
-              "date": "2026-10-25",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-19",
-          "period_end": "2026-10-25",
-          "selected_at": "2026-10-26T22:40:28.702462+00:00",
-          "selection_version": 4
-        },
-        {
-          "company": "Birr",
-          "company_url": "/app/companies?name=Birr",
-          "headline": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
-          "deal_type": "regulatory_action",
-          "amount_usd": null,
-          "country": "ET",
-          "sector": null,
-          "announced": "2026-10-24",
-          "score": 52.47,
-          "independent_stories": 1,
-          "transaction_records": 0,
-          "related_events": 1,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period",
-            "Selected from corporate-event monitoring, not the transaction headline feed"
-          ],
-          "sources": [
-            {
-              "publisher": "Borkena",
-              "title": "Ethiopian Police File Charges in 1B Birr Labor Ministry Fraud Case",
-              "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNaDJPUUFXUVNReHZpRnRkSlR3bGZ2UUREdk5JRFNWS2VOQ2p5RGtZTXNBNGtBWWZFdGc2Vm10ZXJqa3BYZ2hxb3RqZ0xOZTRHRFNXSGc1VnFyQWpLYnNhVFA4SjRpZEplNXlGUEpIdDhVNWRNb005ZWpScEZQN3g1RWNYSmhZU2lvQkU4dEEzREo?oc=5",
-              "date": "2026-10-24",
-              "kind": "corporate_event"
-            }
-          ],
-          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-          "period_start": "2026-10-19",
-          "period_end": "2026-10-25",
-          "selected_at": "2026-10-26T22:40:28.702462+00:00",
-          "selection_version": 4
-        },
         {
           "company": "Geregu Power",
           "company_url": "/app/companies?name=Geregu%20Power",
@@ -1999,73 +1006,218 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-19",
           "period_end": "2026-10-25",
-          "selected_at": "2026-10-26T22:40:28.702462+00:00",
-          "selection_version": 4
+          "selected_at": "2026-10-27T12:25:25.693643+00:00",
+          "selection_version": 5
         },
         {
-          "company": "Impact",
-          "company_url": "/app/companies?name=Impact",
-          "headline": "Fitch outlines impact of Indonesia downgrade by MSCI",
-          "deal_type": "credit_risk",
+          "company": "Sanlam",
+          "company_url": "/app/companies?name=Sanlam",
+          "headline": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+          "deal_type": "leadership_change",
           "amount_usd": null,
-          "country": "ZW",
+          "country": "KE",
           "sector": null,
-          "announced": "2026-10-23",
-          "score": 50.74,
+          "announced": "2026-10-22",
+          "score": 49.16,
           "independent_stories": 1,
           "transaction_records": 0,
           "related_events": 1,
           "reasons": [
-            "Corporate signal: credit risk",
-            "Event rule confidence: 0.92",
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
             "1 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "IDNFinancials",
-              "title": "Fitch outlines impact of Indonesia downgrade by MSCI",
-              "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPM3hSa1VmREZ3dDZUMkJxbWRFclJacVB3bUo4UFFzT1F0cjhfcHBHR0gxam1GMHB3Q21DTFN1X0xhTU91NmtlcmMteXVsd2VadXY0ei02SzB2cG1LNms1ellDVmJ0azRFdlR1VzhER0R0dlNiWFlSX0ZDT3BuckFnX0ZIcjdnWXhKb2pMZUtHVWdGUTIxNlRRcA?oc=5",
-              "date": "2026-10-23",
+              "publisher": "Nairametrics",
+              "title": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+              "url": "https://nairametrics.com/2026/10/22/sanlam-allianz-kenya-appoints-jacqueline-karasha-as-ceo-from-november-1/",
+              "date": "2026-10-22",
               "kind": "corporate_event"
             }
           ],
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-19",
           "period_end": "2026-10-25",
-          "selected_at": "2026-10-26T22:40:28.702462+00:00",
-          "selection_version": 4
+          "selected_at": "2026-10-27T12:25:25.693643+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "De Beers",
+          "company_url": "/app/companies?name=De%20Beers",
+          "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "BW",
+          "sector": "mining",
+          "announced": "2026-10-20",
+          "score": 42.86,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Mining Weekly",
+              "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+              "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+              "date": "2026-10-20",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-19",
+          "period_end": "2026-10-25",
+          "selected_at": "2026-10-27T12:25:25.693643+00:00",
+          "selection_version": 5
         }
       ],
-      "runner_ups": [
+      "runner_ups": []
+    },
+    {
+      "company": "Geregu Power",
+      "company_url": "/app/companies?name=Geregu%20Power",
+      "headline": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+      "deal_type": "earnings_surprise",
+      "amount_usd": null,
+      "country": "NG",
+      "sector": "energy",
+      "announced": "2026-10-24",
+      "score": 49.69,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: earnings surprise",
+        "Event rule confidence: 0.72",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
         {
-          "company": "Congo",
-          "score": 50.14,
+          "publisher": "Nairametrics",
+          "title": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+          "url": "https://nairametrics.com/2026/10/24/geregu-power-signs-siemens-transformer-deal-after-sharp-revenue-decline/",
+          "date": "2026-10-24",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-10-20",
+      "period_end": "2026-10-26",
+      "selected_at": "2026-10-27T12:25:35.467699+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "Geregu Power",
+          "company_url": "/app/companies?name=Geregu%20Power",
+          "headline": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "energy",
+          "announced": "2026-10-24",
+          "score": 49.69,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.72",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+              "url": "https://nairametrics.com/2026/10/24/geregu-power-signs-siemens-transformer-deal-after-sharp-revenue-decline/",
+              "date": "2026-10-24",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-20",
+          "period_end": "2026-10-26",
+          "selected_at": "2026-10-27T12:25:35.467699+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Sanlam",
+          "company_url": "/app/companies?name=Sanlam",
+          "headline": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": null,
+          "announced": "2026-10-22",
+          "score": 47.74,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
           "reasons": [
             "Corporate signal: leadership change",
-            "Event rule confidence: 0.90",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "Sanlam Allianz Kenya appoints Jacqueline Karasha as CEO from November 1",
+              "url": "https://nairametrics.com/2026/10/22/sanlam-allianz-kenya-appoints-jacqueline-karasha-as-ceo-from-november-1/",
+              "date": "2026-10-22",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-20",
+          "period_end": "2026-10-26",
+          "selected_at": "2026-10-27T12:25:35.467699+00:00",
+          "selection_version": 5
         },
         {
-          "company": "Woman",
-          "score": 54.61,
+          "company": "De Beers",
+          "company_url": "/app/companies?name=De%20Beers",
+          "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "BW",
+          "sector": "mining",
+          "announced": "2026-10-20",
+          "score": 41.43,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
           "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "2 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Data",
-          "score": 49.61,
-          "reasons": [
-            "Corporate signal: regulatory action",
-            "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Mining Weekly",
+              "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
+              "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
+              "date": "2026-10-20",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-20",
+          "period_end": "2026-10-26",
+          "selected_at": "2026-10-27T12:25:35.467699+00:00",
+          "selection_version": 5
         }
-      ]
+      ],
+      "runner_ups": []
     }
   ]
 }

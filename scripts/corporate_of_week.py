@@ -14,6 +14,10 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, quote
 from urllib.request import Request, urlopen
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from src.data.african_companies import AFRICAN_COMPANIES  # noqa: E402  (standard library only)
+from src.data.africa_countries import countries_in_text, regulator_acronyms  # noqa: E402
+
 DEFAULT_API = "https://deal-intelligence-api.vercel.app"
 DEFAULT_OUTPUT = Path("web/data/corporate-of-week.json")
 TYPE_WEIGHT = {
@@ -28,6 +32,27 @@ GENERIC_TARGETS = {
     "million", "millions", "billion", "billions", "president", "président", "presidente",
     "public", "first", "company limited", "private limited", "violators", "une", "bank", "fresh", "pay", "boost", "obuasi",
 }
+
+# Regulators, exchanges, development lenders and state bodies act on companies; they are not the
+# "corporate" of a corporate event ("NGX fines 15 companies" is about the companies, not NGX).
+INSTITUTIONS = re.compile(
+    r"(?i)^(?:" + "|".join(re.escape(a) for a in regulator_acronyms()) + r"|IFC|AfDB|World Bank|IMF|BII|"
+    r"Afreximbank|DFC|Proparco|FMO|EIB|EBRD|UN|UNICEF|WHO|police|ministry|government|court|senate|"
+    r"parliament|presidency|army|military)$")
+# Currencies are capitalised in headlines ("1B Birr") but are not companies.
+CURRENCIES = {"birr", "naira", "rand", "cedi", "cedis", "shilling", "shillings", "dirham", "kwacha", "franc",
+              "francs", "dinar", "pound", "dollar", "dollars", "euro", "euros", "leone", "dalasi"}
+# A story placed in a market outside Africa is out of scope unless it also names an African one.
+FOREIGN_MARKET = re.compile(
+    r"\b(?:U\.S\.|USA|American|UK|British|India|Indian|China|Chinese|Saudi|UAE|Dubai|Pakistan\w*|"
+    r"Australia\w*|Canad\w*|German\w*|Japan\w*|Korea\w*|Brazil\w*|Mexic\w*|Europe\w*|Philippin\w*|"
+    r"Malaysia\w*|Singapore\w*|Indonesia\w*|Vietnam\w*|Russia\w*|Turk\w*|Romania\w*|Wall Street|Nasdaq|NYSE)\b")
+SINGLE_WORD_MIN_APPEARANCES = 2     # a one-word name from one garbled record ("Kenya", "Team") is not a company
+_INSTITUTIONAL_NOUNS = {"stock exchange", "exchange", "central bank", "securities exchange", "state", "federal government",
+                        "national assembly", "supreme court", "high court", "treasury", "customs", "tax authority",
+                        "u s", "us", "usa", "uk", "u k", "eu", "uae"}
+_PLACE_WORDS = {"south", "north", "east", "west", "central", "southern", "northern", "eastern", "western",
+                "africa", "african", "sub", "saharan", "sahel", "maghreb"}
 
 # News stories dominated by transactions, politics, or sports are not corporate
 # operating signals for this section, even when a parser labels them as leadership.
@@ -79,13 +104,62 @@ def is_generic_company(value: str | None) -> bool:
 
 
 def matched_events(company: str, events: list[dict]) -> list[dict]:
-    key = normalise(company)
-    if len(key) < 3:
+    """Events whose headline names the company as written (case-sensitive): "leadership team" is not "Team"."""
+    if len(normalise(company)) < 3:
         return []
-    return [
-        event for event in events
-        if re.search(r"(?<![a-z0-9])" + re.escape(key) + r"(?![a-z0-9])", normalise(event.get("headline")))
-    ]
+    name = re.escape(company.strip())
+    if " " not in company.strip():
+        # A one-word name must lead the headline as its subject ("Fawry appoints ..."), optionally after a
+        # short "Topic:" prefix, not appear somewhere inside it.
+        pattern = re.compile(r"^(?:[^:]{0,40}:\s*)?" + name + r"(?:['’]s)?(?![\w-])")
+    else:
+        pattern = re.compile(r"(?<![\w-])" + name + r"(?:['’]s)?(?![\w-])")
+    plain = company.strip()
+    return [event for event in events
+            if plain in str(event.get("headline") or "") and pattern.search(str(event.get("headline") or ""))]
+
+
+def is_african_event(event: dict) -> bool:
+    headline = str(event.get("headline") or "")
+    if FOREIGN_MARKET.search(headline) and not (countries_in_text(headline) or re.search(r"(?i)\bafric", headline)):
+        return False
+    return True
+
+
+def company_universe(deals: list[dict], corpus: list[str]) -> dict[str, str]:
+    """Names that identify a company: deal parties and the curated African list, minus generic nouns,
+    institutions and currencies. A one-word "name" the corpus also writes in lowercase is a word."""
+    counts: dict[str, int] = {}
+    display: dict[str, str] = {}
+    for deal in deals:
+        # Targets only: the database places every deal in Africa by its target, while buyers are often
+        # foreign (Meta, Siemens), and their own news is not an African corporate event.
+        name = str(deal.get("target") or "").strip()
+        key = normalise(name)
+        if key:
+            counts[key] = counts.get(key, 0) + 1
+            display.setdefault(key, name)
+    curated = {normalise(name): name for name in AFRICAN_COMPANIES}
+    text = " ".join(corpus)
+    out = dict(curated)
+    for key, n in counts.items():
+        name = display[key]
+        if key in curated or is_generic_company(name) or INSTITUTIONS.match(name) or key in CURRENCIES \
+                or FOREIGN_MARKET.fullmatch(name.rstrip(".")) or key in _INSTITUTIONAL_NOUNS:
+            continue
+        words = key.split()
+        # Places are not companies: "Kenya", "South", "Congo", "East Africa".
+        if all(w in _PLACE_WORDS for w in words) or (countries_in_text(name) and all(
+                countries_in_text(w) or w in _PLACE_WORDS for w in name.split())):
+            continue
+        if len(words) == 1:
+            if n < SINGLE_WORD_MIN_APPEARANCES:
+                continue
+            # Any lowercase use in the corpus ("leadership team", "full-year", "a woman") marks a word.
+            if re.search(r"(?<![\w])" + re.escape(key) + r"(?![\w])", text):
+                continue
+        out[key] = name
+    return out
 
 
 _STOPWORDS = {"the", "a", "an", "and", "or", "to", "of", "for", "in", "on", "as", "by", "with", "its", "from", "after", "new"}
@@ -177,19 +251,18 @@ def _headline_overlap(left: str, right: str) -> bool:
 
 def select_company(deals: list[dict], events: list[dict], start: date, end: date) -> dict:
     """Select companies with notable non-transaction events, not another copy of the deal feed."""
-    company_names: dict[str, str] = {}
+    corpus = [str(d.get("headline") or "") for d in deals] + [str(e.get("headline") or "") for e in events]
+    company_names = company_universe(deals, corpus)
     company_deals: dict[str, list[dict]] = {}
     for deal in deals:
-        company = str(deal.get("target") or "").strip()
-        key = normalise(company)
-        if is_generic_company(company):
-            continue
-        company_names.setdefault(key, company)
-        company_deals.setdefault(key, []).append(deal)
+        key = normalise(deal.get("target"))
+        if key in company_names:
+            company_deals.setdefault(key, []).append(deal)
 
     period_events = [
         event for event in events
         if within_period(event.get("day"), start, end)
+        and is_african_event(event)
         and str(event.get("signal_type") or "").casefold() not in {"ma_activity", "m_and_a_activity", "m&a", "merger", "acquisition"}
         and event.get("url")
         and not NON_CORPORATE_HEADLINE.search(str(event.get("headline") or ""))
@@ -302,7 +375,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
             "period_start": start.isoformat(),
             "period_end": end.isoformat(),
             "selected_at": selected_at,
-            "selection_version": 4,
+            "selection_version": 5,
         }
         for row in unique_ranked[:5]
     ]
@@ -313,7 +386,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
         "period_start": start.isoformat(),
         "period_end": end.isoformat(),
         "selected_at": selected_at,
-        "selection_version": 4,
+        "selection_version": 5,
         "runner_ups": [
             {"company": row["company"], "score": row["score"], "reasons": row["reasons"][:3]}
             for row in unique_ranked[5:8]
