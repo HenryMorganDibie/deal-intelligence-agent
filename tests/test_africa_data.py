@@ -2253,3 +2253,9 @@ def test_round_extraction_fixes_from_other_coverage_review():
     for text, target, lead, participants in cases:
         r = extract(text, target, 2026)
         assert (r["lead"], r["participants"]) == (lead, participants), (target, r)
+
+
+def test_a_long_lead_list_is_not_claimed_as_leads():
+    from src.engines.round_parties import extract
+    r = extract("The round was led by LocalGlobe, Enza Capital, Logos Ventures, FirstCheck Africa and Speedinvest.", "Jumba", 2026)
+    assert r["lead"] == [] and r["participants"][:2] == ["LocalGlobe", "Enza Capital"]

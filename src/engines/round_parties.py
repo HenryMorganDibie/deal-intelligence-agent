@@ -61,6 +61,7 @@ _NOT_A_NAME = {"however", "also", "meanwhile", "additionally", "moreover", "this
                "new", "other", "others", "several", "various", "local", "global", "international", "angel", "angels",
                "ceo", "founder", "founders", "co-founder", "management", "the company", "the startup", "both"}
 MAX_NAMES_PER_SENTENCE = 10
+MAX_LEADS = 3
 # Lowercase role words, or a capitalised title after another word ("Mono CEOs X"); a capitalised first word is
 # part of a name ("Founders Factory Africa").
 _PERSON_OR_ROLE = re.compile(
@@ -190,6 +191,9 @@ def extract(text: str, target: str, deal_year: Optional[int] = None, strict: boo
                 participants.append(name)
             if not any(e["name"] == name for e in evidence):
                 evidence.append({"name": name, "role": role, "sentence": sentence[:400]})
+    if len(lead) > MAX_LEADS:                           # a list this long was misread as the lead; no lead is claimed
+        participants, lead = lead + participants, []
+        evidence = [{**e, "role": "participant"} for e in evidence]
     participants = [p for p in participants if p not in lead]
     return {"lead": lead, "participants": participants, "round": stage, "evidence": evidence}
 
