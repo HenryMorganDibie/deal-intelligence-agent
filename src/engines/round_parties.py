@@ -29,7 +29,7 @@ _BROWSER = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (K
 # Where a list of names ends: punctuation, or a word that starts another clause.
 _LIST_END = (r"(?=[.;:!?()\[\]]|,?\s+(?:to|in|at|for|which|who|that|as|bringing|taking|valuing|according|"
              r"after|while|following|this|its|their|with|alongside|joined|backed|plus)\b|$)")
-_NAMES = r"(?P<names>[A-Z0-9][^.;:!?]{1,240}?)"
+_NAMES = r"(?:the\s+)?(?P<names>[A-Z0-9][^.;:!?]{1,240}?)"
 # "a manufacturer led by its founder" names management, not a round's lead investor.
 _LEAD = [re.compile(r"(?<!manufacturer )(?<!company )(?<!firm )(?<!startup )(?<!business )(?<!platform )(?<!group )"
                     r"(?<!operator )(?<!developer )(?<!maker )(?<!producer )(?<!provider )(?<!team )(?<!bank )"
@@ -52,14 +52,20 @@ _OTHER_ROUND = re.compile(r"(?i)\b(previously|previous|earlier|prior|past|last\s
                           r"portfolio\s+includes?|follows?\s+an?\b|following\s+an?\b|comes?\s+(?:\S+\s+){0,4}after|"
                           r"after\s+(?:raising|securing|closing)|in\s+which|its\s+seed\s+round|first\s+round)\b")
 _STAGE = re.compile(r"(?i)\b(pre-seed|seed|pre-series\s+[a-f]|series\s+[a-f]|bridge|growth|extension)(?:\s+(?:round|funding|extension))?\b")
-_NOT_A_NAME = {"the", "a", "an", "its", "their", "series", "seed", "round", "funding", "investors", "investor", "existing",
+_NOT_A_NAME = {"however", "also", "meanwhile", "additionally", "moreover", "this", "these", "it", "they", "we",
+               "the", "a", "an", "its", "their", "series", "seed", "round", "funding", "investors", "investor", "existing",
                "new", "other", "others", "several", "various", "local", "global", "international", "angel", "angels",
                "ceo", "founder", "founders", "co-founder", "management", "the company", "the startup", "both"}
 MAX_NAMES_PER_SENTENCE = 10
+# Lowercase role words, or a capitalised title after another word ("Mono CEOs X"); a capitalised first word is
+# part of a name ("Founders Factory Africa").
 _PERSON_OR_ROLE = re.compile(
-    r"^.*?\b(?:angel\s+investors?|investors?|backers?|actors?|actress(?:es)?|musicians?|footballers?|founders?|"
-    r"co-founders?|CEOs?|chief\s+executives?|executives?|entrepreneurs?|including|such\s+as|like)\s+(?=[A-Z0-9])",
-    re.IGNORECASE)
+    r"^(?:.*?\b(?:angel\s+investors?|investors?|backers?|actors?|actress(?:es)?|musicians?|footballers?|founders?|"
+    r"co-founders?|chief\s+executives?|executives?|entrepreneurs?|including|such\s+as|like)|\S+.*?\b(?:CEOs?|CTOs?|"
+    r"COOs?|CFOs?|Founders?|Co-founders?))\s+(?=[A-Z0-9])")
+_ORG_WORD = re.compile(r"(?i)\b(?:bank|fund|capital|ventures?|partners|group|holdings?|investments?|corporation|"
+                       r"company|foundation|trust|authority|agency|council|ministry|institute|association)\b")
+_ROLE_ONLY = re.compile(r"(?i)\b(?:CEO|CTO|COO|CFO|founder|co-founder|chairman|chairperson|director|partner)s?$")
 
 
 def resolve_google_news(url: str, client: httpx.Client) -> Optional[str]:
@@ -96,13 +102,20 @@ def _names(fragment: str, target: str) -> list[str]:
     target_key = inv.normalise_name(target or "")
     out = []
     for part in re.split(r",\s*(?:and\s+)?|\s+and\s+|\s+as\s+well\s+as\s+", fragment):
-        part = re.sub(r"^(?:existing\s+|new\s+|returning\s+)?(?:investors?\s+|backers?\s+)?", "", part.strip(), flags=re.I)
+        part = re.sub(r"^(?:the\s+)?(?:existing\s+|new\s+|returning\s+)?(?:investors?\s+|backers?\s+)?", "", part.strip(), flags=re.I)
         # Descriptions before a name: "Angel investors X", "Hollywood actor X", "Silicon Valley investors including X",
         # "Mono CEOs X", "California-based X".
         part = _PERSON_OR_ROLE.sub("", part)
         part = re.sub(r"^[A-Z][\w.]*(?:\s+[A-Z][\w.]*)?-based\s+", "", part)
         part = re.sub(r"\s*\([^)]*\)$", "", part).strip(" '\"’”")
+        # "Jeff Bezos' Bezos Expeditions" is the fund; "Ken Njoroge of PANI" is the person, not the company he runs.
+        part = re.sub(r"^[A-Z][\w.-]*(?:\s+[A-Z][\w.-]*){0,2}(?:'s|’s|'|’)\s+(?=[A-Z])", "", part)
+        person_of = re.match(r"^([A-Z][a-z]+\s+[A-Z][a-z]+)\s+of\s+[A-Z]", part)
+        if person_of and not _ORG_WORD.search(person_of.group(1)):
+            part = person_of.group(1)
         if not part or not (part[0].isupper() or part[0].isdigit()) or len(part.split()) > 6 or part.lower() in _NOT_A_NAME:
+            continue
+        if _ROLE_ONLY.search(part):                     # "Cowrywise CTO" is a job, not an investor's name
             continue
         # A name has at most one lowercase connector word ("Bank of Industry"); more is a clause
         # ("Kasapreko's impressive financial performance").

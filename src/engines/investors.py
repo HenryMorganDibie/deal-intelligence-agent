@@ -259,7 +259,8 @@ def canonical(name: Optional[str]) -> Optional[str]:
     words = name.strip().split()
     for k in (1, 2):
         tail = normalise_name(" ".join(words[-k:])) if len(words) > k else ""
-        if tail in _ALIAS and len(tail) >= 4:
+        # A common word at the end of a name is not a registry name ("Grazia Equity" is not Equity Bank).
+        if tail in _ALIAS and len(tail) >= 4 and tail not in _COMMON_WORDS:
             return _ALIAS[tail].name
     # A description before a name: "Billionaire Joe Lonsdale", "South African PE Firm Harith".
     described = _DESCRIPTOR.match(name.strip())

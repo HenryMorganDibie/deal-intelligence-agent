@@ -2122,3 +2122,32 @@ def test_round_extraction_strips_descriptions_and_skips_clauses_and_prior_rounds
                  "also participated."]:
         found = extract(text, "Acme", 2026)
         assert not found["lead"] and not found["participants"], text
+
+
+def test_round_parties_name_edge_cases():
+    from src.engines import investors as inv
+    from src.engines.round_parties import extract
+    assert inv.split_names("Grazia Equity") == ["Grazia Equity"]
+    cases = [
+        ("This funding round was led by some notable investors including Resolute Ventures, Social Capital, "
+         "Founders Factory Africa, etc.", "Asaak", "Founders Factory Africa", None),
+        ("The round saw participation from Sahil Lavingia, Cowrywise CTO Edward Popoola and others.",
+         "Cowrywise", "Edward Popoola", "Cowrywise CTO"),
+        ("The round saw participation from Ken Njoroge of PANI and Jackson Kibigo of Workpay.",
+         "Asaak", "Ken Njoroge", "Ken Njoroge of PANI"),
+        ("The round was led by Jeff Bezos' Bezos Expeditions with participation from the Development Bank "
+         "of Southern Africa.", "Terra", "Development Bank of Southern Africa", "Jeff Bezos"),
+        ("However, many female-targeted funds have launched and one of such participated in this round.",
+         "Jetstream", None, "However"),
+    ]
+    for text, target, present, absent in cases:
+        r = extract(text, target, 2026)
+        names = r["lead"] + r["participants"]
+        if present:
+            assert present in names, (text, names)
+        if absent:
+            assert absent not in names, (text, names)
+    r = extract("The $8 million seed round was led by Grazia Equity (Germany) and BACKED VC (London).", "Affinity", 2026)
+    assert r["lead"][0] == "Grazia Equity"
+    r = extract("The round was led by Jeff Bezos' Bezos Expeditions.", "Terra", 2026)
+    assert r["lead"] == ["Bezos Expeditions"]
