@@ -1327,6 +1327,10 @@ def _same_transaction_name(a: dict, b: dict) -> bool:
     if same_buyer and kenya_pipeline_report(a) and kenya_pipeline_report(b):
         return True
 
+    # Two distinctive targets with no word in common are two companies ("Life Molecular Imaging" and
+    # "SG Fleet Group"), however alike the headlines' verbs.
+    if not (ta <= _GENERIC_ASSET_WORDS or tb <= _GENERIC_ASSET_WORDS):
+        return False
     # Extraction can choose different target fragments from equivalent headlines.
     # Fall back to strong headline overlap; the caller still enforces compatible deal
     # types, date proximity, and amount agreement before accepting a duplicate.
@@ -1371,6 +1375,54 @@ def _same_transaction_type(a: dict, b: dict) -> bool:
     return bool(evidence.search(a.get("headline") or "") and evidence.search(b.get("headline") or ""))
 
 
+# Words that mark a stage in one deal's life: agreed, approved or blocked by a regulator, completed.
+_LIFECYCLE = re.compile(r"(?i)\b(complet\w*|conclud\w*|closes?|closed|finali[sz]\w*|approv\w*|clears?|cleared|consent\w*|halts?|"
+                        r"halted|blocks?|blocked|rejects?|terminat\w*|signs?|signed|agreement|to\s+(?:sell|buy|acquire|exit|divest)|"
+                        r"secures?\s+(?:new\s+)?deal|takes?\s+over|exit\w*)\b")
+LIFECYCLE_WINDOW_DAYS = 400
+_FOLLOW_ON = re.compile(r"(?i)\b(raises?|increases?|ups|tops?\s+up|extra|additional|further|remaining|rest\s+of|balance\s+of)\b"
+                        r".{0,30}\bstake\b|\bstake\s+to\s+\d|\bdata\b")
+_GENERIC_ASSET_WORDS = {"agreements", "agreement", "assets", "asset", "stake", "stakes", "portfolio", "business", "operations",
+                        "unit", "majority", "minority", "controlling", "shares", "interest", "subsidiary", "subsidiaries",
+                        "in", "of", "the", "a"}
+
+
+def _lifecycle_match(a: dict, b: dict, gap: int) -> bool:
+    """An announcement, a regulator's decision and the completion of one deal are reported months apart:
+    "TotalEnergies to exit 10% of Renaissance JV" (January) and "TotalEnergies sells 10% stake in Renaissance
+    oil licences for $800 million" (October). They are one transaction when the asset matches, a party
+    matches, a report marks a stage, and no disclosed term (stake, amount) disagrees."""
+    if gap > LIFECYCLE_WINDOW_DAYS or not ({a.get("deal_type"), b.get("deal_type")} <= {"acquisition", "merger", "exit"}):
+        return False
+    ha, hb = a.get("headline") or "", b.get("headline") or ""
+    if not (_LIFECYCLE.search(ha) or _LIFECYCLE.search(hb)):
+        return False
+    # Buying more ("raises stake to 49%", "buys remaining stake") is a later transaction, not a stage of this one.
+    if bool(_FOLLOW_ON.search(ha)) != bool(_FOLLOW_ON.search(hb)):
+        return False
+    ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
+    if not (ta and tb and (ta <= tb or tb <= ta)) or ta <= _GENERIC_ASSET_WORDS or tb <= _GENERIC_ASSET_WORDS:
+        return False                                    # "majority stake" or "agreement" names no asset
+
+    def same(field: str) -> bool:
+        x, y = _name_tokens(a.get(field)), _name_tokens(b.get(field))
+        return bool(x and y and (x <= y or y <= x))
+
+    def conflicts(field: str, tolerance: float) -> bool:
+        x, y = a.get(field), b.get(field)
+        return bool(x and y and abs(float(x) - float(y)) > tolerance * max(float(x), float(y)))
+
+    if not (same("seller") or same("buyer")) or conflicts("stake_pct", 0.0) or conflicts("amount_usd", 0.2):
+        return False
+    if a.get("currency") and a.get("currency") == b.get("currency") and conflicts("amount", 0.2):
+        return False                                    # N6.95bn and N16.35bn are different deals
+    # A named counterparty on both sides that differs is a different deal (Chappal in 2024, Vaaris in 2026).
+    for field in ("buyer", "seller"):
+        if a.get(field) and b.get(field) and not same(field):
+            return False
+    return True
+
+
 def same_transaction(a: dict, b: dict) -> bool:
     """Conservative duplicate test: compatible type, close dates, and matching transaction identity."""
     try:
@@ -1384,6 +1436,8 @@ def same_transaction(a: dict, b: dict) -> bool:
 
     if not _same_transaction_name(a, b):
         return False
+    if a.get("stake_pct") and b.get("stake_pct") and float(a["stake_pct"]) != float(b["stake_pct"]):
+        return False                                    # 43% and 73.29% stakes are different deals
     # The same buyer and seller can do separate deals in different markets (Access Bank buying Standard
     # Chartered's Gambia and Tanzania units): reports placed in disjoint countries are different deals.
     ca, cb = set(a.get("countries") or [a.get("country")]) - {None}, set(b.get("countries") or [b.get("country")]) - {None}
@@ -1404,6 +1458,9 @@ def same_transaction(a: dict, b: dict) -> bool:
         ba, bb = _name_tokens(a.get("buyer")), _name_tokens(b.get("buyer"))
         if ta and tb and ba and bb and (ta <= tb or tb <= ta) and (ba <= bb or bb <= ba):
             return True
+
+    if _lifecycle_match(a, b, gap):
+        return True
 
     ua, ub = a.get("amount_usd"), b.get("amount_usd")
     if not ua or not ub:

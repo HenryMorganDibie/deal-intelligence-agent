@@ -2351,3 +2351,37 @@ def test_corporate_of_week_considers_listed_and_self_named_companies():
     from datetime import date
     picked = cw.select_company([], events, date(2026, 10, 20), date(2026, 10, 26))
     assert {c["company"] for c in picked["companies"]} == {"Intels", "Kakuzi"}
+
+
+def test_a_deals_announcement_approval_and_completion_are_one_transaction():
+    from src.engines.deals import same_transaction as same
+
+    def d(headline, announced, **kw):
+        return {"headline": headline, "announced": announced, "deal_type": kw.pop("deal_type", "exit"),
+                "country": "NG", "countries": ["NG"], **kw}
+    jan = d("TotalEnergies to Exit 10% Stake in Nigeria's Renaissance JV in Asset Sale", "2026-01-14",
+            target="Renaissance JV", seller="TotalEnergies", buyer="Vaaris", stake_pct=10)
+    oct_ = d("TotalEnergies sells 10% stake in Renaissance oil licences for $800 million", "2026-10-27",
+             target="Renaissance", seller="TotalEnergies", stake_pct=10, amount_usd=8e8)
+    assert same(jan, oct_)
+    # Same asset, a different buyer two years apart: the earlier, failed sale is a different deal.
+    chappal = d("Chappal to purchase TotalEnergies' Renaissance JV stake", "2025-03-01", target="Renaissance JV",
+                seller="TotalEnergies", buyer="Chappal", stake_pct=10)
+    assert not same(chappal, jan)
+    # Buying more later is a new transaction.
+    a = d("Natco Pharma To Acquire 36% Stake In South Africa's Adcock Ingram", "2025-01-10", deal_type="acquisition",
+          target="Adcock Ingram", buyer="Natco Pharma", country="ZA", countries=["ZA"])
+    b = d("Natco Pharma raises stake in South Africa's Adcock Ingram to 49%", "2025-11-01", deal_type="acquisition",
+          target="Adcock Ingram", buyer="Natco Pharma", country="ZA", countries=["ZA"])
+    assert not same(a, b)
+    # Distinct targets are distinct deals, however alike the headlines.
+    x = d("Life Healthcare to sell stake in Life Molecular Imaging", "2025-01-13", target="Life Molecular Imaging",
+          seller="Life Healthcare", amount_usd=4.0e8, country="ZA", countries=["ZA"])
+    y = d("Super Group to sell SG Fleet Group for $423m", "2024-12-13", target="SG Fleet Group", seller="Super Group",
+          amount_usd=4.23e8, country="ZA", countries=["ZA"])
+    assert not same(x, y)
+    u1 = d("UAC Nigeria Enters Agreement to Sell 43% Stake in DP World Logistics", "2026-09-26", target="DP World Logistics",
+           stake_pct=43.0)
+    u2 = d("UAC Of Nigeria Enters Deal To Sell 73.29% Stake In Livestock Feeds", "2026-09-30", target="Livestock Feeds",
+           stake_pct=73.29)
+    assert not same(u1, u2)
