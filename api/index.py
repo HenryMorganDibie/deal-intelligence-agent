@@ -123,7 +123,17 @@ def _client_hash(request: Request) -> str:
 
 
 async def _rpc(client: httpx.AsyncClient, fn: str, args: dict) -> httpx.Response:
-    return await client.post(f"{SUPABASE_URL}/rest/v1/rpc/{fn}", headers=_headers(), json=args)
+    """Call a Supabase function. A failed connection is retried: the request never reached the
+    database, so a retry cannot apply it twice. Anything after the request was sent is not retried."""
+    import asyncio
+    for attempt in range(3):
+        try:
+            return await client.post(f"{SUPABASE_URL}/rest/v1/rpc/{fn}", headers=_headers(), json=args)
+        except (httpx.ConnectError, httpx.ConnectTimeout):
+            if attempt == 2:
+                raise
+            await asyncio.sleep(0.5 * 2 ** attempt)
+    raise AssertionError("unreachable")
 
 
 @app.get("/api/health")
@@ -253,15 +263,19 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
         raise HTTPException(502, "The analysis failed. The data sources may be unavailable; try again in a minute.")
 
     brief_json = json.loads(brief.model_dump_json())
-    async with httpx.AsyncClient(timeout=15) as client:
-        resp = await _rpc(client, "finish_run", {
-            "secret": API_SECRET, "p_run_id": run_id,
-            "p_company": brief.company_name, "p_ticker": body.ticker,
-            "p_severity": brief_json.get("overall_severity"),
-            "p_signal_count": len(brief.detected_signals),
-            "p_llm_used": "LLM unavailable" not in (brief_json.get("analyst_model") or ""),
-            "p_brief": brief_json, "p_markdown": brief_to_markdown(brief),
-        })
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await _rpc(client, "finish_run", {
+                "secret": API_SECRET, "p_run_id": run_id,
+                "p_company": brief.company_name, "p_ticker": body.ticker,
+                "p_severity": brief_json.get("overall_severity"),
+                "p_signal_count": len(brief.detected_signals),
+                "p_llm_used": "LLM unavailable" not in (brief_json.get("analyst_model") or ""),
+                "p_brief": brief_json, "p_markdown": brief_to_markdown(brief),
+            })
+    except httpx.HTTPError as e:
+        log.error("finish_run unreachable for %r: %r", body.company, e)
+        raise HTTPException(502, "The brief was generated but could not be saved. Please run it again.")
     if resp.status_code != 200:
         log.error("finish_run failed: %s %s", resp.status_code, resp.text[:300])
         raise HTTPException(502, "The brief was generated but could not be saved.")

@@ -895,6 +895,33 @@ class TestSignalParsing:
         assert signals[0].filing_references == ["filing-secondary", "filing-primary"]
         assert state.errors
 
+    def test_several_candidates_of_one_type_each_keep_their_own_evidence_and_scores(self):
+        """Two M&A events (a merger and a merger-control filing) stay two signals, each with its own
+        evidence and corroboration; the weaker one must not overwrite the stronger."""
+        from src.agents.signal_agent import _parse_explanations
+        from src.engines.alpha_scorer import candidate_for
+        from src.engines.calibration import calibrate_all
+        state = AgentState(request=AnalysisRequest(company_name="MTN Group"))
+        strong = SignalCandidate(signal_type=SignalType.MA_ACTIVITY, event_subtype="merger", matched_patterns=["m"],
+                                 source_text="MTN advances 6.2bn tower deal after IHS investors approval",
+                                 source_type="news", source_name="Leadership", raw_score=0.4, corroboration_count=10)
+        weak = SignalCandidate(signal_type=SignalType.MA_ACTIVITY, event_subtype="unspecified", matched_patterns=["m"],
+                               source_text="MTN merger in telecom deal", source_type="news",
+                               source_name="Blog", raw_score=0.22, corroboration_count=1)
+        state.signal_candidates = [strong, weak]
+        calibrated = calibrate_all(state.signal_candidates)
+        both = json.dumps([{"signal_type": "m_and_a_activity", "event_subtype": "merger", "evidence": ["6.2bn tower deal"]},
+                           {"signal_type": "m_and_a_activity", "event_subtype": "unspecified", "evidence": ["telecom deal"]}])
+        signals = _parse_explanations(both, state.signal_candidates, calibrated, state)
+        assert [(s.event_subtype, s.corroboration_count, s.evidence) for s in signals] == [
+            ("merger", 10, ["6.2bn tower deal"]), ("unspecified", 1, ["telecom deal"])]
+        assert candidate_for(signals[0], state.signal_candidates) is strong
+        assert candidate_for(signals[1], state.signal_candidates) is weak
+        # Without subtypes, replies are matched to the unexplained candidates in order.
+        bare = json.dumps([{"signal_type": "m_and_a_activity"}, {"signal_type": "m_and_a_activity"}])
+        signals = _parse_explanations(bare, state.signal_candidates, calibrated, state)
+        assert [s.corroboration_count for s in signals] == [10, 1]
+
     def test_llm_cannot_invent_signal_not_in_candidates(self):
         from src.agents.signal_agent import _parse_explanations
         from src.engines.calibration import calibrate_all

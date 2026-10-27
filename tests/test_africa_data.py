@@ -1895,3 +1895,31 @@ def test_sens_log_parses_feed_appends_new_only_and_confirms_completed_events(tmp
     assert sl.events_for("Anglo American", "AGL.JO", entries=held) == []      # cautionary: talks, not the event
     assert sl.classify_headline("Directorate Change") == {"leadership_change"}
     assert sl.classify_headline("Dealings in Securities by a Director") == set()
+
+
+def test_research_reports_absent_investor_kind_and_ranks_superlatives_by_size():
+    deals = [_deal("Nigeria’s Daya raises $2.4m for stablecoin payments", published="2026-06-24"),
+             _deal("Nigerian Fintech Stabyl Raises $2.7M to Solve FX Liquidity", published="2026-06-14"),
+             _deal("Nigerian fintech Cardtonic secures $0.5m seed", published="2026-08-01")]
+    _, evidence = rs.retrieve("Which private equity firms invested in Nigerian fintech this year?", deals,
+                              live_news=False, today=date(2026, 10, 27))
+    # No registered PE investor is itself the answer; the matching deals are still the evidence.
+    assert "None of the 3 deals in scope involves an investor registered as private equity" in evidence[0]["text"]
+    assert sum(item["kind"] == "deal" for item in evidence) == 3
+    _, evidence = rs.retrieve("Biggest Nigerian fintech deals this year", deals, live_news=False,
+                              today=date(2026, 10, 27))
+    assert [item["title"] for item in evidence if item["kind"] == "deal"][0].startswith("Nigerian Fintech Stabyl")
+    assert "Largest disclosed: Nigerian Fintech Stabyl" in evidence[0]["text"]
+
+
+def test_deal_extractor_rejects_non_transactions_and_reads_bank_backing_as_lending():
+    for title in ["NLC Announces Compulsory Land Acquisition In Two Counties For Major Road Projects in Kenya",
+                  "Watford Snap Up Zimbabwe International Jordan Zemura From Udinese",
+                  "Kenyan CEO In Court For Forging Signature To Secure $150k Loan",
+                  "Nigeria's McDowell’s Acquires New Name, Mr. Dowell’s"]:
+        assert dl.extract_deal(title, published="2026-10-20") is None, title
+    loan = dl.extract_deal("SBM Bank Kenya Backs Beyond Continents Logistics With $4.44Mn for Fleet", published="2026-10-20")
+    assert loan["deal_type"] == "debt_financing" and loan["buyer"] == "SBM Bank Kenya"
+    # A bank that invests (an equity stake) is still equity.
+    stake = dl.extract_deal("Siinqee Bank Invests ETB 50 Million in Ethiopia’s Stock Exchange", published="2026-10-20")
+    assert stake["deal_type"] == "equity_funding"

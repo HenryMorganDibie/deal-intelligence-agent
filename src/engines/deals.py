@@ -408,6 +408,10 @@ _NOT_A_DEAL = re.compile(r"\b(black\s+stars|super\s+eagles|super\s+falcons|bafan
                          r"questions?|prices?|tariffs?|rates?|fears?|hopes?|the\s+bar|bursary|igr|revenue\s+target))\b"
                          r"|\braise[sd]?\s+(?:\S+\s+){0,3}(cap|ceiling|limit|investment|capital|budget|allocation|target|commitment)\s+to\b",
                          re.IGNORECASE)
+# State expropriation, court cases, renamings and football transfers use deal verbs but are not deals.
+_NON_TRANSACTION = re.compile(
+    r"(?i)\bcompulsory\s+(?:land\s+)?acquisition|\bin\s+court\b|\bby\s+mistake\b|\bacquires?\s+(?:a\s+)?new\s+name\b"
+    r"|\bsnap(?:s|ped)?\s+up\b.{0,60}\bfrom\b|\bsigns?\s+(?:striker|midfielder|defender|goalkeeper|winger)\b")
 _SOVEREIGN = re.compile(
     r"(?i)^(?:the\s+)?(?:China|Chinese\s+government|Beijing|Saudi\s+Arabia|Saudi|Riyadh|Qatar|UAE|United\s+Arab\s+Emirates|"
     r"Kuwait|Japan|India|Turkey|Türkiye|Russia|United\s+States|U\.?S\.?|USA|America|UK|U\.K\.|Britain|United\s+Kingdom|France|"
@@ -588,7 +592,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         title,
     ):
         return None
-    if _NOT_A_DEAL.search(title):
+    if _NOT_A_DEAL.search(title) or _NON_TRANSACTION.search(title):
         return None
     if title.rstrip().endswith("?") or re.match(r"(?i)(why|how|what|should|could|can|will|is|are|does|do|opinion|analysis|explainer)\b", title):
         return None
@@ -670,6 +674,12 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         if m.groupdict().get("obj"):           # "Investor backs Company"
             buyer, target = subj, obj
             investors = [subj] if subj else []
+            # A commercial bank backing a company is lending unless the headline says equity.
+            if subj and re.search(r"(?i)\b(?:bank|banque)\b", subj) and re.search(
+                    r"(?i)\b(?:backs|backed|funds|funded|finances|financed|supports|supported)\b", m.group(0)) \
+                    and not _ROUND.search(title) and not re.search(
+                    r"(?i)\b(?:equity|stake|shares?|shareholding|seed|series)\b", title):
+                deal_type = "debt_financing"
         else:                                    # "Company raises $X"
             target = subj
     elif deal_type == "debt_financing":

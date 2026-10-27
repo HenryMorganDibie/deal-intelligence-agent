@@ -23,6 +23,7 @@ Architecture (Phase 2 — Separation of Concerns):
 """
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import re
@@ -43,7 +44,7 @@ from src.schemas.models import (
 from src.engines.deterministic_engine import DeterministicSignalEngine
 from src.engines.signal_interaction import _get_systemic_risk
 from src.engines.adaptive_calibration import adaptive_calibrate
-from src.engines.alpha_scorer import score_all_signals, LOW_CONFIDENCE_SUPPRESS_THRESHOLD
+from src.engines.alpha_scorer import candidate_for, score_all_signals, LOW_CONFIDENCE_SUPPRESS_THRESHOLD
 from src.engines.confidence import decompose
 from src.engines.semantic import extract_from_filing, extract_from_news, evidence_to_strings
 from src.engines.audit_log import log_state
@@ -281,6 +282,7 @@ You MUST reference only evidence present in the source material provided.
 For each signal candidate, return a JSON object:
 {
   "signal_type": "<same as input>",
+  "event_subtype": "<same as input>",
   "headline": "<crisp one-line description>",
   "evidence": ["<specific fact from source>", "<specific fact>"],
   "reasoning": "<2-3 sentences of professional analyst context>",
@@ -369,14 +371,14 @@ def _parse_explanations(
             state.errors.append("LLM explanation parser: no JSON array found")
             return []
 
-    cal_map: dict[SignalType, tuple] = {}
+    # A company can have several candidates of one type (an acquisition and a merger-control filing):
+    # each is keyed by (type, subtype), the key the engine merged them on.
+    cal_map: dict[tuple, tuple] = {}
     for cand, sev, conf, mat_rate in calibrated:
-        cal_map[cand.signal_type] = (sev, conf, mat_rate)
-
-    cand_map: dict[SignalType, SignalCandidate] = {c.signal_type: c for c in candidates}
+        cal_map[(cand.signal_type, cand.event_subtype)] = (sev, conf, mat_rate)
 
     signals: list[DetectedSignal] = []
-    seen: set[SignalType] = set()
+    seen: set[tuple] = set()
     for item in data:
         try:
             if not isinstance(item, dict):
@@ -387,10 +389,13 @@ def _parse_explanations(
             except ValueError:
                 continue
 
-            cand = cand_map.get(sig_type)
-            if cand is None or sig_type in seen:
+            unexplained = [c for c in candidates
+                           if c.signal_type == sig_type and (c.signal_type, c.event_subtype) not in seen]
+            subtype = str(item.get("event_subtype") or "")
+            cand = next((c for c in unexplained if c.event_subtype == subtype), unexplained[0] if unexplained else None)
+            if cand is None:
                 continue
-            seen.add(sig_type)
+            seen.add((cand.signal_type, cand.event_subtype))
 
             evidence = item.get("evidence") or []
             if isinstance(evidence, str):
@@ -423,7 +428,7 @@ def _parse_explanations(
                 + ([cand.filing_reference] if cand.filing_reference else [])
             ))
 
-            sev, conf, _ = cal_map.get(sig_type, (Severity.LOW, 0.5, 0.1))
+            sev, conf, _ = cal_map.get((sig_type, cand.event_subtype), (Severity.LOW, 0.5, 0.1))
 
             signals.append(DetectedSignal(
                 signal_type=sig_type,
@@ -551,11 +556,11 @@ class LLMExplanationNode:
         try:
             if self.client is None:
                 raise RuntimeError(self.client_error)
-            raw = _call_llm(self.client, self.provider, EXPLANATION_SYSTEM, user_prompt, max_tokens=3000)
+            raw = await asyncio.to_thread(_call_llm, self.client, self.provider, EXPLANATION_SYSTEM, user_prompt, max_tokens=3000)
             signals = _parse_explanations(raw, candidates_for_llm, calibrated, state)
             # The LLM explains signals; it must not be able to drop one by omission.
-            explained = {s.signal_type for s in signals}
-            missing = [row for row in calibrated if row[0].signal_type not in explained]
+            explained = {(s.signal_type, s.event_subtype) for s in signals}
+            missing = [row for row in calibrated if (row[0].signal_type, row[0].event_subtype) not in explained]
             if missing:
                 state.errors.append(
                     f"LLM omitted {len(missing)} confirmed signal(s); deterministic output used for those"
@@ -586,10 +591,9 @@ class AlphaScoringNode:
             compliance_mode=state.compliance_mode,
         )
         # Attach the evidence-quality breakdown for each signal's originating candidate.
-        cand_map = {c.signal_type: c for c in state.signal_candidates}
         state.detected_signals = [
-            s.model_copy(update={"confidence_decomposition": decompose(cand_map[s.signal_type])})
-            if s.signal_type in cand_map else s
+            s.model_copy(update={"confidence_decomposition": decompose(c)})
+            if (c := candidate_for(s, state.signal_candidates)) else s
             for s in state.detected_signals
         ]
         state.detected_signals = attach_track_records(state.detected_signals)
@@ -682,7 +686,7 @@ class BriefSynthesisAgent:
         try:
             if self.client is None:
                 raise RuntimeError(self.client_error)
-            raw = _call_llm(self.client, self.provider, SYNTHESIS_SYSTEM, user_prompt, max_tokens=2500)
+            raw = await asyncio.to_thread(_call_llm, self.client, self.provider, SYNTHESIS_SYSTEM, user_prompt, max_tokens=2500)
             raw = re.sub(r"```json|```", "", raw).strip()
             try:
                 data = json.loads(raw)

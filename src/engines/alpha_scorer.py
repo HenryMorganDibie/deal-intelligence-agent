@@ -403,6 +403,14 @@ def compute_alpha_score(
     )
 
 
+def candidate_for(signal: DetectedSignal, candidates: list[SignalCandidate]) -> Optional[SignalCandidate]:
+    """The candidate a signal came from. The engine merges candidates by (signal type, subtype), so one
+    company can have several of a type (an acquisition and a merger-control filing); matching on type
+    alone attached one candidate's evidence and scores to another's signal."""
+    same_type = [c for c in candidates if c.signal_type == signal.signal_type]
+    return next((c for c in same_type if c.event_subtype == signal.event_subtype), same_type[0] if same_type else None)
+
+
 def score_all_signals(
     signals: list[DetectedSignal],
     candidates: list[SignalCandidate],
@@ -413,17 +421,12 @@ def score_all_signals(
 ) -> list[DetectedSignal]:
     """
     Attach AlphaScore to every DetectedSignal.
-    Matches signals to their originating candidate by signal_type.
+    Matches signals to their originating candidate (see candidate_for).
     Returns signals sorted by alpha score descending.
     """
-    # Build candidate lookup by signal_type
-    candidate_map: dict[SignalType, SignalCandidate] = {
-        c.signal_type: c for c in candidates
-    }
-
     scored: list[DetectedSignal] = []
     for signal in signals:
-        candidate = candidate_map.get(signal.signal_type)
+        candidate = candidate_for(signal, candidates)
         if candidate is None:
             scored.append(signal)
             continue

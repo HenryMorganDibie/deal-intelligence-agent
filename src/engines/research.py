@@ -160,6 +160,9 @@ _REGION_ALIASES = {
 }
 
 
+_SUPERLATIVE = re.compile(r"\b(biggest|largest|top|major|highest|most\s+valuable)\b", re.IGNORECASE)
+
+
 def _terms(q: str) -> list[str]:
     return [t for t in re.findall(r"[a-z0-9&'-]{3,}", q.lower()) if t not in _STOP]
 
@@ -742,14 +745,30 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
             continue
         if p["investors"] and not set(p["investors"]) & {n for n, _ in inv.parties(d)}:
             continue
-        if p["investor_kinds"]:
-            kinds = set(p["investor_kinds"]) | ({"multilateral"} if "dfi" in p["investor_kinds"] else set())
-            if not any((inv.registry_entry(n) or inv.Investor("", "", "")).kind in kinds for n, _ in inv.parties(d)):
-                continue
         if p["companies"] and not any(_matches_company(c, d) for c in p["companies"]):
             continue
         scope.append(d)
-    scope.sort(key=lambda d: (_score(_deal_text(d), p["terms"]), d.get("announced") or ""), reverse=True)
+    # An investor-kind filter ("private equity firms") that leaves nothing is itself the finding: keep the
+    # matching deals and say so, rather than answer from no deals at all.
+    kind_note = None
+    if p["investor_kinds"]:
+        kinds = set(p["investor_kinds"]) | ({"multilateral"} if "dfi" in p["investor_kinds"] else set())
+        of_kind = [d for d in scope if any((inv.registry_entry(n) or inv.Investor("", "", "")).kind in kinds
+                                           for n, _ in inv.parties(d))]
+        if of_kind or not scope:
+            scope = of_kind
+        else:
+            named = sorted({n for d in scope for n, _ in inv.parties(d)})
+            label = " or ".join(k.replace("_", " ") for k in sorted(kinds))
+            kind_note = (f"None of the {len(scope)} deals in scope involves an investor registered as {label}. "
+                         f"Investors named in these deals: {', '.join(named[:15]) or 'none disclosed'}.")
+    if _SUPERLATIVE.search(question):
+        # "Biggest" or "largest" questions rank by disclosed amount; undisclosed amounts go last.
+        scope.sort(key=lambda d: (d.get("amount_usd") or -1, d.get("announced") or ""), reverse=True)
+    else:
+        scope.sort(key=lambda d: (_score(_deal_text(d), p["terms"]), d.get("announced") or ""), reverse=True)
+    if kind_note:
+        add("statistics", "Investor type in scope (computed from the deals database)", kind_note, source="Deals database")
     if scope:
         total = sum(d.get("amount_usd") or 0 for d in scope)
         by_type = Counter(d["deal_type"] for d in scope)
@@ -757,7 +776,12 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
         add("statistics", "Deals in scope (computed from the deals database)",
             f"{len(scope)} deals; disclosed value {_fmt_usd(total)} across {sum(1 for d in scope if d.get('amount_usd'))} "
             f"with amounts; by type: {dict(by_type)}; by country: {dict(by_country.most_common(8))}; "
-            f"period: {min(d.get('announced') or '' for d in scope)} to {max(d.get('announced') or '' for d in scope)}.",
+            f"period: {min(d.get('announced') or '' for d in scope)} to {max(d.get('announced') or '' for d in scope)}."
+            + (" Largest disclosed: " + "; ".join(f"{d.get('headline') or d.get('target')} ({_fmt_usd(d['amount_usd'])}, "
+                                                 f"{d.get('announced') or 'undated'})"
+                                                 for d in sorted((d for d in scope if d.get("amount_usd")),
+                                                                 key=lambda d: d["amount_usd"], reverse=True)[:5]) + "."
+               if any(d.get("amount_usd") for d in scope) else ""),
             source="Deals database")
     for d in scope[:12]:
         src = (d.get("sources") or [{}])[0]
