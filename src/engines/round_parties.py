@@ -134,6 +134,7 @@ def extract(text: str, target: str, deal_year: Optional[int] = None) -> dict:
     evidence: list[dict] = []
     stage = None
     target_key = inv.normalise_name(target or "")
+    text = re.sub(r"(\w)\[(\w)\]", r"\1\2", text or "")    # "Factor[e] Ventures": a bracket would end the list
     for sentence in _sentences(text):
         if not _ROUND_WORDS.search(sentence) or _OTHER_ROUND.search(sentence):
             continue

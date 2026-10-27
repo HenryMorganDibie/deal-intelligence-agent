@@ -2151,3 +2151,11 @@ def test_round_parties_name_edge_cases():
     assert r["lead"][0] == "Grazia Equity"
     r = extract("The round was led by Jeff Bezos' Bezos Expeditions.", "Terra", 2026)
     assert r["lead"] == ["Bezos Expeditions"]
+
+
+def test_round_parties_bracketed_and_misspelt_names():
+    from src.engines import investors as inv
+    from src.engines.round_parties import extract
+    r = extract("The round was led by Factor[e] Ventures, with participation from Persistent Energy.", "SunFi", 2026)
+    assert [inv.canonical(n) for n in r["lead"]] == ["Factor[e] Ventures"]
+    assert inv.canonical("International Financing Corporation") == "International Finance Corporation"

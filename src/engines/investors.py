@@ -36,7 +36,7 @@ class Investor:
 
 REGISTRY: tuple[Investor, ...] = (
     # Development finance institutions and multilaterals
-    Investor("International Finance Corporation", "dfi", "Washington, DC, United States", ("IFC",)),
+    Investor("International Finance Corporation", "dfi", "Washington, DC, United States", ("IFC", "International Financing Corporation")),
     Investor("British International Investment", "dfi", "London, United Kingdom", ("BII", "CDC Group", "CDC")),
     Investor("Proparco", "dfi", "Paris, France"),
     Investor("FMO", "dfi", "The Hague, Netherlands", ("Dutch entrepreneurial development bank",)),
@@ -156,6 +156,7 @@ REGISTRY: tuple[Investor, ...] = (
     Investor("Partech Africa", "venture_capital", "Paris, France", ("Partech",)),
     Investor("TLcom Capital", "venture_capital", "London, United Kingdom", ("TLcom",)),
     Investor("Novastar Ventures", "venture_capital", "Nairobi, Kenya", ("Novastar",)),
+    Investor("Factor[e] Ventures", "venture_capital", "Washington, DC, United States", ("Factore Ventures", "Factor E Ventures")),
     Investor("4DX Ventures", "venture_capital", "Washington, DC, United States"),
     Investor("Ventures Platform", "venture_capital", "Abuja, Nigeria"),
     Investor("Future Africa", "venture_capital", "Lagos, Nigeria"),
