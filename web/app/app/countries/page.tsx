@@ -11,12 +11,13 @@ type Row = {
   iso2: string; name: string; region: string; currency: string; exchange: string | null; risk_score: number | null;
   risk_tier: string | null; risk_coverage: number; coverage_tier: string; deals: number; events: number;
   deal_value_usd?: number; first_year?: number | null; deals_last_12m?: number;
+  deals_with_amount?: number; median_disclosed_usd?: number | null; largest_disclosed_usd?: number | null; risk_partial?: boolean;
   source_quality?: { source_links_checked: number; official_host_matched_links: number; registered_country_hosts: number; registry_status: string };
 };
 
 const REGIONS = ["Northern Africa", "Western Africa", "Middle Africa", "Eastern Africa", "Southern Africa"];
 
-const compactUsd = (n?: number) => n ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 1, notation: "compact" }).format(n) : "None";
+const compactUsd = (n?: number | null) => n ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 1, notation: "compact" }).format(n) : "Not disclosed";
 
 function scoreLabel(score: number | null) {
   return score == null ? "Not available" : `${score}/100`;
@@ -26,6 +27,8 @@ export default function CountriesPage() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [asOf, setAsOf] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [meta, setMeta] = useState<{ unassigned: number; total: number; historyStart: string | null } | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [sort, setSort] = useState<"risk" | "name" | "deals" | "events" | "coverage" | "value" | "recent">("deals");
   const [region, setRegion] = useState("");
   const [query, setQuery] = useState("");
@@ -35,13 +38,15 @@ export default function CountriesPage() {
   const [selected, setSelected] = useState<string[]>([]);
 
   useEffect(() => {
-    get<{ countries: Row[]; data_as_of: string }>("/api/countries")
+    setError(null);
+    get<{ countries: Row[]; data_as_of: string; unassigned_deals?: number; total_deals?: number; history_start?: string }>("/api/countries")
       .then((r) => {
         setRows(r.countries);
         setAsOf(r.data_as_of);
+        setMeta({ unassigned: r.unassigned_deals ?? 0, total: r.total_deals ?? 0, historyStart: r.history_start ?? null });
       })
       .catch((err) => setError(err instanceof ApiError ? err.message : "Could not load countries."));
-  }, []);
+  }, [attempt]);
 
   const shown = useMemo(() => {
     const q = query.trim().toLocaleLowerCase();
@@ -138,7 +143,7 @@ export default function CountriesPage() {
             <span className="mb-1.5 block text-xs text-[color:var(--muted)]">Sort markets</span>
             <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="field w-full">
               <option value="deals">Most recorded deals</option>
-              <option value="value">Largest disclosed deal value</option>
+              <option value="value">Total disclosed deal value</option>
               <option value="recent">Most deals in the last 12 months</option>
               <option value="events">Most corporate events</option>
               <option value="risk">Risk score (high to low)</option>
@@ -176,14 +181,17 @@ export default function CountriesPage() {
               <tbody>
                 {[
                   ["Region", (c: Row) => c.region],
-                  ["Risk score", (c: Row) => scoreLabel(c.risk_score)],
+                  ["Risk score", (c: Row) => scoreLabel(c.risk_score) + (c.risk_partial ? " (partial data)" : "")],
                   ["Risk tier", (c: Row) => c.risk_tier ?? "Not available"],
                   ["Risk-data coverage", (c: Row) => `${Math.round(c.risk_coverage * 100)}%`],
                   ["Evidence coverage tier", (c: Row) => c.coverage_tier],
                   ["Recorded deals", (c: Row) => c.deals.toLocaleString()],
                   ["Deals in the last 12 months", (c: Row) => (c.deals_last_12m ?? 0).toLocaleString()],
-                  ["Disclosed deal value", (c: Row) => compactUsd(c.deal_value_usd)],
-                  ["Record starts", (c: Row) => c.first_year ? String(c.first_year) : "No dated deals"],
+                  ["Total disclosed deal value", (c: Row) => compactUsd(c.deal_value_usd)],
+                  ["Deals with a disclosed amount", (c: Row) => `${(c.deals_with_amount ?? 0).toLocaleString()} of ${c.deals.toLocaleString()}`],
+                  ["Median disclosed amount", (c: Row) => compactUsd(c.median_disclosed_usd)],
+                  ["Largest single disclosed amount", (c: Row) => compactUsd(c.largest_disclosed_usd)],
+                  ["Earliest deal held", (c: Row) => c.first_year ? String(c.first_year) : "No dated deals"],
                   ["Corporate events", (c: Row) => c.events.toLocaleString()],
                   ["Currency", (c: Row) => c.currency],
                   ["Exchange", (c: Row) => c.exchange ?? "Not listed"],
@@ -200,14 +208,19 @@ export default function CountriesPage() {
       )}
 
       <div className="mt-6">
-        {rows === null ? <Loading label="Loading country intelligence…" /> : shown.length === 0 ? (
+        {rows === null && error ? (
+          <div className="panel p-8 text-center">
+            <h2 className="font-medium">Countries could not be loaded</h2>
+            <button type="button" className="btn btn-ghost mt-4" onClick={() => setAttempt((n) => n + 1)}>Try again</button>
+          </div>
+        ) : rows === null ? <Loading label="Loading country intelligence…" /> : shown.length === 0 ? (
           <div className="panel p-8 text-center">
             <h2 className="font-medium">No markets match these filters</h2>
             <p className="mt-2 text-sm text-[color:var(--muted)]">Try a different search or reset the filters.</p>
             <button type="button" className="btn btn-ghost mt-4" onClick={clearFilters}>Reset filters</button>
           </div>
         ) : (
-          <Table head={["Compare", "Country", "Region", "Risk score", "Risk tier", "Risk-data coverage", "Evidence tier", "Official-source links", "Deals", "Last 12 mo", "Disclosed value", "Since", "Events", "Currency"]} minWidth="90rem">
+          <Table head={["Compare", "Country", "Region", "Risk score", "Risk tier", "Risk-data coverage", "Evidence tier", "Official-source links", "Deals", "Last 12 mo", "Total disclosed value", "Earliest deal", "Events", "Currency"]} minWidth="90rem">
             {shown.map((c) => (
               <tr key={c.iso2}>
                 <Td>
@@ -226,7 +239,7 @@ export default function CountriesPage() {
                   {c.exchange && <span className="mt-1 block text-xs text-[color:var(--dim)]">{c.exchange}</span>}
                 </Td>
                 <Td className="text-[color:var(--muted)]">{c.region}</Td>
-                <Td className="kbd">{c.risk_score ?? "n/a"}</Td>
+                <Td className="kbd">{c.risk_score ?? "n/a"}{c.risk_partial ? <span className="block text-xs text-[color:var(--dim)]" title="Some risk components have no recent data; the score averages the others.">partial</span> : null}</Td>
                 <Td><Pill value={c.risk_tier} /></Td>
                 <Td>
                   <div className="min-w-20">
@@ -253,6 +266,7 @@ export default function CountriesPage() {
         )}
       </div>
       <p className="mt-4 text-xs leading-relaxed text-[color:var(--dim)]">
+        {meta ? <>Deal value is the sum of disclosed amounts, and a deal naming several countries counts in full for each. Last 12 months is the current calendar month and the 11 before it. Records are held from {meta.historyStart ? meta.historyStart.slice(0, 4) : "2010"}, so an earliest deal of {meta.historyStart ? meta.historyStart.slice(0, 4) : "2010"} means the record starts there. {meta.unassigned.toLocaleString()} of {meta.total.toLocaleString()} deals name no single African country (pan-African or unclear) and appear on no country row. </> : null}
         Interpretation note: risk-data coverage is the share of expected inputs available to the risk model; it is not the probability that the risk score is correct. Evidence coverage tier describes the breadth of available market datasets. Review the country page for component formulas, indicator years, currency methodology and source limitations before comparing markets.
       </p>
     </Container>

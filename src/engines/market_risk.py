@@ -57,7 +57,8 @@ def currency_history(currency: str, snapshot: Optional[dict] = None) -> dict[str
     snap = snapshot if snapshot is not None else cr.load_snapshot()
     series = snap.get("series", {}).get("PA.NUS.FCRF") or {}
     best = max((series.get(c.iso3) or {} for c in COUNTRIES if c.currency == currency), key=len, default={})
-    return dict(sorted(best.items()))
+    current, _ = cr.fx_series_after_break(best)          # earlier years are in the pre-redenomination unit
+    return dict(sorted(current.items()))
 
 
 def currency_risk(currency: str, snapshot: Optional[dict] = None,

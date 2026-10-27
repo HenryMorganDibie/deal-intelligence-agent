@@ -26,6 +26,7 @@ import json
 import logging
 import time
 from pathlib import Path
+from datetime import date, datetime
 from typing import Callable, Optional
 
 import httpx
@@ -221,20 +222,51 @@ def load_snapshot(path: Path = INDICATORS_PATH) -> dict:
     return _SNAPSHOT
 
 
+# An input more than this many years older than the latest year in the data is not scored: a 2015 growth rate
+# says little about a country's risk today. It is still listed, marked stale.
+MAX_INPUT_AGE_YEARS = 3
+
+
+def fx_series_after_break(series: dict) -> tuple[dict, Optional[int]]:
+    """An LCU-per-USD series from its last currency redenomination on, and that year (or None).
+
+    A fall of 90% or more in local currency per dollar in one year is a new currency (Zimbabwe's ZWL to ZiG
+    in 2024: 3,266 to 26.6), not an appreciation; values before it are in a different unit and are dropped."""
+    years = sorted(series, key=int)
+    start, broke = 0, None
+    for i in range(1, len(years)):
+        prev, cur = series[years[i - 1]], series[years[i]]
+        if prev and prev > 0 and cur / prev <= 0.1:
+            start, broke = i, int(years[i])
+    return {y: series[y] for y in years[start:]}, broke
+
+
+def reference_year(snapshot: dict) -> Optional[int]:
+    """The latest year with any observation in the snapshot: the 'now' that input ages are measured from."""
+    return max((int(y) for by_country in snapshot.get("series", {}).values() for years in by_country.values()
+                for y in years), default=None)
+
+
 def latest_indicators(iso3: str, snapshot: Optional[dict] = None) -> dict[str, dict]:
-    """{indicator: {"value", "year"}} using each indicator's most recent year, plus FX depreciation."""
+    """{indicator: {"value", "year", "stale"}} using each indicator's most recent year, plus FX depreciation
+    over consecutive years within the current currency."""
     snap = snapshot if snapshot is not None else load_snapshot()
+    ref = reference_year(snap)
     out: dict[str, dict] = {}
     for indicator, by_country in snap.get("series", {}).items():
         years = by_country.get(iso3) or {}
         if years:
-            year = max(years)
+            year = max(years, key=int)
             out[indicator] = {"value": round(years[year], 3), "year": int(year)}
-    fx = (snap.get("series", {}).get("PA.NUS.FCRF") or {}).get(iso3) or {}
-    years = sorted(fx)
-    if len(years) >= 2 and fx[years[-2]] > 0:
+    fx, broke = fx_series_after_break((snap.get("series", {}).get("PA.NUS.FCRF") or {}).get(iso3) or {})
+    years = sorted(fx, key=int)
+    if len(years) >= 2 and int(years[-1]) - int(years[-2]) == 1 and fx[years[-2]] > 0:
         dep = (fx[years[-1]] / fx[years[-2]] - 1) * 100
         out["fx_depreciation"] = {"value": round(dep, 2), "year": int(years[-1])}
+    if broke is not None:
+        out.setdefault("fx_depreciation", {"value": None, "year": broke})["redenominated"] = broke
+    for v in out.values():
+        v["stale"] = bool(ref and v.get("year") and ref - v["year"] > MAX_INPUT_AGE_YEARS)
     return out
 
 
@@ -340,6 +372,65 @@ def load_current_signals_snapshot(path: Optional[Path] = None) -> dict:
     return _CURRENT_SIGNALS_SNAPSHOT
 
 
+SIGNAL_LABELS = {
+    "fx_usd_daily": "Exchange rate, daily",
+    "official_exchange_rate_latest_lcu_per_usd": "Official exchange rate",
+    "policy_rate_pct": "Central bank policy rate",
+    "inflation_cpi_latest_yoy_pct": "Consumer price inflation, year on year",
+    "overnight_interbank_rate_pct": "Overnight interbank rate",
+    "interbank_7d_rate_pct": "7-day interbank rate",
+}
+# How old an observation can be, by frequency, before it is flagged as out of date.
+_STALE_AFTER_DAYS = {"daily": 14, "weekly": 45, "monthly": 120, "quarterly": 200}
+
+
+def _period_age_days(period: Optional[str], today: date) -> Optional[int]:
+    try:
+        text = str(period or "")
+        d = date.fromisoformat(text[:10]) if len(text) >= 10 else date.fromisoformat(text[:7] + "-01")
+    except ValueError:
+        return None
+    return (today - d).days
+
+
+def annotate_current_signals(country: Country, stored: dict, run_at: Optional[str] = None,
+                             today: Optional[date] = None) -> dict:
+    """Stored signals with a readable label per observation, an out-of-date flag (the provider's own
+    "historical" tag, or older than its frequency allows), official exchange rates that disagree with the daily
+    rate (or, with no daily rate, the World Bank's latest annual rate) by more than half flagged as inconsistent,
+    and countries whose figures were kept from an earlier refresh marked as retained."""
+    today = today or date.today()
+    rows = [dict(o) for o in stored.get("observations") or []]
+    daily = next((o["value"] for o in rows if o.get("metric_key") == "fx_usd_daily" and o.get("value")), None)
+    if daily is None:
+        annual = ((load_snapshot().get("series", {}).get("PA.NUS.FCRF") or {}).get(country.iso3) or {})
+        annual, _ = fx_series_after_break(annual)
+        daily = annual[max(annual, key=int)] if annual else None
+    for o in rows:
+        o["label"] = SIGNAL_LABELS.get(o.get("metric_key"), str(o.get("name") or o.get("metric_key")).replace("_", " "))
+        age = _period_age_days(o.get("as_of_period"), today)
+        limit = _STALE_AFTER_DAYS.get(str(o.get("frequency") or ""))
+        if o.get("metric_key") == "policy_rate_pct":
+            # A policy rate holds until the next decision, so its date is the last decision; only a decision
+            # more than a year old suggests the figure has not been kept up to date.
+            o["out_of_date"] = bool(age is not None and age > 365)
+        else:
+            o["out_of_date"] = o.get("freshness") == "historical" or bool(age is not None and limit and age > limit)
+        if o.get("metric_key") == "official_exchange_rate_latest_lcu_per_usd" and daily and o.get("value"):
+            ratio = o["value"] / daily
+            o["inconsistent"] = not (2 / 3 <= ratio <= 1.5)
+    retained = bool(stored.get("retained"))
+    if not retained and run_at and stored.get("generated_at"):
+        try:
+            gap = datetime.fromisoformat(run_at.replace("Z", "+00:00")) - datetime.fromisoformat(
+                str(stored["generated_at"]).replace("Z", "+00:00"))
+            retained = gap.total_seconds() > 6 * 3600
+        except ValueError:
+            pass
+    return {**stored, "observations": rows, "retained": retained,
+            "retained_since": stored.get("retained_since") or (stored.get("generated_at") if retained else None)}
+
+
 def current_macro_signals(country: Country, fetch: Optional[Callable[[Country], dict]] = None) -> dict:
     """Return committed high-frequency signals, separate from annual risk scoring.
 
@@ -363,7 +454,7 @@ def current_macro_signals(country: Country, fetch: Optional[Callable[[Country], 
     countries = snapshot.get("countries", {}) if isinstance(snapshot, dict) else {}
     stored = countries.get(country.iso2.upper()) if isinstance(countries, dict) else None
     if isinstance(stored, dict):
-        return stored
+        return annotate_current_signals(country, stored, snapshot.get("generated_at"))
     return {
         "status": "not_configured" if not snapshot else "no_observations",
         "source": "Africa API",
@@ -378,16 +469,19 @@ def assess(country: Country, snapshot: Optional[dict] = None,
            fx: Optional[Callable[[str], Optional[float]]] = None) -> dict:
     """Country risk profile: score, tier, every component with its formula and inputs."""
     ind = latest_indicators(country.iso3, snapshot)
+    # Stale inputs and a missing post-redenomination change are not scored.
+    usable = {k: v for k, v in ind.items() if not v.get("stale") and v.get("value") is not None}
     components = []
     total = weight = 0.0
     for name, w, formula, fn in COMPONENTS:
-        risk = fn(ind)
+        risk = fn(usable)
         components.append({"name": name, "weight": w, "risk": risk, "formula": formula})
         if risk is not None:
             total += w * risk
             weight += w
     coverage = round(weight / sum(w for _, w, _, _ in COMPONENTS), 2)
     score = round(total / weight, 1) if weight else None
+    missing = [c["name"] for c in components if c["risk"] is None]
     snap = snapshot if snapshot is not None else load_snapshot()
     labels = snap.get("labels", {})
     return {
@@ -396,13 +490,20 @@ def assess(country: Country, snapshot: Optional[dict] = None,
         "securities_regulator": country.securities_regulator,
         "score": score, "tier": tier(score) if score is not None else None,
         "coverage": coverage,
+        # A partial score averages only the components with recent data, so it can understate the risk of a
+        # country whose missing inputs are the weak ones.
+        "partial": bool(missing), "missing_components": missing,
+        "stale_inputs": sorted(k for k, v in ind.items() if v.get("stale")),
+        "redenominated": (ind.get("fx_depreciation") or {}).get("redenominated"),
         "components": components,
         "indicators": {k: {**v, "label": labels.get(k, "Annual change in official USD exchange rate (%)")}
                        for k, v in sorted(ind.items())},
         "spot_usd_rate": (fx or spot_fx)(country.currency),
         "data_as_of": snap.get("retrieved"),
-        "method": "Weighted mean of component risks (0-100) over components with data; "
-                  "tiers: <30 low, <45 moderate, <60 elevated, <75 high, else severe.",
+        "method": "Weighted mean of component risks (0-100) over components with data from the last "
+                  f"{MAX_INPUT_AGE_YEARS} years; tiers: <30 low, <45 moderate, <60 elevated, <75 high, else severe. "
+                  "Older inputs are listed but not scored, and the year after a currency redenomination has no "
+                  "depreciation figure.",
     }
 
 

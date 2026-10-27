@@ -1409,7 +1409,7 @@ def country_report(code: str, deals: Iterable[dict] = (), events: Iterable[dict]
     parsed, items = retrieve(q, deals, events, live_news=live_news, news=news)
     risk = cr.assess(c, fx=lambda _: None)
     cur = mr.currency_risk(c.currency, fx=lambda _: None)
-    cdeals = deals_mod.search(deals, country=c.iso2, limit=500)
+    cdeals = deals_mod.search(deals, country=c.iso2, limit=max(len(deals), 1))      # every deal, as the page counts
     top_inv = inv.leaderboard(cdeals, limit=8)
     md = [f"# {c.name}: private markets and risk\n",
           f"Region: {c.region}. Currency: {c.currency} ({cur['regime']}). Exchange: {c.exchange or 'none'}. "
@@ -1417,13 +1417,17 @@ def country_report(code: str, deals: Iterable[dict] = (), events: Iterable[dict]
     summary = answer(f"Summarise the investment environment in {c.name}: deal activity, investors, and risks.",
                      items, parsed, llm)
     md.append(_section("Executive summary", [summary["answer"]]))
-    md.append(_section("Country risk", [f"Score **{risk['score']}** ({risk['tier']}), data coverage {risk['coverage']:.0%}."]
+    score_text = (f"Score **{risk['score']}** ({risk['tier']}), data coverage {risk['coverage']:.0%}"
+                  + (f"; partial score, no recent data for {', '.join(m.replace('_', ' ') for m in risk['missing_components'])}"
+                     if risk.get("partial") else "") + "."
+                  if risk["score"] is not None else "No risk score: no recent indicator data.")
+    md.append(_section("Country risk", [score_text]
                        + [f"- {x['name'].replace('_', ' ')}: {x['risk']} (weight {x['weight']}; {x['formula']})"
                           for x in risk["components"]]))
     md.append(_section("Currency", [f"Regime: {cur['regime']} ({cur['regime_note']}). Last-year depreciation vs USD: "
                                     f"{cur['last_year_depreciation_pct']}%; five-year annualised: "
                                     f"{cur['five_year_annualised_depreciation_pct']}%. Score {cur['score']} ({cur['tier']})."]))
-    by_type = Counter(d["deal_type"] for d in cdeals)
+    by_type = Counter(d.get("deal_type") or "unclassified" for d in cdeals)
     md.append(_section("Deal activity", [f"{len(cdeals)} deals recorded; disclosed value "
                                          f"{_fmt_usd(sum(d.get('amount_usd') or 0 for d in cdeals))}; by type {dict(by_type)}."]
                        + [f"- {d.get('announced')}: {d.get('headline')}" for d in cdeals[:15]]))

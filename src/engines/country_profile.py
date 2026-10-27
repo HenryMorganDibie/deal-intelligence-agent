@@ -22,6 +22,25 @@ def _belongs(record: dict, iso2: str) -> bool:
     return iso2 in (record.get("countries") or [record.get("country")])
 
 
+HISTORY_START_YEAR = 2010
+
+
+def last_12_months(today: date) -> list[str]:
+    """The current calendar month and the 11 before it, oldest first ("2025-11" ... "2026-10")."""
+    out, y, m = [], today.year, today.month
+    for _ in range(12):
+        out.append(f"{y:04d}-{m:02d}")
+        y, m = (y, m - 1) if m > 1 else (y - 1, 12)
+    return out[::-1]
+
+
+def in_last_12_months(announced: Optional[str], today: date) -> bool:
+    """Dated within the current month or the 11 before it, and not in the future. The countries list and
+    the country page use this one definition of "last 12 months"."""
+    text = (announced or "")[:10]
+    return len(text) >= 7 and last_12_months(today)[0] <= text[:7] and text <= today.isoformat()
+
+
 def build(iso2: str, deals: Iterable[dict], events: Iterable[dict], today: Optional[date] = None) -> dict:
     from src.engines import provenance
 
@@ -57,14 +76,16 @@ def build(iso2: str, deals: Iterable[dict], events: Iterable[dict], today: Optio
         return [{"label": label, "deals": n, "disclosed_value_usd": round(values[label])}
                 for label, n in counts.most_common()]
 
-    cutoff = date(today.year - 1, today.month, 1).isoformat()
-    recent = [d for d in country_deals if (d.get("announced") or "") >= cutoff]
+    recent = [d for d in country_deals if in_last_12_months(d.get("announced"), today)]
     months: Counter = Counter((d.get("announced") or "")[:7] for d in recent)
+    multi = [d for d in country_deals if len(d.get("countries") or []) > 1]
 
     largest = sorted((d for d in country_deals if (d.get("amount_usd") or 0) > 0),
                      key=lambda d: float(d["amount_usd"]), reverse=True)[:10]
-    years = sorted(by_year)
+    years = sorted(y for y in by_year if HISTORY_START_YEAR <= y <= today.year)
     deal_years = [y for y in years if by_year[y]["deals"]]
+    if years:                                          # every year from the first record to now, empty or not
+        years = list(range(years[0], today.year + 1))
     return {
         "first_year": deal_years[0] if deal_years else None,       # of the deal record; events may start earlier
         "last_year": deal_years[-1] if deal_years else None,
@@ -75,13 +96,20 @@ def build(iso2: str, deals: Iterable[dict], events: Iterable[dict], today: Optio
         "median_disclosed_usd": round(median(amounts)) if amounts else None,
         "corroborated_deals": corroborated,
         "single_source_deals": len(country_deals) - corroborated,
-        "by_year": [{"year": y, **{k: (round(v) if isinstance(v, float) else v) for k, v in by_year[y].items()}}
-                    for y in years],
-        "by_month_last_12": [{"month": m, "deals": n} for m, n in sorted(months.items()) if m],
+        "by_year": [{"year": y, **{k: (round(v) if isinstance(v, float) else v) for k, v in by_year[y].items()},
+                     "partial": y == today.year} for y in years],
+        "by_month_last_12": [{"month": m, "deals": months.get(m, 0), "partial": m == today.isoformat()[:7]}
+                             for m in last_12_months(today)],
+        "deals_last_12m": len(recent),
+        # A deal naming several countries counts in full for each of them.
+        "cross_border_deals": len(multi),
+        "cross_border_value_usd": round(sum(float(d.get("amount_usd") or 0) for d in multi)),
         "sectors": mix("sector"),
         "deal_types": mix("deal_type"),
         "event_types": [{"label": label, "events": n} for label, n in
-                        Counter((e.get("signal_type") or "unclassified") for e in country_events).most_common()],
-        "largest_deals": [{k: d.get(k) for k in ("id", "headline", "target", "buyer", "deal_type", "sector",
-                                                  "amount_usd", "announced")} for d in largest],
+                        Counter(((e.get("signal_type") or "").strip() or "unclassified")
+                                for e in country_events).most_common()],
+        "largest_deals": [{**{k: d.get(k) for k in ("id", "headline", "target", "buyer", "deal_type", "sector",
+                                                    "amount_usd", "announced", "stage", "countries")},
+                           "independent_stories": len(provenance.stories(d.get("sources") or []))} for d in largest],
     }

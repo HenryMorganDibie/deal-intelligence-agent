@@ -81,8 +81,24 @@ def test_country_risk_components_follow_documented_formulas():
                     "external": 50.0, "growth": 50.0, "external_debt": 40.0}
     assert r["score"] == pytest.approx(0.2 * 90 + 0.2 * 50 + 0.15 * 50 + 0.15 * 50 + 0.1 * 50 + 0.1 * 50 + 0.1 * 40, abs=0.1)
     assert r["tier"] == "elevated" and r["coverage"] == 1.0 and r["spot_usd_rate"] == 1500.0
-    assert r["indicators"]["fx_depreciation"] == {"value": 25.0, "year": 2024,
+    assert r["indicators"]["fx_depreciation"] == {"value": 25.0, "year": 2024, "stale": False,
                                                   "label": "Annual change in official USD exchange rate (%)"}
+    assert r["partial"] is False and r["missing_components"] == [] and r["stale_inputs"] == []
+
+
+def test_redenomination_and_stale_inputs_are_not_scored():
+    snap = _snapshot(**{
+        "GOV_WGI_PV.EST": {"ZWE": {"2025": -1.0}},
+        "GOV_WGI_GE.EST": {"ZWE": {"2025": -1.0}},
+        "FP.CPI.TOTL.ZG": {"ZWE": {"2020": 557.2}},                     # five years old: listed, not scored
+        "PA.NUS.FCRF": {"ZWE": {"2023": 5000.0, "2024": 3266.3, "2025": 26.6}},   # ZWL to ZiG
+    })
+    r = cr.assess(ac.get("ZW"), snap, fx=lambda _: None)
+    risk = {c["name"]: c["risk"] for c in r["components"]}
+    assert risk["currency"] is None and risk["inflation"] is None      # not "low risk" from a -99% "appreciation"
+    assert r["redenominated"] == 2025 and r["partial"] is True
+    assert "FP.CPI.TOTL.ZG" in r["stale_inputs"] and {"currency", "inflation"} <= set(r["missing_components"])
+    assert cr.fx_series_after_break({"2023": 5000.0, "2024": 3266.3, "2025": 26.6}) == ({"2025": 26.6}, 2025)
 
 
 
@@ -1666,7 +1682,11 @@ def test_country_profile_summarises_the_whole_history_not_the_latest_page():
     assert p["largest_deals"][0]["id"] == "big" and all(d["id"] != "ke" for d in p["largest_deals"])
     assert p["deal_types"][0] == {"label": "acquisition", "deals": 16, "disclosed_value_usd": 1_360_000_000}
     assert p["sectors"][-1]["label"] == "unclassified"
-    assert p["by_month_last_12"] == [{"month": "2026-09", "deals": 1}]
+    months = p["by_month_last_12"]
+    assert len(months) == 12 and months[0]["month"] == "2025-11" and months[-1] == {"month": "2026-10", "deals": 0, "partial": True}
+    assert {m["month"]: m["deals"] for m in months}["2026-09"] == 1 and p["deals_last_12m"] == 1
+    assert [r["year"] for r in p["by_year"]] == list(range(2010, 2027)) and p["by_year"][-1]["partial"]
+    assert p["cross_border_deals"] == 1 and p["cross_border_value_usd"] == 900_000_000
 
 
 def test_market_cap_is_a_valuation_and_sovereign_or_sector_backing_is_not_a_deal():
@@ -1793,3 +1813,19 @@ def test_nse_price_list_rows_match_names_initials_and_tickers():
     assert nse_price_for("KCB Group", prices, "KCB.NR")["price"] == 85.25
     assert nse_price_for("Kenya Power", prices)["price"] == 21.7
     assert nse_price_for("Unknown Holdings", prices, "ZZZ.NR") is None
+
+
+def test_current_signals_flag_out_of_date_inconsistent_and_retained_figures():
+    from datetime import date
+    stored = {"generated_at": "2026-10-20T10:00:00Z", "observations": [
+        {"metric_key": "fx_usd_daily", "value": 585.6, "frequency": "daily", "as_of_period": "2026-10-24", "freshness": "current"},
+        {"metric_key": "official_exchange_rate_latest_lcu_per_usd", "value": 2191.7, "frequency": "monthly",
+         "as_of_period": "2026-01", "freshness": "historical"},
+        {"metric_key": "policy_rate_pct", "value": 4.5, "frequency": "unspecified", "as_of_period": "2025-12-15",
+         "freshness": "historical"}]}
+    r = cr.annotate_current_signals(ac.get("CG"), stored, "2026-10-26T11:30:00Z", today=date(2026, 10, 26))
+    daily, official, policy = r["observations"]
+    assert daily["label"] == "Exchange rate, daily" and not daily["out_of_date"]
+    assert official["inconsistent"] and official["out_of_date"]          # 2,192 against a peg of about 585
+    assert not policy["out_of_date"]                                    # in force since the last decision
+    assert r["retained"] and r["retained_since"] == "2026-10-20T10:00:00Z"

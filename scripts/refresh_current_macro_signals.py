@@ -31,6 +31,18 @@ API_URL = "https://api.africa-api.com/v1/countries/{code}/signals"
 REQUEST_INTERVAL_SECONDS = 12.5
 
 
+# Figures kept from an earlier refresh are dropped once they are this old, rather than shown indefinitely.
+MAX_RETAINED_DAYS = 30
+
+
+def _age_days(stamp: str) -> float:
+    try:
+        then = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    except ValueError:
+        return float("inf")
+    return (datetime.now(timezone.utc) - then).total_seconds() / 86400
+
+
 def main() -> int:
     api_key = os.environ.get("AFRICA_API_KEY", "").strip()
     if not api_key:
@@ -67,8 +79,11 @@ def main() -> int:
                 # Keep the last successful country's snapshot if one exists. Never
                 # replace good published data with a transient provider failure.
                 previous = old_countries.get(country.iso2.upper())
-                if isinstance(previous, dict):
-                    countries[country.iso2.upper()] = previous
+                since = (previous or {}).get("retained_since") or (previous or {}).get("generated_at")
+                if isinstance(previous, dict) and previous.get("observations") and since \
+                        and _age_days(since) <= MAX_RETAINED_DAYS:
+                    # Marked so the page can say these figures are from an earlier refresh.
+                    countries[country.iso2.upper()] = {**previous, "retained": True, "retained_since": since}
                 else:
                     countries[country.iso2.upper()] = {
                         "status": "unavailable",

@@ -149,8 +149,12 @@ export type CountryRisk = {
   score: number | null;
   tier: string | null;
   coverage: number;
+  partial?: boolean;
+  missing_components?: string[];
+  stale_inputs?: string[];
+  redenominated?: number | null;
   components: RiskComponent[];
-  indicators: Record<string, { value: number; year: number; label: string }>;
+  indicators: Record<string, { value: number | null; year: number; label: string; stale?: boolean }>;
   spot_usd_rate: number | null;
   data_as_of: string | null;
   method: string;

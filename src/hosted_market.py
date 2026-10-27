@@ -32,6 +32,7 @@ import logging
 import os
 import re
 import socket
+import statistics
 import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
@@ -287,22 +288,32 @@ def _country_or_404(code: str) -> ac.Country:
 
 # ── Countries, currencies, coverage ───────────────────────────────────────────
 
+_countries_cache: dict = {"key": None, "value": None}
+
+
 @router.get("/api/countries")
 async def countries() -> dict:
     ds, es = deals(), events()
     today = datetime.now(timezone.utc).date()
-    recent_cutoff = (today - timedelta(days=365)).isoformat()
+    # The table is a pass over every record for 54 countries; it is recomputed when the data or the day changes.
+    key = (id(ds), len(ds), id(es), len(es), today)
+    if _countries_cache["key"] == key:
+        return _countries_cache["value"]
     first_year: dict[str, int] = {}
     recent: dict[str, int] = {}
+    amounts: dict[str, list[float]] = {}
+    unassigned = 0
     for d in ds:
         year = (d.get("announced") or "")[:4]
-        for iso in d.get("countries") or [d.get("country")]:
-            if not iso:
-                continue
+        isos = [i for i in (d.get("countries") or [d.get("country")]) if i]
+        unassigned += not isos
+        for iso in isos:
             if year.isdigit():
                 first_year[iso] = min(first_year.get(iso, 9999), int(year))
-            if (d.get("announced") or "") >= recent_cutoff:
+            if country_profile.in_last_12_months(d.get("announced"), today):
                 recent[iso] = recent.get(iso, 0) + 1
+            if (d.get("amount_usd") or 0) > 0:
+                amounts.setdefault(iso, []).append(float(d["amount_usd"]))
     rows = []
     for c in ac.COUNTRIES:
         risk = country_risk.assess(c, fx=lambda _: None)
@@ -313,8 +324,18 @@ async def countries() -> dict:
                      "risk_coverage": risk["coverage"], "coverage_tier": cov["tier"], "deals": cov["deals"],
                      "events": cov["events"], "deal_value_usd": cov["deal_value_usd"],
                      "first_year": first_year.get(c.iso2), "deals_last_12m": recent.get(c.iso2, 0),
+                     "deals_with_amount": len(amounts.get(c.iso2, [])),
+                     "median_disclosed_usd": round(statistics.median(amounts[c.iso2])) if amounts.get(c.iso2) else None,
+                     "largest_disclosed_usd": round(max(amounts[c.iso2])) if amounts.get(c.iso2) else None,
+                     "risk_partial": risk["partial"],
                      "source_quality": source_quality})
-    return {"countries": rows, "data_as_of": country_risk.load_snapshot().get("retrieved")}
+    value = {"countries": rows, "data_as_of": country_risk.load_snapshot().get("retrieved"),
+             "history_start": f"{country_profile.HISTORY_START_YEAR}-01-01", "unassigned_deals": unassigned,
+             "total_deals": len(ds),
+             "notes": ["Deal value is the sum of disclosed amounts; a deal naming several countries counts in full "
+                       "for each.", "Last 12 months is the current calendar month and the 11 before it."]}
+    _countries_cache.update(key=key, value=value)
+    return value
 
 
 @router.get("/api/countries/{code}/history")
@@ -625,8 +646,10 @@ async def _finish(run_id: int) -> None:
 @router.post("/api/research")
 async def research(body: ResearchBody, request: Request) -> dict:
     run_id = await _reserve(request, f"[research] {body.question}")
-    result = await run_in_threadpool(research_mod.research, body.question, deals(), events())
-    await _finish(run_id)
+    try:
+        result = await run_in_threadpool(research_mod.research, body.question, deals(), events())
+    finally:
+        await _finish(run_id)
     return {**result, "result_id": str(uuid.uuid4())}
 
 
@@ -634,8 +657,10 @@ async def research(body: ResearchBody, request: Request) -> dict:
 async def country_report(code: str, request: Request) -> dict:
     c = _country_or_404(code)
     run_id = await _reserve(request, f"[report] country {c.iso2}")
-    result = await run_in_threadpool(research_mod.country_report, c.iso2, deals(), events())
-    await _finish(run_id)
+    try:
+        result = await run_in_threadpool(research_mod.country_report, c.iso2, deals(), events())
+    finally:
+        await _finish(run_id)
     return {**result, "result_id": str(uuid.uuid4())}
 
 
@@ -645,8 +670,10 @@ async def sector_report(sector: str, request: Request, country: Optional[str] = 
         raise HTTPException(404, "Unknown sector.")
     country = _country_or_404(country).iso2 if country else None
     run_id = await _reserve(request, f"[report] sector {sector} {country or ''}")
-    result = await run_in_threadpool(research_mod.sector_report, sector, deals(), events(), country)
-    await _finish(run_id)
+    try:
+        result = await run_in_threadpool(research_mod.sector_report, sector, deals(), events(), country)
+    finally:
+        await _finish(run_id)
     return {**result, "result_id": str(uuid.uuid4())}
 
 

@@ -11,7 +11,7 @@ import { get, post, type CountryRisk, type CoverageRow, type CurrencyRisk, type 
 type CountryResponse = {
   country: { iso2: string; name: string; region: string; languages: string[]; currency: string; exchange: string | null; central_bank: string; securities_regulator: string | null };
   risk: CountryRisk;
-  current_signals: { status: string; source: string; source_url: string; generated_at: string | null; observations: { metric_key: string; name: string; value: number; unit: string | null; frequency: string; source: string | null; freshness: string | null; as_of_period: string | null; retrieved_at: string | null; location_name: string | null }[]; message: string | null };
+  current_signals: { status: string; source: string; source_url: string; generated_at: string | null; observations: { metric_key: string; name: string; label?: string; value: number; unit: string | null; frequency: string; source: string | null; freshness: string | null; as_of_period: string | null; retrieved_at: string | null; location_name: string | null; out_of_date?: boolean; inconsistent?: boolean }[]; message: string | null; retained?: boolean; retained_since?: string | null };
   currency: CurrencyRisk;
   coverage: CoverageRow;
   source_quality: { deal_records: number; event_records: number; source_links_checked: number; official_host_matched_links: number; deal_records_with_official_host: number; deal_records_without_official_host: number; records_without_source_url: number; unverified_or_invalid_source_urls: number; unverified_publisher_source_urls?: number; recognised_news_publisher_source_urls?: number; invalid_or_non_https_source_urls?: number; unresolved_news_wrapper_source_urls?: number; news_wrapper_publisher_hosts_checked?: number; event_records_with_official_host: number; event_records_without_official_host: number; registered_country_hosts: number; registry_status: string; verification_scope: string };
@@ -35,12 +35,14 @@ type CountryProfile = {
   median_disclosed_usd: number | null;
   corroborated_deals: number;
   single_source_deals: number;
-  by_year: { year: number; deals: number; with_amount: number; disclosed_value_usd: number; events: number }[];
-  by_month_last_12: { month: string; deals: number }[];
+  by_year: { year: number; deals: number; with_amount: number; disclosed_value_usd: number; events: number; partial?: boolean }[];
+  by_month_last_12: { month: string; deals: number; partial?: boolean }[];
+  cross_border_deals?: number;
+  cross_border_value_usd?: number;
   sectors: Mix[];
   deal_types: Mix[];
   event_types: { label: string; events: number }[];
-  largest_deals: { id: string; headline: string; target: string | null; buyer: string | null; deal_type: string | null; sector: string | null; amount_usd: number; announced: string | null }[];
+  largest_deals: { id: string; headline: string; target: string | null; buyer: string | null; deal_type: string | null; sector: string | null; amount_usd: number; announced: string | null; stage?: string | null; countries?: string[] | null; independent_stories?: number }[];
 };
 
 const compactUsd = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 1, notation: "compact" }).format(n);
@@ -112,6 +114,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
   const [dealLimit, setDealLimit] = useState(25);
   const [eventOffset, setEventOffset] = useState(0);
   const [eventLimit, setEventLimit] = useState(25);
+  const [historyFailed, setHistoryFailed] = useState(false);
   const [riskHistory, setRiskHistory] = useState<{ year: number; score: number | null; tier: string | null; coverage: number; input_years: Record<string, number>; indicator_count: number }[]>([]);
   const [marketHistory, setMarketHistory] = useState<{ year: number; deal_records: number; event_records: number; disclosed_deal_value_usd: number; deals_with_official_host: number; events_with_official_host: number; source_links_checked: number; official_host_matched_links: number; dated_records: number }[]>([]);
   const [marketHistoryNote, setMarketHistoryNote] = useState<string>("");
@@ -133,7 +136,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         setMarketHistoryNote(result.market_activity_note ?? "Activity counts reflect records currently held, not a complete census of transactions.");
         setHistoryMeta({ source: result.source, source_url: result.source_url, retrieved: result.retrieved, method: result.method, archived_snapshots: result.archived_snapshots, snapshot_note: result.snapshot_note });
       })
-      .catch(() => { if (!cancelled) setHistoryMeta(null); });
+      .catch(() => { if (!cancelled) { setHistoryMeta(null); setHistoryFailed(true); } });
     return () => { cancelled = true; };
   }, [params.code]);
 
@@ -146,7 +149,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
     return Array.from({ length: 12 }, (_, i) => {
       const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (11 - i), 1));
       const key = date.toISOString().slice(0, 7);
-      return { key, label: date.toLocaleDateString("en", { month: "short", timeZone: "UTC" }), count: counts.get(key) ?? 0 };
+      return { key, label: date.toLocaleDateString("en", { month: "short", timeZone: "UTC" }), count: counts.get(key) ?? 0, partial: i === 11 };
     });
   }, [profile]);
   const maxMonthlyDeals = Math.max(1, ...monthlyDealFlow.map((month) => month.count));
@@ -207,7 +210,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         </PageHeader>
       </div>
       <div className="grid gap-3 sm:grid-cols-4">
-        <Stat label="Country risk" value={risk.score ?? "n/a"} note={<Pill value={risk.tier} />} />
+        <Stat label="Country risk" value={risk.score ?? "n/a"} note={<><Pill value={risk.tier} />{risk.partial ? <span className="ml-2 text-xs text-[color:var(--dim)]">Partial: {Math.round(risk.coverage * 100)}% of inputs recent</span> : null}</>} />
         <Stat label="Currency risk" value={cur.score ?? "n/a"} note={<Pill value={cur.tier} />} />
         <Stat label="Coverage tier" value={cov.tier} note={cov.prices ? "Listing data available" : "News, deals and risk"} />
         <Stat label="Deals recorded" value={cov.deals} note={`${cov.events} corporate events`} />
@@ -258,8 +261,8 @@ export default function CountryPage({ params }: { params: { code: string } }) {
       {!profile ? <Loading label="Loading market activity…" /> : (
         <>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Stat label={`Deals ${profile.first_year ?? ""}–${profile.last_year ?? ""}`} value={profile.deals.toLocaleString()} note={`${profile.events.toLocaleString()} corporate events`} />
-            <Stat label="Disclosed deal value" value={profile.disclosed_value_usd ? compactUsd(profile.disclosed_value_usd) : "None"} note={`${profile.deals_with_amount.toLocaleString()} deals with an amount`} />
+            <Stat label={profile.first_year ? `Deals ${profile.first_year}–${profile.last_year ?? ""}` : "Deals recorded"} value={profile.deals.toLocaleString()} note={`${profile.events.toLocaleString()} corporate events`} />
+            <Stat label="Total disclosed deal value" value={profile.disclosed_value_usd ? compactUsd(profile.disclosed_value_usd) : "Not disclosed"} note={`${profile.deals_with_amount.toLocaleString()} deals with an amount${profile.cross_border_deals ? `; ${profile.cross_border_deals.toLocaleString()} cross-border deals (${compactUsd(profile.cross_border_value_usd ?? 0)}) count in full for each country named` : ""}`} />
             <Stat label="Median disclosed deal" value={profile.median_disclosed_usd ? compactUsd(profile.median_disclosed_usd) : "n/a"} note="Among deals with an amount" />
             <Stat label="Corroborated deals" value={profile.corroborated_deals.toLocaleString()} note={`Two or more independent stories; ${profile.single_source_deals.toLocaleString()} single-source`} />
           </div>
@@ -267,7 +270,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           <section className="panel mt-5 p-4 sm:p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h3 className="font-medium">Deal flow by year</h3>
-              <span className="text-xs text-[color:var(--dim)]">Deals by announcement year; hover for value and events</span>
+              <span className="text-xs text-[color:var(--dim)]">Deals by announcement year, every year shown; * this year so far; hover for value and events</span>
             </div>
             {profile.by_year.length === 0 ? (
               <p className="mt-4 text-sm text-[color:var(--muted)]">No dated deal records yet. Check coverage before concluding that no deals occurred.</p>
@@ -276,14 +279,14 @@ export default function CountryPage({ params }: { params: { code: string } }) {
                 <div className="flex h-40 min-w-[32rem] items-end gap-1.5 border-b hairline pb-1">
                   {profile.by_year.map((y) => (
                     <div key={y.year} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1"
-                      title={`${y.year}: ${y.deals} deals, ${y.with_amount} with an amount${y.disclosed_value_usd ? ` (${compactUsd(y.disclosed_value_usd)})` : ""}, ${y.events} events`}>
+                      title={`${y.year}${y.partial ? " (so far)" : ""}: ${y.deals} deals, ${y.with_amount} with an amount${y.disclosed_value_usd ? ` (${compactUsd(y.disclosed_value_usd)})` : ""}, ${y.events} events`}>
                       <span className="text-[10px] text-[color:var(--dim)]">{y.deals || ""}</span>
                       <div className="w-full max-w-8 rounded-t bg-verified/80" style={{ height: `${Math.max(y.deals ? 4 : 0, (y.deals / maxYearDeals) * 100)}px` }} />
                     </div>
                   ))}
                 </div>
                 <div className="mt-2 flex min-w-[32rem] gap-1.5">
-                  {profile.by_year.map((y) => <span key={y.year} className="min-w-0 flex-1 truncate text-center text-[10px] text-[color:var(--dim)]">{String(y.year).slice(2)}</span>)}
+                  {profile.by_year.map((y) => <span key={y.year} className="min-w-0 flex-1 truncate text-center text-[10px] text-[color:var(--dim)]">{String(y.year).slice(2)}{y.partial ? "*" : ""}</span>)}
                 </div>
               </div>
             )}
@@ -293,18 +296,18 @@ export default function CountryPage({ params }: { params: { code: string } }) {
             <section className="panel p-4 sm:p-5">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="font-medium">Last 12 months</h3>
-                <span className="text-xs text-[color:var(--dim)]">Deals by announcement month</span>
+                <span className="text-xs text-[color:var(--dim)]">Deals by announcement month; * this month so far</span>
               </div>
               <div className="mt-4 flex h-32 items-end gap-1.5 border-b hairline pb-1">
                 {monthlyDealFlow.map((month) => (
-                  <div key={month.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1" title={`${month.key}: ${month.count} deals`}>
+                  <div key={month.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1" title={`${month.key}: ${month.count} deals${month.partial ? " so far this month" : ""}`}>
                     <span className="text-[10px] text-[color:var(--dim)]">{month.count || ""}</span>
                     <div className="w-full max-w-7 rounded-t bg-verified/80" style={{ height: `${Math.max(month.count ? 4 : 0, (month.count / maxMonthlyDeals) * 76)}px` }} />
                   </div>
                 ))}
               </div>
               <div className="mt-2 flex gap-1.5">
-                {monthlyDealFlow.map((month) => <span key={month.key} className="min-w-0 flex-1 truncate text-center text-[10px] text-[color:var(--dim)]">{month.label}</span>)}
+                {monthlyDealFlow.map((month) => <span key={month.key} className="min-w-0 flex-1 truncate text-center text-[10px] text-[color:var(--dim)]">{month.label}{month.partial ? "*" : ""}</span>)}
               </div>
             </section>
 
@@ -334,6 +337,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
             <section className="panel p-4 sm:p-5">
               <h3 className="font-medium">Deal types</h3>
+              {profile.deal_types.length === 0 ? <p className="mt-3 text-sm text-[color:var(--muted)]">No deals recorded yet.</p> : null}
               <div className="mt-3 flex flex-wrap gap-2">
                 {profile.deal_types.map((row) => (
                   <span key={row.label} className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1.5 text-xs">
@@ -359,13 +363,16 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           {profile.largest_deals.length > 0 && (
             <section className="mt-4">
               <h3 className="font-medium">Largest disclosed deals</h3>
+              <p className="mt-1 text-xs text-[color:var(--dim)]">Ranked by reported amount. Check the stage and sourcing: announced or single-source amounts are reports, not completed, verified transactions.</p>
               <div className="mt-3">
-                <Table head={["Date", "Deal", "Type", "Amount"]} minWidth="40rem">
+                <Table head={["Date", "Deal", "Type", "Stage", "Sources", "Amount"]} minWidth="48rem">
                   {profile.largest_deals.map((deal) => (
                     <tr key={deal.id}>
                       <Td className="kbd text-[color:var(--muted)]">{deal.announced ?? "n/a"}</Td>
                       <Td><Link href={`/app/deals/${encodeURIComponent(deal.id)}`} className="hover:underline">{deal.headline}</Link></Td>
                       <Td className="text-[color:var(--muted)]">{deal.deal_type ? words(deal.deal_type) : "n/a"}</Td>
+                      <Td className="text-[color:var(--muted)]">{deal.stage ? words(deal.stage) : "n/a"}</Td>
+                      <Td className="text-xs text-[color:var(--muted)]">{(deal.independent_stories ?? 0) >= 2 ? `${deal.independent_stories} independent` : "Single source"}{deal.countries && deal.countries.length > 1 ? <span className="block">Also: {deal.countries.filter((x) => x !== params.code.toUpperCase()).join(", ")}</span> : null}</Td>
                       <Td className="kbd">{compactUsd(deal.amount_usd)}</Td>
                     </tr>
                   ))}
@@ -434,10 +441,11 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           </Table>
           <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]">{marketHistoryNote}</p>
         </div>
-      ) : <p className="mt-3 text-sm text-[color:var(--muted)]">No dated deal/event records are currently available for a historical activity timeline.</p>}
+      ) : <p className="mt-3 text-sm text-[color:var(--muted)]">{historyFailed ? "The activity timeline could not be loaded. Reload the page to try again." : "No dated deal/event records are currently available for a historical activity timeline."}</p>}
 
       <h2 className="eyebrow mt-12">Country risk components</h2>
       <p className="mt-2 text-[0.8125rem] text-[color:var(--dim)]">{risk.method}</p>
+      {risk.partial ? <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">Partial score: no recent data for {(risk.missing_components ?? []).map(words).join(", ")}. The score averages the other components, so it can understate risk if the missing ones are weak.{risk.redenominated ? ` The currency was redenominated in ${risk.redenominated}, so there is no annual depreciation figure for that year.` : ""}</p> : null}
       <div className="mt-4">
         <Table head={["Component", "Weight", "Risk (0 to 100)", "Formula"]}>
           {risk.components.map((x) => (
@@ -461,10 +469,11 @@ export default function CountryPage({ params }: { params: { code: string } }) {
               <Table head={["Signal", "Value", "Frequency", "Period", "Source"]} minWidth="42rem">
                 {d.current_signals.observations.map((item, i) => (
                   <tr key={`${item.metric_key}-${item.as_of_period ?? "unknown"}-${i}`}>
-                    <Td>{item.name}{item.location_name ? <span className="block text-xs text-[color:var(--dim)]">{item.location_name}</span> : null}</Td>
-                    <Td className="kbd">{num(item.value, 2)}{item.unit === "percent" ? "%" : ""}</Td>
-                    <Td>{item.frequency}</Td>
-                    <Td className="kbd">{item.as_of_period ?? "date unavailable"}</Td>
+                    <Td>{item.label ?? item.name}{item.location_name ? <span className="block text-xs text-[color:var(--dim)]">{item.location_name}</span> : null}
+                      {item.inconsistent ? <span className="block text-xs text-[color:var(--muted)]">Disagrees with the daily rate by more than half; treat with caution</span> : null}</Td>
+                    <Td className="kbd">{num(item.value, 2)}{item.unit === "percent" || /_pct$/.test(item.metric_key) ? "%" : item.unit ? <span className="block text-xs text-[color:var(--dim)]">{item.unit.replace(/_/g, " ")}</span> : null}</Td>
+                    <Td>{item.frequency === "unspecified" ? "Not stated" : item.frequency}</Td>
+                    <Td className="kbd">{item.as_of_period ?? "date unavailable"}{item.out_of_date ? <span className="block text-xs text-[color:var(--muted)]">Out of date</span> : null}</Td>
                     <Td className="text-xs text-[color:var(--muted)]">{item.source ?? d.current_signals.source}</Td>
                   </tr>
                 ))}
@@ -473,6 +482,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
             <p className="mt-3 text-xs text-[color:var(--dim)]">
               Supplemental source: <a href={d.current_signals.source_url} target="_blank" rel="noreferrer noopener" className="text-verified hover:underline">Africa API</a>
               {d.current_signals.generated_at ? ` · response generated ${d.current_signals.generated_at}` : ""}. Reporting periods may lag retrieval dates.
+              {d.current_signals.retained ? ` The latest refresh for this country failed, so these figures are kept from ${d.current_signals.retained_since ?? "an earlier refresh"}.` : ""}
             </p>
           </>
         ) : (
@@ -486,8 +496,8 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           {Object.entries(risk.indicators).map(([k, v]) => (
             <tr key={k}>
               <Td>{v.label}</Td>
-              <Td className="kbd">{num(v.value, 2)}</Td>
-              <Td className="kbd text-[color:var(--muted)]">{v.year}</Td>
+              <Td className="kbd">{v.value == null ? "n/a" : num(v.value, 2)}</Td>
+              <Td className="kbd text-[color:var(--muted)]">{v.year}{v.stale ? <span className="block text-xs">Too old to score</span> : null}</Td>
             </tr>
           ))}
         </Table>
