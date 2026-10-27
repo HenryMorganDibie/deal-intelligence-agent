@@ -2213,3 +2213,24 @@ def test_described_targets_are_repaired_from_the_headline():
         assert r(name, "x") == name, name
     deal = extract_deal("South African Startup Orca Fraud Raises USD 550 K Pre-Seed Round", published="2026-10-01")
     assert deal and deal["target"] == "Orca Fraud"
+
+
+def test_track_record_is_graded_within_the_company_market():
+    from src.engines import measured as m
+    obs = ([{"signal_type": "leadership_change", "severity": "medium", "event_confirmed": i < 45, "direction_correct": None,
+             "abnormal_return_10d_pct": 0.1, "event_subtype": "board_change", "market": "us"} for i in range(100)]
+           + [{"signal_type": "leadership_change", "severity": "medium", "event_confirmed": i < 8, "direction_correct": None,
+               "abnormal_return_10d_pct": 0.1, "event_subtype": "board_change", "market": "africa"} for i in range(40)])
+    m.set_tables(m.build(obs))
+    m.set_base_rates({"leadership_change": {"base_rate": 0.25}, "leadership_change@us": {"base_rate": 0.44},
+                      "leadership_change@africa": {"base_rate": 0.02}})
+    try:
+        pooled = m.track_record("leadership_change", "medium", "board_change")
+        us = m.track_record("leadership_change", "medium", "board_change", "us")
+        africa = m.track_record("leadership_change", "medium", "board_change", "africa")
+        assert pooled["grade"] != "chance"                      # pooling the markets hides the US result
+        assert us["grade"] == "chance" and us["graded_on"] == "US board change"
+        assert africa["grade"] == "proven" and africa["base_rate"] == 0.02
+    finally:
+        m.set_tables(None)
+        m.set_base_rates(None)

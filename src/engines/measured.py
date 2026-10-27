@@ -58,7 +58,9 @@ def _moves(values: list[float]) -> Optional[dict]:
 
 
 # Appended keys keep older compact rows readable (they simply lack the newer fields).
-_OBS_KEYS = ("signal_type", "severity", "event_confirmed", "direction_correct", "abnormal_return_10d_pct", "event_subtype")
+_OBS_KEYS = ("signal_type", "severity", "event_confirmed", "direction_correct", "abnormal_return_10d_pct", "event_subtype",
+             "market")
+MARKETS = ("us", "africa")
 
 
 def _compact(p: dict) -> list:
@@ -80,6 +82,16 @@ def build(predictions: list[dict], meta: Optional[dict] = None, keep_observation
             entry["by_severity"][sev] = _summary(st, [p for p in rows if p["severity"] == sev])
         for sub in sorted({p.get("event_subtype") for p in rows} - {None, "", "unspecified"}):
             entry["by_subtype"][sub] = _summary(st, [p for p in rows if p.get("event_subtype") == sub])
+        # Markets differ enough (a US board change is confirmed by an 8-K almost as often with no flag as with
+        # one) that a grade is only meaningful within a market, against that market's base rate.
+        for market in MARKETS:
+            in_market = [p for p in rows if p.get("market") == market]
+            if not in_market:
+                continue
+            entry.setdefault("by_market", {})[market] = {
+                "type": _summary(st, in_market),
+                "by_subtype": {sub: _summary(st, [p for p in in_market if (p.get("event_subtype") or "unspecified") == sub])
+                               for sub in sorted({p.get("event_subtype") or "unspecified" for p in in_market})}}
         by_type[st] = entry
     confirmable = [p for p in predictions if p["signal_type"] not in PRICE_ONLY and p.get("event_confirmed") is not None]
     overall = {"labelled": len(confirmable), "confirmed": sum(p["event_confirmed"] for p in confirmable),
@@ -157,7 +169,13 @@ def live_observation(outcome: dict) -> Optional[dict]:
         return None
     obs = {"signal_type": st, "severity": outcome.get("severity_at_detection") or outcome.get("severity") or "low",
            "event_confirmed": outcome.get("event_confirmed"), "direction_correct": outcome.get("direction_correct"),
-           "abnormal_return_10d_pct": outcome.get("abnormal_return_10d_pct")}
+           "abnormal_return_10d_pct": outcome.get("abnormal_return_10d_pct"),
+           "event_subtype": outcome.get("event_subtype")}
+    if outcome.get("market") in MARKETS:
+        obs["market"] = outcome["market"]
+    elif outcome.get("ticker"):
+        from src.engines.outcome_labeller import market_for_ticker
+        obs["market"] = market_for_ticker(outcome["ticker"])
     if obs["event_confirmed"] is None and obs["direction_correct"] is None and obs["abnormal_return_10d_pct"] is None:
         return None
     return obs
@@ -277,6 +295,10 @@ def _base_rates() -> dict:
         except (OSError, ValueError):
             metrics = {}
         _BASE_RATES = {st: (by.get("all") or {}) for st, by in metrics.items() if isinstance(by, dict)}
+        for st, by in metrics.items():
+            if isinstance(by, dict):
+                for market in MARKETS:
+                    _BASE_RATES[f"{st}@{market}"] = by.get(market) or {}
     return _BASE_RATES
 
 
@@ -295,7 +317,10 @@ def _wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     return max(0.0, centre - half), min(1.0, centre + half)
 
 
-def track_record(signal_type: str, severity: str, subtype: Optional[str] = None) -> dict:
+_MARKET_LABEL = {"us": "US", "africa": "African"}
+
+
+def track_record(signal_type: str, severity: str, subtype: Optional[str] = None, market: Optional[str] = None) -> dict:
     """How flags of this type and severity have performed: the measured confirmation rate (or, for price-only
     types, how often the 10-day move went the expected way), its 95% interval, the base rate it is compared
     with, and a grade an analyst can act on:
@@ -310,9 +335,21 @@ def track_record(signal_type: str, severity: str, subtype: Optional[str] = None)
     sig = (t.get("signals") or {}).get(signal_type) or {}
     price_only = signal_type in PRICE_ONLY
     key = "direction" if price_only else "confirmation"
-    # The most specific group with enough history: the named sub-signal, then the severity, then the type.
+    # The most specific group with enough history: within the company's market, the sub-signal then the type
+    # (against that market's base rate); otherwise, pooled, the sub-signal, then the severity, then the type.
+    base = 0.5 if price_only else (_base_rates().get(signal_type) or {}).get("base_rate")
+    in_market = ((sig.get("by_market") or {}).get(market or "") or {})
+    market_base = 0.5 if price_only else (_base_rates().get(f"{signal_type}@{market}") or {}).get("base_rate")
     sub_stats = ((sig.get("by_subtype") or {}).get(subtype or "") or {}).get(key) or {}
-    if (sub_stats.get("labelled") or 0) >= TRACK_MIN_N:
+    market_sub = ((in_market.get("by_subtype") or {}).get(subtype or "unspecified") or {}).get(key) or {}
+    market_type = (in_market.get("type") or {}).get(key) or {}
+    label = _MARKET_LABEL.get(market or "", "")
+    if market_base and (market_sub.get("labelled") or 0) >= TRACK_MIN_N:
+        stats, base = market_sub, market_base
+        scope = f"{label} {subtype.replace('_', ' ')} " if subtype and subtype != "unspecified" else f"{label} "
+    elif market_base and (market_type.get("labelled") or 0) >= TRACK_MIN_N:
+        stats, scope, base = market_type, f"{label} ", market_base
+    elif (sub_stats.get("labelled") or 0) >= TRACK_MIN_N:
         stats, scope = sub_stats, f"{subtype.replace('_', ' ')} "
     else:
         stats = ((sig.get("by_severity") or {}).get(severity) or {}).get(key) or {}
@@ -321,8 +358,8 @@ def track_record(signal_type: str, severity: str, subtype: Optional[str] = None)
             stats, scope = (sig.get("type") or {}).get(key) or {}, ""
     n = int(stats.get("labelled") or 0)
     k = int(stats.get("confirmed", stats.get("correct", 0)) or 0)
-    base = 0.5 if price_only else (_base_rates().get(signal_type) or {}).get("base_rate")
-    out = {"signal_type": signal_type, "severity": severity, "subtype": subtype, "graded_on": scope.strip() or "type",
+    out = {"signal_type": signal_type, "severity": severity, "subtype": subtype, "market": market,
+           "graded_on": scope.strip() or "type",
            "measure": key, "n": n,
            "rate": round(k / n, 4) if n else None, "base_rate": base}
     if n < TRACK_MIN_N or not base:
