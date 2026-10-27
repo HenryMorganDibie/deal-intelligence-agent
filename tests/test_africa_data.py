@@ -2293,3 +2293,19 @@ def test_round_extraction_reads_more_phrasings_french_and_headlines():
     deal = {"target": "Maplerad", "announced": "2022-06-01", "sources": [],
             "headline": "Nigerian banking-as-a-service platform Maplerad raises $6M, led by Peter Thiel’s Valar Ventures"}
     assert rp.enrich(deal, None, fetch=lambda i: {}, search=lambda d, c, t: [])[0]["lead_investors"] == ["Valar Ventures"]
+
+
+def test_raises_that_are_not_funding_rounds_take_their_real_type():
+    from src.engines.deals import extract_deal, round_kind as k
+    assert k("MTN Nigeria Raises N72.18 Billion in Oversubscribed Commercial Paper Issuance") == "debt_financing"
+    assert k("Egypt’s MNT-Halan Raises $41.3m in Fresh Securitisation to Fuel Lending Growth") == "debt_financing"
+    assert k("Optasia Raises $345M in South Africa’s Largest Fintech IPO") == "ipo"
+    assert k("Airnergize Capital closes R3.89 billion clean infrastructure fund targeting solar") == "fund_raise"
+    assert k("Le Trésor Public Béninois lève 33 milliards de FCFA au niveau du marché financier de l’UMOA") == "public"
+    for genuine in ("Breadfast Raises USD 50M to Scale Across Africa & Prepare for IPO",
+                    "Dangote secures $2.5 billion in private share placement ahead of Africa's biggest refinery IPO",
+                    "Weego raises $1.1m from Azur Innovation Fund", "Payhippo Raises $4M to Fund Clean Energy",
+                    "World Bank invests in Somalia’s KIMS Microfinance", "Kuda raises $25m Series B led by Valar"):
+        assert k(genuine) is None, genuine
+    deal = extract_deal("Advans Nigeria raises N6 billion in debut commercial paper to boost SME financing", published="2026-10-01")
+    assert deal["deal_type"] == "debt_financing"

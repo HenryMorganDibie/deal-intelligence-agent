@@ -442,6 +442,34 @@ def repair_target(target: Optional[str], headline: str) -> Optional[str]:
     return "Undisclosed " + " ".join(words) if words else None
 
 
+# Raises reported like a funding round that are something else: debt securities and bank loans, listings,
+# fund closes, and public finance. Checked in this order; "public" means not a company transaction.
+_NOT_A_ROUND = (
+    ("debt_financing", re.compile(r"(?i)\b(bonds?|eurobond|sukuk|commercial paper|obligat\w*|emprunt|notes? issu\w*|"
+                                  r"securiti[sz]ation|loan|credit (?:facility|line)|term facility|debt (?:financing|capital|"
+                                  r"facility|funding)|private debt|non-recourse financing|project finance|auprès de (?:\w+ )?banques)\b")),
+    ("public", re.compile(r"(?i)\b(tr[ée]sor public|treasury bills?|t-bills?|government of|republic of|ministry|"
+                          r"march[ée] financier de l['’]?(?:umoa|uemoa)|l['’][ée]tat du|world bank invests .{0,60}\b(?:project|"
+                          r"intervention|programme|program)|unicef|rotary|charity|donat(?:es|ion)|grant funding|"
+                          r"raises? .{0,40}\bfor (?:badly needed )?hospital)\b")),
+    ("ipo", re.compile(r"(?i)(?<!ahead of )(?<!prepare for )(?<!before )(?<!plans )(?<!plans for )(?<!toward )"
+                       r"\b(ipo|initial public offering|introduction en bourse|lists? on the|debuts? on the)\b(?! plans)")),
+    ("fund_raise", re.compile(r"(?i)(?<!to )(?<!from )\b(first close|final close|(?:debut|maiden|nature-impact|clean infrastructure|"
+                              r"private equity|venture capital)\s+fund\b|to invest in (?:african |early-stage |climate )?"
+                              r"(?:startups|companies|smes|businesses))")),
+)
+_PRE_IPO = re.compile(r"(?i)\b(?:ahead of|before|prepare for|plans? for)\b.{0,40}\bipo\b")
+
+
+def round_kind(headline: str) -> Optional[str]:
+    """What an "equity round" headline really reports, when it is not one: "debt_financing", "ipo", "fund_raise",
+    or "public" (sovereign or public finance, not a company transaction). None for a genuine round."""
+    for kind, pattern in _NOT_A_ROUND:
+        if pattern.search(headline or "") and not (kind == "ipo" and _PRE_IPO.search(headline or "")):
+            return kind
+    return None
+
+
 def normalise_name(name: Optional[str]) -> str:
     if not name:
         return ""
@@ -1121,6 +1149,10 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if target and (_PLACE_OR_SECTOR_TARGET.match(target.strip()) or _is_place_only(target)):
         return None
     target = repair_target(target, title)               # "South African Fintech Tyme Bank" -> "Tyme Bank"
+    if deal_type == "equity_funding" and (kind := round_kind(title)):
+        if kind == "public":
+            return None                                 # sovereign and public finance is not a company deal
+        deal_type = kind                                # a bond, listing or fund close reported like a round
     deal = {
         "deal_type": deal_type,
         "stage": stage,
