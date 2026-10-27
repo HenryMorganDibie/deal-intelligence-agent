@@ -1004,6 +1004,60 @@ class _StoryClusters:
         return k
 
 
+# Generic M&A wordings of one deal ("MTN's IHS acquisition", "IHS shareholders approve MTN merger").
+_GENERIC_DEAL_SUBTYPES = {"acquisition", "merger", "unspecified"}
+_NOT_A_COUNTERPARTY = {
+    "the", "and", "for", "with", "after", "over", "into", "from", "deal", "deals", "merger", "acquisition", "takeover",
+    "approves", "approve", "approval", "shareholders", "shareholder", "investors", "board", "billion", "million",
+    "coast", "clears", "moves", "closer", "advances", "completes", "agrees", "signs", "bid", "offer", "stake", "news",
+    "africa", "african", "east", "west", "south", "north", "major", "telecom", "infrastructure", "tower", "towers",
+}
+
+
+def _counterparties(text: str, own_names: list[str]) -> set[str]:
+    """Proper-name tokens in a story other than the target's own name, places, demonyms and deal words."""
+    own = {w.lower() for n in own_names if n for w in re.findall(r"[A-Za-z]{2,}", n)}
+    headline = re.sub(r"\s+[-–|]\s+[^-–|]+$", "", text or "")          # drop " - Publisher"
+    out = set()
+    for t in re.findall(r"\b[A-Z][A-Za-z&]{2,}\b", headline):
+        t = t.lower()
+        stem = re.sub(r"(ian|an|ese|n)$", "", t)
+        if t in own or t in _COUNTRY_WORDS or stem in _COUNTRY_WORDS or (stem + "a") in _COUNTRY_WORDS:
+            continue
+        if t in _NOT_A_COUNTERPARTY or t in _GENERIC_NAME_WORDS:
+            continue
+        out.add(t)
+    return out
+
+
+def _fold_same_deal(candidates: list[SignalCandidate], own_names: list[str]) -> list[SignalCandidate]:
+    """Merge generic M&A candidates that name the same counterparty: one deal, one signal. Their story groups
+    are disjoint (each story has one subtype), so corroboration adds up exactly."""
+    generic = sorted((c for c in candidates
+                      if c.signal_type == SignalType.MA_ACTIVITY and c.event_subtype in _GENERIC_DEAL_SUBTYPES),
+                     key=lambda c: c.raw_score, reverse=True)
+    others = [c for c in candidates if c not in generic]
+    folded: list[tuple[SignalCandidate, set[str]]] = []
+    for c in generic:
+        parties = _counterparties(c.source_text, own_names)
+        for i, (kept, kept_parties) in enumerate(folded):
+            if parties & kept_parties:
+                folded[i] = (kept.model_copy(update={
+                    "corroboration_count": kept.corroboration_count + c.corroboration_count,
+                    "corroborating_source_urls": list(dict.fromkeys(
+                        kept.corroborating_source_urls + ([c.source_url] if c.source_url else [])
+                        + c.corroborating_source_urls)),
+                    "corroborating_filing_references": list(dict.fromkeys(
+                        kept.corroborating_filing_references + c.corroborating_filing_references)),
+                    "matched_patterns": list(dict.fromkeys(kept.matched_patterns + c.matched_patterns)),
+                    "event_subtype": kept.event_subtype if kept.event_subtype != "unspecified" else c.event_subtype,
+                }), kept_parties | parties)
+                break
+        else:
+            folded.append((c, parties))
+    return others + [c for c, _ in folded]
+
+
 def _company_matchers(*names: Optional[str], ticker: Optional[str] = None) -> list[re.Pattern]:
     """
     Word-boundary patterns that identify the target company in free text.
@@ -1405,6 +1459,9 @@ class DeterministicSignalEngine:
                 "corroborating_filing_references": filing_references,
             }))
 
+        final_candidates = _fold_same_deal(final_candidates, [
+            state.request.company_name, profile.name if profile else None,
+            (state.request.ticker or (profile.ticker if profile else None) or "").split(".")[0]])
         # Sort by raw_score descending
         final_candidates.sort(key=lambda c: c.raw_score, reverse=True)
         state.signal_candidates = final_candidates

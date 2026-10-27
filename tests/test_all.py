@@ -4412,3 +4412,22 @@ def test_zen_provider_routes_claude_to_messages_and_others_to_chat_and_falls_thr
     assert calls == ["/inference/anthropic/v1/messages", "/inference/openai/v1/chat/completions"]
     assert sa.public_model_name("deepseek-v4.1-flash") == "the fallback language model"
     assert sa.public_model_name("claude-sonnet-5-5") == "the primary language model"
+
+
+def test_generic_mna_wordings_of_one_deal_fold_into_one_signal():
+    from src.engines.deterministic_engine import _fold_same_deal
+
+    def cand(subtype, text, score, n, url):
+        return SignalCandidate(signal_type=SignalType.MA_ACTIVITY, event_subtype=subtype, matched_patterns=["m"],
+                               source_text=text, source_type="news", source_name="x", raw_score=score,
+                               corroboration_count=n, source_url=url)
+    folded = _fold_same_deal([
+        cand("acquisition", "Coast clears for MTN Group’s $6.2b IHS Towers’ acquisition - The Nation", 0.40, 6, "u1"),
+        cand("merger", "IHS shareholders approve MTN merger in major telecom infrastructure deal - Businessamlive", 0.22, 1, "u2"),
+        cand("acquisition", "MTN acquires Nigerian fintech Paystack", 0.30, 2, "u3"),
+        cand("merger_control_filing", "Competition Commission clears MTN-IHS deal", 0.34, 2, "u4"),
+    ], ["MTN Group", "MTN"])
+    by = {(c.event_subtype, c.corroboration_count) for c in folded}
+    assert by == {("acquisition", 7), ("acquisition", 2), ("merger_control_filing", 2)}
+    ihs = next(c for c in folded if c.corroboration_count == 7)
+    assert "u2" in ihs.corroborating_source_urls

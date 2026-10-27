@@ -1923,3 +1923,23 @@ def test_deal_extractor_rejects_non_transactions_and_reads_bank_backing_as_lendi
     # A bank that invests (an equity stake) is still equity.
     stake = dl.extract_deal("Siinqee Bank Invests ETB 50 Million in Ethiopia’s Stock Exchange", published="2026-10-20")
     assert stake["deal_type"] == "equity_funding"
+
+
+def test_follow_up_reports_of_an_agreed_deal_extract_place_and_upgrade_the_rumour():
+    rumour = dl.extract_deal("South Africa's MTN In Talks To Buy Remaining Stake In IHS Towers", published="2026-02-09")
+    rumour["sources"] = [{"url": "u0"}]
+    assert rumour["stage"] == "rumoured"
+    for title in ["Coast clears for MTN Group’s $6.2b IHS Towers’ acquisition",
+                  "MTN Moves Closer to $6.2 Billion IHS Acquisition After Shareholder Approval",
+                  "IHS shareholders approve MTN merger in major telecom infrastructure deal",
+                  "MTN agrees to buy IHS Towers for $6.2 billion"]:
+        d = dl.extract_deal(title, published="2026-08-05")
+        assert d and d["deal_type"] == "acquisition" and d["countries"] == ["ZA"], title   # MTN places it
+        assert dl.same_transaction(d, rumour), title
+    agreed = dl.extract_deal("MTN agrees to buy IHS Towers for $6.2 billion", published="2026-08-05")
+    agreed["sources"] = [{"url": "u1"}]
+    merged = dl.merge(rumour, agreed)
+    assert (merged["stage"], merged["amount_usd"], merged["announced"]) == ("announced", 6.2e9, "2026-02-09")
+    assert merged["headline"] == "MTN agrees to buy IHS Towers for $6.2 billion"
+    # A non-African deal is still not placed in Africa.
+    assert dl.extract_deal("Microsoft acquires Activision for $69bn", published="2026-08-05") is None

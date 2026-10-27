@@ -384,6 +384,11 @@ _PATTERNS: list[tuple[str, re.Pattern]] = [(t, re.compile(p)) for t, p in [
     ("acquisition", rf"(?P<obj>{NAME})\s+(?:(?:is|was|has\s+been|gets|got|to\s+be)\s+)?(?:acquired|bought|taken\s+over|snapped\s+up)\s+by\s+(?:\S+\s+){{0,4}}?(?P<subj>{NAME})"),
     ("acquisition", rf"(?P<subj>{NAME}){_AUX}\s+(?:acquires?|acquired|acquiring|buys?|bought|buying|snaps?\s+up|takes?\s+over|took\s+over|purchases?|purchased|rachète|acquiert|adquire|compra|adquiriu)\s+{_STAKE_IN}?(?P<obj>{NAME})"),
     ("acquisition", rf"(?P<subj>{NAME}){_AUX}\s+(?:takes?|took|increases?|ups|raises?)\s+{_STAKE_IN}(?P<obj>{NAME})"),
+    # Follow-up reports of an agreed deal: "MTN Group's $6.2b IHS Towers' acquisition",
+    # "MTN moves closer to $6.2bn IHS acquisition", "IHS shareholders approve MTN merger".
+    ("acquisition", rf"(?P<subj>{NAME})['’]s\s+(?:\S*\d\S*\s+(?i:billion|million|bn|m)?\s*)?(?:(?i:proposed|planned|pending|agreed)\s+)?(?P<obj>{NAME})['’]?s?\s+(?i:acquisition|takeover|buyout)\b"),
+    ("acquisition", rf"(?P<subj>{NAME})\s+(?i:moves?\s+closer\s+to|edges?\s+closer\s+to|advances?|nears?|wins?\s+approval\s+for|gets?\s+approval\s+for|secures?\s+approval\s+for)\s+(?:(?i:its|the|a)\s+)?(?:\S*\d\S*\s+(?i:billion|million|bn|m)?\s*)?(?P<obj>{NAME})\s+(?i:acquisition|takeover|buyout|merger|tower\s+deal)\b"),
+    ("acquisition", rf"(?P<obj>{NAME})\s+(?i:shareholders|investors|regulators?)\s+(?i:approves?|approved|clears?|cleared)\s+(?P<subj>{NAME})(?:['’]s)?\s+(?:\S*\d\S*\s+(?i:billion|million|bn|m)?\s*)?(?i:merger|takeover|acquisition|bid|offer)\b"),
     ("acquisition", rf"(?P<subj>{NAME})\s+(?i:prend\s+le\s+contr[ôo]le\s+de|prend\s+une\s+participation\s+dans)\s+(?P<obj>{NAME})"),
     ("exit", rf"(?P<subj>{NAME}){_AUX}\s+(?:sells?|sold|selling|divests?|divested|offloads?|offloaded|disposes?\s+of|cède|vende)\s+{_STAKE_IN}?(?P<obj>{NAME})(?:.{{0,40}}?\s+(?:to|à)\s+(?:the\s+|a\s+)?(?:[a-z]\S*\s+){{0,3}}(?P<to>{NAME}))?"),
     ("exit", rf"(?P<subj>{NAME}){_AUX}\s+(?:exits?|exited|exiting)\s+(?:its\s+|their\s+)?(?:\S+\s+){{0,2}}?(?:stake|investment|holding|position)s?\s+in\s+(?P<obj>{NAME})"),
@@ -915,6 +920,11 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     publisher_has_african_context = bool(countries_in_text(publisher)) or bool(
         re.search(r"\bafrica|\bafrique|\báfrica", publisher, re.IGNORECASE)
     )
+    if not countries:
+        # A major African company named without its country ("MTN agrees to buy IHS") places the deal.
+        from src.data.african_companies import countries_of_companies
+        countries = countries_of_companies(title)
+        primary_country = primary_country or (countries[0] if countries else None)
     if not countries and not (africa_source or publisher_has_african_context
                               or re.search(r"\bafrica|\bafrique|\báfrica", text, re.IGNORECASE)):
         return None
@@ -1012,6 +1022,11 @@ def merge(existing: dict, new: dict) -> dict:
             out[k] = v
     out["deal_type"] = _merged_type(existing, new)
     if _STAGE_RANK.get(new.get("stage"), 0) > _STAGE_RANK.get(out.get("stage"), 0):
+        # A later, firmer report (announced or completed after a rumour) carries the deal's real terms.
+        if out.get("stage") == "rumoured" and new.get("amount_usd"):
+            for k in ("amount", "currency", "amount_usd", "headline"):
+                if new.get(k) not in (None, ""):
+                    out[k] = new[k]
         out["stage"] = new["stage"]
     out["investors"] = list(dict.fromkeys((existing.get("investors") or []) + (new.get("investors") or [])))[:12]
     out["countries"] = list(dict.fromkeys((existing.get("countries") or []) + (new.get("countries") or [])))
@@ -1142,6 +1157,15 @@ def same_transaction(a: dict, b: dict) -> bool:
 
     if not _same_transaction_name(a, b):
         return False
+
+    # A rumour and the later agreed or completed deal between the same buyer and target are one
+    # transaction, even months apart and at a different price: talks rarely end at the first figure.
+    stages = {a.get("stage"), b.get("stage")}
+    if "rumoured" in stages and len(stages) == 2 and gap <= 365 and types <= {"acquisition", "merger"}:
+        ta, tb = _name_tokens(a.get("target")), _name_tokens(b.get("target"))
+        ba, bb = _name_tokens(a.get("buyer")), _name_tokens(b.get("buyer"))
+        if ta and tb and ba and bb and (ta <= tb or tb <= ta) and (ba <= bb or bb <= ba):
+            return True
 
     ua, ub = a.get("amount_usd"), b.get("amount_usd")
     if not ua or not ub:
@@ -1323,7 +1347,9 @@ def _african_party(names: Iterable[Optional[str]]) -> bool:
 
 
 def _placed_in_africa(h: str, parties: Iterable[Optional[str]], publishers: Iterable[Optional[str]]) -> bool:
-    if countries_in_text(h) or _AFRICA_WORD.search(h) or _AFRICAN_CURRENCY.search(h) or _african_party(parties):
+    from src.data.african_companies import countries_of_companies
+    if countries_in_text(h) or _AFRICA_WORD.search(h) or _AFRICAN_CURRENCY.search(h) or _african_party(parties) \
+            or countries_of_companies(h):
         return True
     return any(_african_outlet(p) for p in publishers) and not _FOREIGN_MARKET.search(h)
 
