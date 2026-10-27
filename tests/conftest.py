@@ -11,6 +11,7 @@ import pytest
 
 # (module, attribute, file name) for every persistent store under data/.
 _STORES = [
+    ("src.engines.sens_log",           "LOG_PATH",             "sens_announcements.jsonl"),
     ("src.engines.audit_log",          "AUDIT_PATH",           "audit_log.jsonl"),
     ("src.agents.signal_agent",        "LLM_CACHE_PATH",       "llm_cache.json"),
     ("src.engines.backtest",           "BACKTEST_PATH",        "backtest_results.json"),

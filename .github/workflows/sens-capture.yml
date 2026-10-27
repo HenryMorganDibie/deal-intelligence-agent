@@ -1,0 +1,76 @@
+name: SENS daily capture
+
+on:
+  schedule:
+    # Weekdays after the JSE close (19:10 SAST). The free page also shows the previous trading day,
+    # so one missed run is recovered by the next.
+    - cron: "10 17 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sens-capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install httpx
+
+      - name: Capture SENS announcements
+        run: python scripts/capture_sens.py
+
+      - name: Commit the capture log directly to main
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'src/data/sens_announcements.jsonl';
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            if (!fs.existsSync(path)) { core.info('No capture log written.'); return; }
+            const content = fs.readFileSync(path, 'utf8');
+            for (let attempt = 1; attempt <= 5; attempt++) {
+              const ref = await github.rest.git.getRef({ owner, repo, ref: 'heads/main' });
+              const baseSha = ref.data.object.sha;
+              const baseCommit = await github.rest.git.getCommit({ owner, repo, commit_sha: baseSha });
+              const blob = await github.rest.git.createBlob({ owner, repo, content, encoding: 'utf-8' });
+              let current = null;
+              try {
+                current = (await github.rest.repos.getContent({ owner, repo, path, ref: baseSha })).data.sha;
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+              if (current === blob.data.sha) { core.info('No new SENS announcements.'); return; }
+              const tree = await github.rest.git.createTree({
+                owner, repo, base_tree: baseCommit.data.tree.sha,
+                tree: [{ path, mode: '100644', type: 'blob', sha: blob.data.sha }],
+              });
+              const commit = await github.rest.git.createCommit({
+                owner, repo, message: 'Capture daily JSE SENS announcements', tree: tree.data.sha, parents: [baseSha],
+              });
+              try {
+                await github.rest.git.updateRef({ owner, repo, ref: 'heads/main', sha: commit.data.sha, force: false });
+                core.info(`Published the SENS log at ${commit.data.sha}.`);
+                return;
+              } catch (error) {
+                if (error.status === 422 && attempt < 5) { core.warning(`main moved (attempt ${attempt}); retrying.`); continue; }
+                throw error;
+              }
+            }
+            throw new Error('Could not publish the SENS log after five retries.');

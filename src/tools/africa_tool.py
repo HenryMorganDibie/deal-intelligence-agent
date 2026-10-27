@@ -484,17 +484,19 @@ class AfricaTool:
 
     async def fetch_jse_sens(self, ticker: Optional[str]) -> list[SECFiling]:
         """
-        JSE SENS announcements for a JSE share code (today's announcements; Sharenet's
-        free tier does not expose history). Needs the JSE code, e.g. NPN or NPN.JO.
+        JSE SENS announcements for a JSE share code: today's from the live page (Sharenet's free tier
+        does not expose history) plus the last 90 days from our own daily capture log.
+        Needs the JSE code, e.g. NPN or NPN.JO.
         """
         code = _exchange_code(ticker, ".JO")
         if not code:
             return []
+        logged = self._logged_sens(code)
         try:
             r = await self.client.get(JSE_SENS_TODAY.format(code=quote(code)))
             r.raise_for_status()
         except Exception:
-            return []
+            return logged
         filings: list[SECFiling] = []
         for row in re.findall(r"<tr[^>]*>(.*?)</tr>", r.text, re.S):
             link = re.search(r'href="(/v3/sens_display\.php\?tdate=(\d{8})\d*[^"]*)"', row)
@@ -513,7 +515,18 @@ class AfricaTool:
                 document_url=SHARENET_BASE + html.unescape(link.group(1)),
                 description=f"{code}: {title}",
             ))
-        return filings
+        live = {f.document_url.split("&scode=")[0] for f in filings}
+        return filings + [f for f in logged if f.document_url.split("&scode=")[0] not in live]
+
+    @staticmethod
+    def _logged_sens(code: str, days: int = 90) -> list[SECFiling]:
+        """This share code's announcements in the daily SENS capture log (headline and link only)."""
+        from src.engines import sens_log
+        since = (utcnow() - timedelta(days=days)).date().isoformat()
+        return [SECFiling(
+            accession_number=f"SENS-{_stable_id(e['url'])}", form_type="JSE SENS", filing_date=e["date"],
+            company_name=e["issuer"], cik="JSE", document_url=e["url"], description=f"{code}: {e['headline']}",
+        ) for e in sens_log.load() if e.get("code") == code and e["date"] >= since]
 
     async def fetch_ngx_disclosures(
         self, company_name: str, ticker: Optional[str], lookback_days: int = 90

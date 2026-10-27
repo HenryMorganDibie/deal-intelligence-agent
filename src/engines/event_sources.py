@@ -416,6 +416,10 @@ def collect_events(
         filed = [e for e in merger_filings.events_for(company, ticker) if since.isoformat() <= e["date"] <= until.isoformat()]
         if filed:          # only when something matched: an empty snapshot must not turn "no source read" into "none found"
             results.append(filed)
+        from src.engines import sens_log                # JSE SENS headlines from the daily capture log
+        sens = [e for e in sens_log.events_for(company, ticker) if since.isoformat() <= e["date"] <= until.isoformat()]
+        if sens:
+            results.append(sens)
         got = [r for r in results if r is not None]
         return [e for r in got for e in r] if got else None
     finally:

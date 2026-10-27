@@ -1862,3 +1862,36 @@ def test_merger_filings_parse_dates_and_parties_and_confirm_named_companies():
                "parties": ["MTN", "IHS"], "excerpt": ""}]
     assert mf.events_for("Paramount Global", "PARA", filings=others) == []
     assert len(mf.events_for("MTN Group", "MTN.JO", filings=others)) == 1
+
+
+def test_sens_log_parses_feed_appends_new_only_and_confirms_completed_events(tmp_path):
+    from datetime import date
+    from src.engines import sens_log as sl
+    page = ('<tr><td>09:00 - 27 Oct 2026 MTN 09:00 - 27 Oct 2026 |</td><td>'
+            '<a href="/v3/sens_display.php?tdate=20261027090000&amp;seq=17&amp;scode=">MTN MTN GROUP LIMITED - '
+            'Fulfilment of conditions precedent</a> Price: 1 | Move: 0</td></tr>'
+            '<tr><td>08:00 - 26 Oct 2026 08:00 - 26 Oct 2026</td><td>'
+            '<a href="/v3/sens_display.php?tdate=20261026080000&amp;seq=3&amp;scode=">ANGLO AMERICAN PLC - '
+            'Cautionary announcement regarding the acquisition of X</a></td></tr>')
+    entries = sl.parse_feed(page)
+    assert [e["id"] for e in entries] == ["20261026-3", "20261027-17"]
+    assert entries[1]["code"] == "MTN" and entries[1]["issuer"] == "MTN GROUP LIMITED"
+    assert entries[0]["code"] is None and entries[0]["issuer"] == "ANGLO AMERICAN PLC"
+
+    class Client:
+        def get(self, url):
+            class R:
+                text = page
+                def raise_for_status(self):
+                    pass
+            return R()
+    log = tmp_path / "sens.jsonl"
+    assert sl.capture(log, Client()) == {"added": 2, "total": 2}
+    assert sl.capture(log, Client()) == {"added": 0, "total": 2}
+    held = sl.load(log)
+    assert sl.covered_since(held) == date(2026, 10, 26)
+    hits = sl.events_for("MTN Group", "MTN.JO", entries=held)
+    assert hits[0]["signal_types"] == ["m_and_a_activity"] and hits[0]["official"]
+    assert sl.events_for("Anglo American", "AGL.JO", entries=held) == []      # cautionary: talks, not the event
+    assert sl.classify_headline("Directorate Change") == {"leadership_change"}
+    assert sl.classify_headline("Dealings in Securities by a Director") == set()

@@ -361,6 +361,10 @@ def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_
     from src.engines import merger_filings
     events += [e for e in merger_filings.events_for(company, ticker)
                if start.isoformat() <= e["date"] <= horizon_end.isoformat()]
+    # JSE SENS announcements from the daily capture log (going forward from the first capture).
+    from src.engines import sens_log
+    events += [e for e in sens_log.events_for(company, ticker)
+               if start.isoformat() <= e["date"] <= horizon_end.isoformat()]
     headlines = 0
     for d in truth_dates:
         window = src.news(company, d - timedelta(days=LOOKBACK_DAYS), d, french=_french(ticker), ticker=ticker)
@@ -391,7 +395,8 @@ def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_
                 hit = [e for e in confirming_events(official_events, SignalType(p.signal_type))
                        if as_of.isoformat() < e["date"] <= (as_of + timedelta(days=HORIZON_DAYS)).isoformat()]
                 official = bool(hit) if (market == "us" or ticker.upper().endswith(".LG")
-                                         or _merger_control_market(ticker, p.signal_type)) else None
+                                         or _merger_control_market(ticker, p.signal_type)
+                                         or _sens_covers(ticker, as_of)) else None
             predictions.append({**p.__dict__, "event_confirmed": o.get("event_confirmed"),
                                 "confirmed_by_official_filing": official,
                                 "confirmation_source": o.get("confirmation_source"),
@@ -410,6 +415,16 @@ def _merger_control_market(ticker: str, signal_type: str) -> bool:
     from src.engines.merger_filings import COMESA_MEMBERS
     c = from_ticker(ticker)
     return signal_type == "m_and_a_activity" and c is not None and (c.iso2 == "ZA" or c.iso2 in COMESA_MEMBERS)
+
+
+def _sens_covers(ticker: str, as_of: date) -> bool:
+    """A JSE listing whose whole horizon after `as_of` falls inside the SENS capture log, so the absence of
+    an announcement there means none was made (before capture began it means nothing)."""
+    from src.engines import sens_log
+    entries = sens_log.load()
+    first = sens_log.covered_since(entries)
+    return (ticker.upper().endswith(".JO") and first is not None and as_of >= first
+            and (as_of + timedelta(days=HORIZON_DAYS)).isoformat() <= max(e["date"] for e in entries))
 
 
 def rolling_period(today: date, months: int = 17) -> tuple[date, date]:
