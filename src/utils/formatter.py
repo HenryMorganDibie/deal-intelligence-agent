@@ -134,8 +134,8 @@ def print_brief(brief: AnalystBrief) -> None:
     sev_color = _severity_color(brief.overall_severity)
     conf_bar  = "█" * int(brief.confidence_score * 20) + "░" * (20 - int(brief.confidence_score * 20))
     event_probability = (
-        f"Mean signal event probability [{conf_bar}] {brief.confidence_score:.0%}"
-        if brief.detected_signals else "No confirmed signals; event probability unavailable"
+        f"Mean historical confirmation rate [{conf_bar}] {brief.confidence_score:.0%}"
+        if brief.detected_signals else "No confirmed signals; confirmation rate unavailable"
     )
     console.print(Panel(
         f"[{sev_color}]{SEVERITY_ICONS[brief.overall_severity]} SEVERITY: {brief.overall_severity.value.upper()}[/{sev_color}]\n\n"
@@ -201,7 +201,7 @@ def print_brief(brief: AnalystBrief) -> None:
             console.print(Panel(
                 f"[{color}]{SEVERITY_ICONS[sig.severity]} {sig.severity.value.upper()}[/{color}]  "
                 f"[dim]{sig.signal_type.value.replace('_', ' ').title()}[/dim]  "
-                f"[dim]Event probability: {sig.confidence:.0%}  Corroboration: {sig.corroboration_count}x[/dim]\n\n"
+                f"[dim]Historical confirmation rate: {sig.confidence:.0%}  Corroboration: {sig.corroboration_count}x[/dim]\n\n"
                 f"[white]{_e(sig.headline)}[/white]\n\n"
                 + "\n".join(f"  [dim]• {_e(e)}[/dim]" for e in sig.evidence[:4])
                 + (f"\n\n[dim italic]{_e(sig.reasoning[:300])}{'...' if len(sig.reasoning) > 300 else ''}[/dim italic]"
@@ -296,8 +296,8 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
         f"**Date:** {brief.brief_date.strftime('%B %d, %Y')}  ",
         f"**Ticker:** {brief.ticker or '—'}  ",
         f"**Severity:** {brief.overall_severity.value.upper()}  ",
-        (f"**Mean signal event probability:** {brief.confidence_score:.0%}  "
-         if brief.detected_signals else "**Mean signal event probability:** — (no confirmed signals)  "),
+        (f"**Mean historical confirmation rate:** {brief.confidence_score:.0%}  "
+         if brief.detected_signals else "**Mean historical confirmation rate:** — (no confirmed signals)  "),
         f"**Sources Reviewed:** {brief.total_sources}  ",
         f"**Deterministic Candidates:** {brief.signal_candidates_count}  ",
         f"**Confirmed Signals:** {len(brief.detected_signals)}  ",
@@ -325,7 +325,7 @@ def brief_to_markdown(brief: AnalystBrief) -> str:
             f"### {icon} Signal {i}: {sig.headline}",
             f"**Type:** {sig.signal_type.value.replace('_', ' ').title()}  ",
             f"**Severity:** {sig.severity.value.upper()}  ",
-            f"**Event Probability:** {sig.confidence:.0%}  ",
+            f"**Historical confirmation rate:** {sig.confidence:.0%}  ",
             f"**Corroboration:** {sig.corroboration_count} source(s)  ",
         ]
         if sig.alpha_score:

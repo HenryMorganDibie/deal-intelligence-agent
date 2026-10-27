@@ -65,6 +65,10 @@ ANTHROPIC_MODEL  = os.getenv("DEAL_INTEL_ANTHROPIC_MODEL", "claude-opus-5-5")
 ANTHROPIC_EFFORT = os.getenv("DEAL_INTEL_EFFORT", "high")
 GROQ_MODEL       = os.getenv("DEAL_INTEL_GROQ_MODEL", "openai/gpt-oss-120b")
 GROQ_FALLBACK_MODELS = ["qwen/qwen3.8-27b"]
+# Ollama Cloud (OLLAMA_API_KEY): DEAL_INTEL_OLLAMA_MODEL first, then OLLAMA_FALLBACK_MODELS.
+OLLAMA_HOST          = os.getenv("OLLAMA_HOST", "https://ollama.com").rstrip("/")
+OLLAMA_MODEL         = os.getenv("DEAL_INTEL_OLLAMA_MODEL", "gemma4:31b")
+OLLAMA_FALLBACK_MODELS = [m for m in os.getenv("DEAL_INTEL_OLLAMA_FALLBACKS", "gpt-oss:120b").split(",") if m]
 MODEL            = GROQ_MODEL if PROVIDER == "groq" else ANTHROPIC_MODEL
 
 # Thinking is always on for current Claude models and counts toward max_tokens,
@@ -85,6 +89,14 @@ def _groq_client():
     if not api_key:
         raise RuntimeError("GROQ_API_KEY environment variable not set.")
     return GroqClient(api_key=api_key)
+
+
+def _ollama_client():
+    api_key = os.getenv("OLLAMA_API_KEY")
+    if not api_key:
+        raise RuntimeError("OLLAMA_API_KEY environment variable not set.")
+    import httpx
+    return httpx.Client(base_url=OLLAMA_HOST, headers={"Authorization": f"Bearer {api_key}"}, timeout=120)
 
 
 class LLMRouter:
@@ -119,8 +131,10 @@ def _get_llm_client():
         return _groq_client(), "groq"
     if PROVIDER == "anthropic":
         return _anthropic_client(), "anthropic"
+    if PROVIDER == "ollama":
+        return _ollama_client(), "ollama"
     available, errors = [], []
-    for make, name in ((_anthropic_client, "anthropic"), (_groq_client, "groq")):
+    for make, name in ((_anthropic_client, "anthropic"), (_ollama_client, "ollama"), (_groq_client, "groq")):
         try:
             available.append((make(), name))
         except RuntimeError as e:
@@ -139,7 +153,7 @@ _last_model: dict[str, str] = {}
 def _model_label(client, provider: str) -> str:
     if provider == "router":
         return getattr(client, "last_model", None) or "unknown"
-    return _last_model.get(provider) or (GROQ_MODEL if provider == "groq" else ANTHROPIC_MODEL)
+    return _last_model.get(provider) or {"groq": GROQ_MODEL, "ollama": OLLAMA_MODEL}.get(provider, ANTHROPIC_MODEL)
 
 
 def public_model_name(model: Optional[str]) -> Optional[str]:
@@ -147,7 +161,7 @@ def public_model_name(model: Optional[str]) -> Optional[str]:
     The exact model is still kept in the server logs and the LLM cache key."""
     if not model:
         return model
-    if model in (GROQ_MODEL, *GROQ_FALLBACK_MODELS) or "/" in model:
+    if model in (GROQ_MODEL, *GROQ_FALLBACK_MODELS, *OLLAMA_FALLBACK_MODELS) or "/" in model:
         return "the fallback language model"
     if model == "unknown":
         return "the language model"
@@ -162,10 +176,20 @@ LLM_CACHE_PATH = DATA_DIR / "llm_cache.json"
 _LLM_CACHE_MAX = 2000
 
 
-def _llm_cache_key(provider: str, system: str, user: str, max_tokens: int) -> str:
-    groq = f"{GROQ_MODEL}|{','.join(GROQ_FALLBACK_MODELS)}"
-    model = {"groq": groq, "router": f"{ANTHROPIC_MODEL}|{ANTHROPIC_EFFORT}>{groq}"}.get(
+def _provider_models(provider: str) -> str:
+    return {"groq": f"{GROQ_MODEL}|{','.join(GROQ_FALLBACK_MODELS)}",
+            "ollama": f"{OLLAMA_MODEL}|{','.join(OLLAMA_FALLBACK_MODELS)}"}.get(
         provider, f"{ANTHROPIC_MODEL}|{ANTHROPIC_EFFORT}")
+
+
+def _llm_cache_key(provider: str, system: str, user: str, max_tokens: int, client: Any = None) -> str:
+    # A router's key names the providers it actually holds, so adding or removing one never
+    # serves a reply written by a different model line-up.
+    if provider == "router":
+        names = [p for _, p in client.providers] if isinstance(client, LLMRouter) else ["anthropic", "groq"]
+        model = ">".join(_provider_models(p) for p in names)
+    else:
+        model = _provider_models(provider)
     payload = json.dumps([provider, model, system, user, max_tokens], ensure_ascii=False)
     return hashlib.sha256(payload.encode()).hexdigest()
 
@@ -184,7 +208,7 @@ def _call_llm(client, provider: str, system: str, user: str, max_tokens: int = 3
     """LLM call through the reproducibility cache (see LLM_CACHE_PATH)."""
     if os.getenv("DEAL_INTEL_LLM_CACHE", "1") == "0":
         return _call_llm_uncached(client, provider, system, user, max_tokens)
-    key = _llm_cache_key(provider, system, user, max_tokens)
+    key = _llm_cache_key(provider, system, user, max_tokens, client)
     cache: dict = load_json(LLM_CACHE_PATH, dict)
     if key in cache:
         return cache[key]["text"]
@@ -219,6 +243,26 @@ def _call_llm_uncached(client, provider: str, system: str, user: str, max_tokens
     """
     if provider == "router":
         return client.call(system, user, max_tokens)
+    if provider == "ollama":
+        errors = []
+        for model in [OLLAMA_MODEL, *[m for m in OLLAMA_FALLBACK_MODELS if m != OLLAMA_MODEL]]:
+            try:
+                r = client.post("/api/chat", json={
+                    "model": model, "stream": False,
+                    "options": {"temperature": 0, "num_predict": max_tokens + 4000},
+                    "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+                })
+                r.raise_for_status()           # 402/429: outside the plan or over its usage: try the next
+                text = (r.json().get("message") or {}).get("content") or ""
+            except Exception as e:
+                errors.append(f"{model}: {e}")
+                continue
+            text = re.sub(r"(?s)<think>.*?</think>", "", text).strip()
+            if text:
+                _last_model["ollama"] = model
+                return text
+            errors.append(f"{model}: empty reply")
+        raise RuntimeError("Ollama failed: " + "; ".join(errors))
     if provider == "groq":
         errors = []
         for model in [GROQ_MODEL, *[m for m in GROQ_FALLBACK_MODELS if m != GROQ_MODEL]]:
@@ -263,6 +307,57 @@ def _call_llm_uncached(client, provider: str, system: str, user: str, max_tokens
         return "".join(b.text for b in response.content if b.type == "text")
 
 _SEVERITY_RANK = {Severity.LOW: 0, Severity.MEDIUM: 1, Severity.HIGH: 2, Severity.CRITICAL: 3}
+
+# A figure in the narrative must appear in what the model was given; years and single digits are exempt.
+_FIGURE = re.compile(r"(?<![\d.,])\d[\d,]*(?:\.\d+)?(?![\d])")      # "$6.2bn", "N2.51", "34%"
+
+
+def _figures(text: str) -> set[str]:
+    out = set()
+    for m in _FIGURE.finditer(text or ""):
+        n = m.group(0).replace(",", "").rstrip(".")
+        if n and not re.fullmatch(r"(?:19|20)\d{2}|\d", n):
+            out.add(n.rstrip("0").rstrip(".") if "." in n else n)
+    return out
+
+
+def _unsupported_figures(text: str, corpus_figures: set[str]) -> set[str]:
+    return _figures(text) - corpus_figures
+
+
+def ground_narrative(data: dict, corpus: str) -> tuple[dict, int]:
+    """Drop narrative sentences, bullets, risks and metrics citing a figure absent from the corpus (the
+    prompt the model saw). Returns (cleaned data, number of items removed)."""
+    known = _figures(corpus.replace("\u202f", "").replace("\u00a0", ""))
+    removed = 0
+
+    def clean_text(text: str) -> str:
+        nonlocal removed
+        kept = []
+        for sentence in re.split(r"(?<=[.!?])\s+", str(text or "").replace("\u202f", " ")):
+            if sentence and _unsupported_figures(sentence, known):
+                removed += 1
+                continue
+            kept.append(sentence)
+        return " ".join(k for k in kept if k).strip()
+
+    out = dict(data)
+    for key in ("executive_summary", "recommendation", "competitive_context"):
+        if out.get(key):
+            out[key] = clean_text(out[key])
+    if isinstance(out.get("recent_developments"), list):
+        bullets = [clean_text(b) for b in out["recent_developments"]]
+        out["recent_developments"] = [b for b in bullets if b]
+    for key, fields in (("key_metrics", ("value", "interpretation")), ("risk_factors", ("factor", "impact"))):
+        items = []
+        for item in out.get(key) or []:
+            if isinstance(item, dict) and any(_unsupported_figures(str(item.get(f) or "").replace("\u202f", " "), known)
+                                              for f in fields):
+                removed += 1
+                continue
+            items.append(item)
+        out[key] = items
+    return out, removed
 
 EXPLANATION_SYSTEM = """You are a senior financial analyst writing explanations for pre-confirmed deal intelligence signals.
 
@@ -331,9 +426,12 @@ def _enrich_with_semantic_evidence(candidates: list[SignalCandidate], state: Age
             cand.entity_mentions = list(set(cand.entity_mentions + all_evidence[:3]))
 
 
-def _candidates_to_prompt(candidates: list[SignalCandidate]) -> str:
+def _candidates_to_prompt(candidates: list[SignalCandidate], titles: Optional[dict[str, str]] = None) -> str:
     lines = []
     for i, c in enumerate(candidates, 1):
+        # Headlines of the other stories behind this candidate: one article alone can mislead about a
+        # deal's structure (who buys what), while several together rarely do.
+        others = [titles[u] for u in c.corroborating_source_urls if titles and u in titles and u != c.source_url][:5]
         lines.append(
             f"CANDIDATE {i}:\n"
             f"  signal_type: {c.signal_type.value}\n"
@@ -344,6 +442,7 @@ def _candidates_to_prompt(candidates: list[SignalCandidate]) -> str:
             f"  corroboration: {c.corroboration_count} independent source(s)\n"
             f"  source_text: {c.source_text[:600]}\n"
             f"  entities_found: {', '.join(c.entity_mentions[:5]) or 'none'}\n"
+            + ("".join(f"  other_report: {t[:160]}\n" for t in others) if others else "")
         )
     return "\n".join(lines)
 
@@ -549,7 +648,7 @@ class LLMExplanationNode:
             f"Company: {company}\n"
             f"Lookback: {state.request.lookback_days} days\n\n"
             f"The deterministic engine confirmed these {len(candidates_for_llm)} signal candidates:\n\n"
-            f"{_candidates_to_prompt(candidates_for_llm)}\n\n"
+            f"{_candidates_to_prompt(candidates_for_llm, {n.url: n.title for n in state.news_items if n.url})}\n\n"
             f"Write explanations for each. Do not invent signals."
         )
 
@@ -695,6 +794,9 @@ class BriefSynthesisAgent:
                 data = json.loads(match.group()) if match else {}
             if not isinstance(data, dict):
                 data = {}
+            data, unsupported = ground_narrative(data, user_prompt)
+            if unsupported:
+                state.errors.append(f"{unsupported} narrative item(s) citing figures absent from the sources were removed")
         except Exception as e:
             # The narrative is optional; the deterministic findings are not.
             narrative_error = str(e)
@@ -730,16 +832,10 @@ class BriefSynthesisAgent:
             except Exception:
                 pass
 
-        try:
-            overall_sev = Severity(_text("overall_severity", "low" if narrative_error else "medium").lower())
-        except ValueError:
-            overall_sev = Severity.MEDIUM
-        # Severity is calibrated deterministically; the narrative layer may
-        # not rate the brief below its most severe confirmed signal.
-        if state.detected_signals:
-            floor = max((s.severity for s in state.detected_signals), key=_SEVERITY_RANK.get)
-            if _SEVERITY_RANK[floor] > _SEVERITY_RANK[overall_sev]:
-                overall_sev = floor
+        # The brief's severity is its most severe signal that has beaten chance in the backtest. The
+        # narrative's own rating is not measured, and a type graded "chance" is noise, however severe.
+        measured = [sig for sig in state.detected_signals if (sig.track_record or {}).get("grade") != "chance"]
+        overall_sev = max((sig.severity for sig in measured), key=_SEVERITY_RANK.get, default=Severity.LOW)
 
         confidence = (
             round(sum(sig.confidence for sig in state.detected_signals) / len(state.detected_signals), 3)

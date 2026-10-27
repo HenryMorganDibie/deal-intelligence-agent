@@ -141,7 +141,7 @@ async def health() -> dict:
     return {
         "ok": True,
         "configured": _configured(),
-        "llm": bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("GROQ_API_KEY")),
+        "llm": bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("OLLAMA_API_KEY") or os.environ.get("GROQ_API_KEY")),
         "daily_limit": PER_VISITOR_DAILY,
         "global_daily_limit": GLOBAL_DAILY,
     }

@@ -52,9 +52,9 @@ function SignalCard({ s }: { s: Signal }) {
         {s.track_record && <TrackRecordBadge record={s.track_record} />}
         <span
           className="kbd text-[0.75rem] text-[color:var(--muted)]"
-          title="Calibrated probability that this signal's event materialises"
+          title="Share of past flags of this type and severity that were followed within 90 days by a confirming filing, disclosure or credible report"
         >
-          {Math.round(s.confidence * 100)}% event probability
+          {Math.round(s.confidence * 100)}% historical confirmation rate
         </span>
         {s.alpha_score && (
           <span
@@ -155,9 +155,9 @@ export function BriefView({ brief, resultId }: { brief: Brief; resultId?: string
           {signals.length > 0 && (
             <span
               className="kbd text-[0.75rem] text-[color:var(--muted)]"
-              title="Mean calibrated probability that the confirmed signal events materialise"
+              title="Mean share of past flags like these that were followed within 90 days by a confirming filing, disclosure or credible report"
             >
-              {Math.round(brief.confidence_score * 100)}% mean event probability
+              {Math.round(brief.confidence_score * 100)}% mean historical confirmation rate
             </span>
           )}
           <span className="kbd text-[0.75rem] text-[color:var(--dim)]">{formatDate(brief.brief_date)}</span>

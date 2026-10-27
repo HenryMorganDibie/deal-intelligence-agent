@@ -4361,3 +4361,34 @@ def test_signal_track_records_compare_with_the_base_rate_and_need_enough_events(
     finally:
         measured.set_tables(None)
         measured.set_base_rates(None)
+
+
+def test_narrative_figures_must_appear_in_the_sources_the_model_saw():
+    from src.agents.signal_agent import ground_narrative
+    corpus = 'news: "MTN Advances $6.2bn Tower Deal", "MTN launches $375 million buyback"'
+    data = {"executive_summary": "MTN advances a $6.2 billion deal. Profit rose 34% in 2026. It is a major move.",
+            "key_metrics": [{"name": "Deal value", "value": "$6.2bn"}, {"name": "Profit", "value": "N2.51 trn"}],
+            "recent_developments": ["Buyback of $375 million launched", "Margins hit 41.5%"],
+            "risk_factors": [{"factor": "Regulatory conditions", "impact": "Delay"}]}
+    out, removed = ground_narrative(data, corpus)
+    assert out["executive_summary"] == "MTN advances a $6.2 billion deal. It is a major move."
+    assert [m["name"] for m in out["key_metrics"]] == ["Deal value"]
+    assert out["recent_developments"] == ["Buyback of $375 million launched"]
+    assert len(out["risk_factors"]) == 1 and removed == 3
+
+
+def test_overall_severity_ignores_signal_types_graded_chance():
+    from src.agents.signal_agent import BriefSynthesisAgent
+    from src.schemas.models import DetectedSignal, Severity
+    state = AgentState(request=AnalysisRequest(company_name="Dangote Cement"))
+
+    def sig(t, sev, grade):
+        return DetectedSignal(signal_type=t, severity=sev, headline="h", evidence=["e"], confidence=0.1,
+                              reasoning="r", track_record={"grade": grade})
+    state.detected_signals = [sig(SignalType.INSIDER_ACTIVITY, Severity.HIGH, "chance"),
+                              sig(SignalType.MA_ACTIVITY, Severity.LOW, "indicative")]
+    agent = BriefSynthesisAgent()
+    agent.client, agent.client_error = None, "no model in tests"
+    import asyncio
+    brief = asyncio.run(agent.run(state)).brief
+    assert brief.overall_severity == Severity.LOW
