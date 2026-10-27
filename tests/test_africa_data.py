@@ -1944,3 +1944,13 @@ def test_follow_up_reports_of_an_agreed_deal_extract_place_and_upgrade_the_rumou
     assert merged["headline"] == "MTN agrees to buy IHS Towers for $6.2 billion"
     # A non-African deal is still not placed in Africa.
     assert dl.extract_deal("Microsoft acquires Activision for $69bn", published="2026-08-05") is None
+
+
+def test_charitable_fundraising_and_unnamed_parties_are_not_deals():
+    for title in ["Group raises $1b to tackle child malnutrition in Nigeria, others",
+                  "U.S. invests in Ghana’s Upper West Region to tackle poverty among subsistence farmers",
+                  "Nigerian group raises $5m Series A"]:
+        assert dl.extract_deal(title, published="2026-10-27") is None, title
+    # A company tackling a market gap is still a deal.
+    assert dl.extract_deal("Kenyan fintech Pezesha raises $11m to tackle SME credit gap",
+                           published="2026-10-27")["target"] == "Pezesha"
