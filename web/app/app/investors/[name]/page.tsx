@@ -53,6 +53,9 @@ export default function InvestorPage({ params }: { params: { name: string } }) {
           {p.hq ? `Headquarters: ${p.hq}. ` : ""}
           {p.first_seen ? `Active in the database from ${p.first_seen} to ${p.last_seen}.` : "No recorded deals yet."}
         </PageHeader>
+        <Link href={`/app/watchlists?follow=${encodeURIComponent(p.name)}`} className="btn btn-ghost mt-4 inline-flex h-9 px-4 text-sm">
+          Follow this investor
+        </Link>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <Stat label="Deals" value={p.deal_count} note={Object.entries(p.roles).map(([k, v]) => `${k} ${v}`).join(", ")} />

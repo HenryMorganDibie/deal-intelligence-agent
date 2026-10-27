@@ -41,7 +41,16 @@ export default function WatchlistsPage() {
 
   useEffect(() => {
     setSaved(readSaved());
-    if (new URLSearchParams(window.location.search).get("from") !== "portfolio") return;
+    const params = new URLSearchParams(window.location.search);
+    const follow = params.get("follow");
+    if (follow) {
+      // "Follow this investor" from a profile: a local draft, sent only if the form is submitted.
+      setName(`Deals involving ${follow}`);
+      setCompanies(follow);
+      setPrefillNotice(`${follow} was added to this draft. Alerts cover every deal it takes part in, under any of its known names.`);
+      return;
+    }
+    if (params.get("from") !== "portfolio") return;
     try {
       const raw = window.sessionStorage.getItem("deal-intelligence:portfolio-watchlist-prefill");
       if (!raw) return;

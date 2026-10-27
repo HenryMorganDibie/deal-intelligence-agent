@@ -28,7 +28,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import httpx
 
-from src.engines.investors import parties
+from src.engines.investors import canonical as _canonical, parties
 
 
 def _phrase(name: str) -> re.Pattern:
@@ -52,10 +52,20 @@ def matches_deal(deal: dict, wl: dict) -> list[str]:
     if not wl.get("include_deals", True):
         return []
     names = [n for n in [deal.get("target"), deal.get("buyer"), deal.get("seller"), *(deal.get("investors") or [])] if n]
-    names += [n for n, _ in parties(deal)]
+    roles = parties(deal)
+    names += [n for n, _ in roles]
+    leads = {_canonical(n) for n in deal.get("lead_investors") or []}
     why = []
     for c in wl.get("companies") or []:
-        if c.strip() and (any(_phrase(c).search(n) for n in names) or _phrase(c).search(deal.get("headline") or "")):
+        if not c.strip():
+            continue
+        # A followed investor matches under any of its names ("BII" is British International Investment), and
+        # the reason says in what role it took part.
+        wanted = _canonical(c)
+        role = next((r for n, r in roles if n == wanted or _phrase(c).search(n)), None)
+        if role in ("investor", "lender", "lp", "gp", "acquirer", "seller"):
+            why.append(f"{role}: {wanted}" + (" (lead)" if wanted in leads else ""))
+        elif any(_phrase(c).search(n) for n in names) or _phrase(c).search(deal.get("headline") or ""):
             why.append(f"company: {c}")
     countries = set(wl.get("countries") or [])
     hit = countries & set(deal.get("countries") or [deal.get("country")])

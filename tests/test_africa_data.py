@@ -2098,3 +2098,12 @@ def test_investor_screener_portfolio_and_fund_lifecycle():
     assert life["phase"] == "harvesting" and life["years_since"] == 6.5
     profile = inv.profile(deals, "Novastar Ventures")
     assert profile["typical_round_usd"] == 6e6 and profile["activity_by_year"] == {"2025": 2}
+
+
+def test_followed_investor_matches_under_any_name_and_says_its_role():
+    from src.engines import watch
+    deal = {"id": "x", "deal_type": "equity_funding", "target": "Kuda", "investors": ["British International Investment", "Partech Africa"],
+            "lead_investors": ["Partech Africa"], "headline": "Kuda raises $20m", "announced": "2026-10-01"}
+    assert watch.matches_deal(deal, {"companies": ["BII"]}) == ["investor: British International Investment"]
+    assert watch.matches_deal(deal, {"companies": ["Partech"]}) == ["investor: Partech Africa (lead)"]
+    assert watch.matches_deal(deal, {"companies": ["Kuda"]}) == ["company: Kuda"]
