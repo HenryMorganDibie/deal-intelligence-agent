@@ -1829,3 +1829,36 @@ def test_current_signals_flag_out_of_date_inconsistent_and_retained_figures():
     assert official["inconsistent"] and official["out_of_date"]          # 2,192 against a peg of about 585
     assert not policy["out_of_date"]                                    # in force since the last decision
     assert r["retained"] and r["retained_since"] == "2026-10-20T10:00:00Z"
+
+
+def test_merger_filings_parse_dates_and_parties_and_confirm_named_companies():
+    from src.engines import merger_filings as mf
+    assert mf.parties_from_title("Summary-of-Merger-Transaction-TCCC_CCBA") == ["TCCC", "CCBA"]
+    assert mf.parties_from_title("Website Notice - Uber International Technologies and Delivery Hero") == [
+        "Uber International Technologies", "Delivery Hero"]
+    assert mf.date_in_name("Notice-TaylorHolcim-Merger-20210817") == "2021-08-17"
+    assert mf.date_in_name("Summary-of-Merger-Transaction-RailCo_GPR-leasing-Africa-23.9.19") == "2019-09-23"
+    assert mf.date_in_text("notification received on 12th March, 2025 of the merger") == "2025-03-12"
+    assert mf.date_from_case_number("202 6Mar0004") == "2026-03-15"
+    text = ("1. Case number: 2026Jan0023 – Harvestime (Pty) Ltd and The Vegetable Business of McCain Foods "
+            "(South Africa) (Pty) Ltd 2. Case number: 2026Feb0036 - Tsebo Solutions Group Proprietary Limited "
+            "and UCT Foods Services (RF) Proprietary Limited")
+    entries = mf.sa_gazette_entries(text, "https://example.org/list.pdf")
+    assert [e["date"] for e in entries] == ["2026-01-15", "2026-02-15"]
+    assert entries[1]["parties"][0] == "Tsebo Solutions Group Proprietary Limited"
+    filings = entries + [{"id": "comesa:1", "authority": mf.COMESA, "title": "Sanlam-Decision", "parties": ["Sanlam"],
+                          "date": "2025-07-01", "excerpt": "Sanlam Limited and Allianz SE", "url": "u"},
+                         {"id": "comesa:2", "authority": mf.COMESA, "title": "Undated", "parties": ["Sanlam"], "date": None}]
+    hits = mf.events_for("Sanlam Ltd", "SLM.JO", filings=filings)
+    assert len(hits) == 1 and hits[0]["official"] and hits[0]["signal_types"] == ["m_and_a_activity"]
+    assert mf.events_for("Tsebo Solutions Group", None, filings=filings)[0]["date"] == "2026-02-15"
+    assert mf.events_for("Dangote Cement", "DANGCEM.LG", filings=filings) == []
+    # A namesake is not the company; separate parties are not one name; a re-posted notice counts once.
+    others = [{"authority": mf.COMESA, "title": "Paramount Aerospace Holdings", "date": "2025-08-15",
+               "parties": ["Paramount Aerospace Holdings Proprietary Limited"], "excerpt": ""},
+              {"authority": mf.COMESA, "title": "Website Notice - MTN and IHS", "date": "2026-05-28",
+               "parties": ["MTN", "IHS"], "excerpt": ""},
+              {"authority": mf.COMESA, "title": "Website-Notice-MTN-and-IHS", "date": "2026-05-28",
+               "parties": ["MTN", "IHS"], "excerpt": ""}]
+    assert mf.events_for("Paramount Global", "PARA", filings=others) == []
+    assert len(mf.events_for("MTN Group", "MTN.JO", filings=others)) == 1

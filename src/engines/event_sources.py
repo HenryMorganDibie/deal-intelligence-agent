@@ -412,6 +412,10 @@ def collect_events(
         items = historical_news(client, company, since, until, french=french,
                                 arabic=t.endswith(".CA"), portuguese=t.endswith((".MZ", ".AO")), ticker=t)
         results.append(news_events(client, company, since, until, headlines=items, ticker=t) if items is not None else None)
+        from src.engines import merger_filings          # official merger-control filings naming the company
+        filed = [e for e in merger_filings.events_for(company, ticker) if since.isoformat() <= e["date"] <= until.isoformat()]
+        if filed:          # only when something matched: an empty snapshot must not turn "no source read" into "none found"
+            results.append(filed)
         got = [r for r in results if r is not None]
         return [e for r in got for e in r] if got else None
     finally:

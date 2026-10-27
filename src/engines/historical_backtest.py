@@ -356,6 +356,11 @@ def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_
             "items": [r["items"] for r in sec_rows]}}})
     if ticker.upper().endswith(".LG"):
         events += src.ngx_events(ticker, company, start, horizon_end)
+    # Official merger-control filings (COMESA, South Africa) naming the company: M&A ground truth that does
+    # not depend on the press, read from the committed snapshot.
+    from src.engines import merger_filings
+    events += [e for e in merger_filings.events_for(company, ticker)
+               if start.isoformat() <= e["date"] <= horizon_end.isoformat()]
     headlines = 0
     for d in truth_dates:
         window = src.news(company, d - timedelta(days=LOOKBACK_DAYS), d, french=_french(ticker), ticker=ticker)
@@ -381,11 +386,12 @@ def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_
                                  events=events, today=today, price_moves=_price_moves) or {}
             official = None
             if o.get("event_confirmed") is not None:
-                official_events = [e for e in events if not e.get("signal_types")
+                official_events = [e for e in events if not e.get("signal_types") or e.get("official")
                                    or e["source"].startswith(("NGX disclosure", "NSE Kenya disclosure"))]
                 hit = [e for e in confirming_events(official_events, SignalType(p.signal_type))
                        if as_of.isoformat() < e["date"] <= (as_of + timedelta(days=HORIZON_DAYS)).isoformat()]
-                official = bool(hit) if (market == "us" or ticker.upper().endswith(".LG")) else None
+                official = bool(hit) if (market == "us" or ticker.upper().endswith(".LG")
+                                         or _merger_control_market(ticker, p.signal_type)) else None
             predictions.append({**p.__dict__, "event_confirmed": o.get("event_confirmed"),
                                 "confirmed_by_official_filing": official,
                                 "confirmation_source": o.get("confirmation_source"),
@@ -395,6 +401,15 @@ def _company_run(entry: tuple, start: date, end: date, dates: list[date], truth_
     return {"company": company, "ticker": ticker, "market": market, "as_of_dates": len(dates),
             "headlines": headlines, "filings": len(sec_rows), "covered": bool(headlines or sec_rows),
             "predictions": predictions, "truth": truth, "base": base, "prices_version": PRICES_VERSION}
+
+
+def _merger_control_market(ticker: str, signal_type: str) -> bool:
+    """An African M&A flag whose market publishes merger-control decisions (South Africa, COMESA), so an
+    official filing could confirm it."""
+    from src.data.africa_countries import from_ticker
+    from src.engines.merger_filings import COMESA_MEMBERS
+    c = from_ticker(ticker)
+    return signal_type == "m_and_a_activity" and c is not None and (c.iso2 == "ZA" or c.iso2 in COMESA_MEMBERS)
 
 
 def rolling_period(today: date, months: int = 17) -> tuple[date, date]:

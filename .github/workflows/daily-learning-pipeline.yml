@@ -56,6 +56,16 @@ jobs:
           AFRICA_API_KEY: ${{ secrets.AFRICA_API_KEY }}
         run: python scripts/refresh_current_macro_signals.py
 
+      - name: Refresh official merger-control filings (COMESA, South Africa) weekly
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true            # an authority's site being down never blocks the daily pipeline
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(date -u +%u)" = "1" ]; then
+            python scripts/refresh_merger_filings.py
+          else
+            echo "Not Monday; merger filings refresh weekly."
+          fi
+
       - name: Collect review data, gather financials, build graph and evaluate models
         run: python scripts/daily_pipeline.py
 
@@ -77,6 +87,7 @@ jobs:
               'docs/automation/event_classifier.json',
               'src/data/country_indicators.json',
               'src/data/current_macro_signals.json',
+              'src/data/merger_filings.json',
               'docs/automation/entity_match_evaluation.json',
               'docs/automation/entity_matcher.json',
               'web/data/investment_ideas.json',
