@@ -3,125 +3,125 @@
  "end": "2026-06-15",
  "step_days": 0,
  "as_of_dates": 18,
- "companies": 1696,
+ "companies": 1727,
  "companies_by_market": {
   "us": 1012,
-  "africa": 684
+  "africa": 715
  },
  "company_months": {
   "us": 18216,
-  "africa": 12312
+  "africa": 12870
  },
  "uncovered_companies": {
   "africa": 9
  },
- "missing_companies": 535,
+ "missing_companies": 504,
  "universe_size": 2240,
  "lookback_days": 30,
  "horizon_days": 90,
- "predictions_with_returns": 8188,
+ "predictions_with_returns": 8299,
  "metrics": {
   "credit_risk": {
    "all": {
-    "predictions": 212,
-    "labelled": 212,
-    "precision": 0.024,
+    "predictions": 154,
+    "labelled": 154,
+    "precision": 0.026,
     "precision_official_filings": 0.023,
-    "official_labelled": 174,
+    "official_labelled": 129,
     "events": 102,
-    "caught": 5,
-    "confirmed": 5,
-    "recall": 0.049,
+    "caught": 4,
+    "confirmed": 4,
+    "recall": 0.039,
     "base_hits": 262,
-    "company_months": 30528,
-    "base_rate": 0.009,
-    "lift": 2.67,
+    "company_months": 31086,
+    "base_rate": 0.008,
+    "lift": 3.25,
     "price_only": false,
-    "hit_rate": 0.497,
-    "directional_n": 187,
-    "median_abnormal_return_10d_pct": 0.05
+    "hit_rate": 0.507,
+    "directional_n": 136,
+    "median_abnormal_return_10d_pct": -0.04
    },
    "us": {
-    "predictions": 173,
-    "labelled": 173,
-    "precision": 0.029,
-    "precision_official_filings": 0.023,
-    "official_labelled": 173,
+    "predictions": 127,
+    "labelled": 127,
+    "precision": 0.031,
+    "precision_official_filings": 0.024,
+    "official_labelled": 127,
     "events": 100,
-    "caught": 5,
-    "confirmed": 5,
-    "recall": 0.05,
+    "caught": 4,
+    "confirmed": 4,
+    "recall": 0.04,
     "base_hits": 256,
     "company_months": 18216,
     "base_rate": 0.014,
-    "lift": 2.07,
+    "lift": 2.21,
     "price_only": false,
-    "hit_rate": 0.518,
-    "directional_n": 168,
-    "median_abnormal_return_10d_pct": -0.18
+    "hit_rate": 0.528,
+    "directional_n": 123,
+    "median_abnormal_return_10d_pct": -0.27
    },
    "africa": {
-    "predictions": 39,
-    "labelled": 39,
+    "predictions": 27,
+    "labelled": 27,
     "precision": 0.0,
     "precision_official_filings": 0.0,
-    "official_labelled": 1,
+    "official_labelled": 2,
     "events": 2,
     "caught": 0,
     "confirmed": 0,
     "recall": 0.0,
     "base_hits": 6,
-    "company_months": 12312,
+    "company_months": 12870,
     "base_rate": 0.0,
     "lift": null,
     "price_only": false,
-    "hit_rate": 0.316,
-    "directional_n": 19,
-    "median_abnormal_return_10d_pct": 2.48
+    "hit_rate": 0.308,
+    "directional_n": 13,
+    "median_abnormal_return_10d_pct": 1.08
    }
   },
   "debt_restructuring": {
    "all": {
-    "predictions": 45,
-    "labelled": 45,
-    "precision": 0.022,
-    "precision_official_filings": 0.026,
-    "official_labelled": 38,
+    "predictions": 79,
+    "labelled": 79,
+    "precision": 0.025,
+    "precision_official_filings": 0.035,
+    "official_labelled": 57,
     "events": 14,
-    "caught": 1,
-    "confirmed": 1,
-    "recall": 0.071,
+    "caught": 2,
+    "confirmed": 2,
+    "recall": 0.143,
     "base_hits": 34,
-    "company_months": 30528,
+    "company_months": 31086,
     "base_rate": 0.001,
-    "lift": 22.0,
+    "lift": 25.0,
     "price_only": false,
-    "hit_rate": 0.488,
-    "directional_n": 41,
-    "median_abnormal_return_10d_pct": 0.47
+    "hit_rate": 0.433,
+    "directional_n": 67,
+    "median_abnormal_return_10d_pct": 1.1
    },
    "us": {
-    "predictions": 37,
-    "labelled": 37,
-    "precision": 0.027,
-    "precision_official_filings": 0.027,
-    "official_labelled": 37,
+    "predictions": 56,
+    "labelled": 56,
+    "precision": 0.036,
+    "precision_official_filings": 0.036,
+    "official_labelled": 56,
     "events": 13,
-    "caught": 1,
-    "confirmed": 1,
-    "recall": 0.077,
+    "caught": 2,
+    "confirmed": 2,
+    "recall": 0.154,
     "base_hits": 31,
     "company_months": 18216,
     "base_rate": 0.002,
-    "lift": 13.5,
+    "lift": 18.0,
     "price_only": false,
-    "hit_rate": 0.5,
-    "directional_n": 36,
-    "median_abnormal_return_10d_pct": -0.06
+    "hit_rate": 0.436,
+    "directional_n": 55,
+    "median_abnormal_return_10d_pct": 0.8
    },
    "africa": {
-    "predictions": 8,
-    "labelled": 8,
+    "predictions": 23,
+    "labelled": 23,
     "precision": 0.0,
     "precision_official_filings": 0.0,
     "official_labelled": 1,
@@ -130,41 +130,41 @@
     "confirmed": 0,
     "recall": 0.0,
     "base_hits": 3,
-    "company_months": 12312,
+    "company_months": 12870,
     "base_rate": 0.0,
     "lift": null,
     "price_only": false,
-    "hit_rate": 0.4,
-    "directional_n": 5,
-    "median_abnormal_return_10d_pct": 1.25
+    "hit_rate": 0.417,
+    "directional_n": 12,
+    "median_abnormal_return_10d_pct": 1.48
    }
   },
   "distressed_asset": {
    "all": {
-    "predictions": 137,
-    "labelled": 137,
-    "precision": 0.08,
-    "precision_official_filings": 0.101,
-    "official_labelled": 99,
+    "predictions": 139,
+    "labelled": 139,
+    "precision": 0.079,
+    "precision_official_filings": 0.1,
+    "official_labelled": 100,
     "events": 197,
     "caught": 18,
     "confirmed": 11,
     "recall": 0.091,
     "base_hits": 410,
-    "company_months": 30528,
+    "company_months": 31086,
     "base_rate": 0.013,
-    "lift": 6.15,
+    "lift": 6.08,
     "price_only": false,
-    "hit_rate": 0.431,
-    "directional_n": 102,
-    "median_abnormal_return_10d_pct": 1.13
+    "hit_rate": 0.423,
+    "directional_n": 104,
+    "median_abnormal_return_10d_pct": 1.14
    },
    "us": {
-    "predictions": 98,
-    "labelled": 98,
-    "precision": 0.102,
-    "precision_official_filings": 0.102,
-    "official_labelled": 98,
+    "predictions": 99,
+    "labelled": 99,
+    "precision": 0.101,
+    "precision_official_filings": 0.101,
+    "official_labelled": 99,
     "events": 182,
     "caught": 17,
     "confirmed": 10,
@@ -172,16 +172,16 @@
     "base_hits": 377,
     "company_months": 18216,
     "base_rate": 0.021,
-    "lift": 4.86,
+    "lift": 4.81,
     "price_only": false,
-    "hit_rate": 0.444,
-    "directional_n": 90,
-    "median_abnormal_return_10d_pct": 0.89
+    "hit_rate": 0.44,
+    "directional_n": 91,
+    "median_abnormal_return_10d_pct": 1.14
    },
    "africa": {
-    "predictions": 39,
-    "labelled": 39,
-    "precision": 0.026,
+    "predictions": 40,
+    "labelled": 40,
+    "precision": 0.025,
     "precision_official_filings": 0.0,
     "official_labelled": 1,
     "events": 15,
@@ -189,18 +189,18 @@
     "confirmed": 1,
     "recall": 0.067,
     "base_hits": 33,
-    "company_months": 12312,
+    "company_months": 12870,
     "base_rate": 0.003,
-    "lift": 8.67,
+    "lift": 8.33,
     "price_only": false,
-    "hit_rate": 0.333,
-    "directional_n": 12,
+    "hit_rate": 0.308,
+    "directional_n": 13,
     "median_abnormal_return_10d_pct": 1.4
    }
   },
   "earnings_surprise": {
    "all": {
-    "predictions": 970,
+    "predictions": 1008,
     "labelled": 0,
     "precision": null,
     "precision_official_filings": null,
@@ -210,16 +210,16 @@
     "confirmed": 0,
     "recall": 0.167,
     "base_hits": 17,
-    "company_months": 30528,
+    "company_months": 31086,
     "base_rate": 0.001,
     "lift": null,
     "price_only": true,
-    "hit_rate": 0.542,
-    "directional_n": 908,
-    "median_abnormal_return_10d_pct": 0.43
+    "hit_rate": 0.534,
+    "directional_n": 946,
+    "median_abnormal_return_10d_pct": 0.44
    },
    "us": {
-    "predictions": 880,
+    "predictions": 918,
     "labelled": 0,
     "precision": null,
     "precision_official_filings": null,
@@ -233,9 +233,9 @@
     "base_rate": 0.001,
     "lift": null,
     "price_only": true,
-    "hit_rate": 0.547,
-    "directional_n": 875,
-    "median_abnormal_return_10d_pct": 0.46
+    "hit_rate": 0.539,
+    "directional_n": 913,
+    "median_abnormal_return_10d_pct": 0.48
    },
    "africa": {
     "predictions": 90,
@@ -248,7 +248,7 @@
     "confirmed": 0,
     "recall": null,
     "base_hits": 0,
-    "company_months": 12312,
+    "company_months": 12870,
     "base_rate": 0.0,
     "lift": null,
     "price_only": true,
@@ -259,45 +259,45 @@
   },
   "insider_activity": {
    "all": {
-    "predictions": 2140,
+    "predictions": 2222,
     "labelled": 0,
     "precision": null,
     "precision_official_filings": null,
     "official_labelled": 0,
     "events": 89,
-    "caught": 29,
+    "caught": 28,
     "confirmed": 0,
-    "recall": 0.326,
+    "recall": 0.315,
     "base_hits": 189,
-    "company_months": 30528,
+    "company_months": 31086,
     "base_rate": 0.006,
     "lift": null,
     "price_only": true,
-    "hit_rate": 0.495,
-    "directional_n": 2093,
-    "median_abnormal_return_10d_pct": 0.47
+    "hit_rate": 0.499,
+    "directional_n": 2135,
+    "median_abnormal_return_10d_pct": 0.49
    },
    "us": {
-    "predictions": 2062,
+    "predictions": 2084,
     "labelled": 0,
     "precision": null,
     "precision_official_filings": null,
     "official_labelled": 0,
     "events": 89,
-    "caught": 29,
+    "caught": 28,
     "confirmed": 0,
-    "recall": 0.326,
+    "recall": 0.315,
     "base_hits": 189,
     "company_months": 18216,
     "base_rate": 0.01,
     "lift": null,
     "price_only": true,
-    "hit_rate": 0.493,
-    "directional_n": 2055,
+    "hit_rate": 0.495,
+    "directional_n": 2078,
     "median_abnormal_return_10d_pct": 0.43
    },
    "africa": {
-    "predictions": 78,
+    "predictions": 138,
     "labelled": 0,
     "precision": null,
     "precision_official_filings": null,
@@ -307,58 +307,58 @@
     "confirmed": 0,
     "recall": null,
     "base_hits": 0,
-    "company_months": 12312,
+    "company_months": 12870,
     "base_rate": 0.0,
     "lift": null,
     "price_only": true,
-    "hit_rate": 0.605,
-    "directional_n": 38,
-    "median_abnormal_return_10d_pct": 1.23
+    "hit_rate": 0.649,
+    "directional_n": 57,
+    "median_abnormal_return_10d_pct": 1.38
    }
   },
   "leadership_change": {
    "all": {
-    "predictions": 2636,
-    "labelled": 2636,
+    "predictions": 2637,
+    "labelled": 2637,
     "precision": 0.409,
-    "precision_official_filings": 0.449,
+    "precision_official_filings": 0.448,
     "official_labelled": 2324,
     "events": 4458,
-    "caught": 1610,
-    "confirmed": 1079,
-    "recall": 0.361,
+    "caught": 1607,
+    "confirmed": 1078,
+    "recall": 0.36,
     "base_hits": 8277,
-    "company_months": 30528,
-    "base_rate": 0.271,
-    "lift": 1.51,
+    "company_months": 31086,
+    "base_rate": 0.266,
+    "lift": 1.54,
     "price_only": false,
-    "hit_rate": 0.485,
-    "directional_n": 2433,
+    "hit_rate": 0.484,
+    "directional_n": 2434,
     "median_abnormal_return_10d_pct": 0.17
    },
    "us": {
     "predictions": 2306,
     "labelled": 2306,
-    "precision": 0.459,
-    "precision_official_filings": 0.452,
+    "precision": 0.458,
+    "precision_official_filings": 0.451,
     "official_labelled": 2306,
     "events": 4361,
-    "caught": 1583,
-    "confirmed": 1058,
-    "recall": 0.363,
+    "caught": 1580,
+    "confirmed": 1057,
+    "recall": 0.362,
     "base_hits": 8072,
     "company_months": 18216,
     "base_rate": 0.443,
-    "lift": 1.04,
+    "lift": 1.03,
     "price_only": false,
     "hit_rate": 0.485,
     "directional_n": 2290,
     "median_abnormal_return_10d_pct": 0.15
    },
    "africa": {
-    "predictions": 330,
-    "labelled": 330,
-    "precision": 0.064,
+    "predictions": 331,
+    "labelled": 331,
+    "precision": 0.063,
     "precision_official_filings": 0.056,
     "official_labelled": 18,
     "events": 97,
@@ -366,100 +366,100 @@
     "confirmed": 21,
     "recall": 0.278,
     "base_hits": 205,
-    "company_months": 12312,
-    "base_rate": 0.017,
-    "lift": 3.76,
+    "company_months": 12870,
+    "base_rate": 0.016,
+    "lift": 3.94,
     "price_only": false,
-    "hit_rate": 0.476,
-    "directional_n": 143,
+    "hit_rate": 0.472,
+    "directional_n": 144,
     "median_abnormal_return_10d_pct": 0.57
    }
   },
   "m_and_a_activity": {
    "all": {
-    "predictions": 2385,
-    "labelled": 2385,
-    "precision": 0.086,
-    "precision_official_filings": 0.09,
-    "official_labelled": 1778,
-    "events": 2053,
-    "caught": 775,
-    "confirmed": 206,
-    "recall": 0.377,
-    "base_hits": 1422,
-    "company_months": 30528,
-    "base_rate": 0.047,
-    "lift": 1.83,
+    "predictions": 2439,
+    "labelled": 2439,
+    "precision": 0.091,
+    "precision_official_filings": 0.075,
+    "official_labelled": 2315,
+    "events": 2156,
+    "caught": 804,
+    "confirmed": 221,
+    "recall": 0.373,
+    "base_hits": 1543,
+    "company_months": 31086,
+    "base_rate": 0.05,
+    "lift": 1.82,
     "price_only": false,
-    "hit_rate": 0.523,
-    "directional_n": 1993,
+    "hit_rate": 0.524,
+    "directional_n": 2033,
     "median_abnormal_return_10d_pct": 0.29
    },
    "us": {
-    "predictions": 1748,
-    "labelled": 1748,
-    "precision": 0.115,
-    "precision_official_filings": 0.092,
-    "official_labelled": 1748,
-    "events": 2020,
-    "caught": 770,
-    "confirmed": 201,
-    "recall": 0.381,
-    "base_hits": 1358,
+    "predictions": 1773,
+    "labelled": 1773,
+    "precision": 0.117,
+    "precision_official_filings": 0.094,
+    "official_labelled": 1773,
+    "events": 2048,
+    "caught": 777,
+    "confirmed": 207,
+    "recall": 0.379,
+    "base_hits": 1402,
     "company_months": 18216,
-    "base_rate": 0.075,
-    "lift": 1.53,
+    "base_rate": 0.077,
+    "lift": 1.52,
     "price_only": false,
-    "hit_rate": 0.52,
-    "directional_n": 1733,
-    "median_abnormal_return_10d_pct": 0.24
+    "hit_rate": 0.524,
+    "directional_n": 1756,
+    "median_abnormal_return_10d_pct": 0.27
    },
    "africa": {
-    "predictions": 637,
-    "labelled": 637,
-    "precision": 0.008,
-    "precision_official_filings": 0.0,
-    "official_labelled": 30,
-    "events": 33,
-    "caught": 5,
-    "confirmed": 5,
-    "recall": 0.152,
-    "base_hits": 64,
-    "company_months": 12312,
-    "base_rate": 0.005,
-    "lift": 1.6,
+    "predictions": 666,
+    "labelled": 666,
+    "precision": 0.021,
+    "precision_official_filings": 0.013,
+    "official_labelled": 542,
+    "events": 108,
+    "caught": 27,
+    "confirmed": 14,
+    "recall": 0.25,
+    "base_hits": 141,
+    "company_months": 12870,
+    "base_rate": 0.011,
+    "lift": 1.91,
     "price_only": false,
-    "hit_rate": 0.542,
-    "directional_n": 260,
-    "median_abnormal_return_10d_pct": 0.52
+    "hit_rate": 0.527,
+    "directional_n": 277,
+    "median_abnormal_return_10d_pct": 0.43
    }
   },
   "regulatory_action": {
    "all": {
-    "predictions": 496,
-    "labelled": 496,
-    "precision": 0.04,
+    "predictions": 514,
+    "labelled": 514,
+    "precision": 0.039,
     "precision_official_filings": 0.0,
-    "official_labelled": 386,
+    "official_labelled": 396,
     "events": 112,
     "caught": 26,
     "confirmed": 20,
     "recall": 0.232,
     "base_hits": 249,
-    "company_months": 30528,
+    "company_months": 31086,
     "base_rate": 0.008,
-    "lift": 5.0,
+    "lift": 4.88,
     "price_only": false,
-    "hit_rate": 0.445,
-    "directional_n": 431,
-    "median_abnormal_return_10d_pct": 0.58
+    "hit_rate": 0.45,
+    "directional_n": 444,
+    "median_abnormal_return_10d_pct": 0.56
    },
    "us": {
-    "predictions": 376,
-    "labelled": 376,
-    "precision": 0.037,
+    "predictions": 384,
+    "labelled": 384,
+    "precision": 0.036,
     "precision_official_filings": 0.0,
-    "official_labelled": 376,
+    "official_labelled": 384,
     "events": 84,
     "caught": 19,
     "confirmed": 14,
@@ -467,52 +467,52 @@
     "base_hits": 179,
     "company_months": 18216,
     "base_rate": 0.01,
-    "lift": 3.7,
+    "lift": 3.6,
     "price_only": false,
-    "hit_rate": 0.448,
-    "directional_n": 373,
+    "hit_rate": 0.449,
+    "directional_n": 381,
     "median_abnormal_return_10d_pct": 0.56
    },
    "africa": {
-    "predictions": 120,
-    "labelled": 120,
-    "precision": 0.05,
+    "predictions": 130,
+    "labelled": 130,
+    "precision": 0.046,
     "precision_official_filings": 0.0,
-    "official_labelled": 10,
+    "official_labelled": 12,
     "events": 28,
     "caught": 7,
     "confirmed": 6,
     "recall": 0.25,
     "base_hits": 70,
-    "company_months": 12312,
-    "base_rate": 0.006,
-    "lift": 8.33,
+    "company_months": 12870,
+    "base_rate": 0.005,
+    "lift": 9.2,
     "price_only": false,
-    "hit_rate": 0.431,
-    "directional_n": 58,
-    "median_abnormal_return_10d_pct": 0.88
+    "hit_rate": 0.46,
+    "directional_n": 63,
+    "median_abnormal_return_10d_pct": 0.62
    }
   }
  },
  "by_severity": {
   "credit_risk": {
    "medium_plus": {
-    "labelled": 75,
-    "precision": 0.053
+    "labelled": 74,
+    "precision": 0.054
    },
    "low": {
-    "labelled": 137,
-    "precision": 0.007
+    "labelled": 80,
+    "precision": 0.0
    }
   },
   "debt_restructuring": {
    "medium_plus": {
-    "labelled": 11,
+    "labelled": 16,
     "precision": 0.0
    },
    "low": {
-    "labelled": 34,
-    "precision": 0.029
+    "labelled": 63,
+    "precision": 0.032
    }
   },
   "distressed_asset": {
@@ -521,134 +521,134 @@
     "precision": 0.137
    },
    "low": {
-    "labelled": 86,
-    "precision": 0.047
+    "labelled": 88,
+    "precision": 0.045
    }
   },
   "leadership_change": {
    "medium_plus": {
-    "labelled": 2075,
+    "labelled": 2073,
     "precision": 0.457
    },
    "low": {
-    "labelled": 561,
-    "precision": 0.232
+    "labelled": 564,
+    "precision": 0.23
    }
   },
   "m_and_a_activity": {
    "medium_plus": {
-    "labelled": 632,
-    "precision": 0.158
+    "labelled": 608,
+    "precision": 0.164
    },
    "low": {
-    "labelled": 1753,
-    "precision": 0.06
+    "labelled": 1831,
+    "precision": 0.066
    }
   },
   "regulatory_action": {
    "medium_plus": {
-    "labelled": 136,
-    "precision": 0.037
+    "labelled": 141,
+    "precision": 0.035
    },
    "low": {
-    "labelled": 360,
-    "precision": 0.042
+    "labelled": 373,
+    "precision": 0.04
    }
   }
  },
  "alpha_validation": {
-  "labelled": 5911,
+  "labelled": 5962,
   "cutoffs": [
-   45.1,
-   64.8
+   44.9,
+   64.4
   ],
   "bands": {
    "low": {
-    "n": 1970,
+    "n": 1944,
     "alpha_range": [
      39.7,
-     45.0
+     44.7
     ],
-    "precision": 0.082,
-    "mean_abs_move_10d_pct": 156.95,
-    "moves_n": 1540
+    "precision": 0.086,
+    "mean_abs_move_10d_pct": 160.46,
+    "moves_n": 1504
    },
    "middle": {
-    "n": 1938,
+    "n": 1988,
     "alpha_range": [
-     45.1,
-     64.7
+     44.9,
+     64.3
     ],
-    "precision": 0.227,
-    "mean_abs_move_10d_pct": 4.8,
-    "moves_n": 1719
+    "precision": 0.222,
+    "mean_abs_move_10d_pct": 10.74,
+    "moves_n": 1745
    },
    "high": {
-    "n": 2003,
+    "n": 2030,
     "alpha_range": [
-     64.8,
-     95.6
+     64.4,
+     95.3
     ],
-    "precision": 0.36,
-    "mean_abs_move_10d_pct": 4.37,
-    "moves_n": 1912
+    "precision": 0.358,
+    "mean_abs_move_10d_pct": 4.26,
+    "moves_n": 1941
    }
   },
-  "spearman_alpha_vs_confirmed": 0.278,
+  "spearman_alpha_vs_confirmed": 0.265,
   "by_type": {
    "credit_risk": {
-    "labelled": 212,
+    "labelled": 154,
     "precision": {
      "low": 0.0,
-     "middle": 0.013,
-     "high": 0.056
+     "middle": 0.0,
+     "high": 0.075
     },
-    "spearman": 0.182
+    "spearman": 0.2
    },
    "debt_restructuring": {
-    "labelled": 45,
+    "labelled": 79,
     "precision": {
      "low": 0.0,
-     "middle": 0.067,
-     "high": 0.0
-    },
-    "spearman": 0.017
-   },
-   "distressed_asset": {
-    "labelled": 137,
-    "precision": {
-     "low": 0.023,
-     "middle": 0.064,
-     "high": 0.152
-    },
-    "spearman": 0.224
-   },
-   "leadership_change": {
-    "labelled": 2636,
-    "precision": {
-     "low": 0.231,
-     "middle": 0.431,
-     "high": 0.5
-    },
-    "spearman": 0.18
-   },
-   "m_and_a_activity": {
-    "labelled": 2385,
-    "precision": {
-     "low": 0.055,
-     "middle": 0.053,
-     "high": 0.151
-    },
-    "spearman": 0.154
-   },
-   "regulatory_action": {
-    "labelled": 496,
-    "precision": {
-     "low": 0.043,
-     "middle": 0.042,
+     "middle": 0.038,
      "high": 0.036
     },
-    "spearman": -0.0
+    "spearman": 0.064
+   },
+   "distressed_asset": {
+    "labelled": 139,
+    "precision": {
+     "low": 0.022,
+     "middle": 0.065,
+     "high": 0.149
+    },
+    "spearman": 0.227
+   },
+   "leadership_change": {
+    "labelled": 2637,
+    "precision": {
+     "low": 0.233,
+     "middle": 0.445,
+     "high": 0.48
+    },
+    "spearman": 0.16
+   },
+   "m_and_a_activity": {
+    "labelled": 2439,
+    "precision": {
+     "low": 0.066,
+     "middle": 0.056,
+     "high": 0.15
+    },
+    "spearman": 0.136
+   },
+   "regulatory_action": {
+    "labelled": 514,
+    "precision": {
+     "low": 0.042,
+     "middle": 0.036,
+     "high": 0.039
+    },
+    "spearman": -0.01
    }
   },
   "verdict": "confirmations rose with alpha across all three thirds"
