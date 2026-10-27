@@ -4392,3 +4392,23 @@ def test_overall_severity_ignores_signal_types_graded_chance():
     import asyncio
     brief = asyncio.run(agent.run(state)).brief
     assert brief.overall_severity == Severity.LOW
+
+
+def test_zen_provider_routes_claude_to_messages_and_others_to_chat_and_falls_through(monkeypatch):
+    import httpx
+    from src.agents import signal_agent as sa
+    calls = []
+
+    def handler(request):
+        calls.append(request.url.path)
+        body = json.loads(request.content)
+        if request.url.path.endswith("/anthropic/v1/messages"):
+            return httpx.Response(402, json={"error": {"message": "no credit"}})
+        return httpx.Response(200, json={"choices": [{"message": {"content": f"<think>x</think>answer from {body['model']}"}}]})
+    monkeypatch.setattr(sa, "ZEN_MODELS", ["claude-sonnet-5-5", "deepseek-v4.1-flash"])
+    client = httpx.Client(base_url="https://zen.test/inference", transport=httpx.MockTransport(handler))
+    text = sa._call_llm_uncached(client, "zen", "system", "user", 100)
+    assert text == "answer from deepseek-v4.1-flash"
+    assert calls == ["/inference/anthropic/v1/messages", "/inference/openai/v1/chat/completions"]
+    assert sa.public_model_name("deepseek-v4.1-flash") == "the fallback language model"
+    assert sa.public_model_name("claude-sonnet-5-5") == "the primary language model"

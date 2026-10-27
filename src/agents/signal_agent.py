@@ -65,6 +65,12 @@ ANTHROPIC_MODEL  = os.getenv("DEAL_INTEL_ANTHROPIC_MODEL", "claude-opus-5-5")
 ANTHROPIC_EFFORT = os.getenv("DEAL_INTEL_EFFORT", "high")
 GROQ_MODEL       = os.getenv("DEAL_INTEL_GROQ_MODEL", "openai/gpt-oss-120b")
 GROQ_FALLBACK_MODELS = ["qwen/qwen3.8-27b"]
+# OpenCode Zen (OPENCODE_API_KEY): paid models behind one key, tried in DEAL_INTEL_ZEN_MODELS order.
+# Claude-family and Qwen Plus/Flash models use its Anthropic Messages endpoint, the rest its
+# OpenAI-compatible one. Zen's free models only run inside OpenCode itself, so none are listed.
+ZEN_BASE        = os.getenv("OPENCODE_ZEN_BASE", "https://opencode.ai/inference").rstrip("/")
+ZEN_MODELS      = [m for m in os.getenv("DEAL_INTEL_ZEN_MODELS", "claude-sonnet-5-5,deepseek-v4.1-flash").split(",") if m]
+_ZEN_MESSAGES_API = re.compile(r"^(claude-|qwen3\.8-flash|qwen3\.[56]-plus)")
 # Ollama Cloud (OLLAMA_API_KEY): DEAL_INTEL_OLLAMA_MODEL first, then OLLAMA_FALLBACK_MODELS.
 OLLAMA_HOST          = os.getenv("OLLAMA_HOST", "https://ollama.com").rstrip("/")
 OLLAMA_MODEL         = os.getenv("DEAL_INTEL_OLLAMA_MODEL", "gemma4:31b")
@@ -89,6 +95,15 @@ def _groq_client():
     if not api_key:
         raise RuntimeError("GROQ_API_KEY environment variable not set.")
     return GroqClient(api_key=api_key)
+
+
+def _zen_client():
+    api_key = os.getenv("OPENCODE_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENCODE_API_KEY environment variable not set.")
+    import httpx
+    return httpx.Client(base_url=ZEN_BASE, timeout=180, headers={
+        "Authorization": f"Bearer {api_key}", "x-api-key": api_key, "anthropic-version": "2023-06-01"})
 
 
 def _ollama_client():
@@ -133,8 +148,11 @@ def _get_llm_client():
         return _anthropic_client(), "anthropic"
     if PROVIDER == "ollama":
         return _ollama_client(), "ollama"
+    if PROVIDER == "zen":
+        return _zen_client(), "zen"
     available, errors = [], []
-    for make, name in ((_anthropic_client, "anthropic"), (_ollama_client, "ollama"), (_groq_client, "groq")):
+    for make, name in ((_anthropic_client, "anthropic"), (_zen_client, "zen"), (_ollama_client, "ollama"),
+                       (_groq_client, "groq")):
         try:
             available.append((make(), name))
         except RuntimeError as e:
@@ -153,7 +171,8 @@ _last_model: dict[str, str] = {}
 def _model_label(client, provider: str) -> str:
     if provider == "router":
         return getattr(client, "last_model", None) or "unknown"
-    return _last_model.get(provider) or {"groq": GROQ_MODEL, "ollama": OLLAMA_MODEL}.get(provider, ANTHROPIC_MODEL)
+    return _last_model.get(provider) or {"groq": GROQ_MODEL, "ollama": OLLAMA_MODEL,
+                                         "zen": ZEN_MODELS[0] if ZEN_MODELS else "unknown"}.get(provider, ANTHROPIC_MODEL)
 
 
 def public_model_name(model: Optional[str]) -> Optional[str]:
@@ -161,7 +180,7 @@ def public_model_name(model: Optional[str]) -> Optional[str]:
     The exact model is still kept in the server logs and the LLM cache key."""
     if not model:
         return model
-    if model in (GROQ_MODEL, *GROQ_FALLBACK_MODELS, *OLLAMA_FALLBACK_MODELS) or "/" in model:
+    if model in (GROQ_MODEL, *GROQ_FALLBACK_MODELS, *OLLAMA_FALLBACK_MODELS, *ZEN_MODELS[1:]) or "/" in model:
         return "the fallback language model"
     if model == "unknown":
         return "the language model"
@@ -178,7 +197,8 @@ _LLM_CACHE_MAX = 2000
 
 def _provider_models(provider: str) -> str:
     return {"groq": f"{GROQ_MODEL}|{','.join(GROQ_FALLBACK_MODELS)}",
-            "ollama": f"{OLLAMA_MODEL}|{','.join(OLLAMA_FALLBACK_MODELS)}"}.get(
+            "ollama": f"{OLLAMA_MODEL}|{','.join(OLLAMA_FALLBACK_MODELS)}",
+            "zen": ",".join(ZEN_MODELS)}.get(
         provider, f"{ANTHROPIC_MODEL}|{ANTHROPIC_EFFORT}")
 
 
@@ -243,6 +263,34 @@ def _call_llm_uncached(client, provider: str, system: str, user: str, max_tokens
     """
     if provider == "router":
         return client.call(system, user, max_tokens)
+    if provider == "zen":
+        errors = []
+        for model in ZEN_MODELS:
+            try:
+                if _ZEN_MESSAGES_API.match(model):
+                    r = client.post("/anthropic/v1/messages", json={
+                        "model": model, "max_tokens": max_tokens + _THINKING_HEADROOM, "system": system,
+                        "messages": [{"role": "user", "content": user}]})
+                    r.raise_for_status()
+                    body = r.json()
+                    if body.get("stop_reason") in ("refusal", "max_tokens"):
+                        raise RuntimeError(f"stopped: {body['stop_reason']}")
+                    text = "".join(b.get("text", "") for b in body.get("content") or [] if b.get("type") == "text")
+                else:
+                    r = client.post("/openai/v1/chat/completions", json={
+                        "model": model, "max_tokens": max_tokens + 4000,
+                        "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]})
+                    r.raise_for_status()           # 401/402/429: bad key, no credit or rate limit: try the next
+                    text = ((r.json().get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+            except Exception as e:
+                errors.append(f"{model}: {e}")
+                continue
+            text = re.sub(r"(?s)<think>.*?</think>", "", text).strip()
+            if text:
+                _last_model["zen"] = model
+                return text
+            errors.append(f"{model}: empty reply")
+        raise RuntimeError("OpenCode Zen failed: " + "; ".join(errors))
     if provider == "ollama":
         errors = []
         for model in [OLLAMA_MODEL, *[m for m in OLLAMA_FALLBACK_MODELS if m != OLLAMA_MODEL]]:
