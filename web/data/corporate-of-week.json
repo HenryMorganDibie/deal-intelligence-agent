@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-27T16:29:32.635563+00:00",
+  "updated_at": "2026-10-27T16:50:11.349507+00:00",
   "current": {
     "company": "Geregu Power",
     "company_url": "/app/companies?name=Geregu%20Power",
@@ -32,7 +32,7 @@
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-10-20",
     "period_end": "2026-10-26",
-    "selected_at": "2026-10-27T16:29:32.634555+00:00",
+    "selected_at": "2026-10-27T16:50:11.348454+00:00",
     "selection_version": 5,
     "companies": [
       {
@@ -66,7 +66,41 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-20",
         "period_end": "2026-10-26",
-        "selected_at": "2026-10-27T16:29:32.634555+00:00",
+        "selected_at": "2026-10-27T16:50:11.348454+00:00",
+        "selection_version": 5
+      },
+      {
+        "company": "Kakuzi",
+        "company_url": "/app/companies?name=Kakuzi",
+        "headline": "Kakuzi Issues Profit Warning Amid Macadamia Slump",
+        "deal_type": "earnings_surprise",
+        "amount_usd": null,
+        "country": "KE",
+        "sector": null,
+        "announced": "2026-10-22",
+        "score": 51.49,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: earnings surprise",
+          "Event rule confidence: 0.88",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "The Kenyan Wall Street",
+            "title": "Kakuzi Issues Profit Warning Amid Macadamia Slump",
+            "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNR0FtRHlKeDJQckVUX0hwX1c2cXo0eGlLaXM4d0V4MzRfMWd1UXBucFMwTXc4Wldqdy02b0VkNmtnWC03SHh2Q05LLUxMaW5vNVYzRFJEQlFCbGlmdFMxSnpWVGRMSFdBOXBtaDBCMHFpM1ZfWjVnQ0oyMl9scy0zM3pNdDR4dU5yN050XzVRN2dWUjRwYmRjYzN3?oc=5",
+            "date": "2026-10-22",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-20",
+        "period_end": "2026-10-26",
+        "selected_at": "2026-10-27T16:50:11.348454+00:00",
         "selection_version": 5
       },
       {
@@ -100,45 +134,98 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-20",
         "period_end": "2026-10-26",
-        "selected_at": "2026-10-27T16:29:32.634555+00:00",
+        "selected_at": "2026-10-27T16:50:11.348454+00:00",
         "selection_version": 5
       },
       {
-        "company": "De Beers",
-        "company_url": "/app/companies?name=De%20Beers",
-        "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
-        "deal_type": "earnings_surprise",
+        "company": "Abu Dhabi Islamic Bank",
+        "company_url": "/app/companies?name=Abu%20Dhabi%20Islamic%20Bank",
+        "headline": "Sudan Revokes Abu Dhabi Islamic Bank’s Licence and Orders Liquidation in Blow to UAE Financial Influence",
+        "deal_type": "distressed_asset",
         "amount_usd": null,
-        "country": "BW",
-        "sector": "mining",
-        "announced": "2026-10-20",
-        "score": 41.43,
+        "country": "SD",
+        "sector": "banking",
+        "announced": "2026-10-22",
+        "score": 44.29,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
         "reasons": [
-          "Corporate signal: earnings surprise",
+          "Corporate signal: distressed asset",
           "Event rule confidence: 0.80",
           "1 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "Mining Weekly",
-            "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
-            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
-            "date": "2026-10-20",
+            "publisher": "دزاير تيوب",
+            "title": "Sudan Revokes Abu Dhabi Islamic Bank’s Licence and Orders Liquidation in Blow to UAE Financial Influence",
+            "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPbFFhQmZpVFdZTmZMQ3l4SzEya0dkWmhFb0I5b05SVVpobzhXUkFEVUhsb3ZMeWFJNHhVRnBTWGE5OWRnX0h0Y0lZSmQ5TGR4VFk1SkEyY0tQQl9FU29scE1Vbm03cHA3bnZ3MHRYR1VSWTNrdV8yQW5fcE90M1BQaVZVLThSamtMeng4VXBPWDlONWNDV2dzeXk1amRRcDRKb2lfRk05SGMtTGp6UktlTWtqdk80NlpkbzUyX25fYi0xQXRXeExncTgxa1VHZw?oc=5",
+            "date": "2026-10-22",
             "kind": "corporate_event"
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-10-20",
         "period_end": "2026-10-26",
-        "selected_at": "2026-10-27T16:29:32.634555+00:00",
+        "selected_at": "2026-10-27T16:50:11.348454+00:00",
+        "selection_version": 5
+      },
+      {
+        "company": "Famous Brands",
+        "company_url": "/app/companies?name=Famous%20Brands",
+        "headline": "Famous Brands raises interim dividend despite profit decline",
+        "deal_type": "earnings_surprise",
+        "amount_usd": null,
+        "country": "BW",
+        "sector": null,
+        "announced": "2026-10-21",
+        "score": 40.46,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: earnings surprise",
+          "Event rule confidence: 0.72",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "thenational.co.za",
+            "title": "Famous Brands raises interim dividend despite profit decline",
+            "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQaGk4VEZfVTFrVHRyZkVxQU5hRWtTX3dXeV9lbXZMWGk3Y3prcHFaZ0Y3ckNBLTZLTFI1Z0FnQmg0Y1NfUFdObWRKQU1tSThwQ3RmOTVzMlVzMjBYTUtpeXNwOXN5cUZEQ2ZWLURFWTM4Zkp4d2dadkd0MFE4amI3b0h6TVlBSXRZalpaaWpCZU5DUk1QTEQzMGhya1BSSGM2UHNCNjVn?oc=5",
+            "date": "2026-10-21",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-10-20",
+        "period_end": "2026-10-26",
+        "selected_at": "2026-10-27T16:50:11.348454+00:00",
         "selection_version": 5
       }
     ],
-    "runner_ups": []
+    "runner_ups": [
+      {
+        "company": "Intels",
+        "score": 50.28,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "De Beers",
+        "score": 41.43,
+        "reasons": [
+          "Corporate signal: earnings surprise",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      }
+    ]
   },
   "history": [
     {
@@ -1111,7 +1198,7 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-10-20",
       "period_end": "2026-10-26",
-      "selected_at": "2026-10-27T16:29:32.634555+00:00",
+      "selected_at": "2026-10-27T16:50:11.348454+00:00",
       "selection_version": 5,
       "companies": [
         {
@@ -1145,7 +1232,41 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-20",
           "period_end": "2026-10-26",
-          "selected_at": "2026-10-27T16:29:32.634555+00:00",
+          "selected_at": "2026-10-27T16:50:11.348454+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Kakuzi",
+          "company_url": "/app/companies?name=Kakuzi",
+          "headline": "Kakuzi Issues Profit Warning Amid Macadamia Slump",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": null,
+          "announced": "2026-10-22",
+          "score": 51.49,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.88",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "The Kenyan Wall Street",
+              "title": "Kakuzi Issues Profit Warning Amid Macadamia Slump",
+              "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNR0FtRHlKeDJQckVUX0hwX1c2cXo0eGlLaXM4d0V4MzRfMWd1UXBucFMwTXc4Wldqdy02b0VkNmtnWC03SHh2Q05LLUxMaW5vNVYzRFJEQlFCbGlmdFMxSnpWVGRMSFdBOXBtaDBCMHFpM1ZfWjVnQ0oyMl9scy0zM3pNdDR4dU5yN050XzVRN2dWUjRwYmRjYzN3?oc=5",
+              "date": "2026-10-22",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-20",
+          "period_end": "2026-10-26",
+          "selected_at": "2026-10-27T16:50:11.348454+00:00",
           "selection_version": 5
         },
         {
@@ -1179,45 +1300,98 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-20",
           "period_end": "2026-10-26",
-          "selected_at": "2026-10-27T16:29:32.634555+00:00",
+          "selected_at": "2026-10-27T16:50:11.348454+00:00",
           "selection_version": 5
         },
         {
-          "company": "De Beers",
-          "company_url": "/app/companies?name=De%20Beers",
-          "headline": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
-          "deal_type": "earnings_surprise",
+          "company": "Abu Dhabi Islamic Bank",
+          "company_url": "/app/companies?name=Abu%20Dhabi%20Islamic%20Bank",
+          "headline": "Sudan Revokes Abu Dhabi Islamic Bank’s Licence and Orders Liquidation in Blow to UAE Financial Influence",
+          "deal_type": "distressed_asset",
           "amount_usd": null,
-          "country": "BW",
-          "sector": "mining",
-          "announced": "2026-10-20",
-          "score": 41.43,
+          "country": "SD",
+          "sector": "banking",
+          "announced": "2026-10-22",
+          "score": 44.29,
           "independent_stories": 1,
           "transaction_records": 0,
           "related_events": 1,
           "reasons": [
-            "Corporate signal: earnings surprise",
+            "Corporate signal: distressed asset",
             "Event rule confidence: 0.80",
             "1 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "Mining Weekly",
-              "title": "De Beers reports lower Q3 output; raises full-year guidance on increased Gahcho Kué stake",
-              "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNZWRYSVpxYmc0dTVBZEJDTE1qVzZIOC1mdjFmaXcwbHNuQkRNLW03VnVNeXJUNlZUQUNudi02VnhXek9nYTFwLUhRcUFRamVheVY3Q0VncnE2TEMzYVdlWlZuSGN6b29oQnFpWXdYTkhxTUxibVg4V25jQXI2c2pDYW83dnlHYVAzSmZWUk40UGlhck45czU4TWVZdFkyNFdsZUJwelRxTkV1MGE0T3FCY2Exem9WME1fcV9JQUlZMjhmUWo2RkM2YTZBZEhkQmlZ?oc=5",
-              "date": "2026-10-20",
+              "publisher": "دزاير تيوب",
+              "title": "Sudan Revokes Abu Dhabi Islamic Bank’s Licence and Orders Liquidation in Blow to UAE Financial Influence",
+              "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPbFFhQmZpVFdZTmZMQ3l4SzEya0dkWmhFb0I5b05SVVpobzhXUkFEVUhsb3ZMeWFJNHhVRnBTWGE5OWRnX0h0Y0lZSmQ5TGR4VFk1SkEyY0tQQl9FU29scE1Vbm03cHA3bnZ3MHRYR1VSWTNrdV8yQW5fcE90M1BQaVZVLThSamtMeng4VXBPWDlONWNDV2dzeXk1amRRcDRKb2lfRk05SGMtTGp6UktlTWtqdk80NlpkbzUyX25fYi0xQXRXeExncTgxa1VHZw?oc=5",
+              "date": "2026-10-22",
               "kind": "corporate_event"
             }
           ],
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-10-20",
           "period_end": "2026-10-26",
-          "selected_at": "2026-10-27T16:29:32.634555+00:00",
+          "selected_at": "2026-10-27T16:50:11.348454+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Famous Brands",
+          "company_url": "/app/companies?name=Famous%20Brands",
+          "headline": "Famous Brands raises interim dividend despite profit decline",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "BW",
+          "sector": null,
+          "announced": "2026-10-21",
+          "score": 40.46,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.72",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "thenational.co.za",
+              "title": "Famous Brands raises interim dividend despite profit decline",
+              "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQaGk4VEZfVTFrVHRyZkVxQU5hRWtTX3dXeV9lbXZMWGk3Y3prcHFaZ0Y3ckNBLTZLTFI1Z0FnQmg0Y1NfUFdObWRKQU1tSThwQ3RmOTVzMlVzMjBYTUtpeXNwOXN5cUZEQ2ZWLURFWTM4Zkp4d2dadkd0MFE4amI3b0h6TVlBSXRZalpaaWpCZU5DUk1QTEQzMGhya1BSSGM2UHNCNjVn?oc=5",
+              "date": "2026-10-21",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-20",
+          "period_end": "2026-10-26",
+          "selected_at": "2026-10-27T16:50:11.348454+00:00",
           "selection_version": 5
         }
       ],
-      "runner_ups": []
+      "runner_ups": [
+        {
+          "company": "Intels",
+          "score": 50.28,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "De Beers",
+          "score": 41.43,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
     }
   ]
 }
