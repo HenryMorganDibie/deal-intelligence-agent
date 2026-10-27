@@ -312,7 +312,7 @@ _NOT_AN_ENTITY = re.compile(
     r"|^(?:(?:new\s+york|london|dubai|us|uk|african|foreign|local|global|international|unnamed|undisclosed)\s+)?"
     r"(?:investment\s+firm|venture\s+capital\s+firm|vc|vc\s+firm|pe\s+firm|investors?|fis?|lenders?|banks?|"
     r"funds?|consortium|firm|lp|lps|gp)$"
-    r"|-based$|^(?:debt-strained|cash-strapped|struggling|operating)\s|^boost\s|\s+and\s+(?:ethiopia|kenya|nigeria)$")
+    r"|-based$|^(?:debt-strained|cash-strapped|struggling|operating)\s|^boost\s|^(?:largest|biggest|record|first)(?:-ever)?\b|-(?:ever|focused|backed|based)$|\s+and\s+(?:ethiopia|kenya|nigeria)$")
 
 
 _PLACES = {
@@ -350,7 +350,8 @@ def split_names(name: Optional[str]) -> list[str]:
             return [c for p in parts for c in split_names(p)]
     if _GENERIC_PARTY.match(raw) or not normalise_name(raw) or normalise_name(raw) in _GENERIC_PARTY_KEYS or _FRAGMENT.search(raw):
         return []
-    if _NOT_AN_ENTITY.search(raw) or _is_place(raw):
+    # A name starts with a capital or digit ("eBay"-style brands aside); a lowercase start is a clause.
+    if _NOT_AN_ENTITY.search(raw) or _is_place(raw) or not (raw[0].isupper() or raw[0].isdigit() or raw[1:2].isupper()):
         return []
     c = canonical(raw)
     return [c] if c else []
@@ -418,6 +419,99 @@ def _inferred_kind(name: str, roles: Counter) -> str:
     return "investment_firm" if _INVESTMENT_FIRM.search(name) else "corporate"
 
 
+def _median(values: list[float]) -> Optional[float]:
+    if not values:
+        return None
+    v = sorted(values)
+    mid = len(v) // 2
+    return round(v[mid] if len(v) % 2 else (v[mid - 1] + v[mid]) / 2)
+
+
+def _stage(deal: dict) -> Optional[str]:
+    """A round's stage, normalised ("Series A", "seed", "pre-seed")."""
+    r = (deal.get("round") or "").strip().lower()
+    if not r:
+        return None
+    m = re.match(r"(pre-seed|seed|pre-series\s+[a-f]|series\s+[a-f]|bridge|growth|extension)", r)
+    return m.group(1).replace("  ", " ") if m else None
+
+
+INVESTMENT_PERIOD_YEARS = 5      # a closed-end fund typically invests for about five years, then harvests
+
+
+def portfolio(deals: list[dict], name: str) -> list[dict]:
+    """Companies this party backed or bought, with what happened to each afterwards: a later round, an exit
+    (sale, acquisition by someone else, IPO), or nothing recorded yet."""
+    rows = [(d, role) for d in deals for n, role in parties(d) if n == name and role in ("investor", "acquirer", "lender")]
+    by_target: dict[str, dict] = {}
+    for d, role in sorted(rows, key=lambda r: r[0].get("announced") or ""):
+        target = d.get("target")
+        # A target that is not a recognisable name ("Africa-focused", a headline clause) is left out.
+        if not target or not split_names(target) or len(target.split()) > 6:
+            continue
+        key = normalise_name(target)
+        by_target.setdefault(key, {"company": target, "first_deal": d.get("announced"), "role": role,
+                                   "deal_id": d["id"], "since": []})
+    for d in deals:
+        key = normalise_name(d.get("target"))
+        entry = by_target.get(key)
+        if not entry or not d.get("announced") or d["announced"] <= (entry["first_deal"] or ""):
+            continue
+        t = d.get("deal_type")
+        event = ("raised again" if t == "equity_funding" else "listed" if t == "ipo"
+                 else "exited" if t in ("exit", "acquisition", "merger") and name not in {n for n, _ in parties(d)} else None)
+        if event:
+            entry["since"].append({"event": event, "date": d["announced"], "deal_id": d["id"]})
+    out = []
+    for e in by_target.values():
+        latest = max(e["since"], key=lambda x: x["date"]) if e["since"] else None
+        out.append({**{k: v for k, v in e.items() if k != "since"},
+                    "status": latest["event"] if latest else "no later deal recorded",
+                    "status_date": latest["date"] if latest else None})
+    return sorted(out, key=lambda e: e["first_deal"] or "", reverse=True)
+
+
+def fund_lifecycle(deals: list[dict], name: str, today: Optional[str] = None) -> Optional[dict]:
+    """The latest fund this party raised as manager, and where it likely is in its life: investing (within
+    about five years of the close) or harvesting (beyond it, when exits are due)."""
+    from datetime import date
+    raised = [d for d in deals if d.get("deal_type") == "fund_raise" and d.get("announced")
+              and name in {n for n, role in parties(d) if role == "gp"}]
+    if not raised:
+        return None
+    latest = max(raised, key=lambda d: d["announced"])
+    years = round((date.fromisoformat(today or date.today().isoformat()) - date.fromisoformat(latest["announced"][:10])).days / 365.25, 1)
+    return {"fund": latest.get("target"), "announced": latest["announced"], "amount_usd": latest.get("amount_usd"),
+            "stage": latest.get("stage"), "years_since": years,
+            "phase": "investing" if years < INVESTMENT_PERIOD_YEARS else "harvesting",
+            "note": f"Closed-end funds typically invest for about {INVESTMENT_PERIOD_YEARS} years, then sell; "
+                    "this is an estimate from the fund's announcement date, not a reported fund term."}
+
+
+def filter_deals(deals: Iterable[dict], sector: Optional[str] = None, country: Optional[str] = None,
+                 stage: Optional[str] = None, deal_type: Optional[str] = None, since: Optional[str] = None,
+                 until: Optional[str] = None, min_usd: Optional[float] = None, max_usd: Optional[float] = None) -> list[dict]:
+    """The deals a screen covers; investors are then ranked on these deals only."""
+    out = []
+    for d in deals:
+        if sector and d.get("sector") != sector:
+            continue
+        if country and country not in (d.get("countries") or [d.get("country")]):
+            continue
+        if stage and _stage(d) != stage.lower():
+            continue
+        if deal_type and d.get("deal_type") != deal_type:
+            continue
+        day = (d.get("announced") or "")[:10]
+        if (since and (not day or day < since)) or (until and (not day or day > until)):
+            continue
+        amount = d.get("amount_usd")
+        if (min_usd is not None and (amount is None or amount < min_usd)) or (max_usd is not None and (amount is None or amount > max_usd)):
+            continue
+        out.append(d)
+    return out
+
+
 def _profile(name: str, rows: list[tuple[dict, str]]) -> dict:
     entry = registry_entry(name)
     roles = Counter(role for _, role in rows)
@@ -444,6 +538,12 @@ def _profile(name: str, rows: list[tuple[dict, str]]) -> dict:
         "co_investors": [{"name": n, "deals": k} for n, k in co.most_common(10)],
         "first_seen": min((d.get("announced") for d, _ in rows if d.get("announced")), default=None),
         "last_seen": max((d.get("announced") for d, _ in rows if d.get("announced")), default=None),
+        "lead_count": sum(1 for d, _ in rows if name in {canonical(n) for n in d.get("lead_investors") or []}),
+        "activity_by_year": dict(sorted(Counter((d.get("announced") or "")[:4] for d, _ in rows
+                                                if d.get("announced")).items())),
+        "typical_round_usd": _median([d["amount_usd"] for d, role in rows
+                                      if role == "investor" and d.get("deal_type") == "equity_funding" and d.get("amount_usd")]),
+        "rounds_by_stage": dict(Counter(_stage(d) for d, role in rows if role == "investor" and _stage(d))),
         "recent": [{"id": d["id"], "role": role, "deal_type": d.get("deal_type"), "target": d.get("target"),
                     "amount_usd": d.get("amount_usd"), "announced": d.get("announced"), "country": d.get("country"),
                     "headline": d.get("headline")} for d, role in recent[:15]],
@@ -464,18 +564,21 @@ def profile(deals: Iterable[dict], name: str) -> Optional[dict]:
 
 
 def leaderboard(deals: Iterable[dict], role: Optional[str] = None, kind: Optional[str] = None,
-                limit: int = 50) -> list[dict]:
-    """Most active parties, optionally by role (investor, lender, acquirer, seller, lp, gp) or registry type."""
+                limit: int = 50, lead_only: bool = False) -> list[dict]:
+    """Most active parties, optionally by role (investor, lender, acquirer, seller, lp, gp), registry type,
+    or only those that led a round."""
     rows = []
     for p in profiles(deals).values():
         if role and not p["roles"].get(role):
+            continue
+        if lead_only and not p["lead_count"]:
             continue
         if kind and p["type"] != kind:
             continue
         rows.append(p)
     rows.sort(key=lambda p: (p["roles"].get(role, 0) if role else p["deal_count"], p["disclosed_usd"]), reverse=True)
-    return [{k: p[k] for k in ("name", "type", "type_inferred", "hq", "deal_count", "roles", "disclosed_usd", "countries",
-                               "last_seen")}
+    return [{k: p[k] for k in ("name", "type", "type_inferred", "hq", "deal_count", "lead_count", "roles", "disclosed_usd",
+                               "countries", "typical_round_usd", "last_seen")}
             for p in rows[:limit]]
 
 

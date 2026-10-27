@@ -413,6 +413,24 @@ _NOT_A_DEAL = re.compile(r"\b(black\s+stars|super\s+eagles|super\s+falcons|bafan
                          r"questions?|prices?|tariffs?|rates?|fears?|hopes?|the\s+bar|bursary|igr|revenue\s+target))\b"
                          r"|\braise[sd]?\s+(?:\S+\s+){0,3}(cap|ceiling|limit|investment|capital|budget|allocation|target|commitment)\s+to\b",
                          re.IGNORECASE)
+_LEADING_RAISE = re.compile(
+    rf"^\s*(?P<subj>{NAME}){_AUX}\s+(?:raises?|raised|secures?|secured|lands?|landed|bags?|bagged|closes?|closed|nets?)"
+    rf"\s+(?:about\s+|over\s+|nearly\s+)?(?=US\$|\$|€|£|₦|N\d|R\d|KSh|USD|\d)")
+_DESCRIBED_NAME = re.compile(
+    r"\b(?:(?:South\s+)?African|Nigerian|Kenyan|Ghanaian|Egyptian|Moroccan|Ethiopian|Ugandan|Tanzanian|Rwandan|Zambian|"
+    r"Zimbabwean|Senegalese|Ivorian|Tunisian|Cameroonian|Malawian|Namibian|Botswana|Mozambican|Algerian|Angolan|"
+    r"Congolese|Beninese|Togolese|Malian|Burkinabe|Sudanese|Somali|Liberian|Gambian|Sierra\s+Leonean|Mauritian|"
+    r"(?:[A-Z][a-z]+)['’]s)\s+(?:(?:[a-z][\w-]*|AI|B2B|B2C|SME)\s+){0,2}"
+    r"(?:fintech|startup|start-up|company|firm|lender|insurer|telco|retailer|platform|agritech|healthtech|edtech|"
+    r"proptech|insurtech|climate-tech|cleantech|marketplace|bank|miner|operator|developer|manufacturer|unicorn|outlet|"
+    r"brewer|distributor|producer|processor|provider|marketer|carrier|airline)\s+(?=[A-Z0-9])")
+# Spending on a place or a sector is not an investment in a company ("Kenya Power invests in Western Kenya
+# lines", "backs E-Mobility").
+_PLACE_OR_SECTOR_TARGET = re.compile(
+    r"(?i)^(?:(?:western|eastern|northern|southern|central|coastal|rural|urban)\s+)?(?:[a-z]+\s+and\s+)?"
+    r"(?:e-mobility|electric\s+mobility|mobility|evs?(?:\s+and\s+charging\s+stations?)?|charging\s+stations?|"
+    r"substations?|lines|grid|roads?|agriculture|healthcare|education|renewables?|solar|energy|clean\s+energy|"
+    r"infrastructure|fintech|startups|smes|youth|women)$")
 # A target that is only a description of equipment ("First Next-Generation MRI Scanner", "New Equipment",
 # "EVs and CNG Vehicles") is an asset purchase, not a company. Brand names ("Peach Cars") are not caught:
 # every word before the noun must be descriptive.
@@ -533,6 +551,18 @@ def _recover_target_from_title(title: str, deal_type: str) -> Optional[str]:
     return candidate
 
 
+def _is_place_only(name: str) -> bool:
+    """A target made only of places: "Western Kenya", "Kwale and Kilifi" (Kenyan counties)."""
+    words = [w for w in re.split(r"\s+(?:and|&)\s+|\s+", name.strip()) if w]
+    region = {"western", "eastern", "northern", "southern", "central", "coastal", "rural", "urban"}
+    rest = [w for w in words if w.lower() not in region]
+    return bool(rest) and len(rest) <= 3 and all(countries_in_text(w) or w in _KENYAN_COUNTIES for w in rest)
+
+
+_KENYAN_COUNTIES = {"Kwale", "Kilifi", "Mombasa", "Kisumu", "Nakuru", "Kiambu", "Machakos", "Turkana", "Garissa",
+                    "Kakamega", "Bungoma", "Meru", "Nyeri", "Kajiado", "Narok", "Lamu", "Marsabit", "Busia"}
+
+
 def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = None,
                  publisher: str = "", url: str = "", publisher_url: str = "", country_hint: Optional[str] = None,
                  africa_source: bool = False,
@@ -620,6 +650,9 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if title.rstrip().endswith("?") or re.match(r"(?i)(why|how|what|should|could|can|will|is|are|does|do|opinion|analysis|explainer)\b", title):
         return None
     norm = _normalise_case(title)
+    # "Nigerian fintech Kuda", "Kenya's agritech startup Twiga": the description before a company name hides it
+    # from the name patterns. The country stays in the full text, which places the deal.
+    norm = _DESCRIBED_NAME.sub("", norm)
     match = None
     for deal_type, rx in _PATTERNS:
         m = rx.search(norm)
@@ -629,6 +662,12 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if match is None:
         return None
     deal_type, m = match
+    # "Spiro Raises $100m in Africa's Largest Investment in Mobility": a company raising money at the start of
+    # the headline is the subject, whatever a later phrase matched.
+    if m.start() > 0:
+        lead_raise = _LEADING_RAISE.match(norm)
+        if lead_raise:
+            deal_type, m = "equity_funding", lead_raise
     subj = _clean_name(m.groupdict().get("subj"))
     obj = _clean_name(m.groupdict().get("obj"))
     if not subj and not obj:
@@ -960,6 +999,12 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         elif deal_type == "fund_raise":
             return None
 
+    # "Mobility for Africa" is a company: the name patterns stop at "for".
+    if target and re.search(rf"\b{re.escape(target)}\s+for\s+Africa\b", title):
+        target = f"{target} for Africa"
+    # Checked on the final target, after descriptors such as "Ghanaian-based" have been resolved.
+    if target and (_PLACE_OR_SECTOR_TARGET.match(target.strip()) or _is_place_only(target)):
+        return None
     deal = {
         "deal_type": deal_type,
         "stage": stage,

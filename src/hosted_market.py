@@ -516,19 +516,33 @@ async def comparables(deal_id: Optional[str] = None, sector: Optional[str] = Non
 
 @router.get("/api/investors")
 async def investor_board(role: Optional[str] = None, kind: Optional[str] = None,
+                         sector: Optional[str] = None, country: Optional[str] = None, stage: Optional[str] = None,
+                         type: Optional[str] = None, since: Optional[str] = None, until: Optional[str] = None,
+                         min_usd: Optional[float] = Query(None, ge=0), max_usd: Optional[float] = Query(None, ge=0),
+                         lead_only: bool = False,
                          limit: int = Query(50, ge=1, le=100),
                          offset: int = Query(0, ge=0, le=100000)) -> dict:
-    matching = investors.leaderboard(deals(), role=role, kind=kind, limit=max(len(deals()) * 2, 1000))
+    """Investor screener: parties ranked on the deals that match the filters (sector, country, round stage,
+    deal type, dates, round size), optionally only those that led a round."""
+    country = _country_or_404(country).iso2 if country else None
+    scope = investors.filter_deals(deals(), sector=sector, country=country, stage=stage, deal_type=type,
+                                   since=since, until=until, min_usd=min_usd, max_usd=max_usd)
+    matching = investors.leaderboard(scope, role=role, kind=kind, lead_only=lead_only,
+                                     limit=max(len(scope) * 2, 1000))
     total_matching = len(matching)
     return {"investors": matching[offset:offset + limit], "total_matching": total_matching,
-            "offset": offset, "limit": limit,
+            "offset": offset, "limit": limit, "deals_in_scope": len(scope),
             "registry": [{"name": i.name, "type": i.kind, "hq": i.hq, "aliases": list(i.aliases)}
                          for i in investors.REGISTRY]}
 
 
 @router.get("/api/investors/{name}")
 async def investor(name: str) -> dict:
-    p = investors.profile(deals(), name)
+    ds = deals()
+    p = investors.profile(ds, name)
+    if p is not None:
+        p = {**p, "portfolio": investors.portfolio(ds, p["name"])[:40],
+             "fund_lifecycle": investors.fund_lifecycle(ds, p["name"])}
     if p is None:
         entry = investors.registry_entry(name)
         if entry is None:
