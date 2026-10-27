@@ -45,6 +45,9 @@ function SignalCard({ s }: { s: Signal }) {
     <article className="panel p-5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-verified">{label(s.signal_type)}</span>
+        {s.event_subtype && s.event_subtype !== "unspecified" && (
+          <span className="kbd text-[0.6875rem] text-[color:var(--muted)]">{label(s.event_subtype)}</span>
+        )}
         <SeverityBadge severity={s.severity} />
         {s.track_record && <TrackRecordBadge record={s.track_record} />}
         <span

@@ -29,6 +29,7 @@ export type Signal = {
   alpha_score?: AlphaScore | null;
   attribution_doubt?: string | null;
   track_record?: TrackRecord | null;
+  event_subtype?: string;
 };
 
 export type TrackRecord = {

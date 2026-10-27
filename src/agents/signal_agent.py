@@ -454,7 +454,8 @@ def attach_track_records(signals: list[DetectedSignal]) -> list[DetectedSignal]:
     """Each signal with its measured track record (see measured.track_record), proven signals first."""
     from src.engines.measured import track_record
     order = {"proven": 0, "indicative": 1, "insufficient": 2, "chance": 3}
-    out = [s.model_copy(update={"track_record": track_record(s.signal_type.value, s.severity.value)}) for s in signals]
+    out = [s.model_copy(update={"track_record": track_record(s.signal_type.value, s.severity.value, s.event_subtype)})
+           for s in signals]
     return sorted(out, key=lambda s: order.get((s.track_record or {}).get("grade"), 2))
 
 

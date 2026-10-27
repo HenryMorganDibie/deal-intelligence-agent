@@ -217,6 +217,7 @@ class Prediction:
     source: str
     source_kind: str            # "filing" | "news"
     alpha: Optional[float] = None
+    event_subtype: str = "unspecified"   # the named sub-signal ("capital_raise", "strategic_review", ...)
 
 
 def _french(ticker: str) -> bool:
@@ -296,7 +297,8 @@ def detect(src: Sources, company: str, ticker: str, as_of: date, sec_rows: list[
         alpha = alpha_components(severity, cand, LiquidityTier.MID_CAP,
                                  now=datetime.combine(as_of, datetime.min.time()))["score"]
         out.append(Prediction(company, ticker, market, sig_type.value, severity.value, as_of.isoformat(),
-                              direction, cand.source_text[:160], cand.source_type, alpha))
+                              direction, cand.source_text[:160], cand.source_type, alpha,
+                              getattr(cand, "event_subtype", None) or "unspecified"))
     return out
 
 

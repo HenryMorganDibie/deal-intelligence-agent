@@ -177,7 +177,42 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\b(agreed|agrees|plans?|planned|announced)\b.{0,30}\b(to\s+)?(sell|sale|dispose\s+of|divest)\b.{0,50}\b(subsidiar(?:y|ies)|business|division|stake|unit)\b",
         r"\b(merger|acquisition|takeover\s+bid|sale\s+process)\b.{0,35}\b(withdrawn|terminated|abandoned|collapsed)\b",
     ], 0.78),
+    # M&A sub-signals that come before deals.
+    # Merger control: a competition authority reviewing or clearing a named transaction is near-certain
+    # evidence of a live deal (COMESA, South Africa, Nigeria, Kenya, Egypt and others).
+    (SignalType.MA_ACTIVITY, [
+        r"\b(competition\s+(commission|tribunal|authority|council)|comesa(\s+competition\s+commission)?|ccc|fccpc|cak|"
+        r"competition\s+authority\s+of\s+kenya|egyptian\s+competition\s+authority|eac\s+competition)\b.{0,60}\b"
+        r"(approv\w*|clear\w*|conditionally|notif\w*|review\w*|block\w*|prohibit\w*)\b.{0,60}\b(merger|acquisition|takeover|transaction|deal)\b",
+        r"\b(merger|acquisition|takeover|transaction|deal)\b.{0,60}\b(approved|cleared|blocked|notified)\s+by\s+(the\s+)?"
+        r"(competition\s+(commission|tribunal|authority)|comesa|fccpc|cak)\b",
+    ], 0.86),
+    # Capital raise intent: a raise being prepared or launched, before the money is in.
+    (SignalType.MA_ACTIVITY, [
+        r"\b(rights\s+(issue|offer)|private\s+placement|public\s+offer(?:ing)?\s+of\s+shares|offer\s+for\s+subscription|"
+        r"book[-\s]?build(?:ing)?|accelerated\s+bookbuild)\b",
+        r"\b(plans?|planning|seeks?|seeking|looks?\s+to|aims?\s+to|set\s+to|intends?\s+to)\s+(to\s+)?raise\b.{0,40}\b"
+        r"(capital|equity|funds?|financing|billion|million|bn|m)\b",
+        r"\b(mandates?|mandated|appoints?|hires?)\b.{0,40}\b(banks?|arrangers?|bookrunners?|advisers?|advisors?)\b.{0,40}\b"
+        r"(eurobond|bond|notes?|sukuk|rights\s+issue|capital\s+raise|fundrais\w*)\b",
+        r"\b(recapitali[sz]ation|capital\s+(raise|raising|injection)|minimum\s+capital\s+requirement)\b",
+    ], 0.72),
+    # Strategic review and market exit: a seller preparing to sell.
+    (SignalType.MA_ACTIVITY, [
+        r"\b(exploring|explores?|considering|weighing|reviewing)\b.{0,30}\b(a\s+)?(sale|strategic\s+options|strategic\s+alternatives|options\s+for)\b",
+        r"\b(puts?|putting)\s+(?:\S+\s+){0,6}?up\s+for\s+sale\b|\b(seeking\s+(a\s+)?buyers?|sale\s+of\s+its\s+\w+\s+(unit|business|operations|subsidiary))\b",
+        r"\b(non[-\s]core\s+(assets?|businesses|operations)|spin[-\s]?off|demerger|carve[-\s]?out)\b",
+        r"\b(exits?|exiting|pulls?\s+out\s+of|withdraws?\s+from|quits?)\s+(the\s+)?([A-Z][a-z]+(?:n|an|ian)?\s+)?(market|operations|business)\b",
+    ], 0.74),
     # ── Credit Risk ──
+    # Distress precursors in reporting: auditors leaving, qualified opinions, results not filed.
+    (SignalType.CREDIT_RISK, [
+        r"\b(auditors?)\b.{0,30}\b(resign\w*|quits?|steps?\s+down|withdraws?)\b",
+        r"\b(qualified|adverse)\s+(audit\s+)?opinion\b|\bdisclaimer\s+of\s+opinion\b",
+        r"\b(fail\w*\s+to\s+(file|submit|publish)|late\s+(filing|submission)|delay\w*\s+(in\s+)?(filing|publishing|releasing))\b"
+        r".{0,40}\b(results|financial\s+statements|accounts|annual\s+report)\b",
+        r"\b(suspended|suspension)\b.{0,40}\b(late|failure\s+to\s+file|non[-\s]submission|outstanding)\b.{0,30}\b(results|accounts|financial\s+statements)\b",
+    ], 0.80),
     (SignalType.CREDIT_RISK, [
         r"\bcovenant\s+(breach|violation|default|waiver)\b",
         r"\bgoing\s+concern\b",
@@ -637,17 +672,35 @@ PERCENTAGE_PATTERN = re.compile(r'\d+\.?\d*\s*%')
 def _classify_event_subtype(signal_type: SignalType, text: str) -> str:
     """Assign a stable, specific event label without changing the canonical signal type."""
     value = (text or "").lower()
+    if signal_type == SignalType.MA_ACTIVITY and re.search(
+            r"\b(exits?|exiting|pulls?\s+out\s+of|withdraws?\s+from|quits?)\s+(the\s+)?(\w+\s+)?(market|operations)\b", value) \
+            and not re.search(r"\b(competition|rights\s+issue|private\s+placement)\b", value):
+        return "market_exit"
     rules: dict[SignalType, list[tuple[str, tuple[str, ...]]]] = {
         SignalType.MA_ACTIVITY: [
+            ("merger_control_filing", ("competition commission", "competition tribunal", "competition authority", "comesa", "fccpc",
+                                       "competition council", "merger control")),
+            ("capital_raise", ("rights issue", "rights offer", "private placement", "offer for subscription", "bookbuild",
+                               "book-build", "book build", "recapitalisation", "recapitalization", "capital raise", "capital raising",
+                               "capital injection", "minimum capital requirement", "plans to raise", "seeks to raise",
+                               "seeking to raise", "aims to raise", "looks to raise", "set to raise", "mandates banks", "mandated banks")),
+            ("market_exit", ("exits the", "exit from the", "pulls out of", "withdraws from the", "exiting the", "quits the")),
             ("divestiture", ("divestiture", "divests", "divested", "divesting", "dispose of a subsidiary", "sale of a division", "sells its subsidiary", "agreed to sell", "cession de filiale")),
             ("transaction_withdrawn", ("acquisition withdrawn", "acquisition was withdrawn", "merger withdrawn", "deal terminated", "takeover bid withdrawn", "acquisition abandoned")),
             ("ipo_preparation", ("ipo", "initial public offering", "introduction en bourse", "cotation", "oferta pública inicial", "oferta publica inicial", "abertura de capital", "listing preparations", "roadshow", "prospectus")),
             ("merger", ("merger", "merges with", "fusion")),
             ("acquisition", ("acquisition", "acquires", "acquired", "takeover", "rachat", "acquiert", "cession de contrôle", "aquisição", "adquire", "buyout")),
-            ("strategic_review", ("strategic review", "strategic alternatives", "sale process")),
+            ("strategic_review", ("strategic review", "strategic alternatives", "strategic options", "sale process", "non-core",
+                                  "spin-off", "spinoff", "spin off", "demerger", "carve-out", "carve out", "put up for sale",
+                                  "seeking a buyer", "seeking buyers", "exploring a sale", "considering a sale", "exploring sale",
+                                  "exploring the sale", "explores sale", "considering sale", "weighs sale", "up for sale")),
             ("exit_process", ("exit process", "exploring a sale", "sale of the company")),
         ],
         SignalType.CREDIT_RISK: [
+            ("auditor_change", ("auditor resign", "auditors resign", "auditor quits", "auditor steps down", "auditor withdraws",
+                                "qualified opinion", "qualified audit opinion", "adverse opinion", "disclaimer of opinion")),
+            ("late_filing", ("failed to file", "failure to file", "late filing", "late submission", "failed to submit",
+                             "failed to publish", "delay in filing", "delayed filing", "non-submission")),
             ("cash_runway", ("cash runway", "runway of less than", "runway below")),
             ("missed_payment", ("missed debt payment", "missed coupon payment", "skipped interest payment", "failed to make a debt payment")),
             ("covenant_breach", ("covenant breach", "breached its covenant", "waiver request", "bris de covenant", "bris de covenants")),

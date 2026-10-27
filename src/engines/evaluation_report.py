@@ -232,7 +232,7 @@ def _alpha_reading(bands: dict) -> str:
 
 
 def predictions_csv(result: dict) -> str:
-    cols = ["company", "ticker", "market", "as_of", "signal_type", "severity", "alpha", "direction", "source_kind",
+    cols = ["company", "ticker", "market", "as_of", "signal_type", "event_subtype", "severity", "alpha", "direction", "source_kind",
             "source", "event_confirmed", "confirmed_by_official_filing", "confirmation_source",
             "abnormal_return_10d_pct", "price_change_10d_pct", "direction_correct"]
     buf = io.StringIO()

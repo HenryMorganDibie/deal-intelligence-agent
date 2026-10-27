@@ -57,7 +57,8 @@ def _moves(values: list[float]) -> Optional[dict]:
             "p75": round(q[2], 2), "share_negative": round(sum(v < 0 for v in values) / len(values), 3)}
 
 
-_OBS_KEYS = ("signal_type", "severity", "event_confirmed", "direction_correct", "abnormal_return_10d_pct")
+# Appended keys keep older compact rows readable (they simply lack the newer fields).
+_OBS_KEYS = ("signal_type", "severity", "event_confirmed", "direction_correct", "abnormal_return_10d_pct", "event_subtype")
 
 
 def _compact(p: dict) -> list:
@@ -74,9 +75,11 @@ def build(predictions: list[dict], meta: Optional[dict] = None, keep_observation
     by_type: dict[str, dict] = {}
     for st in sorted({p["signal_type"] for p in predictions}):
         rows = [p for p in predictions if p["signal_type"] == st]
-        entry = {"type": _summary(st, rows), "by_severity": {}}
+        entry = {"type": _summary(st, rows), "by_severity": {}, "by_subtype": {}}
         for sev in sorted({p["severity"] for p in rows}):
             entry["by_severity"][sev] = _summary(st, [p for p in rows if p["severity"] == sev])
+        for sub in sorted({p.get("event_subtype") for p in rows} - {None, "", "unspecified"}):
+            entry["by_subtype"][sub] = _summary(st, [p for p in rows if p.get("event_subtype") == sub])
         by_type[st] = entry
     confirmable = [p for p in predictions if p["signal_type"] not in PRICE_ONLY and p.get("event_confirmed") is not None]
     overall = {"labelled": len(confirmable), "confirmed": sum(p["event_confirmed"] for p in confirmable),
@@ -292,7 +295,7 @@ def _wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     return max(0.0, centre - half), min(1.0, centre + half)
 
 
-def track_record(signal_type: str, severity: str) -> dict:
+def track_record(signal_type: str, severity: str, subtype: Optional[str] = None) -> dict:
     """How flags of this type and severity have performed: the measured confirmation rate (or, for price-only
     types, how often the 10-day move went the expected way), its 95% interval, the base rate it is compared
     with, and a grade an analyst can act on:
@@ -307,14 +310,20 @@ def track_record(signal_type: str, severity: str) -> dict:
     sig = (t.get("signals") or {}).get(signal_type) or {}
     price_only = signal_type in PRICE_ONLY
     key = "direction" if price_only else "confirmation"
-    stats = ((sig.get("by_severity") or {}).get(severity) or {}).get(key) or {}
-    scope = f"{severity} " if stats.get("labelled") else ""
-    if (stats.get("labelled") or 0) < TRACK_MIN_N:          # too few at this severity: grade the whole type
-        stats, scope = (sig.get("type") or {}).get(key) or {}, ""
+    # The most specific group with enough history: the named sub-signal, then the severity, then the type.
+    sub_stats = ((sig.get("by_subtype") or {}).get(subtype or "") or {}).get(key) or {}
+    if (sub_stats.get("labelled") or 0) >= TRACK_MIN_N:
+        stats, scope = sub_stats, f"{subtype.replace('_', ' ')} "
+    else:
+        stats = ((sig.get("by_severity") or {}).get(severity) or {}).get(key) or {}
+        scope = f"{severity} " if stats.get("labelled") else ""
+        if (stats.get("labelled") or 0) < TRACK_MIN_N:      # too few at this severity: grade the whole type
+            stats, scope = (sig.get("type") or {}).get(key) or {}, ""
     n = int(stats.get("labelled") or 0)
     k = int(stats.get("confirmed", stats.get("correct", 0)) or 0)
     base = 0.5 if price_only else (_base_rates().get(signal_type) or {}).get("base_rate")
-    out = {"signal_type": signal_type, "severity": severity, "measure": key, "n": n,
+    out = {"signal_type": signal_type, "severity": severity, "subtype": subtype, "graded_on": scope.strip() or "type",
+           "measure": key, "n": n,
            "rate": round(k / n, 4) if n else None, "base_rate": base}
     if n < TRACK_MIN_N or not base:
         return {**out, "grade": "insufficient", "label": "Insufficient history",

@@ -222,3 +222,24 @@ def test_new_event_variants_receive_specific_subtypes():
     ]
     for signal_type, text, expected in cases:
         assert _classify_event_subtype(signal_type, text) == expected
+
+
+def test_deal_sub_signals_are_named_within_the_eight_types():
+    cases = {
+        "Competition Commission approves Heineken's acquisition of Distell with conditions": "merger_control_filing",
+        "COMESA Competition Commission clears Vodacom deal for Safaricom stake": "merger_control_filing",
+        "Access Holdings launches N351bn rights issue to meet CBN recapitalisation": "capital_raise",
+        "Zenith Bank plans to raise $500 million in equity": "capital_raise",
+        "Seplat mandates banks for $650m Eurobond": "capital_raise",
+        "Shell exploring sale of its Nigerian onshore business": "strategic_review",
+        "Diageo puts its stake in Guinness Nigeria up for sale": "strategic_review",
+        "MultiChoice weighs spin-off of Showmax": "strategic_review",
+        "Procter & Gamble exits Nigerian market": "market_exit",
+    }
+    for text, subtype in cases.items():
+        assert SignalType.MA_ACTIVITY in matched_types(text), text
+        assert _classify_event_subtype(SignalType.MA_ACTIVITY, text) == subtype, text
+    assert _classify_event_subtype(SignalType.CREDIT_RISK, "Auditor resigns from Tongaat Hulett citing irregularities") == "auditor_change"
+    assert SignalType.CREDIT_RISK in matched_types("NGX suspends 13 companies for failure to file audited financial statements")
+    for text in ("Unilever posts strong results as sales rise", "Messi exits the pitch"):
+        assert SignalType.MA_ACTIVITY not in matched_types(text), text
