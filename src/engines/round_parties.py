@@ -38,7 +38,7 @@ _LEAD = [re.compile(r"(?<!manufacturer )(?<!company )(?<!firm )(?<!startup )(?<!
 _PARTICIPANT = [
     re.compile(r"\b(?:with\s+)?(?:participation|participating)\s+(?:from|of|by)\s+" + _NAMES + _LIST_END),
     re.compile(r"\balongside\s+(?:existing\s+|new\s+)?(?:investors?\s+)?" + _NAMES + _LIST_END),
-    re.compile(r"\b(?:also\s+)?(?:joined|backed|supported)\s+by\s+(?:existing\s+|new\s+)?(?:investors?\s+)?" + _NAMES + _LIST_END),
+    re.compile(r"\b(?:also\s+)?(?:joined|backed)\s+by\s+(?:existing\s+|new\s+)?(?:investors?\s+)?" + _NAMES + _LIST_END),
     re.compile(r"\binvestors?\s+(?:including|include|included|such\s+as|like)\s+" + _NAMES + _LIST_END),
     re.compile(_NAMES + r"\s+(?:also\s+)?(?:participated|joined\s+the\s+round|took\s+part)\b"),
     re.compile(r"\b(?:raised|raises|raising|secured|secures|closed|closes|bagged|lands|landed)\s+(?:a\s+|an\s+)?"
@@ -47,13 +47,19 @@ _PARTICIPANT = [
 ]
 _ROUND_WORDS = re.compile(r"(?i)\b(round|raise[ds]?|raising|funding|investment|financing|seed|series|backers?|"
                           r"investors?|capital|secured|closes?|closed)\b")
-_OTHER_ROUND = re.compile(r"(?i)\b(previously|earlier|prior|past|last\s+year|had\s+raised|has\s+raised\s+a\s+total|"
-                          r"to\s+date|in\s+total|since\s+(?:its\s+)?(?:launch|founding|inception)|portfolio\s+includes?)\b")
+_OTHER_ROUND = re.compile(r"(?i)\b(previously|previous|earlier|prior|past|last\s+year|last\s+round|had\s+raised|"
+                          r"has\s+raised\s+a\s+total|to\s+date|in\s+total|since\s+(?:its\s+)?(?:launch|founding|inception)|"
+                          r"portfolio\s+includes?|follows?\s+an?\b|following\s+an?\b|comes?\s+(?:\S+\s+){0,4}after|"
+                          r"after\s+(?:raising|securing|closing)|in\s+which|its\s+seed\s+round|first\s+round)\b")
 _STAGE = re.compile(r"(?i)\b(pre-seed|seed|pre-series\s+[a-f]|series\s+[a-f]|bridge|growth|extension)(?:\s+(?:round|funding|extension))?\b")
 _NOT_A_NAME = {"the", "a", "an", "its", "their", "series", "seed", "round", "funding", "investors", "investor", "existing",
                "new", "other", "others", "several", "various", "local", "global", "international", "angel", "angels",
                "ceo", "founder", "founders", "co-founder", "management", "the company", "the startup", "both"}
 MAX_NAMES_PER_SENTENCE = 10
+_PERSON_OR_ROLE = re.compile(
+    r"^.*?\b(?:angel\s+investors?|investors?|backers?|actors?|actress(?:es)?|musicians?|footballers?|founders?|"
+    r"co-founders?|CEOs?|chief\s+executives?|executives?|entrepreneurs?|including|such\s+as|like)\s+(?=[A-Z0-9])",
+    re.IGNORECASE)
 
 
 def resolve_google_news(url: str, client: httpx.Client) -> Optional[str]:
@@ -91,8 +97,16 @@ def _names(fragment: str, target: str) -> list[str]:
     out = []
     for part in re.split(r",\s*(?:and\s+)?|\s+and\s+|\s+as\s+well\s+as\s+", fragment):
         part = re.sub(r"^(?:existing\s+|new\s+|returning\s+)?(?:investors?\s+|backers?\s+)?", "", part.strip(), flags=re.I)
+        # Descriptions before a name: "Angel investors X", "Hollywood actor X", "Silicon Valley investors including X",
+        # "Mono CEOs X", "California-based X".
+        part = _PERSON_OR_ROLE.sub("", part)
+        part = re.sub(r"^[A-Z][\w.]*(?:\s+[A-Z][\w.]*)?-based\s+", "", part)
         part = re.sub(r"\s*\([^)]*\)$", "", part).strip(" '\"’”")
         if not part or not (part[0].isupper() or part[0].isdigit()) or len(part.split()) > 6 or part.lower() in _NOT_A_NAME:
+            continue
+        # A name has at most one lowercase connector word ("Bank of Industry"); more is a clause
+        # ("Kasapreko's impressive financial performance").
+        if sum(1 for w in part.split() if w[:1].islower() and w not in ("of", "and", "for", "de", "du", "la", "el", "&")) > 0:
             continue
         for name in inv.split_names(part):
             if name and inv.normalise_name(name) != target_key and name not in out:

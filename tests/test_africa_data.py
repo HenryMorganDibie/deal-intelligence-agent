@@ -2107,3 +2107,18 @@ def test_followed_investor_matches_under_any_name_and_says_its_role():
     assert watch.matches_deal(deal, {"companies": ["BII"]}) == ["investor: British International Investment"]
     assert watch.matches_deal(deal, {"companies": ["Partech"]}) == ["investor: Partech Africa (lead)"]
     assert watch.matches_deal(deal, {"companies": ["Kuda"]}) == ["company: Kuda"]
+
+
+def test_round_extraction_strips_descriptions_and_skips_clauses_and_prior_rounds():
+    from src.engines.round_parties import extract
+    assert extract("Angel investors Jordan Nel and Hollywood actor Jared Leto also joined the round.", "Terra", 2026)[
+        "participants"] == ["Jordan Nel", "Jared Leto"]
+    assert extract("The round was led by California-based Congruent Ventures, with participation from Active Impact.",
+                   "Zeno", 2026)["lead"] == ["Congruent Ventures"]
+    for text in ["Investor interest was also supported by Kasapreko’s impressive financial performance.",
+                 "MAX’s latest financing also follows a $24 million round announced in January 2026, backed by investors "
+                 "including Novastar Ventures.",
+                 "The raise comes roughly a year after the company secured its seed round, in which TLcom and Flourish "
+                 "also participated."]:
+        found = extract(text, "Acme", 2026)
+        assert not found["lead"] and not found["participants"], text
