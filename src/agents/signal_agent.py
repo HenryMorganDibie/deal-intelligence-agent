@@ -126,15 +126,28 @@ class LLMRouter:
         return "+".join(p for _, p in self.providers)
 
     def call(self, system: str, user: str, max_tokens: int) -> str:
+        import time
         errors = []
-        for client, provider in self.providers:
+        now = time.monotonic()
+        ready = [(c, p) for c, p in self.providers if _COOLDOWN.get(p, 0) <= now]
+        for client, provider in ready or self.providers:    # all cooling down: try them anyway
             try:
                 text = _call_llm_uncached(client, provider, system, user, max_tokens)
                 self.last_model = _last_model.get(provider)
+                _COOLDOWN.pop(provider, None)
                 return text
             except Exception as e:                 # outage, rate limit, refusal: try the next
                 errors.append(f"{provider}: {e}")
+                if _OUT_OF_QUOTA.search(str(e)):
+                    _COOLDOWN[provider] = time.monotonic() + COOLDOWN_SECONDS
         raise RuntimeError("all LLM providers failed: " + "; ".join(errors))
+
+
+# A provider out of credit or over its rate limit is skipped for a while rather than retried on
+# every call (each failed attempt adds latency to the brief); it is tried again after the cooldown.
+COOLDOWN_SECONDS = 900
+_COOLDOWN: dict[str, float] = {}
+_OUT_OF_QUOTA = re.compile(r"(?i)\b(402|429)\b|insufficient (account )?funds|rate limit|quota|free usage")
 
 
 def _get_llm_client():

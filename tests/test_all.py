@@ -4431,3 +4431,22 @@ def test_generic_mna_wordings_of_one_deal_fold_into_one_signal():
     assert by == {("acquisition", 7), ("acquisition", 2), ("merger_control_filing", 2)}
     ihs = next(c for c in folded if c.corroboration_count == 7)
     assert "u2" in ihs.corroborating_source_urls
+
+
+def test_router_skips_a_provider_out_of_credit_until_its_cooldown_ends(monkeypatch):
+    from src.agents import signal_agent as sa
+    calls = []
+
+    def fake(client, provider, system, user, max_tokens):
+        calls.append(provider)
+        if provider == "zen":
+            raise RuntimeError("OpenCode Zen failed: claude-sonnet-5-5: 402 Insufficient account funds")
+        return "ok"
+    monkeypatch.setattr(sa, "_call_llm_uncached", fake)
+    monkeypatch.setattr(sa, "_COOLDOWN", {})
+    router = sa.LLMRouter([(None, "zen"), (None, "ollama")])
+    assert router.call("s", "u", 10) == "ok" and router.call("s", "u", 10) == "ok"
+    assert calls == ["zen", "ollama", "ollama"]          # second call skips zen while it cools down
+    sa._COOLDOWN["zen"] = 0
+    router.call("s", "u", 10)
+    assert calls[-2:] == ["zen", "ollama"]               # retried after the cooldown
