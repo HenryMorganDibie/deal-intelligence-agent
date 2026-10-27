@@ -29,7 +29,9 @@ _BROWSER = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (K
 # Where a list of names ends: punctuation, or a word that starts another clause.
 _LIST_END = (r"(?=[.;:!?()\[\]]|,?\s+(?:to|in|at|for|which|who|that|as|bringing|taking|valuing|according|"
              r"after|while|following|this|its|their|with|alongside|joined|backed|plus)\b|$)")
-_NAMES = r"(?:the\s+)?(?P<names>[A-Z0-9][^.;:!?]{1,240}?)"
+# An optional description before the names ("pan-African venture capital firm Norrsken22").
+_NAMES = (r"(?:the\s+)?(?:(?:a|an|[a-z][\w-]*|[A-Z][a-z]+)\s+(?:[\w-]+\s+){0,3}?"
+          r"(?:firm|investor|fund\s+manager|investment\s+arm|lender|bank)\s+)?(?P<names>[A-Z0-9][^.;:!?]{1,240}?)")
 # "a manufacturer led by its founder" names management, not a round's lead investor.
 _LEAD = [re.compile(r"(?<!manufacturer )(?<!company )(?<!firm )(?<!startup )(?<!business )(?<!platform )(?<!group )"
                     r"(?<!operator )(?<!developer )(?<!maker )(?<!producer )(?<!provider )(?<!team )(?<!bank )"
@@ -37,7 +39,9 @@ _LEAD = [re.compile(r"(?<!manufacturer )(?<!company )(?<!firm )(?<!startup )(?<!
          re.compile(_NAMES + r"\s+(?:led|co-led|spearheaded|anchored)\s+the\s+(?:round|raise|investment|funding|deal)\b")]
 _PARTICIPANT = [
     re.compile(r"\b(?:with\s+)?(?:participation|participating)\s+(?:from|of|by)\s+" + _NAMES + _LIST_END),
-    re.compile(r"\balongside\s+(?:existing\s+|new\s+)?(?:investors?\s+)?" + _NAMES + _LIST_END),
+    # "sits alongside X in the platform" places X; it does not invest with it.
+    re.compile(r"(?<!sits )(?<!sit )(?<!operates )(?<!works )(?<!stands )(?<!listed )\balongside\s+(?:existing\s+|new\s+)?"
+               r"(?:investors?\s+)?" + _NAMES + _LIST_END),
     re.compile(r"\b(?:also\s+)?(?:joined|backed)\s+by\s+(?:existing\s+|new\s+)?(?:investors?\s+)?" + _NAMES + _LIST_END),
     re.compile(r"\binvestors?\s+(?:including|include|included|such\s+as|like)\s+" + _NAMES + _LIST_END),
     re.compile(_NAMES + r"\s+(?:also\s+)?(?:participated|joined\s+the\s+round|took\s+part)\b"),
@@ -61,10 +65,14 @@ MAX_NAMES_PER_SENTENCE = 10
 # part of a name ("Founders Factory Africa").
 _PERSON_OR_ROLE = re.compile(
     r"^(?:.*?\b(?:angel\s+investors?|investors?|backers?|actors?|actress(?:es)?|musicians?|footballers?|founders?|"
-    r"co-founders?|chief\s+executives?|executives?|entrepreneurs?|including|such\s+as|like)|\S+.*?\b(?:CEOs?|CTOs?|"
+    r"co-founders?|chief\s+executives?|executives?|entrepreneurs?|including|such\s+as|like|firm|fund|manager|"
+    r"investment\s+arm|vehicle)|\S+.*?\b(?:CEOs?|CTOs?|"
     r"COOs?|CFOs?|Founders?|Co-founders?))\s+(?=[A-Z0-9])")
 _ORG_WORD = re.compile(r"(?i)\b(?:bank|fund|capital|ventures?|partners|group|holdings?|investments?|corporation|"
                        r"company|foundation|trust|authority|agency|council|ministry|institute|association)\b")
+_GENERIC_PLURAL = re.compile(r"(?i)\b(?:institutions|investors|backers|lenders|shareholders)$")
+# Names with "and" inside them, which the list splitter would otherwise cut in two.
+_AND_NAMES = ("Plug and Play", "Bill and Melinda Gates", "Johnson and Johnson", "Procter and Gamble", "Marks and Spencer")
 _ROLE_ONLY = re.compile(r"(?i)\b(?:CEO|CTO|COO|CFO|founder|co-founder|chairman|chairperson|director|partner)s?$")
 
 
@@ -101,12 +109,15 @@ def _sentences(text: str) -> list[str]:
 def _names(fragment: str, target: str) -> list[str]:
     target_key = inv.normalise_name(target or "")
     out = []
+    for name in _AND_NAMES:
+        fragment = fragment.replace(name, name.replace(" and ", " \x00 "))
     for part in re.split(r",\s*(?:and\s+)?|\s+and\s+|\s+as\s+well\s+as\s+", fragment):
+        part = part.replace(" \x00 ", " and ")
         part = re.sub(r"^(?:the\s+)?(?:existing\s+|new\s+|returning\s+)?(?:investors?\s+|backers?\s+)?", "", part.strip(), flags=re.I)
         # Descriptions before a name: "Angel investors X", "Hollywood actor X", "Silicon Valley investors including X",
         # "Mono CEOs X", "California-based X".
         part = _PERSON_OR_ROLE.sub("", part)
-        part = re.sub(r"^[A-Z][\w.]*(?:\s+[A-Z][\w.]*)?-based\s+", "", part)
+        part = re.sub(r"^(?:[A-Z][\w.]*\s+)?[\w.]+-(?:based|listed|headquartered|focused)\s+", "", part)
         part = re.sub(r"\s*\([^)]*\)$", "", part).strip(" '\"’”")
         # "Jeff Bezos' Bezos Expeditions" is the fund; "Ken Njoroge of PANI" is the person, not the company he runs.
         owned = re.match(r"^([A-Z][\w.-]*(?:\s+[A-Z][\w.-]*){0,2})(?:'s|’s|'|’)\s+(?=[A-Z])(.*)$", part)
@@ -124,8 +135,8 @@ def _names(fragment: str, target: str) -> list[str]:
             part = person_of.group(1)
         if not part or not (part[0].isupper() or part[0].isdigit()) or len(part.split()) > 6 or part.lower() in _NOT_A_NAME:
             continue
-        if _ROLE_ONLY.search(part):                     # "Cowrywise CTO" is a job, not an investor's name
-            continue
+        if _ROLE_ONLY.search(part) or _GENERIC_PLURAL.search(part) or re.fullmatch(r"[\d.,]+", part):
+            continue                                    # "Cowrywise CTO", "Development Finance Institutions", "000"
         # A name has at most one lowercase connector word ("Bank of Industry"); more is a clause
         # ("Kasapreko's impressive financial performance").
         if sum(1 for w in part.split() if w[:1].islower() and w not in ("of", "and", "for", "de", "du", "la", "el", "&")) > 0:
@@ -289,6 +300,7 @@ def enrich(deal: dict, client: httpx.Client, fetch=None, search=None) -> tuple[d
             continue
         out = dict(deal)
         names = found["lead"] + found["participants"]
+        names = [n for n in names if not any(o != n and o.startswith(n + " ") for o in names)]   # "A15" in "A15 Ventures"
         out["investors"] = list(dict.fromkeys((deal.get("investors") or []) + names))[:12]
         out["lead_investors"] = found["lead"]
         out["investor_evidence"] = [{**e, "url": page.get("content_url") or url} for e in found["evidence"]]

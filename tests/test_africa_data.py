@@ -2234,3 +2234,22 @@ def test_track_record_is_graded_within_the_company_market():
     finally:
         m.set_tables(None)
         m.set_base_rates(None)
+
+
+def test_round_extraction_fixes_from_other_coverage_review():
+    from src.engines.round_parties import extract
+    cases = [
+        ("Within the platform, Airnergize Capital sits alongside AiZAR Capital, which focuses on digital infrastructure.",
+         "Airnergize Capital", [], []),
+        ("The funding round was led by Plug and Play Ventures, and features an experienced cap table.", "Zazu",
+         ["Plug and Play Ventures"], []),
+        ("The round was led by pan-African venture capital firm Norrsken22, with participation from AAIC and Tremis "
+         "Capital.", "Shiprazor", ["Norrsken22"], ["AAIC", "Tremis Capital"]),
+        ("The funding round was led by US venture capital firm Lux Capital, with participation from Resilience17 "
+         "Capital.", "Terrahaptix", ["Lux Capital"], ["Resilience17 Capital"]),
+        ("Africa50 secured participation from Development Finance Institutions and Old Mutual in the fund raise.",
+         "Africa50", [], ["Old Mutual"]),
+    ]
+    for text, target, lead, participants in cases:
+        r = extract(text, target, 2026)
+        assert (r["lead"], r["participants"]) == (lead, participants), (target, r)
