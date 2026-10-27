@@ -84,6 +84,7 @@ def _authorized_cron(request: Request) -> bool:
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/live-deal-ingestion.yml@refs/heads/main",
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/historical-backfill.yml@refs/heads/main",
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/review-labels-import.yml@refs/heads/main",
+            "HenryMorganDibie/deal-intelligence-agent/.github/workflows/enrich-round-investors.yml@refs/heads/main",
         }
         return (
             claims.get("repository") == "HenryMorganDibie/deal-intelligence-agent"
@@ -1426,6 +1427,56 @@ async def cron_country_snapshot(request: Request) -> dict:
     return {"status": "ok", "captured_at": captured_at.isoformat(), "countries_submitted": len(rows),
             "rows_written": r.json(), "data_as_of": data_as_of,
             "note": "This captures the current score and inputs; it does not imply the underlying annual indicators were published on the capture date."}
+
+
+def _needs_round_parties(d: dict) -> bool:
+    """A visible equity round that names no investor and whose articles have not been read yet."""
+    return (d.get("deal_type") == "equity_funding" and deals_mod.is_visible(d) and not d.get("parties_checked")
+            and not investors.parties(d))
+
+
+@router.get("/api/cron/enrich-rounds")
+async def cron_enrich_rounds(request: Request, limit: int = Query(40, ge=1, le=80)) -> dict:
+    """Read the articles of funding rounds that name no investor and record the investors they name, each
+    with the sentence that names it. Every round tried is marked, so none is read twice."""
+    if not _authorized_cron(request):
+        raise HTTPException(401, "Unauthorized")
+    if not _configured():
+        raise HTTPException(503, "The API is not configured.")
+    import asyncio
+    from src.engines import round_parties
+    _cache.clear()
+    pending = sorted((d for d in await run_in_threadpool(_load, "deals") if _needs_round_parties(d)),
+                     key=lambda d: d.get("announced") or "", reverse=True)
+    batch = pending[:limit]
+    deadline = time.monotonic() + 200
+    sem = asyncio.Semaphore(4)
+
+    def work(deal: dict) -> tuple[dict, str]:
+        with httpx.Client(timeout=20, follow_redirects=True) as client:
+            return round_parties.enrich(deal, client)
+
+    async def one(deal: dict) -> Optional[tuple[dict, str]]:
+        async with sem:
+            if time.monotonic() > deadline:
+                return None                     # left for the next call
+            try:
+                return await asyncio.wait_for(run_in_threadpool(work, deal), timeout=60)
+            except Exception as e:
+                log.info("round enrichment failed for %s: %r", deal.get("id"), e)
+                return None
+    results = [r for r in await asyncio.gather(*(one(d) for d in batch)) if r]
+    if results:
+        async with httpx.AsyncClient(timeout=60) as client:
+            r = await _rpc(client, "upsert_deals", {"p_rows": [deal for deal, _ in results]})
+        if r.status_code != 200:
+            log.error("round enrichment write failed: status=%s body=%s", r.status_code, r.text[:300])
+            raise HTTPException(502, "Round enrichment could not be saved; the run can be retried.")
+        _cache.clear()
+    statuses: dict[str, int] = {}
+    for _, status in results:
+        statuses[status] = statuses.get(status, 0) + 1
+    return {"processed": len(results), "statuses": statuses, "remaining": len(pending) - len(results)}
 
 
 @router.get("/api/cron/ingest")

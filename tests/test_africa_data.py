@@ -2045,3 +2045,30 @@ def test_investor_names_are_cleaned_and_unregistered_types_inferred():
     assert inv._inferred_kind("Equity Bank", Counter()) == "bank"
     assert inv._inferred_kind("Shell", Counter()) == "corporate"
     assert inv.registry_entry("AgDevCo").kind == "dfi"
+
+
+def test_round_investors_are_read_from_article_text_with_evidence():
+    from src.engines.round_parties import enrich, extract
+    text = ("Lagos-based fintech Moniepoint has raised $110 million in a Series C round led by Development Partners "
+            "International, with participation from Verod Capital and Lightrock. "
+            "Moniepoint previously raised $50 million in 2022 from QED Investors and Novastar Ventures. "
+            "Existing investors Endeavor Catalyst and Global Ventures also participated in the round. "
+            "QCIL, a Kampala-based pharmaceutical manufacturer led by Emmanuel Katongole, is unrelated.")
+    found = extract(text, "Moniepoint", 2024)
+    assert found["lead"] == ["Development Partners International"]
+    assert found["participants"] == ["Verod Capital", "Lightrock", "Endeavor Catalyst", "Global Ventures"]
+    assert found["round"] == "series c"
+    names = {e["name"] for e in found["evidence"]}
+    assert "Novastar Ventures" not in names and "Emmanuel Katongole" not in names     # earlier round; management
+    assert all(e["sentence"] for e in found["evidence"])
+
+    deal = {"id": "d1", "deal_type": "equity_funding", "announced": "2024-10-01", "target": "Moniepoint",
+            "sources": [{"url": "https://example.com/story", "title": "Moniepoint raises $110m"}]}
+    page = {"content_status": "article_text_retrieved", "content_text": text, "content_url": "https://example.com/story"}
+    out, status = enrich(deal, client=None, fetch=lambda item: page)
+    assert status == "investors_found" and out["lead_investors"] == ["Development Partners International"]
+    assert out["investors"][0] == "Development Partners International" and out["round"] == "series c"
+    assert out["investor_evidence"][0]["url"] == "https://example.com/story"
+    assert out["parties_checked"]["status"] == "investors_found"
+    empty, status = enrich(deal, client=None, fetch=lambda item: {"content_status": "snippet_only"})
+    assert status == "article_unreadable" and not empty.get("investors")

@@ -1,0 +1,52 @@
+name: Enrich round investors
+
+# Reads the articles of funding rounds that name no investor and records the investors they name (lead and
+# participants), each with the sentence that names it. Daily after ingestion for new rounds; a manual run
+# keeps going until the backlog is cleared, which is how the history is backfilled.
+on:
+  schedule:
+    - cron: "4 19 * * *"            # after the 18:17 live ingestion
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: enrich-round-investors
+  cancel-in-progress: false
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Request short-lived GitHub Actions OIDC token
+        id: oidc
+        run: |
+          set -euo pipefail
+          response="$(curl --fail-with-body --silent --show-error --max-time 15 \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api")"
+          token="$(printf '%s' "$response" | jq -er '.value')"
+          echo "::add-mask::${token}"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Read round articles in batches
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          # Scheduled runs take three batches of new rounds; a manual run clears the backlog.
+          max_batches=3
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then max_batches=60; fi
+          for i in $(seq 1 "$max_batches"); do
+            result="$(curl --fail-with-body --silent --show-error --max-time 280 \
+              --retry 2 --retry-delay 10 --retry-all-errors \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" -H "Accept: application/json" \
+              "https://deal-intelligence-api.vercel.app/api/cron/enrich-rounds?limit=40")"
+            echo "batch $i: $result"
+            remaining="$(printf '%s' "$result" | jq -er '.remaining')"
+            processed="$(printf '%s' "$result" | jq -er '.processed')"
+            if [ "$remaining" -eq 0 ] || [ "$processed" -eq 0 ]; then break; fi
+          done
