@@ -1023,17 +1023,28 @@ def merge(existing: dict, new: dict) -> dict:
     out["deal_type"] = _merged_type(existing, new)
     if _STAGE_RANK.get(new.get("stage"), 0) > _STAGE_RANK.get(out.get("stage"), 0):
         # A later, firmer report (announced or completed after a rumour) carries the deal's real terms.
-        if out.get("stage") == "rumoured" and new.get("amount_usd"):
+        upgraded = out.get("stage") == "rumoured"
+        if upgraded and new.get("amount_usd"):
             for k in ("amount", "currency", "amount_usd", "headline"):
                 if new.get(k) not in (None, ""):
                     out[k] = new[k]
         out["stage"] = new["stage"]
+        if upgraded and new.get("announced"):
+            # Talks are not an announcement: the deal dates from the firm report; the rumour is kept.
+            out["first_reported"] = out.get("first_reported") or existing.get("announced")
+            out["announced"] = new["announced"]
+            return _merge_rest(out, existing, new)
+    out = _merge_rest(out, existing, new)
+    if new.get("announced") and (not out.get("announced") or new["announced"] < out["announced"]):
+        out["announced"] = new["announced"]
+    return out
+
+
+def _merge_rest(out: dict, existing: dict, new: dict) -> dict:
     out["investors"] = list(dict.fromkeys((existing.get("investors") or []) + (new.get("investors") or [])))[:12]
     out["countries"] = list(dict.fromkeys((existing.get("countries") or []) + (new.get("countries") or [])))
     urls = {s.get("url") for s in existing.get("sources") or []}
     out["sources"] = list(existing.get("sources") or []) + [s for s in new.get("sources") or [] if s.get("url") not in urls]
-    if new.get("announced") and (not out.get("announced") or new["announced"] < out["announced"]):
-        out["announced"] = new["announced"]
     return out
 
 

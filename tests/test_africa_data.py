@@ -1939,7 +1939,8 @@ def test_follow_up_reports_of_an_agreed_deal_extract_place_and_upgrade_the_rumou
     agreed = dl.extract_deal("MTN agrees to buy IHS Towers for $6.2 billion", published="2026-08-05")
     agreed["sources"] = [{"url": "u1"}]
     merged = dl.merge(rumour, agreed)
-    assert (merged["stage"], merged["amount_usd"], merged["announced"]) == ("announced", 6.2e9, "2026-02-09")
+    assert (merged["stage"], merged["amount_usd"], merged["announced"], merged["first_reported"]) == (
+        "announced", 6.2e9, "2026-08-05", "2026-02-09")
     assert merged["headline"] == "MTN agrees to buy IHS Towers for $6.2 billion"
     # A non-African deal is still not placed in Africa.
     assert dl.extract_deal("Microsoft acquires Activision for $69bn", published="2026-08-05") is None
