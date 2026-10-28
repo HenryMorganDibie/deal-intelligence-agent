@@ -5,7 +5,8 @@ import { MarketPulse } from "../components/MarketPulse";
 import { Problem } from "../components/Problem";
 import { SiteNav } from "../components/SiteNav";
 import { SourceMarquee } from "../components/SourceMarquee";
-import { getPulse, getShowcase } from "../lib/pulse";
+import { getMarkets, getPulse, getShowcase } from "../lib/pulse";
+import { MarketsToday } from "../components/MarketsToday";
 import corporateOfWeekArchive from "../data/corporate-of-week.json";
 import { ArrowRight, Container, Reveal } from "../components/primitives";
 
@@ -45,7 +46,13 @@ const CAPABILITIES = [
     label: "Explore company research",
   },
   {
-    title: "Understand markets",
+    title: "Follow markets",
+    body: "Daily prices, returns in dollars and valuations for 1,500+ listed African companies, with a valuation workspace that checks every input against evidence.",
+    href: "/app/markets",
+    label: "Explore markets",
+  },
+  {
+    title: "Understand countries",
     body: "Compare country context, investor activity and risk while keeping data coverage and gaps visible.",
     href: "/app/countries",
     label: "Explore country coverage",
@@ -53,9 +60,9 @@ const CAPABILITIES = [
 ];
 
 export default async function LandingPage() {
-  const [pulse, showcase] = await Promise.all([getPulse(), getShowcase()]);
+  const [pulse, showcase, markets] = await Promise.all([getPulse(), getShowcase(), getMarkets()]);
   return (
-    <div className="relative">
+    <div className="relative overflow-x-clip">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-bone focus:px-4 focus:py-2 focus:text-ink"
@@ -68,6 +75,7 @@ export default async function LandingPage() {
         <SourceMarquee />
         <Problem compact />
         <MarketPulse pulse={pulse} compact />
+        <MarketsToday data={markets} />
         <section aria-labelledby="corporate-week-title" className="border-t hairline py-14 sm:py-16">
           <Container>
             <div className="flex flex-wrap items-end justify-between gap-4">
@@ -174,7 +182,7 @@ export default async function LandingPage() {
                 One research workflow for African private markets and company intelligence, with the source trail and limitations visible.
               </p>
             </Reveal>
-            <div className="mt-10 grid gap-3 md:grid-cols-3">
+            <div className="mt-10 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {CAPABILITIES.map((item, i) => (
                 <Reveal key={item.title} delay={i * 70}>
                   <article className="panel flex h-full flex-col p-6">

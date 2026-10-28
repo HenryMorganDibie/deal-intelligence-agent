@@ -16,6 +16,7 @@ Hosted API routes for market data (mounted by api/index.py):
   GET  /api/companies/profile          company profile and financial statements (name, ticker, country, cik)
   GET  /api/valuation                  valuation view for a company
   GET  /api/valuation/cost-of-equity   country cost of equity (dollar and local currency) with its build-up
+  POST /api/valuation/evidence         each valuation input checked against exchange data, the filing and the source
   POST /api/research                   source-grounded AI answer (rate-limited)
   POST /api/reports/country/{code}     country research report (rate-limited)
   POST /api/reports/sector/{sector}    sector research report (rate-limited)
@@ -697,6 +698,47 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
 async def valuation_cost_of_equity(country: str = Query(..., min_length=2, max_length=60)) -> dict:
     """A transparent cost of equity for valuing a company in this country (dollar and local currency)."""
     return market_risk.cost_of_equity(_country_or_404(country))
+
+
+class EvidenceBody(BaseModel):
+    company: str = Field(..., min_length=1, max_length=120)
+    ticker: str = Field("", max_length=24)
+    country: str = Field("", max_length=60)
+    exchange: str = Field("", max_length=8)
+    symbol: str = Field("", max_length=20)
+    method: Literal["dcf", "ddm"] = "dcf"
+    currency: str = Field("", max_length=3)
+    period: str = Field("", max_length=10)
+    source: str = Field("", max_length=1000)
+    price: Optional[float] = None
+    price_date: str = Field("", max_length=10)
+    price_source: str = Field("", max_length=1000)
+    shares: Optional[float] = None
+    fcf: Optional[float] = None
+    cash: Optional[float] = None
+    debt: Optional[float] = None
+    dividend_per_share: Optional[float] = None
+
+
+@router.post("/api/valuation/evidence")
+async def valuation_evidence(body: EvidenceBody) -> dict:
+    """Checks each valuation input against the exchange's data, the parsed filing and the cited document."""
+    import asyncio
+    from src.engines import markets, valuation_evidence as ve
+    if body.exchange and body.symbol:
+        listing = markets.quote(await run_in_threadpool(_market_snapshot), body.exchange.lower(), body.symbol)
+    else:
+        listing = await run_in_threadpool(_listing_for, body.company, body.ticker or None, body.country or None)
+    profile: dict = {}
+    try:                                                # usually cached: the page has just loaded this profile
+        profile = await asyncio.wait_for(company(name=body.company, ticker=body.ticker or None,
+                                                 country=body.country or None, cik=None,
+                                                 exchange=body.exchange or None, symbol=body.symbol or None), timeout=40)
+    except (asyncio.TimeoutError, HTTPException):
+        pass
+    inputs = body.model_dump()
+    return await run_in_threadpool(lambda: ve.check(inputs, listing, profile.get("financials"),
+                                                    (profile.get("identity") or {}).get("website")))
 
 
 @router.get("/api/valuation")

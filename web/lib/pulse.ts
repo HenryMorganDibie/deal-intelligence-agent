@@ -246,3 +246,20 @@ export function ciText(x: QualityCI): string {
   const p = (v: number) => Math.round(v * 100);
   return `${p(x.value)}% (95% CI ${p(x.low)}–${p(x.high)}%, n=${x.n})`;
 }
+
+/** Today's market snapshot (exchange tiles, movers) and how many companies are on record, for the landing page. */
+export async function getMarkets(): Promise<{ overview: import("./markets-data").Overview; companies: { listed: number; private: number } | null } | null> {
+  if (!API_URL) return null;
+  try {
+    const [o, d] = await Promise.all([
+      fetch(fresh("/api/markets/overview"), { next: { revalidate: REVALIDATE } }),
+      fetch(fresh("/api/companies/directory?limit=1"), { next: { revalidate: REVALIDATE } }),
+    ]);
+    if (!o.ok) return null;
+    const overview = await o.json();
+    const companies = d.ok ? ((await d.json()) as { counts: { listed: number; private: number } }).counts : null;
+    return { overview, companies };
+  } catch {
+    return null;
+  }
+}

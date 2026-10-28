@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, PageHeader } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
-import { get } from "../../../../lib/market";
+import { get, post } from "../../../../lib/market";
 import { calculateDcfPerShare, calculateDdmPerShare, validHttpUrl, validPastDate } from "../../../../lib/markets-valuation";
 import { isSavedValuation, parseValuationHistoryBackup, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
 
@@ -48,6 +48,7 @@ type CompanyProfile = {
   identity?: { sector?: string | null; industry?: string | null } | null;
   market?: { price?: number | null; currency?: string | null; market_cap?: number | null; source?: string; as_at?: string | null;
     shares_outstanding?: number | null; stale?: boolean; age_days?: number } | null;
+  listing?: { exchange: string; symbol: string; exchange_name: string } | null;
   financials?: {
     source: string;
     source_url?: string;
@@ -98,6 +99,29 @@ function money(value: number | null, currency: string): string {
   }
 }
 
+type EvidenceField = { status: string; note?: string; reference?: number | string; reference_date?: string };
+type Evidence = {
+  grade: "A" | "B" | "C" | "D";
+  verdict_allowed: boolean;
+  fields: Record<string, EvidenceField>;
+  document: { url: string | null; standing: "official" | "company" | "other" | null; status: string; names_company: boolean; states_period: boolean };
+  freshness: { statement_age_days: number | null; statement_stale: boolean; price_age_days: number | null; price_stale: boolean };
+  reasons: string[];
+  method: string;
+};
+const FIELD_LABEL: Record<string, string> = {
+  fcf: "Free cash flow", cash: "Cash", debt: "Debt", dividend_per_share: "Dividend per share", price: "Share price",
+  shares: "Shares outstanding", currency: "Currency",
+};
+const STATUS_LABEL: Record<string, [string, string]> = {
+  verified: ["Verified", "text-verified"], found: ["Found in source", "text-verified"],
+  found_unofficial: ["Found, unofficial source", "text-[#f5d58a]"], not_found: ["Not found in source", "text-risk"],
+  mismatch: ["Contradicted", "text-risk"], unchecked: ["Not checked", "text-[color:var(--muted)]"],
+};
+const STANDING_LABEL: Record<string, string> = {
+  official: "exchange or regulator filing", company: "the company's own website", other: "neither an exchange or regulator nor the company",
+};
+
 type CostOfEquity = {
   country: string;
   currency: string | null;
@@ -134,6 +158,9 @@ export default function MarketsValuationPage() {
   const [form, setForm] = useState<Inputs>(initial);
   const [error, setError] = useState<string | null>(null);
   const [hasCalculated, setHasCalculated] = useState(false);
+  const [listing, setListing] = useState<{ exchange: string; symbol: string; exchange_name: string } | null>(null);
+  const [evidence, setEvidence] = useState<Evidence | null>(null);
+  const [evidenceBusy, setEvidenceBusy] = useState(false);
   const [profileBusy, setProfileBusy] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [detectedSector, setDetectedSector] = useState("");
@@ -175,6 +202,7 @@ export default function MarketsValuationPage() {
         ticker: form.ticker.trim(),
         country: form.country.trim(),
       });
+      setListing(profile.listing ?? null);
       const financials = profile.financials;
       const profileCountry = profile.country_name || (typeof profile.country === "string" ? profile.country : profile.country?.name) || "";
       const sector = String(profile.identity?.sector || profile.identity?.industry || "");
@@ -302,7 +330,7 @@ export default function MarketsValuationPage() {
     parsed.terminalGrowth != null && parsed.terminalGrowth >= -5 && parsed.terminalGrowth <= 8 &&
     parsed.discountRate > parsed.terminalGrowth;
   const sourceInputsValid = form.company.trim().length > 0 && VALUATION_CURRENCIES.includes(form.currency) && validHttpUrl(form.source) && validPastDate(form.period) &&
-    (parsed.price == null || (parsed.price > 0 && validHttpUrl(form.priceSource) && validPastDate(form.priceDate)));
+    (parsed.price == null || (parsed.price > 0 && validPastDate(form.priceDate) && (form.priceSource.trim() === "" || validHttpUrl(form.priceSource))));
   const sectorRequiresDdm = /bank|financial services|financial institution|insurance|insurer|microfinance|lender|credit provider/i.test(detectedSector);
   const modelFitAllowsDcf = form.modelFit === "standard-operating-company";
   const modelFitAllowsDdm = form.modelFit === "financial-institution" || form.modelFit === "mature-dividend-payer";
@@ -318,8 +346,8 @@ export default function MarketsValuationPage() {
     setSavedMessage(null);
     if (!validInputs) {
       setError(form.method === "dcf"
-        ? "Check the source URL, a valid past reporting date, positive FCF and shares, non-negative cash/debt, ordered growth assumptions, discount rate above terminal growth, and confirmation that this is a suitable non-financial operating company. If the profile identifies a bank or insurer, use DDM instead of ordinary-company DCF. A market price also needs an HTTP(S) source URL and a valid past quote date."
-        : "Check the source URL, a valid past reporting date, positive annual dividend per share, ordered dividend-growth assumptions, discount rate above terminal growth, and confirmation that the company is a mature dividend payer with a sustainable payout. A market price also needs an HTTP(S) source URL and a valid past quote date.");
+        ? "Check the source URL, a valid past reporting date, positive FCF and shares, non-negative cash/debt, ordered growth assumptions, discount rate above terminal growth, and confirmation that this is a suitable non-financial operating company. If the profile identifies a bank or insurer, use DDM instead of ordinary-company DCF. A market price also needs a valid past quote date."
+        : "Check the source URL, a valid past reporting date, positive annual dividend per share, ordered dividend-growth assumptions, discount rate above terminal growth, and confirmation that the company is a mature dividend payer with a sustainable payout. A market price also needs a valid past quote date.");
       setHasCalculated(false);
       return;
     }
@@ -329,6 +357,27 @@ export default function MarketsValuationPage() {
       return;
     }
     setHasCalculated(true);
+    void checkEvidence();
+  }
+
+  // Each input checked on the server against the exchange's close and shares, the parsed filing, and the cited
+  // document itself; a URL on its own proves nothing.
+  async function checkEvidence() {
+    setEvidenceBusy(true);
+    setEvidence(null);
+    try {
+      setEvidence(await post<Evidence>("/api/valuation/evidence", {
+        company: form.company.trim(), ticker: form.ticker.trim(), country: form.country.trim(),
+        exchange: listing?.exchange ?? "", symbol: listing?.symbol ?? "", method: form.method, currency: form.currency,
+        period: form.period, source: form.source.trim(), price: parsed.price, price_date: form.priceDate,
+        price_source: form.priceSource.trim(), shares: parsed.shares, fcf: parsed.fcf, cash: parsed.cash,
+        debt: parsed.debt, dividend_per_share: parsed.dividendPerShare,
+      }));
+    } catch {
+      setEvidence(null);
+    } finally {
+      setEvidenceBusy(false);
+    }
   }
 
   function saveValuationLocally() {
@@ -432,7 +481,7 @@ export default function MarketsValuationPage() {
   const validScenarioValues = scenarios.map((scenario) => scenario.perShare).filter((value): value is number => value != null && Number.isFinite(value));
   const scenarioLow = validScenarioValues.length ? Math.min(...validScenarioValues) : null;
   const scenarioHigh = validScenarioValues.length ? Math.max(...validScenarioValues) : null;
-  const verdict = hasCalculated && base?.perShare != null && price != null && validScenarioValues.length === 3
+  const verdict = hasCalculated && evidence?.verdict_allowed && base?.perShare != null && price != null && validScenarioValues.length === 3
     ? validScenarioValues.every((value) => value < price) && base.perShare < price * 0.85
       ? "Potentially overvalued on these assumptions"
       : validScenarioValues.every((value) => value > price) && base.perShare > price * 1.15
@@ -443,7 +492,7 @@ export default function MarketsValuationPage() {
             ? "Price is below all three scenario estimates, but the base-case gap is under 15%"
             : "Mixed signal: the conclusion changes across scenarios"
     : null;
-  const rangeConclusion = hasCalculated && price != null && validScenarioValues.length === 3
+  const rangeConclusion = hasCalculated && evidence?.verdict_allowed && price != null && validScenarioValues.length === 3
     ? validScenarioValues.every((value) => value < price) ? "Entered price is above all three scenario estimates"
       : validScenarioValues.every((value) => value > price) ? "Entered price is below all three scenario estimates"
         : "The conclusion changes across scenarios"
@@ -559,7 +608,7 @@ export default function MarketsValuationPage() {
                   <input id="valuation-price-date" className="field" type="date" value={form.priceDate} onChange={set("priceDate")} />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-source">Quote source URL (HTTP or HTTPS, required if price entered)</label>
+                  <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-source">Quote source URL (optional: listed prices are checked against the exchange&apos;s own close)</label>
                   <input id="valuation-price-source" className="field" type="url" value={form.priceSource} onChange={set("priceSource")} placeholder="https://... exchange or market-data source" />
                 </div>
               </div>
@@ -651,9 +700,40 @@ export default function MarketsValuationPage() {
                     </table>
                   </div>
                 </div>
+                <div className="mt-4 rounded-xl border hairline p-4" aria-live="polite">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="eyebrow">Evidence for the inputs</p>
+                    {evidence ? <span className={`rounded-full border px-2.5 py-0.5 text-xs ${evidence.grade === "A" || evidence.grade === "B" ? "text-verified border-[rgba(110,231,200,0.35)]" : "text-risk border-[rgba(255,143,112,0.4)]"}`}>Grade {evidence.grade}</span> : null}
+                  </div>
+                  {evidenceBusy && <p className="mt-2 text-xs text-[color:var(--muted)]" role="status">Checking each input against exchange data, the filing and the cited document…</p>}
+                  {!evidenceBusy && !evidence && <p className="mt-2 text-xs text-[color:var(--muted)]">The evidence check could not run. <button type="button" className="underline" onClick={() => void checkEvidence()}>Try again</button></p>}
+                  {evidence && (
+                    <>
+                      <table className="mt-3 w-full text-left text-xs">
+                        <tbody>
+                          {Object.entries(evidence.fields).map(([k, f]) => (
+                            <tr key={k} className="border-b hairline last:border-0">
+                              <td className="py-1.5 pr-3 text-[color:var(--muted)]">{FIELD_LABEL[k] ?? k}</td>
+                              <td className={`py-1.5 pr-3 ${STATUS_LABEL[f.status]?.[1] ?? ""}`}>{STATUS_LABEL[f.status]?.[0] ?? f.status}</td>
+                              <td className="py-1.5 text-[color:var(--dim)]">{f.note}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
+                        Source document: {evidence.document.standing ? STANDING_LABEL[evidence.document.standing] : "none"}
+                        {evidence.document.status === "ok"
+                          ? `; ${evidence.document.names_company ? "names the company" : "does not name the company"}, ${evidence.document.states_period ? "states the period" : "does not state the period"}.`
+                          : evidence.document.url ? `; could not be read (${evidence.document.status}).` : "."}
+                      </p>
+                      {evidence.reasons.length > 0 && <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-[color:var(--muted)]">{evidence.reasons.map((r) => <li key={r}>{r}</li>)}</ul>}
+                      <p className="mt-2 text-[0.6875rem] text-[color:var(--dim)]">{evidence.method}</p>
+                    </>
+                  )}
+                </div>
                 <div className="mt-4 rounded-xl border hairline p-4">
                   <p className="eyebrow">Conclusion across scenarios</p>
-                  <h3 className="mt-2 text-lg font-semibold">{verdict ?? rangeConclusion ?? "No market-price comparison"}</h3>
+                  <h3 className="mt-2 text-lg font-semibold">{verdict ?? rangeConclusion ?? (price != null && evidence && !evidence.verdict_allowed ? "No verdict: the inputs are not sufficiently evidenced" : "No market-price comparison")}</h3>
                   <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
                     {verdict || rangeConclusion
                       ? "This is a mechanical comparison of the entered quote with the three model scenarios, not a recommendation or proof of mispricing; the 15% base-case band is a display convention, not a statistical confidence interval. The output can be wrong if the inputs, accounting basis or assumptions are wrong. Review the source and countercase before acting."

@@ -743,14 +743,16 @@ def overview(snapshot: dict, today: Optional[date] = None, movers: int = 8) -> d
     tiles.sort(key=lambda t: -(t["mcap_usd"] or 0))
 
     # Movers among shares worth tracking: a known cap of at least $10m, or any NSE/JSE share (no cap column).
-    tradable = [r for r in fresh if r.get("chg_1d") is not None and ((r.get("mcap_usd") or 0) >= 1e7 or r.get("mcap_usd") is None)]
+    # Primary listings only: a secondary line (Old Mutual in Blantyre) moves on thin trade.
+    tradable = [r for r in fresh if r.get("chg_1d") is not None and not r.get("secondary_of")
+                and ((r.get("mcap_usd") or 0) >= 1e7 or r.get("mcap_usd") is None)]
 
     def slim(r: dict) -> dict:
         return {k: r.get(k) for k in ("exchange", "symbol", "name", "sector", "price", "currency", "chg_1d", "ytd",
                                       "ytd_usd", "mcap_usd", "volume", "value_traded", "date")}
     gainers = sorted((r for r in tradable if r["chg_1d"] > 0), key=lambda r: -r["chg_1d"])[:movers]
     losers = sorted((r for r in tradable if r["chg_1d"] < 0), key=lambda r: r["chg_1d"])[:movers]
-    active = sorted((r for r in fresh if r.get("value_traded")),
+    active = sorted((r for r in fresh if r.get("value_traded") and not r.get("secondary_of")),
                     key=lambda r: -(_usd(r["value_traded"], r["currency"], rates) or 0))[:movers]
 
     currencies = []
