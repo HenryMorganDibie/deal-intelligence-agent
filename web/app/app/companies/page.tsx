@@ -47,7 +47,16 @@ type Profile = {
     investors_and_lenders: string[];
     deals: Deal[];
   };
-  valuation: { latest_mark: { valuation_usd: number; basis: string; announced: string } | null; comparables: Comparables };
+  valuation: {
+    latest_mark: { valuation_usd: number; basis: string; announced: string } | null;
+    comparables: Comparables;
+    public_bridge?: {
+      sector: string; scope: "country" | "africa"; country: string | null; peers: number; valuation_usd: number;
+      announced: string | null; rank_percentile: number; larger_than: number; peer_median_cap_usd: number;
+      peer_ytd_usd: number | null; note: string;
+      largest_peers: { exchange: string; symbol: string; name: string; mcap_usd: number; ytd_usd: number | null }[];
+    } | null;
+  };
 };
 
 const ORDER = [
@@ -319,6 +328,29 @@ export default function CompaniesPage() {
               </div>
             )}
           </section>
+
+          {p.valuation.public_bridge && (() => {
+            const b = p.valuation.public_bridge;
+            return (
+              <section>
+                <h3 className="eyebrow">Private mark against listed peers</h3>
+                <p className="mt-2 max-w-3xl text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
+                  The latest mark of {usd(b.valuation_usd)}{b.announced ? ` (${b.announced})` : ""} would be larger than {b.larger_than} of {b.peers} listed {b.sector.toLowerCase()} companies
+                  {b.scope === "country" ? ` in ${p.country_name ?? b.country}` : " across Africa"} (median listed cap {usd(b.peer_median_cap_usd)}).
+                  {b.peer_ytd_usd != null ? ` Those listed peers are ${b.peer_ytd_usd >= 0 ? "up" : "down"} ${Math.abs(b.peer_ytd_usd * 100).toFixed(1)}% in dollars this year.` : ""}
+                </p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-5">
+                  {b.largest_peers.map((r) => (
+                    <Link key={`${r.exchange}:${r.symbol}`} href={`/app/companies?${new URLSearchParams({ name: r.name, exchange: r.exchange, symbol: r.symbol })}`} className="rounded-lg border hairline p-3 text-[0.8125rem] hover:bg-white/[0.03]">
+                      <span className="block truncate">{r.name}</span>
+                      <span className="kbd text-[color:var(--muted)]">{usd(r.mcap_usd)}</span>
+                    </Link>
+                  ))}
+                </div>
+                <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">{b.note}</p>
+              </section>
+            );
+          })()}
 
           {p.valuation.comparables.deals.length > 0 && (
             <section>

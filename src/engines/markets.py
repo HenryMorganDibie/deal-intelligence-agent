@@ -614,20 +614,35 @@ def overview(snapshot: dict, today: Optional[date] = None, movers: int = 8) -> d
                       "dollar returns apply the change in the currency's dollar rate since 1 January."}
 
 
-_SECTOR_ALIASES = {"financial services": "Financials", "banking": "Financials", "insurance": "Financials",
-                   "telecommunication": "Telecom", "telecommunications": "Telecom", "ict": "Technology",
-                   "oil & gas": "Oil & Gas", "energy & petroleum": "Oil & Gas", "agricultural": "Agriculture",
-                   "construction & allied": "Industrials", "manufacturing & allied": "Industrials",
-                   "commercial and services": "Consumer Services", "automobiles & accessories": "Industrials",
-                   "investment": "Financials", "real estate investment trusts": "Real Estate",
-                   "exchange traded funds": None, "investment services": "Financials"}
+# The sources label sectors differently (ICB groups, JSE sub-sectors, myStocks' NSE segments); each label is
+# mapped to one of twelve groups by its first matching keyword. Funds and unlabelled rows have no sector.
+_SECTOR_RULES = (
+    (None, r"#n/a|^-$|\betf\b|exchange traded|closed.end"),
+    ("Real Estate", r"real estate|reit"),
+    ("Financials", r"financ|bank|insur|investment|microfinance|lending|asset manag"),
+    ("Telecom", r"telecom|telecommunication"),
+    ("Technology", r"technolog|software|computer|\bict\b|media"),
+    ("Oil & Gas", r"oil|gas|petroleum"),
+    ("Utilities", r"utilit|electricity|power"),
+    ("Health Care", r"health|pharma|biotech|medical"),
+    ("Agriculture", r"agricult|plantation|forestry"),
+    ("Basic Materials", r"basic material|chemical|mining|metal|paper"),
+    ("Consumer Goods", r"consumer goods|beverage|food producer|tobacco|personal goods|household|brew"),
+    ("Consumer Services", r"consumer services|retail|travel|leisure|hotel|commercial and services|education"),
+    ("Industrials", r"industr|construction|engineering|transport|support services|electronic|automobile|"
+                    r"manufactur|cement|logistic"),
+)
+SECTORS = [name for name, _ in _SECTOR_RULES if name]
 
 
 def _sector(name: Optional[str]) -> Optional[str]:
     if not name:
         return None
-    key = name.strip().lower()
-    return _SECTOR_ALIASES[key] if key in _SECTOR_ALIASES else name.strip()
+    label = name.strip().lower()
+    for group, pattern in _SECTOR_RULES:
+        if re.search(pattern, label):
+            return group
+    return name.strip()
 
 
 def sectors(rows: list[dict]) -> list[dict]:
@@ -739,3 +754,47 @@ def resolve(snapshot: dict, name: str, country: Optional[str] = None, today: Opt
 def quote(snapshot: dict, exchange: str, symbol: str, today: Optional[date] = None) -> Optional[dict]:
     sym = symbol.upper().split(".")[0]
     return next((r for r in enrich(snapshot, today) if r["exchange"] == exchange and r["symbol"] == sym), None)
+
+
+# ── Private to public ─────────────────────────────────────────────────────────
+
+# The listed sector a private company's deal sector trades in.
+DEAL_SECTOR_TO_LISTED = {
+    "fintech": "Financials", "banking": "Financials", "insurance": "Financials", "energy": "Utilities",
+    "oil_gas": "Oil & Gas", "mining": "Basic Materials", "telecom": "Telecom", "agriculture": "Agriculture",
+    "healthcare": "Health Care", "logistics": "Industrials", "mobility": "Industrials",
+    "ecommerce_retail": "Consumer Services", "real_estate": "Real Estate", "infrastructure": "Industrials",
+    "education": "Consumer Services", "media_tech": "Technology", "manufacturing": "Industrials",
+    "hospitality": "Consumer Services",
+}
+_MIN_PEERS = 5
+
+
+def valuation_bridge(snapshot: dict, valuation_usd: Optional[float], deal_sector: Optional[str],
+                     country: Optional[str], announced: Optional[str] = None, today: Optional[date] = None) -> Optional[dict]:
+    """Where a private valuation mark sits among listed companies in its sector: the peers' caps (in the
+    company's country when it has enough of them, else across Africa), the mark's rank among them, and how the
+    peer group has moved in dollars this year. A reference point for a mark, not a revaluation."""
+    sector = DEAL_SECTOR_TO_LISTED.get(deal_sector or "")
+    if not valuation_usd or not sector:
+        return None
+    rows = [r for r in enrich(snapshot, today) if _sector(r.get("sector")) == sector and r.get("mcap_usd")
+            and not r["stale"] and not r.get("secondary_of")]
+    local = [r for r in rows if country and r["country"] == country.upper()]
+    peers, scope = (local, "country") if len(local) >= _MIN_PEERS else (rows, "africa")
+    if len(peers) < _MIN_PEERS:
+        return None
+    caps = sorted(r["mcap_usd"] for r in peers)
+    below = sum(1 for c in caps if c < valuation_usd)
+    ytd = _cap_weighted(peers, "ytd_usd")
+    top = sorted(peers, key=lambda r: -r["mcap_usd"])[:5]
+    return {
+        "sector": sector, "scope": scope, "country": country if scope == "country" else None,
+        "peers": len(peers), "valuation_usd": valuation_usd, "announced": announced,
+        "rank_percentile": round(below / len(caps), 3), "larger_than": below,
+        "peer_median_cap_usd": round(statistics.median(caps), 2),
+        "peer_ytd_usd": ytd,
+        "largest_peers": [{k: r.get(k) for k in ("exchange", "symbol", "name", "mcap_usd", "ytd_usd")} for r in top],
+        "note": "Listed caps are equity values on today's prices; a private mark is a negotiated price at the date "
+                "of the round, often with preference terms. The comparison places the mark, it does not revalue it.",
+    }

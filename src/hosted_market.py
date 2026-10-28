@@ -675,6 +675,19 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     profile = await run_in_threadpool(company_profile.build, name, ticker.upper() if ticker else None, country,
                                       deals(), cik, None, listing)
     profile["valuation"] = market_risk.valuation_view(profile.get("name") or name, deals(), profile)
+    mark = profile["valuation"].get("latest_mark")
+    if mark and not profile.get("listing"):
+        from src.engines import markets
+        own = [d for d in deals() if deals_mod.normalise_name(d.get("target")) == deals_mod.normalise_name(profile.get("name") or name)]
+        sector = next((d.get("sector") for d in sorted(own, key=lambda d: d.get("announced") or "", reverse=True)
+                       if d.get("sector")), None)
+        try:
+            snap = await run_in_threadpool(_market_snapshot)
+            profile["valuation"]["public_bridge"] = markets.valuation_bridge(
+                snap, mark.get("valuation_usd"), sector, profile.get("country") or next((d.get("country") for d in own if d.get("country")), None),
+                mark.get("announced"))
+        except HTTPException:
+            pass
     _profile_cache[key] = (time.monotonic(), profile)
     return profile
 

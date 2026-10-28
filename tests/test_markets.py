@@ -305,3 +305,16 @@ def test_cost_of_equity_builds_up_from_risk_score_and_inflation(monkeypatch):
     r = market_risk.cost_of_equity(ac.get("NG"))
     assert r["country_premium"] == 0.08 and r["cost_of_equity_usd"] == round(0.043 + 0.045 + 0.08, 4)
     assert r["cost_of_equity_local"] == round(1.168 * 1.23 / 1.027 - 1, 4) and r["currency"] == "NGN"
+
+
+def test_valuation_bridge_places_a_private_mark_among_listed_peers():
+    snap = _snapshot()
+    banks = [{"symbol": f"B{i}", "name": f"Bank {i}", "sector": "Banking", "price": 10.0, "chg_1d": 0.0, "ytd": 0.1,
+              "mcap": cap * 1350.0, "date": "2026-10-27"} for i, cap in enumerate([2e8, 5e8, 9e8, 1.5e9, 3e9, 6e9])]
+    snap["quotes"]["ngx"] = snap["quotes"]["ngx"] + banks
+    b = markets.valuation_bridge(snap, 1e9, "fintech", "NG", "2024-10-30", today=TODAY)
+    assert b["sector"] == "Financials" and b["scope"] == "country" and b["peers"] == 6
+    assert b["larger_than"] == 3 and b["rank_percentile"] == 0.5
+    assert b["largest_peers"][0]["symbol"] == "B5"
+    assert markets.valuation_bridge(snap, 1e9, "hospitality", "NG", today=TODAY) is None     # too few peers
+    assert markets.valuation_bridge(snap, None, "fintech", "NG", today=TODAY) is None

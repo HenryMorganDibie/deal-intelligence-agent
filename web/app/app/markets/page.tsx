@@ -269,7 +269,7 @@ export default function MarketsPage() {
           ["/app/markets/screener", "Screener", "Filter every listed share by exchange, sector, size and return."],
           ["/app/markets/valuation", "Valuation", "DCF and dividend models prefilled from filings and today's price."],
           ["/app/markets/portfolio", "Portfolio", "Holdings priced from the daily snapshot, in local currency and dollars."],
-          ["/app/markets/compare", "Compare", "Two companies side by side: price, returns, multiples, deals."],
+          ["/app/markets/compare", "Compare", "Two companies side by side: market data, multiples and deals."],
         ].map(([href, title, body]) => (
           <Link key={href} href={href} className="rounded-xl border hairline p-4 hover:bg-white/[0.03]">
             <p className="text-sm font-medium">{title} →</p>
