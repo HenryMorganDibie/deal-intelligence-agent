@@ -1859,6 +1859,8 @@ def _market_snapshot() -> dict:
         if r.status_code == 200:
             snap["intraday"] = {row["scope"]: row.get("payload") or {} for row in r.json() or []
                                 if str(row.get("snapshot_date")) == today}
+        else:
+            log.warning("intraday read failed, serving daily closes: %s %s", r.status_code, r.text[:300])
     markets.apply_intraday(snap, snap.get("intraday") or {})
     _markets_cache["snapshot"] = (time.monotonic(), snap)
     return snap
