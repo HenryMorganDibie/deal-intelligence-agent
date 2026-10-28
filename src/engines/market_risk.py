@@ -178,3 +178,35 @@ def valuation_view(company: str, deals: Iterable[dict], profile: Optional[dict] 
             "market_cap": market.get("market_cap"), "market_currency": market.get("currency"),
             "note": "Valuations are as reported in the press or implied by a disclosed stake and price; "
                     "comparable deals are matched on sector, type, country and size."}
+
+
+# ── Cost of equity ────────────────────────────────────────────────────────────
+# Stated assumptions, reviewed when markets move materially: the US 10-year yield, a mature-market equity risk
+# premium, and US inflation for the local-currency conversion.
+US_RISK_FREE = 0.043
+MATURE_ERP = 0.045
+US_INFLATION = 0.027
+
+
+def cost_of_equity(country) -> dict:
+    """A transparent cost of equity for valuing a company in this country, in dollars and in local currency.
+
+    Dollar cost = US risk-free + mature equity premium + a country premium scaled from the country risk score
+    (0.25 points per score point above 15). Local cost converts it with the inflation differential, since cash
+    flows in naira or cedi carry that country's inflation. The country premium is a proxy, not market-implied."""
+    from src.engines import country_risk
+    risk = country_risk.assess(country, fx=lambda _: None)
+    crp = round(max(0.0, (risk["score"] - 15) * 0.0025), 4)
+    usd = round(US_RISK_FREE + MATURE_ERP + crp, 4)
+    infl = (risk["indicators"].get("FP.CPI.TOTL.ZG") or {})
+    local_infl = round(min(max(infl.get("value") / 100, 0.0), 0.6), 4) if isinstance(infl.get("value"), (int, float)) else None
+    local = round((1 + usd) * (1 + local_infl) / (1 + US_INFLATION) - 1, 4) if local_infl is not None else None
+    return {"country": country.iso2, "currency": getattr(country, "currency", None), "risk_score": risk["score"],
+            "risk_tier": risk["tier"], "risk_free_usd": US_RISK_FREE, "mature_equity_premium": MATURE_ERP,
+            "country_premium": crp, "cost_of_equity_usd": usd, "local_inflation": local_infl,
+            "local_inflation_year": infl.get("year"), "us_inflation": US_INFLATION, "cost_of_equity_local": local,
+            "method": "Dollar cost of equity = US 10-year yield + mature-market equity premium + country premium "
+                      "(0.25 points per country risk score point above 15). Local cost = (1 + dollar cost) x "
+                      "(1 + local inflation) / (1 + US inflation) - 1, with the latest annual inflation standing in for expected "
+                      "inflation. The country premium is a proxy scaled from "
+                      "the risk score, not a market-implied spread."}

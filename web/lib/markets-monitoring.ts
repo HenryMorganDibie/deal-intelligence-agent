@@ -15,7 +15,26 @@ export type MonitoringEvent = {
   direction: string | null;
   country: string | null;
   sector: string | null;
+  headline_en?: string | null;
+  measured?: EventMeasures | null;
 };
+
+// How this kind of event has played out in African markets (from /api/events).
+export type EventMeasures = {
+  grade: "proven" | "indicative" | "no better than chance" | "insufficient" | string | null;
+  label: string | null;
+  lift: number | null;
+  n: number | null;
+  basis: string | null;
+  move_10d: { median: number; p25: number; p75: number; n: number; share_negative: number } | null;
+};
+
+// Proven and indicative signal types first, then the most recent.
+export function rankByGrade<T extends { event: MonitoringEvent }>(matches: T[]): T[] {
+  const rank = (g: string | null | undefined) => (g === "proven" ? 0 : g === "indicative" ? 1 : 2);
+  return [...matches].sort((a, b) => rank(a.event.measured?.grade) - rank(b.event.measured?.grade) ||
+    String(b.event.day ?? "").localeCompare(String(a.event.day ?? "")));
+}
 
 export type PortfolioEventMatch = {
   event: MonitoringEvent;

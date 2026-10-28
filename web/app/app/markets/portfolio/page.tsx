@@ -7,6 +7,10 @@ import { ErrorNote, PageHeader, Stat } from "../../../../components/app/ui";
 import { calculateExposureRows, calculatePortfolioTotals, calculatePortfolioValuationReviews, calculatePortfolioValuationSummary, convertToBase, isSavedValuation, type SavedValuationSnapshot, ASSET_TYPES, CURRENCIES, normalizeAssetType } from "../../../../lib/markets-portfolio";
 import { parseCsv, stringifyCsv } from "../../../../lib/markets-csv";
 import { createPortfolioWorkbook, parsePortfolioWorkbook } from "../../../../lib/markets-excel";
+import { post } from "../../../../lib/market";
+
+type PricedQuote = { exchange_name: string; symbol: string; price: number; currency: string; date: string | null; stale: boolean } | null;
+type PricesResponse = { results: PricedQuote[]; fx: { usd_rates: Record<string, number>; as_of: string | null } };
 
 type Holding = {
   id: string;
@@ -202,7 +206,7 @@ export default function MarketsPortfolioPage() {
       insights.push({ title: "Entered holdings are priced and converted", detail: "All listed holdings have a current price and FX conversion, but the results still depend on the accuracy and date of your manual inputs." });
     }
     if (undatedPrices > 0 || stalePrices > 0 || undatedFx > 0 || staleFx > 0) {
-      insights.push({ title: "Check price and FX freshness", detail: `${undatedPrices} holding(s) have no price date, ${stalePrices} have prices older than 7 days, ${undatedFx} foreign-currency holding(s) have no FX date, and ${staleFx} have FX rates older than 7 days. Dates are user-entered and not independently verified.` });
+      insights.push({ title: "Check price and FX freshness", detail: `${undatedPrices} holding(s) have no price date, ${stalePrices} have prices older than 7 days, ${undatedFx} foreign-currency holding(s) have no FX date, and ${staleFx} have FX rates older than 7 days. Refresh prices and FX updates both from the daily snapshot.` });
     }
     return insights;
   }, [holdings.length, largestPosition, countryExposure, sectorExposure, missingPriceCount, missingFxCount, undatedPrices, stalePrices, undatedFx, staleFx]);
@@ -253,8 +257,8 @@ export default function MarketsPortfolioPage() {
     }]);
     setForm({ ...blankForm, currency: baseCurrency });
     setMessage(duplicate
-      ? "Holding added, but it matches an existing name/ticker and country. Check whether this is a separate lot or an accidental duplicate. Prices and FX rates are manual, not live."
-      : "Holding added. Values are based on the prices and FX rates you entered, not live market feeds.");
+      ? "Holding added, but it matches an existing name/ticker and country. Check whether this is a separate lot or an accidental duplicate. Use Refresh prices and FX to price it from the daily exchange snapshot."
+      : "Holding added. Use Refresh prices and FX to price listed holdings from the daily exchange snapshot.");
   }
 
   async function importRows(rows: string[][], format: "CSV" | "Excel") {
@@ -418,6 +422,44 @@ export default function MarketsPortfolioPage() {
     }));
   }
 
+  const [pricing, setPricing] = useState(false);
+
+  // Prices each holding from the daily exchange snapshot (by ticker, else by name) and converts with the day's
+  // dollar rates. Holdings the snapshot cannot match keep the price entered for them.
+  async function refreshPrices() {
+    setPricing(true);
+    setError(null);
+    try {
+      const r = await post<PricesResponse>("/api/markets/prices", {
+        items: holdings.map((h) => ({ name: h.name, ticker: h.ticker, country: h.country, currency: h.currency })),
+      });
+      const fxDay = r.fx.as_of ? new Date(r.fx.as_of).toISOString().slice(0, 10) : null;
+      const perUsd = (c: string) => r.fx.usd_rates[c.toUpperCase()];
+      let priced = 0, converted = 0, stale = 0;
+      setHoldings((current) => current.map((h, i) => {
+        const q = r.results[i];
+        let next = h;
+        if (q && q.date) {
+          next = { ...next, currentPrice: q.price, priceAsOf: q.date };
+          priced += 1;
+          if (q.stale) stale += 1;
+        }
+        if (h.currency === baseCurrency) {
+          next = { ...next, fxToBase: 1, fxAsOf: null };
+        } else if (perUsd(h.currency) && perUsd(baseCurrency) && fxDay) {
+          next = { ...next, fxToBase: perUsd(baseCurrency) / perUsd(h.currency), fxAsOf: fxDay };
+          converted += 1;
+        }
+        return next;
+      }));
+      setMessage(`Priced ${priced} of ${holdings.length} holding(s) from the daily exchange snapshot${stale ? ` (${stale} with a price more than a week old)` : ""}; converted ${converted} at the day's rates. Unmatched holdings keep their entered prices.`);
+    } catch {
+      setError("Prices could not be refreshed. Entered prices are unchanged.");
+    } finally {
+      setPricing(false);
+    }
+  }
+
   function preparePortfolioWatchlist() {
     const uniqueCompanies = [...new Map(holdings.map((holding) => {
       const value = holding.name.trim();
@@ -447,13 +489,14 @@ export default function MarketsPortfolioPage() {
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · Portfolio Intelligence" title="Your portfolio, in context.">
-        Add holdings manually or import a CSV to understand your exposure and review the prices and assumptions behind portfolio totals. Holdings, quantities, cost basis, prices and FX inputs stay in this browser. If you choose Prepare event watchlist, only company names or tickers are passed to the existing Watchlists page so you can decide whether to save a watchlist.
+        Add holdings or import a CSV, then price listed holdings from the daily close on 16 African exchanges with the day&apos;s exchange rates. Holdings, quantities, cost basis, prices and FX inputs stay in this browser. If you choose Prepare event watchlist, only company names or tickers are passed to the existing Watchlists page so you can decide whether to save a watchlist.
       </PageHeader>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <Link href="/app/markets" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">← Back to Markets</Link>
         <Link href="/app/markets/portfolio/cloud" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Cloud portfolios and team workspaces</Link>
         <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn btn-primary" onClick={refreshPrices} disabled={holdings.length === 0 || pricing}>{pricing ? "Pricing…" : "Refresh prices and FX"}</button>
           <button type="button" className="btn btn-secondary" onClick={preparePortfolioWatchlist} disabled={holdings.length === 0}>Prepare event watchlist</button>
           <button type="button" className="btn btn-secondary" onClick={exportCsv} disabled={holdings.length === 0}>Export CSV backup</button>
           <button type="button" className="btn btn-secondary" onClick={exportExcel} disabled={holdings.length === 0}>Export Excel backup</button>
@@ -483,7 +526,7 @@ export default function MarketsPortfolioPage() {
           <div>
             <h2 id="portfolio-settings-title" className="text-sm font-medium">Your data stays on this device</h2>
             <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">
-              Prices and exchange rates are manual inputs, not live quotes. For holdings in a different currency, enter the number of {baseCurrency} units represented by one unit of that holding&apos;s currency. Change the reporting currency only after checking the FX rates.
+              Refresh prices and FX uses end-of-day closes and the day&apos;s dollar rates; anything it cannot match keeps the value you enter. For holdings in a different currency, enter the number of {baseCurrency} units represented by one unit of that holding&apos;s currency. Change the reporting currency only after checking the FX rates.
             </p>
           </div>
         </div>
@@ -623,7 +666,7 @@ export default function MarketsPortfolioPage() {
             <p className="eyebrow">Portfolio composition</p>
             <h2 id="exposure-title" className="h3 mt-2 text-lg">Where the priced holdings sit</h2>
             <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
-              All four exposure views use manually entered current prices and FX rates. Holdings without either are excluded; these are not live valuations.
+              All four exposure views use the current prices and FX rates shown in the table (refreshed or entered). Holdings without either are excluded.
             </p>
             <div className="mt-4 grid gap-5 sm:grid-cols-2">
               <ExposureList title="By country" rows={countryExposure} currency={baseCurrency} />

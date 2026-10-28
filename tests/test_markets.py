@@ -255,3 +255,53 @@ def test_a_throttled_listing_page_is_retried(monkeypatch):
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
         quotes, _ = markets.fetch_exchange(markets.EXCHANGES["gse"], client, TODAY)
     assert len(calls) == 2 and quotes[0]["symbol"] == "MTNGH"
+
+
+def test_prices_endpoint_prices_holdings_by_ticker_or_name_and_returns_fx(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    import api.index as api
+    import src.hosted_market as hm
+
+    monkeypatch.setattr(hm, "_configured", lambda: False)
+    hm._markets_cache.clear()
+    markets.save_local(_snapshot())
+    out = TestClient(api.app).post("/api/markets/prices", json={"items": [
+        {"ticker": "DANGCEM.LG"}, {"name": "Equity Group Holdings", "country": "Kenya"},
+        {"name": "MTN Nigeria Communications", "currency": "USD"}, {"name": "Flutterwave"}]}).json()
+    first, eqty, wrong_ccy, private = out["results"]
+    assert first["price"] == 1341.9 and first["currency"] == "NGN"
+    assert eqty["exchange"] == "nse"
+    assert wrong_ccy is None and private is None
+    assert out["fx"]["usd_rates"]["NGN"] == 1350.0 and out["fx"]["usd_rates"]["USD"] == 1.0
+
+
+def test_events_carry_their_measured_track_record(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    import api.index as api
+    import src.hosted_market as hm
+    from src.engines import measured
+
+    monkeypatch.setattr(hm, "_configured", lambda: False)
+    hm._measures_cache.clear()
+    monkeypatch.setattr(hm, "events", lambda: [
+        {"id": "e1", "day": "2026-10-27", "signal_type": "m_and_a_activity", "headline": "Dangote buys stake", "country": "NG"}])
+    monkeypatch.setattr(measured, "track_record", lambda t, sev, sub, market: {
+        "grade": "proven", "label": "Proven: 1.8x", "lift": 1.8, "n": 300, "basis": "b", "graded_on": "African",
+        "market": market})
+    monkeypatch.setattr(measured, "expected_move", lambda t, sev: {"median": 0.3, "p25": -2.9, "p75": 3.6, "n": 2000,
+                                                                    "share_negative": 0.47, "basis": "x"})
+    e = TestClient(api.app).get("/api/events").json()["events"][0]
+    assert e["measured"]["grade"] == "proven" and e["measured"]["move_10d"]["median"] == 0.3
+
+
+def test_cost_of_equity_builds_up_from_risk_score_and_inflation(monkeypatch):
+    from src.data import africa_countries as ac
+    from src.engines import country_risk, market_risk
+
+    monkeypatch.setattr(country_risk, "assess", lambda c, fx=None: {
+        "score": 47.0, "tier": "elevated", "indicators": {"FP.CPI.TOTL.ZG": {"value": 23.0, "year": 2025}}})
+    r = market_risk.cost_of_equity(ac.get("NG"))
+    assert r["country_premium"] == 0.08 and r["cost_of_equity_usd"] == round(0.043 + 0.045 + 0.08, 4)
+    assert r["cost_of_equity_local"] == round(1.168 * 1.23 / 1.027 - 1, 4) and r["currency"] == "NGN"

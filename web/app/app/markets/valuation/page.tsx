@@ -46,7 +46,8 @@ type CompanyProfile = {
   country?: { code?: string; name?: string } | string | null;
   country_name?: string | null;
   identity?: { sector?: string | null; industry?: string | null } | null;
-  market?: { price?: number | null; currency?: string | null; market_cap?: number | null; source?: string; as_at?: string | null } | null;
+  market?: { price?: number | null; currency?: string | null; market_cap?: number | null; source?: string; as_at?: string | null;
+    shares_outstanding?: number | null; stale?: boolean; age_days?: number } | null;
   financials?: {
     source: string;
     source_url?: string;
@@ -96,6 +97,18 @@ function money(value: number | null, currency: string): string {
     return `${value.toLocaleString("en", { maximumFractionDigits: 2 })} ${currency}`;
   }
 }
+
+type CostOfEquity = {
+  country: string;
+  currency: string | null;
+  risk_free_usd: number;
+  mature_equity_premium: number;
+  country_premium: number;
+  cost_of_equity_usd: number;
+  cost_of_equity_local: number | null;
+  local_inflation: number | null;
+  us_inflation: number;
+};
 
 function ScenarioCard({ scenario, currency, price }: { scenario: Scenario; currency: string; price: number | null }) {
   const upside = price != null && price > 0 && scenario.perShare != null ? (scenario.perShare / price - 1) * 100 : null;
@@ -185,10 +198,17 @@ export default function MarketsValuationPage() {
         : null;
       const currency = statementCurrency || "NGN";
       const sameCurrency = Boolean(statementCurrency && profile.market?.currency && profile.market.currency.toUpperCase() === statementCurrency);
-      const hasDatedQuote = Boolean(profile.market?.as_at && profile.market?.price != null && sameCurrency);
-      const inferredShares = hasDatedQuote && profile.market?.market_cap != null && profile.market.market_cap > 0 && profile.market.price != null && profile.market.price > 0
+      // A quote more than a week old does not anchor a price comparison.
+      const hasDatedQuote = Boolean(profile.market?.as_at && profile.market?.price != null && sameCurrency && !profile.market?.stale);
+      const publishedShares = profile.market?.shares_outstanding && profile.market.shares_outstanding > 0 ? String(profile.market.shares_outstanding) : "";
+      const inferredShares = publishedShares || (hasDatedQuote && profile.market?.market_cap != null && profile.market.market_cap > 0 && profile.market.price != null && profile.market.price > 0
         ? String(profile.market.market_cap / profile.market.price)
-        : "";
+        : "");
+      const countryCode = typeof profile.country === "string" ? profile.country : null;
+      const coe = countryCode
+        ? await get<CostOfEquity>("/api/valuation/cost-of-equity", { country: countryCode }).catch(() => null)
+        : null;
+      const coeRate = coe ? (currency === "USD" ? coe.cost_of_equity_usd : coe.currency === currency ? coe.cost_of_equity_local : null) : null;
       setForm((current) => ({
         ...current,
         company: profile.name || current.company,
@@ -207,6 +227,7 @@ export default function MarketsValuationPage() {
         price: hasDatedQuote ? String(profile.market!.price) : "",
         priceDate: hasDatedQuote ? String(profile.market?.as_at).slice(0, 10) : "",
         priceSource: "",
+        discountRate: coeRate != null ? (coeRate * 100).toFixed(1) : current.discountRate,
       }));
       setHasCalculated(false);
       setModelFitConfirmed(false);
@@ -217,7 +238,9 @@ export default function MarketsValuationPage() {
         financialInstitution ? "The sector suggests a bank or financial institution, so the page switched to the dividend discount model. Confirm dividend sustainability before calculating; ordinary-company DCF is not suitable for banks or insurers." : "",
         "A generic free_cash_flow field is not automatically treated as unlevered FCFF. If no explicitly labelled FCFF field is available, verify the correct figure in the source and enter it manually.",
         financials.verified ? "The profile reports its available accounting checks as passed." : "The profile does not report all available accounting checks as passed.",
-        inferredShares ? "Shares outstanding is inferred from market capitalisation divided by price, not independently verified." : "Shares outstanding was not inferred because a dated price, market capitalisation or currency alignment was unavailable.",
+        publishedShares ? "Shares outstanding comes from the exchange's published market capitalisation and price; verify it against the latest filing." : inferredShares ? "Shares outstanding is inferred from market capitalisation divided by price, not independently verified." : "Shares outstanding was not inferred because a dated price, market capitalisation or currency alignment was unavailable.",
+        profile.market?.stale ? `The latest price is ${profile.market.age_days} days old, so it was not prefilled.` : "",
+        coe && coeRate != null ? `Discount rate set to the ${currency} cost of equity for ${coe.country}: ${(coeRate * 100).toFixed(1)}% (US risk-free ${(coe.risk_free_usd * 100).toFixed(1)}% + equity premium ${(coe.mature_equity_premium * 100).toFixed(1)}% + country premium ${(coe.country_premium * 100).toFixed(1)}%${currency !== "USD" && coe.local_inflation != null ? `, converted at ${(coe.local_inflation * 100).toFixed(1)}% local vs ${(coe.us_inflation * 100).toFixed(1)}% US inflation` : ""}). The country premium is a proxy from the risk score; adjust it if you hold a better estimate.` : "",
         hasDatedQuote ? `A price dated ${String(profile.market?.as_at).slice(0, 10)} was prefilled from ${profile.market?.source || "the company profile"}; add its source URL before calculating a price comparison.` : "Current price was left blank because the profile did not provide a dated quote in the statement currency.",
         financials.source_url ? "" : "No direct financial statement URL was returned; add a source URL before calculating.",
         "Review every field, especially units, debt, share count, dividend sustainability and the source period, before calculating.",

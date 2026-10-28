@@ -31,6 +31,8 @@ type Profile = {
   identity?: Record<string, unknown> & { board?: string[]; business?: string; source?: string };
   market?: Record<string, unknown> | null;
   multiples?: Record<string, number>;
+  multiples_withheld?: string;
+  listing?: { exchange: string; exchange_name: string; symbol: string; name: string; sector: string | null; secondary_of?: string | null };
   financials?: Financials;
   financials_note?: string;
   filings?: { title: string; url: string; filed: string }[];
@@ -66,19 +68,45 @@ function compact(v: number): string {
   return num(v, 2);
 }
 
+type CompanyEvent = { id: string; signal_type: string | null; day: string | null; headline: string; headline_en?: string | null; url?: string | null; publisher?: string | null };
+
+function pctText(v: unknown, digits = 1): string {
+  return typeof v === "number" && Number.isFinite(v) ? `${v > 0 ? "+" : ""}${v.toFixed(digits)}%` : "n/a";
+}
+
+function toneOf(v: unknown): string {
+  return typeof v !== "number" || v === 0 ? "" : v > 0 ? "text-verified" : "text-risk";
+}
+
+// The words that find a company's news: its name without the corporate suffix.
+function newsName(name: string): string {
+  return name.replace(/\b(plc|ltd|limited|holdings?|group|company|corporation|s\.?a\.?|inc)\.?$/i, "").trim();
+}
+
 export default function CompaniesPage() {
   const [form, setForm] = useState({ name: "", ticker: "", country: "", cik: "" });
+  const [listing, setListing] = useState<{ exchange: string; symbol: string } | null>(null);
+  const [events, setEvents] = useState<CompanyEvent[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [p, setP] = useState<Profile | null>(null);
 
-  async function load(f = form) {
+  async function load(f = form, exact = listing) {
     if (!f.name.trim()) return;
     setBusy(true);
     setError(null);
     setP(null);
+    setEvents(null);
     try {
-      setP(await get<Profile>("/api/companies/profile", { name: f.name.trim(), ticker: f.ticker.trim(), country: f.country.trim(), cik: f.cik.trim() }));
+      const profile = await get<Profile>("/api/companies/profile", {
+        name: f.name.trim(), ticker: f.ticker.trim(), country: f.country.trim(), cik: f.cik.trim(),
+        exchange: exact?.exchange, symbol: exact?.symbol,
+      });
+      setP(profile);
+      const since = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
+      get<{ events: CompanyEvent[] }>("/api/events", { q: newsName(profile.listing?.name ?? profile.name), since, limit: 12 })
+        .then((r) => setEvents(r.events))
+        .catch(() => setEvents([]));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not build the profile.");
     } finally {
@@ -89,9 +117,11 @@ export default function CompaniesPage() {
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const f = { name: q.get("name") ?? "", ticker: q.get("ticker") ?? "", country: q.get("country") ?? "", cik: q.get("cik") ?? "" };
+    const exact = q.get("exchange") && q.get("symbol") ? { exchange: q.get("exchange")!, symbol: q.get("symbol")! } : null;
     if (f.name) {
       setForm(f);
-      load(f);
+      setListing(exact);
+      load(f, exact);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -100,7 +130,8 @@ export default function CompaniesPage() {
     e.preventDefault();
     const q = new URLSearchParams(Object.entries(form).filter(([, v]) => v));
     window.history.replaceState(null, "", `?${q}`);
-    load();
+    setListing(null);
+    load(form, null);
   }
 
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value });
@@ -159,11 +190,26 @@ export default function CompaniesPage() {
           </section>
 
           {p.market && (
-            <section className="grid gap-3 sm:grid-cols-4">
-              <Stat label="Price" value={p.market.price != null ? `${num(p.market.price as number, 2)} ${p.market.currency ?? ""}` : "n/a"} note={String(p.market.source ?? "")} />
-              <Stat label="Market cap" value={p.market.market_cap ? compact(p.market.market_cap as number) : "n/a"} note={String(p.market.currency ?? "")} />
-              <Stat label="52-week range" value={p.market.low_52w != null ? `${num(p.market.low_52w as number, 2)} to ${num(p.market.high_52w as number, 2)}` : "n/a"} />
-              <Stat label="Latest valuation mark" value={usd(p.valuation.latest_mark?.valuation_usd)} note={p.valuation.latest_mark ? `${p.valuation.latest_mark.basis}, ${p.valuation.latest_mark.announced}` : undefined} />
+            <section>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Stat label="Price" value={p.market.price != null ? `${num(p.market.price as number, 2)} ${p.market.currency ?? ""}` : "n/a"}
+                  note={<>
+                    <span className={toneOf(p.market.change_pct)}>{pctText(p.market.change_pct, 2)}</span>
+                    {` · ${p.market.as_at ? `as of ${String(p.market.as_at).slice(0, 10)}` : "date not reported"}`}
+                    {p.market.stale ? <span className="text-risk"> · stale ({String(p.market.age_days)} days)</span> : null}
+                  </>} />
+                <Stat label="Market cap" value={p.market.market_cap_usd ? usd(p.market.market_cap_usd as number) : p.market.market_cap ? compact(p.market.market_cap as number) : "n/a"}
+                  note={p.market.market_cap ? `${compact(p.market.market_cap as number)} ${p.market.currency ?? ""}${p.market.shares_outstanding ? ` · ${compact(p.market.shares_outstanding as number)} shares` : ""}` : "Not published for this listing"} />
+                <Stat label="Year to date" value={<span className={toneOf(p.market.ytd_usd_pct ?? p.market.ytd_pct)}>{pctText(p.market.ytd_usd_pct ?? p.market.ytd_pct)}</span>}
+                  note={p.market.ytd_note ? String(p.market.ytd_note) : p.market.ytd_usd_pct != null ? `In USD · ${pctText(p.market.ytd_pct)} in ${p.market.currency ?? "local currency"}` : p.market.ytd_pct != null ? "Local currency" : undefined} />
+                <Stat label="Latest private valuation mark" value={usd(p.valuation.latest_mark?.valuation_usd)} note={p.valuation.latest_mark ? `${p.valuation.latest_mark.basis}, ${p.valuation.latest_mark.announced}` : undefined} />
+              </div>
+              <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">
+                {String(p.market.source ?? "")}
+                {p.market.low_52w != null ? ` · 52-week range ${num(p.market.low_52w as number, 2)} to ${num(p.market.high_52w as number, 2)}` : ""}
+                {p.listing?.secondary_of ? ` · secondary listing; primary on ${p.listing.secondary_of.toUpperCase()}` : ""}
+                {p.listing ? <> · <Link className="hover:underline" href={`/app/markets/screener?exchange=${p.listing.exchange}${p.listing.sector ? `&sector=${encodeURIComponent(p.listing.sector)}` : ""}`}>peers on {p.listing.exchange_name}</Link></> : null}
+              </p>
             </section>
           )}
 
@@ -234,6 +280,7 @@ export default function CompaniesPage() {
             </section>
           )}
 
+          {p.multiples_withheld && <p className="text-[0.875rem] text-[color:var(--muted)]">Trading multiples withheld: {p.multiples_withheld}</p>}
           {p.multiples && Object.keys(p.multiples).length > 0 && (
             <section>
               <h3 className="eyebrow">Trading multiples</h3>
@@ -280,6 +327,21 @@ export default function CompaniesPage() {
               <div className="mt-4">
                 <DealRows deals={p.valuation.comparables.deals} showWhy />
               </div>
+            </section>
+          )}
+
+          {events && events.length > 0 && (
+            <section>
+              <h3 className="eyebrow">Corporate events, last 12 months</h3>
+              <ul className="mt-3 space-y-2">
+                {events.map((e) => (
+                  <li key={e.id} className="flex flex-wrap items-baseline gap-2 text-[0.8125rem]">
+                    <span className="kbd text-[0.75rem] text-[color:var(--dim)]">{e.day}</span>
+                    <Pill value={e.signal_type ?? "event"} />
+                    {e.url ? <a href={e.url} target="_blank" rel="noreferrer" className="hover:underline">{e.headline_en || e.headline}</a> : <span>{e.headline_en || e.headline}</span>}
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
 

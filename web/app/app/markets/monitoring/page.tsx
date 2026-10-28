@@ -6,7 +6,7 @@ import { Container } from "../../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pill } from "../../../../components/app/ui";
 import { get } from "../../../../lib/market";
 import { validHttpUrl } from "../../../../lib/markets-valuation";
-import { calculateValuationChangeAlerts, fetchMonitoringEventHistory, matchPortfolioEvents, type MonitoringEvent, type MonitoringHolding } from "../../../../lib/markets-monitoring";
+import { calculateValuationChangeAlerts, fetchMonitoringEventHistory, matchPortfolioEvents, rankByGrade, type MonitoringEvent, type MonitoringHolding } from "../../../../lib/markets-monitoring";
 import { isSavedValuation, type SavedValuationSnapshot } from "../../../../lib/markets-portfolio";
 
 type StoredPortfolio = { version?: number; holdings?: unknown[] };
@@ -219,7 +219,7 @@ export default function MarketsMonitoringPage() {
             ) : null}
 
             <div className="space-y-3">
-              {matches.map(({ event, holdings: relatedHoldings }) => (
+              {rankByGrade(matches).map(({ event, holdings: relatedHoldings }) => (
                 <article key={event.id} className="rounded-xl border hairline p-4 sm:p-5">
                   <div className="flex flex-wrap items-center gap-2">
                     <Pill value={event.signal_type || "corporate event"} />
@@ -227,7 +227,19 @@ export default function MarketsMonitoringPage() {
                     {event.country ? <span className="text-xs text-[color:var(--dim)]">{event.country}</span> : null}
                     <span className="text-xs text-[color:var(--dim)]">{displayDate(event.day)}</span>
                   </div>
-                  <h3 className="mt-3 text-sm font-medium leading-relaxed">{event.headline}</h3>
+                  <h3 className="mt-3 text-sm font-medium leading-relaxed">{event.headline_en || event.headline}</h3>
+                  {event.headline_en ? <p className="mt-1 text-xs text-[color:var(--dim)]" dir="rtl">{event.headline}</p> : null}
+                  {event.measured && event.measured.grade && event.measured.grade !== "insufficient" ? (
+                    <div className="mt-3 rounded-lg border hairline p-3 text-xs leading-relaxed">
+                      <p><span className={event.measured.grade === "proven" ? "text-verified" : event.measured.grade === "indicative" ? "text-[#f5d58a]" : "text-[color:var(--muted)]"}>{event.measured.label}</span></p>
+                      {event.measured.move_10d ? (
+                        <p className="mt-1 text-[color:var(--muted)]">
+                          After {event.measured.move_10d.n.toLocaleString()} past events of this kind, the share price moved a median {event.measured.move_10d.median > 0 ? "+" : ""}{event.measured.move_10d.median.toFixed(1)}% against its market over 10 days (middle half {event.measured.move_10d.p25.toFixed(1)}% to {event.measured.move_10d.p75 > 0 ? "+" : ""}{event.measured.move_10d.p75.toFixed(1)}%).
+                        </p>
+                      ) : null}
+                      {event.measured.basis ? <p className="mt-1 text-[color:var(--dim)]">{event.measured.basis}</p> : null}
+                    </div>
+                  ) : null}
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <span className="text-xs text-[color:var(--muted)]">Possible match for</span>
                     {relatedHoldings.map((holding) => (
@@ -254,7 +266,7 @@ export default function MarketsMonitoringPage() {
       ) : null}
 
       <div className="mt-8 rounded-xl border hairline p-4 text-xs leading-relaxed text-[color:var(--dim)]">
-        Privacy and reliability: holdings are read from browser-local storage and are never sent to the events API. The page requests a general 90-day event feed in pages of up to 500 records, capped at 5,000 records per refresh; if the cap is reached, the page discloses that the result is incomplete. Matching is conservative but can still miss aliases or produce false positives; this is not a push notification service, an automatic impact score, or a verified alert that a holding&apos;s value has changed.
+        Privacy and reliability: holdings are read from browser-local storage and are never sent to the events API. The page requests a general 90-day event feed in pages of up to 500 records, capped at 5,000 records per refresh; if the cap is reached, the page discloses that the result is incomplete. Matching is conservative but can still miss aliases or produce false positives; matches are ordered by how well their kind of event has been confirmed historically (proven, then indicative), and the measured move is a historical distribution for the event type, not a forecast for this holding.
       </div>
     </Container>
   );

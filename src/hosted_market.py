@@ -15,6 +15,7 @@ Hosted API routes for market data (mounted by api/index.py):
   GET  /api/sectors/{sector}/risk      sector risk (country)
   GET  /api/companies/profile          company profile and financial statements (name, ticker, country, cik)
   GET  /api/valuation                  valuation view for a company
+  GET  /api/valuation/cost-of-equity   country cost of equity (dollar and local currency) with its build-up
   POST /api/research                   source-grounded AI answer (rate-limited)
   POST /api/reports/country/{code}     country research report (rate-limited)
   POST /api/reports/sector/{sector}    sector research report (rate-limited)
@@ -26,6 +27,7 @@ Hosted API routes for market data (mounted by api/index.py):
   GET  /api/markets/screener           shares across every exchange (exchange, sector, min_mcap_usd, q, sort)
   GET  /api/markets/search             listed shares matching a name or ticker
   GET  /api/markets/quote              one listing's latest quote (exchange, symbol)
+  POST /api/markets/prices             latest closes for a list of holdings, and dollar rates
   GET  /api/cron/ingest                scheduled rolling feed -> deals and events, webhooks
   GET  /api/cron/market-snapshot       scheduled daily quotes, indices and FX
 """
@@ -586,9 +588,36 @@ async def event_feed(country: Optional[str] = None, type: Optional[str] = None, 
            if (not c or c.iso2 in (e.get("countries") or [e.get("country")]))
            and (not type or e.get("signal_type") == type)
            and (not since or (e.get("day") or "") >= since)
-           and (not q or q.lower() in e.get("headline", "").lower())]
+           and (not q or q.lower() in f'{e.get("headline", "")} {e.get("headline_en") or ""}'.lower())]
     out.sort(key=lambda e: e.get("day") or "", reverse=True)
-    return {"count": len(out), "offset": offset, "limit": limit, "events": out[offset:offset + limit]}
+    page = [{**e, "measured": event_measures(e.get("signal_type"))} for e in out[offset:offset + limit]]
+    return {"count": len(out), "offset": offset, "limit": limit, "events": page}
+
+
+_measures_cache: dict[str, tuple[float, Optional[dict]]] = {}
+
+
+def event_measures(signal_type: Optional[str]) -> Optional[dict]:
+    """How this kind of event has played out: its graded track record in African markets (how often such a flag
+    was followed by confirmation, against the base rate) and the measured market-adjusted 10-day share-price
+    move after it. Graded on the type, since stored events carry no severity."""
+    if not signal_type:
+        return None
+    hit = _measures_cache.get(signal_type)
+    if hit and time.monotonic() - hit[0] < _LIVE_TTL:
+        return hit[1]
+    from src.engines import measured
+    try:
+        record = measured.track_record(signal_type, "", None, "africa")
+        move = measured.expected_move(signal_type, "")
+    except Exception:
+        log.exception("measured lookup failed for %s", signal_type)
+        return None
+    out = {"grade": record.get("grade"), "label": record.get("label"), "lift": record.get("lift"),
+           "n": record.get("n"), "basis": record.get("basis"), "graded_on": record.get("graded_on"),
+           "move_10d": move and {k: move.get(k) for k in ("median", "p25", "p75", "n", "share_negative")}}
+    _measures_cache[signal_type] = (time.monotonic(), out)
+    return out
 
 
 @router.get("/api/sectors/{sector}/risk")
@@ -624,20 +653,36 @@ def _listing_for(name: str, ticker: Optional[str], country: Optional[str]) -> Op
 
 @router.get("/api/companies/profile")
 async def company(name: str = Query(..., min_length=1, max_length=120), ticker: Optional[str] = None,
-                  country: Optional[str] = None, cik: Optional[int] = None) -> dict:
+                  country: Optional[str] = None, cik: Optional[int] = None,
+                  exchange: Optional[str] = Query(None, max_length=8), symbol: Optional[str] = Query(None, max_length=20)) -> dict:
+    """A company's profile. `exchange` and `symbol` name a listing in the market snapshot exactly (the markets
+    pages link this way); otherwise a ticker or the name is resolved against it."""
     if country:                                      # an ISO code or a country name ("Kenya")
         found = ac.get(country) or next(iter(ac.countries_in_text(country)), None)
         # A market outside Africa (e.g. "United States") is not an error: the listing is found from the ticker.
         country = found.iso2 if found else None
-    key = (name.lower(), (ticker or "").upper(), (country or "").upper(), cik)
+    key = (name.lower(), (ticker or "").upper(), (country or "").upper(), cik, (exchange or "").lower(),
+           (symbol or "").upper())
     hit = _profile_cache.get(key)
     if hit and time.monotonic() - hit[0] < 6 * 3600:
         return hit[1]
+    if exchange and symbol:
+        from src.engines import markets
+        snap = await run_in_threadpool(_market_snapshot)
+        listing = markets.quote(snap, exchange.lower(), symbol)
+    else:
+        listing = await run_in_threadpool(_listing_for, name, ticker, country)
     profile = await run_in_threadpool(company_profile.build, name, ticker.upper() if ticker else None, country,
-                                      deals(), cik, None, await run_in_threadpool(_listing_for, name, ticker, country))
+                                      deals(), cik, None, listing)
     profile["valuation"] = market_risk.valuation_view(profile.get("name") or name, deals(), profile)
     _profile_cache[key] = (time.monotonic(), profile)
     return profile
+
+
+@router.get("/api/valuation/cost-of-equity")
+async def valuation_cost_of_equity(country: str = Query(..., min_length=2, max_length=60)) -> dict:
+    """A transparent cost of equity for valuing a company in this country (dollar and local currency)."""
+    return market_risk.cost_of_equity(_country_or_404(country))
 
 
 @router.get("/api/valuation")
@@ -1236,7 +1281,10 @@ async def market_pulse() -> dict:
         summary["alpha_validation"] = backtest.get("alpha_validation")
     except (OSError, ValueError):
         pass
-    return pulse.build(rows_d, rows_e, summary, today=datetime.now(timezone.utc).date())
+    out = pulse.build(rows_d, rows_e, summary, today=datetime.now(timezone.utc).date())
+    for card in out["events"]["latest"]:
+        card["measured"] = event_measures(card.get("signal_type"))
+    return out
 
 
 # ── Evaluation ────────────────────────────────────────────────────────────────
@@ -1803,6 +1851,48 @@ async def markets_search(q: str = Query(..., min_length=2, max_length=80), limit
     """Listed shares matching a company name or ticker."""
     from src.engines import markets
     return {"results": markets.search(await run_in_threadpool(_market_snapshot), q, limit=limit)}
+
+
+class PriceItem(BaseModel):
+    name: str = Field("", max_length=120)
+    ticker: str = Field("", max_length=24)
+    country: str = Field("", max_length=60)
+    currency: str = Field("", max_length=3)
+
+
+class PriceRequest(BaseModel):
+    items: list[PriceItem] = Field(..., min_length=1, max_length=200)
+
+
+@router.post("/api/markets/prices")
+async def markets_prices(body: PriceRequest) -> dict:
+    """Latest close for each holding (by ticker, else by name) and dollar rates, for pricing a portfolio."""
+    from src.engines import markets
+    snap = await run_in_threadpool(_market_snapshot)
+
+    def one(item: PriceItem) -> Optional[dict]:
+        country = None
+        if item.country:
+            found = ac.get(item.country) or next(iter(ac.countries_in_text(item.country)), None)
+            country = found.iso2 if found else None
+        ticker = item.ticker.strip().upper()
+        exchange = company_profile.exchange_of(ticker)
+        hit = None
+        if exchange:
+            hit = markets.quote(snap, exchange, ticker)
+        elif ticker:
+            hit = next((r for r in markets.search(snap, ticker, limit=10)
+                        if r["symbol"] == ticker and (not country or r["country"] == country)), None)
+        if not hit and item.name.strip():
+            hit = markets.resolve(snap, item.name, country)
+        # A quote in another currency than the holding's is a different line (a cross-listing): not used.
+        if hit and item.currency and hit["currency"] != item.currency.upper():
+            return None
+        return hit and {k: hit.get(k) for k in ("exchange", "exchange_name", "symbol", "name", "price", "currency",
+                                                  "chg_1d", "date", "stale", "age_days")}
+    results = await run_in_threadpool(lambda: [one(i) for i in body.items])
+    fx = snap.get("fx") or {}
+    return {"results": results, "fx": {"usd_rates": {**(fx.get("rates") or {}), "USD": 1.0}, "as_of": fx.get("as_of")}}
 
 
 @router.get("/api/markets/quote")

@@ -3,228 +3,284 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Container } from "../../../components/primitives";
+import { MarketSearch } from "../../../components/app/MarketSearch";
 import { ErrorNote, Loading, PageHeader, Pill, Stat, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { get } from "../../../lib/market";
+import { asOf, companyHref, heat, pct, price, tone, type Mover, type Overview } from "../../../lib/markets-data";
 
-type PulseCountry = { code: string; name: string } | null;
-type PulseDeal = {
-  id: string;
-  deal_type: string | null;
-  target: string | null;
-  amount_usd: number | null;
-  country: PulseCountry;
-  sector: string | null;
-  announced: string | null;
-  headline: string;
-  publisher: string | null;
-};
 type PulseEvent = {
   id: string;
   signal_type: string | null;
-  direction: string | null;
-  country: PulseCountry;
+  country: { code: string; name: string } | null;
   day: string | null;
   headline: string;
+  headline_en?: string | null;
   publisher: string | null;
   url: string | null;
 };
 type Pulse = {
   as_of: string;
-  latest_record: string | null;
   deals: {
-    total: number;
-    countries: number;
     recent: number;
     recent_countries: number;
     recent_disclosed_usd: number;
     recent_disclosed_n: number;
+    recent_disclosed_median_usd: number | null;
+    recent_top3_share: number | null;
+    recent_value_by_kind: Record<string, number>;
     top_countries: { code: string; name: string; deals: number }[];
-    latest: PulseDeal[];
   };
-  events: { total: number; recent: number; latest: PulseEvent[] };
+  events: { recent: number; latest: PulseEvent[] };
 };
-function compactNumber(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "Not available";
-  return value.toLocaleString("en-US");
-}
 
-function formatDate(value: string | null | undefined): string {
-  if (!value) return "Date not reported";
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime())
-    ? value
-    : parsed.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+const KIND_LABEL: Record<string, string> = {
+  equity: "Equity rounds", debt: "Debt", m_and_a: "M&A", funds: "Fund raises", listings: "Listings", other: "Other",
+};
+
+function MoverTable({ title, rows, metric }: { title: string; rows: Mover[]; metric: "chg_1d" | "value" }) {
+  return (
+    <section className="panel min-w-0 p-5">
+      <h3 className="eyebrow">{title}</h3>
+      {rows.length === 0 ? (
+        <p className="mt-3 text-sm text-[color:var(--muted)]">No shares qualify in the latest snapshot.</p>
+      ) : (
+        <ul className="mt-3 divide-y divide-[color:var(--line)]">
+          {rows.map((r) => (
+            <li key={`${r.exchange}:${r.symbol}`}>
+              <Link href={companyHref(r)} className="flex items-center justify-between gap-3 py-2 text-sm hover:opacity-80">
+                <span className="min-w-0">
+                  <span className="block truncate">{r.name}</span>
+                  <span className="text-xs text-[color:var(--dim)]">{r.symbol} · {r.exchange.toUpperCase()}</span>
+                </span>
+                <span className="shrink-0 text-right">
+                  {metric === "chg_1d" ? (
+                    <>
+                      <span className={`block kbd ${tone(r.chg_1d)}`}>{pct(r.chg_1d, 2)}</span>
+                      <span className="text-xs text-[color:var(--dim)]">{price(r.price, r.currency)}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="block kbd">{usd(r.value_traded_usd)}</span>
+                      <span className={`text-xs ${tone(r.chg_1d)}`}>{pct(r.chg_1d, 2)}</span>
+                    </>
+                  )}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
 }
 
 export default function MarketsPage() {
+  const [overview, setOverview] = useState<Overview | null>(null);
   const [pulse, setPulse] = useState<Pulse | null>(null);
-  const [pulseError, setPulseError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [heatBy, setHeatBy] = useState<"chg_1d" | "ytd_usd">("chg_1d");
 
   useEffect(() => {
     let active = true;
-    get<Pulse>("/api/pulse")
-      .then((data) => { if (active) setPulse(data); })
-      .catch((error) => {
-        if (active) setPulseError(error instanceof ApiError ? error.message : "Market activity could not be loaded.");
-      });
+    get<Overview>("/api/markets/overview")
+      .then((d) => { if (active) setOverview(d); })
+      .catch((e) => { if (active) setError(e instanceof ApiError ? e.message : "Market data could not be loaded."); });
+    get<Pulse>("/api/pulse").then((d) => { if (active) setPulse(d); }).catch(() => undefined);
     return () => { active = false; };
   }, []);
 
-  const latestDeals = pulse?.deals.latest ?? [];
-  const latestEvents = pulse?.events.latest ?? [];
-  const topDealCountries = pulse?.deals.top_countries.slice(0, 5) ?? [];
-  const maxCountryDeals = Math.max(1, ...topDealCountries.map((country) => country.deals));
+  const totalCap = overview?.exchanges.reduce((s, t) => s + (t.mcap_usd ?? 0), 0) ?? 0;
+  const kinds = Object.entries(pulse?.deals.recent_value_by_kind ?? {});
+  const kindTotal = kinds.reduce((s, [, v]) => s + v, 0) || 1;
+
   return (
     <Container className="py-8 lg:py-12">
-      <PageHeader eyebrow="Markets · African investment intelligence" title="Explore Investments">
-        Explore African investments using existing company data, market context, transparent valuation models and portfolio analysis. Conclusions are only as reliable as their sources and assumptions; this is decision support, not a promise of returns or an instruction to trade. Coverage differs by country, exchange, instrument and company, and Markets makes those limits visible.
+      <PageHeader eyebrow="Markets" title="African equity markets, today.">
+        Every share on {overview?.coverage.exchanges ?? 16} African exchanges, priced daily from the exchanges&apos; own
+        lists, with returns in local currency and in dollars, alongside the private deal flow and corporate events.
       </PageHeader>
 
-      <section className="mt-8" aria-labelledby="market-overview-title">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="eyebrow">Live intelligence from the existing data store</p>
-            <h2 id="market-overview-title" className="h3 mt-2 text-xl">African market activity</h2>
-          </div>
-          <p className="text-xs text-[color:var(--dim)]">
-            {pulse?.latest_record ? `Latest dated record: ${formatDate(pulse.latest_record)} · Summary date: ${formatDate(pulse.as_of)}` : pulse?.as_of ? `Summary date: ${formatDate(pulse.as_of)} · No dated record available` : "Summary date appears when data loads"}
-          </p>
-        </div>
-        {pulseError && <ErrorNote message={pulseError} />}
-        {!pulse && !pulseError ? <Loading label="Loading African market activity…" /> : null}
-        {pulse && (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Stat label="Deals in database" value={compactNumber(pulse.deals.total)} note={`Across ${compactNumber(pulse.deals.countries)} countries`} />
-            <Stat label="Deals in last 30 days" value={compactNumber(pulse.deals.recent)} note={`${compactNumber(pulse.deals.recent_countries)} countries represented`} />
-            <Stat label="Corporate events in last 7 days" value={compactNumber(pulse.events.recent)} note="From the existing event feed" />
-            <Stat label="Disclosed deal value, last 30 days" value={pulse.deals.recent_disclosed_n ? usd(pulse.deals.recent_disclosed_usd) : "Not disclosed"} note={`Sum of reported amounts for ${compactNumber(pulse.deals.recent_disclosed_n)} deals; single reports are not verified`} />
-          </div>
-        )}
-        {pulse && topDealCountries.length > 0 && (
-          <section className="panel mt-4 p-5" aria-labelledby="country-deal-flow-title">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="eyebrow">Recent deal activity</p>
-                <h3 id="country-deal-flow-title" className="h3 mt-2 text-base">Markets with the most deals in the last 30 days</h3>
-              </div>
-              <Link href="/app/deals" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Explore deal records →</Link>
-            </div>
-            <div className="mt-4 space-y-3">
-              {topDealCountries.map((country) => (
-                <div key={country.code}>
-                  <div className="mb-1.5 flex items-baseline justify-between gap-3 text-xs">
-                    <span>{country.name}</span>
-                    <span className="kbd text-[color:var(--muted)]">{country.deals.toLocaleString()} deals in 30 days</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-white/10" role="img" aria-label={`${country.name}: ${country.deals} deals in the last 30 days relative to the top country`}>
-                    <div className="h-full rounded-full bg-[color:var(--accent)]" style={{ width: `${Math.max(0, Math.min(100, (country.deals / maxCountryDeals) * 100))}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">This ranks records in Deal Intelligence&apos;s dataset, not total investment volume, market size or the quality of each country&apos;s investment opportunities. Differences can reflect source availability and reporting coverage.</p>
-          </section>
-        )}
-        <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
-          These figures describe Deal Intelligence&apos;s recorded deals and corporate events. They are not stock-market performance, trading volume or a measure of every investment made across Africa.
-        </p>
-      </section>
+      <MarketSearch />
 
-      <section className="mt-10 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <div className="min-w-0">
-          <div className="mb-4 flex items-end justify-between gap-3">
-            <div>
-              <p className="eyebrow">Recent signals</p>
-              <h2 className="h3 mt-2 text-xl">Company and market developments</h2>
+      {error && <ErrorNote message={error} />}
+      {!overview && !error && <Loading label="Loading today's market snapshot…" />}
+
+      {overview && (
+        <>
+          <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <Stat label="Listed shares tracked" value={overview.coverage.shares.toLocaleString()}
+              note={`${overview.coverage.priced_today.toLocaleString()} priced in the last week`} />
+            <Stat label="Market cap covered" value={usd(totalCap)}
+              note={`${overview.coverage.with_market_cap.toLocaleString()} shares with a published cap`} />
+            <Stat label="Exchanges" value={overview.coverage.exchanges} note="Including regional BRVM (8 states)" />
+            <Stat label="Snapshot" value={asOf(overview.captured_at)} note={`FX: ${overview.fx_as_of ? overview.fx_as_of.slice(5, 16) : "n/a"}`} />
+          </section>
+
+          <section className="mt-8" aria-labelledby="exchanges-title">
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+              <h2 id="exchanges-title" className="h3 text-xl">Exchanges</h2>
+              <Link href="/app/markets/screener" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Open the screener →</Link>
             </div>
-            <Link href="/app/countries" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Explore countries</Link>
-          </div>
-          {pulse && latestEvents.length === 0 && <p className="panel p-4 text-sm text-[color:var(--muted)]">No events were returned for the current seven-day window.</p>}
-          {!pulse && !pulseError && <Loading label="Loading recent events…" />}
-          <div className="space-y-3">
-            {latestEvents.map((event) => (
-              <article key={event.id} className="rounded-xl border hairline bg-white/[0.02] p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Pill value={event.signal_type ?? "event"} />
-                  {event.country && <span className="text-xs text-[color:var(--dim)]">{event.country.name}</span>}
-                  <span className="text-xs text-[color:var(--dim)]">{formatDate(event.day)}</span>
-                </div>
-                <h3 className="mt-2 text-sm font-medium leading-relaxed">{event.headline}</h3>
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[color:var(--muted)]">
-                  <span>{event.publisher || "Publisher not specified"}</span>
-                  {event.url ? <a href={event.url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">Open source ↗</a> : null}
-                </div>
-              </article>
-            ))}
-          </div>
-          {pulse && latestDeals.length > 0 && (
-            <div className="mt-8">
-              <div className="mb-3 flex items-end justify-between gap-3">
-                <div>
-                  <p className="eyebrow">Deal flow</p>
-                  <h3 className="mt-2 text-base font-medium">Recent transactions</h3>
-                </div>
-                <Link href="/app/deals" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Browse deals</Link>
-              </div>
-              <div className="space-y-2">
-                {latestDeals.slice(0, 5).map((deal) => (
-                  <article key={deal.id} className="flex flex-col gap-2 rounded-xl border hairline p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium">{deal.target || "Company not identified"}</p>
-                      <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">{deal.headline}</p>
-                      <p className="mt-2 text-xs text-[color:var(--dim)]">{[deal.country?.name, deal.sector ? words(deal.sector) : null, formatDate(deal.announced)].filter(Boolean).join(" · ")}</p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {overview.exchanges.map((t) => {
+                const ytdUsd = t.ytd_usd ?? t.ytd_median_usd;
+                const ytdLocal = t.ytd_local ?? t.ytd_median_local;
+                const basis = t.ytd_usd != null ? "cap-weighted" : "median share";
+                return (
+                  <Link key={t.exchange} href={`/app/markets/screener?exchange=${t.exchange}`}
+                    className={`rounded-xl border hairline p-4 transition hover:bg-white/[0.03] ${t.stale ? "opacity-60" : ""}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{t.name}</p>
+                        <p className="text-xs text-[color:var(--dim)]">{t.index?.name ?? t.exchange.toUpperCase()} · {t.currency}</p>
+                      </div>
+                      {t.stale ? <Pill value="stale" title="No share priced in the last 7 days" /> : null}
                     </div>
-                    <div className="shrink-0 text-left sm:text-right">
-                      <p className="text-sm font-medium">{usd(deal.amount_usd)}</p>
-                      <p className="mt-1 text-xs text-[color:var(--dim)]">{deal.deal_type ? words(deal.deal_type) : "Transaction"}</p>
+                    <div className="mt-3 flex items-baseline justify-between gap-2">
+                      <span className="kbd text-lg">{t.index ? t.index.level.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "n/a"}</span>
+                      <span className={`kbd text-sm ${tone(t.index?.chg_1d)}`}>{pct(t.index?.chg_1d, 2)}</span>
                     </div>
-                  </article>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                      <dt className="text-[color:var(--dim)]">YTD in USD</dt>
+                      <dd className={`text-right kbd ${tone(ytdUsd)}`} title={basis}>{pct(ytdUsd)}</dd>
+                      <dt className="text-[color:var(--dim)]">YTD local</dt>
+                      <dd className={`text-right kbd ${tone(ytdLocal)}`} title={basis}>{pct(ytdLocal)}</dd>
+                      <dt className="text-[color:var(--dim)]">Currency vs USD</dt>
+                      <dd className={`text-right kbd ${tone(t.currency_ytd_vs_usd)}`}>{pct(t.currency_ytd_vs_usd)}</dd>
+                      <dt className="text-[color:var(--dim)]">Market cap</dt>
+                      <dd className="text-right kbd">{t.mcap_usd ? usd(t.mcap_usd) : "not published"}</dd>
+                      <dt className="text-[color:var(--dim)]">Up / down today</dt>
+                      <dd className="text-right kbd"><span className="text-verified">{t.advancers}</span> / <span className="text-risk">{t.decliners}</span></dd>
+                    </dl>
+                    <p className="mt-2 text-[0.6875rem] text-[color:var(--dim)]">{t.listed} shares · as of {asOf(t.as_of)} · YTD {basis}</p>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="mt-8 grid gap-4 lg:grid-cols-3">
+            <MoverTable title="Top gainers today" rows={overview.gainers} metric="chg_1d" />
+            <MoverTable title="Top losers today" rows={overview.losers} metric="chg_1d" />
+            <MoverTable title="Most traded (value, USD)" rows={overview.most_traded} metric="value" />
+          </section>
+          <p className="mt-2 text-xs text-[color:var(--dim)]">Movers are shares priced in the last week with a market cap of at least $10m, or on exchanges that publish no cap. Turnover is published by NGX, Nairobi and Johannesburg.</p>
+
+          <section className="mt-8" aria-labelledby="sectors-title">
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+              <h2 id="sectors-title" className="h3 text-xl">Sectors across Africa</h2>
+              <div className="flex gap-1 text-xs" role="group" aria-label="Colour sectors by">
+                {(["chg_1d", "ytd_usd"] as const).map((k) => (
+                  <button key={k} onClick={() => setHeatBy(k)}
+                    className={`rounded-full border hairline px-3 py-1 ${heatBy === k ? "bg-white/10" : ""}`}>
+                    {k === "chg_1d" ? "Today" : "YTD in USD"}
+                  </button>
                 ))}
               </div>
             </div>
-          )}
-        </div>
-
-        <aside className="space-y-6">
-
-          <section className="panel p-5" aria-labelledby="portfolio-title">
-            <p className="eyebrow">Personal investing</p>
-            <h2 id="portfolio-title" className="h3 mt-2 text-lg">Your portfolio, in context.</h2>
-            <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Track holdings, allocation, concentration and currency exposure with manual entry or CSV import. Portfolio data stays in this browser and prices are not presented as live quotes.
-            </p>
-            <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
-              Portfolio holdings are stored in this browser only. Prices and FX rates are user-entered, not live market data.
-            </p>
-            <Link href="/app/markets/portfolio" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open Portfolio Intelligence →</Link>
-          </section>
-
-          <section className="panel p-5" aria-labelledby="valuation-title">
-            <p className="eyebrow">Valuation and verdicts</p>
-            <h2 id="valuation-title" className="h3 mt-2 text-lg">A clear view, with a countercase.</h2>
-            <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Compare transparent DCF and dividend-discount scenarios where the company and data fit the method. Inspect assumptions, sensitivity and the sourced quote, and see when the model cannot support an honest conclusion.
-            </p>
-            <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
-              These are explicit model outputs, not verified fair value. DCF is restricted to suitable operating companies; unsupported or uncertain profiles do not receive a cheap/expensive verdict. Source quality, currency, quote date and assumptions still require review.
-            </p>
-            <Link href="/app/markets/valuation" className="mt-4 inline-flex text-sm underline-offset-4 hover:underline">Open Valuation workspace →</Link>
-          </section>
-
-          <section className="rounded-xl border hairline p-5" aria-labelledby="investment-tools-title">
-            <p className="eyebrow">Investment tools</p>
-            <h2 id="investment-tools-title" className="h3 mt-2 text-lg">Compare and monitor.</h2>
-            <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-              Compare available investment evidence, then monitor relevant developments against your portfolio context.
-            </p>
-            <div className="mt-4 grid gap-2">
-              <Link href="/app/markets/compare" className="btn btn-secondary justify-center">Compare opportunities</Link>
-              <Link href="/app/markets/monitoring" className="btn btn-ghost justify-center">Monitor portfolio developments</Link>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              {overview.sectors.map((s) => {
+                const v = heatBy === "chg_1d" ? s.chg_1d : s.ytd_usd;
+                return (
+                  <Link key={s.sector} href={`/app/markets/screener?sector=${encodeURIComponent(s.sector)}`}
+                    className="rounded-lg p-3 transition hover:opacity-90" style={{ background: heat(v, heatBy === "chg_1d" ? 0.05 : 0.5) }}>
+                    <p className="truncate text-sm font-medium">{s.sector}</p>
+                    <p className="kbd mt-1 text-base">{pct(v, heatBy === "chg_1d" ? 2 : 1)}</p>
+                    <p className="text-[0.6875rem] text-[color:var(--muted)]">{s.shares} shares · {s.mcap_usd ? usd(s.mcap_usd) : "cap n/a"}</p>
+                  </Link>
+                );
+              })}
             </div>
           </section>
-        </aside>
+
+          <section className="mt-8" aria-labelledby="fx-title">
+            <h2 id="fx-title" className="h3 mb-3 text-xl">Currencies against the dollar, year to date</h2>
+            <div className="-mx-4 overflow-x-auto px-4">
+              <div className="flex gap-2">
+                {overview.currencies.map((c) => (
+                  <div key={c.currency} className="min-w-[7.5rem] rounded-lg border hairline p-3">
+                    <p className="text-sm font-medium">{c.currency}</p>
+                    <p className={`kbd text-sm ${tone(c.ytd_vs_usd)}`}>{pct(c.ytd_vs_usd)}</p>
+                    <p className="text-[0.6875rem] text-[color:var(--dim)]">{c.per_usd.toLocaleString("en-US", { maximumFractionDigits: 2 })} per USD</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-[color:var(--dim)]">{overview.method}</p>
+          </section>
+        </>
+      )}
+
+      {pulse && (
+        <section className="mt-10 grid gap-6 xl:grid-cols-[1fr_1fr]">
+          <div className="min-w-0">
+            <div className="mb-3 flex items-end justify-between gap-3">
+              <h2 className="h3 text-xl">Private deal flow, last 30 days</h2>
+              <Link href="/app/deals" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Browse deals →</Link>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Stat label="Deals" value={pulse.deals.recent.toLocaleString()} note={`${pulse.deals.recent_countries} countries`} />
+              <Stat label="Median disclosed size" value={usd(pulse.deals.recent_disclosed_median_usd)} note={`${pulse.deals.recent_disclosed_n} deals disclose an amount`} />
+              <Stat label="Disclosed total" value={usd(pulse.deals.recent_disclosed_usd)}
+                note={pulse.deals.recent_top3_share != null ? `${Math.round(pulse.deals.recent_top3_share * 100)}% from the three largest` : undefined} />
+            </div>
+            {kinds.length > 0 && (
+              <div className="panel mt-3 p-4">
+                <p className="text-xs text-[color:var(--dim)]">Disclosed value by kind</p>
+                <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-white/10">
+                  {kinds.map(([k, v], i) => (
+                    <div key={k} style={{ width: `${(v / kindTotal) * 100}%`, opacity: 1 - i * 0.15 }} className="bg-[color:var(--accent)]" title={`${KIND_LABEL[k] ?? k}: ${usd(v)}`} />
+                  ))}
+                </div>
+                <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[color:var(--muted)]">
+                  {kinds.map(([k, v]) => <li key={k}>{KIND_LABEL[k] ?? words(k)} {usd(v)}</li>)}
+                </ul>
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="mb-3 flex items-end justify-between gap-3">
+              <h2 className="h3 text-xl">Corporate events, last 7 days</h2>
+              <Link href="/app/markets/monitoring" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Monitor holdings →</Link>
+            </div>
+            {pulse.events.latest.length === 0 && <p className="panel p-4 text-sm text-[color:var(--muted)]">No events in the last seven days.</p>}
+            <div className="space-y-2">
+              {pulse.events.latest.slice(0, 5).map((e) => (
+                <article key={e.id} className="rounded-xl border hairline p-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[color:var(--dim)]">
+                    <Pill value={e.signal_type ?? "event"} />
+                    {e.country && <span>{e.country.name}</span>}
+                    <span>{asOf(e.day)}</span>
+                    {e.headline_en ? <span>Translated from Arabic</span> : null}
+                  </div>
+                  <h3 className="mt-1.5 text-sm leading-relaxed">
+                    {e.url ? <a href={e.url} target="_blank" rel="noreferrer" className="hover:underline">{e.headline_en || e.headline}</a> : (e.headline_en || e.headline)}
+                  </h3>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          ["/app/markets/screener", "Screener", "Filter every listed share by exchange, sector, size and return."],
+          ["/app/markets/valuation", "Valuation", "DCF and dividend models prefilled from filings and today's price."],
+          ["/app/markets/portfolio", "Portfolio", "Holdings priced from the daily snapshot, in local currency and dollars."],
+          ["/app/markets/compare", "Compare", "Two companies side by side: price, returns, multiples, deals."],
+        ].map(([href, title, body]) => (
+          <Link key={href} href={href} className="rounded-xl border hairline p-4 hover:bg-white/[0.03]">
+            <p className="text-sm font-medium">{title} →</p>
+            <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">{body}</p>
+          </Link>
+        ))}
       </section>
+      <p className="mt-6 text-xs leading-relaxed text-[color:var(--dim)]">
+        Prices are end-of-day closes from public exchange price lists; they are not live quotes and not investment advice.
+        Figures marked stale, flagged or withheld are shown that way rather than estimated.
+      </p>
     </Container>
   );
 }
