@@ -90,6 +90,7 @@ def _authorized_cron(request: Request) -> bool:
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/historical-backfill.yml@refs/heads/main",
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/review-labels-import.yml@refs/heads/main",
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/enrich-round-investors.yml@refs/heads/main",
+            "HenryMorganDibie/deal-intelligence-agent/.github/workflows/market-snapshot.yml@refs/heads/main",
         }
         return (
             claims.get("repository") == "HenryMorganDibie/deal-intelligence-agent"

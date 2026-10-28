@@ -1,0 +1,30 @@
+name: Market snapshot
+
+# Records the day's quotes for every exchange, the benchmark indices and dollar rates. The Vercel cron runs it
+# every weekday after the African closes; this workflow runs it on demand (a first snapshot, or a missed day).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: market-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Record the snapshot
+        run: |
+          set -euo pipefail
+          oidc="$(curl --fail-with-body --silent --show-error --max-time 15 \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api" | jq -er '.value')"
+          echo "::add-mask::${oidc}"
+          curl --fail-with-body --silent --show-error --max-time 290 \
+            -H "Authorization: Bearer ${oidc}" -H "Accept: application/json" \
+            "https://deal-intelligence-api.vercel.app/api/cron/market-snapshot"
