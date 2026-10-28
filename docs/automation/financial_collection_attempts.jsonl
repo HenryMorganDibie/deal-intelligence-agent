@@ -236,3 +236,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-27", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47443_CAVERTON_OFFSHORE_SUPPORT_GROUP_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_JULY_2026.pdf", "status": "collected", "ticker": "CAVERTON.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "CBIBF.BV"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CCAP.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CCAPP.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CCNN.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CCO.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CCRS.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CDA.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CDM.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CEFM.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CERA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CFAC.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CFG.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CFR.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CGEN.NR"}

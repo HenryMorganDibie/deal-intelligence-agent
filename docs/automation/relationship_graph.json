@@ -283,6 +283,94 @@
     "shares": {
       "name": "Shares",
       "kind": "organization"
+    },
+    "helios": {
+      "name": "Helios",
+      "kind": "organization"
+    },
+    "merec industries": {
+      "name": "Merec Industries",
+      "kind": "organization"
+    },
+    "green climate fund": {
+      "name": "Green Climate Fund",
+      "kind": "organization"
+    },
+    "climate fund managers": {
+      "name": "Climate Fund Managers",
+      "kind": "organization"
+    },
+    "proparco": {
+      "name": "Proparco",
+      "kind": "organization"
+    },
+    "t rkiye": {
+      "name": "Türkiye",
+      "kind": "organization"
+    },
+    "afreximbank": {
+      "name": "Afreximbank",
+      "kind": "organization"
+    },
+    "management buy out of oryx energies": {
+      "name": "Management Buy-Out of Oryx Energies",
+      "kind": "organization"
+    },
+    "nitin sandesara": {
+      "name": "Nitin Sandesara",
+      "kind": "organization"
+    },
+    "sterling oil pulls off massive african energy": {
+      "name": "Sterling Oil Pulls Off Massive African Energy",
+      "kind": "organization"
+    },
+    "nvidia": {
+      "name": "Nvidia",
+      "kind": "organization"
+    },
+    "meta": {
+      "name": "Meta",
+      "kind": "organization"
+    },
+    "sterling oil": {
+      "name": "Sterling Oil",
+      "kind": "organization"
+    },
+    "eni": {
+      "name": "Eni",
+      "kind": "organization"
+    },
+    "alios finance": {
+      "name": "Alios Finance",
+      "kind": "organization"
+    },
+    "new nonbank lending": {
+      "name": "New Nonbank Lending",
+      "kind": "organization"
+    },
+    "newly": {
+      "name": "Newly",
+      "kind": "organization"
+    },
+    "defense systems boost ethiopia": {
+      "name": "Defense Systems Boost Ethiopia",
+      "kind": "organization"
+    },
+    "ndindi nyoro": {
+      "name": "Ndindi Nyoro",
+      "kind": "organization"
+    },
+    "olympia capital": {
+      "name": "Olympia Capital",
+      "kind": "organization"
+    },
+    "merec": {
+      "name": "Merec",
+      "kind": "organization"
+    },
+    "oryx energies": {
+      "name": "Oryx Energies",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -856,7 +944,189 @@
           "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPOFE1SkZXTExOdnhXeWs1WEpsT1lsaUhUZnZ1T3JfMEd5SkdYZk8xTUZOalRZdUUtSzhtMUQ2ck40Vmx5V25TdnFSVkpyZ05KcVoxX3B4dWVXTl9VTHNXRTFGYTFXWFl4R21FWEJHdzZWOTExQ2xaaVJZdGIwZTdfckI5TU1CUU5CcWpiVzVNaG5FdmpGMGc?oc=5"
         }
       ]
+    },
+    "da9e6041247fae68cbd9": {
+      "id": "da9e6041247fae68cbd9",
+      "from": "helios",
+      "to": "merec industries",
+      "type": "acquisition",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Mozambique: Helios to acquire 49% stake in Merec Industries",
+          "publisher": "Club of Mozambique",
+          "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQc2Nua3E1bjhoMnZ3RmFsQTdOZEt0UmN4TjRCSE1yY29WVGVsTTdHMVJWMm5ya2YyWGxHT2hVbXdtMDJmQ1BLTlVNMDhyYjdDR294ajJaVWRla2s4TEZSZ3JCblB4SzFmV1RzSnhWM3NuaUlWOTNUWWF6RVBlUUthN2FfSFQwREF2OXZGS0dhajZTRHhyTmJN?oc=5"
+        }
+      ]
+    },
+    "c588bf2060fd44ec43b0": {
+      "id": "c588bf2060fd44ec43b0",
+      "from": "green climate fund",
+      "to": "climate fund managers",
+      "type": "equity_funding",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Climate Fund Managers secures $140m from Green Climate Fund",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxPcFF1TWNlRkFBMGhoc1VLaUpXTDd2Y1JTT0RxbXRpbjVfbU03Z1Z1Mmt3Q3RvRVRHTkFRM1JpY2JCUDBtazVvYnJSanRZR3p6eW1qZGNCc0VnZnlxNWF2bnlSUENuNEtjVXlNRktQUl9EQU5TVjdBVkRtdm9QTWtjbERR?oc=5"
+        }
+      ]
+    },
+    "bbc02426bcaa9d01dcb4": {
+      "id": "bbc02426bcaa9d01dcb4",
+      "from": "proparco",
+      "to": "t rkiye",
+      "type": "debt_financing",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Proparco backs green finance in Türkiye with €75m loan",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNUmdzd1dPWHlFX3gwSmpJR2VGRlRWZzMtQnIwNTZTVEhQcEFSVXpOUU1GdjMwSkVJRXp3NE9oQVNBMEFZN1lINHR3UFZDVkhXR0h5dXk2azdPUC1MUml3dnlSUV9ycV9xMy1BZDVTVUxRdnY5TUZxeFlsTVFEYU95cjFTZ0F2V2RieDlGVC1hUVpPZUg5Wkd0RV9hOER0RlE1dzB4UmVxN3JpNnVhdk9LX216Y1FRTU14TmcxSGNwTVFnOVE?oc=5"
+        }
+      ]
+    },
+    "901479598ac9e85ffdda": {
+      "id": "901479598ac9e85ffdda",
+      "from": "afreximbank",
+      "to": "management buy out of oryx energies",
+      "type": "debt_financing",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Afreximbank Approves $975m Facility For Management Buy-Out Of Oryx Energies",
+          "publisher": "https://thefact.ng/",
+          "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOcmtKM0NLeEtqZ2ttR1phQ1g0RzFMSUJtUGNnNWttR3Nkc015ZTc4YzJDNGhQVjItYldtcW5ObHZ2SU9WQjBCYWw4enBNcFA0NEpxOTZJUWlfSjFwaGg2MkR3S3IzcDRacDVkWklXc3MxTzNwN2s1TURMTVYyRXdiVXFMNGJIUkZLclVwdGhLLV9SRndTVTVKNUtn?oc=5"
+        }
+      ]
+    },
+    "5b054160cac8ed87e4ac": {
+      "id": "5b054160cac8ed87e4ac",
+      "from": "nitin sandesara",
+      "to": "sterling oil pulls off massive african energy",
+      "type": "acquisition",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Nitin Sandesara’s Sterling Oil Pulls Off Massive African Energy Takeover From Italian Giant Eni",
+          "publisher": "Gujarat Samachar",
+          "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNclE5WVpicFZTdlFUc0hzRWNzY3l2aThhcjl3bnplVEI2V1VPX2U4RTVwNlRZaEpMQzczc3F1Q1ZWbkxwRVpNQUtoZ2VPY3FjUGhIMzJiNjcwM2NEMG5OSEVVNFB6aEx4RDZZdXVOWlVobHlFUmcyMzk5M1F6czVDSTZ4WnZHdjlVTGpqMFRIaFpOWHlZUmp5d0U3MU5zaEYyZGZCeWhuTHdTdHFCZDJYTk1WSkRYcTBLOTNRRTFhcXZxcS1ieW5KNldHZk14YVliOUJPektGa3ZkS1BsS0RWcnBTT2c0WFlpQ25FQQ?oc=5"
+        }
+      ]
+    },
+    "62d53dff739399f66371": {
+      "id": "62d53dff739399f66371",
+      "from": "nvidia",
+      "to": "meta",
+      "type": "equity_funding",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Nvidia invests $3 billion in Meta as the AI spending race accelerates",
+          "publisher": "Modern Ghana",
+          "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE9jT2JXeWUzeFJHOWJXSnJoQWhPSmtfYllVV1VrbGZSY2kyRzJjdjVOM244QWFjODdxaWJDckktdGhWQ2ZyMjlIcmFDSHpvRmhNekRWZUNIV3pwV0o4c3ZyNNIBXEFVX3lxTE1fV3ZadkllS25XbFVyNG5KMDlYeHlCRDBYeUU5X2xmT3ZjU0Q5cWp5UXZ5MS1tWnItUGt5Smw3ajlzMmwwY3NMMkpqY2FfVWthT0xrWVNBQk4xYTFD?oc=5"
+        }
+      ]
+    },
+    "a3df7d67fae13d1578a3": {
+      "id": "a3df7d67fae13d1578a3",
+      "from": "sterling oil",
+      "to": "eni",
+      "type": "acquisition",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Sterling Oil acquires Eni’s Nigerian unit, adds 5% stake in Renaissance oil and gas venture",
+          "publisher": "ANI News",
+          "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxPeTRRcHVBVk9sTy01TVY4WEtBUzBaS3ZYWkQ3V0tIMVFkeHYzWDZVV2docWt0SEwzNmYtQkVLUjlBc25rMmp6UlN2b3lSUjlkOF93aEF5Y1I0VWp2aUo1RnVIelJ6Z0l0aER6Y3J3YnZCeGxVaDJDOHljMGZSLUgtZkNscURRRk1oZ194SWk0TnZWNDNIaXBucDYxUUFwYW9FVFhRM3B5Wk1BeVVCZV9iZV9rTTdWNXRrTWhYYTkxZ1J3d0lZcDRQOTJSSVhwOU1YRDFMeTBtY0E3azA?oc=5"
+        }
+      ]
+    },
+    "30e59d460e1ddb89a41f": {
+      "id": "30e59d460e1ddb89a41f",
+      "from": "sterling oil",
+      "to": "renaissance",
+      "type": "acquisition",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Sandesara family's Sterling Oil acquires Eni's stake in Nigeria's Renaissance joint venture",
+          "publisher": "News24Online",
+          "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxPSU1ncFJzdVBRbm5sX1FFbzVNUnRBb1ZnUjVhOFJYUDVua2NtUHcxeGR6Z0RiWXp3Qks0YkYwdmVqSG5qMnRvZzFfRXhLZkp2S0gxMTE4am1KSkx1aDhaSUNoemNtRVpSZUYtaDFicjNDMWlGMmhpLTlvaVZ0THVQQWxIMzR5N00tQjRlZjJZRW1GekZGY3Q1TVFJVk02OE5vOU9hdFVEQkZ1YW9XaV9DNDZ6Y2lPQXZJYUtBdHpvMUdkUUI0eXdr0gHLAUFVX3lxTE5QTUM4Zng1V0xRc0FxUVlmZUd5TGtKbVd1eVBfTTQ3ZUd4eUNSbV9nY2I5aHQyM1dpT05kRW40eUd1ajg5RFNtOEpZWWlGY2JHYTljQjJ2bjNnMnVxNHhHa2l6aGtiN3NZdEw4OGttcklJOTVZNTRaa1AzSE9sZjdhZVZQMUFZYkFHZ0R1Z3BUTDlheXo2U0R2SjhGVVRENF96V0FrSUtUdzNjcm5vMTk0NzVaeTBDNzJ4S1RQN21sVjFCY2FHdDc1ZDFZ?oc=5"
+        }
+      ]
+    },
+    "d3fb0f8efaec4ae18596": {
+      "id": "d3fb0f8efaec4ae18596",
+      "from": "alios finance",
+      "to": "new nonbank lending",
+      "type": "acquisition",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Alios Finance Takes 51% of Cameroon’s New Nonbank Lending in First Half of 2026",
+          "publisher": "Business in Cameroon",
+          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPLUZjcVlZWE5sSkgtWmNBaHdQYjBldXBpVk5DaVVYa19IVEszY0pNNGNkQ2dFQ2JuQkFPZWRYMVZUM1M0MFRwWDlzbWlXTXBfdmRPWXJwZkpTTjI0c1VHeVhyMmw0aGk2SDl5aFpaOElObzJvNnJfSmM4N1ZNeU1oQnozWS1xVkRvOTJPc05Cd2MzT290aU5Oc1NJOGhJQU9sVWNHbWZrdzM0aWtqcFBNUkljYjNmSUhqQVV0TExHejN3TkJQQ2hBR3dHU3g?oc=5"
+        }
+      ]
+    },
+    "69f7d5f8e20e42f7c3f6": {
+      "id": "69f7d5f8e20e42f7c3f6",
+      "from": "newly",
+      "to": "defense systems boost ethiopia",
+      "type": "acquisition",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "PM Abiy Says Newly Acquired Defense Systems Boost Ethiopia’s Strategic Deterrence",
+          "publisher": "ENA English",
+          "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE1Yd0ZaQkRPc2ZaRFAwYkJJek1seDF4TTdRWTV6T0lsMmFQS1ZJbU5tMWN5OXQ4X0VOdnNYUThsdXo0OWJBcWNmQWxpYzZOLXg5MlE?oc=5"
+        }
+      ]
+    },
+    "e73a08808cbeefce50eb": {
+      "id": "e73a08808cbeefce50eb",
+      "from": "ndindi nyoro",
+      "to": "olympia capital",
+      "type": "acquisition",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Ndindi Nyoro acquires stake in Olympia Capital in fresh investment move",
+          "publisher": "Bizna Kenya",
+          "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9yTVU1akJlYmpqT2s4MmJON2JFVDc5WEYxdTdmZWEyeS1nR091UGxSSThjSXpaQ2JhLXFWUWhrQ0U4T1EwX2VybTlBVWpZYUhmQklCcW9iSktKcURhZXBzTElxNDI2cTF5VDJvdFFZZFI5a0E?oc=5"
+        }
+      ]
+    },
+    "8e85118fd4374e18c6bb": {
+      "id": "8e85118fd4374e18c6bb",
+      "from": "helios",
+      "to": "merec",
+      "type": "acquisition",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Helios to acquire up to 49% stake in Mozambique’s Merec",
+          "publisher": "Milling Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPVFpLMTlJX3RTZE5PTXFjYTBKblprSnV3bTJKamE2UWp3OURUXzR1NllScVBqR2RYajN6cHhXb1hfVU5Nc0dlRkN0OUk3TC12QVhwanNUT1VjclF3UUpnWC1NWWNWaVZ6bWZpR0NwbGFGUFhnTEFFRTVoSG42VGtuZlpSVQ?oc=5"
+        }
+      ]
+    },
+    "0f742d0a2332a27b8b40": {
+      "id": "0f742d0a2332a27b8b40",
+      "from": "amsons group",
+      "to": "oryx energies",
+      "type": "acquisition",
+      "first_seen": "2026-10-28",
+      "sources": [
+        {
+          "title": "Amsons Group acquires Geneva-based Oryx Energies' downstream business in $230 million transformative infrastructure deal",
+          "publisher": "Business Insider Africa",
+          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQdi1vSnBhcHpMNWFFM0k5azI3LTR3bVFWNThHNGdmSkpnUTRiUDZMcWRCX1Y2Z2NoMXZhRE03OUVZZlAyS2JBcVJrZjMwYUNYbDJTTXRPOWxmTFVzRTF2elRXY0dzUzlCdzJScUdaY1pTb0Z3a29lRE9YaTNkcnJHalo0V0V0QXhSV19jdHZLZ1NBTExvX1M0eXZ0d1hxdDdWT05JaUhLSk9xNmVUVGNKMmpHSWM5QzNKTndlaTFBNmNkajNIYlRoMU5n?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-27T17:20:29.812382+00:00"
+  "updated_at": "2026-10-28T22:51:15.798867+00:00"
 }
