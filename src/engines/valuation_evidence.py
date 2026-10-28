@@ -13,8 +13,10 @@ it can verify:
   * the source's standing: an exchange or regulator filing, the company's own website, or another site;
   * freshness: a statement period over 18 months old or a price over 7 days old.
 
-Each field gets a status: "verified" (matches exchange data or the parsed filing), "found" (appears in the cited
-official document), "not_found", "mismatch", or "unchecked". A cheap or expensive verdict is allowed only when the
+Each field gets a status: "verified" (matches exchange data, or the current-period line of the filing parsed as a
+statement, whether from the profile or the cited document itself), "found" (appears on the line labelled as that
+item in an official document), "found_unlabelled" (the number appears, but not under its label: not counted),
+"not_found", "mismatch", or "unchecked". A cheap or expensive verdict is allowed only when the
 price is verified and every statement figure is verified or found, with nothing mismatched or stale.
 """
 from __future__ import annotations
@@ -45,6 +47,16 @@ OFFICIAL_DOMAINS = (
 )
 _FIELDS = {"fcf": ("fcff", "unlevered_free_cash_flow", "free_cash_flow"), "cash": ("cash",), "debt": ("total_debt",),
            "dividend_per_share": ("annual_dividend_per_share", "dividend_per_share")}
+# The line labels each figure is reported under, in English and French filings.
+_LABELS = {
+    "cash": r"cash and (?:cash )?equivalents|cash and bank|cash at bank|bank balances and cash|tr[ée]sorerie",
+    "debt": r"borrowings|loans? (?:and|&) (?:borrowings|advances payable)|bank loans|interest[- ]bearing|debt|"
+            r"bonds? (?:in )?issue|notes? payable|lease liabilities|emprunts|dettes financi[èe]res",
+    "fcf": r"free cash ?flows?|\bfcff?\b",
+    "dividend_per_share": r"dividends? per (?:ordinary )?share|\bdps\b|dividend of|dividende par action",
+    "shares": r"(?:number of )?(?:ordinary )?shares (?:in issue|outstanding|issued)|issued share capital|"
+              r"weighted average number",
+}
 _MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october",
            "november", "december"]
 
@@ -151,6 +163,39 @@ def figure_in_text(value: Optional[float], text: str) -> Optional[str]:
     return None
 
 
+def labelled_figure(value: Optional[float], text: str, label: str) -> Optional[str]:
+    """The form in which the figure appears on a line carrying its label (or the line after it, where a PDF
+    breaks a row), or None. A figure found only elsewhere in the document does not count."""
+    if value is None or not text:
+        return None
+    lines = [re.sub(r"[ \u00a0\u202f]+", " ", ln) for ln in text.splitlines()]
+    pattern = re.compile(label, re.I)
+    for i, line in enumerate(lines):
+        if pattern.search(line):
+            window = line + " " + (lines[i + 1] if i + 1 < len(lines) else "")
+            form = figure_in_text(value, window)
+            if form:
+                return form
+    return None
+
+
+def statement_in_text(text: str) -> Optional[dict]:
+    """The cited document read as a financial statement (line items, current and prior columns, accounting
+    checks), when it is one."""
+    from src.engines import financials as fin
+    try:
+        parsed = fin.parse_statement_text(text or "")
+    except Exception:
+        return None
+    if len(parsed.get("items") or {}) < 2:
+        return None
+    mult = parsed.get("multiplier") or 1
+    items = {k: {**v, "current": v["current"] * (1 if k == "eps" else mult)} for k, v in parsed["items"].items()}
+    checks = fin.verify(parsed["items"])
+    return {"items": items, "checks": checks, "verified": bool(checks) and all(c["passed"] for c in checks),
+            "source": "parsed from the cited document"}
+
+
 def _period_in_text(period: str, text: str) -> bool:
     try:
         d = date.fromisoformat(period[:10])
@@ -200,28 +245,34 @@ def check(inputs: dict, listing: Optional[dict] = None, filing: Optional[dict] =
            "states_period": bool(text) and bool(inputs.get("period")) and _period_in_text(inputs["period"], text)}
     same_filing = bool(filing and filing.get("source_url") and source and filing["source_url"] == source)
 
+    # The cited document read as a statement, when the profile has no parsed filing for this source.
+    statement = filing if same_filing else (statement_in_text(text) if text else None)
     for key in wanted:
         value = inputs.get(key)
         if value is None:
             fields[key] = {"status": "unchecked", "note": "not entered"}
             continue
         parsed = None
-        if filing and same_filing:
+        if statement:
             for item in _FIELDS[key]:
-                cur = ((filing.get("items") or {}).get(item) or {}).get("current")
+                cur = ((statement.get("items") or {}).get(item) or {}).get("current")
                 if isinstance(cur, (int, float)):
                     parsed = cur
                     break
         if parsed is not None:
             ok = _close(value, parsed, FILING_TOLERANCE)
+            where = "the filing" if same_filing else "the cited statement"
             fields[key] = {"status": "verified" if ok else "mismatch", "reference": parsed,
-                           "note": ("matches" if ok else "differs from") + " the figure parsed from the filing"
-                                   + (" (accounting checks passed)" if filing.get("verified") else "")}
+                           "note": ("matches" if ok else "differs from") + f" the current-period line in {where}"
+                                   + (" (accounting checks passed)" if statement.get("verified") else "")}
             continue
-        form = figure_in_text(value, text or "")
+        form = labelled_figure(value, text or "", _LABELS[key])
         if form:
             fields[key] = {"status": "found" if standing in ("official", "company") else "found_unofficial",
-                           "note": f"appears in the cited document as {form}"}
+                           "note": f"appears as {form} on the document's {key.replace('_', ' ')} line"}
+        elif figure_in_text(value, text or ""):
+            fields[key] = {"status": "found_unlabelled",
+                           "note": "the number appears in the document, but not on a line labelled as this item"}
         else:
             fields[key] = {"status": "not_found" if text else "unchecked",
                            "note": "not found in the cited document" if text else f"document could not be read ({fetched})"}
@@ -251,7 +302,7 @@ def check(inputs: dict, listing: Optional[dict] = None, filing: Optional[dict] =
             fields["shares"] = {"status": "verified" if ok else "mismatch", "reference": listing["shares"],
                                 "note": "exchange-published shares outstanding" + ("" if ok else "; the entered count differs by more than 5%")}
     if "shares" not in fields and method == "dcf":
-        form = figure_in_text(inputs.get("shares"), text or "")
+        form = labelled_figure(inputs.get("shares"), text or "", _LABELS["shares"])
         fields["shares"] = {"status": "found" if form else "unchecked",
                             "note": "appears in the cited document" if form else "no published share count to check against"}
 
@@ -279,8 +330,12 @@ def check(inputs: dict, listing: Optional[dict] = None, filing: Optional[dict] =
         reasons.append("The price is more than a week old.")
     if standing == "other" and not same_filing:
         reasons.append("The source is neither an exchange or regulator filing nor the company's own site.")
+    if any(f["status"] == "found_unlabelled" for f in fields.values()):
+        reasons.append("Some figures appear in the document but not under their line item; they are not counted.")
+    doc["read_as_statement"] = bool(statement) and not same_filing
     return {"grade": grade, "verdict_allowed": verdict_allowed, "fields": fields, "document": doc,
             "freshness": fresh, "reasons": reasons,
-            "method": "Grade A: every figure matches exchange data or the parsed filing. B: figures found in an official "
+            "method": "Grade A: every figure matches exchange data or the current-period line of a parsed filing (the profile's, or "
+                      "the cited document read as a statement). B: figures found on their labelled lines in an official "
                       "document and the price matches the exchange close (or the cited quote). C: partly evidenced. "
                       "D: unevidenced or contradicted. A cheap or expensive verdict needs A or B."}

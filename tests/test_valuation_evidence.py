@@ -80,3 +80,35 @@ def test_evidence_endpoint_uses_the_listing_and_profile(monkeypatch):
     body.update(exchange="ngx", symbol="DANGCEM")
     r = TestClient(api.app).post("/api/valuation/evidence", json=body).json()
     assert r["fields"]["price"]["status"] == "verified" and r["grade"] == "B"
+
+
+STATEMENT = """Dangote Cement Plc
+Consolidated statement of financial position as at 31 December 2025
+In millions of Naira    2025    2024
+Revenue 4,200,000 3,580,000
+Total assets 6,100,000 5,400,000
+Total liabilities 3,900,000 3,500,000
+Total equity 2,200,000 1,900,000
+Cash and cash equivalents 412,345 389,100
+Borrowings 1,250,600 1,100,200
+Free cash flow 845,200 700,000
+"""
+
+
+def test_a_cited_statement_is_parsed_and_its_current_column_verifies_inputs():
+    r = ve.check(_inputs(), LISTING, fetch=lambda url: (STATEMENT, "ok"), today=TODAY)
+    assert r["document"]["read_as_statement"]
+    assert r["fields"]["cash"]["status"] == "verified" and r["fields"]["debt"]["status"] == "verified"
+    assert r["fields"]["fcf"]["status"] == "found"                  # on its labelled line; not a parsed item
+    # The prior-year column is not the current figure.
+    prior = ve.check(_inputs(cash=389.1e9), LISTING, fetch=lambda url: (STATEMENT, "ok"), today=TODAY)
+    assert prior["fields"]["cash"]["status"] == "mismatch" and not prior["verdict_allowed"]
+
+
+def test_a_number_under_another_line_item_does_not_count():
+    doc = ("Dangote Cement Plc annual report for the year ended 31 December 2025\n"
+           "Other operating income 412,345\nTotal borrowings 1,250,600\nFree cash flow 845.2\n")
+    r = ve.check(_inputs(), LISTING, fetch=lambda url: (doc, "ok"), today=TODAY)
+    assert r["fields"]["cash"]["status"] == "found_unlabelled"
+    assert r["fields"]["debt"]["status"] == "found" and not r["verdict_allowed"]
+    assert any("not under their line item" in reason for reason in r["reasons"])

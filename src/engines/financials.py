@@ -49,14 +49,16 @@ LINE_ITEMS: tuple[tuple[str, str], ...] = (
     ("total_equity", r"total\s+equity(?:\s+attributable)?"),
     ("loans_to_customers", r"loans\s+and\s+advances\s+to\s+customers"),
     ("customer_deposits", r"deposits\s+from\s+customers"),
-    ("cash", r"cash\s+and\s+cash\s+equivalents\s+at\s+(?:the\s+)?end"),
+    ("cash", r"cash\s+and\s+cash\s+equivalents\s+at\s+(?:the\s+)?end|cash\s+and\s+(?:cash\s+)?equivalents\s*$|cash\s+and\s+(?:cash\s+)?equivalents(?=\s+[\d(])"),
+    ("total_debt", r"(?:total\s+)?(?:interest[- ]bearing\s+)?(?:loans\s+and\s+)?borrowings|bank\s+loans|debt\s+securities\s+in\s+issue"),
     ("operating_cash_flow", r"net\s+cash\s+(?:generated\s+from|from|provided\s+by|\(used\s+in\)/generated\s+from|generated\s+from/\(used\s+in\))\s+operating\s+activities"),
     ("investing_cash_flow", r"net\s+cash\s+(?:used\s+in|from|generated\s+from/\(used\s+in\)|\(used\s+in\)/generated\s+from)\s+investing\s+activities"),
     ("financing_cash_flow", r"net\s+cash\s+(?:used\s+in|from|generated\s+from/\(used\s+in\)|\(used\s+in\)/generated\s+from)\s+financing\s+activities"),
 )
 _ITEM_RES = [(f, re.compile(rf"^\s*(?:{p})\b", re.IGNORECASE)) for f, p in LINE_ITEMS]
 _NUM = re.compile(r"\(?-?\d{1,3}(?:,\d{3})+(?:\.\d+)?\)?|\(?-?\d+(?:\.\d+)?\)?")
-_UNIT = re.compile(r"(?<![A-Za-z])(?:₦|N|=N=|NGN|KShs?|KES|R|ZAR|GH¢|GHS|\$|US\$)\s*['’]?\s*(million|000|billion|m|bn)\b", re.IGNORECASE)
+_UNIT = re.compile(r"(?<![A-Za-z])(?:₦|N|=N=|NGN|KShs?|KES|R|ZAR|GH¢|GHS|\$|US\$)\s*['’]?\s*(million|000|billion|m|bn)\b|"
+                   r"\bin\s+(millions?|thousands?|billions?)\s+of\b", re.IGNORECASE)
 _PERIOD = re.compile(r"(?:for\s+the\s+)?(year|six\s+months|nine\s+months|three\s+months|period)\s+ended\s+"
                      r"(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+),?\s+(\d{4})", re.IGNORECASE)
 _MONTHS = {m: i for i, m in enumerate(["january", "february", "march", "april", "may", "june", "july", "august",
@@ -94,7 +96,8 @@ def parse_statement_text(text: str) -> dict:
     """
     unit_m = _UNIT.search(text)
     unit = unit_m.group(0) if unit_m else None
-    mult = {"million": 1e6, "m": 1e6, "000": 1e3, "billion": 1e9, "bn": 1e9}.get(unit_m.group(1).lower(), 1) if unit_m else 1
+    word = (unit_m.group(1) or unit_m.group(2) or "").lower().rstrip("s") if unit_m else ""
+    mult = {"million": 1e6, "m": 1e6, "000": 1e3, "thousand": 1e3, "billion": 1e9, "bn": 1e9}.get(word, 1)
     period = None
     pm = _PERIOD.search(text)
     if pm:

@@ -104,7 +104,7 @@ type Evidence = {
   grade: "A" | "B" | "C" | "D";
   verdict_allowed: boolean;
   fields: Record<string, EvidenceField>;
-  document: { url: string | null; standing: "official" | "company" | "other" | null; status: string; names_company: boolean; states_period: boolean };
+  document: { url: string | null; standing: "official" | "company" | "other" | null; status: string; names_company: boolean; states_period: boolean; read_as_statement?: boolean };
   freshness: { statement_age_days: number | null; statement_stale: boolean; price_age_days: number | null; price_stale: boolean };
   reasons: string[];
   method: string;
@@ -116,6 +116,7 @@ const FIELD_LABEL: Record<string, string> = {
 const STATUS_LABEL: Record<string, [string, string]> = {
   verified: ["Verified", "text-verified"], found: ["Found in source", "text-verified"],
   found_unofficial: ["Found, unofficial source", "text-[#f5d58a]"], not_found: ["Not found in source", "text-risk"],
+  found_unlabelled: ["Not under its line item", "text-[#f5d58a]"],
   mismatch: ["Contradicted", "text-risk"], unchecked: ["Not checked", "text-[color:var(--muted)]"],
 };
 const STANDING_LABEL: Record<string, string> = {
@@ -723,7 +724,7 @@ export default function MarketsValuationPage() {
                       <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
                         Source document: {evidence.document.standing ? STANDING_LABEL[evidence.document.standing] : "none"}
                         {evidence.document.status === "ok"
-                          ? `; ${evidence.document.names_company ? "names the company" : "does not name the company"}, ${evidence.document.states_period ? "states the period" : "does not state the period"}.`
+                          ? `; ${evidence.document.names_company ? "names the company" : "does not name the company"}, ${evidence.document.states_period ? "states the period" : "does not state the period"}${evidence.document.read_as_statement ? ", and was read as a financial statement (current-period column, accounting checks)" : ""}.`
                           : evidence.document.url ? `; could not be read (${evidence.document.status}).` : "."}
                       </p>
                       {evidence.reasons.length > 0 && <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-[color:var(--muted)]">{evidence.reasons.map((r) => <li key={r}>{r}</li>)}</ul>}
