@@ -342,7 +342,7 @@ _SECTOR_WORDS = {"private", "equity", "venture", "capital", "supply", "chain", "
                  "cloud", "computing", "space", "technology", "delivery", "crypto", "ecommerce", "parent", "high-growth",
                  "flower", "security", "biotech", "medtech", "climate", "agri", "farming", "media", "entertainment",
                  "hospitality", "hotel", "water", "waste", "recycling", "housing", "transport", "shipping", "freight",
-                 "flour", "milling", "grain", "sugar", "dairy", "cocoa", "coffee", "tea", "poultry", "feed", "edible", "oil"}
+                 "flour", "milling", "grain", "sugar", "cocoa", "coffee", "tea", "poultry", "feed", "edible", "oil"}
 _ROLE_WORDS = {"startup", "start-up", "startups", "firm", "firms", "company", "companies", "platform", "fintech",
                "lender", "entrepreneur", "founder", "operator", "businessman", "businesswoman", "billionaire",
                "insurer", "agritech", "healthtech", "edtech", "insurtech", "proptech", "unicorn", "manufacturer",
@@ -358,7 +358,7 @@ _HEADLINE_STOP = {"raises", "raised", "secures", "secured", "lands", "landed", "
                   "acquired", "buys", "sells", "in", "for", "to", "with", "from", "now", "valued", "has", "is", "and", "as",
                   "at", "by", "on", "of", "after", "receives", "launches", "expands", "invests", "just", "the", "a", "an",
                   "seed", "series", "round", "funding", "million", "billion", "rethink", "help", "turn", "build", "scale",
-                  "behind", "raise", "secure", "make", "makes", "gets", "takes", "will", "says", "leads", "lead", "led",
+                  "behind", "raise", "secure", "make", "makes", "takes", "will", "says", "leads", "lead", "led",
                   "backs", "plans", "weighs", "purchases", "invest", "buy", "acquire", "take", "over", "move", "bid"}
 _NAME_TOKEN = r"(?:[A-Z][\w.&'’-]*|[a-z][a-z0-9]*\.[a-z]{2,4})"
 

@@ -22,7 +22,12 @@ Hosted API routes for market data (mounted by api/index.py):
   GET  /api/watchlists/{id}/feed.xml   RSS of matched events and deals
   GET  /api/evaluation                 historical backtest and live outcome statistics
   GET  /api/pulse                      live market summary for the site (deal flow, events, measured rates)
+  GET  /api/markets/overview           exchange tiles, movers, most traded, sectors, currencies (16 exchanges)
+  GET  /api/markets/screener           shares across every exchange (exchange, sector, min_mcap_usd, q, sort)
+  GET  /api/markets/search             listed shares matching a name or ticker
+  GET  /api/markets/quote              one listing's latest quote (exchange, symbol)
   GET  /api/cron/ingest                scheduled rolling feed -> deals and events, webhooks
+  GET  /api/cron/market-snapshot       scheduled daily quotes, indices and FX
 """
 from __future__ import annotations
 
@@ -1653,3 +1658,94 @@ async def cron_ingest(
             "events_detected": len(new_events), "events_saved": r2.json(),
             "webhooks_delivered": delivered, "webhook_lookup_ok": hooks.status_code == 200,
             "alerts_suppressed": bool(month)}
+
+
+# ── African equity markets ───────────────────────────────────────────────────
+
+_markets_cache: dict[str, tuple[float, dict]] = {}
+_MARKETS_TTL = 600
+
+
+def _market_snapshot() -> dict:
+    """The latest stored snapshot of every exchange's quotes, the indices and FX."""
+    from src.engines import markets
+    hit = _markets_cache.get("snapshot")
+    if hit and time.monotonic() - hit[0] < _MARKETS_TTL:
+        return hit[1]
+    if not _configured():
+        snap = markets.load_local()
+    else:
+        parts = {}
+        for kind in ("quotes", "indices", "fx"):
+            r = _rpc_sync("list_market_snapshots", {"p_kind": kind})
+            if r.status_code != 200:
+                log.error("market snapshot read failed: %s %s", r.status_code, r.text[:300])
+                if hit:
+                    return hit[1]
+                raise HTTPException(503, "Market data store is unavailable.")
+            parts[kind] = r.json() or []
+        snap = markets.from_rows(parts["quotes"], parts["indices"], parts["fx"])
+    _markets_cache["snapshot"] = (time.monotonic(), snap)
+    return snap
+
+
+@router.get("/api/cron/market-snapshot")
+async def cron_market_snapshot(request: Request) -> dict:
+    """Record today's quotes for every exchange, the benchmark indices and dollar exchange rates."""
+    if not _authorized_cron(request):
+        raise HTTPException(401, "Unauthorized")
+    from src.engines import markets
+    snap = await run_in_threadpool(markets.build_snapshot)
+    rows = markets.snapshot_rows(snap)
+    if not rows:
+        raise HTTPException(502, "No market source answered; nothing was recorded.")
+    if not _configured():
+        markets.save_local(snap)
+        written = len(rows)
+    else:
+        r = await run_in_threadpool(_rpc_sync, "upsert_market_snapshots", {"p_rows": rows}, 60)
+        if not r.is_success:
+            log.error("market snapshot write failed: %s %s", r.status_code, r.text[:300])
+            raise HTTPException(502, "Could not persist the market snapshot.")
+        written = r.json()
+    _markets_cache.clear()
+    return {"status": "ok", "rows_written": written, "exchanges": {k: len(v) for k, v in snap["quotes"].items()},
+            "indices": len(snap["indices"]), "currencies": len(snap["fx"].get("rates") or {}),
+            "failed": snap["errors"]}
+
+
+@router.get("/api/markets/overview")
+async def markets_overview() -> dict:
+    """Exchange tiles, movers, most traded, sector moves and currency moves across 16 African exchanges."""
+    from src.engines import markets
+    return markets.overview(await run_in_threadpool(_market_snapshot))
+
+
+@router.get("/api/markets/screener")
+async def markets_screener(
+    exchange: Optional[str] = Query(None, max_length=8), sector: Optional[str] = Query(None, max_length=60),
+    min_mcap_usd: Optional[float] = Query(None, ge=0), q: Optional[str] = Query(None, max_length=80),
+    sort: Literal["mcap", "chg_1d", "ytd", "value", "name"] = "mcap",
+    include_stale: bool = False, limit: int = Query(100, ge=1, le=500),
+) -> dict:
+    """Shares across every exchange, filtered and sorted."""
+    from src.engines import markets
+    snap = await run_in_threadpool(_market_snapshot)
+    return markets.screener(snap, exchange=exchange, sector=sector, min_mcap_usd=min_mcap_usd, q=q, sort=sort,
+                            include_stale=include_stale, limit=limit)
+
+
+@router.get("/api/markets/search")
+async def markets_search(q: str = Query(..., min_length=2, max_length=80), limit: int = Query(10, ge=1, le=25)) -> dict:
+    """Listed shares matching a company name or ticker."""
+    from src.engines import markets
+    return {"results": markets.search(await run_in_threadpool(_market_snapshot), q, limit=limit)}
+
+
+@router.get("/api/markets/quote")
+async def markets_quote(exchange: str = Query(..., max_length=8), symbol: str = Query(..., max_length=20)) -> dict:
+    from src.engines import markets
+    hit = markets.quote(await run_in_threadpool(_market_snapshot), exchange.lower(), symbol)
+    if not hit:
+        raise HTTPException(404, "No quote for that listing in the latest snapshot.")
+    return hit

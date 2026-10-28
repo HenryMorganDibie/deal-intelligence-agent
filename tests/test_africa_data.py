@@ -2162,7 +2162,6 @@ def test_round_parties_bracketed_and_misspelt_names():
 
 
 def test_round_investors_fall_back_to_other_reports_read_strictly():
-    import re
     from src.engines import round_parties as rp
     deal = {"id": "d1", "deal_type": "equity_funding", "announced": "2024-10-29", "target": "Moniepoint",
             "sources": [{"url": "https://paywalled.example/story", "title": "Moniepoint raises $110m"}]}

@@ -34,6 +34,7 @@ _STORES = [
     ("src.engines.backtest_universe",   "UNIVERSE_PATH",       "backtest_universe.csv"),
     ("src.engines.backtest_universe",   "LISTED_NAMES_PATH",   "african_listed_companies.json"),
     ("src.engines.deals",              "DEALS_PATH",           "deals.json"),
+    ("src.engines.markets",            "SNAPSHOT_PATH",        "market_snapshot.json"),
     ("src.engines.alpha_scorer",       "_RANKER_PATH",         "learned_ranker.json"),
 ]
 
