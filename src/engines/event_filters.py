@@ -60,7 +60,16 @@ _PERSON_CUE = re.compile(
 # is a deal whatever its subject.
 _TRANSACTION_TYPES = {"m_and_a_activity", "insider_activity"}
 _ARMS = re.compile(r"(?i)\b(fighter\s+jets?|warplanes?|attack\s+helicopters?|helicopters?|weapons?|missiles?|drones?\s+for\s+"
-                   r"(?:the\s+)?(?:army|military)|jf-17|tanks?\s+for|armou?red\s+vehicles?)\b")
+                   r"(?:the\s+)?(?:army|military)|jf-17|tanks?\s+for|armou?red\s+vehicles?|bombs?|revolutionary\s+guard|"
+                   r"military)\b")
+# A head of state or government inviting, urging or asking another to buy is diplomacy, not a transaction
+# ("Angola President invites Namibia to purchase stake in Lobito refinery"); inviting bids is a sale process.
+_INVITATION = re.compile(r"(?i)\b(?:president|minister|government|governor|prime\s+minister)\b.{0,40}\b(?:invites?|urges?|"
+                         r"calls\s+on|asks|encourages?|woos?|courts?)\b(?!\s+(?:bids?|tenders?|offers?|expressions?|proposals?))")
+# Public bodies' funds: "How companies disbursed Kogi LG funds" is a corruption case about local government money.
+_PUBLIC_FUNDS = re.compile(r"\bLGA?s?\s+(?:funds?|chairm[ae]n|councils?|allocations?|elections?)\b|(?i:\blocal\s+government\b)")
+# Sports clubs change hands as companies do, but are not the market this product covers.
+_SPORTS = re.compile(r"(?i)\b(?:football|soccer)\s+club\b|\bfc\b|\bronaldo\b|\bpremier\s+league\b")
 
 
 @lru_cache(maxsize=1)
@@ -111,10 +120,13 @@ def is_corporate_event(headline: str, signal_type: Optional[str] = None) -> bool
 
     A political or personal headline counts only when a listed company is its subject. Any other headline
     must name a company or describe one ("a top bank was fined", "profit warning")."""
-    if signal_type in _TRANSACTION_TYPES:
-        # Deal rules require transaction wording already; a state buying weapons is not a deal.
-        return not _ARMS.search(headline or "")
     text = headline or ""
+    if signal_type in _TRANSACTION_TYPES:
+        # Deal rules require transaction wording already; a state buying weapons, a president inviting another
+        # state to buy, and a club takeover are not deals.
+        return not (_ARMS.search(text) or _INVITATION.search(text) or _SPORTS.search(text))
+    if _PUBLIC_FUNDS.search(text):
+        return False
     name = named_company(text)
     listed = _listed_pattern()
     names_listed = bool(listed and listed.search(text))

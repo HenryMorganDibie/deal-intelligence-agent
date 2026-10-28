@@ -279,10 +279,14 @@ def _visible_events(rows: list[dict]) -> list[dict]:
     """Events the product shows: placed in an African market, not reviewed out of scope, and about a company
     (event_filters). Events with no country are mostly foreign stories the news search returned, and political
     or personal stories matched by a signal rule; both stay stored for audit."""
+    from src.engines import headline_translate
     from src.engines.event_filters import is_corporate_event
     return [e for e in rows if not e.get("excluded") and not e.get("merged_into")
             and (e.get("country") or e.get("countries"))
-            and is_corporate_event(e.get("headline") or "", e.get("signal_type"))]
+            # An Arabic headline is judged by its English rendering; untranslated, only by a transaction rule.
+            and is_corporate_event(e.get("headline_en") or e.get("headline") or "", e.get("signal_type"))
+            and (e.get("headline_en") or not headline_translate.is_arabic(e.get("headline"))
+                 or e.get("signal_type") in {"m_and_a_activity", "insider_activity"})]
 
 
 def events() -> list[dict]:
@@ -1602,6 +1606,20 @@ async def cron_ingest(
     from src.engines import event_dedup
     stored_events = {e["id"]: e for e in await run_in_threadpool(_load, "events")}
     new_events = await run_in_threadpool(event_dedup.resolve, new_events, stored_events)
+    # Arabic headlines get an English rendering: today's first, then a batch of stored ones each run.
+    from src.engines import headline_translate
+    queued = {e["id"]: e for e in new_events}
+    backlog = [e for e in stored_events.values() if e["id"] not in queued and not e.get("merged_into")
+               and not e.get("excluded")]
+    import asyncio
+    try:
+        translated = await asyncio.wait_for(
+            run_in_threadpool(headline_translate.add_translations, [*new_events, *backlog]), timeout=60)
+    except asyncio.TimeoutError:
+        translated = []                                 # left for the next run
+    for e in translated:
+        queued[e["id"]] = e
+    new_events = list(queued.values())
     async with httpx.AsyncClient(timeout=60) as client:
         r1 = await _rpc(client, "upsert_deals", {"p_rows": list(merged.values())})
         if r1.status_code != 200:
@@ -1700,6 +1718,7 @@ async def cron_ingest(
             "refreshed_at": datetime.now(timezone.utc).isoformat(),
             "headlines": len(items), "deals_detected": len(new_deals), "deals_saved": r1.json(),
             "events_detected": len(new_events), "events_saved": r2.json(), "deals_reclassified": len(reclassified),
+            "headlines_translated": len(translated),
             "webhooks_delivered": delivered, "webhook_lookup_ok": hooks.status_code == 200,
             "alerts_suppressed": bool(month)}
 

@@ -38,6 +38,7 @@ def _deal_card(d: dict) -> dict:
 def _event_card(e: dict) -> dict:
     return {"id": e.get("id"), "signal_type": e.get("signal_type"), "direction": e.get("direction"),
             "country": _country(e.get("country")), "day": e.get("day"), "headline": e.get("headline"),
+            "headline_en": e.get("headline_en"),
             "publisher": e.get("publisher"), "url": e.get("url")}
 
 
