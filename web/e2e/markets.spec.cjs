@@ -3,6 +3,7 @@ const fs = require("node:fs/promises");
 
 const routes = [
   "/app/markets",
+  "/app/markets/screener",
   "/app/markets/valuation",
   "/app/markets/portfolio",
   "/app/markets/compare",
@@ -28,7 +29,8 @@ test("Markets and adjacent workspaces render without route failures", async ({ p
 
 test("Markets overview keeps Research and Coverage in their own workspaces", async ({ page }) => {
   await page.goto("/app/markets");
-  await expect(page.getByText("Explore Investments", { exact: false }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "African equity markets, today." })).toBeVisible();
+  await expect(page.getByLabel("Search listed companies")).toBeVisible();
   await expect(page.getByText("Research a company", { exact: false })).toHaveCount(0);
   await expect(page.getByText("Search country, exchange or currency", { exact: false })).toHaveCount(0);
 });

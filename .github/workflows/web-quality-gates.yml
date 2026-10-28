@@ -37,7 +37,8 @@ jobs:
       - name: Apply migrations and run pgTAP security tests
         run: supabase test db
   typecheck:
-    runs-on: ubuntu-latest
+    # Playwright 1.56 installs browsers only on Ubuntu releases it supports; ubuntu-latest moved to 26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
       run:
