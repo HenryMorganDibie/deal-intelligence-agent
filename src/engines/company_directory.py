@@ -9,6 +9,7 @@ Search ranks listed and private companies together.
 """
 from __future__ import annotations
 
+import re
 from datetime import date
 from typing import Iterable, Optional
 
@@ -17,6 +18,26 @@ from src.engines import markets
 from src.engines.investors import parties
 
 _TARGET_TYPES = {"equity_funding", "debt_financing", "acquisition", "merger", "exit", "ipo"}
+_EXTRA_DESCRIPTORS = {"billion", "million", "dollar", "valued", "leading", "largest", "fast", "growing", "popular",
+                      "giant", "firm", "platform", "company", "based", "born", "backed", "owned"}
+_NOT_A_PARTY = re.compile(r"(?i)^(?:and\s+)?others?$|^and\s+|^other\s+investors$|^existing\s+investors$")
+
+
+def _descriptive(words: list[str]) -> bool:
+    return all(deals_mod._is_description_word(w) or w in _EXTRA_DESCRIPTORS or w.isdigit() for w in words)
+
+
+def _fold_described(groups: dict[str, list[dict]]) -> dict[str, list[dict]]:
+    """"Billion-Dollar Fintech Moniepoint" is Moniepoint: a key made of description words and another company's
+    key joins that company."""
+    for key in sorted(groups, key=len, reverse=True):
+        words = key.split()
+        for i in range(1, len(words)):
+            rest = " ".join(words[i:])
+            if rest in groups and rest != key and _descriptive(words[:i]):
+                groups[rest].extend(groups.pop(key))
+                break
+    return groups
 
 
 def private_companies(deals: Iterable[dict]) -> list[dict]:
@@ -30,19 +51,21 @@ def private_companies(deals: Iterable[dict]) -> list[dict]:
         if key:
             groups.setdefault(key, []).append(d)
     out = []
-    for key, rows in groups.items():
+    for key, rows in _fold_described(groups).items():
         rows.sort(key=lambda d: d.get("announced") or "", reverse=True)
         latest = rows[0]
+        # The plainest spelling names the company ("Moniepoint", not "Billion-Dollar Fintech Moniepoint").
+        name = next((d["target"] for d in rows if deals_mod.normalise_name(d["target"]) == key), latest["target"])
         raised = [d for d in rows if d["deal_type"] in ("equity_funding", "debt_financing") and d.get("amount_usd")]
         marks = [d for d in rows if d.get("reported_valuation_usd") or d.get("implied_valuation_usd")]
         investors: list[str] = []
         for d in rows:
-            for name, role in parties(d):
-                if role in ("investor", "lender", "acquirer") and name not in investors:
-                    investors.append(name)
+            for party, role in parties(d):
+                if role in ("investor", "lender", "acquirer") and party not in investors and not _NOT_A_PARTY.search(party):
+                    investors.append(party)
         sector = next((d.get("sector") for d in rows if d.get("sector")), None)
         out.append({
-            "kind": "private", "key": key, "name": latest["target"],
+            "kind": "private", "key": key, "name": name,
             "country": next((d.get("country") for d in rows if d.get("country")), None),
             "sector": markets.DEAL_SECTOR_TO_LISTED.get(sector or "") or None, "deal_sector": sector,
             "deal_count": len(rows),

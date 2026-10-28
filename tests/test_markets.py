@@ -393,3 +393,17 @@ def test_jse_keeps_the_last_screened_list_when_the_screener_is_rate_limited(monk
     (npn,) = quotes
     assert npn["name"] == "Naspers" and npn["price"] == 4000.0 and npn["mcap"] == 4000.0 * 1.6e8
     assert npn["pe"] == 20.0                                # repriced with the share price
+
+
+def test_directory_folds_described_names_and_drops_placeholder_investors():
+    from src.engines import company_directory as cd
+
+    deals = [
+        {"id": "1", "deal_type": "equity_funding", "target": "Moniepoint", "country": "NG", "amount_usd": 110e6,
+         "announced": "2024-10-29", "investors": ["Visa"]},
+        {"id": "2", "deal_type": "equity_funding", "target": "Billion-Dollar Fintech Moniepoint", "country": "NG",
+         "amount_usd": 90e6, "announced": "2025-06-01", "investors": ["Google", "And Others"]},
+    ]
+    (m,) = cd.private_companies(deals)
+    assert m["name"] == "Moniepoint" and m["deal_count"] == 2 and m["equity_raised_usd"] == 200e6
+    assert "And Others" not in m["investors"] and {"Visa", "Google"} <= set(m["investors"])
