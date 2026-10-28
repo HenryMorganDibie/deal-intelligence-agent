@@ -6,9 +6,21 @@
       "maxDuration": 300,
       "includeFiles": "{src/**,docs/*.json,docs/backtest_predictions.csv,docs/automation/learned_ranker.json,evaluation/**/*.jsonl,evaluation/**/results*.json,evaluation/review/**}",
       "excludeFiles": "{web/**,evaluation/review/*/pool.jsonl}"
+    },
+    "api/market_snapshot.py": {
+      "maxDuration": 300,
+      "regions": [
+        "cdg1"
+      ],
+      "includeFiles": "{src/**,docs/*.json,docs/backtest_predictions.csv,docs/automation/learned_ranker.json,evaluation/**/*.jsonl,evaluation/**/results*.json,evaluation/review/**}",
+      "excludeFiles": "{web/**,evaluation/review/*/pool.jsonl}"
     }
   },
   "rewrites": [
+    {
+      "source": "/api/cron/market-snapshot",
+      "destination": "/api/market_snapshot"
+    },
     {
       "source": "/(.*)",
       "destination": "/api/index"
