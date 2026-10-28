@@ -148,7 +148,7 @@ export default function InvestmentExplorerPage() {
         <article className="panel min-w-0 p-5">
           <p className="eyebrow">Calculator 01</p>
           <h2 className="mt-1 text-xl font-semibold">Treasury bill return</h2>
-          <p className="mt-2 text-sm text-[color:var(--muted)]">Enter a quoted discount rate and days to maturity. This uses a simple 365-day convention for illustration; use the auction's published true yield for an actual offer.</p>
+          <p className="mt-2 text-sm text-[color:var(--muted)]">Enter a quoted discount rate and days to maturity. This uses a simple 365-day convention for illustration; use the auction&apos;s published true yield for an actual offer.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <label className="text-sm">Currency
               <select className="field mt-1 w-full" value={currency} onChange={(e) => setCurrency(e.target.value)}>
