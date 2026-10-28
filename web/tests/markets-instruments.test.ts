@@ -1,5 +1,5 @@
 import test from "node:test";
-import assert from "node:assert/strict";
+import * as assert from "node:assert/strict";
 import { calculateBond, calculateTreasuryBill } from "../lib/markets-instruments";
 
 test("Treasury bill separates purchase discount from investment yield", () => {
