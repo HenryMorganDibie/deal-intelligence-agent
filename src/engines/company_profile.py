@@ -236,6 +236,11 @@ def exchange_of(ticker: Optional[str]) -> Optional[str]:
 def _apply_listing(profile: dict, listing: dict, today: Optional[datetime] = None) -> None:
     """Add the daily snapshot's quote: it replaces an older price (NGX's trading summary lags the price list by
     days), and supplies market cap, shares outstanding and year-to-date return where the exchange section has none."""
+    profile["listing"] = {k: listing.get(k) for k in ("exchange", "exchange_name", "symbol", "name", "sector",
+                                                      "secondary_of")}
+    profile["exchange"] = profile.get("exchange") or listing.get("exchange_name")
+    if not listing.get("price"):
+        return                                          # listed, but the exchange publishes no daily price
     market = dict(profile.get("market") or {})
     newer = listing.get("date") and (not market.get("as_at") or listing["date"] > str(market["as_at"])[:10])
     if newer or not market.get("price"):
@@ -252,9 +257,6 @@ def _apply_listing(profile: dict, listing: dict, today: Optional[datetime] = Non
     if listing.get("ytd_suspect"):
         market["ytd_note"] = "Year-to-date figure is likely unadjusted for a split or bonus issue."
     profile["market"] = market
-    profile["listing"] = {k: listing.get(k) for k in ("exchange", "exchange_name", "symbol", "name", "sector",
-                                                      "secondary_of")}
-    profile["exchange"] = profile.get("exchange") or listing.get("exchange_name")
 
 
 def _flag_stale_price(profile: dict, today: Optional[datetime] = None) -> None:

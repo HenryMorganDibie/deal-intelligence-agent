@@ -318,3 +318,78 @@ def test_valuation_bridge_places_a_private_mark_among_listed_peers():
     assert b["largest_peers"][0]["symbol"] == "B5"
     assert markets.valuation_bridge(snap, 1e9, "hospitality", "NG", today=TODAY) is None     # too few peers
     assert markets.valuation_bridge(snap, None, "fintech", "NG", today=TODAY) is None
+
+
+def test_yahoo_screen_rows_recompute_multiples_in_one_unit():
+    row = {"currency": "ZAc", "financialCurrency": "ZAR", "regularMarketPrice": 19816.0, "sharesOutstanding": 1.88e9,
+           "epsTrailingTwelveMonths": 9.91, "bookValue": 66.0, "dividendYield": 3.1, "regularMarketChangePercent": 0.5,
+           "regularMarketTime": 1793113219, "longName": "MTN Group Limited"}
+    q = markets.parse_screen_row(row)
+    assert q["price"] == 198.16 and q["mcap"] == round(198.16 * 1.88e9, 2)
+    assert q["pe"] == 20.0 and q["pb"] == 3.0 and q["dividend_yield"] == 0.031
+    assert markets.parse_screen_row({**row, "epsTrailingTwelveMonths": 0.5})["pe"] is None      # 396x: not kept
+
+
+def test_uganda_feed_and_ethiopia_directory_parse():
+    feed = [{"type": "EQUITY", "stock": "MTNU", "price": 455, "market_cap": 10187015128745, "volume": 100},
+            {"type": "EQUITY", "stock": "FXD 2/2015/15", "price": 139.3, "market_cap": 1}]
+    page = "<table><tr><th>Counter</th><th>ISIN</th><th>Full Name</th></tr><tr><td>MTNU</td><td>UG1</td><td>MTN Uganda</td></tr></table>"
+    (mtn,) = markets.parse_use(feed, page, date(2026, 10, 31))           # a Saturday capture is Friday's close
+    assert mtn["name"] == "MTN Uganda" and mtn["date"] == "2026-10-30" and mtn["shares"] == round(10187015128745 / 455)
+    esx = ("<table><tr><th>Name</th><th>Symbol</th><th>Sector</th><th>Date Listed</th></tr>"
+           "<tr><td>Ethio Telecom Share Company</td><td>TELE</td><td>Telecom Servicess</td><td>2026-05-26</td></tr></table>")
+    (tele,) = markets.parse_esx(esx)
+    assert tele["price"] is None and tele["sector"] == "Telecom Services"
+    snap = _snapshot()
+    snap["quotes"]["esx"] = [tele]
+    rows = {r["symbol"]: r for r in markets.enrich(snap, TODAY)}
+    assert rows["TELE"]["stale"] and markets.resolve(snap, "Ethio Telecom", today=TODAY)["exchange"] == "esx"
+    assert markets.overview(snap, TODAY)["coverage"]["shares"] == 8
+
+
+def test_daily_change_is_filled_from_the_previous_close():
+    prev = {"quotes": {"use": [{"symbol": "MTNU", "price": 450.0, "date": "2026-10-27"}]}}
+    now = {"quotes": {"use": [{"symbol": "MTNU", "price": 459.0, "date": "2026-10-28", "chg_1d": None}]}}
+    assert markets.fill_daily_change(now, prev) == 1 and now["quotes"]["use"][0]["chg_1d"] == 0.02
+
+
+def test_directory_merges_listed_and_private_companies():
+    from src.engines import company_directory as cd
+
+    deals = [
+        {"id": "1", "deal_type": "equity_funding", "target": "Moniepoint", "country": "NG", "sector": "fintech",
+         "amount_usd": 110e6, "round": "series c", "announced": "2024-10-29", "investors": ["Development Partners International"],
+         "reported_valuation_usd": 1e9},
+        {"id": "2", "deal_type": "debt_financing", "target": "Moniepoint", "country": "NG", "sector": "fintech",
+         "amount_usd": 20e6, "announced": "2025-03-01", "buyer": "IFC"},
+        {"id": "3", "deal_type": "acquisition", "target": "Dangote Cement Plc", "country": "NG", "sector": "manufacturing",
+         "buyer": "Dangote Industries", "stake_pct": 5, "announced": "2026-01-10"},
+        {"id": "4", "deal_type": "equity_funding", "target": "Undisclosed fintech", "country": "KE", "amount_usd": 1e6},
+    ]
+    rows = cd.directory(_snapshot(), deals, today=TODAY)
+    private = {r["name"]: r for r in rows if r["kind"] == "private"}
+    assert set(private) == {"Moniepoint"}
+    m = private["Moniepoint"]
+    assert m["equity_raised_usd"] == 110e6 and m["debt_raised_usd"] == 20e6 and m["deal_count"] == 2
+    assert m["valuation_usd"] == 1e9 and m["sector"] == "Financials" and "International Finance Corporation" in m["investors"]
+    dangote = next(r for r in rows if r.get("symbol") == "DANGCEM")
+    assert dangote["kind"] == "listed" and dangote["deal_count"] == 1          # its deal history folds into the listing
+    out = cd.query(rows, q="moniepoint")
+    assert out["rows"][0]["name"] == "Moniepoint" and out["counts"] == {"listed": 0, "private": 1}
+    assert cd.query(rows, kind="private", country="NG")["total"] == 1
+    assert cd.query(rows, kind="listed")["counts"]["private"] == 1
+
+
+def test_jse_keeps_the_last_screened_list_when_the_screener_is_rate_limited(monkeypatch):
+    import httpx
+
+    monkeypatch.setattr(markets, "yahoo_screen", lambda exchange, attempts=3: {})
+    spark = {"spark": {"result": [{"symbol": "NPN.JO", "response": [{"meta": {
+        "currency": "ZAc", "regularMarketPrice": 400000.0, "regularMarketChangePercent": 1.0,
+        "regularMarketTime": 1793113219}, "indicators": {"quote": [{"close": [350000.0]}]}}]}]}}
+    with httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=spark))) as client:
+        quotes = markets._jse_quotes("", client, previous=[
+            {"symbol": "NPN", "name": "Naspers", "sector": "Technology", "price": 3800.0, "shares": 1.6e8, "pe": 19.0}])
+    (npn,) = quotes
+    assert npn["name"] == "Naspers" and npn["price"] == 4000.0 and npn["mcap"] == 4000.0 * 1.6e8
+    assert npn["pe"] == 20.0                                # repriced with the share price

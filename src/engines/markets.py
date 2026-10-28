@@ -39,6 +39,9 @@ AM_BASE = "https://www.african-markets.com/en/stock-markets/{slug}/listed-compan
 NGX_PRICE_LIST = "https://doclib.ngxgroup.com/REST/api/statistics/equities/?market=&sector=&orderby=&pageSize=500&pageNo=0"
 NSE_PRICE_LIST = "https://live.mystocks.co.ke/m/pricelist"
 YAHOO_SPARK = "https://query1.finance.yahoo.com/v7/finance/spark"
+USE_PRICES = "https://www.use.or.ug/api/delayed-data"
+USE_EQUITIES = "https://www.use.or.ug/securities/equities"
+ESX_LISTED = "https://esx.et/equity-market/listed-companies/"
 FX_LATEST = "https://open.er-api.com/v6/latest/USD"
 FX_ON_DATE = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@{day}/v1/currencies/usd.json"
 
@@ -79,7 +82,8 @@ EXCHANGES: dict[str, Exchange] = {e.key: e for e in (
     Exchange("nsx", "Namibian Stock Exchange", "NA", "NAD", "nsx", "NSX OI"),
     Exchange("rse", "Rwanda Stock Exchange", "RW", "RWF", "rse", "RSE ASI"),
     Exchange("zse", "Zimbabwe Stock Exchange", "ZW", "ZWG", "zse", "ZSE ASI"),
-    Exchange("use", "Uganda Securities Exchange", "UG", "UGX", "use", "USE ASI", source="index_only"),
+    Exchange("use", "Uganda Securities Exchange", "UG", "UGX", "use", "USE ASI", source="use"),
+    Exchange("esx", "Ethiopian Securities Exchange", "ET", "ETB", "esx", "", source="esx"),
 )}
 _BY_SLUG = {e.slug: e for e in EXCHANGES.values()}
 
@@ -293,10 +297,16 @@ def _get(client: httpx.Client, url: str, **kw) -> Optional[httpx.Response]:
         return None
 
 
-def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = None) -> tuple[list[dict], list[dict]]:
+def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = None,
+                   previous: Optional[list[dict]] = None) -> tuple[list[dict], list[dict]]:
     """(quotes, indices) for one exchange; the index table rides along on every african-markets page."""
     if ex.source == "index_only":
         return [], []
+    if ex.source == "use":
+        return _use_quotes(client, today or date.today()), []
+    if ex.source == "esx":
+        r = _get(client, ESX_LISTED)
+        return (parse_esx(r.text) if r is not None else []), []
     page = ""
     for wait in (0, 3, 8):                              # the listing site throttles a run of requests
         if wait:
@@ -310,16 +320,17 @@ def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = N
         quotes = parse_listing(page, ex, today)
         if ex.key == "ngx":
             quotes = _overlay_ngx(quotes, client)
+        if ex.key == "egx":
+            quotes = _overlay_yahoo_multiples(quotes, "CAI", ".CA")
         return quotes, indices
     if ex.source == "mystocks":
         r = _get(client, NSE_PRICE_LIST)
         return (parse_mystocks(r.text) if r is not None else []), indices
-    # JSE: names and symbols from the listing page, prices from Yahoo in batches of 20 (its limit).
-    listed = parse_listing_names(page)
-    by_symbol = {f"{x['symbol']}.JO": x for x in listed}
-    quotes = []
-    symbols = list(by_symbol)
+    return _jse_quotes(page, client, previous), indices
 
+
+def _spark_all(client: httpx.Client, symbols: list[str]) -> dict[str, dict]:
+    """Yahoo batch quotes with the year's closes, 20 symbols a call (its limit), four calls at a time."""
     def batch(chunk: list[str]) -> dict[str, dict]:
         r = _get(client, YAHOO_SPARK, headers=_YAHOO_HEADERS,
                  params={"symbols": ",".join(chunk), "range": "ytd", "interval": "1d"})
@@ -328,16 +339,159 @@ def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = N
         except ValueError:
             return {}
     from concurrent.futures import ThreadPoolExecutor
+    priced: dict[str, dict] = {}
     with ThreadPoolExecutor(max_workers=4) as pool:
-        priced: dict[str, dict] = {}
         for part in pool.map(batch, [symbols[i:i + 20] for i in range(0, len(symbols), 20)]):
             priced.update(part)
-    for ysym, q in priced.items():
-        base = by_symbol.get(ysym)
-        if base:
-            quotes.append({"symbol": base["symbol"], "name": base["name"], "sector": base["sector"],
-                           **{k: v for k, v in q.items() if k != "name"}})
-    return quotes, indices
+    return priced
+
+
+def yahoo_screen(exchange: str, attempts: int = 3) -> dict[str, dict]:
+    """Every equity Yahoo lists on an exchange ("JNB", "CAI"), with shares outstanding, earnings, book value and
+    dividends. Yahoo's screener needs a session cookie and crumb, which yfinance manages; it is rate limited, so
+    an empty result is expected now and then and callers fall back."""
+    try:
+        import yfinance as yf
+        from yfinance import EquityQuery
+    except ImportError:
+        return {}
+    for attempt in range(attempts):
+        out: dict[str, dict] = {}
+        try:
+            offset = 0
+            while True:
+                r = yf.screen(EquityQuery("eq", ["exchange", exchange]), offset=offset, size=250,
+                              sortField="intradaymarketcap", sortAsc=False)
+                rows = r.get("quotes") or []
+                out.update({q["symbol"]: q for q in rows if q.get("symbol")})
+                offset += len(rows)
+                if len(rows) < 250 or offset >= (r.get("total") or 0):
+                    return out
+        except Exception as e:
+            log.info("Yahoo screener %s attempt %s failed: %r", exchange, attempt + 1, e)
+            time.sleep(4 * (attempt + 1))
+    return {}
+
+
+def parse_screen_row(row: dict) -> dict:
+    """Price, shares, cap and multiples from a Yahoo screener row. JSE prices are in cents while earnings and book
+    value are in rand, so multiples are recomputed in one unit and kept only within sane bounds."""
+    scale = 0.01 if row.get("currency") in ("ZAc", "ZAC") else 1.0
+    major = "ZAR" if scale != 1.0 else row.get("currency")
+    price = row.get("regularMarketPrice")
+    price = round(price * scale, 4) if isinstance(price, (int, float)) and price > 0 else None
+    shares = row.get("sharesOutstanding") if isinstance(row.get("sharesOutstanding"), (int, float)) else None
+    same_unit = (row.get("financialCurrency") or major) == major
+    eps, book = row.get("epsTrailingTwelveMonths"), row.get("bookValue")
+    pe = round(price / eps, 2) if price and same_unit and isinstance(eps, (int, float)) and eps > 0 else None
+    pb = round(price / book, 2) if price and same_unit and isinstance(book, (int, float)) and book > 0 else None
+    dy = row.get("dividendYield")
+    t = row.get("regularMarketTime")
+    chg = row.get("regularMarketChangePercent")
+    return {
+        "name": row.get("longName") or row.get("shortName"), "price": price,
+        "chg_1d": round(chg / 100, 6) if isinstance(chg, (int, float)) else None,
+        "volume": row.get("regularMarketVolume"),
+        "date": datetime.fromtimestamp(t, tz=timezone.utc).date().isoformat() if isinstance(t, (int, float)) and t > 0 else None,
+        "shares": shares, "mcap": round(price * shares, 2) if price and shares else None,
+        "pe": pe if pe and pe < 200 else None, "pb": pb if pb and pb < 50 else None,
+        "dividend_yield": round(dy / 100, 4) if isinstance(dy, (int, float)) and 0 < dy < 30 else None,
+    }
+
+
+def _jse_quotes(page: str, client: httpx.Client, previous: Optional[list[dict]] = None) -> list[dict]:
+    """Every JSE equity: Yahoo's screener for the full list with shares and multiples, its batch chart for
+    year-to-date. When the screener is rate limited, the previous snapshot's list (with its shares and
+    multiples), else the listing page's names."""
+    names = {x["symbol"]: x for x in parse_listing_names(page)}
+    screened = {k[:-3]: v for k, v in yahoo_screen("JNB").items() if k.endswith(".JO")}
+    before = {q["symbol"]: q for q in previous or []}
+    symbols = list(screened or before or names)
+    priced = _spark_all(client, [f"{s}.JO" for s in symbols])
+    quotes = []
+    for sym in symbols:
+        row = parse_screen_row(screened[sym]) if sym in screened else {}
+        spark = priced.get(f"{sym}.JO") or {}
+        price = spark.get("price") or row.get("price")
+        if not price:
+            continue
+        q = {"symbol": sym, "name": (names.get(sym) or {}).get("name") or row.get("name") or spark.get("name") or sym,
+             "sector": (names.get(sym) or {}).get("sector"), "price": price,
+             "chg_1d": spark.get("chg_1d") if spark.get("chg_1d") is not None else row.get("chg_1d"),
+             "ytd": spark.get("ytd"), "volume": spark.get("volume") or row.get("volume"),
+             "date": spark.get("date") or row.get("date")}
+        if not row and sym in before:                   # carried from the last screen, repriced
+            old = before[sym]
+            q["name"] = (names.get(sym) or {}).get("name") or old.get("name") or q["name"]
+            q["sector"] = q["sector"] or old.get("sector")
+            row = {"shares": old.get("shares")}
+            if old.get("price"):
+                ratio = price / old["price"]
+                row.update({k: round(old[k] * ratio, 2) for k in ("pe", "pb") if old.get(k)})
+                if old.get("dividend_yield"):
+                    row["dividend_yield"] = round(old["dividend_yield"] / ratio, 4)
+        if row.get("shares"):
+            q.update(shares=row["shares"], mcap=round(row["shares"] * price, 2))
+        q.update({k: row[k] for k in ("pe", "pb", "dividend_yield") if row.get(k) is not None})
+        quotes.append(q)
+    return quotes
+
+
+def _overlay_yahoo_multiples(quotes: list[dict], exchange: str, suffix: str) -> list[dict]:
+    """Shares outstanding and multiples from Yahoo's screener for an exchange priced from another source."""
+    screened = {k[:-len(suffix)]: parse_screen_row(v) for k, v in yahoo_screen(exchange).items() if k.endswith(suffix)}
+    for q in quotes:
+        row = screened.get(q["symbol"])
+        if not row:
+            continue
+        if not q.get("shares") and row.get("shares"):
+            q.update(shares=row["shares"], mcap=round(row["shares"] * q["price"], 2))
+        q.update({k: row[k] for k in ("pe", "pb", "dividend_yield") if row.get(k) is not None})
+    return quotes
+
+
+def parse_use(prices: object, equities_page: str, today: date) -> list[dict]:
+    """Uganda: the exchange's delayed-data feed (price, cap, volume) with names from its equities list.
+    Government bonds in the feed are left out. The feed carries no trade date: a weekday capture is dated today."""
+    names = {}
+    for row in re.findall(r"<tr.*?</tr>", equities_page or "", re.S):
+        cells = [_text(c) for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row, re.S)]
+        if len(cells) >= 3 and cells[0] and cells[0] != "Counter":
+            names[cells[0].upper()] = cells[2]
+    day = today if today.weekday() < 5 else today - timedelta(days=today.weekday() - 4)
+    out = []
+    for r in prices if isinstance(prices, list) else []:
+        sym = str(r.get("stock") or "").strip()
+        price = r.get("price")
+        if r.get("type") != "EQUITY" or not sym or sym.upper().startswith("FXD") or not isinstance(price, (int, float)) or price <= 0:
+            continue
+        q = {"symbol": sym.upper(), "name": names.get(sym.upper()) or sym.title(), "sector": None, "price": float(price),
+             "chg_1d": None, "volume": r.get("volume"), "date": day.isoformat()}
+        cap = r.get("market_cap")
+        if isinstance(cap, (int, float)) and cap > 0:
+            q.update(mcap=float(cap), shares=round(cap / price))
+        out.append(q)
+    return out
+
+
+def _use_quotes(client: httpx.Client, today: date) -> list[dict]:
+    r = _get(client, USE_PRICES)
+    e = _get(client, USE_EQUITIES)
+    try:
+        return parse_use(r.json() if r is not None else [], e.text if e is not None else "", today)
+    except ValueError:
+        return []
+
+
+def parse_esx(page: str) -> list[dict]:
+    """Ethiopia: the listed companies (the exchange publishes no daily price list). Listed without a price."""
+    out = []
+    for row in re.findall(r"<tr.*?</tr>", page or "", re.S):
+        cells = [_text(c) for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row, re.S)]
+        if len(cells) >= 3 and cells[0] != "Name" and re.fullmatch(r"[A-Z]{2,8}", cells[1] or ""):
+            out.append({"symbol": cells[1], "name": cells[0], "sector": cells[2].replace("Servicess", "Services"),
+                        "price": None, "chg_1d": None, "date": None, "listed": cells[3] if len(cells) > 3 else None})
+    return out
 
 
 def _overlay_ngx(quotes: list[dict], client: httpx.Client) -> list[dict]:
@@ -387,7 +541,7 @@ _CURRENCIES = {e.currency for e in EXCHANGES.values()} | {"USD", "EUR", "GBP", "
 
 
 def build_snapshot(client: Optional[httpx.Client] = None, today: Optional[date] = None,
-                   exchanges: Optional[Iterable[str]] = None) -> dict:
+                   exchanges: Optional[Iterable[str]] = None, previous: Optional[dict] = None) -> dict:
     """Fetch every exchange, the index table and FX. {"quotes": {exchange: [...]}, "indices": [...], "fx": {...},
     "errors": [exchange...]}."""
     today = today or date.today()
@@ -397,18 +551,22 @@ def build_snapshot(client: Optional[httpx.Client] = None, today: Optional[date] 
         quotes: dict[str, list[dict]] = {}
         indices: dict[str, dict] = {}
         errors = []
-        for key in exchanges or EXCHANGES:
-            ex = EXCHANGES[key]
+        def one(key: str) -> tuple[str, list[dict], list[dict]]:
             try:
-                qs, idx = fetch_exchange(ex, c, today)
+                return (key, *fetch_exchange(EXCHANGES[key], c, today, ((previous or {}).get("quotes") or {}).get(key)))
             except Exception as e:                      # one exchange's failure never sinks the snapshot
                 log.warning("market snapshot failed for %s: %r", key, e)
-                qs, idx = [], []
+                return key, [], []
+        # Three at a time: Johannesburg's batched quotes take longest, and the listing site throttles bursts.
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            results = list(pool.map(one, list(exchanges or EXCHANGES)))
+        for key, qs, idx in results:
             for i in idx:
                 indices.setdefault(i["exchange"], i)
             if qs:
                 quotes[key] = qs
-            elif ex.source != "index_only":
+            elif EXCHANGES[key].source != "index_only":
                 errors.append(key)
         fx = fetch_fx(c, today)
     finally:
@@ -484,7 +642,7 @@ def enrich(snapshot: dict, today: Optional[date] = None) -> list[dict]:
             row = {**q, "exchange": ex.key, "exchange_name": ex.name, "country": ex.country,
                    "currency": ex.currency, "age_days": age, "stale": age is None or age > STALE_DAYS,
                    "mcap_usd": _usd(q.get("mcap"), ex.currency, rates), "ytd_usd": ytd_usd,
-                   "value_traded": q.get("value") or (q["volume"] * q["price"] if q.get("volume") else None)}
+                   "value_traded": q.get("value") or (q["volume"] * q["price"] if q.get("volume") and q.get("price") else None)}
             row["value_traded_usd"] = _usd(row["value_traded"], ex.currency, rates)
             if (row["mcap_usd"] or 0) > MAX_CAP_USD:
                 # Larger than any share whose home is one of these exchanges: a table error (EGX's shares column
@@ -504,7 +662,7 @@ MAX_CAP_USD = 40e9
 # Where a company listed on several of these exchanges has its primary listing.
 _HOME_ORDER = ("jse", "nse", "ngx", "egx", "bvc", "gse", "brvm", "sem", "bvmt", "zse", "bse", "luse", "dse", "mse",
                "nsx", "rse", "use")
-_STRICT_NOISE = re.compile(r"(?i)\b(plc|ltd|limited|holdings?|group|company|co|corporation|corp|inc|the)\b\.?")
+_STRICT_NOISE = re.compile(r"(?i)\b(plc|ltd|limited|holdings?|group|share\s+company|company|co|corporation|corp|inc|the)\b\.?")
 
 
 def _strict_key(name: str) -> str:
@@ -673,7 +831,8 @@ def _weighted_1d(rows: list[dict]) -> Optional[float]:
 
 _SORTS = {"mcap": lambda r: -(r.get("mcap_usd") or 0), "chg_1d": lambda r: -(r.get("chg_1d") or -9),
           "ytd": lambda r: -(r.get("ytd_usd") if r.get("ytd_usd") is not None else -9),
-          "value": lambda r: -(r.get("value_traded_usd") or 0), "name": lambda r: (r.get("name") or "").lower()}
+          "value": lambda r: -(r.get("value_traded_usd") or 0), "name": lambda r: (r.get("name") or "").lower(),
+          "pe": lambda r: r.get("pe") or 1e9, "dividend": lambda r: -(r.get("dividend_yield") or 0)}
 
 
 def screener(snapshot: dict, exchange: Optional[str] = None, sector: Optional[str] = None,
@@ -702,7 +861,7 @@ def screener(snapshot: dict, exchange: Optional[str] = None, sector: Optional[st
 
 # ── Name and symbol search ────────────────────────────────────────────────────
 
-_NAME_NOISE = re.compile(r"(?i)\b(plc|ltd|limited|holdings?|group|company|co|corporation|corp|s\.?a\.?|inc|the|"
+_NAME_NOISE = re.compile(r"(?i)\b(plc|ltd|limited|holdings?|group|share\s+company|company|co|corporation|corp|s\.?a\.?|inc|the|"
                          r"nigeria|kenya|ghana|egypt|tanzania|uganda|zambia|malawi|namibia|rwanda|botswana|"
                          r"mauritius|zimbabwe|morocco|tunisia|maroc)\b\.?")
 
@@ -798,3 +957,17 @@ def valuation_bridge(snapshot: dict, valuation_usd: Optional[float], deal_sector
         "note": "Listed caps are equity values on today's prices; a private mark is a negotiated price at the date "
                 "of the round, often with preference terms. The comparison places the mark, it does not revalue it.",
     }
+
+
+def fill_daily_change(snapshot: dict, previous: dict) -> int:
+    """A 1-day change for quotes whose source gives none (Uganda), from the previous stored close."""
+    filled = 0
+    for key, quotes in (snapshot.get("quotes") or {}).items():
+        before = {q["symbol"]: q for q in (previous.get("quotes") or {}).get(key) or []}
+        for q in quotes:
+            p = before.get(q["symbol"])
+            if (q.get("chg_1d") is None and q.get("price") and p and p.get("price")
+                    and (p.get("date") or "") < (q.get("date") or "")):
+                q["chg_1d"] = round(q["price"] / p["price"] - 1, 6)
+                filled += 1
+    return filled

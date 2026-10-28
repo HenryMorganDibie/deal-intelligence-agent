@@ -80,6 +80,7 @@ export default function MarketsPage() {
   const [pulse, setPulse] = useState<Pulse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [heatBy, setHeatBy] = useState<"chg_1d" | "ytd_usd">("chg_1d");
+  const [companies, setCompanies] = useState<{ listed: number; private: number } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -87,6 +88,8 @@ export default function MarketsPage() {
       .then((d) => { if (active) setOverview(d); })
       .catch((e) => { if (active) setError(e instanceof ApiError ? e.message : "Market data could not be loaded."); });
     get<Pulse>("/api/pulse").then((d) => { if (active) setPulse(d); }).catch(() => undefined);
+    get<{ counts: { listed: number; private: number } }>("/api/companies/directory", { limit: 1 })
+      .then((d) => { if (active) setCompanies(d.counts); }).catch(() => undefined);
     return () => { active = false; };
   }, []);
 
@@ -97,8 +100,8 @@ export default function MarketsPage() {
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets" title="African equity markets, today.">
-        Every share on {overview?.coverage.exchanges ?? 16} African exchanges, priced daily from the exchanges&apos; own
-        lists, with returns in local currency and in dollars, alongside the private deal flow and corporate events.
+        Every share on {overview?.coverage.exchanges ?? 18} African exchanges, priced daily, and every private company in
+        the deal record, with returns in local currency and in dollars, deal flow and corporate events.
       </PageHeader>
 
       <MarketSearch />
@@ -113,7 +116,8 @@ export default function MarketsPage() {
               note={`${overview.coverage.priced_today.toLocaleString()} priced in the last week`} />
             <Stat label="Market cap covered" value={usd(totalCap)}
               note={`${overview.coverage.with_market_cap.toLocaleString()} shares with a published cap`} />
-            <Stat label="Exchanges" value={overview.coverage.exchanges} note="Including regional BRVM (8 states)" />
+            <Stat label="Companies on record" value={companies ? (companies.listed + companies.private).toLocaleString() : overview.coverage.shares.toLocaleString()}
+              note={companies ? <><Link className="hover:underline" href="/app/markets/screener">{companies.listed.toLocaleString()} listed</Link> · <Link className="hover:underline" href="/app/markets/screener?view=private">{companies.private.toLocaleString()} private</Link></> : `${overview.coverage.exchanges} exchanges`} />
             <Stat label="Snapshot" value={asOf(overview.captured_at)} note={`FX: ${overview.fx_as_of ? overview.fx_as_of.slice(5, 16) : "n/a"}`} />
           </section>
 

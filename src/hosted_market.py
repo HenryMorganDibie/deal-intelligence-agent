@@ -27,6 +27,7 @@ Hosted API routes for market data (mounted by api/index.py):
   GET  /api/markets/screener           shares across every exchange (exchange, sector, min_mcap_usd, q, sort)
   GET  /api/markets/search             listed shares matching a name or ticker
   GET  /api/markets/quote              one listing's latest quote (exchange, symbol)
+  GET  /api/companies/directory        every company: listed shares and private companies (q, kind, country, sector)
   POST /api/markets/prices             latest closes for a list of holdings, and dollar rates
   GET  /api/cron/ingest                scheduled rolling feed -> deals and events, webhooks
   GET  /api/cron/market-snapshot       scheduled daily quotes, indices and FX
@@ -1819,7 +1820,12 @@ async def cron_market_snapshot(request: Request) -> dict:
     if not _authorized_cron(request):
         raise HTTPException(401, "Unauthorized")
     from src.engines import markets
-    snap = await run_in_threadpool(markets.build_snapshot)
+    try:
+        previous = await run_in_threadpool(_market_snapshot)
+    except HTTPException:
+        previous = {}                                   # no earlier snapshot to compare with
+    snap = await run_in_threadpool(lambda: markets.build_snapshot(previous=previous))
+    markets.fill_daily_change(snap, previous)
     rows = markets.snapshot_rows(snap)
     if not rows:
         raise HTTPException(502, "No market source answered; nothing was recorded.")
@@ -1833,6 +1839,7 @@ async def cron_market_snapshot(request: Request) -> dict:
             raise HTTPException(502, "Could not persist the market snapshot.")
         written = r.json()
     _markets_cache.clear()
+    _directory_cache.clear()
     return {"status": "ok", "rows_written": written, "exchanges": {k: len(v) for k, v in snap["quotes"].items()},
             "indices": len(snap["indices"]), "currencies": len(snap["fx"].get("rates") or {}),
             "failed": snap["errors"]}
@@ -1849,7 +1856,7 @@ async def markets_overview() -> dict:
 async def markets_screener(
     exchange: Optional[str] = Query(None, max_length=8), sector: Optional[str] = Query(None, max_length=60),
     min_mcap_usd: Optional[float] = Query(None, ge=0), q: Optional[str] = Query(None, max_length=80),
-    sort: Literal["mcap", "chg_1d", "ytd", "value", "name"] = "mcap",
+    sort: Literal["mcap", "chg_1d", "ytd", "value", "name", "pe", "dividend"] = "mcap",
     include_stale: bool = False, limit: int = Query(100, ge=1, le=500),
 ) -> dict:
     """Shares across every exchange, filtered and sorted."""
@@ -1906,6 +1913,34 @@ async def markets_prices(body: PriceRequest) -> dict:
     results = await run_in_threadpool(lambda: [one(i) for i in body.items])
     fx = snap.get("fx") or {}
     return {"results": results, "fx": {"usd_rates": {**(fx.get("rates") or {}), "USD": 1.0}, "as_of": fx.get("as_of")}}
+
+
+_directory_cache: dict[str, tuple[float, list]] = {}
+
+
+def _directory() -> list[dict]:
+    from src.engines import company_directory
+    hit = _directory_cache.get("rows")
+    if hit and time.monotonic() - hit[0] < _MARKETS_TTL:
+        return hit[1]
+    rows = company_directory.directory(_market_snapshot(), deals())
+    _directory_cache["rows"] = (time.monotonic(), rows)
+    return rows
+
+
+@router.get("/api/companies/directory")
+async def companies_directory(
+    q: Optional[str] = Query(None, max_length=80), kind: Literal["all", "listed", "private"] = "all",
+    country: Optional[str] = Query(None, max_length=60), sector: Optional[str] = Query(None, max_length=60),
+    sort: Literal["recent", "raised", "size", "deals", "name"] = "recent",
+    limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=100000),
+) -> dict:
+    """Every company on record: listed shares on 17 exchanges and private companies from the deals database."""
+    from src.engines import company_directory
+    code = _country_or_404(country).iso2 if country else None
+    rows = await run_in_threadpool(_directory)
+    return company_directory.query(rows, q=q, kind=kind, country=code, sector=sector, sort=sort, limit=limit,
+                                   offset=offset)
 
 
 @router.get("/api/markets/quote")

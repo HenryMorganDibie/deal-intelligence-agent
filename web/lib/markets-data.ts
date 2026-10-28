@@ -25,7 +25,47 @@ export type Quote = {
   secondary_of?: string;
   cap_note?: string;
   match?: number;
+  pe?: number | null;
+  pb?: number | null;
+  dividend_yield?: number | null;
 };
+
+// One row of /api/companies/directory: a listed share or a private company from the deals database.
+export type DirectoryRow = {
+  kind: "listed" | "private";
+  name: string;
+  country: string | null;
+  sector: string | null;
+  exchange?: string;
+  exchange_name?: string;
+  symbol?: string;
+  price?: number | null;
+  currency?: string;
+  chg_1d?: number | null;
+  ytd_usd?: number | null;
+  mcap_usd?: number | null;
+  pe?: number | null;
+  stale?: boolean;
+  deal_count?: number;
+  equity_raised_usd?: number | null;
+  debt_raised_usd?: number | null;
+  last_round?: string | null;
+  last_deal_type?: string | null;
+  last_deal_date?: string | null;
+  valuation_usd?: number | null;
+  valuation_date?: string | null;
+  acquired?: boolean;
+  investors?: string[];
+  investor_count?: number;
+};
+
+export type Directory = { total: number; offset: number; rows: DirectoryRow[]; counts: { listed: number; private: number } };
+
+export function directoryHref(r: DirectoryRow): string {
+  if (r.kind === "listed" && r.exchange && r.symbol) return companyHref({ name: r.name, exchange: r.exchange, symbol: r.symbol });
+  const p = new URLSearchParams({ name: r.name, ...(r.country ? { country: r.country } : {}) });
+  return `/app/companies?${p}`;
+}
 
 export type ExchangeTile = {
   exchange: string;
