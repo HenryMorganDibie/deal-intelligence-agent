@@ -487,3 +487,39 @@ def test_jse_groups_listed_primarily_abroad_keep_their_cap_outside_totals():
     assert rows["BHG"]["foreign_primary"] and rows["BHG"]["mcap_usd"] > 1e11
     tile = next(t for t in markets.overview(snap, TODAY)["exchanges"] if t["exchange"] == "jse")
     assert round(tile["mcap_usd"]) == round(4e11 / 16.6, -0) or abs(tile["mcap_usd"] - 4e11 / 16.6) < 1
+
+
+def test_intraday_overlay_updates_price_cap_and_ytd_and_yields_to_the_evening_close():
+    snap = {"quotes": {"jse": [{"symbol": "NPN", "name": "Naspers", "price": 4000.0, "ytd": 0.10, "shares": 1.6e8,
+                                "mcap": 6.4e11, "date": "2026-10-27"}]},
+            "captured_at": "2026-10-27T17:23:00+00:00"}
+    block = {"jse": {"captured_at": "2026-10-28T11:20:00+00:00", "delay": "about 15 minutes (Yahoo Finance)",
+                     "rows": [{"symbol": "NPN", "price": 4400.0, "chg_1d": 0.1, "date": "2026-10-28",
+                               "quote_time": "2026-10-28T11:05:00+00:00"}]}}
+    assert markets.apply_intraday(snap, block) == 1
+    q = snap["quotes"]["jse"][0]
+    assert q["price"] == 4400.0 and q["delayed"] and q["quote_time"].startswith("2026-10-28T11:05")
+    assert q["mcap"] == 4400.0 * 1.6e8 and round(q["ytd"], 4) == round(1.1 * 1.1 - 1, 4)
+    later = {"quotes": {"jse": [{"symbol": "NPN", "price": 4350.0, "date": "2026-10-28"}]},
+             "captured_at": "2026-10-28T17:23:00+00:00"}
+    assert markets.apply_intraday(later, block) == 0                        # the evening close stands
+
+
+def test_only_todays_session_counts_as_intraday(monkeypatch):
+    from datetime import datetime, timezone
+
+    import httpx
+    now = datetime(2026, 10, 28, 11, 30, tzinfo=timezone.utc)
+    monkeypatch.setattr(markets, "_spark_all_range", lambda c, symbols, rng: {
+        "NPN.JO": {"price": 4400.0, "chg_1d": 0.01, "date": "2026-10-28", "time": "2026-10-28T11:05:00+00:00"},
+        "COMI.CA": {"price": 80.0, "date": "2024-07-23", "time": "2024-07-23T20:00:00+00:00"}})
+    with httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(404))) as client:
+        out = markets.build_intraday({"quotes": {"jse": [{"symbol": "NPN"}], "egx": [{"symbol": "COMI"}]}}, client, now)
+    assert set(out) == {"jse"} and out["jse"]["rows"][0]["symbol"] == "NPN"
+
+
+def test_intraday_endpoint_requires_cron_auth():
+    from fastapi.testclient import TestClient
+
+    import api.index as api
+    assert TestClient(api.app).get("/api/cron/market-intraday").status_code == 401

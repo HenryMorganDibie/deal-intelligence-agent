@@ -30,7 +30,7 @@ export function MarketsToday({ data }: { data: { overview: Overview; companies: 
       <Container>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-2xl">
-            <p className="eyebrow">Markets · Daily close{day ? ` · ${day}` : ""}</p>
+            <p className="eyebrow">Markets · Daily close and delayed intraday{day ? ` · ${day}` : ""}</p>
             <h2 id="markets-title" className="h2 mt-3">Every African stock market, in one place.</h2>
             <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
               Index moves, returns in local currency and in dollars, and the day&apos;s movers across the continent,
@@ -89,7 +89,8 @@ export function MarketsToday({ data }: { data: { overview: Overview; companies: 
           ))}
         </div>
         <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
-          End-of-day closes, not live quotes, and not investment advice. Stale prices are excluded from returns and movers.
+          End-of-day closes, with Johannesburg and Lagos refreshed during trading hours by delayed quotes (not real-time),
+          and not investment advice. Stale prices are excluded from returns and movers.
         </p>
       </Container>
     </section>

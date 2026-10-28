@@ -204,7 +204,9 @@ export default function CompaniesPage() {
                 <Stat label="Price" value={p.market.price != null ? `${num(p.market.price as number, 2)} ${p.market.currency ?? ""}` : "n/a"}
                   note={<>
                     <span className={toneOf(p.market.change_pct)}>{pctText(p.market.change_pct, 2)}</span>
-                    {` · ${p.market.as_at ? `as of ${String(p.market.as_at).slice(0, 10)}` : "date not reported"}`}
+                    {p.market.delayed && p.market.quote_time
+                      ? ` · delayed quote, ${String(p.market.quote_time).slice(11, 16)} UTC`
+                      : ` · ${p.market.as_at ? `as of ${String(p.market.as_at).slice(0, 10)}` : "date not reported"}`}
                     {p.market.stale ? <span className="text-risk"> · stale ({String(p.market.age_days)} days)</span> : null}
                   </>} />
                 <Stat label="Market cap" value={p.market.market_cap_usd ? usd(p.market.market_cap_usd as number) : p.market.market_cap ? compact(p.market.market_cap as number) : "n/a"}

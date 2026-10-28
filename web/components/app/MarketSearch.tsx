@@ -50,7 +50,7 @@ export function MarketSearch({ placeholder = "Search any African company: listed
                       <span className="block truncate font-medium">{r.name}</span>
                       <span className="text-xs text-[color:var(--dim)]">
                         {r.kind === "listed"
-                          ? `${r.symbol} · ${r.exchange_name}${r.price == null ? " · no published price" : r.stale ? " · stale price" : ""}`
+                          ? `${r.symbol} · ${r.exchange_name}${r.price == null ? " · no published price" : r.stale ? " · stale price" : r.delayed ? " · delayed intraday" : ""}`
                           : `Private · ${[r.country, r.sector, r.deal_count ? `${r.deal_count} deal${r.deal_count > 1 ? "s" : ""}` : null].filter(Boolean).join(" · ")}`}
                       </span>
                     </span>

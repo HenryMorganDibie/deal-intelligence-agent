@@ -247,8 +247,11 @@ def _apply_listing(profile: dict, listing: dict, today: Optional[datetime] = Non
         market.update({"price": listing["price"], "currency": listing["currency"], "as_at": listing.get("date"),
                        "change_pct": None if listing.get("chg_1d") is None else round(listing["chg_1d"] * 100, 4),
                        "volume": listing.get("volume", market.get("volume")),
-                       "as_at_basis": "Closing price on the exchange's daily price list for this date",
-                       "source": f"{listing['exchange_name']} daily price list"})
+                       "as_at_basis": (f"Delayed intraday quote, {listing.get('delay')}" if listing.get("delayed")
+                                       else "Closing price on the exchange's daily price list for this date"),
+                       "source": f"{listing['exchange_name']} " + ("intraday quote (delayed)" if listing.get("delayed")
+                                                                     else "daily price list"),
+                       "delayed": bool(listing.get("delayed")), "quote_time": listing.get("quote_time")})
     if not market.get("market_cap") and listing.get("mcap"):
         market["market_cap"] = listing["mcap"]
     market.update({"market_cap_usd": listing.get("mcap_usd"), "shares_outstanding": listing.get("shares"),

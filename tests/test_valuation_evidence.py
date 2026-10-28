@@ -112,3 +112,24 @@ def test_a_number_under_another_line_item_does_not_count():
     assert r["fields"]["cash"]["status"] == "found_unlabelled"
     assert r["fields"]["debt"]["status"] == "found" and not r["verdict_allowed"]
     assert any("not under their line item" in reason for reason in r["reasons"])
+
+
+def test_free_cash_flow_is_derived_and_borrowing_parts_are_summed():
+    stmt = """Dangote Cement Plc
+Statement of financial position and cash flows for the year ended 31 December 2025
+In millions of Naira    2025    2024
+Total assets 6,100,000 5,400,000
+Total liabilities 3,900,000 3,500,000
+Total equity 2,200,000 1,900,000
+Cash and cash equivalents 412,345 389,100
+Borrowings - non-current 1,000,600 900,200
+Borrowings - current 250,000 200,000
+Net cash generated from operating activities 1,100,000 950,000
+Purchase of property, plant and equipment (254,800) (210,000)
+"""
+    r = ve.check(_inputs(), LISTING, fetch=lambda url: (stmt, "ok"), today=TODAY)
+    assert r["fields"]["debt"]["status"] == "verified"                    # 1,000,600 + 250,000
+    assert r["fields"]["fcf"]["status"] == "verified" and "less capital expenditure" in r["fields"]["fcf"]["note"]
+    assert r["grade"] == "A" and r["verdict_allowed"]
+    other = ve.check(_inputs(fcf=900e9), LISTING, fetch=lambda url: (stmt, "ok"), today=TODAY)
+    assert other["fields"]["fcf"]["status"] == "differs_from_statement" and not other["verdict_allowed"]

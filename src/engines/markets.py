@@ -914,6 +914,12 @@ def save_local(snapshot: dict) -> None:
     save_json(SNAPSHOT_PATH, {**snapshot, "captured_at": datetime.now(timezone.utc).isoformat()})
 
 
+def save_local_intraday(intraday: dict) -> None:
+    """Store intraday quotes beside the local daily snapshot, leaving its capture time as it was."""
+    snap = load_json(SNAPSHOT_PATH, dict) or {}
+    save_json(SNAPSHOT_PATH, {**snap, "intraday": intraday})
+
+
 def load_local() -> dict:
     return load_json(SNAPSHOT_PATH, dict) or {"quotes": {}, "indices": [], "fx": {}}
 
@@ -1064,7 +1070,7 @@ def overview(snapshot: dict, today: Optional[date] = None, movers: int = 8) -> d
 
     def slim(r: dict) -> dict:
         return {k: r.get(k) for k in ("exchange", "symbol", "name", "sector", "price", "currency", "chg_1d", "ytd",
-                                      "ytd_usd", "mcap_usd", "volume", "value_traded", "date")}
+                                      "ytd_usd", "mcap_usd", "volume", "value_traded", "date", "delayed", "quote_time")}
     gainers = sorted((r for r in tradable if r["chg_1d"] > 0), key=lambda r: -r["chg_1d"])[:movers]
     losers = sorted((r for r in tradable if r["chg_1d"] < 0), key=lambda r: r["chg_1d"])[:movers]
     active = sorted((r for r in fresh if r.get("value_traded") and not r.get("secondary_of")),
@@ -1288,3 +1294,117 @@ def fill_daily_change(snapshot: dict, previous: dict) -> int:
                 q["chg_1d"] = round(q["price"] / p["price"] - 1, 6)
                 filled += 1
     return filled
+
+
+# ── Intraday (delayed) ────────────────────────────────────────────────────────
+# Real-time African prices are licensed by the exchanges; these are the free delayed sources, refreshed during
+# trading hours: Yahoo for Johannesburg and Cairo (about 15 minutes behind), myStocks for Nairobi and NGX's own
+# list for Lagos. Every intraday quote is labelled delayed, with the time it was taken.
+INTRADAY_EXCHANGES = ("jse", "egx", "nse", "ngx")
+_YAHOO_SUFFIX = {"jse": ".JO", "egx": ".CA"}
+
+
+def build_intraday(snapshot: dict, client: Optional[httpx.Client] = None,
+                   now: Optional[datetime] = None) -> dict[str, dict]:
+    """{exchange: {"captured_at", "rows": [{symbol, price, chg_1d, volume, date, quote_time}]}} for the
+    exchanges with a free intraday source."""
+    now = now or datetime.now(timezone.utc)
+    own = client is None
+    c = client or _client()
+    out: dict[str, dict] = {}
+    try:
+        for ex, suffix in _YAHOO_SUFFIX.items():
+            symbols = [f"{q['symbol']}{suffix}" for q in (snapshot.get("quotes") or {}).get(ex) or []]
+            rows = []
+            for sym, q in _spark_all_range(c, symbols, "1d").items():
+                if not sym.endswith(suffix):
+                    continue
+                rows.append({"symbol": sym[:-len(suffix)], "price": q["price"], "chg_1d": q.get("chg_1d"),
+                             "volume": q.get("volume"), "date": q.get("date"), "quote_time": q.get("time")})
+            if rows:
+                out[ex] = {"captured_at": now.isoformat(), "rows": rows, "delay": "about 15 minutes (Yahoo Finance)"}
+        r = _get(c, NSE_PRICE_LIST)
+        nse = parse_mystocks(r.text) if r is not None else []
+        if nse:
+            out["nse"] = {"captured_at": now.isoformat(), "delay": "intraday (myStocks)",
+                          "rows": [{**{k: q.get(k) for k in ("symbol", "price", "chg_1d", "volume", "date")},
+                                    "quote_time": now.isoformat()} for q in nse]}
+        r = _get(c, NGX_PRICE_LIST)
+        try:
+            ngx = parse_ngx_doclib(r.json()) if r is not None else {}
+        except ValueError:
+            ngx = {}
+        if ngx:
+            out["ngx"] = {"captured_at": now.isoformat(), "delay": "intraday (NGX price list)", "rows": [
+                {"symbol": s, "price": o["price"], "date": o["date"], "volume": o.get("volume"), "value": o.get("value"),
+                 "chg_1d": round(o["price"] / o["prev"] - 1, 6) if isinstance(o.get("prev"), (int, float)) and o["prev"] > 0 else None,
+                 "quote_time": now.isoformat()} for s, o in ngx.items()]}
+    finally:
+        if own:
+            c.close()
+    # Only quotes from today's session are intraday: Yahoo's Cairo data has stopped updating and myStocks dates
+    # its list by the last completed session, so those keep their daily close rather than a false "delayed" label.
+    today = now.date().isoformat()
+    for ex in list(out):
+        out[ex]["rows"] = [r for r in out[ex]["rows"] if r.get("date") == today]
+        if not out[ex]["rows"]:
+            del out[ex]
+    return out
+
+
+def _spark_all_range(client: httpx.Client, symbols: list[str], rng: str) -> dict[str, dict]:
+    """Yahoo batch quotes (20 a call) over a range; the meta block carries the latest delayed price and time."""
+    def batch(chunk: list[str]) -> dict[str, dict]:
+        r = _get(client, YAHOO_SPARK, headers=_YAHOO_HEADERS, params={"symbols": ",".join(chunk), "range": rng, "interval": "1d"})
+        try:
+            parsed = parse_spark(r.json()) if r is not None else {}
+            metas = {i.get("symbol"): ((i.get("response") or [{}])[0] or {}).get("meta") or {}
+                     for i in ((r.json() or {}).get("spark") or {}).get("result") or []} if r is not None else {}
+        except (ValueError, AttributeError):
+            return {}
+        for sym, q in parsed.items():
+            t = metas.get(sym, {}).get("regularMarketTime")
+            q["time"] = datetime.fromtimestamp(t, tz=timezone.utc).isoformat() if t else None
+        return parsed
+    from concurrent.futures import ThreadPoolExecutor
+    out: dict[str, dict] = {}
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for part in pool.map(batch, [symbols[i:i + 20] for i in range(0, len(symbols), 20)]):
+            out.update(part)
+    return out
+
+
+def apply_intraday(snapshot: dict, intraday: dict[str, dict]) -> int:
+    """Overlay delayed intraday quotes on the daily closes where they are newer: price, 1-day change, volume, date,
+    and the cap and year-to-date return that follow from the new price. A block captured before the daily snapshot
+    is ignored (the evening close supersedes the session's quotes). Returns the quotes updated."""
+    updated = 0
+    for ex, block in (intraday or {}).items():
+        if snapshot.get("captured_at") and str((block or {}).get("captured_at") or "") <= str(snapshot["captured_at"]):
+            continue
+        live = {r["symbol"]: r for r in (block or {}).get("rows") or [] if r.get("price")}
+        for q in (snapshot.get("quotes") or {}).get(ex) or []:
+            i = live.get(q["symbol"])
+            if not i or (q.get("date") and i.get("date") and i["date"] < q["date"]):
+                continue
+            old = q.get("price")
+            if old and q.get("ytd") is not None:      # the year's return moves with the price from the close
+                q["ytd"] = round((1 + q["ytd"]) * i["price"] / old - 1, 6)
+            q.update(price=i["price"], date=i.get("date") or q.get("date"), delayed=True,
+                     quote_time=i.get("quote_time"), delay=block.get("delay"))
+            if i.get("chg_1d") is not None:
+                q["chg_1d"] = i["chg_1d"]
+            if i.get("volume") is not None:
+                q["volume"] = i["volume"]
+            if i.get("value") is not None:
+                q["value"] = i["value"]
+            if q.get("shares"):
+                q["mcap"] = round(q["shares"] * i["price"], 2)
+            updated += 1
+    return updated
+
+
+def intraday_rows(intraday: dict[str, dict], captured_at: Optional[datetime] = None) -> list[dict]:
+    captured_at = captured_at or datetime.now(timezone.utc)
+    return [{"snapshot_date": captured_at.date().isoformat(), "kind": "intraday", "scope": ex,
+             "captured_at": captured_at.isoformat(), "payload": block} for ex, block in intraday.items()]

@@ -163,6 +163,19 @@ def figure_in_text(value: Optional[float], text: str) -> Optional[str]:
     return None
 
 
+DERIVED_TOLERANCE = 0.02
+
+
+def _derived_fcf(statement: Optional[dict]) -> Optional[tuple[float, float, float]]:
+    """(operating cash flow, capex, their difference) from a parsed statement, when both lines are present."""
+    items = (statement or {}).get("items") or {}
+    ocf = (items.get("operating_cash_flow") or {}).get("current")
+    capex = (items.get("capex") or {}).get("current")
+    if isinstance(ocf, (int, float)) and isinstance(capex, (int, float)):
+        return ocf, capex, ocf - abs(capex)
+    return None
+
+
 def labelled_figure(value: Optional[float], text: str, label: str) -> Optional[str]:
     """The form in which the figure appears on a line carrying its label (or the line after it, where a PDF
     breaks a row), or None. A figure found only elsewhere in the document does not count."""
@@ -266,10 +279,24 @@ def check(inputs: dict, listing: Optional[dict] = None, filing: Optional[dict] =
                            "note": ("matches" if ok else "differs from") + f" the current-period line in {where}"
                                    + (" (accounting checks passed)" if statement.get("verified") else "")}
             continue
+        derived = _derived_fcf(statement) if key == "fcf" else None
+        if derived is not None:
+            ocf, capex, fcf = derived
+            if _close(value, fcf, DERIVED_TOLERANCE):
+                fields[key] = {"status": "verified", "reference": fcf,
+                               "note": f"matches operating cash flow {ocf:,.0f} less capital expenditure {abs(capex):,.0f} "
+                                       "in the cited statement"}
+                continue
         form = labelled_figure(value, text or "", _LABELS[key])
         if form:
             fields[key] = {"status": "found" if standing in ("official", "company") else "found_unofficial",
                            "note": f"appears as {form} on the document's {key.replace('_', ' ')} line"}
+        elif derived is not None:
+            # Free cash flow is defined variously (to the firm adds back after-tax interest); a different figure is
+            # reported, not counted as a contradiction.
+            fields[key] = {"status": "differs_from_statement", "reference": derived[2],
+                           "note": f"the statement implies {derived[2]:,.0f} (operating cash flow less capital "
+                                   "expenditure); the entered figure differs, so it is not counted"}
         elif figure_in_text(value, text or ""):
             fields[key] = {"status": "found_unlabelled",
                            "note": "the number appears in the document, but not on a line labelled as this item"}

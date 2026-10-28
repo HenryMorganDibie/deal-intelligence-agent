@@ -22,6 +22,10 @@
       "destination": "/api/market_snapshot"
     },
     {
+      "source": "/api/cron/market-intraday",
+      "destination": "/api/market_snapshot"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api/index"
     }

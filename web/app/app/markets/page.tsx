@@ -7,7 +7,7 @@ import { MarketSearch } from "../../../components/app/MarketSearch";
 import { ErrorNote, Loading, PageHeader, Pill, Stat, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { get } from "../../../lib/market";
-import { asOf, companyHref, heat, pct, price, tone, type Mover, type Overview } from "../../../lib/markets-data";
+import { asOf, companyHref, quoteWhen, heat, pct, price, tone, type Mover, type Overview } from "../../../lib/markets-data";
 
 type PulseEvent = {
   id: string;
@@ -57,7 +57,7 @@ function MoverTable({ title, rows, metric }: { title: string; rows: Mover[]; met
                   {metric === "chg_1d" ? (
                     <>
                       <span className={`block kbd ${tone(r.chg_1d)}`}>{pct(r.chg_1d, 2)}</span>
-                      <span className="text-xs text-[color:var(--dim)]">{price(r.price, r.currency)}</span>
+                      <span className="text-xs text-[color:var(--dim)]">{price(r.price, r.currency)}{r.delayed ? ` · ${quoteWhen(r)}` : ""}</span>
                     </>
                   ) : (
                     <>
@@ -282,7 +282,9 @@ export default function MarketsPage() {
         ))}
       </section>
       <p className="mt-6 text-xs leading-relaxed text-[color:var(--dim)]">
-        Prices are end-of-day closes from public exchange price lists; they are not live quotes and not investment advice.
+        Prices are end-of-day closes from public exchange price lists; Johannesburg and Lagos are refreshed during
+        trading hours with delayed quotes (Johannesburg about 15 minutes behind), marked &ldquo;delayed&rdquo; with
+        their time. None are real-time quotes, and nothing here is investment advice.
         Figures marked stale, flagged or withheld are shown that way rather than estimated.
       </p>
     </Container>

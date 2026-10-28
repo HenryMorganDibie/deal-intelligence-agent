@@ -30,6 +30,9 @@ export type Quote = {
   dividend_yield?: number | null;
   priced_from?: string;
   foreign_primary?: boolean;
+  delayed?: boolean;
+  quote_time?: string | null;
+  delay?: string | null;
 };
 
 // One row of /api/companies/directory: a listed share or a private company from the deals database.
@@ -48,6 +51,8 @@ export type DirectoryRow = {
   mcap_usd?: number | null;
   pe?: number | null;
   stale?: boolean;
+  delayed?: boolean;
+  quote_time?: string | null;
   deal_count?: number;
   equity_raised_usd?: number | null;
   debt_raised_usd?: number | null;
@@ -91,7 +96,7 @@ export type ExchangeTile = {
 };
 
 export type Mover = Pick<Quote, "exchange" | "symbol" | "name" | "sector" | "price" | "currency" | "chg_1d" | "ytd" |
-  "ytd_usd" | "mcap_usd" | "volume" | "value_traded" | "date"> & { value_traded_usd?: number | null };
+  "ytd_usd" | "mcap_usd" | "volume" | "value_traded" | "date" | "delayed" | "quote_time"> & { value_traded_usd?: number | null };
 
 export type SectorMove = { sector: string; shares: number; mcap_usd: number | null; chg_1d: number | null; ytd_usd: number | null };
 export type CurrencyMove = { currency: string; per_usd: number; jan1_per_usd: number | null; ytd_vs_usd: number | null };
@@ -152,4 +157,13 @@ export function asOf(day: string | null | undefined): string {
   if (!day) return "date not reported";
   const d = new Date(day);
   return Number.isNaN(d.getTime()) ? day : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+}
+
+// "delayed · 11:05 UTC" for an intraday quote, else the close date.
+export function quoteWhen(q: { delayed?: boolean; quote_time?: string | null; date?: string | null }): string {
+  if (q.delayed && q.quote_time) {
+    const t = new Date(q.quote_time);
+    if (!Number.isNaN(t.getTime())) return `delayed · ${t.toISOString().slice(11, 16)} UTC`;
+  }
+  return asOf(q.date ?? null);
 }

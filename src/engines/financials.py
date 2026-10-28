@@ -50,7 +50,8 @@ LINE_ITEMS: tuple[tuple[str, str], ...] = (
     ("loans_to_customers", r"loans\s+and\s+advances\s+to\s+customers"),
     ("customer_deposits", r"deposits\s+from\s+customers"),
     ("cash", r"cash\s+and\s+cash\s+equivalents\s+at\s+(?:the\s+)?end|cash\s+and\s+(?:cash\s+)?equivalents\s*$|cash\s+and\s+(?:cash\s+)?equivalents(?=\s+[\d(])"),
-    ("total_debt", r"(?:total\s+)?(?:interest[- ]bearing\s+)?(?:loans\s+and\s+)?borrowings|bank\s+loans|debt\s+securities\s+in\s+issue"),
+    ("total_debt", r"(?:total\s+)?(?:(?:non-?\s?)?current\s+)?(?:interest[- ]bearing\s+)?(?:loans\s+and\s+)?borrowings(?:\s*[-–:]\s*(?:non-?\s?)?current)?|bank\s+loans|debt\s+securities\s+in\s+issue"),
+    ("capex", r"(?:purchases?|acquisitions?|additions?)\s+(?:of|to)\s+property,?\s+plant\s+(?:and|&)\s+equipment"),
     ("operating_cash_flow", r"net\s+cash\s+(?:generated\s+from|from|provided\s+by|\(used\s+in\)/generated\s+from|generated\s+from/\(used\s+in\))\s+operating\s+activities"),
     ("investing_cash_flow", r"net\s+cash\s+(?:used\s+in|from|generated\s+from/\(used\s+in\)|\(used\s+in\)/generated\s+from)\s+investing\s+activities"),
     ("financing_cash_flow", r"net\s+cash\s+(?:used\s+in|from|generated\s+from/\(used\s+in\)|\(used\s+in\)/generated\s+from)\s+financing\s+activities"),
@@ -108,6 +109,8 @@ def parse_statement_text(text: str) -> dict:
             period = {"months": months, "end": f"{pm.group(4)}-{mon:02d}-{int(pm.group(2)):02d}",
                       "label": re.sub(r"\s+", " ", pm.group(0)).strip()}
     items: dict[str, dict] = {}
+    debt_parts: list[tuple[float, float, str]] = []
+    debt_total = False
     for raw in text.splitlines():
         line = raw.strip()
         if not line or _SEPARATOR_ONLY.match(line):
@@ -121,8 +124,19 @@ def parse_statement_text(text: str) -> dict:
             if field != "eps" and not any("," in f or abs(_value(f) or 0) >= 1000 for f in figures[-max(len(nums), 1):]):
                 continue
             if len(nums) >= 2:
+                if field == "total_debt" and not re.match(r"(?i)\s*total\s+borrowings", line):
+                    # Borrowings are reported in parts (non-current and current); the parts add up to the total
+                    # unless the statement prints one. A part repeated in a note is counted once.
+                    if (nums[0], nums[1]) not in {(c, p) for c, p, _ in debt_parts}:
+                        debt_parts.append((nums[0], nums[1], line[:80]))
+                    break
+                if field == "total_debt":
+                    debt_total = True
                 items[field] = {"current": nums[0], "prior": nums[1], "line": line[:160]}
             break
+    if debt_parts and not debt_total:
+        items["total_debt"] = {"current": sum(c for c, _, _ in debt_parts), "prior": sum(p for _, p, _ in debt_parts),
+                               "line": "sum of " + "; ".join(ln for _, _, ln in debt_parts)[:160]}
     return {"period": period, "unit": unit, "multiplier": mult, "items": items}
 
 

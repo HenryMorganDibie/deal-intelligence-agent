@@ -117,6 +117,7 @@ const STATUS_LABEL: Record<string, [string, string]> = {
   verified: ["Verified", "text-verified"], found: ["Found in source", "text-verified"],
   found_unofficial: ["Found, unofficial source", "text-[#f5d58a]"], not_found: ["Not found in source", "text-risk"],
   found_unlabelled: ["Not under its line item", "text-[#f5d58a]"],
+  differs_from_statement: ["Differs from the statement", "text-[#f5d58a]"],
   mismatch: ["Contradicted", "text-risk"], unchecked: ["Not checked", "text-[color:var(--muted)]"],
 };
 const STANDING_LABEL: Record<string, string> = {

@@ -1,0 +1,32 @@
+name: Market intraday
+
+# Delayed intraday quotes (Johannesburg from Yahoo, about 15 minutes behind; Lagos from NGX's own list) every 30
+# minutes through African trading hours on weekdays. The daily snapshot at 17:23 UTC supersedes them.
+on:
+  schedule:
+    - cron: "7,37 6-15 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: market-intraday
+  cancel-in-progress: true
+
+jobs:
+  intraday:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Refresh intraday quotes
+        run: |
+          set -euo pipefail
+          oidc="$(curl --fail-with-body --silent --show-error --max-time 15 \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api" | jq -er '.value')"
+          echo "::add-mask::${oidc}"
+          curl --fail-with-body --silent --show-error --max-time 290 \
+            -H "Authorization: Bearer ${oidc}" -H "Accept: application/json" \
+            "https://deal-intelligence-api.vercel.app/api/cron/market-intraday"

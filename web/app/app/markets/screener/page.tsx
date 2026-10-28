@@ -6,7 +6,7 @@ import { Container } from "../../../../components/primitives";
 import { ErrorNote, Field, Loading, PageHeader, Table, Td, usd, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get } from "../../../../lib/market";
-import { asOf, companyHref, directoryHref, pct, price, tone, type Directory, type Screener } from "../../../../lib/markets-data";
+import { asOf, companyHref, directoryHref, quoteWhen, pct, price, tone, type Directory, type Screener } from "../../../../lib/markets-data";
 
 const EXCHANGES: [string, string][] = [
   ["", "All exchanges"], ["jse", "Johannesburg"], ["ngx", "Nigeria"], ["egx", "Egypt"], ["nse", "Nairobi"],
@@ -225,7 +225,7 @@ export default function ScreenerPage() {
                 <Td className="kbd">{r.pe != null ? r.pe.toFixed(1) : ""}</Td>
                 <Td className="kbd">{r.dividend_yield != null ? `${(r.dividend_yield * 100).toFixed(1)}%` : ""}</Td>
                 <Td className="kbd">{r.value_traded_usd ? usd(r.value_traded_usd) : ""}</Td>
-                <Td className="text-xs text-[color:var(--dim)]">{asOf(r.date)}{r.stale ? " · stale" : ""}</Td>
+                <Td className="text-xs text-[color:var(--dim)]">{quoteWhen(r)}{r.stale ? " · stale" : ""}</Td>
               </tr>
             ))}
           </Table>

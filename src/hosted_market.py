@@ -32,6 +32,7 @@ Hosted API routes for market data (mounted by api/index.py):
   POST /api/markets/prices             latest closes for a list of holdings, and dollar rates
   GET  /api/cron/ingest                scheduled rolling feed -> deals and events, webhooks
   GET  /api/cron/market-snapshot       scheduled daily quotes, indices and FX
+  GET  /api/cron/market-intraday       delayed intraday quotes during trading hours (JSE, NGX)
 """
 from __future__ import annotations
 
@@ -95,6 +96,7 @@ def _authorized_cron(request: Request) -> bool:
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/review-labels-import.yml@refs/heads/main",
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/enrich-round-investors.yml@refs/heads/main",
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/market-snapshot.yml@refs/heads/main",
+            "HenryMorganDibie/deal-intelligence-agent/.github/workflows/market-intraday.yml@refs/heads/main",
         }
         return (
             claims.get("repository") == "HenryMorganDibie/deal-intelligence-agent"
@@ -1852,6 +1854,12 @@ def _market_snapshot() -> dict:
                 raise HTTPException(503, "Market data store is unavailable.")
             parts[kind] = r.json() or []
         snap = markets.from_rows(parts["quotes"], parts["indices"], parts["fx"])
+        today = datetime.now(timezone.utc).date().isoformat()
+        r = _rpc_sync("list_market_snapshots", {"p_kind": "intraday"})
+        if r.status_code == 200:
+            snap["intraday"] = {row["scope"]: row.get("payload") or {} for row in r.json() or []
+                                if str(row.get("snapshot_date")) == today}
+    markets.apply_intraday(snap, snap.get("intraday") or {})
     _markets_cache["snapshot"] = (time.monotonic(), snap)
     return snap
 
@@ -1885,6 +1893,31 @@ async def cron_market_snapshot(request: Request) -> dict:
     return {"status": "ok", "rows_written": written, "exchanges": {k: len(v) for k, v in snap["quotes"].items()},
             "indices": len(snap["indices"]), "currencies": len(snap["fx"].get("rates") or {}),
             "failed": snap["errors"]}
+
+
+@router.get("/api/cron/market-intraday")
+async def cron_market_intraday(request: Request) -> dict:
+    """Delayed intraday quotes for the exchanges with a free intraday source, during trading hours."""
+    if not _authorized_cron(request):
+        raise HTTPException(401, "Unauthorized")
+    from src.engines import markets
+    snap = await run_in_threadpool(_market_snapshot)
+    intraday = await run_in_threadpool(markets.build_intraday, snap)
+    if not intraday:
+        return {"status": "ok", "rows_written": 0, "note": "no exchange has quotes from today's session yet"}
+    rows = markets.intraday_rows(intraday)
+    if not _configured():
+        markets.save_local_intraday(intraday)
+        written = len(rows)
+    else:
+        r = await run_in_threadpool(_rpc_sync, "upsert_market_snapshots", {"p_rows": rows}, 60)
+        if not r.is_success:
+            log.error("intraday write failed: %s %s", r.status_code, r.text[:300])
+            raise HTTPException(502, "Could not persist intraday quotes.")
+        written = r.json()
+    _markets_cache.clear()
+    _directory_cache.clear()
+    return {"status": "ok", "rows_written": written, "exchanges": {k: len(v["rows"]) for k, v in intraday.items()}}
 
 
 @router.get("/api/markets/overview")
