@@ -1,4 +1,4 @@
-import test from "node:test";
+import { test } from "node:test";
 import * as assert from "node:assert/strict";
 import { calculateBond, calculateTreasuryBill } from "../lib/markets-instruments";
 
