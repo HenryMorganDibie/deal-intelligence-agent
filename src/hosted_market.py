@@ -600,6 +600,24 @@ async def sector_risk(sector: str, country: Optional[str] = None, days: int = Qu
 _profile_cache: dict[tuple, tuple[float, dict]] = {}
 
 
+def _listing_for(name: str, ticker: Optional[str], country: Optional[str]) -> Optional[dict]:
+    """The company's quote in the latest market snapshot: by ticker when one is given, else by name."""
+    from src.engines import markets
+    try:
+        snap = _market_snapshot()
+    except HTTPException:
+        return None
+    if ticker:
+        exchange = company_profile.exchange_of(ticker)
+        hit = markets.quote(snap, exchange, ticker) if exchange else None
+        if hit or exchange:
+            return hit
+        # A bare symbol: the country's exchange, if the symbol is listed there.
+        return next((r for r in markets.search(snap, ticker, limit=5)
+                     if r["symbol"] == ticker.upper() and (not country or r["country"] == country.upper())), None)
+    return markets.resolve(snap, name, country)
+
+
 @router.get("/api/companies/profile")
 async def company(name: str = Query(..., min_length=1, max_length=120), ticker: Optional[str] = None,
                   country: Optional[str] = None, cik: Optional[int] = None) -> dict:
@@ -612,7 +630,7 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     if hit and time.monotonic() - hit[0] < 6 * 3600:
         return hit[1]
     profile = await run_in_threadpool(company_profile.build, name, ticker.upper() if ticker else None, country,
-                                      deals(), cik)
+                                      deals(), cik, None, await run_in_threadpool(_listing_for, name, ticker, country))
     profile["valuation"] = market_risk.valuation_view(profile.get("name") or name, deals(), profile)
     _profile_cache[key] = (time.monotonic(), profile)
     return profile
@@ -1509,6 +1527,29 @@ async def cron_enrich_rounds(request: Request, limit: int = Query(40, ge=1, le=8
     return {"processed": len(results), "statuses": statuses, "remaining": len(pending) - len(results)}
 
 
+def _reclassify_stored(existing: dict[str, dict], merged: dict[str, dict]) -> dict[str, dict]:
+    """Stored records the current rules correct (deals.reclassify): a roundup or a non-company target is
+    excluded, a bond or loan stored as an equity round gets its type, and a record whose new type matches another
+    stored record of the same transaction is merged into it."""
+    visible = [d for d in existing.values() if deals_mod.is_visible(d)]
+    out: dict[str, dict] = {}
+    for d in visible:
+        current = merged.get(d["id"], d)
+        if current.get("reviewed_on"):
+            continue                                    # a reviewer's decision stands
+        change = deals_mod.reclassify(current)
+        if not change:
+            continue
+        fixed = {**current, **change}
+        if "deal_type" in change:
+            twin = next((o for o in visible if o["id"] != d["id"] and o["id"] not in out
+                         and deals_mod.same_transaction(fixed, o)), None)
+            if twin:
+                fixed["merged_into"] = twin["id"]
+        out[d["id"]] = fixed
+    return out
+
+
 @router.get("/api/cron/ingest")
 async def cron_ingest(
     request: Request,
@@ -1555,6 +1596,8 @@ async def cron_ingest(
             if reason:
                 e["excluded"] = reason
     merged = deals_mod.merge_all(new_deals, into={k: existing[k] for k in {d["id"] for d in new_deals} if k in existing})
+    reclassified = _reclassify_stored(existing, merged)
+    merged.update(reclassified)
     # Each publisher's wording of a story is one event: later reports point at the first.
     from src.engines import event_dedup
     stored_events = {e["id"]: e for e in await run_in_threadpool(_load, "events")}
@@ -1656,7 +1699,7 @@ async def cron_ingest(
     return {"status": "ok", "mode": f"backfill:{month}" if month else "rolling-7d",
             "refreshed_at": datetime.now(timezone.utc).isoformat(),
             "headlines": len(items), "deals_detected": len(new_deals), "deals_saved": r1.json(),
-            "events_detected": len(new_events), "events_saved": r2.json(),
+            "events_detected": len(new_events), "events_saved": r2.json(), "deals_reclassified": len(reclassified),
             "webhooks_delivered": delivered, "webhook_lookup_ok": hooks.status_code == 200,
             "alerts_suppressed": bool(month)}
 

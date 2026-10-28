@@ -23,6 +23,7 @@ import html as html_mod
 import logging
 import re
 import statistics
+import time
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Iterable, Optional
@@ -296,8 +297,14 @@ def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = N
     """(quotes, indices) for one exchange; the index table rides along on every african-markets page."""
     if ex.source == "index_only":
         return [], []
-    r = _get(client, AM_BASE.format(slug=ex.slug))
-    page = r.text if r is not None else ""
+    page = ""
+    for wait in (0, 3, 8):                              # the listing site throttles a run of requests
+        if wait:
+            time.sleep(wait)
+        r = _get(client, AM_BASE.format(slug=ex.slug))
+        page = r.text if r is not None else ""
+        if "tabtable-rs_01k0jris" in page:
+            break
     indices = parse_indices(page, today)
     if ex.source == "listing":
         quotes = parse_listing(page, ex, today)

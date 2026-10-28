@@ -444,10 +444,20 @@ def repair_target(target: Optional[str], headline: str) -> Optional[str]:
     return "Undisclosed " + " ".join(words) if words else None
 
 
+# A development finance institution raising its own funding (bonds, credit lines, replenishments) is
+# institutional finance, not a company deal: "AfDB raises $2.5 billion", "la BAD lève 2,5 milliards USD sur
+# les marchés", "BoI secures €2.22bn funding".
+_DFI_OWN_FUNDING = re.compile(
+    r"(?i)^(?:[\w' ]{2,30}\s?:\s+)?(?:la |le |the )?(?:afdb|bad|african development bank|banque africaine de "
+    r"d[ée]veloppement|afreximbank|boi|bank of industry|bdeac|boad|ebid|tdb(?: group)?|trade and development bank|"
+    r"shelter afrique|africa finance corporation|afc|development bank of [a-z]+|dbsa|dbn|ida|ifc)\b.{0,25}?\b"
+    r"(?:raises?|secures?|l[eè]ve|obtains?|mobili[sz]es?|borrows?|issues?)\b")
+
 # Raises reported like a funding round that are something else: debt securities and bank loans, listings,
 # fund closes, and public finance. Checked in this order; "public" means not a company transaction.
 _NOT_A_ROUND = (
-    ("debt_financing", re.compile(r"(?i)\b(bonds?|eurobond|sukuk|commercial paper|obligat\w*|emprunt|notes? issu\w*|"
+    ("public", _DFI_OWN_FUNDING),
+    ("debt_financing", re.compile(r"(?i)\bl[eè]ve\b.{0,50}\bsur les march[ée]s\b|\b(bonds?|eurobond|sukuk|commercial paper|obligat\w*|emprunt|notes? issu\w*|"
                                   r"securiti[sz]ation|loan|credit (?:facility|line)|term facility|debt (?:financing|capital|"
                                   r"facility|funding)|private debt|non-recourse financing|project finance|auprès de (?:\w+ )?banques)\b")),
     ("public", re.compile(r"(?i)\b(tr[ée]sor public|treasury bills?|t-bills?|government of|republic of|ministry|"
@@ -461,6 +471,48 @@ _NOT_A_ROUND = (
                               r"(?:startups|companies|smes|businesses))")),
 )
 _PRE_IPO = re.compile(r"(?i)\b(?:ahead of|before|prepare for|plans? for)\b.{0,40}\bipo\b")
+
+
+# Reports that are not a transaction even though they read like one: market roundups ("Logistics attracts
+# $780 million, overtaking fintech"), backing for a whole industry, and an amount or a continent captured as the
+# target ("Dangote, Djibouti and Ethiopia commit USD 660m to...", "MIDYAN invests EGP 12bn across three sectors").
+_ROUNDUP = re.compile(r"(?i)\b(?:overtak\w+|lead(?:s|ing)? africa with|continent raises|startups? (?:raised|attracted|"
+                      r"funding (?:in|for) (?:q[1-4]|h[12]|20\d\d))|african startup funding|funding tally|"
+                      r"across (?:\w+ )?sectors)\b")
+_GENERIC_TARGET = re.compile(
+    r"(?i)^(?!undisclosed\b)(?:(?:african|nigerian|kenyan|ghanaian|egyptian|south african|moroccan|local)\s+)?"
+    r"(?:[\w-]+\s+)?(?:industry|sector|ecosystem|value chain|continent|startups)$")
+# An amount captured as the target of a "round" is spending or a pledge ("Vodacom Lesotho invests USD 40M",
+# "Lesieur Cristal investit 65MDH dans une nouvelle savonnerie"); names that start with a digit (54Gene, 9mobile,
+# 10X Investments) are not amounts.
+_AMOUNT_TARGET = re.compile(r"(?i)^(?:(?:usd|us\$|\$|€|£|egp|ngn|kes|ksh|zar|ghs|xof|cfa|mad)\s?\d[\d.,]*\s?\w*|"
+                            r"\d[\d.,]*\s?(?:m|mn|bn|b|k|million|billion|me|mdh|m\$))$")
+
+
+def not_a_deal(headline: str, target: Optional[str], deal_type: Optional[str] = None) -> Optional[str]:
+    """Why a headline the deal patterns matched is not a company transaction, or None."""
+    if _ROUNDUP.search(headline or ""):
+        return "market roundup, not a transaction"
+    if target and _GENERIC_TARGET.search(target.strip()):
+        return "the target is an industry or a market, not a company"
+    if target and deal_type == "equity_funding" and _AMOUNT_TARGET.search(target.strip()):
+        return "the target is an amount: spending or a pledge, not a funding round"
+    return None
+
+
+def reclassify(deal: dict) -> Optional[dict]:
+    """What the current rules change in a stored record: {"excluded": reason}, or a corrected deal type for a
+    bond, loan, listing or fund close stored as an equity round. None when the record stands."""
+    headline = deal.get("headline") or ""
+    if reason := not_a_deal(headline, deal.get("target"), deal.get("deal_type")):
+        return {"excluded": f"reclassified: {reason}"}
+    if deal.get("deal_type") == "debt_financing" and _DFI_OWN_FUNDING.search(headline):
+        return {"excluded": "reclassified: public or institutional finance, not a company transaction"}
+    if deal.get("deal_type") == "equity_funding" and (kind := round_kind(headline)):
+        if kind == "public":
+            return {"excluded": "reclassified: public or institutional finance, not a company transaction"}
+        return {"deal_type": kind, "round": None}
+    return None
 
 
 def round_kind(headline: str) -> Optional[str]:
@@ -1167,6 +1219,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     if target and (_PLACE_OR_SECTOR_TARGET.match(target.strip()) or _is_place_only(target)):
         return None
     target = repair_target(target, title)               # "South African Fintech Tyme Bank" -> "Tyme Bank"
+    if not_a_deal(title, target, deal_type):
+        return None
     if deal_type == "equity_funding" and (kind := round_kind(title)):
         if kind == "public":
             return None                                 # sovereign and public finance is not a company deal
@@ -1307,7 +1361,9 @@ def _name_tokens(name: Optional[str]) -> set[str]:
         "boi": "__bank_of_industry__",
         "bank of industry": "__bank_of_industry__",
         "afdb": "__african_development_bank__",
+        "bad": "__african_development_bank__",
         "african development bank": "__african_development_bank__",
+        "banque africaine de developpement": "__african_development_bank__",
         "frasers": "__frasers_group__",
         "sports direct parent": "__frasers_group__",
     }

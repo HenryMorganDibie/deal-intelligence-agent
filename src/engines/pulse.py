@@ -8,6 +8,7 @@ Every figure is a count or sum over stored records; nothing is estimated.
 """
 from __future__ import annotations
 
+import statistics
 from collections import Counter
 from datetime import date, timedelta
 from typing import Iterable, Optional
@@ -16,6 +17,8 @@ from src.data import africa_countries as ac
 from src.engines import investors as investors_mod
 
 WINDOW_DAYS = 30
+_FLOW_KIND = {"equity_funding": "equity", "debt_financing": "debt", "acquisition": "m_and_a", "merger": "m_and_a",
+              "exit": "m_and_a", "fund_raise": "funds", "ipo": "listings"}
 EVENT_DAYS = 7
 
 
@@ -53,7 +56,13 @@ def build(deals: Iterable[dict], events: Iterable[dict], measured: dict, today: 
         return {c for d in rows for c in (d.get("countries") or [d.get("country")]) if c}
 
     by_country = Counter(c for d in recent for c in (d.get("countries") or [d.get("country")]) if c)
-    disclosed = [d["amount_usd"] for d in recent if d.get("amount_usd")]
+    disclosed = sorted((d["amount_usd"] for d in recent if d.get("amount_usd")), reverse=True)
+    # A sum over reported amounts is dominated by a few large raises (a development bank's bond, a credit line);
+    # the median, the top three's share and the split by type say what the flow is made of.
+    value_by_type: Counter = Counter()
+    for d in recent:
+        if d.get("amount_usd"):
+            value_by_type[_FLOW_KIND.get(d.get("deal_type"), "other")] += d["amount_usd"]
     largest = max(recent, key=lambda d: d.get("amount_usd") or 0, default=None)
     # Registry-matched investors only: unmatched names include extraction noise.
     active = [i for i in investors_mod.leaderboard(recent, limit=200) if i.get("type")][:5] if recent else []
@@ -65,6 +74,9 @@ def build(deals: Iterable[dict], events: Iterable[dict], measured: dict, today: 
             "total": len(deals), "countries": len(countries(deals)),
             "since": since, "window_days": WINDOW_DAYS, "recent": len(recent), "recent_countries": len(countries(recent)),
             "recent_disclosed_usd": round(sum(disclosed)), "recent_disclosed_n": len(disclosed),
+            "recent_disclosed_median_usd": round(statistics.median(disclosed)) if disclosed else None,
+            "recent_top3_share": round(sum(disclosed[:3]) / sum(disclosed), 3) if disclosed else None,
+            "recent_value_by_kind": {k: round(v) for k, v in value_by_type.most_common()},
             "by_type": dict(Counter(d.get("deal_type") or "other" for d in recent).most_common()),
             "top_countries": [{**_country(c), "deals": n} for c, n in by_country.most_common(6) if _country(c)],
             "largest": _deal_card(largest) if largest and largest.get("amount_usd") else None,

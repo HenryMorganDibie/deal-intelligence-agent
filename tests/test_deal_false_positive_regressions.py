@@ -124,3 +124,82 @@ def test_currency_and_sentence_fragments_are_not_targets():
     ):
         assert extract_deal(headline, published="2026-10-18", africa_source=True) is None
 
+
+
+def test_institutional_raises_roundups_and_non_company_targets_are_not_deals():
+    from src.engines import deals as d
+
+    for headline in (
+        "Afrique : la BAD lève 2,5 milliards USD sur les marchés",
+        "BoI secures €2.22bn, N250bn funding for Nigerian industries",
+        "Afreximbank Backs African Auto Industry With $1 Billion",
+        "Logistics Attracts $780 Million, Overtaking Fintech in African Startup Funding",
+        "Nigerian Startups Lead Africa With $624m Funding As Continent Raises $2.49bn In 2026",
+        "Dangote, Djibouti and Ethiopia commit USD 660m to a Red Sea fuel pipeline hub",
+        "MIDYAN Developments invests EGP 12bn across three sectors over four years",
+    ):
+        assert d.extract_deal(headline, published="2026-10-20") is None, headline
+    for headline, target in (
+        ("Moniepoint raises $110 million Series C led by Development Partners International", "Moniepoint"),
+        ("Standard Bank Group announces strategic investment in OPay", "OPay"),
+        ("Kenyan fintech 4G Capital raises $18.5M from Lightrock to scale lending to MSMEs", "4G Capital"),
+    ):
+        assert (d.extract_deal(headline, published="2026-10-20") or {}).get("target") == target, headline
+
+
+def test_stored_records_are_reclassified_without_touching_real_deals():
+    from src.engines import deals as d
+
+    excluded = [
+        ("equity_funding", "BAD", "Afrique : la BAD lève 2,5 milliards USD sur les marchés"),
+        ("debt_financing", "AfDB", "AfDB raises $2.5 billion in global bond as orders hit $4.8 billion"),
+        ("equity_funding", "Maritime Sector", "APM Terminals Pledges $600 Million Investment in Nigeria’s Maritime Sector"),
+        ("equity_funding", "USD 40M", "Vodacom Lesotho Invests USD 40M to Boost Connectivity and Digital Inclusion"),
+        ("equity_funding", "65MDH", "Lesieur Cristal Maroc investit 65MDH dans une nouvelle savonnerie au Sénégal"),
+    ]
+    for deal_type, target, headline in excluded:
+        change = d.reclassify({"deal_type": deal_type, "target": target, "headline": headline})
+        assert change and change["excluded"].startswith("reclassified:"), headline
+    kept = [
+        ("equity_funding", "54Gene", "Biotech startup, 54Gene raises $500,000 to boost COVID-19 testing in Nigeria"),
+        ("equity_funding", "Undisclosed startup", "Buying Used Cars In Kenya Is Trouble. This Startup Just Raised USD 11 M"),
+        ("joint_venture", "Yusen Logistics", "Africa Global and Yusen Logistics Launch Joint Venture"),
+        ("fund_raise", "USD 180m", "CFM raises over USD 180m at first close of South Africa H2 fund"),
+        ("debt_financing", "Kenya Airways", "Kenya Airways secures $350m state loan to shore up finances"),
+        ("acquisition", "10X Investments", "Old Mutual acquires 10X Investments in R2.2 billion deal"),
+    ]
+    for deal_type, target, headline in kept:
+        assert d.reclassify({"deal_type": deal_type, "target": target, "headline": headline}) is None, headline
+    bond = d.reclassify({"deal_type": "equity_funding", "target": "Seplat", "headline": "Seplat raises $650m bond"})
+    assert bond == {"deal_type": "debt_financing", "round": None}
+
+
+def test_pulse_reports_median_concentration_and_value_by_kind():
+    from datetime import date
+
+    from src.engines import pulse
+
+    rows = [{"id": str(i), "deal_type": t, "amount_usd": a, "announced": "2026-10-20", "country": "NG"}
+            for i, (t, a) in enumerate([("debt_financing", 900e6), ("equity_funding", 10e6), ("equity_funding", 20e6),
+                                        ("acquisition", 50e6), ("fund_raise", 20e6)])]
+    out = pulse.build(rows, [], {}, today=date(2026, 10, 28))["deals"]
+    assert out["recent_disclosed_usd"] == 1_000_000_000 and out["recent_disclosed_median_usd"] == 20_000_000
+    assert out["recent_top3_share"] == 0.97
+    assert out["recent_value_by_kind"] == {"debt": 900_000_000, "m_and_a": 50_000_000, "equity": 30_000_000,
+                                           "funds": 20_000_000}
+
+
+def test_ingest_reclassification_merges_a_retyped_record_into_its_twin_and_spares_reviewed_ones():
+    import src.hosted_market as hm
+
+    stored = {
+        "a": {"id": "a", "deal_type": "debt_financing", "target": "Seplat", "amount_usd": 650e6,
+              "announced": "2026-10-14", "country": "NG", "headline": "Seplat prices $650m bond"},
+        "b": {"id": "b", "deal_type": "equity_funding", "target": "Seplat", "amount_usd": 650e6,
+              "announced": "2026-10-15", "country": "NG", "headline": "Seplat raises $650 million bond"},
+        "c": {"id": "c", "deal_type": "equity_funding", "target": "Maritime Sector", "reviewed_on": "2026-10-20",
+              "headline": "APM Terminals Pledges $600 Million Investment in Nigeria’s Maritime Sector"},
+    }
+    out = hm._reclassify_stored(stored, {})
+    assert set(out) == {"b"}
+    assert out["b"]["deal_type"] == "debt_financing" and out["b"]["merged_into"] == "a"

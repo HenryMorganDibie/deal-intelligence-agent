@@ -220,10 +220,69 @@ def _yahoo_section(ticker: str) -> Optional[dict]:
     return out
 
 
+# Exchanges whose listings the per-exchange sections above can read, by the suffix they use.
+_SUFFIX = {"ngx": ".LG", "nse": ".NR", "jse": ".JO", "egx": ".CA"}
+_EXCHANGE_OF_SUFFIX = {v: k for k, v in _SUFFIX.items()}
+STALE_PRICE_DAYS = 7
+
+
+def exchange_of(ticker: Optional[str]) -> Optional[str]:
+    """The snapshot exchange key a Yahoo-style ticker belongs to ("DANGCEM.LG" -> "ngx")."""
+    if not ticker or "." not in ticker:
+        return None
+    return _EXCHANGE_OF_SUFFIX.get("." + ticker.rsplit(".", 1)[1].upper())
+
+
+def _apply_listing(profile: dict, listing: dict, today: Optional[datetime] = None) -> None:
+    """Add the daily snapshot's quote: it replaces an older price (NGX's trading summary lags the price list by
+    days), and supplies market cap, shares outstanding and year-to-date return where the exchange section has none."""
+    market = dict(profile.get("market") or {})
+    newer = listing.get("date") and (not market.get("as_at") or listing["date"] > str(market["as_at"])[:10])
+    if newer or not market.get("price"):
+        market.update({"price": listing["price"], "currency": listing["currency"], "as_at": listing.get("date"),
+                       "change_pct": None if listing.get("chg_1d") is None else round(listing["chg_1d"] * 100, 4),
+                       "volume": listing.get("volume", market.get("volume")),
+                       "as_at_basis": "Closing price on the exchange's daily price list for this date",
+                       "source": f"{listing['exchange_name']} daily price list"})
+    if not market.get("market_cap") and listing.get("mcap"):
+        market["market_cap"] = listing["mcap"]
+    market.update({"market_cap_usd": listing.get("mcap_usd"), "shares_outstanding": listing.get("shares"),
+                   "ytd_pct": None if listing.get("ytd") is None else round(listing["ytd"] * 100, 2),
+                   "ytd_usd_pct": None if listing.get("ytd_usd") is None else round(listing["ytd_usd"] * 100, 2)})
+    if listing.get("ytd_suspect"):
+        market["ytd_note"] = "Year-to-date figure is likely unadjusted for a split or bonus issue."
+    profile["market"] = market
+    profile["listing"] = {k: listing.get(k) for k in ("exchange", "exchange_name", "symbol", "name", "sector",
+                                                      "secondary_of")}
+    profile["exchange"] = profile.get("exchange") or listing.get("exchange_name")
+
+
+def _flag_stale_price(profile: dict, today: Optional[datetime] = None) -> None:
+    """A price more than a week old cannot carry multiples or a valuation verdict; they are withheld, not shown."""
+    market = profile.get("market") or {}
+    as_at = str(market.get("as_at") or "")[:10]
+    if not market.get("price") or not as_at:
+        return
+    try:
+        age = ((today or datetime.now(timezone.utc)).date() - datetime.fromisoformat(as_at).date()).days
+    except ValueError:
+        return
+    market["age_days"] = age
+    market["stale"] = age > STALE_PRICE_DAYS
+    if market["stale"] and profile.get("multiples"):
+        profile["multiples_withheld"] = f"The latest price is {age} days old; multiples resume with a current price."
+        profile["multiples"] = {}
+
+
 def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None,
-          deals: Iterable[dict] = (), cik: Optional[int] = None, fetch=None) -> dict:
-    """Full profile. Sections a source cannot fill are absent rather than guessed."""
+          deals: Iterable[dict] = (), cik: Optional[int] = None, fetch=None, listing: Optional[dict] = None,
+          today: Optional[datetime] = None) -> dict:
+    """Full profile. Sections a source cannot fill are absent rather than guessed. `listing` is the company's
+    quote in the daily market snapshot, when the name or ticker resolves to one."""
     deals = list(deals)
+    if listing and not ticker and listing.get("exchange") in _SUFFIX:
+        ticker = listing["symbol"] + _SUFFIX[listing["exchange"]]
+    country = country or (listing or {}).get("country")
     c: Optional[Country] = resolve(country, ticker)
     # A bare exchange code with a Nigerian or Kenyan country ("SCOM", Kenya) is that exchange's listing.
     if ticker and "." not in ticker and c and c.iso2 in ("NG", "KE"):
@@ -259,6 +318,10 @@ def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None
         profile.update(listed)
         if listed.get("identity", {}).get("name"):
             profile["name"] = listed["identity"]["name"]
+    if listing:
+        _apply_listing(profile, listing)
+        profile["sources"].append("Daily exchange price list")
+    _flag_stale_price(profile, today)
     profile["private_markets"] = private_market_summary(name, deals)
     if profile["private_markets"]["deal_count"]:
         profile["sources"].append("Deals database")
@@ -267,5 +330,6 @@ def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None
             ("No machine-readable statements were found for this listing. Most African exchanges outside NGX and NSE "
              "Kenya publish results without a data feed; filed documents are linked where available."
              if c else "No machine-readable statements were found for this listing.")
-            if ticker else "Private company: financial statements are not public; figures come from reported transactions.")
+            if ticker or listing else
+            "Private company: financial statements are not public; figures come from reported transactions.")
     return profile

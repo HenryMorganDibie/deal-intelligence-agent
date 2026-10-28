@@ -192,3 +192,66 @@ def test_market_endpoints_serve_the_stored_snapshot(monkeypatch):
     assert client.get("/api/markets/quote", params={"exchange": "ngx", "symbol": "NOPE"}).status_code == 404
     assert client.get("/api/markets/screener", params={"sort": "chg_1d", "include_stale": True}).json()["total"] == 7
     assert client.get("/api/cron/market-snapshot").status_code == 401
+
+
+def test_profile_takes_the_snapshot_quote_and_withholds_multiples_on_a_stale_price(monkeypatch):
+    from datetime import datetime, timezone
+
+    from src.engines import company_profile
+
+    rows = {(r["exchange"], r["symbol"]): r for r in markets.enrich(_snapshot(), TODAY)}
+    now = datetime(2026, 10, 28, tzinfo=timezone.utc)
+    # NGX's trading summary lagged the price list (Dangote at 1066.7 when the list said 1341.9).
+    monkeypatch.setattr(company_profile, "_ngx_section", lambda ticker, fetch=None: {
+        "identity": {"name": "Dangote Cement Plc"},
+        "market": {"price": 1066.7, "as_at": "2026-10-13", "currency": "NGN"}, "multiples": {"trailingPE": 9.0}})
+    p = company_profile.build("Dangote Cement", listing=rows[("ngx", "DANGCEM")], today=now)
+    assert p["ticker"] == "DANGCEM.LG" and p["market"]["price"] == 1341.9 and p["market"]["as_at"] == "2026-10-27"
+    assert round(p["market"]["market_cap_usd"] / 1e9, 2) == 16.74 and not p["market"]["stale"]
+    assert p["multiples"] == {"trailingPE": 9.0} and "Private company" not in (p.get("financials_note") or "")
+
+    # A listing whose latest price is weeks old keeps its price (the newer of the two sources), flagged.
+    p = company_profile.build("Old Co", listing={**rows[("ngx", "OLDCO")]}, today=now)
+    assert p["market"]["price"] == 1066.7 and p["market"]["stale"] and p["market"]["age_days"] == 15
+    monkeypatch.setattr(company_profile, "_ngx_section", lambda ticker, fetch=None: {
+        "market": {"price": 5.0, "as_at": "2026-07-01", "currency": "NGN"}, "multiples": {"trailingPE": 4.0}})
+    p = company_profile.build("Old Co", ticker="OLDCO.LG", today=now)
+    assert p["multiples"] == {} and "days old" in p["multiples_withheld"]
+
+
+def test_profile_route_resolves_a_name_to_its_listing(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    import api.index as api
+    import src.hosted_market as hm
+    from src.engines import company_profile
+
+    monkeypatch.setattr(hm, "_configured", lambda: False)
+    hm._markets_cache.clear()
+    hm._profile_cache.clear()
+    snap = _snapshot()
+    snap["quotes"]["gse"] = [{"symbol": "MTNGH", "name": "MTN Ghana", "price": 6.53, "chg_1d": 0.0062,
+                              "mcap": 80.25e9, "date": date.today().isoformat()}]
+    snap["fx"]["rates"]["GHS"] = 11.64
+    markets.save_local(snap)
+    monkeypatch.setattr(company_profile, "_yahoo_section", lambda ticker: None)
+    p = TestClient(api.app).get("/api/companies/profile", params={"name": "MTN Ghana"}).json()
+    assert p["listing"]["symbol"] == "MTNGH" and p["exchange"] == "Ghana Stock Exchange"
+    assert p["market"]["price"] == 6.53 and p["valuation"]["market_cap"] == 80.25e9
+    assert p["country"] == "GH"
+
+
+def test_a_throttled_listing_page_is_retried(monkeypatch):
+    import httpx
+
+    monkeypatch.setattr(markets.time, "sleep", lambda s: None)
+    page = _listing(["Company", "Sector", "Price", "1D", "YTD", "M.Cap", "Date"], [
+        _row(["MTN Ghana", "Telecom", "6.53", "+0.62%", "+55.48%", "80.25", "27/10"], "MTNGH")])
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request.url)
+        return httpx.Response(429) if len(calls) == 1 else httpx.Response(200, text=page)
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        quotes, _ = markets.fetch_exchange(markets.EXCHANGES["gse"], client, TODAY)
+    assert len(calls) == 2 and quotes[0]["symbol"] == "MTNGH"
