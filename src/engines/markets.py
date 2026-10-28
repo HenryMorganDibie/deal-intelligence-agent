@@ -42,6 +42,17 @@ YAHOO_SPARK = "https://query1.finance.yahoo.com/v7/finance/spark"
 USE_PRICES = "https://www.use.or.ug/api/delayed-data"
 USE_EQUITIES = "https://www.use.or.ug/securities/equities"
 ESX_LISTED = "https://esx.et/equity-market/listed-companies/"
+ZSEH_API = "https://ds88jcmqc11je.cloudfront.net/api/fetch/{kind}?exchange=VFEX"
+BVMAC_API = "https://bosxch.bvm-ac.org/ws_api/"
+BODIVA_SUMMARY = "https://www.bodiva.ao/reports/controllers/excel/Export/ResumoMercados.php"
+SGBV_HOME = "https://www.sgbv.dz/"
+SGBV_COMPANIES = "https://www.sgbv.dz/?page=ligne_societe&lang=fr"
+ESE_HOME = "https://www.ese.co.sz/"
+MERJ_PRICES = "https://www.merj.exchange/api/merj-prices"
+MERJ_ISSUERS = "https://www.merj.exchange/api/issuers"
+ILBOURSA_TUNIS = "https://www.ilboursa.com/marches/aaz"
+NSX_COMPANIES = "https://nsx.com.na/listing/listed-companies/"
+_BROWSER = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"}
 FX_LATEST = "https://open.er-api.com/v6/latest/USD"
 FX_ON_DATE = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@{day}/v1/currencies/usd.json"
 
@@ -84,6 +95,12 @@ EXCHANGES: dict[str, Exchange] = {e.key: e for e in (
     Exchange("zse", "Zimbabwe Stock Exchange", "ZW", "ZWG", "zse", "ZSE ASI"),
     Exchange("use", "Uganda Securities Exchange", "UG", "UGX", "use", "USE ASI", source="use"),
     Exchange("esx", "Ethiopian Securities Exchange", "ET", "ETB", "esx", "", source="esx"),
+    Exchange("vfex", "Victoria Falls Stock Exchange", "ZW", "USD", "vfex", "", source="vfex"),
+    Exchange("bvmac", "BVMAC (Central African regional exchange)", "GA", "XAF", "bvmac", "", source="bvmac"),
+    Exchange("bodiva", "BODIVA (Angola)", "AO", "AOA", "bodiva", "", source="bodiva"),
+    Exchange("sgbv", "Algiers Stock Exchange", "DZ", "DZD", "sgbv", "", source="sgbv"),
+    Exchange("ese", "Eswatini Stock Exchange", "SZ", "SZL", "ese", "", source="ese"),
+    Exchange("merj", "MERJ Exchange (Seychelles)", "SC", "USD", "merj", "", source="merj"),
 )}
 _BY_SLUG = {e.slug: e for e in EXCHANGES.values()}
 
@@ -263,6 +280,35 @@ def parse_mystocks(page: str) -> list[dict]:
     return out
 
 
+_MS_SHARES = re.compile(r"Shares\s+Issued:\s*(?:<[^>]+>\s*)*([\d.,]+)\s*([KMB])?", re.I)
+
+
+def parse_mystocks_shares(page: str) -> Optional[float]:
+    """Shares issued from a myStocks stock page ("Shares Issued: 40.07B")."""
+    m = _MS_SHARES.search(page or "")
+    v = _num(m.group(1)) if m else None
+    return v * {"K": 1e3, "M": 1e6, "B": 1e9}.get((m.group(2) or "").upper(), 1) if v else None
+
+
+def _nse_shares(quotes: list[dict], client: httpx.Client, previous: Optional[list[dict]] = None) -> list[dict]:
+    """Nairobi caps from shares issued: carried from the previous snapshot, fetched from each stock's page when
+    missing (share counts change rarely, so most runs fetch none)."""
+    before = {q["symbol"]: q.get("shares") for q in previous or [] if q.get("shares")}
+    missing = [q for q in quotes if q["symbol"] not in before]
+
+    def one(q: dict) -> tuple[str, Optional[float]]:
+        r = _get(client, f"https://live.mystocks.co.ke/m/stock={q['symbol']}")
+        return q["symbol"], parse_mystocks_shares(r.text) if r is not None else None
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        before.update({s: v for s, v in pool.map(one, missing) if v})
+    for q in quotes:
+        shares = before.get(q["symbol"])
+        if shares:
+            q.update(shares=shares, mcap=round(shares * q["price"], 2))
+    return quotes
+
+
 def parse_spark(payload: object) -> dict[str, dict]:
     """{symbol: {price, chg_1d, volume, ytd, date, currency}} from Yahoo's batch chart (range=ytd)."""
     out: dict[str, dict] = {}
@@ -307,6 +353,14 @@ def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = N
     if ex.source == "esx":
         r = _get(client, ESX_LISTED)
         return (parse_esx(r.text) if r is not None else []), []
+    own = {"vfex": _vfex_quotes, "bvmac": _bvmac_quotes, "bodiva": _bodiva_quotes, "sgbv": _sgbv_quotes,
+           "ese": _ese_quotes, "merj": _merj_quotes}.get(ex.source)
+    if own:
+        quotes = own(client, today or date.today())
+        if ex.source == "bodiva":                       # the summary lists only what traded; keep the rest
+            seen = {q["symbol"] for q in quotes}
+            quotes += [q for q in previous or [] if q["symbol"] not in seen]
+        return quotes, []
     page = ""
     for wait in (0, 3, 8):                              # the listing site throttles a run of requests
         if wait:
@@ -322,10 +376,15 @@ def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = N
             quotes = _overlay_ngx(quotes, client)
         if ex.key == "egx":
             quotes = _overlay_yahoo_multiples(quotes, "CAI", ".CA")
+        if ex.key == "bvmt":
+            quotes = _overlay_ilboursa(quotes, client, today or date.today())
+        if ex.key == "nsx":
+            quotes = _add_nsx_listings(quotes, client)
         return quotes, indices
     if ex.source == "mystocks":
         r = _get(client, NSE_PRICE_LIST)
-        return (parse_mystocks(r.text) if r is not None else []), indices
+        quotes = parse_mystocks(r.text) if r is not None else []
+        return _nse_shares(quotes, client, previous), indices
     return _jse_quotes(page, client, previous), indices
 
 
@@ -483,6 +542,256 @@ def _use_quotes(client: httpx.Client, today: date) -> list[dict]:
         return []
 
 
+def _capture_day(today: date) -> str:
+    """The trading day a source without a date describes: today, or Friday at a weekend."""
+    return (today if today.weekday() < 5 else today - timedelta(days=today.weekday() - 4)).isoformat()
+
+
+def _json(client: httpx.Client, url: str, **kw) -> object:
+    r = _get(client, url, **kw)
+    try:
+        return r.json() if r is not None else None
+    except ValueError:
+        return None
+
+
+def _title(name: str) -> str:
+    small = {"of", "and", "de", "du", "des", "la", "le"}
+    return " ".join(w if w.isupper() and len(w) <= 4 or w.lower() in small else w.capitalize()
+                    for w in re.sub(r"\s+", " ", name.strip()).split(" "))
+
+
+def parse_vfex(prices: object, caps: object) -> list[dict]:
+    """Victoria Falls (US dollars): the exchange's price sheet with shares and caps from its capitalisation feed."""
+    cap_rows = {(r.get("companyName") or "").strip().upper(): r for r in (caps or {}).get("data") or []} \
+        if isinstance(caps, dict) else {}
+    out = []
+    for r in (prices or {}).get("data") or [] if isinstance(prices, dict) else []:
+        name, close = (r.get("name") or "").strip(), r.get("closePrice")
+        if not name or not isinstance(close, (int, float)) or close <= 0 or re.search(r"(?i)\bfund\b|traded fund", name):
+            continue
+        cap = cap_rows.get(name.upper()) or {}
+        d = r.get("statsDate")
+        q = {"symbol": (cap.get("symbol") or name).split(".")[0].upper(), "name": _title(name), "sector": None,
+             "price": float(close), "chg_1d": round(r["percentageChange"] / 100, 6) if isinstance(r.get("percentageChange"), (int, float)) else None,
+             "volume": r.get("turnover"), "value": r.get("turnoverValue"),
+             "date": date(*d).isoformat() if isinstance(d, list) and len(d) == 3 else None}
+        if isinstance(cap.get("outstandingShares"), (int, float)) and cap["outstandingShares"] > 0:
+            q.update(shares=float(cap["outstandingShares"]), mcap=round(cap["outstandingShares"] * close, 2))
+        out.append(q)
+    return out
+
+
+def _vfex_quotes(client: httpx.Client, today: date) -> list[dict]:
+    return parse_vfex(_json(client, ZSEH_API.format(kind="price-sheet")),
+                      _json(client, ZSEH_API.format(kind="market-capitalisation")))
+
+
+_FR_MONTHS = {m: i for i, m in enumerate(["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
+                                          "septembre", "octobre", "novembre", "décembre"], 1)}
+
+
+def _french_date(text: str) -> Optional[str]:
+    m = re.search(r"(\d{1,2})\s+(janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|"
+                  r"novembre|décembre|decembre)\s+(\d{4})", text or "", re.I)
+    if not m:
+        return None
+    month = m.group(2).lower().replace("fevrier", "février").replace("aout", "août").replace("decembre", "décembre")
+    return date(int(m.group(3)), _FR_MONTHS[month], int(m.group(1))).isoformat()
+
+
+def parse_bvmac(payload: object) -> list[dict]:
+    """Central Africa (six CEMAC states, XAF): the exchange's equity board. Each share's country is its ISIN's."""
+    if not isinstance(payload, dict):
+        return []
+    day = _french_date(_text(str(payload.get("datecapitalisation") or "")))
+    out = []
+    for row in re.findall(r"<tr.*?</tr>", str(payload.get("action") or ""), re.S):
+        cells = [_text(c) for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row, re.S)]   # the ISIN is a <th>
+        if len(cells) < 11 or not re.fullmatch(r"[A-Z]{2}\d{10}", cells[0]):
+            continue
+        close = _num(cells[6].replace(" ", ""))
+        if not close:
+            continue
+        name = re.sub(r"(?i)^actions?\s+", "", cells[1]).strip()
+        out.append({"symbol": re.sub(r"[^A-Z0-9]", "", name.upper())[:10], "name": name, "isin": cells[0],
+                    "country": cells[0][:2], "sector": None, "price": close,
+                    "chg_1d": _pct(cells[10]) if cells[10] not in ("", "-") else None,
+                    "volume": _num(cells[9].replace(" ", "")), "date": day})
+    return out
+
+
+def _bvmac_quotes(client: httpx.Client, today: date) -> list[dict]:
+    return parse_bvmac(_json(client, BVMAC_API))
+
+
+# BODIVA's summary names shares by code; these are the companies they belong to.
+_BODIVA_NAMES = {"BAI": "Banco Angolano de Investimentos", "BFA": "Banco de Fomento Angola",
+                 "BCGA": "Banco Caixa Geral Angola", "ENSA": "ENSA Seguros de Angola", "SBAO": "Standard Bank de Angola",
+                 "UNTL": "Unitel"}
+
+
+def parse_bodiva(xlsx: bytes) -> list[dict]:
+    """Angola: shares (Acções) from BODIVA's market summary workbook, which lists what traded in the session."""
+    import io
+    import zipfile
+    try:
+        z = zipfile.ZipFile(io.BytesIO(xlsx))
+        strings = [_TAG.sub("", s) for s in re.findall(r"<si>.*?</si>", z.read("xl/sharedStrings.xml").decode(), re.S)]
+        sheet = z.read("xl/worksheets/sheet1.xml").decode()
+    except (zipfile.BadZipFile, KeyError, UnicodeDecodeError):
+        return []
+    rows = []
+    for row in re.findall(r"<row[^>]*>(.*?)</row>", sheet, re.S):
+        cells = []
+        for attrs, value in re.findall(r"<c ([^>]*)>(?:<f>.*?</f>)?<v>([^<]*)</v>", row):
+            cells.append(strings[int(value)] if 't="s"' in attrs else value)
+        rows.append(cells)
+    stamp = next((re.search(r"(\d{2})/(\d{2})/(\d{4})", r[0]) for r in rows if r and "Resumo" in r[0]), None)
+    day = f"{stamp.group(3)}-{stamp.group(2)}-{stamp.group(1)}" if stamp else None
+    out = []
+    for r in rows:
+        if len(r) >= 7 and r[1] == "Acções":
+            # Codes are padded with "A" to eight characters (BAIAAAAA, BCGAAAAA): a known code's prefix wins.
+            code = next((k for k in sorted(_BODIVA_NAMES, key=len, reverse=True)
+                         if r[0].startswith(k) and set(r[0][len(k):]) <= {"A"}), r[0][:4])
+            price = _num(r[2])
+            if price:
+                out.append({"symbol": code, "name": _BODIVA_NAMES.get(code, code), "sector": None, "price": price,
+                            "chg_1d": round(float(r[3]), 6) if _num(r[3]) is not None else None,
+                            "volume": _num(r[5]), "value": _num(r[6]), "date": day})
+    return out
+
+
+def _bodiva_quotes(client: httpx.Client, today: date) -> list[dict]:
+    r = _get(client, BODIVA_SUMMARY, headers=_BROWSER)
+    return parse_bodiva(r.content) if r is not None else []
+
+
+def parse_sgbv(home: str, companies: str) -> list[dict]:
+    """Algeria: the session's prices from the exchange's home page ticker, names and shares from its list of
+    listed companies (bonds in the ticker are left out)."""
+    listed = {}
+    for row in re.findall(r"<tr.*?</tr>", companies or "", re.S):
+        cells = [_text(c) for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row, re.S)]
+        if len(cells) >= 6 and re.fullmatch(r"DZ\d{10}", cells[0]):
+            listed[cells[1]] = {"name": _title(cells[2]), "sector": cells[3].title(),
+                                "shares": _num(cells[5].replace(" ", "").replace("\xa0", ""))}
+    text = _text(home or "")
+    day = _french_date(text)
+    out = []
+    seen = set()
+    for code, price, chg in re.findall(r"\b([A-Z]{2,5})\s+([\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\b", text):
+        info = listed.get(code)
+        if not info or code in seen:
+            continue                                    # a bond, an unlisted line, or a later table on the page
+        seen.add(code)
+        p = _num(price.replace(".", "").replace(",", "."))
+        q = {"symbol": code, "name": info["name"], "sector": info["sector"], "price": p,
+             "chg_1d": round(float(chg.replace(".", "").replace(",", ".")) / 100, 6), "date": day}
+        if info["shares"] and p:
+            q.update(shares=info["shares"], mcap=round(info["shares"] * p, 2))
+        out.append(q)
+    return out
+
+
+def _sgbv_quotes(client: httpx.Client, today: date) -> list[dict]:
+    h, c = _get(client, SGBV_HOME, headers=_BROWSER), _get(client, SGBV_COMPANIES, headers=_BROWSER)
+    return parse_sgbv(h.text if h is not None else "", c.text if c is not None else "")
+
+
+# Names the exchange's own page gives for its codes; codes it does not name stay codes.
+_ESE_NAMES = {"FNBE": "First National Bank Eswatini", "NED": "Nedbank Eswatini", "INALA": "Inala Capital",
+              "RSC": "RES Corporation", "SWP": "Swaziland Property Investments (Swaprop)", "SBC": "SBC Limited",
+              "AGS": "AGSPAC"}
+
+
+def parse_ese(page: str, today: date) -> list[dict]:
+    """Eswatini: the latest price of every listed share, from the exchange's home page (in emalangeni)."""
+    text = _text(page or "")
+    block = text.split("LATEST PRICES", 1)[-1].split("LATEST NEWS", 1)[0] if "LATEST PRICES" in text else ""
+    return [{"symbol": code, "name": _ESE_NAMES.get(code, code), "sector": None, "price": float(price),
+             "chg_1d": None, "date": _capture_day(today)}
+            for code, price in re.findall(r"\b([A-Z]{2,6})\s*:\s*E\s?([\d.]+)\s*/share", block)]
+
+
+def _ese_quotes(client: httpx.Client, today: date) -> list[dict]:
+    r = _get(client, ESE_HOME, headers=_BROWSER)
+    return parse_ese(r.content.decode("utf-8", errors="ignore") if r is not None else "", today)
+
+
+def parse_merj(prices: object, issuers: object) -> list[dict]:
+    """Seychelles: MERJ's own listings (US-share tokens and bonds left out), with issuer names and sectors."""
+    by_ticker = {(i.get("ticker") or "").upper(): i for i in (issuers or {}).get("data") or []} if isinstance(issuers, dict) else {}
+    out = []
+    for p in (prices or {}).get("data") or [] if isinstance(prices, dict) else []:
+        ticker = (p.get("ticker") or "").upper()
+        issuer = by_ticker.get(ticker) or {}
+        name = issuer.get("company_name") or issuer.get("name") or ticker
+        price = p.get("current_price")
+        if (not ticker or "." in ticker or not isinstance(price, (int, float)) or price <= 0
+                or re.search(r"(?i)\bbond|\bnote|\betf\b|fund\b", name)):
+            continue
+        chg = p.get("change_percent")
+        out.append({"symbol": ticker, "name": name, "sector": issuer.get("sector") or issuer.get("industry"),
+                    "price": float(price), "chg_1d": round(chg / 100, 6) if isinstance(chg, (int, float)) else None,
+                    "volume": p.get("volume"), "date": str(p.get("last_close") or p.get("timestamp") or "")[:10] or None})
+    return out
+
+
+def _merj_quotes(client: httpx.Client, today: date) -> list[dict]:
+    return parse_merj(_json(client, MERJ_PRICES), _json(client, MERJ_ISSUERS))
+
+
+def parse_ilboursa(page: str, today: date) -> dict[str, dict]:
+    """Tunis: today's board (last price, change, volume) by code, from ilboursa; the page carries no date."""
+    out = {}
+    for row in re.findall(r"<tr.*?</tr>", page or "", re.S):
+        code = re.search(r'href="cotation_([A-Z0-9]+)"', row)
+        cells = [_text(c).replace("\xa0", "").replace(" ", "") for c in re.findall(r"<td[^>]*>(.*?)</td>", row, re.S)]
+        if code and len(cells) >= 8 and _num(cells[6]):
+            out[code.group(1)] = {"price": _num(cells[6]), "chg_1d": _pct(cells[7]), "volume": _num(cells[4]),
+                                  "value": _num(cells[5]), "date": _capture_day(today)}
+    return out
+
+
+def _overlay_ilboursa(quotes: list[dict], client: httpx.Client, today: date) -> list[dict]:
+    """african-markets' Tunis table lags by days; ilboursa's board is today's."""
+    r = _get(client, ILBOURSA_TUNIS, headers=_BROWSER)
+    board = parse_ilboursa(r.text if r is not None else "", today)
+    for q in quotes:
+        b = board.get(q["symbol"])
+        if b:
+            q.update(b)
+    return quotes
+
+
+def _add_nsx_listings(quotes: list[dict], client: httpx.Client) -> list[dict]:
+    """Every company the Namibian exchange lists (its site has no prices), beside the priced table."""
+    r = _get(client, NSX_COMPANIES, headers=_BROWSER)
+    have = {q["symbol"] for q in quotes} | {_strict_key(q["name"]) for q in quotes}
+    for row in re.findall(r"<tr.*?</tr>", (r.text if r is not None else "").split("ETF", 1)[0], re.S):
+        cells = [_text(c) for c in re.findall(r"<td[^>]*>(.*?)</td>", row, re.S)]
+        if len(cells) >= 2 and re.fullmatch(r"[A-Z0-9]{2,8}", cells[1] or "") and cells[1] not in have \
+                and _strict_key(cells[0]) not in have:
+            quotes.append({"symbol": cells[1], "name": re.sub(r"\s*[“\"].*?[”\"]", "", cells[0]).strip(),
+                           "sector": None, "price": None, "chg_1d": None, "date": None})
+    return quotes
+
+
+def _price_from_dual_listing(quotes: dict[str, list[dict]], local: str, primary: str) -> None:
+    """A Namibian share also listed in Johannesburg trades at the same price (the Namibian dollar is pegged to the
+    rand one for one); its JSE close stands in when the local quote is stale or missing."""
+    jse = {_strict_key(q["name"]): q for q in quotes.get(primary) or [] if q.get("price")}
+    for q in quotes.get(local) or []:
+        twin = jse.get(_strict_key(q["name"]))
+        if twin and twin.get("date") and (not q.get("date") or twin["date"] > q["date"]):
+            q.update(price=twin["price"], chg_1d=twin.get("chg_1d"), date=twin["date"], priced_from=primary)
+            q.pop("mcap", None)
+            if q.get("shares"):
+                q["mcap"] = round(q["shares"] * twin["price"], 2)
+
+
 def parse_esx(page: str) -> list[dict]:
     """Ethiopia: the listed companies (the exchange publishes no daily price list). Listed without a price."""
     out = []
@@ -568,6 +877,7 @@ def build_snapshot(client: Optional[httpx.Client] = None, today: Optional[date] 
                 quotes[key] = qs
             elif EXCHANGES[key].source != "index_only":
                 errors.append(key)
+        _price_from_dual_listing(quotes, "nsx", "jse")
         fx = fetch_fx(c, today)
     finally:
         if own:
@@ -639,15 +949,20 @@ def enrich(snapshot: dict, today: Optional[date] = None) -> list[dict]:
             ytd_usd = None
             if q.get("ytd") is not None and rates.get(ex.currency) and jan1.get(ex.currency):
                 ytd_usd = round((1 + q["ytd"]) * jan1[ex.currency] / rates[ex.currency] - 1, 6)
-            row = {**q, "exchange": ex.key, "exchange_name": ex.name, "country": ex.country,
+            row = {**q, "exchange": ex.key, "exchange_name": ex.name, "country": q.get("country") or ex.country,
                    "currency": ex.currency, "age_days": age, "stale": age is None or age > STALE_DAYS,
                    "mcap_usd": _usd(q.get("mcap"), ex.currency, rates), "ytd_usd": ytd_usd,
                    "value_traded": q.get("value") or (q["volume"] * q["price"] if q.get("volume") and q.get("price") else None)}
             row["value_traded_usd"] = _usd(row["value_traded"], ex.currency, rates)
             if (row["mcap_usd"] or 0) > MAX_CAP_USD:
-                # Larger than any share whose home is one of these exchanges: a table error (EGX's shares column
-                # sometimes holds the cap) or a foreign group's worldwide cap on a secondary listing.
-                row.update(mcap=None, shares=None, mcap_usd=None, cap_note="implausible market cap withheld")
+                if ex.source == "yahoo":
+                    # Johannesburg's shares and caps come from Yahoo and are real: a group this size (BHP, AB InBev,
+                    # Richemont) has its primary listing abroad. The cap is shown, outside the exchange's totals.
+                    row.update(foreign_primary=True, cap_note="worldwide cap of a group listed primarily abroad")
+                else:
+                    # From a listing table, larger than any share whose home is one of these exchanges: a table
+                    # error (EGX's shares column sometimes holds the cap) or a foreign group's worldwide cap.
+                    row.update(mcap=None, shares=None, mcap_usd=None, cap_note="implausible market cap withheld")
             if q.get("ytd") is not None and q["ytd"] <= SUSPECT_YTD:
                 row["ytd_suspect"] = True
             out.append(row)
@@ -695,7 +1010,7 @@ def _cap_weighted(rows: list[dict], field: str) -> Optional[float]:
     now = start = 0.0
     for r in rows:
         ret, cap = r.get(field), r.get("mcap_usd") if field.endswith("_usd") else r.get("mcap")
-        if ret is None or not cap or ret <= -1 or r.get("secondary_of") or (field.startswith("ytd") and r.get("ytd_suspect")):
+        if ret is None or not cap or ret <= -1 or r.get("secondary_of") or r.get("foreign_primary") or (field.startswith("ytd") and r.get("ytd_suspect")):
             continue
         now += cap
         start += cap / (1 + ret)
@@ -723,7 +1038,7 @@ def overview(snapshot: dict, today: Optional[date] = None, movers: int = 8) -> d
         idx = indices.get(ex.key)
         if not own and not idx:
             continue
-        caps = [r["mcap_usd"] for r in own if r.get("mcap_usd") and not r.get("secondary_of")]
+        caps = [r["mcap_usd"] for r in own if r.get("mcap_usd") and not r.get("secondary_of") and not r.get("foreign_primary")]
         fx_ytd = (jan1[ex.currency] / rates[ex.currency] - 1) if rates.get(ex.currency) and jan1.get(ex.currency) else None
         tiles.append({
             "exchange": ex.key, "name": ex.name, "country": ex.country, "currency": ex.currency,
@@ -810,7 +1125,7 @@ def sectors(rows: list[dict]) -> list[dict]:
     groups: dict[str, list[dict]] = {}
     for r in rows:
         s = _sector(r.get("sector"))
-        if s and not r["stale"] and not r.get("secondary_of"):
+        if s and not r["stale"] and not r.get("secondary_of") and not r.get("foreign_primary"):
             groups.setdefault(s, []).append(r)
     out = []
     for s, rs in groups.items():
@@ -940,7 +1255,7 @@ def valuation_bridge(snapshot: dict, valuation_usd: Optional[float], deal_sector
     if not valuation_usd or not sector:
         return None
     rows = [r for r in enrich(snapshot, today) if _sector(r.get("sector")) == sector and r.get("mcap_usd")
-            and not r["stale"] and not r.get("secondary_of")]
+            and not r["stale"] and not r.get("secondary_of") and not r.get("foreign_primary")]
     local = [r for r in rows if country and r["country"] == country.upper()]
     peers, scope = (local, "country") if len(local) >= _MIN_PEERS else (rows, "africa")
     if len(peers) < _MIN_PEERS:

@@ -1965,7 +1965,7 @@ def _directory() -> list[dict]:
     hit = _directory_cache.get("rows")
     if hit and time.monotonic() - hit[0] < _MARKETS_TTL:
         return hit[1]
-    rows = company_directory.directory(_market_snapshot(), deals())
+    rows = company_directory.directory(_market_snapshot(), deals(), events=events())
     _directory_cache["rows"] = (time.monotonic(), rows)
     return rows
 

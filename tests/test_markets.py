@@ -367,7 +367,7 @@ def test_directory_merges_listed_and_private_companies():
         {"id": "4", "deal_type": "equity_funding", "target": "Undisclosed fintech", "country": "KE", "amount_usd": 1e6},
     ]
     rows = cd.directory(_snapshot(), deals, today=TODAY)
-    private = {r["name"]: r for r in rows if r["kind"] == "private"}
+    private = {r["name"]: r for r in rows if r["kind"] == "private" and not r.get("source")}
     assert set(private) == {"Moniepoint"}
     m = private["Moniepoint"]
     assert m["equity_raised_usd"] == 110e6 and m["debt_raised_usd"] == 20e6 and m["deal_count"] == 2
@@ -376,8 +376,19 @@ def test_directory_merges_listed_and_private_companies():
     assert dangote["kind"] == "listed" and dangote["deal_count"] == 1          # its deal history folds into the listing
     out = cd.query(rows, q="moniepoint")
     assert out["rows"][0]["name"] == "Moniepoint" and out["counts"] == {"listed": 0, "private": 1}
-    assert cd.query(rows, kind="private", country="NG")["total"] == 1
-    assert cd.query(rows, kind="listed")["counts"]["private"] == 1
+    assert "Dangote Cement" not in {r["name"] for r in rows if r.get("source")}     # curated, but already listed
+
+
+def test_directory_adds_companies_known_only_from_events_and_the_curated_list():
+    from src.engines import company_directory as cd
+
+    events = [{"headline": "Kakuzi Plc issues profit warning", "country": "KE", "day": "2026-10-20"},
+              {"headline": "Kakuzi Plc board names new chairman", "country": "KE", "day": "2026-10-25"},
+              {"headline": "Inflation rises in Kenya", "country": "KE", "day": "2026-10-25"}]
+    rows = cd.directory(_snapshot(), [], today=TODAY, events=events)
+    kakuzi = next(r for r in rows if r["name"] == "Kakuzi")
+    assert kakuzi["event_count"] == 2 and kakuzi["last_event_date"] == "2026-10-25" and kakuzi["source"] == "corporate events"
+    assert any(r.get("source") == "curated list" for r in rows)
 
 
 def test_jse_keeps_the_last_screened_list_when_the_screener_is_rate_limited(monkeypatch):
@@ -407,3 +418,72 @@ def test_directory_folds_described_names_and_drops_placeholder_investors():
     (m,) = cd.private_companies(deals)
     assert m["name"] == "Moniepoint" and m["deal_count"] == 2 and m["equity_raised_usd"] == 200e6
     assert "And Others" not in m["investors"] and {"Visa", "Google"} <= set(m["investors"])
+
+
+def test_new_exchange_parsers():
+    vfex = markets.parse_vfex(
+        {"data": [{"name": "INNSCOR AFRICA LIMITED", "closePrice": 1.5089, "percentageChange": 7.55, "turnover": 10,
+                   "turnoverValue": 15.1, "statsDate": [2026, 10, 27]},
+                  {"name": "FIRST MUTUAL WEALTH GOLD EXCHANGE TRADED FUND", "closePrice": 0.11, "statsDate": [2026, 10, 27]}]},
+        {"data": [{"companyName": "INNSCOR AFRICA LIMITED", "symbol": "INN.VX", "outstandingShares": 5.7e8}]})
+    assert [(q["symbol"], q["chg_1d"], q["date"], q["mcap"]) for q in vfex] == [("INN", 0.0755, "2026-10-27", round(1.5089 * 5.7e8, 2))]
+
+    action = ('<table><tr><th>N° Code</th></tr><tr><th>GA0000010074</th><td>BGFI HC</td><td>2026-05-18</td><td>2500</td>'
+              '<td></td><td>89 000</td><td>89 000</td><td>21</td><td>683</td><td>21</td><td>1,5</td><td>PEq</td></tr></table>')
+    (bgfi,) = markets.parse_bvmac({"action": action, "datecapitalisation": "SEANCE DE COTATION : Mardi 27 Octobre 2026"})
+    assert (bgfi["country"], bgfi["price"], bgfi["date"]) == ("GA", 89000.0, "2026-10-27")
+
+    home = "Séance du Mardi : 27 Octobre 2026 ALL 360,00 1,41 AL30 100,00 0,00 ALL 355,00 3,60"
+    companies = ("<table><tr><td>DZ0000010037</td><td>ALL</td><td>ALLIANCE ASSURANCES</td><td>ASSURANCE</td>"
+                 "<td>380</td><td>13 930 826</td></tr></table>")
+    (alliance,) = markets.parse_sgbv(home, companies)
+    assert (alliance["price"], alliance["chg_1d"], alliance["shares"]) == (360.0, 0.0141, 13930826.0)
+
+    ese = markets.parse_ese("LATEST PRICES FNBE : E14.83/share GRYS : E3.00/share LATEST NEWS", TODAY)
+    assert [(q["symbol"], q["name"], q["price"]) for q in ese] == [("FNBE", "First National Bank Eswatini", 14.83),
+                                                                  ("GRYS", "GRYS", 3.0)]
+
+    merj = markets.parse_merj({"data": [{"ticker": "CWS", "current_price": 400, "change_percent": 0, "last_close": "2026-10-27 23:59:59"},
+                                        {"ticker": "AAPL.iob", "current_price": 347.1}]},
+                              {"data": [{"ticker": "CWS", "company_name": "Cable & Wireless Seychelles"}]})
+    assert [(q["symbol"], q["name"], q["date"]) for q in merj] == [("CWS", "Cable & Wireless Seychelles", "2026-10-27")]
+
+    board = markets.parse_ilboursa('<tr><td><a href="cotation_AL">AL</a></td><td>1</td><td>1</td><td>1</td>'
+                                   '<td>2</td><td>462</td><td><b>230.99</b></td><td>-0.50%</td></tr>', TODAY)
+    assert board["AL"]["price"] == 230.99 and board["AL"]["chg_1d"] == -0.005
+
+
+def test_bodiva_codes_and_namibia_dual_listings():
+    import io
+    import zipfile
+
+    strings = ["Resumo dos Mercados - 28/10/2026 08:46:44", "Acções", "BFAAAAAA", "BCGAAAAA"]
+    sst = "<sst>" + "".join(f"<si><t>{x}</t></si>" for x in strings) + "</sst>"
+    def c(v, s=False):
+        return f'<c r="A1" t="s"><v>{v}</v></c>' if s else f'<c r="A1"><v>{v}</v></c>'
+    sheet = ("<worksheet><sheetData><row>" + c(0, True) + "</row>"
+             "<row>" + c(2, True) + c(1, True) + c(98500) + c(-0.015) + c(3) + c(10) + c(985000) + "</row>"
+             "<row>" + c(3, True) + c(1, True) + c(19749) + c(0.034) + c(1) + c(1) + c(19749) + "</row></sheetData></worksheet>")
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("xl/sharedStrings.xml", sst)
+        z.writestr("xl/worksheets/sheet1.xml", sheet)
+    quotes = markets.parse_bodiva(buf.getvalue())
+    assert [(q["symbol"], q["name"], q["date"]) for q in quotes] == [
+        ("BFA", "Banco de Fomento Angola", "2026-10-28"), ("BCGA", "Banco Caixa Geral Angola", "2026-10-28")]
+
+    snap = {"nsx": [{"symbol": "ANM", "name": "Anglo American plc", "price": 500.0, "date": "2026-07-31"}],
+            "jse": [{"symbol": "AGL", "name": "Anglo American", "price": 580.0, "chg_1d": 0.01, "date": "2026-10-27"}]}
+    markets._price_from_dual_listing(snap, "nsx", "jse")
+    assert snap["nsx"][0]["price"] == 580.0 and snap["nsx"][0]["priced_from"] == "jse"
+
+
+def test_jse_groups_listed_primarily_abroad_keep_their_cap_outside_totals():
+    snap = {"quotes": {"jse": [
+        {"symbol": "BHG", "name": "BHP Group", "price": 500.0, "mcap": 2.5e12, "chg_1d": 0.0, "ytd": 0.1, "date": "2026-10-27"},
+        {"symbol": "CPI", "name": "Capitec", "price": 3600.0, "mcap": 4e11, "chg_1d": 0.0, "ytd": 0.2, "date": "2026-10-27"}]},
+        "indices": [], "fx": {"rates": {"ZAR": 16.6}, "jan1": {"ZAR": 16.5}}}
+    rows = {r["symbol"]: r for r in markets.enrich(snap, TODAY)}
+    assert rows["BHG"]["foreign_primary"] and rows["BHG"]["mcap_usd"] > 1e11
+    tile = next(t for t in markets.overview(snap, TODAY)["exchanges"] if t["exchange"] == "jse")
+    assert round(tile["mcap_usd"]) == round(4e11 / 16.6, -0) or abs(tile["mcap_usd"] - 4e11 / 16.6) < 1

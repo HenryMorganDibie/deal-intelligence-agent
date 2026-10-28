@@ -12,7 +12,9 @@ const EXCHANGES: [string, string][] = [
   ["", "All exchanges"], ["jse", "Johannesburg"], ["ngx", "Nigeria"], ["egx", "Egypt"], ["nse", "Nairobi"],
   ["bvc", "Casablanca"], ["brvm", "BRVM"], ["gse", "Ghana"], ["sem", "Mauritius"], ["bvmt", "Tunis"],
   ["bse", "Botswana"], ["dse", "Dar es Salaam"], ["luse", "Lusaka"], ["mse", "Malawi"], ["nsx", "Namibia"],
-  ["rse", "Rwanda"], ["zse", "Zimbabwe"], ["use", "Uganda"], ["esx", "Ethiopia (no price feed)"],
+  ["rse", "Rwanda"], ["zse", "Zimbabwe"], ["use", "Uganda"], ["vfex", "Victoria Falls (USD)"],
+  ["bvmac", "BVMAC (Central Africa)"], ["bodiva", "Angola"], ["sgbv", "Algeria"], ["ese", "Eswatini"],
+  ["merj", "Seychelles (MERJ)"], ["esx", "Ethiopia (no price feed)"],
 ];
 const SORTS: [string, string][] = [["mcap", "Market cap"], ["chg_1d", "Today's change"], ["ytd", "YTD in USD"],
   ["value", "Value traded"], ["pe", "Lowest P/E"], ["dividend", "Dividend yield"], ["name", "Name"]];
@@ -209,7 +211,7 @@ export default function ScreenerPage() {
               <tr key={`${r.exchange}:${r.symbol}`} className={r.stale ? "opacity-60" : ""}>
                 <Td>
                   <Link href={companyHref(r)} className="hover:underline">{r.name}</Link>
-                  <span className="block text-xs text-[color:var(--dim)]">{r.symbol}{r.secondary_of ? ` · secondary listing (primary: ${r.secondary_of.toUpperCase()})` : ""}</span>
+                  <span className="block text-xs text-[color:var(--dim)]">{r.symbol}{r.secondary_of ? ` · secondary listing (primary: ${r.secondary_of.toUpperCase()})` : ""}{r.priced_from ? ` · priced from its ${r.priced_from.toUpperCase()} listing` : ""}{r.foreign_primary ? " · listed primarily abroad" : ""}</span>
                 </Td>
                 <Td className="text-xs">{r.exchange.toUpperCase()}</Td>
                 <Td className="text-xs text-[color:var(--muted)]">{r.sector ?? ""}</Td>
@@ -230,8 +232,9 @@ export default function ScreenerPage() {
           <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
             ⚑ A year-to-date loss beyond 60% is more often a split or bonus issue the source has not adjusted for; it is
             flagged and left out of exchange and sector returns. Market caps above $40bn are withheld as source errors.
-            Nairobi and Tunis publish no cap in the source lists; P/E and yield come from Johannesburg and Cairo data.
-            Ethiopia&apos;s exchange publishes its listings but no daily prices.
+            Caps of groups listed primarily abroad (BHP, AB InBev) are their worldwide caps and stay out of exchange
+            totals. Namibian shares also listed in Johannesburg take their JSE close (the currencies are pegged one for
+            one). Ethiopia&apos;s exchange publishes its listings but no daily prices.
           </p>
         </section>
       )}

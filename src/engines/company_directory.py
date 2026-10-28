@@ -89,9 +89,37 @@ def _listed_row(q: dict) -> dict:
             "secondary_of": q.get("secondary_of")}
 
 
-def directory(snapshot: dict, deals: Iterable[dict], today: Optional[date] = None) -> list[dict]:
+def event_companies(events: Iterable[dict]) -> list[dict]:
+    """Companies corporate events name (a results warning, a regulator's fine, a board change), one row each,
+    with how many events and the latest; for companies that appear in no recorded transaction."""
+    from src.engines.event_filters import named_company
+    groups: dict[str, dict] = {}
+    for e in events:
+        name = named_company(e.get("headline_en") or e.get("headline") or "")
+        key = deals_mod.normalise_name(name)
+        if not name or not key or not e.get("country"):
+            continue
+        g = groups.setdefault(key, {"kind": "private", "key": key, "name": name, "country": e.get("country"),
+                                    "sector": markets.DEAL_SECTOR_TO_LISTED.get(e.get("sector") or ""),
+                                    "deal_sector": e.get("sector"), "deal_count": 0, "event_count": 0,
+                                    "last_event_date": None, "source": "corporate events"})
+        g["event_count"] += 1
+        g["last_event_date"] = max(g["last_event_date"] or "", e.get("day") or "") or None
+    return list(groups.values())
+
+
+def curated_companies() -> list[dict]:
+    """The curated list of African companies the product recognises in headlines."""
+    from src.data.african_companies import AFRICAN_COMPANIES
+    return [{"kind": "private", "key": deals_mod.normalise_name(n), "name": n, "country": iso, "sector": None,
+             "deal_count": 0, "source": "curated list"} for n, iso in AFRICAN_COMPANIES.items() if iso]
+
+
+def directory(snapshot: dict, deals: Iterable[dict], today: Optional[date] = None,
+              events: Iterable[dict] = ()) -> list[dict]:
     """Listed and private companies in one list. A private record that matches a listing in its country (exact
-    name or symbol) is folded into the listing as its transaction history."""
+    name or symbol) is folded into the listing as its transaction history. Companies known only from corporate
+    events or the curated list follow, when they match nothing already listed."""
     listed = [_listed_row(q) for q in markets.enrich(snapshot, today)]
     by_key: dict[tuple[str, str], dict] = {}
     for row in listed:
@@ -108,11 +136,19 @@ def directory(snapshot: dict, deals: Iterable[dict], today: Optional[date] = Non
                        investors=p["investors"])
         else:
             out.append(p)
+    known = {(deals_mod.normalise_name(r["name"]), r.get("country")) for r in out} | \
+            {deals_mod.normalise_name(r["name"]) for r in out}
+    for extra in [*event_companies(events), *curated_companies()]:
+        k = extra["key"]
+        if not k or k in known or (k, extra["country"]) in known or by_key.get((k, extra["country"])):
+            continue
+        known.add(k)
+        out.append(extra)
     return out
 
 
 _SORTS = {
-    "recent": lambda r: (r.get("last_deal_date") or r.get("date") or ""),
+    "recent": lambda r: (r.get("last_deal_date") or r.get("last_event_date") or r.get("date") or ""),
     "raised": lambda r: (r.get("equity_raised_usd") or 0) + (r.get("debt_raised_usd") or 0),
     "size": lambda r: r.get("mcap_usd") or r.get("valuation_usd") or 0,
     "deals": lambda r: r.get("deal_count") or 0,

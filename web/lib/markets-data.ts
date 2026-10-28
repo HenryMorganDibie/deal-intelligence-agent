@@ -28,6 +28,8 @@ export type Quote = {
   pe?: number | null;
   pb?: number | null;
   dividend_yield?: number | null;
+  priced_from?: string;
+  foreign_primary?: boolean;
 };
 
 // One row of /api/companies/directory: a listed share or a private company from the deals database.
