@@ -2,8 +2,12 @@ name: Live deal ingestion
 
 on:
   schedule:
-    # Run after the main African business-news announcement window; the endpoint scans a rolling 7 days.
-    # Vercel also runs its independent daily cron. Keep this single Actions workflow budget-safe.
+    # Deals are refreshed twice a day by Vercel cron (vercel.json), timed to the African business day:
+    #   04:11 UTC, before the working day opens (05:11 Lagos, 06:11 Johannesburg, 07:11 Nairobi)
+    #   15:11 UTC, after the exchanges close (17:11 Johannesburg, 16:11 Lagos, 18:11 Nairobi)
+    # Vercel's free plan fires each within the hour. This run is the nightly maintenance pass:
+    # it re-scans the rolling 7 days as a backstop, records country risk and refreshes Corporate
+    # of the Week. GitHub often starts scheduled runs hours late, so nothing time-critical rests on it.
     - cron: "17 18 * * *"
   workflow_dispatch:
 

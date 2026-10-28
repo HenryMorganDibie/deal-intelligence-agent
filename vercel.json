@@ -37,7 +37,11 @@
     },
     {
       "path": "/api/cron/ingest",
-      "schedule": "41 5 * * *"
+      "schedule": "11 4 * * *"
+    },
+    {
+      "path": "/api/cron/ingest",
+      "schedule": "11 15 * * *"
     },
     {
       "path": "/api/cron/showcase",
