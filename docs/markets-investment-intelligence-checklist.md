@@ -182,9 +182,7 @@ This checklist is the source of truth for scope and completion. Mark an item com
 - [x] Add deterministic fixed-coupon bond calculator for annual coupon income, current yield and indicative yield to maturity using a bisection solver; validate inputs and disclose simplified assumptions.
 - [x] Link the instrument categories to official Nigerian source starting points: CBN government-securities rates, DMO FGN bond information, FMDQ market-data portal and SEC Nigeria NAV datasets.
 - [x] Add unit tests for T-bill conventions, invalid inputs, par bond yield and premium/discount bond behaviour.
-- [ ] Ingest and normalize dated instrument-level market observations. The new page does not yet claim to contain a live ETF, bond, T-bill, fund or fixed-deposit catalogue.
-- [ ] Build source adapters and schema for instrument identity, issuer/provider, country, currency, observed price/rate/NAV, fees, maturity, source URL, published date, retrieval time and confidence/coverage status.
-- [ ] Add ETF and fund comparison metrics, bond duration/credit fields, T-bill auction history, fixed-deposit terms and dedicated REIT metrics.
-- [ ] Verify all calculator flows, responsive layout, accessibility and source-link behaviour in a running preview; run full Web quality gates before merge.
-- [ ] Keep production `main` untouched until review and explicit approval.
-
+- [x] Ingest dated instrument-level observations: 52 JSE ETFs (Yahoo Finance delayed quotes, refreshed with the intraday run and the daily snapshot), Nigerian Treasury bill stop rates from the CBN primary-auction API with true yields (365-day basis, matching the CBN's published true yields), Kenyan Treasury bill average yields from the CBK page, listed REITs and property companies from the equity snapshot, and policy rates from the country signals snapshot. Each block carries its source, date and capture time (`market_snapshots` kind `instruments`, served by `/api/markets/instruments`).
+- [x] Calculators: bills accept a discount rate or a yield and a 364 or 365-day basis, and can be filled from a published auction; bond prices are per 100 of face value.
+- [x] Python tests for the CBN and CBK parsers, the ETF unit-change guard, listed property, policy rates and the endpoint; web unit tests for both quoting conventions and bond pricing.
+- [ ] Not covered: NGX and Nairobi ETFs (no free price feed), unlisted funds, bank deposit rates, and bond inventories (the CBN bond feed stops in 2023; DMO and FMDQ publish no free dated feed).

@@ -1892,7 +1892,9 @@ async def cron_market_snapshot(request: Request) -> dict:
         written = r.json()
     _markets_cache.clear()
     _directory_cache.clear()
-    return {"status": "ok", "rows_written": written, "exchanges": {k: len(v) for k, v in snap["quotes"].items()},
+    instruments = await run_in_threadpool(_record_instruments, True)
+    return {"status": "ok", "rows_written": written, "instruments": instruments,
+            "exchanges": {k: len(v) for k, v in snap["quotes"].items()},
             "indices": len(snap["indices"]), "currencies": len(snap["fx"].get("rates") or {}),
             "failed": snap["errors"]}
 
@@ -1905,8 +1907,10 @@ async def cron_market_intraday(request: Request) -> dict:
     from src.engines import markets
     snap = await run_in_threadpool(_market_snapshot)
     intraday = await run_in_threadpool(markets.build_intraday, snap)
+    instruments = await run_in_threadpool(_record_instruments, False)
     if not intraday:
-        return {"status": "ok", "rows_written": 0, "note": "no exchange has quotes from today's session yet"}
+        return {"status": "ok", "rows_written": 0, "instruments": instruments,
+                "note": "no exchange has quotes from today's session yet"}
     rows = markets.intraday_rows(intraday)
     if not _configured():
         markets.save_local_intraday(intraday)
@@ -1919,7 +1923,70 @@ async def cron_market_intraday(request: Request) -> dict:
         written = r.json()
     _markets_cache.clear()
     _directory_cache.clear()
-    return {"status": "ok", "rows_written": written, "exchanges": {k: len(v["rows"]) for k, v in intraday.items()}}
+    return {"status": "ok", "rows_written": written, "instruments": instruments,
+            "exchanges": {k: len(v["rows"]) for k, v in intraday.items()}}
+
+
+def _record_instruments(with_tbills: bool) -> dict:
+    """ETF quotes, and on the daily run the Treasury bill auctions; a source failing is reported, not raised."""
+    from src.engines import instruments, markets
+    with httpx.Client(timeout=30, follow_redirects=True) as client:
+        etfs = instruments.build_etfs(client)
+        today = datetime.now(timezone.utc).date().isoformat()
+        etfs = etfs if any(r.get("date") == today for r in etfs["rows"]) or with_tbills else None
+        tbills = instruments.build_tbills(client) if with_tbills else {}
+    rows = instruments.instrument_rows(etfs, tbills)
+    summary = {"etfs": len((etfs or {}).get("rows") or []), "tbills": {c: len(b["rows"]) for c, b in tbills.items()}}
+    if not rows:
+        return {**summary, "written": 0}
+    if not _configured():
+        instruments.save_local(rows)
+    else:
+        r = _rpc_sync("upsert_market_snapshots", {"p_rows": rows}, 60)
+        if not r.is_success:
+            log.error("instruments write failed: %s %s", r.status_code, r.text[:300])
+            return {**summary, "written": 0, "error": "write failed"}
+    _markets_cache.pop("instruments", None)
+    return {**summary, "written": len(rows)}
+
+
+def _instruments() -> dict[str, dict]:
+    """The latest stored block per instrument scope (etf_jse, tbill_ng, tbill_ke)."""
+    from src.engines import instruments
+    hit = _markets_cache.get("instruments")
+    if hit and time.monotonic() - hit[0] < _MARKETS_TTL:
+        return hit[1]
+    if not _configured():
+        blocks = instruments.load_local()
+    else:
+        r = _rpc_sync("list_market_snapshots", {"p_kind": "instruments"})
+        if r.status_code != 200:
+            log.warning("instruments read failed: %s %s", r.status_code, r.text[:300])
+            return hit[1] if hit else {}
+        blocks = {row["scope"]: row.get("payload") or {} for row in r.json() or []}
+    _markets_cache["instruments"] = (time.monotonic(), blocks)
+    return blocks
+
+
+@router.get("/api/markets/instruments")
+async def markets_instruments() -> dict:
+    """Investments beyond single shares: JSE ETFs, Treasury bill auctions, listed property and policy rates."""
+    from src.engines import country_risk, instruments
+    blocks = await run_in_threadpool(_instruments)
+    try:
+        snap = await run_in_threadpool(_market_snapshot)
+    except HTTPException:
+        snap = {}
+    return {
+        "etfs": blocks.get("etf_jse") or {"rows": []},
+        "tbills": [blocks[k] for k in ("tbill_ng", "tbill_ke") if blocks.get(k)],
+        "property": instruments.listed_property(snap)[:60],
+        "policy_rates": instruments.policy_rates(country_risk.load_current_signals_snapshot()),
+        "method": ("ETF prices are Yahoo Finance delayed quotes for JSE-listed funds; Treasury bill rates are the "
+                   "latest auction results published by each central bank; property shares come from the daily "
+                   "equity snapshot; policy rates come from the country signals snapshot. Each figure carries its "
+                   "date. Unlisted funds, fixed deposits and bond inventories are not covered."),
+    }
 
 
 @router.get("/api/markets/overview")

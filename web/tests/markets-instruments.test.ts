@@ -2,39 +2,47 @@ import { test } from "node:test";
 import * as assert from "node:assert/strict";
 import { calculateBond, calculateTreasuryBill } from "../lib/markets-instruments";
 
-test("Treasury bill separates purchase discount from investment yield", () => {
-  const result = calculateTreasuryBill({ faceValue: 1000, discountRatePct: 10, daysToMaturity: 182 });
-  assert.ok(result);
-  assert.ok(result.purchasePrice < 1000);
-  assert.ok(result.incomeAtMaturity > 0);
-  assert.ok(result.simpleAnnualizedInvestmentYieldPct > result.bankDiscountYieldPct);
-  assert.ok(Math.abs(result.purchasePrice - (1000 * (1 - 0.1 * 182 / 365))) < 1e-8);
+test("discount-quoted bill prices off face value and matches the CBN true yield", () => {
+  const r = calculateTreasuryBill({ faceValue: 1000, ratePct: 15.4, rateType: "discount", daysToMaturity: 91, basis: 365 });
+  assert.ok(r);
+  assert.ok(Math.abs(r.purchasePrice - 1000 * (1 - 0.154 * 91 / 365)) < 1e-8);
+  assert.ok(Math.abs(r.investmentYieldPct - 16.0149) < 0.001);       // CBN-style true yield
+  assert.ok(Math.abs(r.discountRatePct - 15.4) < 1e-8);
+  assert.ok(r.investmentYieldPct > r.discountRatePct);
 });
 
-test("Treasury bill rejects invalid rates, tenor and face value", () => {
-  assert.equal(calculateTreasuryBill({ faceValue: 0, discountRatePct: 10, daysToMaturity: 91 }), null);
-  assert.equal(calculateTreasuryBill({ faceValue: 1000, discountRatePct: 100, daysToMaturity: 91 }), null);
-  assert.equal(calculateTreasuryBill({ faceValue: 1000, discountRatePct: 10, daysToMaturity: 0 }), null);
+test("yield-quoted bill discounts to a price that earns that yield", () => {
+  const r = calculateTreasuryBill({ faceValue: 100, ratePct: 9.0288, rateType: "yield", daysToMaturity: 364, basis: 364 });
+  assert.ok(r);
+  assert.ok(Math.abs(r.purchasePrice - 100 / 1.090288) < 1e-8);
+  assert.ok(Math.abs(r.investmentYieldPct - 9.0288) < 1e-8);
 });
 
-test("bond calculates coupon income, current yield and yield to maturity", () => {
-  const result = calculateBond({ faceValue: 1000, annualCouponRatePct: 10, cleanPrice: 1000, yearsToMaturity: 5 });
-  assert.ok(result);
-  assert.equal(result.annualCouponIncome, 100);
-  assert.equal(result.currentYieldPct, 10);
-  assert.ok(result.yieldToMaturityPct != null);
-  assert.ok(Math.abs((result.yieldToMaturityPct ?? 0) - 10) < 0.01);
-  assert.equal(result.totalScheduledCoupons, 10);
+test("Treasury bill rejects invalid rates, tenor, face value and basis", () => {
+  assert.equal(calculateTreasuryBill({ faceValue: 0, ratePct: 10, rateType: "discount", daysToMaturity: 91 }), null);
+  assert.equal(calculateTreasuryBill({ faceValue: 1000, ratePct: 100, rateType: "discount", daysToMaturity: 91 }), null);
+  assert.equal(calculateTreasuryBill({ faceValue: 1000, ratePct: 10, rateType: "discount", daysToMaturity: 0 }), null);
+  assert.equal(calculateTreasuryBill({ faceValue: 1000, ratePct: 10, rateType: "discount", daysToMaturity: 91, basis: 300 as 365 }), null);
 });
 
-test("premium and discount bond yields respond to price", () => {
-  const discount = calculateBond({ faceValue: 1000, annualCouponRatePct: 8, cleanPrice: 900, yearsToMaturity: 5 });
-  const premium = calculateBond({ faceValue: 1000, annualCouponRatePct: 8, cleanPrice: 1100, yearsToMaturity: 5 });
+test("bond at par yields its coupon; price is per 100 of face", () => {
+  const r = calculateBond({ faceValue: 100000, annualCouponRatePct: 10, pricePer100: 100, yearsToMaturity: 5 });
+  assert.ok(r);
+  assert.equal(r.purchaseCost, 100000);
+  assert.equal(r.annualCouponIncome, 10000);
+  assert.equal(r.currentYieldPct, 10);
+  assert.ok(r.yieldToMaturityPct != null && Math.abs(r.yieldToMaturityPct - 10) < 0.01);
+  assert.equal(r.totalScheduledCoupons, 10);
+});
+
+test("discount and premium bond yields respond to price", () => {
+  const discount = calculateBond({ faceValue: 1000, annualCouponRatePct: 8, pricePer100: 90, yearsToMaturity: 5 });
+  const premium = calculateBond({ faceValue: 1000, annualCouponRatePct: 8, pricePer100: 110, yearsToMaturity: 5 });
   assert.ok(discount?.yieldToMaturityPct != null && discount.yieldToMaturityPct > 8);
   assert.ok(premium?.yieldToMaturityPct != null && premium.yieldToMaturityPct < 8);
 });
 
 test("bond rejects invalid inputs", () => {
-  assert.equal(calculateBond({ faceValue: 1000, annualCouponRatePct: 8, cleanPrice: -1, yearsToMaturity: 5 }), null);
-  assert.equal(calculateBond({ faceValue: 1000, annualCouponRatePct: 8, cleanPrice: 1000, yearsToMaturity: 0 }), null);
+  assert.equal(calculateBond({ faceValue: 1000, annualCouponRatePct: 8, pricePer100: -1, yearsToMaturity: 5 }), null);
+  assert.equal(calculateBond({ faceValue: 1000, annualCouponRatePct: 8, pricePer100: 100, yearsToMaturity: 0 }), null);
 });

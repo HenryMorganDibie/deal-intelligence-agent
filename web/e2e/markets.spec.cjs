@@ -4,6 +4,7 @@ const fs = require("node:fs/promises");
 const routes = [
   "/app/markets",
   "/app/markets/screener",
+  "/app/markets/investments",
   "/app/markets/valuation",
   "/app/markets/portfolio",
   "/app/markets/compare",
