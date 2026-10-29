@@ -51,7 +51,7 @@ export function Hero({ pulse = null, brief = null }: { pulse?: Pulse | null; bri
 
           <Reveal delay={120}>
             <p className="lede mt-7 max-w-xl">
-              Track African private-market deals, companies, investors, financials and country risk. Analyse shares and supported investment products, compare companies, assess valuations, analyse portfolios, monitor market events, and generate AI-powered research backed by traceable evidence.
+              Track African and US private-market deals, companies, investors, financials and country risk. Analyse shares and supported investment products, compare companies, assess valuations, analyse portfolios, monitor market events, and generate AI-powered research backed by traceable evidence.
             </p>
           </Reveal>
 
