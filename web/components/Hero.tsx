@@ -52,8 +52,10 @@ export function Hero({ pulse = null, brief = null }: { pulse?: Pulse | null; bri
           <Reveal delay={120}>
             <p className="lede mt-7 max-w-xl">
               Company signals, private-market deals, investors, financial statements and country risk across all 54
-              African countries and the US. Rules find the facts; an LLM explains them and is never allowed to invent
-              one. Every number traces back to a source.
+              African countries and the US. Screen listed shares, compare companies, analyse DCF/DDM valuations and
+              portfolios, and explore supported ETFs, Treasury bills, bonds and listed property. Track watchlists and
+              corporate events, and generate research briefs with source-linked evidence. Rules find the facts; an LLM
+              explains them and is never allowed to invent one. Every number traces back to a source.
             </p>
           </Reveal>
 
