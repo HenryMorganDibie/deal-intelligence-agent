@@ -173,3 +173,16 @@ This checklist is the source of truth for scope and completion. Mark an item com
 
 | 2026-10-24 | Current-head Markets reliability verification | Run `40138138623` passed on head `60b95680a737c4a08d7a8146ff6e80cece02dc2c`: Markets unit tests, ESLint, TypeScript typecheck and Next.js production build all succeeded. This includes the new event-pagination/cap tests and saved valuation-backup validation tests. | Automated code checks complete. Current-head Vercel preview is blocked by build-rate-limit; interactive browser acceptance, mobile/desktop, accessibility and regression checks remain open. PR #17 stays draft and production `main` remains untouched. |
 | 2026-10-24 | Markets information architecture final boundary check | Removed the remaining Research CTA and embedded Coverage summary from Markets so neither workspace is duplicated in the overview. | Automated checks passed on `4a7a241`; newest code still requires a current-head preview and interactive browser acceptance. Production `main` untouched. |
+
+
+## Multi-asset investment discovery — initial slice (2026-10-28)
+
+- [x] Add a dedicated Markets route for investment instruments and link it from the Markets overview.
+- [x] Add deterministic Treasury-bill calculator for face value, discount rate and tenor; show indicative purchase price, maturity income, holding-period return, simple annualized investment yield and bank discount yield separately.
+- [x] Add deterministic fixed-coupon bond calculator for annual coupon income, current yield and indicative yield to maturity using a bisection solver; validate inputs and disclose simplified assumptions.
+- [x] Link the instrument categories to official Nigerian source starting points: CBN government-securities rates, DMO FGN bond information, FMDQ market-data portal and SEC Nigeria NAV datasets.
+- [x] Add unit tests for T-bill conventions, invalid inputs, par bond yield and premium/discount bond behaviour.
+- [x] Ingest dated instrument-level observations: 52 JSE ETFs (Yahoo Finance delayed quotes, refreshed with the intraday run and the daily snapshot), Nigerian Treasury bill stop rates from the CBN primary-auction API with true yields (365-day basis, matching the CBN's published true yields), Kenyan Treasury bill average yields from the CBK page, listed REITs and property companies from the equity snapshot, and policy rates from the country signals snapshot. Each block carries its source, date and capture time (`market_snapshots` kind `instruments`, served by `/api/markets/instruments`).
+- [x] Calculators: bills accept a discount rate or a yield and a 364 or 365-day basis, and can be filled from a published auction; bond prices are per 100 of face value.
+- [x] Python tests for the CBN and CBK parsers, the ETF unit-change guard, listed property, policy rates and the endpoint; web unit tests for both quoting conventions and bond pricing.
+- [ ] Not covered: NGX and Nairobi ETFs (no free price feed), unlisted funds, bank deposit rates, and bond inventories (the CBN bond feed stops in 2023; DMO and FMDQ publish no free dated feed).

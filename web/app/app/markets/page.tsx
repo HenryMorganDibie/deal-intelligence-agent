@@ -271,6 +271,7 @@ export default function MarketsPage() {
       <section className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           ["/app/markets/screener", "Screener", "Filter every listed share by exchange, sector, size and return."],
+          ["/app/markets/investments", "Beyond shares", "JSE ETFs, Treasury bill auctions, listed property and policy rates, with bill and bond calculators."],
           ["/app/markets/valuation", "Valuation", "DCF and dividend models prefilled from filings and today's price."],
           ["/app/markets/portfolio", "Portfolio", "Holdings priced from the daily snapshot, in local currency and dollars."],
           ["/app/markets/compare", "Compare", "Two companies side by side: market data, multiples and deals."],
