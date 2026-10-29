@@ -47,7 +47,7 @@ function billDate(r: TbillRow): string {
   return "date not reported";
 }
 
-// An auction more than 45 days old is still the latest result, but it is marked so it is not read as today's rate.
+// A result more than 45 days old is still the latest published one, but it is marked so it is not read as today's rate.
 function isOld(r: TbillRow): boolean {
   const d = r.auction_date ?? r.settlement_date;
   return !!d && Date.now() - new Date(d).getTime() > 45 * 86400e3;
@@ -128,7 +128,7 @@ function Tbills({ blocks, onUse }: { blocks: TbillBlock[]; onUse: (p: BillPrefil
                     <Td><span className="font-semibold">{rate(r.rate)}</span> <span className="text-xs text-[color:var(--dim)]">{RATE_TYPE[r.rate_type]}</span></Td>
                     <Td>{yieldToBuyer != null ? rate(yieldToBuyer) : <span className="text-[color:var(--dim)]">as published</span>}</Td>
                     <Td className={isOld(r) ? "text-risk" : "text-[color:var(--dim)]"}>
-                      {billDate(r)}{isOld(r) ? <span className="block text-[0.6875rem]">no bills allotted since</span> : null}
+                      {billDate(r)}{isOld(r) ? <span className="block text-[0.6875rem]">latest bill result</span> : null}
                     </Td>
                     <Td>{i === 0 ? <a href={b.source_url} target="_blank" rel="noreferrer" className="text-xs underline underline-offset-4 hover:opacity-80">{b.source.split(",")[0]} ↗</a> : null}</Td>
                     <Td>

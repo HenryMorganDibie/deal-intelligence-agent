@@ -37,8 +37,8 @@ export type BondMetrics = {
 
 /**
  * Price and return of a Treasury bill from a quoted rate. A discount rate prices as F * (1 - d * t / B), a yield as
- * F / (1 + y * t / B). Nigeria quotes a discount rate on 365 days (the CBN's true yields match this basis); Kenya
- * quotes an average yield on 364 days.
+ * F / (1 + y * t / B). Nigeria quotes a discount rate on 365 days (the CBN's true yields match this basis), Ghana a
+ * yield on 364 days, the WAEMU states a discount rate on 360 days.
  */
 export function calculateTreasuryBill(input: TreasuryBillQuote): TreasuryBillMetrics | null {
   const { faceValue, ratePct, rateType, daysToMaturity, basis = 365 } = input;

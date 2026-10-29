@@ -166,7 +166,8 @@ def parse_cbk_tbills(page: str) -> dict:
         value = float(rate)
         if days in rows or not 0 < value < 100:
             continue
-        rows[days] = {"tenor_days": days, "rate_type": "yield", "rate": value, "basis": 364,
+        # The CBK's day-count basis is not confirmed against its own figures, so the yield is not sent to the calculator.
+        rows[days] = {"tenor_days": days, "rate_type": "yield", "rate": value, "basis": None,
                       "next_auction_date": nxt.isoformat(), "auction_date": None}
     return {"country": "KE", "currency": "KES", "issuer": "Government of Kenya",
             "source": "Central Bank of Kenya, Treasury bill auctions", "source_url": CBK_TBILLS,
