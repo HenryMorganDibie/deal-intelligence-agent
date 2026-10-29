@@ -1200,7 +1200,7 @@ def _pipeline_payload(
         "summary": {
             "total_phases": len(stages),
             "active_phases": sum(stage["status"] not in ("promoted", "complete") for stage in stages),
-            "message": "Daily GitHub Actions collects new review data, incrementally builds financial and deal graphs, and publishes learned ranking only when holdout validation improves.",
+            "message": "Twice a day, GitHub Actions collects new review data, incrementally builds financial and deal graphs, and publishes learned ranking only when holdout validation improves.",
         },
         "stages": stages,
     }

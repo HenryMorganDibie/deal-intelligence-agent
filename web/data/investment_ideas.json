@@ -1,9 +1,9 @@
 {
-  "updated_at": "2026-10-27T17:20:34.356329+00:00",
+  "updated_at": "2026-10-29T11:17:55.314544+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
-    "message": "Daily GitHub Actions collects new review data, incrementally builds financial and deal graphs, and publishes learned ranking only when holdout validation improves."
+    "message": "Twice a day, GitHub Actions collects new review data, incrementally builds financial and deal graphs, and publishes learned ranking only when holdout validation improves."
   },
   "stages": [
     {
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 81,
+      "new_review_items_today": 65,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 2,
+      "new_review_items_today": 1,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 75,
-      "new_observations_today": 5,
-      "unreviewed_flagged_observations": 9,
+      "observations_collected": 84,
+      "new_observations_today": 7,
+      "unreviewed_flagged_observations": 12,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 39,
-      "entities": 71,
+      "relationships": 61,
+      "entities": 106,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,26 +177,36 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 75,
-    "new_rows": 5,
+    "collected_tickers": 84,
+    "new_rows": 7,
     "failures": [
-      "CAED.CA",
-      "CAL.GH",
-      "CAP.LG",
-      "CAPHOTEL.LG",
-      "CAPMA.CS",
-      "CAPOIL.LG",
-      "CBIBF.BV"
+      "CGN.JO",
+      "CIC.NR",
+      "CIEC.BV",
+      "CIH.CS",
+      "CIL.JO"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 71,
-    "relationships": 39,
-    "source_links": 44,
+    "nodes": 106,
+    "relationships": 61,
+    "source_links": 69,
     "most_connected": [
       {
         "name": "Amsons Group",
+        "degree": 3
+      },
+      {
+        "name": "Dangote",
+        "degree": 3
+      },
+      {
+        "name": "Sterling Oil",
+        "degree": 3
+      },
+      {
+        "name": "Renaissance",
         "degree": 2
       },
       {
@@ -212,10 +222,6 @@
         "degree": 2
       },
       {
-        "name": "Dangote",
-        "degree": 2
-      },
-      {
         "name": "EBRD",
         "degree": 2
       },
@@ -224,16 +230,8 @@
         "degree": 2
       },
       {
-        "name": "Finnfund",
-        "degree": 1
-      },
-      {
-        "name": "Bisedge",
-        "degree": 1
-      },
-      {
-        "name": "Amethis",
-        "degree": 1
+        "name": "Helios",
+        "degree": 2
       }
     ]
   },

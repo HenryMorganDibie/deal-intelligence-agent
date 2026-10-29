@@ -8,8 +8,13 @@ on:
       - "scripts/daily_pipeline.py"
       - "scripts/refresh_current_macro_signals.py"
   schedule:
-    # Weekly while Actions allowance is low; the Vercel daily refreshes remain active.
-    - cron: "0 3 * * 0"
+    # Twice a day. The repository is public, so hosted runners are free. GitHub often starts
+    # scheduled runs late at busy hours, so each slot is set early enough to absorb a delay:
+    #   04:37 UTC, ready before the African working day (05:37 Lagos, 06:37 Johannesburg, 07:37 Nairobi)
+    #   14:37 UTC, after the Lagos and Nairobi closes and into the Johannesburg close
+    # The morning run also refreshes the slow-moving reference data (see the steps below).
+    - cron: "37 4 * * *"
+    - cron: "37 14 * * *"
   workflow_dispatch:
 
 permissions:
@@ -40,24 +45,25 @@ jobs:
         run: pip install -r requirements-backtest.txt
 
       - name: Refresh World Bank country indicators monthly (or on manual run)
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '37 4 * * *'
         run: |
           set -euo pipefail
           day="$(date -u +%d)"
-          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$((10#$day))" -le 7 ]; then
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || { [ "$((10#$day))" -le 7 ] && [ "$(date -u +%u)" = "7" ]; }; then
             python main.py countries --refresh
           else
             echo "Not the first Sunday of the month; annual country indicators remain unchanged."
           fi
 
+      # Monthly and current-period figures: once a day is enough and keeps within the free API plan.
       - name: Refresh higher-frequency Africa API country signals
-        if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.schedule == '37 4 * * *'
         env:
           AFRICA_API_KEY: ${{ secrets.AFRICA_API_KEY }}
         run: python scripts/refresh_current_macro_signals.py
 
       - name: Refresh official merger-control filings (COMESA, South Africa) weekly
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '37 4 * * *'
         continue-on-error: true            # an authority's site being down never blocks the daily pipeline
         run: |
           if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(date -u +%u)" = "1" ]; then
