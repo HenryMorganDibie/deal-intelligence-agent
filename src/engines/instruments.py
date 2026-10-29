@@ -2,8 +2,11 @@
 
 Every figure comes from a named source and carries its date:
 - JSE exchange-traded funds: Yahoo Finance delayed quotes (about 15 minutes), the same feed as JSE shares.
-- Nigerian Treasury bills: the Central Bank of Nigeria's primary-auction results (stop rate per tenor).
-- Kenyan Treasury bills: the Central Bank of Kenya's Treasury bill page (average rate at the last auction).
+- Treasury bills: each central bank's (or regional market's) latest published auction results. Nigeria (CBN API),
+  Kenya (CBK page), South Africa (SARB market-rates API, with two benchmark bond yields), Ghana (BoG table),
+  Morocco (Bank Al-Maghrib results), Gambia (CBG results), Seychelles (CBS API), Tanzania (BoT API), Zambia (BoZ API)
+  and the eight WAEMU states (UMOA-Titres auction pages). Every quoting convention was checked against the source's
+  own figures: where a rate type or day-count basis cannot be confirmed it is shown as published and not converted.
 - Listed property (REITs and property funds): the daily equity snapshot.
 - Policy rates: the country signals snapshot (Africa API, source kept per observation).
 
@@ -28,6 +31,25 @@ log = logging.getLogger(__name__)
 CBN_NTB = "https://www.cbn.gov.ng/api/GetAllSecuritiesNTB"
 CBN_NTB_PAGE = "https://www.cbn.gov.ng/rates/GovtSecuritiesDrillDown.html?market=NTB"
 CBK_TBILLS = "https://www.centralbank.go.ke/bills-bonds/treasury-bills/"
+SARB_RATES = "https://custom.resbank.co.za/SarbWebApi/WebIndicators/CurrentMarketRates"
+SARB_PAGE = "https://www.resbank.co.za/en/home/what-we-do/statistics/key-statistics/current-market-rates"
+BOG_TBILLS = "https://www.bog.gov.gh/treasury-and-the-markets/treasury-bill-rates/"
+BAM_TBILLS = ("https://www.bkam.ma/Marches/Principaux-indicateurs/Marche-obligataire/Marche-des-bons-de-tresor/"
+              "Marche-des-adjudications-des-bons-du-tresor/Resultats-des-emissions-de-bons-du-tresor")
+CBG_TBILLS = "https://www.cbg.gm/auction-results/91-day-tbills"
+CBS_TBILLS = "https://www.cbs.sc/Controller/MarketinfoController.jsp?type=tbill"
+CBS_PAGE = "https://www.cbs.sc/marketinfo/TBILL.html"
+BOT_TBILLS = "https://www.bot.go.tz/TBills?lang=en"
+BOT_DETAIL = "https://www.bot.go.tz/Tbills/getTbillsDetails"
+BOZ_TBILLS = "https://www.boz.zm/jsonapi/node/tbills_auction_results?include=field_tbills_auction_results&sort=-field_tbills_auction_date&page[limit]=1"
+BOZ_PAGE = "https://www.boz.zm/markets-securities/treasury-bills"
+UMOA_LIST = "https://www.umoatitres.org/fr/emissions/"
+UMOA_COUNTRIES = {"Bénin": "BJ", "Burkina": "BF", "Burkina Faso": "BF", "Côte d’Ivoire": "CI", "Côte d'Ivoire": "CI",
+                  "Guinée-Bissau": "GW", "Guinée Bissau": "GW", "Mali": "ML", "Niger": "NE", "Sénégal": "SN", "Togo": "TG"}
+COUNTRY_NAMES = {"NG": "Nigeria", "KE": "Kenya", "ZA": "South Africa", "GH": "Ghana", "MA": "Morocco", "GM": "Gambia",
+                 "SC": "Seychelles", "TZ": "Tanzania", "ZM": "Zambia", "BJ": "Benin", "BF": "Burkina Faso",
+                 "CI": "Côte d'Ivoire", "GW": "Guinea-Bissau", "ML": "Mali", "NE": "Niger", "SN": "Senegal", "TG": "Togo"}
+_UA = {"User-Agent": "Mozilla/5.0"}
 LOCAL_PATH = DATA_DIR / "market_instruments.json"   # the local copy; the hosted API keeps these in Supabase
 ETF_DELAY = "about 15 minutes (Yahoo Finance)"
 
@@ -151,22 +173,277 @@ def parse_cbk_tbills(page: str) -> dict:
             "rows": [rows[k] for k in sorted(rows)]}
 
 
+def _cells(page: str) -> list[list[str]]:
+    """Every table row of an HTML page as stripped cell texts (empty rows dropped)."""
+    out = []
+    for row in re.findall(r"<tr[^>]*>(.*?)</tr>", page or "", re.S):
+        cells = [re.sub(r"\s+", " ", html_mod.unescape(re.sub(r"<[^>]+>", "", c))).strip()
+                 for c in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", row, re.S)]
+        if any(cells):
+            out.append(cells)
+    return out
+
+
+def _fr_num(s: str) -> Optional[float]:
+    """'2,26 %' or '1 830,00' (French formatting) as a float."""
+    t = re.sub(r"[%\s ]", "", s or "").replace(",", ".")
+    try:
+        return float(t)
+    except ValueError:
+        return None
+
+
+def _block(country: str, currency: str, issuer: str, source: str, url: str, rows: list[dict], **extra) -> dict:
+    return {"country": country, "country_name": COUNTRY_NAMES.get(country, country), "currency": currency,
+            "issuer": issuer, "source": source, "source_url": url, "rows": rows, **extra}
+
+
+def parse_sarb_rates(items: object) -> dict:
+    """South Africa: Treasury bill tender rates (91 to 364 days) and two benchmark bond yields from the SARB. The
+    feed does not say whether a tender rate is a discount rate or a yield, so it is shown as published."""
+    rows, bonds = [], []
+    for it in items if isinstance(items, list) else []:
+        name, value, day = str(it.get("Name") or ""), it.get("Value"), str(it.get("Date") or "")[:10] or None
+        if not isinstance(value, (int, float)):
+            continue
+        m = re.match(r"Treasury bills - (\d+) day", name)
+        if m:
+            rows.append({"tenor_days": int(m.group(1)), "rate_type": "tender", "rate": float(value), "basis": None,
+                         "auction_date": day})
+        elif "closing yields" in name:
+            bonds.append({"name": name.replace(" (closing yields)", ""), "yield": float(value), "date": day})
+    return _block("ZA", "ZAR", "Republic of South Africa", "South African Reserve Bank, current market rates",
+                  SARB_PAGE, sorted(rows, key=lambda r: r["tenor_days"]), bonds=bonds)
+
+
+def parse_bog_tbills(page: str) -> dict:
+    """Ghana: the latest weekly tender's discount and interest rate per tenor. Both are published; they reconcile
+    on a 364-day basis."""
+    latest: dict[int, dict] = {}
+    for c in _cells(page):
+        if len(c) < 5:
+            continue
+        m = re.match(r"(\d+)\s*DAY", c[2], re.I)
+        try:
+            when = datetime.strptime(c[0], "%d %b %Y").date().isoformat()
+        except ValueError:
+            continue
+        disc, rate = _num(c[3]), _num(c[4])
+        if not m or not rate:
+            continue
+        days = int(m.group(1))
+        if days not in latest or latest[days]["auction_date"] < when:
+            latest[days] = {"tenor_days": days, "rate_type": "yield", "rate": rate, "discount_rate": disc,
+                            "basis": 364, "auction_date": when, "tender": c[1]}
+    return _block("GH", "GHS", "Government of Ghana", "Bank of Ghana, Treasury bill rates", BOG_TBILLS,
+                  [latest[k] for k in sorted(latest)])
+
+
+def parse_bam_tbills(page: str) -> dict:
+    """Morocco: the latest Treasury auction's weighted average rate for bills (weeks); bonds quoted in price are
+    skipped. The settlement date is the date shown."""
+    m = re.search(r"name=['\"]date['\"][^>]*value=\"(\d\d)/(\d\d)/(\d{4})\"", page or "")
+    settle = f"{m.group(3)}-{m.group(2)}-{m.group(1)}" if m else None
+    rows = []
+    for c in _cells(page):
+        w = re.match(r"(\d+)\s*semaines", c[0]) if c else None
+        if not w or len(c) < 8:
+            continue
+        rate = _fr_num(c[7])
+        if rate is None or "%" not in c[7]:
+            continue
+        rows.append({"tenor_days": int(w.group(1)) * 7, "tenor_label": f"{w.group(1)} weeks", "rate_type": "yield",
+                     "rate": rate, "basis": 360, "auction_date": None, "settlement_date": settle,
+                     "allotted_mn": _fr_num(c[5])})
+    return _block("MA", "MAD", "Kingdom of Morocco", "Bank Al-Maghrib, Treasury auction results", BAM_TBILLS, rows)
+
+
+def parse_cbg_tbills(page: str) -> dict:
+    """Gambia: the latest auction's weighted average price and yield per tenor (Treasury bills; Sukuk-al-Salaam
+    bills are left out). The yield reconciles with the price on a 365-day basis."""
+    m = re.search(r"issued on \w+ (\w+ \d{1,2})(?:st|nd|rd|th)?, (\d{4})", page or "")
+    when = None
+    if m:
+        try:
+            when = datetime.strptime(f"{m.group(1)} {m.group(2)}", "%B %d %Y").date().isoformat()
+        except ValueError:
+            pass
+    rows = {}
+    for c in _cells(page):
+        d = re.match(r"(\d+)-Day T/Bills", c[0]) if c else None
+        if not d or len(c) < 9:
+            continue
+        days = int(d.group(1))
+        if days in rows:
+            continue
+        rows[days] = {"tenor_days": days, "rate_type": "yield", "rate": _num(c[6]), "price": _num(c[5]),
+                      "basis": 365, "auction_date": when, "offered_mn": (_num(c[1]) or 0) / 1e6 or None,
+                      "allotted_mn": (_num(c[3]) or 0) / 1e6 or None}
+    return _block("GM", "GMD", "Government of The Gambia", "Central Bank of The Gambia, auction results",
+                  CBG_TBILLS, [rows[k] for k in sorted(rows) if rows[k]["rate"]])
+
+
+def parse_cbs_tbills(payload: object) -> dict:
+    """Seychelles: the average interest rate per tenor as published (the basis is not stated)."""
+    item = ((payload or {}).get("tbill") or [{}])[0] if isinstance(payload, dict) else {}
+    try:
+        when = datetime.strptime(str(item.get("date") or ""), "%d %B, %Y").date().isoformat()
+    except ValueError:
+        when = None
+    rows = [{"tenor_days": days, "rate_type": "average", "rate": _num(item.get(key)), "basis": None, "auction_date": when}
+            for days, key in ((91, "rate1"), (182, "rate2"), (365, "rate3")) if _num(item.get(key))]
+    return _block("SC", "SCR", "Government of Seychelles", "Central Bank of Seychelles, Treasury bills", CBS_PAGE, rows)
+
+
+def parse_bot_detail(payload: object, auction_date: Optional[str]) -> dict:
+    """Tanzania: weighted average yield and price per tenor for one auction. Yields reconcile with prices on a
+    365-day basis."""
+    table = (payload or {}).get("TbillData") if isinstance(payload, dict) else None
+    rows = []
+    if table and len(table) > 1:
+        head = table[0]
+        by = {r[0]: r for r in table[1:] if r}
+        yields, prices = by.get("Weighted Average Yield") or [], by.get("Weighted Average Price for Successful Bids") or []
+        offered = by.get("Amount Offered TZS(000,000)") or []      # the allotted amount's unit label is ambiguous
+        for i, label in enumerate(head[1:], start=1):
+            m = re.match(r"(\d+)\s*Days", str(label))
+            rate = _num(yields[i]) if i < len(yields) else None
+            if m and rate:
+                rows.append({"tenor_days": int(m.group(1)), "rate_type": "yield", "rate": rate,
+                             "price": _num(prices[i]) if i < len(prices) else None, "basis": 365,
+                             "auction_date": auction_date,
+                             "offered_mn": _num(offered[i]) if i < len(offered) else None})
+    return _block("TZ", "TZS", "United Republic of Tanzania", "Bank of Tanzania, Treasury bill auction results",
+                  BOT_TBILLS, rows)
+
+
+def parse_bot_list(page: str) -> Optional[tuple[str, str]]:
+    """The newest auction number and date on the Bank of Tanzania's results page."""
+    m = re.search(r"Treasury Bills Auction No\.\s*(\d+)\s+Held on (\d{2}-[A-Z]{3}-\d{4})", page or "")
+    if not m:
+        return None
+    return m.group(1), datetime.strptime(m.group(2).title(), "%d-%b-%Y").date().isoformat()
+
+
+def parse_boz_tbills(payload: object) -> dict:
+    """Zambia: yield and discount rate per tenor at the latest auction. They reconcile on a 365-day basis."""
+    data = (payload or {}).get("data") or [] if isinstance(payload, dict) else []
+    when = ((data[0] or {}).get("attributes") or {}).get("field_tbills_auction_date") if data else None
+    rows = []
+    for inc in (payload or {}).get("included") or [] if isinstance(payload, dict) else []:
+        a = inc.get("attributes") or {}
+        days = next((int(m.group(1)) for k, v in a.items() if (m := re.match(r"(\d+)_days", str(v)))), None)
+        yld = next((_num(v) for k, v in a.items() if "yield" in k), None)
+        disc = next((_num(v) for k, v in a.items() if "discount" in k), None)
+        if days and yld:
+            rows.append({"tenor_days": days, "rate_type": "yield", "rate": yld, "discount_rate": disc, "basis": 365,
+                         "auction_date": when})
+    return _block("ZM", "ZMW", "Government of Zambia", "Bank of Zambia, Treasury bill auction results", BOZ_PAGE,
+                  sorted(rows, key=lambda r: r["tenor_days"]))
+
+
+_UMOA_ROW = re.compile(r"<tr class='emission-[^']*'>\s*<td[^>]*>.*?/>\s*([^<]+?)\s*<br>.*?</td>\s*<td>(BAT|OAT)</td>"
+                       r".*?<td>(\d\d/\d\d/\d{4})</td>\s*<td>\d\d/\d\d/\d{4}</td>\s*<td>(\d\d/\d\d/\d{4})</td>\s*"
+                       r"<td>(\d+)</td>.*?href='([^']+)'", re.S)
+
+
+def parse_umoa_list(page: str) -> dict[str, list[dict]]:
+    """{country code: recent bill auctions, newest first} from UMOA-Titres' list of completed issues: date, page,
+    and the auction's instruments in order (bills and bonds, as their results are listed on the auction page)."""
+    auctions: dict[str, dict] = {}
+    for name, kind, op, maturity, months, link in _UMOA_ROW.findall(page or ""):
+        code = UMOA_COUNTRIES.get(name.strip())
+        if not code:
+            continue
+        when = datetime.strptime(op, "%d/%m/%Y").date().isoformat()
+        a = auctions.setdefault(link, {"country": code, "date": when, "url": link, "instruments": []})
+        a["instruments"].append({"kind": kind, "months": int(months),
+                                 "maturity": datetime.strptime(maturity, "%d/%m/%Y").date().isoformat()})
+    by_country: dict[str, list[dict]] = {}
+    for a in auctions.values():
+        if any(i["kind"] == "BAT" for i in a["instruments"]):
+            by_country.setdefault(a["country"], []).append(a)
+    return {c: sorted(v, key=lambda a: a["date"], reverse=True)[:6] for c, v in by_country.items()}
+
+
+_UMOA_BLOCK = re.compile(r"\b(BAT|OAT) \| Montant sollicité:")
+
+
+def _umoa_results(text: str) -> list[tuple[str, Optional[float], Optional[float]]]:
+    """(kind, weighted average rate, weighted average yield) per instrument, in page order; '--' reads as None."""
+    part = text[text.find("Résultats"):] if "Résultats" in text else text
+    marks = list(_UMOA_BLOCK.finditer(part))
+    out = []
+    for n, m in enumerate(marks):
+        block = part[m.start():marks[n + 1].start() if n + 1 < len(marks) else len(part)]
+        rate = re.search(r"Taux moyen pondéré: \| ([\d,]+) %", block)
+        yld = re.search(r"Rendement moyen pondéré \| ([\d,]+) %", block)
+        out.append((m.group(1), _fr_num(rate.group(1)) if rate else None, _fr_num(yld.group(1)) if yld else None))
+    return out
+
+
+def parse_umoa_auction(page: str, auction: dict) -> dict:
+    """One WAEMU auction page: the bill's weighted average discount rate and yield. The two reconcile on a
+    360-day basis."""
+    text = re.sub(r"(\| )+", "| ", re.sub(r"\s+", " ", html_mod.unescape(re.sub(r"<[^>]+>", " | ", page or ""))))
+    results = _umoa_results(text)
+    rows = []
+    for inst, (kind, disc, yld) in zip(auction["instruments"], results):
+        if inst["kind"] != "BAT" or kind != "BAT":
+            continue
+        rows.append({"tenor_days": round(inst["months"] * 30.4), "tenor_label": f"{inst['months']} months",
+                     "rate_type": "discount", "rate": disc, "true_yield": yld, "basis": 360,
+                     "auction_date": auction["date"], "maturity_date": inst["maturity"]})
+    code = auction["country"]
+    return _block(code, "XOF", f"Government of {COUNTRY_NAMES.get(code, code)}",
+                  "UMOA-Titres, regional auction results", auction["url"], [r for r in rows if r["rate"]])
+
+
+def _safe(label: str, fn):
+    try:
+        return fn()
+    except Exception as exc:                                  # one source failing never stops the others
+        log.warning("Treasury bill source %s failed: %s", label, exc)
+        return None
+
+
 def build_tbills(client: httpx.Client, now: Optional[datetime] = None) -> dict[str, dict]:
-    """{country: block} for each central bank that answered with at least one tenor."""
+    """{country code (lower case): block} for every source that answered with at least one tenor."""
     from src.engines import markets
     now = now or datetime.now(timezone.utc)
+    get = lambda url, **kw: markets._get(client, url, headers=_UA, **kw)          # noqa: E731
+    blocks: list[Optional[dict]] = [
+        _safe("cbn", lambda: parse_cbn_ntb(get(CBN_NTB).json())),
+        _safe("cbk", lambda: parse_cbk_tbills(get(CBK_TBILLS).text)),
+        _safe("sarb", lambda: parse_sarb_rates(get(SARB_RATES).json())),
+        _safe("bog", lambda: parse_bog_tbills(get(BOG_TBILLS).text)),
+        _safe("bam", lambda: parse_bam_tbills(get(BAM_TBILLS).text)),
+        _safe("cbg", lambda: parse_cbg_tbills(get(CBG_TBILLS).text)),
+        _safe("cbs", lambda: parse_cbs_tbills(get(CBS_TBILLS).json())),
+        _safe("boz", lambda: parse_boz_tbills(get(BOZ_TBILLS).json())),
+    ]
+
+    def tanzania() -> Optional[dict]:
+        newest = parse_bot_list(get(BOT_TBILLS).text)
+        if not newest:
+            return None
+        r = client.post(BOT_DETAIL, data={"au_no": newest[0]}, headers=_UA)
+        return parse_bot_detail(r.json(), newest[1]) if r.status_code == 200 else None
+    blocks.append(_safe("bot", tanzania))
+
+    listing = _safe("umoa", lambda: parse_umoa_list(get(UMOA_LIST).text)) or {}
+    for code, recent in listing.items():
+        for auction in recent:                       # an auction that allotted no bills has no rate: try the one before
+            block = _safe(f"umoa-{code}", lambda a=auction: parse_umoa_auction(get(a["url"]).text, a))
+            if block and block["rows"]:
+                blocks.append(block)
+                break
+
     out: dict[str, dict] = {}
-    r = markets._get(client, CBN_NTB, headers={"User-Agent": "Mozilla/5.0"})
-    try:
-        ng = parse_cbn_ntb(r.json()) if r is not None else {"rows": []}
-    except ValueError:
-        ng = {"rows": []}
-    if ng["rows"]:
-        out["ng"] = {**ng, "captured_at": now.isoformat()}
-    r = markets._get(client, CBK_TBILLS, headers={"User-Agent": "Mozilla/5.0"})
-    ke = parse_cbk_tbills(r.text) if r is not None else {"rows": []}
-    if ke["rows"]:
-        out["ke"] = {**ke, "captured_at": now.isoformat()}
+    for b in blocks:
+        if b and b.get("rows"):
+            out[b["country"].lower()] = {"country_name": COUNTRY_NAMES.get(b["country"], b["country"]), **b,
+                                         "captured_at": now.isoformat()}
     return out
 
 

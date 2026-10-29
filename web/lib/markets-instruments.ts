@@ -115,13 +115,19 @@ export type EtfRow = {
   quote_time: string | null;
 };
 
+// rate_type "tender" (South Africa) and "average" (Seychelles) are published without a stated convention, so they
+// are shown as published and never converted.
 export type TbillRow = {
   tenor_days: number;
-  rate_type: RateType;
+  tenor_label?: string;
+  rate_type: RateType | "tender" | "average";
   rate: number;
   true_yield?: number | null;
-  basis: 364 | 365;
+  discount_rate?: number | null;
+  price?: number | null;
+  basis: 360 | 364 | 365 | null;
   auction_date: string | null;
+  settlement_date?: string | null;
   next_auction_date?: string | null;
   maturity_date?: string | null;
   offered_mn?: number | null;
@@ -131,12 +137,14 @@ export type TbillRow = {
 
 export type TbillBlock = {
   country: string;
+  country_name?: string;
   currency: string;
   issuer: string;
   source: string;
   source_url: string;
   captured_at?: string;
   rows: TbillRow[];
+  bonds?: { name: string; yield: number; date: string | null }[];
 };
 
 export type PropertyRow = {

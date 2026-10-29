@@ -12,7 +12,6 @@ import {
   type Instruments, type RateType, type TbillBlock, type TbillRow,
 } from "../../../../lib/markets-instruments";
 
-const COUNTRY_NAME: Record<string, string> = { NG: "Nigeria", KE: "Kenya" };
 const SECTIONS: [string, string][] = [["etfs", "ETFs"], ["tbills", "Treasury bills"], ["property", "Listed property"],
   ["rates", "Policy rates"], ["calculators", "Calculators"]];
 
@@ -33,11 +32,28 @@ function rate(v: number | null | undefined): string {
   return v == null || !Number.isFinite(v) ? "n/a" : `${v.toFixed(2)}%`;
 }
 
-function tenor(days: number): string {
-  return days >= 364 ? "1 year (364 days)" : `${days} days`;
+function tenor(r: TbillRow): string {
+  return r.tenor_label ?? (r.tenor_days >= 364 ? `1 year (${r.tenor_days} days)` : `${r.tenor_days} days`);
 }
 
-type BillPrefill = { currency: string; rate: number; rateType: RateType; days: number; basis: 364 | 365 };
+const RATE_TYPE: Record<TbillRow["rate_type"], string> = {
+  discount: "discount rate", yield: "yield", tender: "tender rate", average: "average rate",
+};
+
+function billDate(r: TbillRow): string {
+  if (r.auction_date) return asOf(r.auction_date);
+  if (r.settlement_date) return `settles ${asOf(r.settlement_date)}`;
+  if (r.next_auction_date) return `last before ${asOf(r.next_auction_date)}`;
+  return "date not reported";
+}
+
+// An auction more than 45 days old is still the latest result, but it is marked so it is not read as today's rate.
+function isOld(r: TbillRow): boolean {
+  const d = r.auction_date ?? r.settlement_date;
+  return !!d && Date.now() - new Date(d).getTime() > 45 * 86400e3;
+}
+
+type BillPrefill = { currency: string; rate: number; rateType: RateType; days: number; basis: 360 | 364 | 365 };
 
 function Etfs({ data }: { data: Instruments["etfs"] }) {
   const exposures = useMemo(() => Array.from(new Set(data.rows.map((r) => r.exposure))), [data.rows]);
@@ -80,47 +96,60 @@ function Etfs({ data }: { data: Instruments["etfs"] }) {
 }
 
 function Tbills({ blocks, onUse }: { blocks: TbillBlock[]; onUse: (p: BillPrefill) => void }) {
+  const [country, setCountry] = useState("");
+  const shown = blocks.filter((b) => !country || b.country === country);
+  const bonds = blocks.flatMap((b) => (b.bonds ?? []).map((x) => ({ ...x, country: b.country_name ?? b.country })));
   return (
     <section id="tbills" className="mt-12 scroll-mt-24" aria-labelledby="tbills-h">
       <h2 id="tbills-h" className="h3 text-xl">Treasury bills</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
-        Short-dated government debt, sold at weekly or fortnightly auctions. Rates below are the latest results the
-        central bank has published. Nigeria quotes a discount rate, so the true yield (what the buyer earns) is shown
-        beside it; Kenya quotes the average yield directly.
+        Short-dated government debt in {blocks.length} countries, from the latest auction each central bank or
+        regional market (UMOA-Titres for the West African CFA states) has published. Countries quote differently: a
+        discount rate is converted to the yield a buyer earns using the convention the source&apos;s own figures confirm;
+        a rate whose convention is not stated is shown as published.
       </p>
       {blocks.length === 0 ? <p className="mt-4 text-sm text-[color:var(--dim)]">No auction results have been recorded yet.</p> : (
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
-          {blocks.map((b) => (
-            <article key={b.country} className="panel min-w-0 p-5">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="text-base font-semibold">{COUNTRY_NAME[b.country] ?? b.country} · {b.currency}</h3>
-                <a href={b.source_url} target="_blank" rel="noreferrer" className="text-xs underline underline-offset-4 hover:opacity-80">{b.source} ↗</a>
-              </div>
-              <div className="mt-3">
-                <Table head={["Tenor", b.rows[0]?.rate_type === "discount" ? "Stop rate (discount)" : "Average yield",
-                  ...(b.rows.some((r) => r.true_yield) ? ["True yield"] : []), "Auction", ""]} minWidth="30rem">
-                  {b.rows.map((r: TbillRow) => (
-                    <tr key={r.tenor_days}>
-                      <Td>{tenor(r.tenor_days)}</Td>
-                      <Td className="font-semibold">{rate(r.rate)}</Td>
-                      {b.rows.some((x) => x.true_yield) && <Td>{rate(r.true_yield)}</Td>}
-                      <Td className="text-[color:var(--dim)]">
-                        {r.auction_date ? asOf(r.auction_date) : r.next_auction_date ? `last before ${asOf(r.next_auction_date)}` : "date not reported"}
-                        {r.allotted_mn != null && r.offered_mn ? <span className="block text-[0.6875rem]">{Math.round(r.allotted_mn).toLocaleString("en-US")}m of {Math.round(r.offered_mn).toLocaleString("en-US")}m allotted</span> : null}
-                      </Td>
-                      <Td>
+        <>
+          <label className="mt-4 block max-w-xs text-sm">Country
+            <select className="field mt-1 w-full" value={country} onChange={(e) => setCountry(e.target.value)}>
+              <option value="">All {blocks.length} countries</option>
+              {blocks.map((b) => <option key={b.country} value={b.country}>{b.country_name ?? b.country}</option>)}
+            </select>
+          </label>
+          <div className="mt-4">
+            <Table head={["Country", "Tenor", "Rate", "Yield to buyer", "Auction", "Source", ""]} minWidth="52rem">
+              {shown.flatMap((b) => b.rows.map((r, i) => {
+                const yieldToBuyer = r.rate_type === "yield" ? r.rate : r.true_yield ?? null;
+                const usable = (r.rate_type === "discount" || r.rate_type === "yield") && r.basis != null;
+                return (
+                  <tr key={`${b.country}-${r.tenor_days}`}>
+                    <Td className={i === 0 ? "font-semibold" : "text-transparent"}>{b.country_name ?? b.country}<span className="sr-only"> {b.currency}</span></Td>
+                    <Td>{tenor(r)}</Td>
+                    <Td><span className="font-semibold">{rate(r.rate)}</span> <span className="text-xs text-[color:var(--dim)]">{RATE_TYPE[r.rate_type]}</span></Td>
+                    <Td>{yieldToBuyer != null ? rate(yieldToBuyer) : <span className="text-[color:var(--dim)]">as published</span>}</Td>
+                    <Td className={isOld(r) ? "text-risk" : "text-[color:var(--dim)]"}>
+                      {billDate(r)}{isOld(r) ? <span className="block text-[0.6875rem]">no bills allotted since</span> : null}
+                    </Td>
+                    <Td>{i === 0 ? <a href={b.source_url} target="_blank" rel="noreferrer" className="text-xs underline underline-offset-4 hover:opacity-80">{b.source.split(",")[0]} ↗</a> : null}</Td>
+                    <Td>
+                      {usable ? (
                         <button type="button" className="text-xs underline underline-offset-4 hover:opacity-80"
-                          onClick={() => onUse({ currency: b.currency, rate: r.rate, rateType: r.rate_type, days: r.tenor_days, basis: r.basis })}>
+                          onClick={() => onUse({ currency: b.currency, rate: r.rate, rateType: r.rate_type as RateType, days: r.tenor_days, basis: r.basis as 360 | 364 | 365 })}>
                           Use in calculator
                         </button>
-                      </Td>
-                    </tr>
-                  ))}
-                </Table>
-              </div>
-            </article>
-          ))}
-        </div>
+                      ) : null}
+                    </Td>
+                  </tr>
+                );
+              }))}
+            </Table>
+          </div>
+          {bonds.length > 0 && (!country || shown.some((b) => b.bonds?.length)) && (
+            <p className="mt-3 text-sm text-[color:var(--muted)]">
+              Government bond yields: {bonds.map((x) => `${x.country} ${x.name} ${rate(x.yield)} (${asOf(x.date)})`).join("; ")}.
+            </p>
+          )}
+        </>
       )}
     </section>
   );
@@ -187,7 +216,7 @@ function Calculators({ prefill }: { prefill: BillPrefill | null }) {
   const [billRate, setBillRate] = useState("15.4");
   const [rateType, setRateType] = useState<RateType>("discount");
   const [billDays, setBillDays] = useState("91");
-  const [basis, setBasis] = useState<"364" | "365">("365");
+  const [basis, setBasis] = useState<"360" | "364" | "365">("365");
   const [bondCurrency, setBondCurrency] = useState("NGN");
   const [bondFace, setBondFace] = useState("100000");
   const [coupon, setCoupon] = useState("16");
@@ -200,13 +229,13 @@ function Calculators({ prefill }: { prefill: BillPrefill | null }) {
     setBillRate(String(prefill.rate));
     setRateType(prefill.rateType);
     setBillDays(String(prefill.days));
-    setBasis(String(prefill.basis) as "364" | "365");
+    setBasis(String(prefill.basis) as "360" | "364" | "365");
     document.getElementById("calc-bill")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [prefill]);
 
   const bill = useMemo(() => calculateTreasuryBill({
     faceValue: numberField(faceValue), ratePct: numberField(billRate), rateType,
-    daysToMaturity: numberField(billDays), basis: Number(basis) as 364 | 365,
+    daysToMaturity: numberField(billDays), basis: Number(basis) as 360 | 364 | 365,
   }), [faceValue, billRate, rateType, billDays, basis]);
 
   const bond = useMemo(() => calculateBond({
@@ -223,8 +252,9 @@ function Calculators({ prefill }: { prefill: BillPrefill | null }) {
         <p className="eyebrow">Calculator</p>
         <h2 className="mt-1 text-xl font-semibold">Treasury bill return</h2>
         <p className="mt-2 text-sm text-[color:var(--muted)]">
-          What you pay and earn for a bill at a quoted rate. Pick how the rate is quoted: Nigeria uses a discount rate
-          on 365 days, Kenya a yield on 364 days. &ldquo;Use in calculator&rdquo; above fills these in.
+          What you pay and earn for a bill at a quoted rate. Conventions differ: Nigeria quotes a discount rate on 365
+          days, Ghana a yield on 364, the West African CFA states a discount rate on 360. &ldquo;Use in calculator&rdquo;
+          above fills in the right one.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="text-sm">Currency
@@ -248,9 +278,10 @@ function Calculators({ prefill }: { prefill: BillPrefill | null }) {
             <input className="field mt-1 w-full" inputMode="numeric" type="number" min="1" max="366" step="1" value={billDays} onChange={(e) => setBillDays(e.target.value)} />
           </label>
           <label className="text-sm">Day-count basis
-            <select className="field mt-1 w-full" value={basis} onChange={(e) => setBasis(e.target.value as "364" | "365")}>
+            <select className="field mt-1 w-full" value={basis} onChange={(e) => setBasis(e.target.value as "360" | "364" | "365")}>
               <option value="365">365 days</option>
               <option value="364">364 days</option>
+              <option value="360">360 days</option>
             </select>
           </label>
         </div>
@@ -323,8 +354,8 @@ export default function InvestmentExplorerPage() {
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · Beyond shares" title="ETFs, Treasury bills, property and rates.">
-        Exchange-traded funds, government bill auctions, listed property and central bank rates across African
-        markets, each with its source and date, plus calculators for bills and bonds.
+        Exchange-traded funds, Treasury bill auctions in 17 countries, listed property and central bank rates across
+        African markets, each with its source and date, plus calculators for bills and bonds.
       </PageHeader>
 
       <nav className="flex flex-wrap gap-2 text-sm" aria-label="Sections">

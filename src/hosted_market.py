@@ -1979,11 +1979,12 @@ async def markets_instruments() -> dict:
         snap = {}
     return {
         "etfs": blocks.get("etf_jse") or {"rows": []},
-        "tbills": [blocks[k] for k in ("tbill_ng", "tbill_ke") if blocks.get(k)],
+        "tbills": sorted((b for k, b in blocks.items() if k.startswith("tbill_") and b.get("rows")),
+                         key=lambda b: b.get("country_name") or b.get("country") or ""),
         "property": instruments.listed_property(snap)[:60],
         "policy_rates": instruments.policy_rates(country_risk.load_current_signals_snapshot()),
         "method": ("ETF prices are Yahoo Finance delayed quotes for JSE-listed funds; Treasury bill rates are the "
-                   "latest auction results published by each central bank; property shares come from the daily "
+                   "latest auction results published by each central bank or regional market (17 countries); property shares come from the daily "
                    "equity snapshot; policy rates come from the country signals snapshot. Each figure carries its "
                    "date. Unlisted funds, fixed deposits and bond inventories are not covered."),
     }
