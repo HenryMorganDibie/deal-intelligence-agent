@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-28T22:51:20.455829+00:00",
+  "updated_at": "2026-10-29T11:17:55.314544+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 95,
+      "new_review_items_today": 65,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 77,
-      "new_observations_today": 2,
-      "unreviewed_flagged_observations": 10,
+      "observations_collected": 84,
+      "new_observations_today": 7,
+      "unreviewed_flagged_observations": 12,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 52,
-      "entities": 93,
+      "relationships": 61,
+      "entities": 106,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,29 +177,32 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 77,
-    "new_rows": 2,
+    "collected_tickers": 84,
+    "new_rows": 7,
     "failures": [
-      "CCNN.LG",
-      "CCO.JO",
-      "CCRS.CA",
-      "CDA.CS",
-      "CDM.CS",
-      "CEFM.CA",
-      "CERA.CA",
-      "CFAC.BV",
-      "CFG.CS",
-      "CGEN.NR"
+      "CGN.JO",
+      "CIC.NR",
+      "CIEC.BV",
+      "CIH.CS",
+      "CIL.JO"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 93,
-    "relationships": 52,
-    "source_links": 57,
+    "nodes": 106,
+    "relationships": 61,
+    "source_links": 69,
     "most_connected": [
       {
         "name": "Amsons Group",
+        "degree": 3
+      },
+      {
+        "name": "Dangote",
+        "degree": 3
+      },
+      {
+        "name": "Sterling Oil",
         "degree": 3
       },
       {
@@ -219,10 +222,6 @@
         "degree": 2
       },
       {
-        "name": "Dangote",
-        "degree": 2
-      },
-      {
         "name": "EBRD",
         "degree": 2
       },
@@ -232,10 +231,6 @@
       },
       {
         "name": "Helios",
-        "degree": 2
-      },
-      {
-        "name": "Sterling Oil",
         "degree": 2
       }
     ]

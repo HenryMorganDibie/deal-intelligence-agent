@@ -248,3 +248,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CFG.CS"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-28", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CFR.JO"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-28", "market": "africa", "status": "no_annual_data_returned", "ticker": "CGEN.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CGN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CGR.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-29", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/CHAMPION_BREWERIES_PLC_-_2025_AUDITED_FINANCIAL_STATEMENTS.pdf", "status": "collected", "ticker": "CHAMPION.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-29", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46494_CHAMS_HOLDING_COMPANY_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "CHAMS.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-29", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47334_CHELLARAMS_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2026_FINANCIAL_STATEMENTS_JULY_2026.pdf", "status": "collected", "ticker": "CHELLARAM.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CHP.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CIC.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CICH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CIEB.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CIEC.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CIH.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CIL.JO"}
