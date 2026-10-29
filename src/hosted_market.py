@@ -1929,7 +1929,7 @@ async def cron_market_intraday(request: Request) -> dict:
 
 def _record_instruments(with_tbills: bool) -> dict:
     """ETF quotes, and on the daily run the Treasury bill auctions; a source failing is reported, not raised."""
-    from src.engines import instruments, markets
+    from src.engines import instruments
     with httpx.Client(timeout=30, follow_redirects=True) as client:
         etfs = instruments.build_etfs(client)
         today = datetime.now(timezone.utc).date().isoformat()
