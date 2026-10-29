@@ -260,3 +260,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CIEC.BV"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CIH.CS"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CIL.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CILEASING.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CIRA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CIRF.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CKS.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CLH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CLHO.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CLI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CLR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CLS.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CLYD.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CMA.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-29", "market": "africa", "status": "no_annual_data_returned", "ticker": "CMAMA.CS"}

@@ -423,6 +423,26 @@
     "flysafair": {
       "name": "FlySafair",
       "kind": "organization"
+    },
+    "green hydrogen": {
+      "name": "Green Hydrogen",
+      "kind": "organization"
+    },
+    "south africa namibia": {
+      "name": "South Africa Namibia",
+      "kind": "organization"
+    },
+    "harith": {
+      "name": "Harith",
+      "kind": "organization"
+    },
+    "ifc": {
+      "name": "IFC",
+      "kind": "organization"
+    },
+    "verod": {
+      "name": "Verod",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1319,7 +1339,49 @@
           "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQaVk0RkdFeDNjck5aNXVySmpoWVVGMnRRU3doMzNuZDhlV1IwS0FZdGRmM0NPd2NMX2JPUFNueHpXTC1HUTB5Tk1YaGVNSlllckU0MXJoV01BcU5SMjNuUzNUaWY4Tm9aZ2ZGT1VLSjRubkhnazQ4SFJlVEdTb1d4VFN3MG9JSkhuX2pjajdzTTNRQWxEN0NTczNpT08yX3VqNXc?oc=5"
         }
       ]
+    },
+    "77d15e1c4181de58ebda": {
+      "id": "77d15e1c4181de58ebda",
+      "from": "green hydrogen",
+      "to": "south africa namibia",
+      "type": "equity_funding",
+      "first_seen": "2026-10-29",
+      "sources": [
+        {
+          "title": "Green Hydrogen Investment in South Africa Namibia",
+          "publisher": "Fuel Cells Works",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPT1o4REEyTDR5LUNOQVBsdXRoUFpMRnQxTXd3cEgzOV9Cd1hCTEVsbHY2UFE4eE9Sd3lWaVdNV0Vsc2Z3bVpIVnl1VU9nTFVBNVI1TDJJbnRxaFpTRVhnaXVWTC1leTVTaG9pTzhVSzFhU0F4NjlUdVpQS19FRXpXcmRubzhweGM2Zi1hRkEzLTh3eHR5TVJnY1dXSW41aVhtY2FUNWRQVQ?oc=5"
+        }
+      ]
+    },
+    "0903cc9d94cc41dd89b8": {
+      "id": "0903cc9d94cc41dd89b8",
+      "from": "harith",
+      "to": "flysafair",
+      "type": "acquisition",
+      "first_seen": "2026-10-29",
+      "sources": [
+        {
+          "title": "Harith secures regulatory approval to acquire FlySafair in landmark South African aviation deal",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNQkRXWkh1WjdfSDNiWnF4bm1EZ2FKc3E3cmYtNm40SjJxQUROTnVjcGI2U2ZfWTFXYVZRRVp2QkFMTEk0R20ySUlRdm1WSHp6OTg5QjlycEdYd1B3VFZ4aTdiYTRHbVRWdDRsVzlSbWIzVWo5RENTeWtaWjRTU3I1dUo0OW9QTFpyQ1YyUG12SFJYeWFXWWJsNkNHbUN5MUpvMkhLVFpDNE5kMXU3M01XWTltckF1djJrcEloSTdNVVRRajBYSnc?oc=5"
+        }
+      ]
+    },
+    "6fa60e5e391ed0bc3ef9": {
+      "id": "6fa60e5e391ed0bc3ef9",
+      "from": "ifc",
+      "to": "verod",
+      "type": "equity_funding",
+      "first_seen": "2026-10-29",
+      "sources": [
+        {
+          "title": "IFC discloses proposed $15m investment in Verod fund",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQVnZTZTVoWXBZZzIzSXUxMWJoTWVnbW5FRl9ldjF1VUxsaUV1VllsR3pkMkxBc2E5QmFmT3dORXNkVDhnMDE1WlBXUEFKMndSaTVXWVY1RnVaU2xjbDB3dG1RX2wtZE81VDcwREVSX3N5TExGZTJia3dZdjI4LWEwSGtXMmdMR3p3MUgw?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-29T11:17:51.792416+00:00"
+  "updated_at": "2026-10-29T19:49:47.136574+00:00"
 }
