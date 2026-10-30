@@ -443,6 +443,38 @@
     "verod": {
       "name": "Verod",
       "kind": "organization"
+    },
+    "moscow summit presses russia": {
+      "name": "Moscow Summit Presses Russia",
+      "kind": "organization"
+    },
+    "factories": {
+      "name": "Factories",
+      "kind": "organization"
+    },
+    "sapetro": {
+      "name": "Sapetro",
+      "kind": "organization"
+    },
+    "opl257": {
+      "name": "OPL257",
+      "kind": "organization"
+    },
+    "airtel kenya": {
+      "name": "Airtel Kenya",
+      "kind": "organization"
+    },
+    "ksh": {
+      "name": "KSh",
+      "kind": "organization"
+    },
+    "blaze minerals": {
+      "name": "Blaze Minerals",
+      "kind": "organization"
+    },
+    "bahati and buyaga tungsten projects": {
+      "name": "Bahati and Buyaga Tungsten Projects",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1080,6 +1112,11 @@
           "title": "Afreximbank Approves $975m Facility For Management Buy-Out Of Oryx Energies",
           "publisher": "https://thefact.ng/",
           "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOcmtKM0NLeEtqZ2ttR1phQ1g0RzFMSUJtUGNnNWttR3Nkc015ZTc4YzJDNGhQVjItYldtcW5ObHZ2SU9WQjBCYWw4enBNcFA0NEpxOTZJUWlfSjFwaGg2MkR3S3IzcDRacDVkWklXc3MxTzNwN2s1TURMTVYyRXdiVXFMNGJIUkZLclVwdGhLLV9SRndTVTVKNUtn?oc=5"
+        },
+        {
+          "title": "Afreximbank approves $975 million facility for Management Buy-Out of Oryx Energies",
+          "publisher": "The Guardian Nigeria News",
+          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNMkc1Q3ZTT3JkTXBUeTRBYkV4TDVSQXRCOVVJaS1PUUYzcy1FZWwyWk1FWXpJOElfN2VETUY4NUtfS05nMkE1eFhRUGFYZmQ5QTJZc0M3U1A5ZU56bnZnZzVPdGtreEpLWXp5SDBHaXJ6SlBnVXoyOFM3OEM5M2dOMUhiWlkyRmxrQm43QU5TOHFQZUVaRXpITmFqU3FVcHpfRFFxTy00T3d0Q2hGYU13RnRzWnVrMHhDN05GeA?oc=5"
         }
       ]
     },
@@ -1381,7 +1418,63 @@
           "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQVnZTZTVoWXBZZzIzSXUxMWJoTWVnbW5FRl9ldjF1VUxsaUV1VllsR3pkMkxBc2E5QmFmT3dORXNkVDhnMDE1WlBXUEFKMndSaTVXWVY1RnVaU2xjbDB3dG1RX2wtZE81VDcwREVSX3N5TExGZTJia3dZdjI4LWEwSGtXMmdMR3p3MUgw?oc=5"
         }
       ]
+    },
+    "64d04b733e56a40faffa": {
+      "id": "64d04b733e56a40faffa",
+      "from": "moscow summit presses russia",
+      "to": "factories",
+      "type": "equity_funding",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "Moscow Summit Presses Russia to Invest in Africa’s Factories, Not Just its Raw Materials",
+          "publisher": "The Chanzo",
+          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxQT1Fna3ItMktOMktQR3RIeDZlZHdGOEtPTktPSmxZWFpzWmdUcmxTTEowUmZPVXNPUnI2d3NDenZUdmh5MS1XQVV1alUzQVAtOXFXTldfbU5oc29DT2xHOEJEZHVqaU1DZk1ucm0zY3JkVW9rakdLXzdNSU1vU3FHZjNtOURGVFg4OGRnVjJvejZCYk4xRU9QUEI2VVhQVmhLS19RbEJhUS04R3dSRUJJOXRQdW1mdVpEcHRyNw?oc=5"
+        }
+      ]
+    },
+    "833f0efb0993df558509": {
+      "id": "833f0efb0993df558509",
+      "from": "sapetro",
+      "to": "opl257",
+      "type": "exit",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "TotalEnergies sells 40% stake in Nigeria's OPL257 block to Sapetro",
+          "publisher": "StreetInsider",
+          "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPT1FWSjhwX0V2RXpUUzdrUGxMRDQxd0tXa2l5R2JwaVdtT2FMdkZlbG1vVnJLYXljeWpvVHo1aHlmTlZvWHFhODBSRW5oUjNOYnNvYVR5U1JkNnd0OG1aS2dSeERfMmd0UW1qb1YxdThYb1dfMnlTSDdKcVNYSEFhNjFzN3NsU0pMSHJtQ05ld3lDc0xMdHhDWlYxYXpyeHBCdUdoMzlRUkhqZG44VEoxX09PY2t5bzFCOXJ2NVZOSVR2SmRH?oc=5"
+        }
+      ]
+    },
+    "1eb9c8c5d2672721d981": {
+      "id": "1eb9c8c5d2672721d981",
+      "from": "airtel kenya",
+      "to": "ksh",
+      "type": "acquisition",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "Airtel Kenya Acquires KSh 8.45bn Spectrum for 5G Expansion",
+          "publisher": "The Kenyan Wallstreet",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNYXR0MEpJV0xmRkozYkxHN2xZOTlYYjk3c0JfeEhpbkpZaEJ6bjY5akNKekRudlVvQkJ1SU9mR1lGd0lFVVp0bkRRSTRCYzAzOUMtR2JVQ0owYVc3QUlwUzNNRi02cWVwb01uem9wV0lNMEE3N2pSNUoxNC1LRkxFc0hUdFNFVUpOVEN1Q2lfQVBvU0tmUGtKcGI3cjhYYUVwMVR3?oc=5"
+        }
+      ]
+    },
+    "001721f1298313e306cc": {
+      "id": "001721f1298313e306cc",
+      "from": "blaze minerals",
+      "to": "bahati and buyaga tungsten projects",
+      "type": "acquisition",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "Blaze Minerals Completes Acquisition of 72% Interest in Bahati and Buyaga Tungsten Projects in Uganda",
+          "publisher": "Kalkine",
+          "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOeGRhQUdkb0hUMG5UazlUYjZMSVZKZkdBZW42UDNOQk5lRV9zeUxrS3JkS2pZdkpCelBEXzliM3IxcjgzM0xfNjV5Z0FfMkZoTE1UZENHbUt5c3NrQWw2QUJDZWxMUzloRGxBSk4yQmJ4YWFLbUhMMWF5a0FvbDk1SUEtdkVLQUlQV1hpZEhYTkt4QkRCYlVOeWd6cGxFY0VwRU1uQUlBSEhrYnljTFRzVmVfWDVuNWlEMUJzOUU4V0xBeS1oZWI2TWp5dzFKbnN0aDg4eFdFUmNxdw?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-29T19:49:47.136574+00:00"
+  "updated_at": "2026-10-30T11:11:27.312217+00:00"
 }
