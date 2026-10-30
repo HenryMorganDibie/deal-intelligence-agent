@@ -284,3 +284,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "status": "no_annual_data_returned", "ticker": "COL.CS"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "status": "no_annual_data_returned", "ticker": "COM.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "COMI.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-30", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46533_CONSOLIDATED_HALLMARK_HOLDINGS_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_APRIL_2026.pdf", "status": "collected", "ticker": "CONHALLPLC.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-30", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47162_CONOIL_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_JUNE_2026.pdf", "status": "collected", "ticker": "CONOIL.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-30", "market": "africa", "status": "no_annual_data_returned", "ticker": "CONTINSURE.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-30", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Co-operative-Bank-of-Kenya-Ltd-Un-audited-Results-of-the-Group-the-Bank-for-the-Period-Ended-30-Jun-2026.pdf", "status": "collected", "ticker": "COOP.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "status": "no_annual_data_returned", "ticker": "COPR.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-30", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/CORNERSTONE_INSURANACE_PLC_SIGNED_AFS_2025v2.pdf", "status": "collected", "ticker": "CORNERST.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "COSG.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-30", "market": "africa", "status": "no_annual_data_returned", "ticker": "COSTAIN.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-30", "market": "africa", "status": "no_annual_data_returned", "ticker": "COURTVILLE.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "status": "no_annual_data_returned", "ticker": "CPC.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "status": "no_annual_data_returned", "ticker": "CPCI.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CPI.JO"}

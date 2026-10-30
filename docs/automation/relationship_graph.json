@@ -475,6 +475,42 @@
     "bahati and buyaga tungsten projects": {
       "name": "Bahati and Buyaga Tungsten Projects",
       "kind": "organization"
+    },
+    "want": {
+      "name": "Want",
+      "kind": "organization"
+    },
+    "anthropic": {
+      "name": "Anthropic",
+      "kind": "organization"
+    },
+    "add properties": {
+      "name": "ADD Properties",
+      "kind": "organization"
+    },
+    "egypt s raya ventures": {
+      "name": "Egypt’s Raya Ventures",
+      "kind": "organization"
+    },
+    "pidima in first investment": {
+      "name": "Pidima in First Investment",
+      "kind": "organization"
+    },
+    "gold fields": {
+      "name": "Gold Fields",
+      "kind": "organization"
+    },
+    "local procurement": {
+      "name": "Local Procurement",
+      "kind": "organization"
+    },
+    "nigeria opl257": {
+      "name": "Nigeria OPL257",
+      "kind": "organization"
+    },
+    "ugandan tungsten projects": {
+      "name": "Ugandan Tungsten Projects",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1402,6 +1438,11 @@
           "title": "Harith secures regulatory approval to acquire FlySafair in landmark South African aviation deal",
           "publisher": "Innovation Village",
           "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNQkRXWkh1WjdfSDNiWnF4bm1EZ2FKc3E3cmYtNm40SjJxQUROTnVjcGI2U2ZfWTFXYVZRRVp2QkFMTEk0R20ySUlRdm1WSHp6OTg5QjlycEdYd1B3VFZ4aTdiYTRHbVRWdDRsVzlSbWIzVWo5RENTeWtaWjRTU3I1dUo0OW9QTFpyQ1YyUG12SFJYeWFXWWJsNkNHbUN5MUpvMkhLVFpDNE5kMXU3M01XWTltckF1djJrcEloSTdNVVRRajBYSnc?oc=5"
+        },
+        {
+          "title": "Harith wins approval to buy FlySafair in major South African aviation deal",
+          "publisher": "Getaway Magazine",
+          "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTE0yQUJIN1g5WFZMbHNTUlJhMVBIYkZReEFSbG1td1g5ZjhuQWRERVFyRWR3MEJsSzJaLWc4RjlmcFMyYUp5Qm9ZZUduVnplZGxmZDFaeV9PcEtVUjJFZkdqeFZvazYtX0VpUzRCRXdhcUJ4VzBXalh3Xw?oc=5"
         }
       ]
     },
@@ -1416,6 +1457,11 @@
           "title": "IFC discloses proposed $15m investment in Verod fund",
           "publisher": "Africa Private Equity News",
           "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQVnZTZTVoWXBZZzIzSXUxMWJoTWVnbW5FRl9ldjF1VUxsaUV1VllsR3pkMkxBc2E5QmFmT3dORXNkVDhnMDE1WlBXUEFKMndSaTVXWVY1RnVaU2xjbDB3dG1RX2wtZE81VDcwREVSX3N5TExGZTJia3dZdjI4LWEwSGtXMmdMR3p3MUgw?oc=5"
+        },
+        {
+          "title": "IFC set to invest in Verod’s fourth fund",
+          "publisher": "africabusinessplus.com",
+          "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQVVNmdjg0d2F4MEdOSzNFVnRoSVVVdEt3RDRVNXEzb1pxNS1VOGZQN3lGZi1FelRKNzRfNmJiNXFHd3ZBNnpXMlNTMW03cFRGY1lSNEZuVGo3dDI3NmliZGR0SktYY29jS3RkT3k5Wlh1UnAzS052TjQwTmxvN0hkVzBYZkVDYzJVNUJkWThB?oc=5"
         }
       ]
     },
@@ -1474,7 +1520,91 @@
           "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOeGRhQUdkb0hUMG5UazlUYjZMSVZKZkdBZW42UDNOQk5lRV9zeUxrS3JkS2pZdkpCelBEXzliM3IxcjgzM0xfNjV5Z0FfMkZoTE1UZENHbUt5c3NrQWw2QUJDZWxMUzloRGxBSk4yQmJ4YWFLbUhMMWF5a0FvbDk1SUEtdkVLQUlQV1hpZEhYTkt4QkRCYlVOeWd6cGxFY0VwRU1uQUlBSEhrYnljTFRzVmVfWDVuNWlEMUJzOUU4V0xBeS1oZWI2TWp5dzFKbnN0aDg4eFdFUmNxdw?oc=5"
         }
       ]
+    },
+    "c63ad9eb89d413a08b9c": {
+      "id": "c63ad9eb89d413a08b9c",
+      "from": "want",
+      "to": "anthropic",
+      "type": "equity_funding",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "Want to invest in Anthropic before its IPO? These 5 funds offer exposure to the AI giant.",
+          "publisher": "Business Insider Africa",
+          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPUDdxNzQtUWtITEZJRUk2X2xfUUoxRHpyX1VGWWRKcjRPbTNuSUUwSXRJRmk2ZDRMUHE2UDF3Z3VuREE2SFZrYkxWUmgtcjBLTVVXV1V4UG9JMmZrdEhkcEZrTmVJbndJMnA0eUdBQWEycGpYYUo5Q2ZHQ0pVUmx1TXNNbEhiYnY1NlFRRmZ3MmJyWHVxUFl1eVJKQjBsc0JqSDRfNmRSUHRJSFhEMVhoa3VGaktNQkRkMDNMNldaOFF5OFEtdk5FTDFyTmc?oc=5"
+        }
+      ]
+    },
+    "96791bd036c7a8d9b706": {
+      "id": "96791bd036c7a8d9b706",
+      "from": "ebrd",
+      "to": "add properties",
+      "type": "debt_financing",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "EBRD arranges US$ 265 million loan for ADD Properties in Egypt",
+          "publisher": "EBRD",
+          "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxOTFozbE9Sa3BKX0NpYjQzZUNZVkU4b1R1bmlOOFpLYkcyenRoQkNQdmtEZ0hnSkZjRXByZmY2bDFQT3FxWVBvSDZxa1ZFU0xWR2cwNDk2bkFTVTU2ZkZ5RTZhUWMzek9fNURyRmxzSUJhbkpqNDN2bEg2bXBuWE1fVWpqOUVMbXhJOENCMExvOFRDTDZCV091aWI0aWVnc2Z5ekctS3FRcWx6a2d3T051amNacjVpWU83VFo0?oc=5"
+        }
+      ]
+    },
+    "5de94fd7b16ae80bc441": {
+      "id": "5de94fd7b16ae80bc441",
+      "from": "egypt s raya ventures",
+      "to": "pidima in first investment",
+      "type": "equity_funding",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "Egypt’s Raya Ventures Backs UK AI Firm Pidima in First Investment",
+          "publisher": "CairoScene",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQQzlIRS1oZk53T1VDNGVJR1FoQmhsSGlkSndSZ1Jnb0oyVlEwR0liSnQxc0hNLXcwbVhDV2w3MlFYNHNNUTVURkxsQjdvYUE5M2pKM2paWWFtay0tcURhalZCeDJIbDFTY2w3OURwYWcyQk53Yy1IRGE2VGJqZDRQWlBjRkVYRHhjNGJFMEd0NE9NTGZhSlU1Vnd3LVdpQQ?oc=5"
+        }
+      ]
+    },
+    "f9548973969b912e6941": {
+      "id": "f9548973969b912e6941",
+      "from": "gold fields",
+      "to": "local procurement",
+      "type": "equity_funding",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "Gold Fields Invests $4.26bn In Local Procurement",
+          "publisher": "DailyGuide Network",
+          "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxPLVRza2F6d0xWY3ktSjJmUkFQbTdtV2Y5ckdpYUFJekEtcXdHaXQ4N0l4VnYzdTdRMWl0bF9WZmhCVXp1a3hxekhfTnliRlBUVHZRSndLUFFYckc0S2xLalo5bjRBZ25BV2xwZm9vWDZxamYyalZ1YU5qVi04OUpCZldkT1A?oc=5"
+        }
+      ]
+    },
+    "eaeddd06c90f55e81845": {
+      "id": "eaeddd06c90f55e81845",
+      "from": "sapetro",
+      "to": "nigeria opl257",
+      "type": "exit",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "TotalEnergies Sells 40 Percent Stake in Nigeria OPL257 to SAPETRO",
+          "publisher": "Head Topics",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNWkc5dGYwd2RjbzRXQjgxQnhGcTBzQlRhT0dNN2JfekhPSDFwVnVZdU5wQkZZMm96RWFkX0lwbm1vRnQxUUlkS2o5djJiSHFELS03NWJGNkZ5dXR2MXVRR1BLUUNudWNKVDN4TkRqdFM3WnVZcFRLSWlZYndVb0k2RjFHYVdPVEVTcUR4UElMZW9tUUdHX2RyZDIyRlRaQQ?oc=5"
+        }
+      ]
+    },
+    "7ab67275ece288bfbc45": {
+      "id": "7ab67275ece288bfbc45",
+      "from": "blaze minerals",
+      "to": "ugandan tungsten projects",
+      "type": "acquisition",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "Blaze Minerals Completes Majority Acquisition of Ugandan Tungsten Projects",
+          "publisher": "TipRanks",
+          "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxQd05DcXZLQjNiYXBwZGNJWGRYNEFhcDh4dGhFT1dVOU5iQ2dQV1RlRHViUnNiR3VlM05kdkRfUFl1NWVKYjJpQ2JfZ0pxU2xKTW1oQml1TlBJbzZCVzhZT2w1aFlnblJFc3FKeVZQTUtuLXBFRS1aY2phT2VfcmZwTDRZb0R1ZlBYSHFzSHdBQ0VuZG5VYTZTb05yODZOb1NvSlJ3ZFVmbDRGaHZTUkY2c21XRW5xRjhkbEMxVzdTdWdteEhT?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-30T11:11:27.312217+00:00"
+  "updated_at": "2026-10-30T19:40:35.264911+00:00"
 }
