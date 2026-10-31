@@ -511,6 +511,22 @@
     "ugandan tungsten projects": {
       "name": "Ugandan Tungsten Projects",
       "kind": "organization"
+    },
+    "add properties egypt": {
+      "name": "ADD Properties' Egypt",
+      "kind": "organization"
+    },
+    "zeus resources": {
+      "name": "Zeus Resources",
+      "kind": "organization"
+    },
+    "sab metals mauritania": {
+      "name": "Sab Metals Mauritania",
+      "kind": "organization"
+    },
+    "nigerian offshore block": {
+      "name": "Nigerian Offshore Block",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1604,7 +1620,49 @@
           "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxQd05DcXZLQjNiYXBwZGNJWGRYNEFhcDh4dGhFT1dVOU5iQ2dQV1RlRHViUnNiR3VlM05kdkRfUFl1NWVKYjJpQ2JfZ0pxU2xKTW1oQml1TlBJbzZCVzhZT2w1aFlnblJFc3FKeVZQTUtuLXBFRS1aY2phT2VfcmZwTDRZb0R1ZlBYSHFzSHdBQ0VuZG5VYTZTb05yODZOb1NvSlJ3ZFVmbDRGaHZTUkY2c21XRW5xRjhkbEMxVzdTdWdteEhT?oc=5"
         }
       ]
+    },
+    "dd7112f310ac9d0fc22a": {
+      "id": "dd7112f310ac9d0fc22a",
+      "from": "ebrd",
+      "to": "add properties egypt",
+      "type": "debt_financing",
+      "first_seen": "2026-10-31",
+      "sources": [
+        {
+          "title": "EBRD arranges $265mln financing for ADD Properties' Egypt hospitality expansion",
+          "publisher": "TradingView",
+          "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxQMDVFZDgyT0lUYWd3bnR1OUQ3YXc5MlJvSHZOdWFoU2JJRmoycFBnTHNoQ0djTkhkblhIUkxiWEJwNzRRc01YRGN2OWhuRWlaaXhDSzJCTzNmRU8xYWJXYl93SVdGOUhWc01pTThYcWZUcFBxSzhxSEFOd3ZtRXIyTzY2RFcxQTc3RGstcmRaYVMxdDRKc2N2Z1hDN3BlVmpna3pJb254MjBBZk9mdTkwS2Q4ZjRuUGc0dkV6am92Q3p1NXNZanllQXpFaUpMTER0SlBSelVfYkZQSVVHMzRuZUlvclF4R1Rm?oc=5"
+        }
+      ]
+    },
+    "f98ee0b891dee60539df": {
+      "id": "f98ee0b891dee60539df",
+      "from": "zeus resources",
+      "to": "sab metals mauritania",
+      "type": "acquisition",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "Projet cuivre-or de Diaguili : Zeus Resources acquiert 51 % de Sab Metals Mauritania",
+          "publisher": "Cridem",
+          "url": "https://news.google.com/rss/articles/CBMiV0FVX3lxTFBULU1BMG5UeGozTHFuZWtjNFNHV0NWT3E4OXJyaG1HZktHOEp1cnNuOFc3bmRqeWVJLUk4SlJlUlBpUGdEMlc2M0pxaE5EZ1pjNlJsUF81VQ?oc=5"
+        }
+      ]
+    },
+    "2ea9e188887929d25e2b": {
+      "id": "2ea9e188887929d25e2b",
+      "from": "sapetro",
+      "to": "nigerian offshore block",
+      "type": "exit",
+      "first_seen": "2026-10-30",
+      "sources": [
+        {
+          "title": "TotalEnergies Sells 40% Stake in Nigerian Offshore Block to SAPETRO",
+          "publisher": "Brand Icon Image",
+          "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxNd3Bwa2JLNERxcTkyeUF5Y1pYT0Y4d3JHczY3aEhMWEZnUjBwaTNDWUNiWmpkbWNidkhyY1hkbW90TGtZSVRmbGY3NnItYjlEUFRCb2syckJtUkZKbG14YmpfbldoNEQ2LVVTUFVOZVJHLURsaGRPM1I5NFNpSkVOTA?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-30T19:40:35.264911+00:00"
+  "updated_at": "2026-10-31T10:45:36.324920+00:00"
 }

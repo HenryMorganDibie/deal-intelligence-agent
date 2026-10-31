@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-30T19:40:39.737175+00:00",
+  "updated_at": "2026-10-31T10:45:40.699985+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 56,
+      "new_review_items_today": 61,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 0,
+      "new_review_items_today": 1,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 99,
-      "new_observations_today": 6,
+      "observations_collected": 101,
+      "new_observations_today": 2,
       "unreviewed_flagged_observations": 15,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 74,
-      "entities": 128,
+      "relationships": 77,
+      "entities": 132,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,23 +177,31 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 99,
-    "new_rows": 6,
+    "collected_tickers": 101,
+    "new_rows": 2,
     "failures": [
-      "CONTINSURE.LG",
-      "COPR.CA",
-      "COSTAIN.LG",
-      "COURTVILLE.LG",
-      "CPC.GH",
-      "CPCI.CA"
+      "CRD.JO",
+      "CRG.JO",
+      "CRP.JO",
+      "CRS.CS",
+      "CRWN.NR",
+      "CSG.JO",
+      "CSP.JO",
+      "CSR.CS",
+      "CTA.JO",
+      "CTK.JO"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 128,
-    "relationships": 74,
-    "source_links": 85,
+    "nodes": 132,
+    "relationships": 77,
+    "source_links": 88,
     "most_connected": [
+      {
+        "name": "EBRD",
+        "degree": 4
+      },
       {
         "name": "Amsons Group",
         "degree": 3
@@ -203,11 +211,11 @@
         "degree": 3
       },
       {
-        "name": "EBRD",
+        "name": "Sterling Oil",
         "degree": 3
       },
       {
-        "name": "Sterling Oil",
+        "name": "Sapetro",
         "degree": 3
       },
       {
@@ -228,10 +236,6 @@
       },
       {
         "name": "Den VC",
-        "degree": 2
-      },
-      {
-        "name": "Helios",
         "degree": 2
       }
     ]

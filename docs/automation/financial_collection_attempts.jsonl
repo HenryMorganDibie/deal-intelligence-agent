@@ -296,3 +296,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "status": "no_annual_data_returned", "ticker": "CPC.GH"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "status": "no_annual_data_returned", "ticker": "CPCI.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-30", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CPI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CRD.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CRG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CRP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CRS.CS"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CRWN.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CSAG.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CSB.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CSG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CSP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CSR.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CTA.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CTK.JO"}
