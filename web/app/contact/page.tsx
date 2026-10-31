@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { SiteFooter } from "../../components/Closing";
 import { SiteNav } from "../../components/SiteNav";
-import { ArrowRight, Container } from "../../components/primitives";
-import { CONTACT_EMAIL, REQUESTS, mailto } from "../../lib/site";
+import { Container } from "../../components/primitives";
+import { ContactForm } from "../../components/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact | Deal Intelligence",
-  description: "Request a demonstration, discuss a pilot, or ask about the methodology and evaluation data.",
+  description:
+    "Contact Deal Intelligence to request a demonstration, explore an institutional pilot, discuss a partnership, or ask about our data and methodology.",
 };
 
 export default function ContactPage() {
@@ -16,36 +17,32 @@ export default function ContactPage() {
       <main id="main" className="pb-16 pt-28">
         <Container className="max-w-3xl">
           <p className="eyebrow">Contact</p>
-          <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">Talk to the person who built it.</h1>
+          <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">
+            Let&apos;s talk about better market intelligence.
+          </h1>
           <p className="mt-4 text-[1rem] leading-relaxed text-[color:var(--muted)]">
-            Every request goes to Henry Dibie directly, at{" "}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-verified hover:underline">
-              {CONTACT_EMAIL}
-            </a>
-            . Each option below opens an email with a short template, so the first reply can be specific.
+            Whether you&apos;re evaluating the platform, exploring an institutional pilot, or discussing a
+            strategic partnership, tell us what you&apos;re working on. Your enquiry goes directly to the
+            Deal Intelligence team.
           </p>
-          <div className="mt-10 grid gap-4">
-            {REQUESTS.map((r) => (
-              <a
-                key={r.key}
-                href={mailto(r.subject, r.template)}
-                className="panel group block p-6 transition-colors hover:bg-white/[0.02]"
-              >
-                <h2 className="h3 flex items-center justify-between gap-3">
-                  {r.title}
-                  <ArrowRight className="shrink-0 text-[color:var(--dim)] transition-colors group-hover:text-verified" />
-                </h2>
-                <p className="mt-2 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">{r.body}</p>
-              </a>
-            ))}
-          </div>
+
+          <ContactForm />
+
+          <p className="mt-5 text-sm text-[color:var(--muted)]">
+            Prefer email? Write to{" "}
+            <a href="mailto:info@deal-intelligence.app" className="text-verified hover:underline">
+              info@deal-intelligence.app
+            </a>
+            .
+          </p>
+
           <section aria-labelledby="pilot-title" className="mt-12 border-t hairline pt-8">
-            <h2 id="pilot-title" className="h3">What a pilot looks like</h2>
+            <h2 id="pilot-title" className="h3">What an institutional pilot looks like</h2>
             <ol className="mt-4 list-decimal space-y-2 pl-5 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
-              <li>Agree the coverage universe: countries, sectors, companies and deal types that matter to you.</li>
-              <li>Fix the success measures before starting: for example recall against deals you already track, field accuracy, and time to first report.</li>
-              <li>Run for four to eight weeks with daily briefs, the deal feed and watchlists on your universe.</li>
-              <li>Close with an evaluation report on your own reference data, using the same method as the public evaluation pages.</li>
+              <li>Agree the coverage universe: countries, sectors, companies and deal types that matter to your team.</li>
+              <li>Set success measures before starting, such as recall against deals you already track, field accuracy, and time to first report.</li>
+              <li>Run a scoped evaluation using the deal feed, company signals and watchlists relevant to your universe.</li>
+              <li>Review the results against your reference data, with limitations and evidence made explicit.</li>
             </ol>
           </section>
         </Container>
