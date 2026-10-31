@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-31T10:45:40.699985+00:00",
+  "updated_at": "2026-10-31T18:44:12.464722+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 61,
+      "new_review_items_today": 60,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 1,
+      "new_review_items_today": 0,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 101,
-      "new_observations_today": 2,
+      "observations_collected": 106,
+      "new_observations_today": 5,
       "unreviewed_flagged_observations": 15,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 77,
-      "entities": 132,
+      "relationships": 78,
+      "entities": 134,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,26 +177,23 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 101,
-    "new_rows": 2,
+    "collected_tickers": 106,
+    "new_rows": 5,
     "failures": [
-      "CRD.JO",
-      "CRG.JO",
-      "CRP.JO",
-      "CRS.CS",
-      "CRWN.NR",
-      "CSG.JO",
-      "CSP.JO",
-      "CSR.CS",
-      "CTA.JO",
-      "CTK.JO"
+      "CTM.CS",
+      "CTUM.NR",
+      "CUL.JO",
+      "CUSTODYINS.LG",
+      "CVH.JO",
+      "CZA.JO",
+      "DANGFLOUR.LG"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 132,
-    "relationships": 77,
-    "source_links": 88,
+    "nodes": 134,
+    "relationships": 78,
+    "source_links": 89,
     "most_connected": [
       {
         "name": "EBRD",

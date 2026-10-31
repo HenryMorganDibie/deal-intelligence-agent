@@ -308,3 +308,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CSR.CS"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CTA.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CTK.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CTM.CS"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CTUM.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CUL.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CUSTODYINS.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/44613_CUTIX_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_JULY_2025.pdf", "status": "collected", "ticker": "CUTIX.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CVH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "CVW.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/43364_CWG_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2024_FINANCIAL_STATEMENTS_MARCH_2025.pdf", "status": "collected", "ticker": "CWG.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "CZA.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46514_DAAR_COMMUNICATIONS_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "DAARCOMM.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/DANGOTE_CEMENT_PLC_-_2025_AUDITED_FINANCIAL_STATEMENTS.pdf", "status": "collected", "ticker": "DANGCEM.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "DANGFLOUR.LG"}

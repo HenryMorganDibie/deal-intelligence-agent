@@ -527,6 +527,14 @@
     "nigerian offshore block": {
       "name": "Nigerian Offshore Block",
       "kind": "organization"
+    },
+    "vistra": {
+      "name": "Vistra",
+      "kind": "organization"
+    },
+    "cogentrix energy": {
+      "name": "Cogentrix Energy",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1662,7 +1670,21 @@
           "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxNd3Bwa2JLNERxcTkyeUF5Y1pYT0Y4d3JHczY3aEhMWEZnUjBwaTNDWUNiWmpkbWNidkhyY1hkbW90TGtZSVRmbGY3NnItYjlEUFRCb2syckJtUkZKbG14YmpfbldoNEQ2LVVTUFVOZVJHLURsaGRPM1I5NFNpSkVOTA?oc=5"
         }
       ]
+    },
+    "cd544f606356637f3b1b": {
+      "id": "cd544f606356637f3b1b",
+      "from": "vistra",
+      "to": "cogentrix energy",
+      "type": "acquisition",
+      "first_seen": "2026-10-31",
+      "sources": [
+        {
+          "title": "Vistra completes acquisition of Cogentrix Energy for 5,500 MW By Investing.com",
+          "publisher": "Investing.com South Africa",
+          "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQdUZXd2RHMXlLQ2hNZU5KNnJKS0k5MXh5Q1JxNW1ieE9iTzNFck1QUXlFMklDUEpPb205SXIydmE2RlpRcjk5anJ1aHNYOUhqXzNYVVhuTkVKMllGN3VJV3lGOFZ1OWZQemlYNHo1N0w0bjB1cmlyT2I3am9mTTJhS3htMlZtX2V0NEQyc1JrQy1UM21iTTZzMnBpT1JUTGxCR2lfbmQ0YUtBMHlXYXNwWTJOWEk0OWltc0pIR3V3?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-31T10:45:36.324920+00:00"
+  "updated_at": "2026-10-31T18:44:08.748790+00:00"
 }
