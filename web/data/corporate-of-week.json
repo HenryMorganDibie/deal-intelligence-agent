@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-30T22:20:45.971108+00:00",
+  "updated_at": "2026-10-31T13:47:52.755375+00:00",
   "current": {
     "company": "BPR Bank",
     "company_url": "/app/companies?name=BPR%20Bank",
@@ -10,7 +10,7 @@
     "country": "RW",
     "sector": "banking",
     "announced": "2026-10-28",
-    "score": 55.77,
+    "score": 54.34,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
@@ -30,9 +30,9 @@
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-10-23",
-    "period_end": "2026-10-29",
-    "selected_at": "2026-10-30T22:20:45.970511+00:00",
+    "period_start": "2026-10-24",
+    "period_end": "2026-10-30",
+    "selected_at": "2026-10-31T13:47:52.754174+00:00",
     "selection_version": 5,
     "companies": [
       {
@@ -44,7 +44,7 @@
         "country": "RW",
         "sector": "banking",
         "announced": "2026-10-28",
-        "score": 55.77,
+        "score": 54.34,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +64,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-23",
-        "period_end": "2026-10-29",
-        "selected_at": "2026-10-30T22:20:45.970511+00:00",
+        "period_start": "2026-10-24",
+        "period_end": "2026-10-30",
+        "selected_at": "2026-10-31T13:47:52.754174+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +78,7 @@
         "country": "CM",
         "sector": "energy",
         "announced": "2026-10-27",
-        "score": 50.14,
+        "score": 48.71,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +98,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-23",
-        "period_end": "2026-10-29",
-        "selected_at": "2026-10-30T22:20:45.970511+00:00",
+        "period_start": "2026-10-24",
+        "period_end": "2026-10-30",
+        "selected_at": "2026-10-31T13:47:52.754174+00:00",
         "selection_version": 5
       },
       {
@@ -112,7 +112,7 @@
         "country": "NG",
         "sector": "energy",
         "announced": "2026-10-24",
-        "score": 45.41,
+        "score": 43.98,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-23",
-        "period_end": "2026-10-29",
-        "selected_at": "2026-10-30T22:20:45.970511+00:00",
+        "period_start": "2026-10-24",
+        "period_end": "2026-10-30",
+        "selected_at": "2026-10-31T13:47:52.754174+00:00",
         "selection_version": 5
       }
     ],
@@ -1874,6 +1874,145 @@
           "period_start": "2026-10-23",
           "period_end": "2026-10-29",
           "selected_at": "2026-10-30T22:20:45.970511+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": []
+    },
+    {
+      "company": "BPR Bank",
+      "company_url": "/app/companies?name=BPR%20Bank",
+      "headline": "BPR Bank Rwanda appoints Xavier Shema as acting MD after Patience Mutesi exit",
+      "deal_type": "leadership_change",
+      "amount_usd": null,
+      "country": "RW",
+      "sector": "banking",
+      "announced": "2026-10-28",
+      "score": 54.34,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: leadership change",
+        "Event rule confidence: 0.90",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Capital FM Africa",
+          "title": "BPR Bank Rwanda appoints Xavier Shema as acting MD after Patience Mutesi exit",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQV2dkYU81Mnh6MWFCS0JXOXJyZlZyNVoyeWxuSzNKZWo5RXFqQVpyWFBlcVRCeGZuSm9hSGFzSWtUUGsyb1ZWdzFSRUtQMmtUUEF2S3BaQ004aEttZmllNUhyeTJ0b25UVDQzNGNPc3dmN2V5MDVXNGNKajJrZmpoNk9aaW00MWFDRXREV0xiSmJMTWZIaEkwcXZrQ2d4N0YwekRPZGZn?oc=5",
+          "date": "2026-10-28",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-10-24",
+      "period_end": "2026-10-30",
+      "selected_at": "2026-10-31T13:47:52.754174+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "BPR Bank",
+          "company_url": "/app/companies?name=BPR%20Bank",
+          "headline": "BPR Bank Rwanda appoints Xavier Shema as acting MD after Patience Mutesi exit",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "RW",
+          "sector": "banking",
+          "announced": "2026-10-28",
+          "score": 54.34,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Capital FM Africa",
+              "title": "BPR Bank Rwanda appoints Xavier Shema as acting MD after Patience Mutesi exit",
+              "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQV2dkYU81Mnh6MWFCS0JXOXJyZlZyNVoyeWxuSzNKZWo5RXFqQVpyWFBlcVRCeGZuSm9hSGFzSWtUUGsyb1ZWdzFSRUtQMmtUUEF2S3BaQ004aEttZmllNUhyeTJ0b25UVDQzNGNPc3dmN2V5MDVXNGNKajJrZmpoNk9aaW00MWFDRXREV0xiSmJMTWZIaEkwcXZrQ2d4N0YwekRPZGZn?oc=5",
+              "date": "2026-10-28",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-24",
+          "period_end": "2026-10-30",
+          "selected_at": "2026-10-31T13:47:52.754174+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Puma Energy",
+          "company_url": "/app/companies?name=Puma%20Energy",
+          "headline": "Gulfcam CEO Leaves for Puma Energy Congo, Leaving Leadership Vacancy at Cameroonian Firm",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "CM",
+          "sector": "energy",
+          "announced": "2026-10-27",
+          "score": 48.71,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Business in Cameroon",
+              "title": "Gulfcam CEO Leaves for Puma Energy Congo, Leaving Leadership Vacancy at Cameroonian Firm",
+              "url": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxNUWxfYjk2d3RzOFhjcXY1Sm5YTkNKdW9UQzRZSnRGZXppdWd5OEFMOFcwZzBLWHNPMlBrWTlieWxkOFU4Y0tZZXNJMjBkd3BRVEY4LWNJc1ZLa0ZwcF9xZVRZU0xEcjYzeGZBNmVkczVFeHM5MlVVSUp2TkdlaGQ1ZmJRS2Rpdms4dkxWZE1GLUFEZ0Z5bnJ2akp4QVNsNnhvNXhBRU52TzVmNWd2ZEwxbGVUaTd2S091bjhBQlVDZUNVSlRpWXZxbk1MSnZ1UlJoemNiSThjb0R3MnNpVlRjU0N2Vml3dw?oc=5",
+              "date": "2026-10-27",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-24",
+          "period_end": "2026-10-30",
+          "selected_at": "2026-10-31T13:47:52.754174+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Geregu Power",
+          "company_url": "/app/companies?name=Geregu%20Power",
+          "headline": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "energy",
+          "announced": "2026-10-24",
+          "score": 43.98,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.72",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "Geregu Power signs Siemens transformer deal after sharp revenue decline",
+              "url": "https://nairametrics.com/2026/10/24/geregu-power-signs-siemens-transformer-deal-after-sharp-revenue-decline/",
+              "date": "2026-10-24",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-10-24",
+          "period_end": "2026-10-30",
+          "selected_at": "2026-10-31T13:47:52.754174+00:00",
           "selection_version": 5
         }
       ],
