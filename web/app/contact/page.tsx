@@ -18,10 +18,10 @@ export default function ContactPage() {
         <Container className="max-w-3xl">
           <p className="eyebrow">Contact</p>
           <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">
-            Let's talk about better market intelligence.
+            Let&apos;s talk about better market intelligence.
           </h1>
           <p className="mt-4 text-[1rem] leading-relaxed text-[color:var(--muted)]">
-            Whether you're evaluating the platform, exploring an institutional pilot, or discussing a
+            Whether you&apos;re evaluating the platform, exploring an institutional pilot, or discussing a
             strategic partnership, tell us what you're working on. Your enquiry goes directly to the
             Deal Intelligence team.
           </p>
