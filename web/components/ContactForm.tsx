@@ -133,7 +133,7 @@ export function ContactForm() {
 
       {status === "success" ? (
         <p role="status" className="rounded-lg border border-emerald-400/20 bg-emerald-400/[0.06] p-4 text-sm text-emerald-200">
-          Thanks for getting in touch. Your enquiry has been received. We'll follow up by email.
+          Thanks for getting in touch. Your enquiry has been received. We&apos;ll follow up by email.
         </p>
       ) : null}
       {status === "error" ? (
