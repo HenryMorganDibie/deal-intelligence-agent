@@ -22,7 +22,7 @@ export default function ContactPage() {
           </h1>
           <p className="mt-4 text-[1rem] leading-relaxed text-[color:var(--muted)]">
             Whether you&apos;re evaluating the platform, exploring an institutional pilot, or discussing a
-            strategic partnership, tell us what you're working on. Your enquiry goes directly to the
+            strategic partnership, tell us what you&apos;re working on. Your enquiry goes directly to the
             Deal Intelligence team.
           </p>
 
