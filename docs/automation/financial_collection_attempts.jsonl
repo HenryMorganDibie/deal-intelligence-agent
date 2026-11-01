@@ -332,3 +332,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DEIN.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DGH.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DHO.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DIA.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DIAMONDBNK.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DIFC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DIGICUT.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DIS.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DKR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DLM.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "DLT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DMC.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "DNB.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DNMEYER.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "DOMT.CA"}

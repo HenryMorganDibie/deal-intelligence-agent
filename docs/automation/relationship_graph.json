@@ -547,6 +547,30 @@
     "100mhz": {
       "name": "100MHz",
       "kind": "organization"
+    },
+    "265m financing for add properties grand hyatt hotel in giza": {
+      "name": "$265m financing for ADD Properties’ Grand Hyatt hotel in Giza",
+      "kind": "organization"
+    },
+    "boost renewable energy": {
+      "name": "Boost Renewable Energy",
+      "kind": "organization"
+    },
+    "mtn ghana": {
+      "name": "MTN Ghana",
+      "kind": "organization"
+    },
+    "network expansion": {
+      "name": "Network Expansion",
+      "kind": "organization"
+    },
+    "america": {
+      "name": "America",
+      "kind": "organization"
+    },
+    "minerals": {
+      "name": "Minerals",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1724,7 +1748,63 @@
           "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOemZuU3l1TmtyOGFLSU5xZm9IbzRZSU5RckxvQ0U4TnhudDFBSGVkeW1HZmRSQVdGM1ZnR0otM2RlX2RPeEhHY2I1YTk2MkRpaHkwdC1mVFd3T0ZvMU1Lak9xbklBUG5adGNIS2JFSVRkWTlwS3h5SzZsZk5QbEl1eHBjUWdqRHZSSUg0ZGc5RlV1Tm1DYzJDUVktR0pzZ21j?oc=5"
         }
       ]
+    },
+    "fb4f260085e5878d0736": {
+      "id": "fb4f260085e5878d0736",
+      "from": "ebrd",
+      "to": "265m financing for add properties grand hyatt hotel in giza",
+      "type": "equity_funding",
+      "first_seen": "2026-11-01",
+      "sources": [
+        {
+          "title": "EBRD backs $265m financing for ADD Properties’ Grand Hyatt hotel in Giza",
+          "publisher": "Daily News Egypt",
+          "url": "https://dailynewsegypt.com/2026/11/01/ebrd-backs-265m-financing-for-add-properties-grand-hyatt-hotel-in-giza/"
+        }
+      ]
+    },
+    "e4ad1baf259906c032ac": {
+      "id": "e4ad1baf259906c032ac",
+      "from": "boost renewable energy",
+      "to": "proparco",
+      "type": "debt_financing",
+      "first_seen": "2026-11-01",
+      "sources": [
+        {
+          "title": "Sterling Bank, Proparco Sign $30m Facility to Boost Renewable Energy, Agricultural SMEs",
+          "publisher": "MSME Africa",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNS0VkdHJNWTRweU9SQmc0UG15OTM4anpQUUhZY00yQUtoRGQtRmc5bS1fbURNUDJOM0ZZM0tQSVNnTGZLYUpGamRNc0lpdUFxdG1QVGVjZW5rdVJXYllBaUw0VUlETU9ORDUwYXM2QWFrdmdWRUktUmhueFhHQkdpV2xwdDZXRmlhUzBvdlJNeFVWRXBZVkVoQ0JGdmlBZlRxYWlxLUJHZmlkcGdpQW1jMkRvZms?oc=5"
+        }
+      ]
+    },
+    "68def42b31b5bdac36f3": {
+      "id": "68def42b31b5bdac36f3",
+      "from": "mtn ghana",
+      "to": "network expansion",
+      "type": "equity_funding",
+      "first_seen": "2026-11-01",
+      "sources": [
+        {
+          "title": "MTN Ghana Invests US$1.1 Billion In Network Expansion Over Three Years",
+          "publisher": "News Ghana",
+          "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNU3ZOT2NHdHk0NWttZkdxN0FTcm0wWGEzRFZiekRydk1GRlpsUGpWYXpGLVpBX29Xb2o2UHZhNVlkeWM5aEFvR1RPWmQ2SzBQZG5jWERMOURIZVlSaDh0MzcxbTJyc2Q5SV9Wam1QQjVpRG85REEtWndBb1EtT1ZONXpPbnJOM2pWX2xHMTJOUUVTLWFQMTFaaFQ2SQ?oc=5"
+        }
+      ]
+    },
+    "4d77cad66b2afbb14b2c": {
+      "id": "4d77cad66b2afbb14b2c",
+      "from": "america",
+      "to": "minerals",
+      "type": "acquisition",
+      "first_seen": "2026-11-01",
+      "sources": [
+        {
+          "title": "America Is Buying Africa’s Minerals, While China Is Buying Leverage",
+          "publisher": "Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOeF9seVEtNmdUYVNKdXNSbnZyYXppTVI0LVo4aHR3SkJKUGMxbVJ6VnVpV3BJZUxMVUszeVlCdkNKVldKdkhfTXVTNHlaQmh3U1B3aWRLSFZTV0k0T0szajFaS2ZHNElneURCa2dkaGdmQ21vUXNfYnlfamVudHFyTkphZTJtYWZGS1VDQUR6TzFmZkdmYl9Qc1ZfMTZoS1FOX3Uw?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-01T11:41:39.272991+00:00"
+  "updated_at": "2026-11-01T19:07:31.752729+00:00"
 }
