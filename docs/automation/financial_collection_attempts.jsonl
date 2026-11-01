@@ -320,3 +320,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46514_DAAR_COMMUNICATIONS_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "DAARCOMM.LG"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/DANGOTE_CEMENT_PLC_-_2025_AUDITED_FINANCIAL_STATEMENTS.pdf", "status": "collected", "ticker": "DANGCEM.LG"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-10-31", "market": "africa", "status": "no_annual_data_returned", "ticker": "DANGFLOUR.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-01", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46208_DANGOTE_SUGAR_REFINERY_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "DANGSUGAR.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DAPH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DARI.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DASPHARMA.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DAW.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DCON.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "DCP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DCRC.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DEAPCAP.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DEIN.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DGH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-01", "market": "africa", "status": "no_annual_data_returned", "ticker": "DHO.CS"}

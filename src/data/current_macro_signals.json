@@ -3,13 +3,13 @@
     "AO": {
       "country_code": "AO",
       "country_name": "Angola",
-      "generated_at": "2026-10-31T10:38:20.677891Z",
+      "generated_at": "2026-11-01T11:34:06.872106Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to AOA exchange rate",
@@ -38,13 +38,13 @@
     "BF": {
       "country_code": "BF",
       "country_name": "Burkina Faso",
-      "generated_at": "2026-10-31T10:35:03.149947Z",
+      "generated_at": "2026-11-01T11:30:49.528960Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
@@ -85,13 +85,13 @@
     "BI": {
       "country_code": "BI",
       "country_name": "Burundi",
-      "generated_at": "2026-10-31T10:40:20.838397Z",
+      "generated_at": "2026-11-01T11:36:07.358557Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to BIF exchange rate",
@@ -120,13 +120,13 @@
     "BJ": {
       "country_code": "BJ",
       "country_name": "Benin",
-      "generated_at": "2026-10-31T10:34:49.871189Z",
+      "generated_at": "2026-11-01T11:30:36.323104Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
@@ -167,13 +167,13 @@
     "BW": {
       "country_code": "BW",
       "country_name": "Botswana",
-      "generated_at": "2026-10-31T10:44:18.603278Z",
+      "generated_at": "2026-11-01T11:40:06.188882Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to BWP exchange rate",
@@ -214,13 +214,13 @@
     "CD": {
       "country_code": "CD",
       "country_name": "Democratic Republic of the Congo",
-      "generated_at": "2026-10-31T10:39:28.230797Z",
+      "generated_at": "2026-11-01T11:35:14.925794Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to CDF exchange rate",
@@ -249,13 +249,13 @@
     "CF": {
       "country_code": "CF",
       "country_name": "Central African Republic",
-      "generated_at": "2026-10-31T10:38:47.979476Z",
+      "generated_at": "2026-11-01T11:34:33.475265Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
@@ -296,13 +296,13 @@
     "CG": {
       "country_code": "CG",
       "country_name": "Republic of the Congo",
-      "generated_at": "2026-10-31T10:39:14.722333Z",
+      "generated_at": "2026-11-01T11:35:01.439815Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
@@ -343,13 +343,13 @@
     "CI": {
       "country_code": "CI",
       "country_name": "C\u00f4te d'Ivoire",
-      "generated_at": "2026-10-31T10:35:29.474117Z",
+      "generated_at": "2026-11-01T11:31:15.921951Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
@@ -390,13 +390,13 @@
     "CM": {
       "country_code": "CM",
       "country_name": "Cameroon",
-      "generated_at": "2026-10-31T10:38:34.672663Z",
+      "generated_at": "2026-11-01T11:34:20.274984Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
@@ -437,13 +437,13 @@
     "CV": {
       "country_code": "CV",
       "country_name": "Cabo Verde",
-      "generated_at": "2026-10-31T10:35:16.182196Z",
+      "generated_at": "2026-11-01T11:31:02.605114Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to CVE exchange rate",
@@ -472,13 +472,13 @@
     "DJ": {
       "country_code": "DJ",
       "country_name": "Djibouti",
-      "generated_at": "2026-10-31T10:40:47.039284Z",
+      "generated_at": "2026-11-01T11:36:33.598906Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to DJF exchange rate",
@@ -507,13 +507,13 @@
     "DZ": {
       "country_code": "DZ",
       "country_name": "Algeria",
-      "generated_at": "2026-10-31T10:33:30.419352Z",
+      "generated_at": "2026-11-01T11:29:17.362767Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to DZD exchange rate",
@@ -554,13 +554,13 @@
     "EG": {
       "country_code": "EG",
       "country_name": "Egypt",
-      "generated_at": "2026-10-31T10:33:43.936543Z",
+      "generated_at": "2026-11-01T11:29:30.681214Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to EGP exchange rate",
@@ -601,13 +601,13 @@
     "ER": {
       "country_code": "ER",
       "country_name": "Eritrea",
-      "generated_at": "2026-10-31T10:41:00.077424Z",
+      "generated_at": "2026-11-01T11:36:46.713362Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to ERN exchange rate",
@@ -636,13 +636,13 @@
     "ET": {
       "country_code": "ET",
       "country_name": "Ethiopia",
-      "generated_at": "2026-10-31T10:41:13.310906Z",
+      "generated_at": "2026-11-01T11:36:59.921227Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to ETB exchange rate",
@@ -671,13 +671,13 @@
     "GA": {
       "country_code": "GA",
       "country_name": "Gabon",
-      "generated_at": "2026-10-31T10:39:54.665918Z",
+      "generated_at": "2026-11-01T11:35:41.260021Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
@@ -718,13 +718,13 @@
     "GH": {
       "country_code": "GH",
       "country_name": "Ghana",
-      "generated_at": "2026-10-31T10:35:56.004008Z",
+      "generated_at": "2026-11-01T11:31:42.416331Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to GHS exchange rate",
@@ -777,13 +777,13 @@
     "GM": {
       "country_code": "GM",
       "country_name": "Gambia",
-      "generated_at": "2026-10-31T10:35:42.688676Z",
+      "generated_at": "2026-11-01T11:31:28.970262Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to GMD exchange rate",
@@ -812,13 +812,13 @@
     "GN": {
       "country_code": "GN",
       "country_name": "Guinea",
-      "generated_at": "2026-10-31T10:36:09.077739Z",
+      "generated_at": "2026-11-01T11:31:55.553494Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to GNF exchange rate",
@@ -847,13 +847,13 @@
     "GQ": {
       "country_code": "GQ",
       "country_name": "Equatorial Guinea",
-      "generated_at": "2026-10-31T10:39:41.446342Z",
+      "generated_at": "2026-11-01T11:35:28.069098Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
@@ -894,13 +894,13 @@
     "GW": {
       "country_code": "GW",
       "country_name": "Guinea-Bissau",
-      "generated_at": "2026-10-31T10:36:22.109592Z",
+      "generated_at": "2026-11-01T11:32:08.612134Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
@@ -941,13 +941,13 @@
     "KE": {
       "country_code": "KE",
       "country_name": "Kenya",
-      "generated_at": "2026-10-31T10:41:26.810734Z",
+      "generated_at": "2026-11-01T11:37:12.627218Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to KES exchange rate",
@@ -1012,13 +1012,13 @@
     "KM": {
       "country_code": "KM",
       "country_name": "Comoros",
-      "generated_at": "2026-10-31T10:40:33.871715Z",
+      "generated_at": "2026-11-01T11:36:20.512692Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to KMF exchange rate",
@@ -1047,13 +1047,13 @@
     "LR": {
       "country_code": "LR",
       "country_name": "Liberia",
-      "generated_at": "2026-10-31T10:36:35.200461Z",
+      "generated_at": "2026-11-01T11:32:21.704090Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to LRD exchange rate",
@@ -1082,13 +1082,13 @@
     "LS": {
       "country_code": "LS",
       "country_name": "Lesotho",
-      "generated_at": "2026-10-31T10:44:44.839074Z",
+      "generated_at": "2026-11-01T11:40:32.436262Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to LSL exchange rate",
@@ -1129,13 +1129,13 @@
     "LY": {
       "country_code": "LY",
       "country_name": "Libya",
-      "generated_at": "2026-10-31T10:33:57.134488Z",
+      "generated_at": "2026-11-01T11:29:43.751017Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to LYD exchange rate",
@@ -1164,13 +1164,13 @@
     "MA": {
       "country_code": "MA",
       "country_name": "Morocco",
-      "generated_at": "2026-10-31T10:34:10.372398Z",
+      "generated_at": "2026-11-01T11:29:56.864834Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MAD exchange rate",
@@ -1223,13 +1223,13 @@
     "MG": {
       "country_code": "MG",
       "country_name": "Madagascar",
-      "generated_at": "2026-10-31T10:41:40.302571Z",
+      "generated_at": "2026-11-01T11:37:25.904825Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MGA exchange rate",
@@ -1258,13 +1258,13 @@
     "ML": {
       "country_code": "ML",
       "country_name": "Mali",
-      "generated_at": "2026-10-31T10:36:48.412165Z",
+      "generated_at": "2026-11-01T11:32:34.862913Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
@@ -1305,13 +1305,13 @@
     "MR": {
       "country_code": "MR",
       "country_name": "Mauritania",
-      "generated_at": "2026-10-31T10:37:01.566513Z",
+      "generated_at": "2026-11-01T11:32:47.960313Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MRU exchange rate",
@@ -1340,13 +1340,13 @@
     "MU": {
       "country_code": "MU",
       "country_name": "Mauritius",
-      "generated_at": "2026-10-31T10:42:06.714334Z",
+      "generated_at": "2026-11-01T11:37:52.343299Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MUR exchange rate",
@@ -1387,13 +1387,13 @@
     "MW": {
       "country_code": "MW",
       "country_name": "Malawi",
-      "generated_at": "2026-10-31T10:41:53.572149Z",
+      "generated_at": "2026-11-01T11:37:39.198679Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MWK exchange rate",
@@ -1422,13 +1422,13 @@
     "MZ": {
       "country_code": "MZ",
       "country_name": "Mozambique",
-      "generated_at": "2026-10-31T10:42:19.831325Z",
+      "generated_at": "2026-11-01T11:38:05.432843Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MZN exchange rate",
@@ -1469,13 +1469,13 @@
     "NA": {
       "country_code": "NA",
       "country_name": "Namibia",
-      "generated_at": "2026-10-31T10:44:58.172628Z",
+      "generated_at": "2026-11-01T11:40:45.710186Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to NAD exchange rate",
@@ -1528,13 +1528,13 @@
     "NE": {
       "country_code": "NE",
       "country_name": "Niger",
-      "generated_at": "2026-10-31T10:37:14.693347Z",
+      "generated_at": "2026-11-01T11:33:01.429450Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
@@ -1575,13 +1575,13 @@
     "NG": {
       "country_code": "NG",
       "country_name": "Nigeria",
-      "generated_at": "2026-10-31T10:37:28.070217Z",
+      "generated_at": "2026-11-01T11:33:14.188247Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to NGN exchange rate",
@@ -1634,13 +1634,13 @@
     "RW": {
       "country_code": "RW",
       "country_name": "Rwanda",
-      "generated_at": "2026-10-31T10:42:33.294740Z",
+      "generated_at": "2026-11-01T11:38:18.765647Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to RWF exchange rate",
@@ -1669,13 +1669,13 @@
     "SC": {
       "country_code": "SC",
       "country_name": "Seychelles",
-      "generated_at": "2026-10-31T10:42:46.225847Z",
+      "generated_at": "2026-11-01T11:38:31.619300Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SCR exchange rate",
@@ -1704,13 +1704,13 @@
     "SD": {
       "country_code": "SD",
       "country_name": "Sudan",
-      "generated_at": "2026-10-31T10:34:23.499049Z",
+      "generated_at": "2026-11-01T11:30:09.964748Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SDG exchange rate",
@@ -1739,13 +1739,13 @@
     "SL": {
       "country_code": "SL",
       "country_name": "Sierra Leone",
-      "generated_at": "2026-10-31T10:37:54.424856Z",
+      "generated_at": "2026-11-01T11:33:40.695539Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SLE exchange rate",
@@ -1774,13 +1774,13 @@
     "SN": {
       "country_code": "SN",
       "country_name": "Senegal",
-      "generated_at": "2026-10-31T10:37:41.276989Z",
+      "generated_at": "2026-11-01T11:33:27.663585Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
@@ -1821,13 +1821,13 @@
     "SO": {
       "country_code": "SO",
       "country_name": "Somalia",
-      "generated_at": "2026-10-31T10:42:59.423104Z",
+      "generated_at": "2026-11-01T11:38:44.769740Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SOS exchange rate",
@@ -1856,13 +1856,13 @@
     "SS": {
       "country_code": "SS",
       "country_name": "South Sudan",
-      "generated_at": "2026-10-31T10:43:12.561954Z",
+      "generated_at": "2026-11-01T11:38:59.274876Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SSP exchange rate",
@@ -1879,13 +1879,13 @@
     "ST": {
       "country_code": "ST",
       "country_name": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
-      "generated_at": "2026-10-31T10:40:07.738967Z",
+      "generated_at": "2026-11-01T11:35:54.269591Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to STN exchange rate",
@@ -1914,13 +1914,13 @@
     "SZ": {
       "country_code": "SZ",
       "country_name": "Eswatini",
-      "generated_at": "2026-10-31T10:44:31.651535Z",
+      "generated_at": "2026-11-01T11:40:19.261042Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SZL exchange rate",
@@ -1949,13 +1949,13 @@
     "TD": {
       "country_code": "TD",
       "country_name": "Chad",
-      "generated_at": "2026-10-31T10:39:01.388296Z",
+      "generated_at": "2026-11-01T11:34:47.963884Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
@@ -1996,13 +1996,13 @@
     "TG": {
       "country_code": "TG",
       "country_name": "Togo",
-      "generated_at": "2026-10-31T10:38:07.483476Z",
+      "generated_at": "2026-11-01T11:33:53.683175Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
@@ -2043,13 +2043,13 @@
     "TN": {
       "country_code": "TN",
       "country_name": "Tunisia",
-      "generated_at": "2026-10-31T10:34:36.784608Z",
+      "generated_at": "2026-11-01T11:30:23.162222Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to TND exchange rate",
@@ -2102,13 +2102,13 @@
     "TZ": {
       "country_code": "TZ",
       "country_name": "Tanzania",
-      "generated_at": "2026-10-31T10:43:25.873921Z",
+      "generated_at": "2026-11-01T11:39:12.391941Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to TZS exchange rate",
@@ -2173,13 +2173,13 @@
     "UG": {
       "country_code": "UG",
       "country_name": "Uganda",
-      "generated_at": "2026-10-31T10:43:39.462392Z",
+      "generated_at": "2026-11-01T11:39:26.140415Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to UGX exchange rate",
@@ -2220,13 +2220,13 @@
     "ZA": {
       "country_code": "ZA",
       "country_name": "South Africa",
-      "generated_at": "2026-10-31T10:45:12.022194Z",
+      "generated_at": "2026-11-01T11:40:58.585130Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to ZAR exchange rate",
@@ -2279,13 +2279,13 @@
     "ZM": {
       "country_code": "ZM",
       "country_name": "Zambia",
-      "generated_at": "2026-10-31T10:43:52.512332Z",
+      "generated_at": "2026-11-01T11:39:39.409049Z",
       "message": null,
       "observations": [
         {
           "as_of_period": "2026-10-24",
           "frequency": "daily",
-          "freshness": "current",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to ZMW exchange rate",
@@ -2326,7 +2326,7 @@
     "ZW": {
       "country_code": "ZW",
       "country_name": "Zimbabwe",
-      "generated_at": "2026-10-31T10:44:05.508699Z",
+      "generated_at": "2026-11-01T11:39:52.954469Z",
       "message": null,
       "observations": [
         {
@@ -2350,7 +2350,7 @@
   "countries_failed": 0,
   "countries_refreshed": 54,
   "countries_requested": 54,
-  "generated_at": "2026-10-31T10:45:12Z",
+  "generated_at": "2026-11-01T11:40:58Z",
   "source": "Africa API country signals endpoint",
   "source_url": "https://africa-api.com/docs/signals"
 }

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-31T18:44:12.464722+00:00",
+  "updated_at": "2026-11-01T11:41:44.820626+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 60,
+      "new_review_items_today": 65,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 106,
-      "new_observations_today": 5,
+      "observations_collected": 108,
+      "new_observations_today": 2,
       "unreviewed_flagged_observations": 15,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 78,
-      "entities": 134,
+      "relationships": 80,
+      "entities": 137,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,23 +177,26 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 106,
-    "new_rows": 5,
+    "collected_tickers": 108,
+    "new_rows": 2,
     "failures": [
-      "CTM.CS",
-      "CTUM.NR",
-      "CUL.JO",
-      "CUSTODYINS.LG",
-      "CVH.JO",
-      "CZA.JO",
-      "DANGFLOUR.LG"
+      "DAPH.CA",
+      "DARI.CS",
+      "DASPHARMA.GH",
+      "DAW.JO",
+      "DCON.NR",
+      "DCRC.CA",
+      "DEAPCAP.LG",
+      "DEIN.CA",
+      "DGH.JO",
+      "DHO.CS"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 134,
-    "relationships": 78,
-    "source_links": 89,
+    "nodes": 137,
+    "relationships": 80,
+    "source_links": 91,
     "most_connected": [
       {
         "name": "EBRD",

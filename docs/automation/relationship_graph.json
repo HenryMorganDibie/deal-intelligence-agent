@@ -535,6 +535,18 @@
     "cogentrix energy": {
       "name": "Cogentrix Energy",
       "kind": "organization"
+    },
+    "rea": {
+      "name": "REA",
+      "kind": "organization"
+    },
+    "africa s renewable energy investment forum": {
+      "name": "Africa’s Renewable Energy Investment Forum",
+      "kind": "organization"
+    },
+    "100mhz": {
+      "name": "100MHz",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1684,7 +1696,35 @@
           "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQdUZXd2RHMXlLQ2hNZU5KNnJKS0k5MXh5Q1JxNW1ieE9iTzNFck1QUXlFMklDUEpPb205SXIydmE2RlpRcjk5anJ1aHNYOUhqXzNYVVhuTkVKMllGN3VJV3lGOFZ1OWZQemlYNHo1N0w0bjB1cmlyT2I3am9mTTJhS3htMlZtX2V0NEQyc1JrQy1UM21iTTZzMnBpT1JUTGxCR2lfbmQ0YUtBMHlXYXNwWTJOWEk0OWltc0pIR3V3?oc=5"
         }
       ]
+    },
+    "c558deeef335cebbad33": {
+      "id": "c558deeef335cebbad33",
+      "from": "rea",
+      "to": "africa s renewable energy investment forum",
+      "type": "equity_funding",
+      "first_seen": "2026-11-01",
+      "sources": [
+        {
+          "title": "REA backs Africa’s Renewable Energy Investment Forum",
+          "publisher": "The Sun Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE5WZl9ZaTVzNmt1WmhnZS1qdmd5Q1pMSjRWV1BHM3JsakRVNVRDUTdfdVhOZUVOUTk3NEpZOXhvclNQX0pUeVNCbVBncFJwbE1LSXhhTzRncktuYnFySTltRFhWRGNPWHRSVnE5eWt1UWJyY2tKYkRWYjhn?oc=5"
+        }
+      ]
+    },
+    "8aba5a668d923702aafb": {
+      "id": "8aba5a668d923702aafb",
+      "from": "airtel kenya",
+      "to": "100mhz",
+      "type": "acquisition",
+      "first_seen": "2026-11-01",
+      "sources": [
+        {
+          "title": "Airtel Kenya acquires 100MHz of spectrum for its next 5G expansion",
+          "publisher": "Techish Kenya",
+          "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOemZuU3l1TmtyOGFLSU5xZm9IbzRZSU5RckxvQ0U4TnhudDFBSGVkeW1HZmRSQVdGM1ZnR0otM2RlX2RPeEhHY2I1YTk2MkRpaHkwdC1mVFd3T0ZvMU1Lak9xbklBUG5adGNIS2JFSVRkWTlwS3h5SzZsZk5QbEl1eHBjUWdqRHZSSUg0ZGc5RlV1Tm1DYzJDUVktR0pzZ21j?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-10-31T18:44:08.748790+00:00"
+  "updated_at": "2026-11-01T11:41:39.272991+00:00"
 }
