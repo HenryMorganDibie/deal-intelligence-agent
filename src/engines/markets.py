@@ -1161,8 +1161,8 @@ _SORTS = {"mcap": lambda r: -(r.get("mcap_usd") or 0), "chg_1d": lambda r: -(r.g
 
 def screener(snapshot: dict, exchange: Optional[str] = None, sector: Optional[str] = None,
              min_mcap_usd: Optional[float] = None, q: Optional[str] = None, include_stale: bool = False,
-             sort: str = "mcap", limit: int = 100, today: Optional[date] = None) -> dict:
-    """Filtered, sorted shares across every exchange."""
+             sort: str = "mcap", limit: int = 100, offset: int = 0, today: Optional[date] = None) -> dict:
+    """Filtered, sorted shares across every exchange; one page of `limit` rows from `offset`."""
     every = enrich(snapshot, today)
     rows = every
     if exchange:
@@ -1179,7 +1179,7 @@ def screener(snapshot: dict, exchange: Optional[str] = None, sector: Optional[st
         r["sector"] = _sector(r.get("sector")) or r.get("sector")
     total = len(rows)
     rows = sorted(rows, key=_SORTS.get(sort, _SORTS["mcap"])) if not q else rows
-    return {"total": total, "rows": rows[:limit],
+    return {"total": total, "offset": offset, "rows": rows[offset:offset + limit],
             "sectors": sorted({s for s in (_sector(r.get("sector")) for r in every) if s})}
 
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Container } from "../../../../components/primitives";
-import { ErrorNote, Loading, PageHeader, Table, Td, usd } from "../../../../components/app/ui";
+import { ErrorNote, Loading, PageHeader, Pagination, Table, Td, usd } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get } from "../../../../lib/market";
 import { asOf, companyHref, compact, pct, price, quoteWhen, tone } from "../../../../lib/markets-data";
@@ -11,6 +11,7 @@ import {
   calculateBond, calculateTreasuryBill,
   type Instruments, type PolicyRate, type RateType, type TbillBlock, type TbillRow,
 } from "../../../../lib/markets-instruments";
+import { usePaged } from "../../../../lib/use-paged";
 
 const SECTIONS: [string, string][] = [["etfs", "ETFs"], ["tbills", "Treasury bills"], ["bonds", "Bonds"], ["property", "Listed property"],
   ["rates", "Policy rates"], ["deposits", "Deposit rates"], ["funds", "Unlisted funds"], ["calculators", "Calculators"]];
@@ -80,6 +81,7 @@ function Etfs({ data }: { data: Instruments["etfs"] }) {
   const [exposure, setExposure] = useState("");
   const [exchange, setExchange] = useState("");
   const rows = data.rows.filter((r) => (!exposure || r.exposure === exposure) && (!exchange || r.exchange === exchange));
+  const { page, pager } = usePaged(rows, `${exposure}|${exchange}`);
   const count = (ex: string) => data.rows.filter((r) => r.exchange === ex).length;
   return (
     <section id="etfs" className="mt-10 scroll-mt-24" aria-labelledby="etfs-h">
@@ -108,7 +110,7 @@ function Etfs({ data }: { data: Instruments["etfs"] }) {
       {rows.length === 0 ? <p className="mt-4 text-sm text-[color:var(--dim)]">No fund prices have been recorded yet.</p> : (
         <div className="mt-4">
           <Table head={["Fund", "Ticker", "Exchange", "Holds", "Price", "Today", "Year to date", "As of"]} minWidth="52rem">
-            {rows.map((r) => (
+            {page.map((r) => (
               <tr key={`${r.exchange}-${r.symbol}`}>
                 <Td>{r.name}</Td>
                 <Td className="font-mono text-xs">{r.symbol}</Td>
@@ -121,6 +123,8 @@ function Etfs({ data }: { data: Instruments["etfs"] }) {
               </tr>
             ))}
           </Table>
+          <Pagination {...pager} />
+          <Pagination {...pager} />
         </div>
       )}
     </section>
@@ -187,6 +191,7 @@ function Bonds({ blocks }: { blocks: TbillBlock[] }) {
   const countries = Array.from(new Set(rows.map((r) => r.country)));
   const [country, setCountry] = useState("");
   const shown = rows.filter((r) => !country || r.country === country);
+  const { page, pager } = usePaged(shown, country);
   const KIND: Record<string, string> = { auction: "auction result", closing: "closing yield", curve: "yield curve" };
   if (rows.length === 0) return null;
   return (
@@ -204,7 +209,7 @@ function Bonds({ blocks }: { blocks: TbillBlock[] }) {
       </label>
       <div className="mt-4">
         <Table head={["Country", "Bond", "Coupon", "Maturity", "Yield", "Type", "As of"]} minWidth="46rem">
-          {shown.map((r, i) => (
+          {page.map((r, i) => (
             <tr key={`${r.country}-${r.name}-${i}`}>
               <Td>{r.country}</Td>
               <Td><a href={r.url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">{r.name}</a></Td>
@@ -216,25 +221,25 @@ function Bonds({ blocks }: { blocks: TbillBlock[] }) {
             </tr>
           ))}
         </Table>
+        <Pagination {...pager} />
       </div>
     </section>
   );
 }
 
 function Property({ rows }: { rows: Instruments["property"] }) {
-  const shown = rows.slice(0, 25);
+  const { page, pager } = usePaged(rows);
   return (
     <section id="property" className="mt-12 scroll-mt-24" aria-labelledby="property-h">
       <h2 id="property-h" className="h3 text-xl">Listed property</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
         Real estate investment trusts and property companies: a share of rental income without owning a building.
-        {rows.length > shown.length ? ` The ${shown.length} largest of ${rows.length} are shown; ` : " "}
-        the <Link href="/app/markets/screener" className="underline underline-offset-4">screener</Link> filters every listed share by sector.
+        {` ${rows.length} listed, largest first; the `}<Link href="/app/markets/screener" className="underline underline-offset-4">screener</Link> filters every listed share by sector.
       </p>
-      {shown.length === 0 ? <p className="mt-4 text-sm text-[color:var(--dim)]">No listed property prices have been recorded yet.</p> : (
+      {rows.length === 0 ? <p className="mt-4 text-sm text-[color:var(--dim)]">No listed property prices have been recorded yet.</p> : (
         <div className="mt-4">
           <Table head={["Company", "Exchange", "Price", "Today", "Year to date", "Market cap", "Dividend yield", "As of"]} minWidth="48rem">
-            {shown.map((r) => (
+            {page.map((r) => (
               <tr key={`${r.exchange}-${r.symbol}`}>
                 <Td><Link href={companyHref(r)} className="underline-offset-4 hover:underline">{r.name}</Link></Td>
                 <Td className="uppercase text-[color:var(--muted)]">{r.exchange}</Td>
@@ -318,6 +323,25 @@ function Deposits({ rows }: { rows: NonNullable<Instruments["deposits"]> }) {
   );
 }
 
+function FundTable({ block: b }: { block: NonNullable<Instruments["funds"]>[number] }) {
+  const { page, pager } = usePaged(b.rows);
+  return (
+    <div className="mt-4">
+      <Table head={["Scheme", `Assets, ${monthLabel(b.period)}`, `Assets, ${monthLabel(b.prior_period)}`, "Change"]} minWidth="36rem">
+        {page.map((r) => (
+          <tr key={r.name}>
+            <Td>{r.name}</Td>
+            <Td>{r.aum != null ? `${compact(r.aum)} ${b.currency}` : "n/a"}</Td>
+            <Td className="text-[color:var(--muted)]">{r.aum_prior != null ? `${compact(r.aum_prior)} ${b.currency}` : "new"}</Td>
+            <Td className={tone(r.aum && r.aum_prior ? r.aum / r.aum_prior - 1 : null)}>{r.aum && r.aum_prior ? pct(r.aum / r.aum_prior - 1) : "n/a"}</Td>
+          </tr>
+        ))}
+      </Table>
+      <Pagination {...pager} />
+    </div>
+  );
+}
+
 function Funds({ blocks }: { blocks: NonNullable<Instruments["funds"]> }) {
   if (blocks.length === 0) return null;
   return (
@@ -330,18 +354,7 @@ function Funds({ blocks }: { blocks: NonNullable<Instruments["funds"]> }) {
             from the <a href={b.source_url} target="_blank" rel="noreferrer" className="underline underline-offset-4">{b.source}</a>.
             The regulator publishes fund size, not returns; a fund&apos;s yield is in its own factsheet.
           </p>
-          <div className="mt-4">
-            <Table head={["Scheme", `Assets, ${monthLabel(b.period)}`, `Assets, ${monthLabel(b.prior_period)}`, "Change"]} minWidth="36rem">
-              {b.rows.map((r) => (
-                <tr key={r.name}>
-                  <Td>{r.name}</Td>
-                  <Td>{r.aum != null ? `${compact(r.aum)} ${b.currency}` : "n/a"}</Td>
-                  <Td className="text-[color:var(--muted)]">{r.aum_prior != null ? `${compact(r.aum_prior)} ${b.currency}` : "new"}</Td>
-                  <Td className={tone(r.aum && r.aum_prior ? r.aum / r.aum_prior - 1 : null)}>{r.aum && r.aum_prior ? pct(r.aum / r.aum_prior - 1) : "n/a"}</Td>
-                </tr>
-              ))}
-            </Table>
-          </div>
+          <FundTable block={b} />
         </div>
       ))}
     </section>

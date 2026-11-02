@@ -523,3 +523,13 @@ def test_intraday_endpoint_requires_cron_auth():
 
     import api.index as api
     assert TestClient(api.app).get("/api/cron/market-intraday").status_code == 401
+
+
+def test_screener_pages_with_offset():
+    snap = _snapshot()
+    first = markets.screener(snap, include_stale=True, limit=2, offset=0, today=date(2026, 10, 28))
+    second = markets.screener(snap, include_stale=True, limit=2, offset=2, today=date(2026, 10, 28))
+    assert first["total"] == second["total"] and first["offset"] == 0 and second["offset"] == 2
+    assert len(first["rows"]) == 2 and not {r["symbol"] for r in first["rows"]} & {r["symbol"] for r in second["rows"]}
+    beyond = markets.screener(snap, include_stale=True, limit=2, offset=first["total"], today=date(2026, 10, 28))
+    assert beyond["rows"] == [] and beyond["total"] == first["total"]

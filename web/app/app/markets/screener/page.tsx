@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Container } from "../../../../components/primitives";
-import { ErrorNote, Field, Loading, PageHeader, Table, Td, usd, words } from "../../../../components/app/ui";
+import { ErrorNote, Field, Loading, PageHeader, Pagination, Table, Td, usd, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get } from "../../../../lib/market";
 import { asOf, companyHref, directoryHref, quoteWhen, pct, price, tone, type Directory, type Screener } from "../../../../lib/markets-data";
@@ -28,6 +28,7 @@ type PrivateFilters = { q: string; country: string; sector: string; sort: string
 function PrivateCompanies() {
   const [f, setF] = useState<PrivateFilters>({ q: "", country: "", sector: "", sort: "recent" });
   const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(50);
   const [data, setData] = useState<Directory | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,12 +36,12 @@ function PrivateCompanies() {
     let active = true;
     const params = Object.fromEntries(Object.entries(f).filter(([, v]) => v));
     const t = setTimeout(() => {
-      get<Directory>("/api/companies/directory", { ...params, kind: "private", limit: 100, offset })
+      get<Directory>("/api/companies/directory", { ...params, kind: "private", limit, offset })
         .then((d) => { if (active) { setData(d); setError(null); } })
         .catch((e) => { if (active) setError(e instanceof ApiError ? e.message : "Private companies could not be loaded."); });
     }, f.q ? 250 : 0);
     return () => { active = false; clearTimeout(t); };
-  }, [f, offset]);
+  }, [f, offset, limit]);
 
   const set = (k: keyof PrivateFilters) => (e: { target: { value: string } }) => { setOffset(0); setF({ ...f, [k]: e.target.value }); };
   return (
@@ -68,7 +69,7 @@ function PrivateCompanies() {
       {!data && !error && <Loading label="Loading private companies…" />}
       {data && (
         <section className="mt-6">
-          <p className="mb-2 text-xs text-[color:var(--dim)]">{data.total.toLocaleString()} private companies{data.total > data.rows.length ? `, ${offset + 1} to ${offset + data.rows.length} shown` : ""}</p>
+          <p className="mb-2 text-xs text-[color:var(--dim)]">{data.total.toLocaleString()} private companies</p>
           <Table head={["Company", "Country", "Sector", "Deals", "Equity raised", "Debt raised", "Last round", "Latest valuation", "Last activity", "Investors"]} minWidth="72rem">
             {data.rows.map((r) => (
               <tr key={r.name + (r.country ?? "")}>
@@ -85,10 +86,8 @@ function PrivateCompanies() {
               </tr>
             ))}
           </Table>
-          <div className="mt-3 flex gap-3 text-xs">
-            {offset > 0 && <button className="underline-offset-4 hover:underline" onClick={() => setOffset(Math.max(0, offset - 100))}>← Previous</button>}
-            {offset + data.rows.length < data.total && <button className="underline-offset-4 hover:underline" onClick={() => setOffset(offset + 100)}>Next →</button>}
-          </div>
+          <Pagination total={data.total} offset={offset} limit={limit} onPageChange={setOffset}
+            onPageSizeChange={(n) => { setLimit(n); setOffset(0); }} />
           <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
             Every company the deals database records as the target of a funding round, loan, acquisition, merger, exit or
             listing. Amounts and valuations are as reported in the press or implied by a disclosed stake and price.
@@ -115,6 +114,9 @@ export default function ScreenerPage() {
   const [f, setF] = useState<Filters | null>(null);
   const [data, setData] = useState<Screener | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(50);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
@@ -128,21 +130,34 @@ export default function ScreenerPage() {
     const params = Object.fromEntries(Object.entries(f).filter(([, v]) => v));
     window.history.replaceState(null, "", `?${new URLSearchParams(params)}`);
     const t = setTimeout(() => {
-      get<Screener>("/api/markets/screener", { ...params, limit: 300 })
+      get<Screener>("/api/markets/screener", { ...params, limit, offset })
         .then((d) => { if (active) { setData(d); setError(null); } })
         .catch((e) => { if (active) setError(e instanceof ApiError ? e.message : "The screener could not be loaded."); });
     }, f.q ? 250 : 0);
     return () => { active = false; clearTimeout(t); };
-  }, [f]);
+  }, [f, offset, limit]);
 
-  const set = (k: keyof Filters) => (e: { target: { value: string } }) => f && setF({ ...f, [k]: e.target.value });
+  const set = (k: keyof Filters) => (e: { target: { value: string } }) => { if (!f) return; setOffset(0); setF({ ...f, [k]: e.target.value }); };
 
-  function download() {
-    if (!data) return;
-    const url = URL.createObjectURL(new Blob([toCsv(data.rows)], { type: "text/csv" }));
-    const a = Object.assign(document.createElement("a"), { href: url, download: "african-equities-screen.csv" });
-    a.click();
-    URL.revokeObjectURL(url);
+  // The table shows one page; the export collects every matching share, 500 at a time (the API's page limit).
+  async function download() {
+    if (!data || !f || exporting) return;
+    setExporting(true);
+    try {
+      const params = Object.fromEntries(Object.entries(f).filter(([, v]) => v));
+      const rows: Screener["rows"] = [];
+      for (let at = 0; at < data.total; at += 500) {
+        rows.push(...(await get<Screener>("/api/markets/screener", { ...params, limit: 500, offset: at })).rows);
+      }
+      const url = URL.createObjectURL(new Blob([toCsv(rows)], { type: "text/csv" }));
+      const a = Object.assign(document.createElement("a"), { href: url, download: "african-equities-screen.csv" });
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "The export could not be completed.");
+    } finally {
+      setExporting(false);
+    }
   }
 
   return (
@@ -203,8 +218,10 @@ export default function ScreenerPage() {
       {view === "listed" && data && (
         <section className="mt-6">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[color:var(--dim)]">
-            <span>{data.total.toLocaleString()} shares{data.total > data.rows.length ? `, first ${data.rows.length} shown` : ""}</span>
-            <button onClick={download} className="underline-offset-4 hover:underline">Download CSV</button>
+            <span>{data.total.toLocaleString()} shares</span>
+            <button onClick={download} disabled={exporting} className="underline-offset-4 hover:underline disabled:opacity-60">
+              {exporting ? "Preparing CSV…" : `Download CSV (all ${data.total.toLocaleString()})`}
+            </button>
           </div>
           <Table head={["Company", "Exchange", "Sector", "Price", "Today", "YTD (local)", "YTD (USD)", "Market cap", "P/E", "Yield", "Traded (USD)", "As of"]} minWidth="72rem">
             {data.rows.map((r) => (
@@ -229,6 +246,8 @@ export default function ScreenerPage() {
               </tr>
             ))}
           </Table>
+          <Pagination total={data.total} offset={offset} limit={limit} onPageChange={setOffset}
+            onPageSizeChange={(n) => { setLimit(n); setOffset(0); }} />
           <p className="mt-3 text-xs leading-relaxed text-[color:var(--dim)]">
             ⚑ A year-to-date loss beyond 60% is more often a split or bonus issue the source has not adjusted for; it is
             flagged and left out of exchange and sector returns. Market caps above $40bn are withheld as source errors.
