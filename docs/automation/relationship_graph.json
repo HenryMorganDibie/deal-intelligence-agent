@@ -631,6 +631,58 @@
     "transcorp": {
       "name": "Transcorp",
       "kind": "organization"
+    },
+    "follow": {
+      "name": "Follow",
+      "kind": "organization"
+    },
+    "out online": {
+      "name": "Out Online",
+      "kind": "organization"
+    },
+    "boost output": {
+      "name": "Boost Output",
+      "kind": "organization"
+    },
+    "afdb": {
+      "name": "AfDB",
+      "kind": "organization"
+    },
+    "dandara": {
+      "name": "Dandara",
+      "kind": "organization"
+    },
+    "totalenergies": {
+      "name": "TotalEnergies",
+      "kind": "organization"
+    },
+    "malaysian gas fields": {
+      "name": "Malaysian Gas Fields",
+      "kind": "organization"
+    },
+    "banque du caire ipo with u s 100 million investment in egypt": {
+      "name": "Banque du Caire IPO with U.S.$100 million investment in Egypt",
+      "kind": "organization"
+    },
+    "ucf": {
+      "name": "UCF",
+      "kind": "organization"
+    },
+    "expans o da produ o de fertilizantes": {
+      "name": "Expansão da Produção de Fertilizantes",
+      "kind": "organization"
+    },
+    "100mhz of 5g spectrum": {
+      "name": "100MHz of 5G Spectrum",
+      "kind": "organization"
+    },
+    "dangote share": {
+      "name": "Dangote Share",
+      "kind": "organization"
+    },
+    "lifts kenya pipeline stock": {
+      "name": "Lifts Kenya Pipeline Stock",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1895,6 +1947,11 @@
           "title": "EBRD Invests $100 Million In Egypt's Banque Du Caire IPO",
           "publisher": "TradingView",
           "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPWWRDQzV6U0ptQW1GQ2V3M2lDOHdVT1d5OGV6Smp4ME9LanRZZ3JKTGJTYlMtcXI3MHJzVVhqcDBkZFhLeEFwSHRuU0RzcGN5ZF9HUmxKeWg5M3V5Qk54NHZlcFItNWtjVHZCamdTemtXMDhQWWcxWUZuZFpxNU5rZTB3QXd3SEZSczhBbWhKQUc2SkVHbl9Tb3laZFA1T21zR2lzOEVSMUsxUVMteHpfOFhkaWpZRkMxSTE4b0gtQ1hySFU?oc=5"
+        },
+        {
+          "title": "EBRD invests US$ 100 million in Egypt's Banque du Caire IPO",
+          "publisher": "Frontier Africa Reports",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNQ1pTZEJJTFJldEo1RHh0QmxMV2tDQWpiazNUMlhQcnJtOUJVOHQ3N0lLR0RZWjE5MHNzdEc3LV9MUU1qektqczh1ZmlzMDVDTk84NzJETEVnVGhaRDBWY0ladk9uSHFaS00yNHNIZzBweW5TeDR3VlBScHpmWlVTZ25peWVnN0U1dWZ5WWhwQ0w0SHBOaG5PQVVRNmhtaGhDQjFvSlBXUQ?oc=5"
         }
       ]
     },
@@ -1995,7 +2052,133 @@
           "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPLURkWFVhS1pCUDVvU2NKRmpOY3pjMmdmWng1bGJmUEJRb3BTenQwSXFyaWtZTE9famYxTnJnR0ZyUDRua0xsR01sMC0xY09LSnRac1J5RUhMQ3dObEpsZUJrNm4wVVhLNTVFT2UxMXk1RUxEYVd2bWQzZnV1MXVwMkd1RXZ4VUk3T3dQcGJ4dWxIVUlzT3p1TjAxSFNkUUVyMlpmU2VnbFVCSDVWbm0yY0t3aUFqaXdLQU1peU5BbXJRRlFyZE9MbzNVS0U?oc=5"
         }
       ]
+    },
+    "69871ee953aef83752da": {
+      "id": "69871ee953aef83752da",
+      "from": "follow",
+      "to": "out online",
+      "type": "exit",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Africa’s Hottest IPO Sold Out Online, Giving Tech A Tough Act To Follow",
+          "publisher": "WeeTracker",
+          "url": "https://weetracker.com/2026/11/02/dangote-ipo-online-retail-surge-tech-exit-gap/"
+        }
+      ]
+    },
+    "8e5c4b9d5403ceb23d34": {
+      "id": "8e5c4b9d5403ceb23d34",
+      "from": "ifc",
+      "to": "banque du caire ipo",
+      "type": "ipo",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "IFC invests $100m in Banque du Caire IPO to boost business financing in Egypt",
+          "publisher": "Daily News Egypt",
+          "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQNF9PTGxRWVprMlpUSW1yUkx3dV9ETHdBYjgtalFxR3N1M1BMVkNfcUVMSFFqblRoTjd0NkxhWE1oQjJ0MGZNQThfV09VWVlnLUNlYlZ5WHFIUTkzSW1JaUZEQmlCVHJVR3lmNFFoMmtBRGkzanZyMndmUGZmRlp6cVZoc3I5cFZVajRiNTNVSk04SnBMZ0V3Y25USkw0NDNiLTlINFlPWUFpUjE1UmFoTHhaVjhDUQ?oc=5"
+        }
+      ]
+    },
+    "2f29eae06208089b9637": {
+      "id": "2f29eae06208089b9637",
+      "from": "afreximbank",
+      "to": "boost output",
+      "type": "debt_financing",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Ogun: Afreximbank Grants Veenocks $81.9m Loan To Boost Output",
+          "publisher": "https://thefact.ng/",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPcUpWb0tzQ0xndDFRU2NpMnk3N0I1dURtcDRHZzQweXIzRzlOc1k2Ni1ldzVpbnkyTWJWcWNVWDdGajI4Y0YzbThHcDFMVEFaNDFIS2hTU3NrYnRnbjBBRjFtOTF1ejk5OWtBYjFrdGw1NV9kRUtnS1lPN2hkTGZMSDNPQ3ZWZw?oc=5"
+        }
+      ]
+    },
+    "635f6e86377048776f5f": {
+      "id": "635f6e86377048776f5f",
+      "from": "afdb",
+      "to": "dandara",
+      "type": "equity_funding",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Egypt: AfDB invests $66 million in Dandara solar and battery project",
+          "publisher": "African Development Bank Group",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPU1czNlpPeWNFY2h1U1l2amlUYzlpd2Vfdi1jRGU1MmlzNUxrSExfN19CVWV5RG04cmxxNElqTU5xOG1VSVJweTFkNDl2WTczZ05sZ2lKdm93Nkd6SzUtejBaQUN5bkJfVDhxdHh3X0ZpU2s0N2tNQ3V2QVhxX0JNVXdUbjZ6eDl0OVMxXzRpTnRLbkVnQ1U3NUNiUTFrdm81ZjU5NkNrSQ?oc=5"
+        }
+      ]
+    },
+    "7d6f947a09d16dee653e": {
+      "id": "7d6f947a09d16dee653e",
+      "from": "totalenergies",
+      "to": "malaysian gas fields",
+      "type": "acquisition",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "TotalEnergies to Acquire 30% Operated Stake in Malaysian Gas Fields",
+          "publisher": "Egypt Oil & Gas",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxPeFpNMnBBZmNyb2dheExia0NqS1pIMndCVFl2UFRzalFsanRYaDJpUTZ4bk9xUjg1a1poQWJ5MGgyQXFKeldOR0ZJdGhiQVZPdXpGd3Q3eV9La0JaMXZteXBrT3Z0SkpySHFSZXdVMG1FSHU0QzNReU9uWkxMbkRYcWs1Si1uNU5TTGU4WTVOZ2d1bjlhQU5HR1o5S2kxZw?oc=5"
+        }
+      ]
+    },
+    "20f6022c2cb268165a6f": {
+      "id": "20f6022c2cb268165a6f",
+      "from": "ebrd",
+      "to": "banque du caire ipo with u s 100 million investment in egypt",
+      "type": "equity_funding",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "EBRD backs Banque du Caire IPO with U.S.$100 million investment in Egypt",
+          "publisher": "Traders Union",
+          "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPV0VqQ0RzaTYtcDlteVc0SFBmUmtXYVJ2dGdvcnNFRTh5Sy05VWJTeng4WS1VcjlOR2I2eDBfRTBDRzdtOEdMOHZUTVh3VkJhZkFoSHhhd2JNc20xVWRDd3R2NDI3TnV6bkowcHkySF90NXR4Y01zSTNnb2VvQlN2endhUlh4WkYzTXdTQjJaeE9fZ3BzV21jQQ?oc=5"
+        }
+      ]
+    },
+    "9d37d02c2e26c02d3344": {
+      "id": "9d37d02c2e26c02d3344",
+      "from": "ucf",
+      "to": "expans o da produ o de fertilizantes",
+      "type": "equity_funding",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Zâmbia: UCF Investe 1,6 MM$ na Expansão da Produção de Fertilizantes",
+          "publisher": "Diario Economico",
+          "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQNWdodGFGbTJnYXZqOHZyQ0JBcHVDdUpQbUJLLWt3UXFCQ0VHYk84Wl9kdHFzb1h3amJVeGlMc1ZHc2twSWNQZ1FaQ25rRlRvUVhMaFcxcnBnWTFjQkgxZmJEVTVuMnR0VWFwOUNFdXg4ZU9CRUlXcHRRbUhvRGZtd2xmbWx6azZJenBMOTFuNVV4UU80QXlpZ2dzRkhFUW1rSGJnYjl5bWQ0NzhJRGdFUlNtTk1lTTl2QTFQYUxvSEhSdw?oc=5"
+        }
+      ]
+    },
+    "2d12d79bd8eef4ea7254": {
+      "id": "2d12d79bd8eef4ea7254",
+      "from": "airtel kenya",
+      "to": "100mhz of 5g spectrum",
+      "type": "acquisition",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Airtel Kenya Acquires 100MHz of 5G Spectrum for $65 Million",
+          "publisher": "TechAfrica News",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNWWt1RG1yaTI2VFR3bm1ZX21rMk4wQS1JeFZFeGRMT25BelpwMm1Hd3JTLVlNOHlaT1AtLWdEYzlIb0NsOGl4R3Y5UDBLa0Y1NFVDZ1ZQY2I5Rm5rbE45NjI5NS0wOVlDNEVVY2RhX1JRMFdiLWc1ZHFEamFpQWo5Z1MxQnFZSFpvZHR1ZHBUTjBuOFl0em0xaUlVc01LZw?oc=5"
+        }
+      ]
+    },
+    "50f57d6b6d61904947fe": {
+      "id": "50f57d6b6d61904947fe",
+      "from": "dangote share",
+      "to": "lifts kenya pipeline stock",
+      "type": "acquisition",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Dangote Share Purchase Lifts Kenya Pipeline Stock 42% as NSE Records Mixed Performance",
+          "publisher": "Soko Directory",
+          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPcFB0R19pU1BQSGxQUUFUZHlzbEtlMFM2ckgwTjVVamJLNUVFODRXNFIyeldsMW51LVdzdGxoaDBzRURuSmhoSEFoR2cyQWtUOU5yem5HTnJxelhFZWNRVVFodWczbW1aZEo4R1NNRTNENmZyX0tPZzJHdnhkLXhLZHpDNmpVZW1wZnM1N29yc0J0THRjV0J3UFN3cWQwc3NCSGxTbUZCLXN5eHRxd0NMaklpd2I1eVk5YTEtOdIBwgFBVV95cUxOWU5TWGd5b3hJREw0X1pGcDYyVTVxcnF4SVRiR0kwSGlsY2RUUDRqdG1McEJHbnhpV3FiVHYySVJ2UDZtTXRkWVpkSXhLNjdvdE5DQnExYmU1V1VJQy1KUGJNbnVkQXRJY1hINDdWa01GQkFCU2pFY3VyNnQwc1R6VWQyMjZBNFdUNHRoV1pTSzZNTUo0Y19EbWxBNUtCOHhVVDRmSlF2VFkzb1hzaERqY2pfVDdsbjNQZmkzQU01bXpWdw?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-02T13:01:28.016299+00:00"
+  "updated_at": "2026-11-02T22:52:35.720668+00:00"
 }
