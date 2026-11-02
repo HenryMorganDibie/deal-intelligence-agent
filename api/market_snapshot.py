@@ -15,8 +15,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi import FastAPI  # noqa: E402
 
-from src.hosted_market import cron_market_intraday, cron_market_snapshot  # noqa: E402
+from src.hosted_market import cron_market_instruments, cron_market_intraday, cron_market_snapshot  # noqa: E402
 
 app = FastAPI(title="Deal Intelligence market snapshot", docs_url=None, redoc_url=None, openapi_url=None)
 app.add_api_route("/api/cron/market-snapshot", cron_market_snapshot, methods=["GET"])
 app.add_api_route("/api/cron/market-intraday", cron_market_intraday, methods=["GET"])
+app.add_api_route("/api/cron/market-instruments", cron_market_instruments, methods=["GET"])

@@ -26,6 +26,10 @@
       "destination": "/api/market_snapshot"
     },
     {
+      "source": "/api/cron/market-instruments",
+      "destination": "/api/market_snapshot"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api/index"
     }

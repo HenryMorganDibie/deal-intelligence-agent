@@ -143,6 +143,8 @@ export type TbillRow = {
 // ("closing") or a point on a central bank's published yield curve ("curve").
 export type BondRow = {
   name: string;
+  isin?: string;
+  price?: number | null;
   yield: number;
   date: string | null;
   coupon?: number | null;
@@ -192,10 +194,27 @@ export type PolicyRate = {
   feed_disagreed?: { rate: number; date: string | null };
 };
 
+export type DepositRate = { country: string; country_name: string; measure: string; rate: number; period: string; source: string; source_url: string };
+
+export type FundBlock = {
+  country: string;
+  country_name: string;
+  currency: string;
+  kind: string;
+  period: string;
+  prior_period: string;
+  measure: string;
+  source: string;
+  source_url: string;
+  rows: { name: string; aum: number | null; aum_prior: number | null }[];
+};
+
 export type Instruments = {
   etfs: { rows: EtfRow[]; delay?: string; captured_at?: string };
   tbills: TbillBlock[];
   property: PropertyRow[];
   policy_rates: PolicyRate[];
+  deposits?: DepositRate[];
+  funds?: FundBlock[];
   method: string;
 };

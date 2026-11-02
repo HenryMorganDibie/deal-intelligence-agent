@@ -341,3 +341,63 @@ def test_nairobi_etfs_come_from_the_equity_snapshot():
     rows = instruments.nse_etfs(snap)
     assert [(r["symbol"], r["exposure"], r["currency"], r["exchange"]) for r in rows] == [
         ("GLD", "Precious metals", "KES", "nse"), ("SMWF", "Global equity", "KES", "nse")]
+
+
+KE_BOND_TEXT = """ISSUE NUMBER SDB1/2011/030 FXD1/2026/030
+TENOR Thirty  (14.4 years to maturity) Thirty (29.6 years to maturity)
+ISIN KE2000002135 KE8000006760
+Due Dates 21-Jan-41 13-Mar-56
+Weighted Average Rate of Accepted Bids (%) 13.6507                                     14.1830
+Price per Kshs 100 at average yield 91.9966                                     88.3420
+Coupon Rate (%) 12.0000                                     12.5000
+For: Director, Financial Markets
+14 October 2026
+"""
+
+
+def test_kenya_bonds_listed_with_isin_coupon_and_yield():
+    links = instruments.parse_cbk_bond_links(
+        '<a href="https://www.centralbank.go.ke//uploads/historical_treasury_bond_results/1_SWITCH RESULTS FXD1-2018-015 DATED 07-10-2026.pdf">'
+        '<a href="https://www.centralbank.go.ke//uploads/historical_treasury_bond_results/2_RESULTS SDB1-2011-030 AND FXD1-2026-030 DATED 19-10-2026.pdf">')
+    assert [link["value_date"] for link in links] == ["2026-10-19"] and "//uploads" not in links[0]["url"]
+    bonds = instruments.parse_cbk_bond_pdf(KE_BOND_TEXT, links[0])
+    assert [(b["name"], b["isin"], b["coupon"], b["yield"], b["maturity"], b["date"]) for b in bonds] == [
+        ("SDB1/2011/030", "KE2000002135", 12.0, 13.6507, "2041-01-21", "2026-10-14"),
+        ("FXD1/2026/030", "KE8000006760", 12.5, 14.183, "2056-03-13", "2026-10-14")]
+    assert instruments.parse_cbk_bond_pdf(KE_BOND_TEXT.replace(" 14.1830", ""), links[0]) == []   # a missing value: nothing shown
+
+
+def test_deposit_rates_kenya_and_morocco():
+    ke = instruments.parse_cbk_deposits(
+        "<table><tr><th>Year</th><th>Month</th><th>Deposit</th><th>Savings</th><th>Lending</th><th>Overdraft</th></tr>"
+        "<tr><td>2026</td><td>September</td><td>6.94</td><td>3.53</td><td>14.4</td><td>13</td></tr>"
+        "<tr><td>2026</td><td>August</td><td>6.91</td><td>3.54</td><td>14.34</td><td>12.5</td></tr></table>")
+    assert [(r["measure"], r["rate"], r["period"]) for r in ke] == [
+        ("Deposit rate", 6.94, "2026-09"), ("Savings rate", 3.53, "2026-09"), ("Lending rate", 14.4, "2026-09")]
+    ma = instruments.parse_bam_deposits("<td>septembre</td> - <td>2026</td> <td>2,21</td> % <td>2,56</td> %")
+    assert [(r["measure"], r["rate"], r["period"]) for r in ma] == [
+        ("6-month term deposit", 2.21, "2026-09"), ("12-month term deposit", 2.56, "2026-09")]
+
+
+def test_kenya_unit_trusts_from_the_cma_bulletin():
+    text = ("Table 36: Market Share of Assets under Management (AUM) as at June 2026\n"
+            "Unit Trust Jun-26 Mar-26 Market Share Change\n"
+            "1. Standard Investment Trust Fund 188,622,006,732 153,153,595,139 19.88% 23%\n"
+            "2. Sanlam Unit Trust Scheme 171,378,881,603 161,017,593,553 18.06% 6%\n"
+            "38. Capital A Unit Trust Scheme 246,688,272 - 0.03% 0%\n")
+    funds = instruments.parse_cma_unit_trusts(text, "u")
+    assert (funds["period"], funds["prior_period"], funds["currency"]) == ("2026-06", "2026-03", "KES")
+    assert [(r["name"], r["aum"], r["aum_prior"]) for r in funds["rows"]] == [
+        ("Standard Investment Trust Fund", 188622006732.0, 153153595139.0),
+        ("Sanlam Unit Trust Scheme", 171378881603.0, 161017593553.0),
+        ("Capital A Unit Trust Scheme", 246688272.0, None)]
+    assert instruments.parse_cma_bulletin_link(
+        '<a href="https://cma.example/x-quarterly-statistical-bulletin-q2-2026.pdf"><a href="https://cma.example/y-quarterly-statistical-bulletin-q3-2026.pdf">'
+    ).endswith("q3-2026.pdf")
+
+
+def test_instruments_cron_requires_authorisation():
+    from fastapi.testclient import TestClient
+
+    import api.market_snapshot as paris
+    assert TestClient(paris.app).get("/api/cron/market-instruments").status_code == 401

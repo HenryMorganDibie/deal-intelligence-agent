@@ -56,6 +56,12 @@ BOG_HOME = "https://www.bog.gov.gh/"
 BOB_HOME = "https://www.bankofbotswana.bw/"
 RBM_HOME = "https://www.rbm.mw/"
 BON_HOME = "https://www.bon.com.na/"
+CBK_BONDS = "https://www.centralbank.go.ke/bills-bonds/treasury-bonds/"
+CBK_DEPOSITS = "https://www.centralbank.go.ke/rates/commercial-banks-weighted-average-rates/"
+BAM_DEPOSITS = "https://www.bkam.ma/Marches/Taux-d-interet/Taux-des-depots-a-terme"
+CMA_PUBLICATIONS = "https://www.cma.or.ke/publications/"
+_FR_MONTH_NAMES = {"janvier": 1, "février": 2, "fevrier": 2, "mars": 3, "avril": 4, "mai": 5, "juin": 6, "juillet": 7,
+                   "août": 8, "aout": 8, "septembre": 9, "octobre": 10, "novembre": 11, "décembre": 12, "decembre": 12}
 BOU_DOCS = ("https://bou.or.ug/api/financial-market-auction-information?populate=auctionInformation.items.file.file.file"
             "&populate=auctionInformation.items.file.fileWithMonth.file.file")
 BOU_PAGE = "https://www.bou.or.ug/bouwebsite/financial-market-auction-information"
@@ -712,6 +718,120 @@ def parse_beac_curve(text: str, code: str, doc: dict) -> dict:
 _ERRORS: list[str] = []          # source failures in the current build, reported by the cron that ran it
 
 
+_CBK_BOND_LINK = re.compile(r'href="([^"]*historical_treasury_bond_results/[^"]*?RESULTS[^"]*?DATED\s+(\d\d)-(\d\d)-(\d{4})[^"]*\.pdf)"', re.I)
+
+
+def parse_cbk_bond_links(page: str) -> list[dict]:
+    """The CBK's Treasury bond result releases (switch auctions excluded), newest value date first."""
+    out, seen = [], set()
+    for href, d, m, y in _CBK_BOND_LINK.findall(page or ""):
+        if "SWITCH" in href.upper() or href in seen:
+            continue
+        seen.add(href)
+        url = href if href.startswith("http") else "https://www.centralbank.go.ke" + href
+        out.append({"value_date": f"{y}-{m}-{d}", "url": re.sub(r"(?<!:)//+", "/", url).replace(" ", "%20")})
+    return sorted(out, key=lambda r: r["value_date"], reverse=True)
+
+
+def parse_cbk_bond_pdf(text: str, link: dict) -> list[dict]:
+    """Kenya: every bond in one results release, with ISIN, maturity, coupon, the weighted average rate of accepted
+    bids and the price. Reopened issues are priced with accrued interest, so prices are not reconciled; instead
+    every row must carry one value per bond, so a misread column cannot attach a yield to the wrong issue."""
+    t = re.sub(r"[ \t]+", " ", text or "")
+    issues = re.findall(r"\b((?:FXD|IFB|SDB|ZCB)\d*/\d{4}/\d{3})\b", (re.search(r"ISSUE NUMBER([^\n]+)", t) or [""])[0])
+    if not issues:
+        return []
+    n = len(issues)
+
+    def values(label: str, pattern: str = r"([\d.,]+)") -> list[str]:
+        m = re.search(label + r"([^\n]+)", t)
+        return re.findall(pattern, m.group(1)) if m else []
+
+    isins, dues = values(r"\nISIN", r"(KE\d{10})"), values(r"Due Dates", r"(\d{1,2}-[A-Z][a-z]{2}-\d{2})")
+    rates, prices, coupons = (values(r"Weighted Average Rate of Accepted Bids \(%\)"),
+                              values(r"Price per Kshs 100 at average yield"), values(r"Coupon Rate \(%\)"))
+    if not all(len(v) == n for v in (isins, dues, rates, prices, coupons)):
+        return []
+    signed = re.search(r"\n(\d{1,2} [A-Z][a-z]+ \d{4})\s*\n", t)
+    auction = datetime.strptime(signed.group(1), "%d %B %Y").date().isoformat() if signed else None
+    return [{"name": issues[i], "isin": isins[i], "coupon": _num(coupons[i]), "yield": _num(rates[i]),
+             "price": _num(prices[i]), "maturity": datetime.strptime(dues[i], "%d-%b-%y").date().isoformat(),
+             "date": auction or link["value_date"], "value_date": link["value_date"], "kind": "auction"}
+            for i in range(n)]
+
+
+def parse_cbk_deposits(page: str) -> list[dict]:
+    """Kenya: commercial banks' weighted average deposit, savings and lending rates for the latest month. Where the
+    table repeats a month, the first (top) row is kept."""
+    for c in _cells(page):
+        if len(c) >= 6 and re.fullmatch(r"20\d\d", c[0]):
+            try:
+                month = datetime.strptime(f"1 {c[1]} {c[0]}", "%d %B %Y").date().isoformat()[:7]
+            except ValueError:
+                continue
+            return [{"country": "KE", "country_name": "Kenya", "measure": name, "rate": _num(c[i]), "period": month,
+                     "source": "Central Bank of Kenya, commercial banks' weighted average rates", "source_url": CBK_DEPOSITS}
+                    for i, name in ((2, "Deposit rate"), (3, "Savings rate"), (4, "Lending rate")) if _num(c[i]) is not None]
+    return []
+
+
+def parse_bam_deposits(page: str) -> list[dict]:
+    """Morocco: Bank Al-Maghrib's weighted average rates on 6 and 12-month term deposits for the latest month."""
+    text = _page_text(page)
+    m = re.search(r"([a-zéû]+) - (20\d\d) ([\d,]+) % ([\d,]+) %", text)
+    if not m or m.group(1) not in _FR_MONTH_NAMES:
+        return []
+    month = f"{m.group(2)}-{_FR_MONTH_NAMES[m.group(1)]:02d}"
+    return [{"country": "MA", "country_name": "Morocco", "measure": name, "rate": _fr_num(v), "period": month,
+             "source": "Bank Al-Maghrib, term deposit rates", "source_url": BAM_DEPOSITS}
+            for name, v in (("6-month term deposit", m.group(3)), ("12-month term deposit", m.group(4)))]
+
+
+def parse_cma_bulletin_link(page: str) -> Optional[str]:
+    """The newest quarterly statistical bulletin on the CMA's publications page."""
+    links = re.findall(r'href="([^"]+quarterly-statistical-bulletin-q(\d)-(20\d\d)\.pdf)"', page or "", re.I)
+    return max(links, key=lambda x: (x[2], x[1]))[0] if links else None
+
+
+def parse_cma_unit_trusts(text: str, url: str) -> dict:
+    """Kenya: assets under management of every unit trust scheme from the Capital Markets Authority's quarterly
+    bulletin (the market-share table), for the latest quarter-end and the one before. Assets, not returns."""
+    t = re.sub(r"[ \t]+", " ", text or "")
+    head = re.search(r"Unit Trust ([A-Z][a-z]{2})-(\d\d) ([A-Z][a-z]{2})-(\d\d) Market Share Change", t)
+    if not head:
+        return {"rows": []}
+    period = datetime.strptime(f"1 {head.group(1)} 20{head.group(2)}", "%d %b %Y").date().isoformat()[:7]
+    prior = datetime.strptime(f"1 {head.group(3)} 20{head.group(4)}", "%d %b %Y").date().isoformat()[:7]
+    rows, seen = [], set()
+    for name, aum, prev in re.findall(r"\d{1,2}\. ([A-Z][^\d|]+?) ([\d,]{7,}) ([\d,]{7,}|-) [\d.]+%", t):
+        name = name.strip()
+        if name in seen:
+            continue
+        seen.add(name)
+        rows.append({"name": name, "aum": _num(aum), "aum_prior": _num(prev) if prev != "-" else None})
+    rows.sort(key=lambda r: -(r["aum"] or 0))
+    return {"country": "KE", "country_name": "Kenya", "currency": "KES", "kind": "Unit trust schemes",
+            "period": period, "prior_period": prior, "measure": "Assets under management",
+            "source": "Capital Markets Authority, quarterly statistical bulletin", "source_url": url, "rows": rows}
+
+
+def build_funds_and_deposits(client: httpx.Client, now: Optional[datetime] = None) -> dict:
+    """Bank deposit rates and unlisted fund data from the regulators and central banks that publish them."""
+    from src.engines import markets
+    now = now or datetime.now(timezone.utc)
+    get = lambda url: markets._get(client, url, headers=_UA)                      # noqa: E731
+    deposits = (_safe("cbk-deposits", lambda: parse_cbk_deposits(get(CBK_DEPOSITS).text)) or []) + \
+               (_safe("bam-deposits", lambda: parse_bam_deposits(get(BAM_DEPOSITS).text)) or [])
+
+    def kenya_funds() -> Optional[dict]:
+        link = parse_cma_bulletin_link(get(CMA_PUBLICATIONS).text)
+        r = get(link) if link else None
+        return parse_cma_unit_trusts(pdf_text(r.content), link) if r is not None else None
+    funds = _safe("cma-funds", kenya_funds)
+    return {"captured_at": now.isoformat(), "deposits": deposits,
+            "funds": [funds] if funds and funds.get("rows") else []}
+
+
 def _safe(label: str, fn):
     try:
         return fn()
@@ -738,12 +858,17 @@ def build_tbills(client: httpx.Client, now: Optional[datetime] = None) -> dict[s
         page = get(CBK_TBILLS)
         if page is None:
             return None
+        bonds: list[dict] = []
+        bond_page = get(CBK_BONDS)
+        for link in parse_cbk_bond_links(bond_page.text if bond_page is not None else "")[:2]:
+            r = get(link["url"])
+            bonds += (_safe("cbk-bonds", lambda r=r, link=link: parse_cbk_bond_pdf(pdf_text(r.content), link)) or []) if r else []
         links = parse_cbk_result_links(page.text)
         for link in links[:2]:
             r = get(link["url"])
             block = _safe("cbk-pdf", lambda r=r, link=link: parse_cbk_result_pdf(pdf_text(r.content), link)) if r else None
             if block and block["rows"]:
-                return block
+                return {**block, "bonds": bonds}
         _ERRORS.append(f"cbk: results release unreadable ({len(links)} links found); used the undated bill page")
         return parse_cbk_tbills(page.text)
 

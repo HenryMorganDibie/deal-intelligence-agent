@@ -28,3 +28,9 @@ jobs:
           curl --fail-with-body --silent --show-error --max-time 290 \
             -H "Authorization: Bearer ${oidc}" -H "Accept: application/json" \
             "https://deal-intelligence-api.vercel.app/api/cron/market-snapshot"
+          echo
+          # ETFs, Treasury bills, bonds, policy and deposit rates, unlisted funds: a separate request, so neither
+          # can push the other past the function's time limit. The response lists any source that failed.
+          curl --fail-with-body --silent --show-error --max-time 290 \
+            -H "Authorization: Bearer ${oidc}" -H "Accept: application/json" \
+            "https://deal-intelligence-api.vercel.app/api/cron/market-instruments"

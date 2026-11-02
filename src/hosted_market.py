@@ -33,6 +33,7 @@ Hosted API routes for market data (mounted by api/index.py):
   GET  /api/cron/ingest                scheduled rolling feed -> deals and events, webhooks
   GET  /api/cron/market-snapshot       scheduled daily quotes, indices and FX
   GET  /api/cron/market-intraday       delayed intraday quotes during trading hours (JSE, NGX)
+  GET  /api/cron/market-instruments    ETFs, Treasury bills, bonds, policy and deposit rates, unlisted funds
 """
 from __future__ import annotations
 
@@ -1892,11 +1893,19 @@ async def cron_market_snapshot(request: Request) -> dict:
         written = r.json()
     _markets_cache.clear()
     _directory_cache.clear()
-    instruments = await run_in_threadpool(_record_instruments, True)
-    return {"status": "ok", "rows_written": written, "instruments": instruments,
+    return {"status": "ok", "rows_written": written,
             "exchanges": {k: len(v) for k, v in snap["quotes"].items()},
             "indices": len(snap["indices"]), "currencies": len(snap["fx"].get("rates") or {}),
             "failed": snap["errors"]}
+
+
+@router.get("/api/cron/market-instruments")
+async def cron_market_instruments(request: Request) -> dict:
+    """ETFs, Treasury bills, bonds, policy rates, deposit rates and unlisted funds: run apart from the quote
+    snapshot so a slow central bank site cannot push either past the function's time limit."""
+    if not _authorized_cron(request):
+        raise HTTPException(401, "Unauthorized")
+    return {"status": "ok", **(await run_in_threadpool(_record_instruments, True))}
 
 
 @router.get("/api/cron/market-intraday")
@@ -1937,11 +1946,17 @@ def _record_instruments(with_tbills: bool) -> dict:
         etfs = etfs if any(r.get("date") == today for r in etfs["rows"]) or with_tbills else None
         tbills = instruments.build_tbills(client) if with_tbills else {}
         policy = instruments.build_policy_rates(client) if with_tbills else None
+        extra = instruments.build_funds_and_deposits(client) if with_tbills else None
     rows = instruments.instrument_rows(etfs, tbills)
     if policy and policy["rows"]:
         rows.append({"snapshot_date": policy["captured_at"][:10], "kind": "instruments", "scope": "policy_rates",
                      "captured_at": policy["captured_at"], "payload": policy})
-    summary = {"etfs": len((etfs or {}).get("rows") or []), "tbills": {c: len(b["rows"]) for c, b in tbills.items()},
+    if extra and (extra["deposits"] or extra["funds"]):
+        rows.append({"snapshot_date": extra["captured_at"][:10], "kind": "instruments", "scope": "funds_deposits",
+                     "captured_at": extra["captured_at"], "payload": extra})
+    summary = {"etfs": len((etfs or {}).get("rows") or []),
+               "deposits": len((extra or {}).get("deposits") or []),
+               "funds": sum(len(f["rows"]) for f in (extra or {}).get("funds") or []), "tbills": {c: len(b["rows"]) for c, b in tbills.items()},
                "policy_rates": [r["country"] for r in (policy or {}).get("rows") or []],
                "source_failures": instruments.take_errors()}
     if not rows:
@@ -1991,6 +2006,8 @@ async def markets_instruments() -> dict:
         "tbills": sorted((b for k, b in blocks.items() if k.startswith("tbill_") and b.get("rows")),
                          key=lambda b: b.get("country_name") or b.get("country") or ""),
         "property": instruments.listed_property(snap)[:60],
+        "deposits": (blocks.get("funds_deposits") or {}).get("deposits") or [],
+        "funds": (blocks.get("funds_deposits") or {}).get("funds") or [],
         "policy_rates": instruments.policy_rates(country_risk.load_current_signals_snapshot(), blocks.get("policy_rates")),
         "method": ("ETF prices: JSE funds are Yahoo Finance delayed quotes; Lagos funds come from the NGX's ETF price "
                    "list, which gives no trade date, so they are dated by the day captured; Nairobi funds come from the "
@@ -2000,6 +2017,8 @@ async def markets_instruments() -> dict:
                    "Congo and Gabon they are the short end of the BEAC's monthly yield curve. Bonds are auctioned "
                    "issues, benchmark closing yields or yield-curve points, each labelled. Policy rates are read from "
                    "the central bank where it publishes one, otherwise from a third-party feed marked unconfirmed. "
+                   "Bank deposit rates are central bank published averages (Kenya, Morocco). Unlisted funds are "
+                   "the Capital Markets Authority's quarterly assets under management for Kenyan unit trusts. "
                    "Property shares come from the daily equity snapshot. Each figure carries its date."),
     }
 

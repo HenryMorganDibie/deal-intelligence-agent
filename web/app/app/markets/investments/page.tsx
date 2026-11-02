@@ -6,14 +6,14 @@ import { Container } from "../../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Table, Td, usd } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get } from "../../../../lib/market";
-import { asOf, companyHref, pct, price, quoteWhen, tone } from "../../../../lib/markets-data";
+import { asOf, companyHref, compact, pct, price, quoteWhen, tone } from "../../../../lib/markets-data";
 import {
   calculateBond, calculateTreasuryBill,
   type Instruments, type PolicyRate, type RateType, type TbillBlock, type TbillRow,
 } from "../../../../lib/markets-instruments";
 
 const SECTIONS: [string, string][] = [["etfs", "ETFs"], ["tbills", "Treasury bills"], ["bonds", "Bonds"], ["property", "Listed property"],
-  ["rates", "Policy rates"], ["calculators", "Calculators"]];
+  ["rates", "Policy rates"], ["deposits", "Deposit rates"], ["funds", "Unlisted funds"], ["calculators", "Calculators"]];
 
 function numberField(value: string, fallback = Number.NaN): number {
   const parsed = Number(value);
@@ -286,6 +286,62 @@ function PolicyRates({ rows }: { rows: Instruments["policy_rates"] }) {
   );
 }
 
+function Deposits({ rows }: { rows: NonNullable<Instruments["deposits"]> }) {
+  if (rows.length === 0) return null;
+  return (
+    <section id="deposits" className="mt-12 scroll-mt-24" aria-labelledby="deposits-h">
+      <h2 id="deposits-h" className="h3 text-xl">Bank deposit rates</h2>
+      <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
+        Average rates banks pay (and charge), as published monthly by the central bank. A single bank&apos;s offer can
+        be higher or lower; these are market averages, not quotes.
+      </p>
+      <div className="mt-4">
+        <Table head={["Country", "Measure", "Rate", "Month", "Source"]} minWidth="36rem">
+          {rows.map((r) => (
+            <tr key={`${r.country}-${r.measure}`}>
+              <Td>{r.country_name}</Td>
+              <Td>{r.measure}</Td>
+              <Td className="font-semibold">{rate(r.rate)}</Td>
+              <Td className="text-[color:var(--dim)]">{monthLabel(r.period)}</Td>
+              <Td><a href={r.source_url} target="_blank" rel="noreferrer" className="text-xs underline underline-offset-4 hover:opacity-80">{r.source.split(",")[0]} ↗</a></Td>
+            </tr>
+          ))}
+        </Table>
+      </div>
+    </section>
+  );
+}
+
+function Funds({ blocks }: { blocks: NonNullable<Instruments["funds"]> }) {
+  if (blocks.length === 0) return null;
+  return (
+    <section id="funds" className="mt-12 scroll-mt-24" aria-labelledby="funds-h">
+      <h2 id="funds-h" className="h3 text-xl">Unlisted funds</h2>
+      {blocks.map((b) => (
+        <div key={`${b.country}-${b.kind}`} className="mt-1">
+          <p className="max-w-3xl text-sm text-[color:var(--muted)]">
+            {b.rows.length} {b.kind.toLowerCase()} in {b.country_name}: {b.measure.toLowerCase()} at the end of {monthLabel(b.period)},
+            from the <a href={b.source_url} target="_blank" rel="noreferrer" className="underline underline-offset-4">{b.source}</a>.
+            The regulator publishes fund size, not returns; a fund&apos;s yield is in its own factsheet.
+          </p>
+          <div className="mt-4">
+            <Table head={["Scheme", `Assets, ${monthLabel(b.period)}`, `Assets, ${monthLabel(b.prior_period)}`, "Change"]} minWidth="36rem">
+              {b.rows.map((r) => (
+                <tr key={r.name}>
+                  <Td>{r.name}</Td>
+                  <Td>{r.aum != null ? `${compact(r.aum)} ${b.currency}` : "n/a"}</Td>
+                  <Td className="text-[color:var(--muted)]">{r.aum_prior != null ? `${compact(r.aum_prior)} ${b.currency}` : "new"}</Td>
+                  <Td className={tone(r.aum && r.aum_prior ? r.aum / r.aum_prior - 1 : null)}>{r.aum && r.aum_prior ? pct(r.aum / r.aum_prior - 1) : "n/a"}</Td>
+                </tr>
+              ))}
+            </Table>
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
 function Calculators({ prefill }: { prefill: BillPrefill | null }) {
   const [currency, setCurrency] = useState("NGN");
   const [faceValue, setFaceValue] = useState("1000000");
@@ -450,6 +506,8 @@ export default function InvestmentExplorerPage() {
           <Bonds blocks={data.tbills} />
           <Property rows={data.property} />
           <PolicyRates rows={data.policy_rates} />
+          <Deposits rows={data.deposits ?? []} />
+          <Funds blocks={data.funds ?? []} />
         </>
       )}
 
