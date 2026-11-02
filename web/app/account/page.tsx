@@ -86,7 +86,7 @@ export default function AccountPage() {
     if (!ok) { setError(data.error || "Account creation failed."); return; }
     setPassword(""); setConfirm("");
     if (data.needsEmailConfirmation) {
-      setMessage(`We sent a confirmation link to ${email.trim()}. Open it to activate your account, then sign in. The link expires in 24 hours.`);
+      setMessage(`If ${email.trim()} is new here, a confirmation link is on its way; open it to activate your account (it expires in 24 hours). If that email already has an account, including one created with Google, no email is sent: sign in, or use "Forgot password?" to set a password.`);
       setMode("sign-in");
       return;
     }
