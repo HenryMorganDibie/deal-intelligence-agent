@@ -124,7 +124,6 @@ function Etfs({ data }: { data: Instruments["etfs"] }) {
             ))}
           </Table>
           <Pagination {...pager} />
-          <Pagination {...pager} />
         </div>
       )}
     </section>
@@ -252,6 +251,7 @@ function Property({ rows }: { rows: Instruments["property"] }) {
               </tr>
             ))}
           </Table>
+          <Pagination {...pager} />
         </div>
       )}
     </section>
