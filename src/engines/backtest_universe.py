@@ -29,7 +29,7 @@ UNIVERSE_PATH = Path(__file__).resolve().parents[2] / "docs" / "backtest_univers
 # of the Week recognise a listed company by them.
 LISTED_NAMES_PATH = Path(__file__).resolve().parents[1] / "data" / "african_listed_companies.json"
 N_US = 1000
-SEC_HEADERS = {"User-Agent": "DealIntelligence research henrymorgandibie@gmail.com"}
+SEC_HEADERS = {"User-Agent": "DealIntelligence research info@deal-intelligence.app"}
 BROWSER = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36"}
 # African Markets exchange code -> (Yahoo-style suffix our tools understand, label)
 AFRICAN_EXCHANGES = {

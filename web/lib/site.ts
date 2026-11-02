@@ -23,7 +23,7 @@ export const LINKS = {
   contact: "/contact",
 } as const;
 
-export const CONTACT_EMAIL = env(process.env.NEXT_PUBLIC_CONTACT_EMAIL) ?? "henrymorgandibie@gmail.com";
+export const CONTACT_EMAIL = env(process.env.NEXT_PUBLIC_CONTACT_EMAIL) ?? "info@deal-intelligence.app";
 
 /** A mailto link with a subject and a short template, so a request arrives with what is needed to answer it. */
 export function mailto(subject: string, body: string): string {
