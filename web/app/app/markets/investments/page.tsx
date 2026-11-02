@@ -40,6 +40,12 @@ const RATE_TYPE: Record<TbillRow["rate_type"], string> = {
   discount: "discount rate", yield: "yield", tender: "tender rate", average: "average rate", curve: "curve yield",
 };
 
+// Maturities are years away, so they always carry the year (asOf is for recent dates and omits it).
+function fullDate(day: string): string {
+  const d = new Date(day);
+  return Number.isNaN(d.getTime()) ? day : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+}
+
 function monthLabel(m: string): string {
   const d = new Date(`${m}-01`);
   return Number.isNaN(d.getTime()) ? m : d.toLocaleDateString("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
@@ -203,7 +209,7 @@ function Bonds({ blocks }: { blocks: TbillBlock[] }) {
               <Td>{r.country}</Td>
               <Td><a href={r.url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">{r.name}</a></Td>
               <Td>{r.coupon != null ? rate(r.coupon) : "n/a"}</Td>
-              <Td>{r.maturity ? asOf(r.maturity) : "n/a"}</Td>
+              <Td>{r.maturity ? fullDate(r.maturity) : "n/a"}</Td>
               <Td className="font-semibold">{rate(r.yield)}</Td>
               <Td className="text-[color:var(--muted)]">{KIND[r.kind ?? "closing"]}</Td>
               <Td className="text-[color:var(--dim)]">{r.date && /^\d{4}-\d{2}$/.test(r.date) ? monthLabel(r.date) : asOf(r.date)}</Td>
