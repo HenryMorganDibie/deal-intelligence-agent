@@ -61,37 +61,57 @@ function isOld(r: TbillRow): boolean {
 
 type BillPrefill = { currency: string; rate: number; rateType: RateType; days: number; basis: 360 | 364 | 365 };
 
+const EXCHANGE_NAME: Record<string, string> = { jse: "Johannesburg", ngx: "Lagos", nse: "Nairobi" };
+
+function etfWhen(r: Instruments["etfs"]["rows"][number]): string {
+  if (r.date_kind === "captured") return `as listed ${asOf(r.date)}`;
+  return quoteWhen({ delayed: r.exchange === "jse", quote_time: r.quote_time, date: r.date });
+}
+
 function Etfs({ data }: { data: Instruments["etfs"] }) {
   const exposures = useMemo(() => Array.from(new Set(data.rows.map((r) => r.exposure))), [data.rows]);
+  const exchanges = useMemo(() => Array.from(new Set(data.rows.map((r) => r.exchange))), [data.rows]);
   const [exposure, setExposure] = useState("");
-  const rows = data.rows.filter((r) => !exposure || r.exposure === exposure);
+  const [exchange, setExchange] = useState("");
+  const rows = data.rows.filter((r) => (!exposure || r.exposure === exposure) && (!exchange || r.exchange === exchange));
+  const count = (ex: string) => data.rows.filter((r) => r.exchange === ex).length;
   return (
     <section id="etfs" className="mt-10 scroll-mt-24" aria-labelledby="etfs-h">
       <h2 id="etfs-h" className="h3 text-xl">Exchange-traded funds</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
-        {data.rows.length} funds listed on the Johannesburg Stock Exchange, priced in rand. Each holds an index or a
-        commodity, so one trade buys the whole basket. Prices are delayed {data.delay ? data.delay.replace(/ \(.*\)$/, "") : "quotes"}.
+        {data.rows.length} funds: {exchanges.map((ex) => `${count(ex)} in ${EXCHANGE_NAME[ex] ?? ex}`).join(", ")}. Each
+        holds an index, bonds or a commodity, so one trade buys the whole basket. Johannesburg prices are delayed about
+        15 minutes; the Lagos list gives no trade date, so its prices are dated by the day they were captured.
       </p>
-      <div className="mt-4 flex flex-wrap gap-2 text-xs" role="group" aria-label="Filter by what the fund holds">
-        {["", ...exposures].map((e) => (
-          <button key={e || "all"} type="button" onClick={() => setExposure(e)} aria-pressed={exposure === e}
-            className={`rounded-full border hairline px-3 py-1.5 ${exposure === e ? "bg-white/[0.08]" : "hover:bg-white/[0.03]"}`}>
-            {e || "All"}
-          </button>
-        ))}
+      <div className="mt-4 flex flex-wrap items-end gap-4">
+        <label className="text-sm">Exchange
+          <select className="field mt-1 block" value={exchange} onChange={(e) => setExchange(e.target.value)}>
+            <option value="">All exchanges</option>
+            {exchanges.map((ex) => <option key={ex} value={ex}>{EXCHANGE_NAME[ex] ?? ex}</option>)}
+          </select>
+        </label>
+        <div className="flex flex-wrap gap-2 text-xs" role="group" aria-label="Filter by what the fund holds">
+          {["", ...exposures].map((e) => (
+            <button key={e || "all"} type="button" onClick={() => setExposure(e)} aria-pressed={exposure === e}
+              className={`rounded-full border hairline px-3 py-1.5 ${exposure === e ? "bg-white/[0.08]" : "hover:bg-white/[0.03]"}`}>
+              {e || "All"}
+            </button>
+          ))}
+        </div>
       </div>
       {rows.length === 0 ? <p className="mt-4 text-sm text-[color:var(--dim)]">No fund prices have been recorded yet.</p> : (
         <div className="mt-4">
-          <Table head={["Fund", "Ticker", "Holds", "Price", "Today", "Year to date", "As of"]} minWidth="46rem">
+          <Table head={["Fund", "Ticker", "Exchange", "Holds", "Price", "Today", "Year to date", "As of"]} minWidth="52rem">
             {rows.map((r) => (
-              <tr key={r.symbol}>
+              <tr key={`${r.exchange}-${r.symbol}`}>
                 <Td>{r.name}</Td>
                 <Td className="font-mono text-xs">{r.symbol}</Td>
+                <Td className="text-[color:var(--muted)]">{EXCHANGE_NAME[r.exchange] ?? r.exchange}</Td>
                 <Td className="text-[color:var(--muted)]">{r.exposure}</Td>
                 <Td>{price(r.price, r.currency)}</Td>
                 <Td className={tone(r.chg_1d)}>{pct(r.chg_1d)}</Td>
                 <Td className={tone(r.ytd)}>{r.ytd_suspect ? <span title="The source changed price units this year">Not comparable</span> : pct(r.ytd)}</Td>
-                <Td className="text-[color:var(--dim)]">{quoteWhen({ delayed: true, quote_time: r.quote_time, date: r.date })}</Td>
+                <Td className="text-[color:var(--dim)]">{etfWhen(r)}</Td>
               </tr>
             ))}
           </Table>

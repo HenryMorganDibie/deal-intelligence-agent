@@ -321,3 +321,23 @@ def test_beac_curve_short_end_as_bills_long_end_as_bonds():
         ("3 months", 6.28, "curve", "2026-07"), ("6 months", 7.09, "curve", "2026-07"), ("1 year", 8.18, "curve", "2026-07")]
     assert [(b["name"], b["yield"]) for b in cm["bonds"]] == [("1.5-year curve point", 8.82), ("10-year curve point", 9.62)]
     assert cm["currency"] == "XAF" and cm["country_name"] == "Cameroon"
+
+
+def test_lagos_etfs_named_and_dated_by_capture():
+    feed = [{"Symbol": "VETGRIF30", "ClosePrice": 92.0, "PrevClosingPrice": 90.0, "Volume": 1000.0},
+            {"Symbol": "NEWGOLD", "ClosePrice": 84000.0, "PrevClosingPrice": 84000.0},
+            {"Symbol": "DEAD", "ClosePrice": 0}]
+    rows = instruments.parse_ngx_etfs(feed, "2026-11-02")
+    assert [(r["symbol"], r["name"], r["exposure"], r["currency"]) for r in rows] == [
+        ("VETGRIF30", "Vetiva Griffin 30 ETF", "Nigerian equity", "NGN"), ("NEWGOLD", "NewGold ETF", "Precious metals", "NGN")]
+    assert rows[0]["chg_1d"] == round(92 / 90 - 1, 6) and rows[0]["date"] == "2026-11-02" and rows[0]["date_kind"] == "captured"
+
+
+def test_nairobi_etfs_come_from_the_equity_snapshot():
+    snap = {"quotes": {"nse": [
+        {"symbol": "GLD", "name": "ABSA NewGold ETF", "price": 4825.0, "sector": "Exchange Traded Funds", "date": "2026-11-02"},
+        {"symbol": "SMWF", "name": "Satrix MSCI World Feeder ETF", "price": 985.0, "sector": "Exchange Traded Funds"},
+        {"symbol": "SCOM", "name": "Safaricom", "price": 30.0, "sector": "Telecom"}]}}
+    rows = instruments.nse_etfs(snap)
+    assert [(r["symbol"], r["exposure"], r["currency"], r["exchange"]) for r in rows] == [
+        ("GLD", "Precious metals", "KES", "nse"), ("SMWF", "Global equity", "KES", "nse")]

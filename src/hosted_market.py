@@ -1985,12 +1985,16 @@ async def markets_instruments() -> dict:
     except HTTPException:
         snap = {}
     return {
-        "etfs": blocks.get("etf_jse") or {"rows": []},
+        "etfs": {**(blocks.get("etf_jse") or {}),
+                 "rows": [r if r.get("exchange") else {**r, "exchange": "jse"}
+                          for r in (blocks.get("etf_jse") or {}).get("rows") or []] + instruments.nse_etfs(snap)},
         "tbills": sorted((b for k, b in blocks.items() if k.startswith("tbill_") and b.get("rows")),
                          key=lambda b: b.get("country_name") or b.get("country") or ""),
         "property": instruments.listed_property(snap)[:60],
         "policy_rates": instruments.policy_rates(country_risk.load_current_signals_snapshot(), blocks.get("policy_rates")),
-        "method": ("ETF prices are Yahoo Finance delayed quotes for JSE-listed funds. Treasury bill rates are the "
+        "method": ("ETF prices: JSE funds are Yahoo Finance delayed quotes; Lagos funds come from the NGX's ETF price "
+                   "list, which gives no trade date, so they are dated by the day captured; Nairobi funds come from the "
+                   "daily Nairobi price list. Treasury bill rates are the "
                    "latest auction results each central bank or regional market publishes (web pages, data feeds or "
                    "PDF releases), checked against the source's own prices where it publishes them; for Cameroon, "
                    "Congo and Gabon they are the short end of the BEAC's monthly yield curve. Bonds are auctioned "

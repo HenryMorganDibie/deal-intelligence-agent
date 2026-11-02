@@ -103,6 +103,8 @@ export function calculateBond(input: BondQuote): BondMetrics | null {
 
 export type EtfRow = {
   symbol: string;
+  exchange: "jse" | "ngx" | "nse";
+  date_kind?: "captured";
   name: string;
   exposure: string;
   currency: string;

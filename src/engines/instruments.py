@@ -85,6 +85,26 @@ JSE_ETFS: dict[str, str] = {
     **dict.fromkeys(["STXGLB"], "Multi-asset"),
 }
 
+NGX_ETFS_FEED = "https://doclib.ngxgroup.com/REST/api/statistics/etfs/?market=&sector=&orderby=&pageSize=300&pageNo=0"
+NGX_ETFS_PAGE = "https://ngxgroup.com/exchange/data/etfs-price-list/"
+# Lagos exchange-traded products: the feed carries symbols only, so names and holdings are kept here.
+NGX_ETFS: dict[str, tuple[str, str]] = {
+    "GREENWETF": ("Greenwich Alpha ETF", "Nigerian equity"),
+    "LOTUSHAL15": ("Lotus Halal Equity ETF", "Nigerian equity"),
+    "MERGROWTH": ("Meristem Growth ETF", "Nigerian equity"),
+    "MERVALUE": ("Meristem Value ETF", "Nigerian equity"),
+    "SIAMLETF40": ("SIAML Pension ETF 40", "Nigerian equity"),
+    "STANBICETF30": ("Stanbic IBTC ETF 30", "Nigerian equity"),
+    "VETBANK": ("Vetiva Banking ETF", "Nigerian equity"),
+    "VETGOODS": ("Vetiva Consumer Goods ETF", "Nigerian equity"),
+    "VETGRIF30": ("Vetiva Griffin 30 ETF", "Nigerian equity"),
+    "VETINDETF": ("Vetiva Industrial ETF", "Nigerian equity"),
+    "VSPBONDETF": ("Vetiva S&P Nigerian Sovereign Bond ETF", "Nigerian bonds"),
+    "NEWGOLD": ("NewGold ETF", "Precious metals"),
+}
+# Nairobi exchange-traded products, found in the daily Nairobi price list by sector.
+NSE_ETF_EXPOSURE = {"GLD": "Precious metals", "SMWF": "Global equity"}
+
 # A year-to-date return beyond this is a unit change in the source (cents to rand), not a market move.
 _YTD_LIMIT = 3.0
 
@@ -105,7 +125,41 @@ def build_etfs(client: httpx.Client, now: Optional[datetime] = None) -> dict:
                      "ytd": ytd if ytd is not None and abs(ytd) <= _YTD_LIMIT else None,
                      "ytd_suspect": ytd is not None and abs(ytd) > _YTD_LIMIT,
                      "date": q.get("date"), "quote_time": q.get("time")})
-    return {"captured_at": now.isoformat(), "exchange": "jse", "delay": ETF_DELAY, "rows": rows}
+    for row in rows:
+        row["exchange"] = "jse"
+    ngx = _safe("ngx-etfs", lambda: parse_ngx_etfs(markets._get(client, NGX_ETFS_FEED, headers=_UA).json(),
+                                                     now.date().isoformat())) or []
+    return {"captured_at": now.isoformat(), "exchange": "jse", "delay": ETF_DELAY, "rows": rows + ngx}
+
+
+def parse_ngx_etfs(items: object, captured: str) -> list[dict]:
+    """Lagos exchange-traded products from the NGX's ETF price list. The feed gives no trade date, so each price is
+    dated by the day it was captured and marked as such."""
+    out = []
+    for it in items if isinstance(items, list) else []:
+        sym = str(it.get("Symbol") or "").strip().upper()
+        price, prev = _num(it.get("ClosePrice")), _num(it.get("PrevClosingPrice"))
+        if not sym or not price:
+            continue
+        name, exposure = NGX_ETFS.get(sym, (sym, "Nigerian equity" if "BOND" not in sym else "Nigerian bonds"))
+        out.append({"symbol": sym, "name": name, "exposure": exposure, "currency": "NGN", "exchange": "ngx",
+                    "price": price, "chg_1d": round(price / prev - 1, 6) if prev else None,
+                    "volume": _num(it.get("Volume")), "ytd": None, "ytd_suspect": False,
+                    "date": captured, "date_kind": "captured", "quote_time": None})
+    return out
+
+
+def nse_etfs(snapshot: dict) -> list[dict]:
+    """Nairobi exchange-traded products from the daily equity snapshot (the Nairobi list files them by sector)."""
+    out = []
+    for q in (snapshot.get("quotes") or {}).get("nse") or []:
+        if (q.get("sector") or "") == "Exchange Traded Funds" and q.get("price"):
+            out.append({"symbol": q["symbol"], "name": q.get("name") or q["symbol"], "currency": "KES",
+                        "exposure": NSE_ETF_EXPOSURE.get(q["symbol"], "Other"), "exchange": "nse",
+                        "price": q["price"], "chg_1d": q.get("chg_1d"), "volume": q.get("volume"),
+                        "ytd": q.get("ytd"), "ytd_suspect": bool(q.get("ytd_suspect")),
+                        "date": q.get("date"), "quote_time": q.get("quote_time")})
+    return out
 
 
 def _tenor_days(tenor: str) -> Optional[int]:
