@@ -99,7 +99,7 @@ export default function AccountPage() {
     const { ok, data } = await authAction({ action: "recover-password", email: recoveryEmail });
     setBusy(false);
     if (!ok) { setError(data.error || "Could not request a reset link."); return; }
-    setMessage("If an account uses that email, a password-reset link is on its way.");
+    setMessage("If an account exists for that email, a password-reset link is on its way.");
     setShowRecovery(false);
   }
 
@@ -141,9 +141,10 @@ export default function AccountPage() {
           ))}
         </div>
 
+        {/* The forms appear once the page is interactive and the session is known, so an early click is never lost. */}
         {session === null ? <p className="mt-6 text-sm text-[color:var(--muted)]" role="status">Checking your session…</p> : null}
 
-        {mode === "sign-in" ? (
+        {session === null ? null : mode === "sign-in" ? (
           <form className="mt-6 space-y-4" onSubmit={signIn} noValidate>
             <div>
               <label className="mb-2 block text-sm" htmlFor="signin-email">Email</label>
@@ -193,8 +194,12 @@ export default function AccountPage() {
           </form>
         )}
 
-        <div className="my-6 flex items-center gap-3 text-xs text-[color:var(--muted)]"><span className="h-px flex-1 bg-[color:var(--line)]" />or<span className="h-px flex-1 bg-[color:var(--line)]" /></div>
-        <a className="btn btn-ghost w-full justify-center" href="/api/portfolio/auth/google">Continue with Google</a>
+        {session === null ? null : (
+          <>
+            <div className="my-6 flex items-center gap-3 text-xs text-[color:var(--muted)]"><span className="h-px flex-1 bg-[color:var(--line)]" />or<span className="h-px flex-1 bg-[color:var(--line)]" /></div>
+            <a className="btn btn-ghost w-full justify-center" href="/api/portfolio/auth/google">Continue with Google</a>
+          </>
+        )}
 
         {showRecovery && mode === "sign-in" ? (
           <form className="mt-5 space-y-3 rounded-xl border border-[color:var(--line)] p-4" onSubmit={requestRecovery}>

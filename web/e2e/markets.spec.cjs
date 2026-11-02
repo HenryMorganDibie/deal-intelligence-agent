@@ -298,29 +298,35 @@ test("password recovery request shows a privacy-preserving confirmation", async 
 
   await page.goto("/account");
   await page.getByRole("button", { name: "Forgot password?" }).click();
-  await page.getByLabel("Send reset link to").fill("recovery@example.test");
+  await page.getByLabel("Send a reset link to").fill("recovery@example.test");
   await page.getByRole("button", { name: "Send password-reset link" }).click();
   await expect(page.getByRole("status")).toContainText("If an account exists for that email");
   expect(submitted).toEqual({ action: "recover-password", email: "recovery@example.test" });
 });
 
-test("password reset page validates confirmation and submits only the new password", async ({ page }) => {
+test("password reset page enforces the rules and the retyped password, and submits only the new password", async ({ page }) => {
   let submitted;
   await page.route("**/api/portfolio/auth", async route => {
     submitted = route.request().postDataJSON();
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
   });
   await page.goto("/account/reset-password");
+  const update = page.getByRole("button", { name: "Update password" });
+  // A password that breaks the rules cannot be submitted.
   await page.getByLabel("New password", { exact: true }).fill("long-test-password-123");
-  await page.getByLabel("Confirm new password").fill("different-password-456");
-  await page.getByRole("button", { name: "Update password" }).click();
-  await expect(page.getByText("The passwords do not match.", { exact: true })).toBeVisible();
+  await page.getByLabel("Retype new password").fill("long-test-password-123");
+  await expect(update).toBeDisabled();
+  // Nor can two entries that differ.
+  await page.getByLabel("New password", { exact: true }).fill("Kettle-Harbour-91!");
+  await page.getByLabel("Retype new password").fill("Kettle-Harbour-91?");
+  await expect(page.getByText("Passwords do not match")).toBeVisible();
+  await expect(update).toBeDisabled();
   expect(submitted).toBeUndefined();
 
-  await page.getByLabel("Confirm new password").fill("long-test-password-123");
-  await page.getByRole("button", { name: "Update password" }).click();
+  await page.getByLabel("Retype new password").fill("Kettle-Harbour-91!");
+  await update.click();
   await expect(page.getByRole("status")).toContainText("Your password has been updated");
-  expect(submitted).toEqual({ action: "update-password", password: "long-test-password-123" });
+  expect(submitted).toEqual({ action: "update-password", password: "Kettle-Harbour-91!", confirmPassword: "Kettle-Harbour-91!" });
 });
 
 test("sign-up enforces the password rules and the retyped password before it can submit", async ({ page }) => {
