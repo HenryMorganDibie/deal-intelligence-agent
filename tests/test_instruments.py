@@ -63,8 +63,9 @@ def test_listed_property_and_policy_rates():
     signals = {"countries": {"KE": {"country_name": "Kenya", "observations": [
         {"metric_key": "policy_rate_pct", "value": 9.25, "as_of_period": "2026-10-07", "source": "cbk"},
         {"metric_key": "fx_usd_daily", "value": 129.2}]}}}
-    assert instruments.policy_rates(signals) == [{"country": "KE", "country_name": "Kenya", "rate": 9.25,
-                                                  "as_of": "2026-10-07", "freshness": None, "source": "cbk"}]
+    row = instruments.policy_rates(signals)[0]
+    assert (row["country"], row["rate"], row["date"], row["date_kind"], row["confirmed_by"]) == (
+        "KE", 9.25, "2026-10-07", "observation", None)
 
 
 def test_instruments_endpoint_serves_stored_blocks(monkeypatch):
@@ -190,3 +191,55 @@ def test_one_failing_source_does_not_stop_the_others(monkeypatch):
 
     out = instruments.build_tbills(Client())
     assert sorted(out) == ["gh", "za"] and out["gh"]["country_name"] == "Ghana"
+
+
+KE_PDF_TEXT = """A. RESULTS OF 91, 182 & 364 DAYS TREASURY  BILLS ISSUES 2706/091, 2680/182 & 2635/364  DATED 02/11/2026
+Tenor 91 DAYS 182 DAYS 364 DAYS TOTAL
+ISIN KE9910007542 KE9910007658 KE9910007765
+Amount Offered (Kshs. M) 8,000.00                       10,000.00                     10,000.00                           28,000.00
+Total Amount Accepted (Kshs. M) 40,556.88                     5,221.41                       5,907.03                             51,685.33
+Weighted Average Interest Rate of 
+accepted bids 8.7498% 8.8508% 9.0288%
+Price per Kshs 100 at average interest 
+rate 97.8651 95.7733 91.7397
+Director, Financial Markets
+October 29, 2026
+Bids must be submitted"""
+
+KE_LINKS = """<a href="/uploads/91_day_historical_treasury_bill_results/1_RESULTS 2705-091 2679-182 2634-364 DATED 26-10-2026.xlsx.pdf">2705</a>
+<a href="/uploads/91_day_historical_treasury_bill_results/2_RESULTS 2706-091 2680-182 2635-364 DATED 02-11-2026.pdf">2706</a>"""
+
+
+def test_kenya_results_release_is_dated_and_reconciled():
+    links = instruments.parse_cbk_result_links(KE_LINKS)
+    assert [(link["issue"], link["value_date"]) for link in links] == [("2706", "2026-11-02"), ("2705", "2026-10-26")]
+    assert "%20" in links[0]["url"] and links[0]["url"].startswith("https://www.centralbank.go.ke/")
+    ke = instruments.parse_cbk_result_pdf(KE_PDF_TEXT, links[0])
+    assert [(r["tenor_days"], r["rate"], r["price"]) for r in ke["rows"]] == [
+        (91, 8.7498, 97.8651), (182, 8.8508, 95.7733), (364, 9.0288, 91.7397)]
+    assert {r["auction_date"] for r in ke["rows"]} == {"2026-10-29"} and ke["rows"][0]["value_date"] == "2026-11-02"
+    assert ke["rows"][0]["basis"] == 365 and ke["rows"][0]["allotted_mn"] == 40556.88
+
+
+def test_kenya_row_that_does_not_reconcile_is_dropped():
+    misread = KE_PDF_TEXT.replace("97.8651", "97.1000")           # a price that no longer matches its rate
+    ke = instruments.parse_cbk_result_pdf(misread, {"issue": "2706", "value_date": "2026-11-02", "url": "u"})
+    assert [r["tenor_days"] for r in ke["rows"]] == [182, 364]
+
+
+def test_policy_rates_prefer_the_central_bank_and_say_what_the_date_means():
+    ke_page = "<table><tr><th>Date</th><th>Rate</th></tr><tr><td>11/08/2026</td><td>8.75</td></tr><tr><td>07/10/2026</td><td>8.75</td></tr></table>"
+    assert instruments.parse_cbk_cbr(ke_page)["date"] == "2026-10-07"
+    na = instruments.parse_bon_repo("Repo Rate Increased by 25 Basis Points to 7.00 Percent On 26 and 27 October 2026, the MPC")
+    assert (na["rate"], na["date"], na["date_kind"]) == (7.0, "2026-10-27", "decision")
+    bw = instruments.parse_bob_mopr("Date: 29 Oct 2026 BoBC Rate 7 Day: 5.50 % Monetary Policy Rate: 5.50 1 month")
+    assert (bw["rate"], bw["date"], bw["date_kind"]) == (5.5, "2026-10-29", "published")
+    assert instruments.parse_rbm_policy("Bank Rates Effective Month Policy Rate 24.00 Mar 2026 Reference")["date"] == "2026-03"
+    assert instruments.parse_cbn_mpr([{"id": 1, "mpr": "23.0000"}], "2026-11-02")["date_kind"] == "confirmed"
+    assert instruments.parse_bog_mpr("system. 14.00 Current Monetary Policy Rate (%)", "2026-11-02")["rate"] == 14.0
+    signals = {"countries": {
+        "NA": {"country_name": "Namibia", "observations": [{"metric_key": "policy_rate_pct", "value": 6.75, "as_of_period": "2026-08-12"}]},
+        "TZ": {"country_name": "Tanzania", "observations": [{"metric_key": "policy_rate_pct", "value": 6.25, "as_of_period": "2026-Q4"}]}}}
+    rows = {r["country"]: r for r in instruments.policy_rates(signals, {"rows": [na]})}
+    assert rows["NA"]["rate"] == 7.0 and rows["NA"]["feed_disagreed"] == {"rate": 6.75, "date": "2026-08-12"}
+    assert rows["TZ"]["confirmed_by"] is None and rows["TZ"]["date_kind"] == "observation"

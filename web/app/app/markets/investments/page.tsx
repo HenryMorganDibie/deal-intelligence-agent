@@ -9,7 +9,7 @@ import { get } from "../../../../lib/market";
 import { asOf, companyHref, pct, price, quoteWhen, tone } from "../../../../lib/markets-data";
 import {
   calculateBond, calculateTreasuryBill,
-  type Instruments, type RateType, type TbillBlock, type TbillRow,
+  type Instruments, type PolicyRate, type RateType, type TbillBlock, type TbillRow,
 } from "../../../../lib/markets-instruments";
 
 const SECTIONS: [string, string][] = [["etfs", "ETFs"], ["tbills", "Treasury bills"], ["property", "Listed property"],
@@ -187,13 +187,25 @@ function Property({ rows }: { rows: Instruments["property"] }) {
   );
 }
 
+function policyDate(r: PolicyRate): string {
+  if (r.date_kind === "decision") return `set ${asOf(r.date)}`;
+  if (r.date_kind === "effective" && r.date) {
+    const d = new Date(`${r.date}-01`);
+    return `effective ${Number.isNaN(d.getTime()) ? r.date : d.toLocaleDateString("en-GB", { month: "short", year: "numeric", timeZone: "UTC" })}`;
+  }
+  if (r.date_kind === "published" || r.date_kind === "confirmed") return `confirmed ${asOf(r.date)}`;
+  return `reported for ${r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date) ? asOf(r.date) : r.date ?? "an unstated period"}`;
+}
+
 function PolicyRates({ rows }: { rows: Instruments["policy_rates"] }) {
+  const confirmed = rows.filter((r) => r.confirmed_by).length;
   return (
     <section id="rates" className="mt-12 scroll-mt-24" aria-labelledby="rates-h">
       <h2 id="rates-h" className="h3 text-xl">Policy rates</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
-        The central bank rate anchors what deposits, money-market funds and Treasury bills pay in each country. Banks
-        set their own deposit rates, which are not collected here.
+        The central bank rate anchors what deposits, money-market funds and Treasury bills pay. {confirmed} of {rows.length} are
+        read from the central bank itself; the rest come from a third-party feed (Africa API) and are marked as not
+        confirmed. A rate stays in force until the next decision, so an older date does not mean the rate is out of date.
       </p>
       {rows.length === 0 ? <p className="mt-4 text-sm text-[color:var(--dim)]">No policy rates are available.</p> : (
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -201,7 +213,11 @@ function PolicyRates({ rows }: { rows: Instruments["policy_rates"] }) {
             <div key={r.country} className="rounded-lg border hairline px-3 py-2.5">
               <p className="text-xs text-[color:var(--muted)]">{r.country_name}</p>
               <p className="mt-0.5 text-lg font-semibold">{rate(r.rate)}</p>
-              <p className="text-[0.6875rem] text-[color:var(--dim)]">since {asOf(r.as_of)}</p>
+              <p className="text-[0.6875rem] text-[color:var(--dim)]">
+                {policyDate(r)} · <a href={r.source_url} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:opacity-80">{r.source}</a>
+              </p>
+              {!r.confirmed_by && <p className="text-[0.6875rem] text-risk">not confirmed with the central bank</p>}
+              {r.feed_disagreed && <p className="text-[0.6875rem] text-[color:var(--dim)]">third-party feed still shows {rate(r.feed_disagreed.rate)}</p>}
             </div>
           ))}
         </div>

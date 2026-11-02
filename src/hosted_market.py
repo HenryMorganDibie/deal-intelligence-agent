@@ -1935,8 +1935,13 @@ def _record_instruments(with_tbills: bool) -> dict:
         today = datetime.now(timezone.utc).date().isoformat()
         etfs = etfs if any(r.get("date") == today for r in etfs["rows"]) or with_tbills else None
         tbills = instruments.build_tbills(client) if with_tbills else {}
+        policy = instruments.build_policy_rates(client) if with_tbills else None
     rows = instruments.instrument_rows(etfs, tbills)
-    summary = {"etfs": len((etfs or {}).get("rows") or []), "tbills": {c: len(b["rows"]) for c, b in tbills.items()}}
+    if policy and policy["rows"]:
+        rows.append({"snapshot_date": policy["captured_at"][:10], "kind": "instruments", "scope": "policy_rates",
+                     "captured_at": policy["captured_at"], "payload": policy})
+    summary = {"etfs": len((etfs or {}).get("rows") or []), "tbills": {c: len(b["rows"]) for c, b in tbills.items()},
+               "policy_rates": [r["country"] for r in (policy or {}).get("rows") or []]}
     if not rows:
         return {**summary, "written": 0}
     if not _configured():
@@ -1982,7 +1987,7 @@ async def markets_instruments() -> dict:
         "tbills": sorted((b for k, b in blocks.items() if k.startswith("tbill_") and b.get("rows")),
                          key=lambda b: b.get("country_name") or b.get("country") or ""),
         "property": instruments.listed_property(snap)[:60],
-        "policy_rates": instruments.policy_rates(country_risk.load_current_signals_snapshot()),
+        "policy_rates": instruments.policy_rates(country_risk.load_current_signals_snapshot(), blocks.get("policy_rates")),
         "method": ("ETF prices are Yahoo Finance delayed quotes for JSE-listed funds; Treasury bill rates are the "
                    "latest auction results published by each central bank or regional market (17 countries); property shares come from the daily "
                    "equity snapshot; policy rates come from the country signals snapshot. Each figure carries its "

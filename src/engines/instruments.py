@@ -46,10 +46,16 @@ BOZ_PAGE = "https://www.boz.zm/markets-securities/treasury-bills"
 UMOA_LIST = "https://www.umoatitres.org/fr/emissions/"
 UMOA_COUNTRIES = {"Bénin": "BJ", "Burkina": "BF", "Burkina Faso": "BF", "Côte d’Ivoire": "CI", "Côte d'Ivoire": "CI",
                   "Guinée-Bissau": "GW", "Guinée Bissau": "GW", "Mali": "ML", "Niger": "NE", "Sénégal": "SN", "Togo": "TG"}
-COUNTRY_NAMES = {"NG": "Nigeria", "KE": "Kenya", "ZA": "South Africa", "GH": "Ghana", "MA": "Morocco", "GM": "Gambia",
+COUNTRY_NAMES = {"BW": "Botswana", "MW": "Malawi", "NA": "Namibia", "NG": "Nigeria", "KE": "Kenya", "ZA": "South Africa", "GH": "Ghana", "MA": "Morocco", "GM": "Gambia",
                  "SC": "Seychelles", "TZ": "Tanzania", "ZM": "Zambia", "BJ": "Benin", "BF": "Burkina Faso",
                  "CI": "Côte d'Ivoire", "GW": "Guinea-Bissau", "ML": "Mali", "NE": "Niger", "SN": "Senegal", "TG": "Togo"}
 _UA = {"User-Agent": "Mozilla/5.0"}
+CBK_CBR = "https://www.centralbank.go.ke/rates/central-bank-rate/"
+CBN_MPR = "https://www.cbn.gov.ng/api/GetMPR_TOP"
+BOG_HOME = "https://www.bog.gov.gh/"
+BOB_HOME = "https://www.bankofbotswana.bw/"
+RBM_HOME = "https://www.rbm.mw/"
+BON_HOME = "https://www.bon.com.na/"
 LOCAL_PATH = DATA_DIR / "market_instruments.json"   # the local copy; the hosted API keeps these in Supabase
 ETF_DELAY = "about 15 minutes (Yahoo Finance)"
 
@@ -172,6 +178,67 @@ def parse_cbk_tbills(page: str) -> dict:
     return {"country": "KE", "currency": "KES", "issuer": "Government of Kenya",
             "source": "Central Bank of Kenya, Treasury bill auctions", "source_url": CBK_TBILLS,
             "rows": [rows[k] for k in sorted(rows)]}
+
+
+def pdf_text(data: bytes) -> str:
+    """The text of a PDF, page by page."""
+    import io
+    from pypdf import PdfReader
+    reader = PdfReader(io.BytesIO(data))
+    return "\n".join(page.extract_text() or "" for page in reader.pages)
+
+
+_CBK_RESULT_LINK = re.compile(r'href="([^"]*treasury_bill_results/[^"]*RESULTS\s+(\d+)-091[^"]*?DATED\s+(\d\d)-(\d\d)-(\d{4})[^"]*\.pdf)"', re.I)
+
+
+def parse_cbk_result_links(page: str) -> list[dict]:
+    """The CBK's published Treasury bill result files, newest value date first: issue number, value date, URL."""
+    seen, out = set(), []
+    for href, issue, d, m, y in _CBK_RESULT_LINK.findall(page or ""):
+        if issue in seen:
+            continue
+        seen.add(issue)
+        url = href if href.startswith("http") else "https://www.centralbank.go.ke" + href
+        out.append({"issue": issue, "value_date": f"{y}-{m}-{d}", "url": url.replace(" ", "%20")})
+    return sorted(out, key=lambda r: (r["value_date"], r["issue"]), reverse=True)
+
+
+def _row_values(text: str, label: str, pattern: str = r"([\d.,]+)%?") -> list[str]:
+    m = re.search(label + r"\s*((?:" + pattern + r"\s*){3})", text, re.S)
+    return re.findall(pattern, m.group(1)) if m else []
+
+
+def parse_cbk_result_pdf(text: str, link: dict) -> dict:
+    """One CBK results release: weighted average interest rate and price per KSh 100 for each tenor, the results
+    announcement date (the auction day) and the value date. The rates reconcile with the published prices on a
+    365-day basis (price = 100 / (1 + r * t / 365))."""
+    t = re.sub(r"[ \t]+", " ", text or "")
+    head = re.search(r"Tenor\s+(\d+)\s*DAYS\s+(\d+)\s*DAYS\s+(\d+)\s*DAYS", t)
+    tenors = [int(x) for x in head.groups()] if head else []
+    rates = _row_values(t, r"Weighted Average Interest Rate of\s*accepted bids")
+    prices = _row_values(t, r"Price per Kshs 100 at average interest\s*rate")
+    offered = _row_values(t, r"Amount Offered \(Kshs\. M\)")
+    accepted = _row_values(t, r"Total Amount Accepted \(Kshs\. M\)")
+    signed = re.search(r"\n([A-Z][a-z]+ \d{1,2}, \d{4})\s*\n", t)
+    auction = None
+    if signed:
+        try:
+            auction = datetime.strptime(signed.group(1), "%B %d, %Y").date().isoformat()
+        except ValueError:
+            pass
+    rows = []
+    for i, days in enumerate(tenors):
+        rate = _num(rates[i]) if i < len(rates) else None
+        price = _num(prices[i]) if i < len(prices) else None
+        # A row whose rate and published price do not reconcile was misread: it is dropped, never shown.
+        if not rate or not price or abs(100 / (1 + rate / 100 * days / 365) - price) > 0.01:
+            continue
+        rows.append({"tenor_days": days, "rate_type": "yield", "rate": rate, "basis": 365, "price": price,
+                     "auction_date": auction, "value_date": link["value_date"], "issue": link["issue"],
+                     "offered_mn": _num(offered[i]) if i < len(offered) else None,
+                     "allotted_mn": _num(accepted[i]) if i < len(accepted) else None})
+    return {"country": "KE", "currency": "KES", "issuer": "Government of Kenya",
+            "source": "Central Bank of Kenya, Treasury bill auction results", "source_url": link["url"], "rows": rows}
 
 
 def _cells(page: str) -> list[list[str]]:
@@ -415,7 +482,7 @@ def build_tbills(client: httpx.Client, now: Optional[datetime] = None) -> dict[s
     get = lambda url, **kw: markets._get(client, url, headers=_UA, **kw)          # noqa: E731
     blocks: list[Optional[dict]] = [
         _safe("cbn", lambda: parse_cbn_ntb(get(CBN_NTB).json())),
-        _safe("cbk", lambda: parse_cbk_tbills(get(CBK_TBILLS).text)),
+        _safe("cbk", lambda: kenya()),
         _safe("sarb", lambda: parse_sarb_rates(get(SARB_RATES).json())),
         _safe("bog", lambda: parse_bog_tbills(get(BOG_TBILLS).text)),
         _safe("bam", lambda: parse_bam_tbills(get(BAM_TBILLS).text)),
@@ -423,6 +490,18 @@ def build_tbills(client: httpx.Client, now: Optional[datetime] = None) -> dict[s
         _safe("cbs", lambda: parse_cbs_tbills(get(CBS_TBILLS).json())),
         _safe("boz", lambda: parse_boz_tbills(get(BOZ_TBILLS).json())),
     ]
+
+    def kenya() -> Optional[dict]:
+        """The newest results release (dated, with prices); the bill page's undated summary if that fails."""
+        page = get(CBK_TBILLS)
+        if page is None:
+            return None
+        for link in parse_cbk_result_links(page.text)[:2]:
+            r = get(link["url"])
+            block = _safe("cbk-pdf", lambda r=r, link=link: parse_cbk_result_pdf(pdf_text(r.content), link)) if r else None
+            if block and block["rows"]:
+                return block
+        return parse_cbk_tbills(page.text)
 
     def tanzania() -> Optional[dict]:
         newest = parse_bot_list(get(BOT_TBILLS).text)
@@ -474,15 +553,118 @@ def listed_property(snapshot: dict) -> list[dict]:
     return sorted(out, key=lambda q: -(q.get("mcap_usd") or 0))
 
 
-def policy_rates(signals: dict) -> list[dict]:
-    """Each country's latest policy rate from the country signals snapshot, with its period and source."""
-    out = []
+def _page_text(page: str) -> str:
+    return re.sub(r"\s+", " ", html_mod.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<script.*?</script>|<style.*?</style>", "", page or "", flags=re.S))))
+
+
+def _rate(country: str, rate: Optional[float], when: Optional[str], kind: str, source: str, url: str) -> Optional[dict]:
+    """A policy rate read from the central bank itself. kind says what the date is: 'decision' (the meeting that set
+    it), 'published' (the bank's own data date), 'effective' (the month it took effect) or 'confirmed' (the day we
+    read it, when the bank gives no date)."""
+    if rate is None or not 0 <= rate < 100:
+        return None
+    return {"country": country, "country_name": COUNTRY_NAMES.get(country, country), "rate": rate, "date": when,
+            "date_kind": kind, "source": source, "source_url": url, "confirmed_by": "central bank"}
+
+
+def parse_sarb_policy(items: object) -> Optional[dict]:
+    for it in items if isinstance(items, list) else []:
+        if it.get("Name") == "SARB Policy Rate" and isinstance(it.get("Value"), (int, float)):
+            return _rate("ZA", float(it["Value"]), str(it.get("Date") or "")[:10] or None, "published",
+                         "South African Reserve Bank", SARB_PAGE)
+    return None
+
+
+def parse_cbk_cbr(page: str) -> Optional[dict]:
+    """Kenya: the latest Monetary Policy Committee decision in the CBK's Central Bank Rate table."""
+    best = None
+    for c in _cells(page):
+        try:
+            when = datetime.strptime(c[0], "%d/%m/%Y").date()
+        except (ValueError, IndexError):
+            continue
+        rate = _num(c[1]) if len(c) > 1 else None
+        if rate is not None and (best is None or when > best[0]):
+            best = (when, rate)
+    return _rate("KE", best[1], best[0].isoformat(), "decision", "Central Bank of Kenya", CBK_CBR) if best else None
+
+
+def parse_cbn_mpr(payload: object, today: str) -> Optional[dict]:
+    item = payload[0] if isinstance(payload, list) and payload else {}
+    return _rate("NG", _num(item.get("mpr")), today, "confirmed", "Central Bank of Nigeria", "https://www.cbn.gov.ng/")
+
+
+def parse_bog_mpr(page: str, today: str) -> Optional[dict]:
+    m = re.search(r"([\d.]+)\s*Current Monetary Policy Rate", _page_text(page))
+    return _rate("GH", _num(m.group(1)), today, "confirmed", "Bank of Ghana", BOG_HOME) if m else None
+
+
+def parse_bob_mopr(page: str) -> Optional[dict]:
+    m = re.search(r"Date:\s*(\d{1,2} [A-Z][a-z]{2} \d{4})\s*BoBC Rate 7 Day:\s*[\d.]+\s*%?\s*Monetary Policy Rate:\s*([\d.]+)",
+                  _page_text(page))
+    if not m:
+        return None
+    when = datetime.strptime(m.group(1), "%d %b %Y").date().isoformat()
+    return _rate("BW", _num(m.group(2)), when, "published", "Bank of Botswana", BOB_HOME)
+
+
+def parse_rbm_policy(page: str) -> Optional[dict]:
+    m = re.search(r"Policy Rate\s*([\d.]+)\s*([A-Z][a-z]{2}) - ?(\d{4})|Policy Rate\s*([\d.]+)\s*([A-Z][a-z]{2}) (\d{4})", _page_text(page))
+    if not m:
+        return None
+    rate, mon, year = (m.group(1), m.group(2), m.group(3)) if m.group(1) else (m.group(4), m.group(5), m.group(6))
+    when = datetime.strptime(f"1 {mon} {year}", "%d %b %Y").date().isoformat()[:7]
+    return _rate("MW", _num(rate), when, "effective", "Reserve Bank of Malawi", RBM_HOME)
+
+
+def parse_bon_repo(page: str) -> Optional[dict]:
+    """Namibia: the latest Monetary Policy Committee announcement on the Bank of Namibia's home page."""
+    m = re.search(r"Repo Rate [A-Za-z0-9 ]*? (?:to|at) ([\d.]+) Percent.{0,40}?On (?:\d{1,2} and )?(\d{1,2}) ([A-Z][a-z]+) (\d{4})",
+                  _page_text(page))
+    if not m:
+        return None
+    when = datetime.strptime(f"{m.group(2)} {m.group(3)} {m.group(4)}", "%d %B %Y").date().isoformat()
+    return _rate("NA", _num(m.group(1)), when, "decision", "Bank of Namibia", BON_HOME)
+
+
+def build_policy_rates(client: httpx.Client, now: Optional[datetime] = None) -> dict:
+    """Policy rates read from each central bank that publishes one in a readable form."""
+    from src.engines import markets
+    now = now or datetime.now(timezone.utc)
+    today = now.date().isoformat()
+    get = lambda url: markets._get(client, url, headers=_UA)                      # noqa: E731
+    found = [
+        _safe("sarb-policy", lambda: parse_sarb_policy(get(SARB_RATES).json())),
+        _safe("cbk-cbr", lambda: parse_cbk_cbr(get(CBK_CBR).text)),
+        _safe("cbn-mpr", lambda: parse_cbn_mpr(get(CBN_MPR).json(), today)),
+        _safe("bog-mpr", lambda: parse_bog_mpr(get(BOG_HOME).text, today)),
+        _safe("bob-mopr", lambda: parse_bob_mopr(get(BOB_HOME).text)),
+        _safe("rbm-policy", lambda: parse_rbm_policy(get(RBM_HOME).text)),
+        _safe("bon-repo", lambda: parse_bon_repo(get(BON_HOME).text)),
+    ]
+    return {"captured_at": now.isoformat(), "rows": [r for r in found if r]}
+
+
+def policy_rates(signals: dict, confirmed: Optional[dict] = None) -> list[dict]:
+    """Each country's policy rate: the central bank's own figure where we read one, otherwise the country signals
+    snapshot (Africa API), whose observation period is not a decision date and whose value is not confirmed. A
+    feed value that disagrees with the central bank is reported beside it."""
+    banks = {r["country"]: r for r in (confirmed or {}).get("rows") or []}
+    feed = {}
     for code, block in ((signals or {}).get("countries") or {}).items():
         for o in (block or {}).get("observations") or []:
             if o.get("metric_key") == "policy_rate_pct" and isinstance(o.get("value"), (int, float)):
-                out.append({"country": code, "country_name": block.get("country_name") or code,
-                            "rate": o["value"], "as_of": o.get("as_of_period"), "freshness": o.get("freshness"),
-                            "source": o.get("source")})
+                feed[code] = {"country": code, "country_name": block.get("country_name") or code, "rate": o["value"],
+                              "date": o.get("as_of_period"), "date_kind": "observation", "source": "Africa API",
+                              "source_url": "https://africa-api.com/docs/signals", "confirmed_by": None}
+    out = []
+    for code in sorted(set(banks) | set(feed)):
+        row = dict(banks.get(code) or feed[code])
+        if code in banks and code in feed:
+            row["country_name"] = feed[code]["country_name"]
+            if abs(feed[code]["rate"] - row["rate"]) > 1e-9:
+                row["feed_disagreed"] = {"rate": feed[code]["rate"], "date": feed[code]["date"]}
+        out.append(row)
     return sorted(out, key=lambda r: r["country_name"])
 
 

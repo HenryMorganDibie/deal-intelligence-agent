@@ -162,7 +162,20 @@ export type PropertyRow = {
   quote_time?: string | null;
 };
 
-export type PolicyRate = { country: string; country_name: string; rate: number; as_of: string | null; freshness: string | null; source: string | null };
+// date_kind says what the date means: the meeting that set the rate ("decision"), the bank's own data date
+// ("published"), the month it took effect ("effective"), the day it was read from the bank ("confirmed"), or a
+// third-party observation period ("observation", not confirmed with the central bank).
+export type PolicyRate = {
+  country: string;
+  country_name: string;
+  rate: number;
+  date: string | null;
+  date_kind: "decision" | "published" | "effective" | "confirmed" | "observation";
+  source: string;
+  source_url: string;
+  confirmed_by: string | null;
+  feed_disagreed?: { rate: number; date: string | null };
+};
 
 export type Instruments = {
   etfs: { rows: EtfRow[]; delay?: string; captured_at?: string };
