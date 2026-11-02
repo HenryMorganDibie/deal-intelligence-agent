@@ -362,7 +362,8 @@ def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = N
             quotes += [q for q in previous or [] if q["symbol"] not in seen]
         return quotes, []
     page = ""
-    for wait in (0, 3, 8):                              # the listing site throttles a run of requests
+    for wait in (0, 4):                                 # the listing site throttles a run; one short retry, as a
+        # throttled run rarely recovers within seconds and every wait is billed function time
         if wait:
             time.sleep(wait)
         r = _get(client, AM_BASE.format(slug=ex.slug))

@@ -67,17 +67,24 @@ _PUBLIC_MARKET_CACHE_EXACT = {
 }
 
 
+# Market data changes at most every 30 minutes (deals twice a day), so a few minutes at the edge costs no freshness
+# and saves a function run per repeat visit.
+_PUBLIC_MARKET_CACHE_PREFIX = {"/api/markets/": 300, "/api/companies/directory": 300}
+
+
 def _public_market_cache_ttl(path: str) -> int | None:
     path = path.rstrip("/") or "/"
+    if path == "/api/markets/instruments":
+        return 900
     if path in _PUBLIC_MARKET_CACHE_EXACT:
-        return 60
+        return 300
     if path.startswith("/api/evaluation/files/"):
         return 3600
     if path.startswith(("/api/deals/", "/api/investors/", "/api/sectors/")):
-        return 60
+        return 300
     if path.startswith("/api/countries/"):
-        return 3600 if path.endswith("/history") else 60
-    return None
+        return 3600 if path.endswith("/history") else 300
+    return next((ttl for prefix, ttl in _PUBLIC_MARKET_CACHE_PREFIX.items() if path.startswith(prefix)), None)
 
 
 @app.middleware("http")

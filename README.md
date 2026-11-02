@@ -199,7 +199,7 @@ python main.py graph --summary
 
 ## Hosted App
 
-**Live:** [deal-intelligence-app.vercel.app](https://deal-intelligence-app.vercel.app) (API: `deal-intelligence-api.vercel.app`)
+**Live:** [deal-intelligence.app](https://deal-intelligence.app) (API: `deal-intelligence-api.vercel.app`)
 
 The web app in `web/` (Next.js 14, Tailwind) is the landing page plus the app. There are no
 accounts: anyone can run an analysis, each brief gets a shareable link, and a visitor's list

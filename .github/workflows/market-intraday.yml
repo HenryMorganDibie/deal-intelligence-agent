@@ -1,10 +1,11 @@
 name: Market intraday
 
-# Delayed intraday quotes (Johannesburg from Yahoo, about 15 minutes behind; Lagos from NGX's own list) every 30
-# minutes through African trading hours on weekdays. The daily snapshot at 17:23 UTC supersedes them.
+# Delayed intraday quotes (Johannesburg from Yahoo, about 15 minutes behind; Lagos from NGX's own list) hourly
+# through Johannesburg and Lagos trading hours (07:12 to 15:12 UTC) on weekdays; hourly rather than half-hourly to
+# keep function usage within the plan. The daily snapshot supersedes them.
 on:
   schedule:
-    - cron: "7,37 6-15 * * 1-5"
+    - cron: "12 7-15 * * 1-5"
   workflow_dispatch:
 
 permissions:

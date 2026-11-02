@@ -12,7 +12,7 @@ export const contentType = "image/png";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/^https?:\/\//, "").replace(/\/$/, "")
-  || "deal-intelligence-app.vercel.app";
+  || "deal-intelligence.app";
 
 const C = {
   bg: "#07080a",

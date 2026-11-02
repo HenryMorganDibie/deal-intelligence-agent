@@ -4,7 +4,7 @@ import { PublicPage } from "../../components/PublicPage";
 import type { Showcase } from "../../lib/pulse";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 60;
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Example brief | Deal Intelligence",
@@ -19,7 +19,7 @@ export default async function ExamplePage() {
     "https://deal-intelligence-api.vercel.app";
   let showcase: Showcase | null = null;
   try {
-    const response = await fetch(`${apiUrl}/api/showcase`, { next: { revalidate: 60 } });
+    const response = await fetch(`${apiUrl}/api/showcase`, { next: { revalidate: 300 } });
     if (response.ok) showcase = (await response.json()) as Showcase;
   } catch {
     // Example renders its explicit fallback only when the API is actually unavailable.
