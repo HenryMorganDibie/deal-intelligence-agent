@@ -82,7 +82,7 @@ def test_instruments_endpoint_serves_stored_blocks(monkeypatch):
     body = TestClient(api.app).get("/api/markets/instruments").json()
     assert body["etfs"]["rows"][0]["symbol"] == "STX40"
     assert body["tbills"][0]["country"] == "NG" and len(body["tbills"][0]["rows"]) == 2
-    assert isinstance(body["policy_rates"], list) and "not covered" in body["method"]
+    assert isinstance(body["policy_rates"], list) and "carries its date" in body["method"]
 
 
 SARB_ITEMS = [
@@ -130,7 +130,7 @@ def test_south_africa_rates_kept_as_published_with_bond_yields():
     za = instruments.parse_sarb_rates(SARB_ITEMS)
     assert [(r["tenor_days"], r["rate"], r["rate_type"], r["basis"]) for r in za["rows"]] == [
         (91, 7.16, "tender", None), (364, 7.46, "tender", None)]     # convention not stated: never converted
-    assert za["bonds"] == [{"name": "8.00% 2030 (R2030)", "yield": 8.035, "date": "2026-10-28"}]
+    assert za["bonds"] == [{"name": "8.00% 2030 (R2030)", "yield": 8.035, "date": "2026-10-28", "kind": "closing"}]
 
 
 def test_ghana_latest_tender_per_tenor_reconciles_on_364_days():
@@ -243,3 +243,81 @@ def test_policy_rates_prefer_the_central_bank_and_say_what_the_date_means():
     rows = {r["country"]: r for r in instruments.policy_rates(signals, {"rows": [na]})}
     assert rows["NA"]["rate"] == 7.0 and rows["NA"]["feed_disagreed"] == {"rate": 6.75, "date": "2026-08-12"}
     assert rows["TZ"]["confirmed_by"] is None and rows["TZ"]["date_kind"] == "observation"
+
+
+UG_TEXT = """PRESS RELEASE
+RESULTS OF TREASURY BILLS AUCTION
+AUCTION NO:1236
+AUCTION DATE: WEDNESDAY 21-OCT-2026
+SETTLEMENT DATE: THURSDAY 22 -OCT-2026
+MATURITIES  91 182 364
+MATURITY DATE 21-Jan-27 22-Apr-27 21-Oct-27
+CUT OFF PRICE 97.272 93.737 87.367
+ANN. DISC RATE 10.942 12.560 12.668
+MONEY MKT YIELD 11.249 13.400 14.499
+"""
+
+MW_TEXT = """Tenor
+91 66.12 64.20 66.12 64.20 12.0000 12.0000 12.0000 12.0000
+182 0.00 0.00 0.00 0.00 0.00 0.00 0.00 14.5000
+364 17,393.00 14,999.63 17,393.00 14,999.63 16.0000 16.0000 16.0000 16.0000
+TOTAL 17,459.12 15,063.83 17,459.12 15,063.83
+RESULTS OF MALAWI GOVT TREASURY BILLS AUCTION HELD ON 27 OCTOBER 2026
+"""
+
+BW_TEXT = """GOVERNMENT BOND AUCTION  RESULTS
+BOTSTB1226 (3-MONTH T-BILL) BOTSGB0929
+AUCTION DATE 24-Sep-26 24-Sep-26
+SETTLEMENT DATE 29-Sep-26 29-Sep-26
+COUPON 0 4.80 percent
+MATURITY DATE 30-Dec-26 5-Sep-29
+STOP OUT PRICE 98.510 -
+SIMPLE YIELD 6.000% 7.750%
+WEIGHTED AVERAGE YIELD OF WINNING BIDS 5.881% 7.750%
+"""
+
+BEAC_TEXT = """Courbe des rendements des titres publics camerounais (juillet 2026)
+Maturités Rendements
+3 mois 6,28
+6 mois 7,09
+1 an 8,18
+1,5 ans 8,82
+10 ans 9,62
+"""
+
+
+def test_uganda_discount_rates_reconcile_with_cut_off_prices():
+    ug = instruments.parse_bou_pdf(UG_TEXT, {"url": "u", "date": "2026-10-21"})
+    assert [(r["tenor_days"], r["rate"], r["true_yield"], r["price"]) for r in ug["rows"]] == [
+        (91, 10.942, 11.249, 97.272), (182, 12.56, 13.4, 93.737), (364, 12.668, 14.499, 87.367)]
+    assert {r["auction_date"] for r in ug["rows"]} == {"2026-10-21"} and ug["rows"][0]["basis"] == 365
+    bad = instruments.parse_bou_pdf(UG_TEXT.replace("97.272", "96.000"), {"url": "u"})
+    assert [r["tenor_days"] for r in bad["rows"]] == [182, 364]
+
+
+def test_malawi_skips_a_tenor_with_nothing_allotted():
+    mw = instruments.parse_rbm_pdf(MW_TEXT, {"url": "u"})
+    assert [(r["tenor_days"], r["rate"], r["basis"], r["auction_date"]) for r in mw["rows"]] == [
+        (91, 12.0, None, "2026-10-27"), (364, 16.0, None, "2026-10-27")]
+    page = 'x<div id="TreasuryBillsAuctionResults"> Oct 27, 2026 <a href="/Home/GetContentFile/?ContentID=63839">Download</a></div><div id="TreasuryBillsAuctionNotice"> Oct 30, 2026 <a href="/Home/GetContentFile/?ContentID=1">Download</a>'
+    assert instruments.parse_rbm_results_links(page) == [
+        {"date": "2026-10-27", "url": "https://www.rbm.mw/Home/GetContentFile/?ContentID=63839"}]
+
+
+def test_botswana_bills_reconcile_and_bonds_are_listed():
+    bw = instruments.parse_bob_pdf(BW_TEXT, "u")
+    assert [(r["tenor_days"], r["rate"], r["price"], r["auction_date"]) for r in bw["rows"]] == [(92, 6.0, 98.51, "2026-09-24")]
+    assert bw["bonds"] == [{"name": "BOTSGB0929", "coupon": 4.8, "maturity": "2029-09-05", "yield": 7.75,
+                            "date": "2026-09-24", "kind": "auction"}]
+
+
+def test_beac_curve_short_end_as_bills_long_end_as_bonds():
+    links = instruments.parse_beac_curve_links(
+        '<a href="https://beac.example/Courbe-des-taux-de-rendement-des-titres-publics-Camerounais-juin-26.pdf">'
+        '<a href="https://beac.example/Courbe-des-taux-de-rendement-des-titres-publics-Camerounais-juillet-26-1.pdf">')
+    assert links["CM"]["month"] == "2026-07"
+    cm = instruments.parse_beac_curve(BEAC_TEXT, "CM", {"url": "u", "month": "2026-07"})
+    assert [(r["tenor_label"], r["rate"], r["rate_type"], r["curve_month"]) for r in cm["rows"]] == [
+        ("3 months", 6.28, "curve", "2026-07"), ("6 months", 7.09, "curve", "2026-07"), ("1 year", 8.18, "curve", "2026-07")]
+    assert [(b["name"], b["yield"]) for b in cm["bonds"]] == [("1.5-year curve point", 8.82), ("10-year curve point", 9.62)]
+    assert cm["currency"] == "XAF" and cm["country_name"] == "Cameroon"

@@ -120,7 +120,7 @@ export type EtfRow = {
 export type TbillRow = {
   tenor_days: number;
   tenor_label?: string;
-  rate_type: RateType | "tender" | "average";
+  rate_type: RateType | "tender" | "average" | "curve";
   rate: number;
   true_yield?: number | null;
   discount_rate?: number | null;
@@ -129,10 +129,23 @@ export type TbillRow = {
   auction_date: string | null;
   settlement_date?: string | null;
   next_auction_date?: string | null;
+  value_date?: string | null;
+  curve_month?: string | null;
   maturity_date?: string | null;
   offered_mn?: number | null;
   subscribed_mn?: number | null;
   allotted_mn?: number | null;
+};
+
+// A government bond yield: an auctioned issue ("auction", with coupon and maturity), a benchmark's daily close
+// ("closing") or a point on a central bank's published yield curve ("curve").
+export type BondRow = {
+  name: string;
+  yield: number;
+  date: string | null;
+  coupon?: number | null;
+  maturity?: string | null;
+  kind?: "auction" | "closing" | "curve";
 };
 
 export type TbillBlock = {
@@ -144,7 +157,7 @@ export type TbillBlock = {
   source_url: string;
   captured_at?: string;
   rows: TbillRow[];
-  bonds?: { name: string; yield: number; date: string | null }[];
+  bonds?: BondRow[];
 };
 
 export type PropertyRow = {

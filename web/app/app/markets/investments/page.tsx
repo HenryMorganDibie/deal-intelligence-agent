@@ -12,7 +12,7 @@ import {
   type Instruments, type PolicyRate, type RateType, type TbillBlock, type TbillRow,
 } from "../../../../lib/markets-instruments";
 
-const SECTIONS: [string, string][] = [["etfs", "ETFs"], ["tbills", "Treasury bills"], ["property", "Listed property"],
+const SECTIONS: [string, string][] = [["etfs", "ETFs"], ["tbills", "Treasury bills"], ["bonds", "Bonds"], ["property", "Listed property"],
   ["rates", "Policy rates"], ["calculators", "Calculators"]];
 
 function numberField(value: string, fallback = Number.NaN): number {
@@ -37,10 +37,16 @@ function tenor(r: TbillRow): string {
 }
 
 const RATE_TYPE: Record<TbillRow["rate_type"], string> = {
-  discount: "discount rate", yield: "yield", tender: "tender rate", average: "average rate",
+  discount: "discount rate", yield: "yield", tender: "tender rate", average: "average rate", curve: "curve yield",
 };
 
+function monthLabel(m: string): string {
+  const d = new Date(`${m}-01`);
+  return Number.isNaN(d.getTime()) ? m : d.toLocaleDateString("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
+}
+
 function billDate(r: TbillRow): string {
+  if (r.curve_month) return `curve, ${monthLabel(r.curve_month)}`;
   if (r.auction_date) return asOf(r.auction_date);
   if (r.settlement_date) return `settles ${asOf(r.settlement_date)}`;
   if (r.next_auction_date) return `last before ${asOf(r.next_auction_date)}`;
@@ -49,7 +55,7 @@ function billDate(r: TbillRow): string {
 
 // A result more than 45 days old is still the latest published one, but it is marked so it is not read as today's rate.
 function isOld(r: TbillRow): boolean {
-  const d = r.auction_date ?? r.settlement_date;
+  const d = r.auction_date ?? r.settlement_date ?? (r.curve_month ? `${r.curve_month}-28` : null);
   return !!d && Date.now() - new Date(d).getTime() > 45 * 86400e3;
 }
 
@@ -98,13 +104,13 @@ function Etfs({ data }: { data: Instruments["etfs"] }) {
 function Tbills({ blocks, onUse }: { blocks: TbillBlock[]; onUse: (p: BillPrefill) => void }) {
   const [country, setCountry] = useState("");
   const shown = blocks.filter((b) => !country || b.country === country);
-  const bonds = blocks.flatMap((b) => (b.bonds ?? []).map((x) => ({ ...x, country: b.country_name ?? b.country })));
   return (
     <section id="tbills" className="mt-12 scroll-mt-24" aria-labelledby="tbills-h">
       <h2 id="tbills-h" className="h3 text-xl">Treasury bills</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
         Short-dated government debt in {blocks.length} countries, from the latest auction each central bank or
-        regional market (UMOA-Titres for the West African CFA states) has published. Countries quote differently: a
+        regional market (UMOA-Titres for the West African CFA states) has published; for Cameroon, Congo and Gabon,
+        the short end of the BEAC&apos;s monthly yield curve. Countries quote differently: a
         discount rate is converted to the yield a buyer earns using the convention the source&apos;s own figures confirm;
         a rate whose convention is not stated is shown as published.
       </p>
@@ -144,13 +150,47 @@ function Tbills({ blocks, onUse }: { blocks: TbillBlock[]; onUse: (p: BillPrefil
               }))}
             </Table>
           </div>
-          {bonds.length > 0 && (!country || shown.some((b) => b.bonds?.length)) && (
-            <p className="mt-3 text-sm text-[color:var(--muted)]">
-              Government bond yields: {bonds.map((x) => `${x.country} ${x.name} ${rate(x.yield)} (${asOf(x.date)})`).join("; ")}.
-            </p>
-          )}
         </>
       )}
+    </section>
+  );
+}
+
+function Bonds({ blocks }: { blocks: TbillBlock[] }) {
+  const rows = blocks.flatMap((b) => (b.bonds ?? []).map((x) => ({ ...x, country: b.country_name ?? b.country, url: b.source_url, source: b.source })));
+  const countries = Array.from(new Set(rows.map((r) => r.country)));
+  const [country, setCountry] = useState("");
+  const shown = rows.filter((r) => !country || r.country === country);
+  const KIND: Record<string, string> = { auction: "auction result", closing: "closing yield", curve: "yield curve" };
+  if (rows.length === 0) return null;
+  return (
+    <section id="bonds" className="mt-12 scroll-mt-24" aria-labelledby="bonds-h">
+      <h2 id="bonds-h" className="h3 text-xl">Government bonds</h2>
+      <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
+        Individual issues from the latest auction (with coupon and maturity), benchmark closing yields, and points on a
+        central bank&apos;s published yield curve, in {countries.length} countries. Each says which it is.
+      </p>
+      <label className="mt-4 block max-w-xs text-sm">Country
+        <select className="field mt-1 w-full" value={country} onChange={(e) => setCountry(e.target.value)}>
+          <option value="">All {countries.length} countries</option>
+          {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </label>
+      <div className="mt-4">
+        <Table head={["Country", "Bond", "Coupon", "Maturity", "Yield", "Type", "As of"]} minWidth="46rem">
+          {shown.map((r, i) => (
+            <tr key={`${r.country}-${r.name}-${i}`}>
+              <Td>{r.country}</Td>
+              <Td><a href={r.url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">{r.name}</a></Td>
+              <Td>{r.coupon != null ? rate(r.coupon) : "n/a"}</Td>
+              <Td>{r.maturity ? asOf(r.maturity) : "n/a"}</Td>
+              <Td className="font-semibold">{rate(r.yield)}</Td>
+              <Td className="text-[color:var(--muted)]">{KIND[r.kind ?? "closing"]}</Td>
+              <Td className="text-[color:var(--dim)]">{r.date && /^\d{4}-\d{2}$/.test(r.date) ? monthLabel(r.date) : asOf(r.date)}</Td>
+            </tr>
+          ))}
+        </Table>
+      </div>
     </section>
   );
 }
@@ -370,7 +410,7 @@ export default function InvestmentExplorerPage() {
   return (
     <Container className="py-8 lg:py-12">
       <PageHeader eyebrow="Markets · Beyond shares" title="ETFs, Treasury bills, property and rates.">
-        Exchange-traded funds, Treasury bill auctions in 17 countries, listed property and central bank rates across
+        Exchange-traded funds, Treasury bills and government bonds, listed property and central bank rates across
         African markets, each with its source and date, plus calculators for bills and bonds.
       </PageHeader>
 
@@ -387,6 +427,7 @@ export default function InvestmentExplorerPage() {
         <>
           <Etfs data={data.etfs} />
           <Tbills blocks={data.tbills} onUse={setPrefill} />
+          <Bonds blocks={data.tbills} />
           <Property rows={data.property} />
           <PolicyRates rows={data.policy_rates} />
         </>

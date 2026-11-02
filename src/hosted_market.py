@@ -1930,6 +1930,7 @@ async def cron_market_intraday(request: Request) -> dict:
 def _record_instruments(with_tbills: bool) -> dict:
     """ETF quotes, and on the daily run the Treasury bill auctions; a source failing is reported, not raised."""
     from src.engines import instruments
+    instruments.take_errors()                                   # start this run's failure list empty
     with httpx.Client(timeout=30, follow_redirects=True) as client:
         etfs = instruments.build_etfs(client)
         today = datetime.now(timezone.utc).date().isoformat()
@@ -1941,7 +1942,8 @@ def _record_instruments(with_tbills: bool) -> dict:
         rows.append({"snapshot_date": policy["captured_at"][:10], "kind": "instruments", "scope": "policy_rates",
                      "captured_at": policy["captured_at"], "payload": policy})
     summary = {"etfs": len((etfs or {}).get("rows") or []), "tbills": {c: len(b["rows"]) for c, b in tbills.items()},
-               "policy_rates": [r["country"] for r in (policy or {}).get("rows") or []]}
+               "policy_rates": [r["country"] for r in (policy or {}).get("rows") or []],
+               "source_failures": instruments.take_errors()}
     if not rows:
         return {**summary, "written": 0}
     if not _configured():
@@ -1988,10 +1990,13 @@ async def markets_instruments() -> dict:
                          key=lambda b: b.get("country_name") or b.get("country") or ""),
         "property": instruments.listed_property(snap)[:60],
         "policy_rates": instruments.policy_rates(country_risk.load_current_signals_snapshot(), blocks.get("policy_rates")),
-        "method": ("ETF prices are Yahoo Finance delayed quotes for JSE-listed funds; Treasury bill rates are the "
-                   "latest auction results published by each central bank or regional market (17 countries); property shares come from the daily "
-                   "equity snapshot; policy rates come from the country signals snapshot. Each figure carries its "
-                   "date. Unlisted funds, fixed deposits and bond inventories are not covered."),
+        "method": ("ETF prices are Yahoo Finance delayed quotes for JSE-listed funds. Treasury bill rates are the "
+                   "latest auction results each central bank or regional market publishes (web pages, data feeds or "
+                   "PDF releases), checked against the source's own prices where it publishes them; for Cameroon, "
+                   "Congo and Gabon they are the short end of the BEAC's monthly yield curve. Bonds are auctioned "
+                   "issues, benchmark closing yields or yield-curve points, each labelled. Policy rates are read from "
+                   "the central bank where it publishes one, otherwise from a third-party feed marked unconfirmed. "
+                   "Property shares come from the daily equity snapshot. Each figure carries its date."),
     }
 
 

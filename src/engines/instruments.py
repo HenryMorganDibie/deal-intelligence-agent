@@ -46,7 +46,7 @@ BOZ_PAGE = "https://www.boz.zm/markets-securities/treasury-bills"
 UMOA_LIST = "https://www.umoatitres.org/fr/emissions/"
 UMOA_COUNTRIES = {"Bénin": "BJ", "Burkina": "BF", "Burkina Faso": "BF", "Côte d’Ivoire": "CI", "Côte d'Ivoire": "CI",
                   "Guinée-Bissau": "GW", "Guinée Bissau": "GW", "Mali": "ML", "Niger": "NE", "Sénégal": "SN", "Togo": "TG"}
-COUNTRY_NAMES = {"BW": "Botswana", "MW": "Malawi", "NA": "Namibia", "NG": "Nigeria", "KE": "Kenya", "ZA": "South Africa", "GH": "Ghana", "MA": "Morocco", "GM": "Gambia",
+COUNTRY_NAMES = {"UG": "Uganda", "CM": "Cameroon", "CG": "Republic of the Congo", "GA": "Gabon", "TD": "Chad", "CF": "Central African Republic", "GQ": "Equatorial Guinea", "BW": "Botswana", "MW": "Malawi", "NA": "Namibia", "NG": "Nigeria", "KE": "Kenya", "ZA": "South Africa", "GH": "Ghana", "MA": "Morocco", "GM": "Gambia",
                  "SC": "Seychelles", "TZ": "Tanzania", "ZM": "Zambia", "BJ": "Benin", "BF": "Burkina Faso",
                  "CI": "Côte d'Ivoire", "GW": "Guinea-Bissau", "ML": "Mali", "NE": "Niger", "SN": "Senegal", "TG": "Togo"}
 _UA = {"User-Agent": "Mozilla/5.0"}
@@ -56,6 +56,16 @@ BOG_HOME = "https://www.bog.gov.gh/"
 BOB_HOME = "https://www.bankofbotswana.bw/"
 RBM_HOME = "https://www.rbm.mw/"
 BON_HOME = "https://www.bon.com.na/"
+BOU_DOCS = ("https://bou.or.ug/api/financial-market-auction-information?populate=auctionInformation.items.file.file.file"
+            "&populate=auctionInformation.items.file.fileWithMonth.file.file")
+BOU_PAGE = "https://www.bou.or.ug/bouwebsite/financial-market-auction-information"
+RBM_TBILLS = "https://www.rbm.mw/FinancialMarkets/TreasuryBills/"
+BOB_AUCTIONS = "https://www.bankofbotswana.bw/government-securities-auctions"
+BEAC_STATS = "https://www.beac.int/economie-stats/statistiques-titres-publics/"
+_FR_MONTHS = {"janv": 1, "jan": 1, "fev": 2, "fév": 2, "fevr": 2, "févr": 2, "mars": 3, "avr": 4, "avril": 4, "mai": 5,
+              "juin": 6, "juil": 7, "juillet": 7, "aout": 8, "août": 8, "sept": 9, "oct": 10, "nov": 11, "dec": 12, "déc": 12}
+_BEAC_COUNTRIES = {"Camerounais": "CM", "Congolais": "CG", "Gabonais": "GA", "Tchadiens": "TD", "Centrafricains": "CF",
+                   "Equato-guineens": "GQ", "Equato-guinéens": "GQ"}
 LOCAL_PATH = DATA_DIR / "market_instruments.json"   # the local copy; the hosted API keeps these in Supabase
 ETF_DELAY = "about 15 minutes (Yahoo Finance)"
 
@@ -279,7 +289,7 @@ def parse_sarb_rates(items: object) -> dict:
             rows.append({"tenor_days": int(m.group(1)), "rate_type": "tender", "rate": float(value), "basis": None,
                          "auction_date": day})
         elif "closing yields" in name:
-            bonds.append({"name": name.replace(" (closing yields)", ""), "yield": float(value), "date": day})
+            bonds.append({"name": name.replace(" (closing yields)", ""), "yield": float(value), "date": day, "kind": "closing"})
     return _block("ZA", "ZAR", "Republic of South Africa", "South African Reserve Bank, current market rates",
                   SARB_PAGE, sorted(rows, key=lambda r: r["tenor_days"]), bonds=bonds)
 
@@ -467,12 +477,201 @@ def parse_umoa_auction(page: str, auction: dict) -> dict:
                   "UMOA-Titres, regional auction results", auction["url"], [r for r in rows if r["rate"]])
 
 
+def parse_bou_docs(payload: object) -> list[dict]:
+    """Bank of Uganda Treasury bill result press releases, newest first, from its document API."""
+    found = []
+
+    def walk(o):
+        if isinstance(o, dict):
+            name, url = str(o.get("name") or ""), str(o.get("url") or "")
+            if url.endswith(".pdf") and re.search(r"t[\s_-]?bill", name, re.I) and re.search(r"press|result", name, re.I):
+                m = re.search(r"(\d{1,2})(?:st|nd|rd|th)?[\s_-]+([A-Za-z]{3,9})[\s_-]+(\d{4})", name)
+                when = None
+                if m:
+                    for fmt in ("%d %b %Y", "%d %B %Y"):
+                        try:
+                            when = datetime.strptime(f"{m.group(1)} {m.group(2)[:3] if fmt == '%d %b %Y' else m.group(2)} {m.group(3)}", fmt).date()
+                            break
+                        except ValueError:
+                            continue
+                if when:
+                    found.append({"date": when.isoformat(), "url": "https://bou.or.ug" + url if url.startswith("/") else url})
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v)
+    walk(payload)
+    return sorted({f["url"]: f for f in found}.values(), key=lambda f: f["date"], reverse=True)
+
+
+def _line_numbers(text: str, label: str, n: int = 3) -> list[float]:
+    m = re.search(label + r"\s+((?:[\d,]+\.?\d*\s+){%d})" % n, text + " ")
+    return [_num(v) for v in m.group(1).split()] if m else []
+
+
+def parse_bou_pdf(text: str, doc: dict) -> dict:
+    """Uganda: cut-off price, annual discount rate and money-market yield per tenor. Each discount rate must
+    reproduce its published price on a 365-day basis, or the row is dropped."""
+    t = re.sub(r"[ \t]+", " ", text or "")
+    m = re.search(r"AUCTION DATE:\s*\w*\s*(\d{1,2})-([A-Z]{3})-(\d{4})", t)
+    auction = datetime.strptime(f"{m.group(1)} {m.group(2).title()} {m.group(3)}", "%d %b %Y").date().isoformat() if m else doc.get("date")
+    tenors = [int(v) for v in _line_numbers(t, "MATURITIES")]
+    prices, discs, mmy = _line_numbers(t, "CUT OFF PRICE"), _line_numbers(t, "ANN. DISC RATE"), _line_numbers(t, "MONEY MKT YIELD")
+    rows = []
+    for i, days in enumerate(tenors):
+        if i >= min(len(prices), len(discs), len(mmy)) or not discs[i] or not prices[i]:
+            continue
+        if abs(100 * (1 - discs[i] / 100 * days / 365) - prices[i]) > 0.01:
+            continue
+        rows.append({"tenor_days": days, "rate_type": "discount", "rate": discs[i], "true_yield": mmy[i], "basis": 365,
+                     "price": prices[i], "auction_date": auction})
+    return _block("UG", "UGX", "Government of Uganda", "Bank of Uganda, Treasury bill auction results", doc["url"], rows)
+
+
+def parse_rbm_results_links(page: str) -> list[dict]:
+    """Reserve Bank of Malawi Treasury bill result files (newest first) from the results tab only."""
+    start = (page or "").find('id="TreasuryBillsAuctionResults"')
+    if start < 0:
+        return []
+    end = page.find('id="TreasuryBillsAuctionNotice"', start)
+    seg = page[start:end if end > 0 else start + 20000]
+    out = []
+    for when, cid in re.findall(r"([A-Z][a-z]{2} \d{1,2}, \d{4}).*?GetContentFile/\?ContentID=(\d+)", seg, re.S):
+        out.append({"date": datetime.strptime(when, "%b %d, %Y").date().isoformat(),
+                    "url": f"https://www.rbm.mw/Home/GetContentFile/?ContentID={cid}"})
+    return out
+
+
+def parse_rbm_pdf(text: str, doc: dict) -> dict:
+    """Malawi: the average yield per tenor at one auction. A tenor with nothing allotted (0.00) is skipped. No price is
+    published to check a day-count basis, so the yield is shown as published."""
+    t = re.sub(r"[ \t]+", " ", text or "")
+    m = re.search(r"AUCTION HELD ON (\d{1,2}) ([A-Z]+) (\d{4})", t)
+    auction = datetime.strptime(f"{m.group(1)} {m.group(2).title()} {m.group(3)}", "%d %B %Y").date().isoformat() if m else doc.get("date")
+    rows = []
+    for days, *vals in re.findall(r"\n(91|182|364) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)", t):
+        allotted, current = _num(vals[2]), _num(vals[6])
+        if allotted and current:
+            rows.append({"tenor_days": int(days), "rate_type": "yield", "rate": current, "basis": None,
+                         "auction_date": auction, "allotted_mn": allotted})
+    return _block("MW", "MWK", "Government of Malawi", "Reserve Bank of Malawi, Treasury bill auction results", doc["url"], rows)
+
+
+def parse_bob_links(page: str) -> list[str]:
+    """Bank of Botswana government securities auction result files, in page order (newest first)."""
+    seen, out = set(), []
+    for href in re.findall(r'href="([^"]*auction-pdf-files/[^"]+\.pdf)"', page or ""):
+        if re.search(r"announcement", href, re.I) or href in seen:
+            continue
+        seen.add(href)
+        out.append(href if href.startswith("http") else "https://www.bankofbotswana.bw" + href)
+    return out
+
+
+def parse_bob_pdf(text: str, url: str) -> dict:
+    """Botswana: one monthly auction. Bills give stop-out price and simple yield, which must reconcile over the days
+    from settlement to maturity on 365 days; bonds give coupon, maturity and the weighted average winning yield."""
+    t = re.sub(r"[ \t]+", " ", text or "")
+    codes = re.findall(r"\bBOTS(?:TB|GB)\d{4}\b", t)
+
+    def line(label: str) -> str:
+        m = re.search(label + r"([^\n]+)", t)
+        return m.group(1) if m else ""
+
+    def parse_d(d: str) -> date:
+        return datetime.strptime(d, "%d-%b-%y").date()
+
+    day_pattern = r"(\d{1,2}-[A-Z][a-z]{2}-\d{2})"
+    auction, settle = re.findall(day_pattern, line("AUCTION DATE")), re.findall(day_pattern, line("SETTLEMENT DATE"))
+    maturity = re.findall(day_pattern, line("MATURITY DATE"))
+    prices = re.findall(r"([\d.]+|-)", line("STOP OUT PRICE"))
+    simple = re.findall(r"([\d.]+)%", line("SIMPLE YIELD"))
+    way = re.findall(r"([\d.]+)%", line("WEIGHTED AVERAGE YIELD OF WINNING BIDS"))
+    coupons = re.findall(r"(\d+(?:\.\d+)? percent|\b0\b)", line("COUPON"))
+    rows, bonds = [], []
+    for i, code in enumerate(codes):
+        if i >= min(len(auction), len(settle), len(maturity)):
+            break
+        a, st, mt = parse_d(auction[i]), parse_d(settle[i]), parse_d(maturity[i])
+        if code.startswith("BOTSTB"):
+            price = _num(prices[i]) if i < len(prices) else None
+            yld = _num(simple[i]) if i < len(simple) else None
+            days = (mt - st).days
+            if not price or not yld or abs((100 / price - 1) * 365 / days * 100 - yld) > 0.02:
+                continue
+            rows.append({"tenor_days": days, "tenor_label": f"{round(days / 30.4)} months", "rate_type": "yield",
+                         "rate": yld, "basis": 365, "price": price, "auction_date": a.isoformat(),
+                         "maturity_date": mt.isoformat(), "isin_code": code})
+        else:
+            yld = _num(way[i]) if i < len(way) else None
+            cpn = coupons[i] if i < len(coupons) else None
+            if yld:
+                bonds.append({"name": code, "coupon": _num(cpn.replace(" percent", "")) if cpn else None,
+                              "maturity": mt.isoformat(), "yield": yld, "date": a.isoformat(), "kind": "auction"})
+    return _block("BW", "BWP", "Government of Botswana", "Bank of Botswana, government securities auctions", url, rows,
+                  bonds=bonds)
+
+
+def parse_beac_curve_links(page: str) -> dict[str, dict]:
+    """{country code: newest monthly yield-curve PDF} from the BEAC's public securities statistics page."""
+    best: dict[str, dict] = {}
+    for href in re.findall(r'href="([^"]*Courbe-des-taux-de-rendement-des-titres-publics-([A-Za-zéè-]+?)-([a-zéû]+)\.?-(\d{2,4})(?:-\d)?\.pdf)"', page or "", re.I):
+        url, people, month, year = href
+        code = _BEAC_COUNTRIES.get(people)
+        mon = _FR_MONTHS.get(month.lower().rstrip("."))
+        if not code or not mon:
+            continue
+        yr = int(year) + (2000 if len(year) == 2 else 0)
+        key = f"{yr:04d}-{mon:02d}"
+        if code not in best or best[code]["month"] < key:
+            best[code] = {"month": key, "url": url}
+    return best
+
+
+def parse_beac_curve(text: str, code: str, doc: dict) -> dict:
+    """A CEMAC state's government yield curve for one month, as published by the BEAC: the 3, 6 and 12-month points
+    as bill yields (curve figures, not auction results) and the longer points as bond yields."""
+    t = re.sub(r"[ \t]+", " ", text or "")
+    t = t[t.find("Maturités Rendements"):] if "Maturités Rendements" in t else t
+    rows, bonds = [], []
+    for label, value in re.findall(r"(\d+(?:,\d)? ?(?:mois|ans?|A)) (\d+,\d+)", t):
+        y = _fr_num(value)
+        num = _fr_num(re.match(r"[\d,]+", label).group(0))
+        if y is None or num is None:
+            continue
+        if "mois" in label:
+            rows.append({"tenor_days": round(num * 30.4), "tenor_label": f"{int(num)} months", "rate_type": "curve",
+                         "rate": y, "basis": None, "auction_date": None, "curve_month": doc["month"]})
+        elif num == 1 and "an" in label and "ans" not in label:
+            rows.append({"tenor_days": 365, "tenor_label": "1 year", "rate_type": "curve", "rate": y, "basis": None,
+                         "auction_date": None, "curve_month": doc["month"]})
+        else:
+            bonds.append({"name": f"{num:g}-year curve point", "yield": y,
+                          "date": doc["month"], "kind": "curve"})
+    seen = set()
+    rows = [r for r in rows if not (r["tenor_days"] in seen or seen.add(r["tenor_days"]))]
+    return _block(code, "XAF", f"Government of {COUNTRY_NAMES.get(code, code)}", "BEAC, monthly government yield curve",
+                  doc["url"], rows, bonds=bonds)
+
+
+_ERRORS: list[str] = []          # source failures in the current build, reported by the cron that ran it
+
+
 def _safe(label: str, fn):
     try:
         return fn()
     except Exception as exc:                                  # one source failing never stops the others
         log.warning("Treasury bill source %s failed: %s", label, exc)
+        _ERRORS.append(f"{label}: {type(exc).__name__}: {str(exc)[:120]}")
         return None
+
+
+def take_errors() -> list[str]:
+    """The source failures recorded since the last call, cleared."""
+    out = list(_ERRORS)
+    _ERRORS.clear()
+    return out
 
 
 def build_tbills(client: httpx.Client, now: Optional[datetime] = None) -> dict[str, dict]:
@@ -480,6 +679,20 @@ def build_tbills(client: httpx.Client, now: Optional[datetime] = None) -> dict[s
     from src.engines import markets
     now = now or datetime.now(timezone.utc)
     get = lambda url, **kw: markets._get(client, url, headers=_UA, **kw)          # noqa: E731
+    def kenya() -> Optional[dict]:
+        """The newest results release (dated, with prices); the bill page's undated summary if that fails."""
+        page = get(CBK_TBILLS)
+        if page is None:
+            return None
+        links = parse_cbk_result_links(page.text)
+        for link in links[:2]:
+            r = get(link["url"])
+            block = _safe("cbk-pdf", lambda r=r, link=link: parse_cbk_result_pdf(pdf_text(r.content), link)) if r else None
+            if block and block["rows"]:
+                return block
+        _ERRORS.append(f"cbk: results release unreadable ({len(links)} links found); used the undated bill page")
+        return parse_cbk_tbills(page.text)
+
     blocks: list[Optional[dict]] = [
         _safe("cbn", lambda: parse_cbn_ntb(get(CBN_NTB).json())),
         _safe("cbk", lambda: kenya()),
@@ -491,18 +704,6 @@ def build_tbills(client: httpx.Client, now: Optional[datetime] = None) -> dict[s
         _safe("boz", lambda: parse_boz_tbills(get(BOZ_TBILLS).json())),
     ]
 
-    def kenya() -> Optional[dict]:
-        """The newest results release (dated, with prices); the bill page's undated summary if that fails."""
-        page = get(CBK_TBILLS)
-        if page is None:
-            return None
-        for link in parse_cbk_result_links(page.text)[:2]:
-            r = get(link["url"])
-            block = _safe("cbk-pdf", lambda r=r, link=link: parse_cbk_result_pdf(pdf_text(r.content), link)) if r else None
-            if block and block["rows"]:
-                return block
-        return parse_cbk_tbills(page.text)
-
     def tanzania() -> Optional[dict]:
         newest = parse_bot_list(get(BOT_TBILLS).text)
         if not newest:
@@ -510,6 +711,45 @@ def build_tbills(client: httpx.Client, now: Optional[datetime] = None) -> dict[s
         r = client.post(BOT_DETAIL, data={"au_no": newest[0]}, headers=_UA)
         return parse_bot_detail(r.json(), newest[1]) if r.status_code == 200 else None
     blocks.append(_safe("bot", tanzania))
+
+    def uganda() -> Optional[dict]:
+        for doc in parse_bou_docs(get(BOU_DOCS).json())[:2]:
+            r = get(doc["url"])
+            block = _safe("bou-pdf", lambda r=r, d=doc: parse_bou_pdf(pdf_text(r.content), d)) if r else None
+            if block and block["rows"]:
+                return block
+        return None
+
+    def malawi() -> Optional[dict]:
+        for doc in parse_rbm_results_links(get(RBM_TBILLS).text)[:4]:   # an auction can allot nothing: try the next
+            r = get(doc["url"])
+            block = _safe("rbm-pdf", lambda r=r, d=doc: parse_rbm_pdf(pdf_text(r.content), d)) if r else None
+            if block and block["rows"]:
+                return block
+        return None
+
+    def botswana() -> Optional[dict]:
+        bills, bonds = None, None
+        for url in parse_bob_links(get(BOB_AUCTIONS).text)[:4]:          # bills from the newest file that has them
+            r = get(url)
+            block = _safe("bob-pdf", lambda r=r, u=url: parse_bob_pdf(pdf_text(r.content), u)) if r else None
+            if not block:
+                continue
+            bonds = bonds if bonds is not None else (block.get("bonds") or None)
+            if block["rows"]:
+                bills = block
+                break
+        if bills and bonds:
+            bills["bonds"] = bonds
+        return bills
+
+    blocks.append(_safe("bou", uganda))
+    blocks.append(_safe("rbm", malawi))
+    blocks.append(_safe("bob", botswana))
+    for code, doc in (_safe("beac", lambda: parse_beac_curve_links(get(BEAC_STATS).text)) or {}).items():
+        r = get(doc["url"])
+        if r is not None:
+            blocks.append(_safe(f"beac-{code}", lambda r=r, c=code, d=doc: parse_beac_curve(pdf_text(r.content), c, d)))
 
     listing = _safe("umoa", lambda: parse_umoa_list(get(UMOA_LIST).text)) or {}
     for code, recent in listing.items():
