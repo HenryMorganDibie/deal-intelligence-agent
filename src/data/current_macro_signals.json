@@ -3,7 +3,7 @@
     "AO": {
       "country_code": "AO",
       "country_name": "Angola",
-      "generated_at": "2026-11-01T11:34:06.872106Z",
+      "generated_at": "2026-11-02T12:53:12.602091Z",
       "message": null,
       "observations": [
         {
@@ -38,7 +38,7 @@
     "BF": {
       "country_code": "BF",
       "country_name": "Burkina Faso",
-      "generated_at": "2026-11-01T11:30:49.528960Z",
+      "generated_at": "2026-11-02T12:49:54.071645Z",
       "message": null,
       "observations": [
         {
@@ -85,7 +85,7 @@
     "BI": {
       "country_code": "BI",
       "country_name": "Burundi",
-      "generated_at": "2026-11-01T11:36:07.358557Z",
+      "generated_at": "2026-11-02T12:55:13.563818Z",
       "message": null,
       "observations": [
         {
@@ -120,7 +120,7 @@
     "BJ": {
       "country_code": "BJ",
       "country_name": "Benin",
-      "generated_at": "2026-11-01T11:30:36.323104Z",
+      "generated_at": "2026-11-02T12:49:40.709070Z",
       "message": null,
       "observations": [
         {
@@ -167,7 +167,7 @@
     "BW": {
       "country_code": "BW",
       "country_name": "Botswana",
-      "generated_at": "2026-11-01T11:40:06.188882Z",
+      "generated_at": "2026-11-02T12:59:13.768734Z",
       "message": null,
       "observations": [
         {
@@ -214,7 +214,7 @@
     "CD": {
       "country_code": "CD",
       "country_name": "Democratic Republic of the Congo",
-      "generated_at": "2026-11-01T11:35:14.925794Z",
+      "generated_at": "2026-11-02T12:54:20.167311Z",
       "message": null,
       "observations": [
         {
@@ -249,7 +249,7 @@
     "CF": {
       "country_code": "CF",
       "country_name": "Central African Republic",
-      "generated_at": "2026-11-01T11:34:33.475265Z",
+      "generated_at": "2026-11-02T12:53:39.584870Z",
       "message": null,
       "observations": [
         {
@@ -296,7 +296,7 @@
     "CG": {
       "country_code": "CG",
       "country_name": "Republic of the Congo",
-      "generated_at": "2026-11-01T11:35:01.439815Z",
+      "generated_at": "2026-11-02T12:54:06.668951Z",
       "message": null,
       "observations": [
         {
@@ -343,7 +343,7 @@
     "CI": {
       "country_code": "CI",
       "country_name": "C\u00f4te d'Ivoire",
-      "generated_at": "2026-11-01T11:31:15.921951Z",
+      "generated_at": "2026-11-02T12:50:20.789019Z",
       "message": null,
       "observations": [
         {
@@ -390,7 +390,7 @@
     "CM": {
       "country_code": "CM",
       "country_name": "Cameroon",
-      "generated_at": "2026-11-01T11:34:20.274984Z",
+      "generated_at": "2026-11-02T12:53:26.270791Z",
       "message": null,
       "observations": [
         {
@@ -437,7 +437,7 @@
     "CV": {
       "country_code": "CV",
       "country_name": "Cabo Verde",
-      "generated_at": "2026-11-01T11:31:02.605114Z",
+      "generated_at": "2026-11-02T12:50:07.280406Z",
       "message": null,
       "observations": [
         {
@@ -472,7 +472,7 @@
     "DJ": {
       "country_code": "DJ",
       "country_name": "Djibouti",
-      "generated_at": "2026-11-01T11:36:33.598906Z",
+      "generated_at": "2026-11-02T12:55:39.932898Z",
       "message": null,
       "observations": [
         {
@@ -507,7 +507,7 @@
     "DZ": {
       "country_code": "DZ",
       "country_name": "Algeria",
-      "generated_at": "2026-11-01T11:29:17.362767Z",
+      "generated_at": "2026-11-02T12:48:20.638669Z",
       "message": null,
       "observations": [
         {
@@ -554,7 +554,7 @@
     "EG": {
       "country_code": "EG",
       "country_name": "Egypt",
-      "generated_at": "2026-11-01T11:29:30.681214Z",
+      "generated_at": "2026-11-02T12:48:33.673275Z",
       "message": null,
       "observations": [
         {
@@ -601,7 +601,7 @@
     "ER": {
       "country_code": "ER",
       "country_name": "Eritrea",
-      "generated_at": "2026-11-01T11:36:46.713362Z",
+      "generated_at": "2026-11-02T12:55:53.067415Z",
       "message": null,
       "observations": [
         {
@@ -636,7 +636,7 @@
     "ET": {
       "country_code": "ET",
       "country_name": "Ethiopia",
-      "generated_at": "2026-11-01T11:36:59.921227Z",
+      "generated_at": "2026-11-02T12:56:06.415818Z",
       "message": null,
       "observations": [
         {
@@ -671,7 +671,7 @@
     "GA": {
       "country_code": "GA",
       "country_name": "Gabon",
-      "generated_at": "2026-11-01T11:35:41.260021Z",
+      "generated_at": "2026-11-02T12:54:47.007205Z",
       "message": null,
       "observations": [
         {
@@ -718,7 +718,7 @@
     "GH": {
       "country_code": "GH",
       "country_name": "Ghana",
-      "generated_at": "2026-11-01T11:31:42.416331Z",
+      "generated_at": "2026-11-02T12:50:47.484549Z",
       "message": null,
       "observations": [
         {
@@ -777,7 +777,7 @@
     "GM": {
       "country_code": "GM",
       "country_name": "Gambia",
-      "generated_at": "2026-11-01T11:31:28.970262Z",
+      "generated_at": "2026-11-02T12:50:33.940968Z",
       "message": null,
       "observations": [
         {
@@ -812,7 +812,7 @@
     "GN": {
       "country_code": "GN",
       "country_name": "Guinea",
-      "generated_at": "2026-11-01T11:31:55.553494Z",
+      "generated_at": "2026-11-02T12:51:00.701601Z",
       "message": null,
       "observations": [
         {
@@ -847,7 +847,7 @@
     "GQ": {
       "country_code": "GQ",
       "country_name": "Equatorial Guinea",
-      "generated_at": "2026-11-01T11:35:28.069098Z",
+      "generated_at": "2026-11-02T12:54:33.743878Z",
       "message": null,
       "observations": [
         {
@@ -894,7 +894,7 @@
     "GW": {
       "country_code": "GW",
       "country_name": "Guinea-Bissau",
-      "generated_at": "2026-11-01T11:32:08.612134Z",
+      "generated_at": "2026-11-02T12:51:13.803700Z",
       "message": null,
       "observations": [
         {
@@ -941,7 +941,7 @@
     "KE": {
       "country_code": "KE",
       "country_name": "Kenya",
-      "generated_at": "2026-11-01T11:37:12.627218Z",
+      "generated_at": "2026-11-02T12:56:19.812808Z",
       "message": null,
       "observations": [
         {
@@ -1012,7 +1012,7 @@
     "KM": {
       "country_code": "KM",
       "country_name": "Comoros",
-      "generated_at": "2026-11-01T11:36:20.512692Z",
+      "generated_at": "2026-11-02T12:55:26.742465Z",
       "message": null,
       "observations": [
         {
@@ -1047,7 +1047,7 @@
     "LR": {
       "country_code": "LR",
       "country_name": "Liberia",
-      "generated_at": "2026-11-01T11:32:21.704090Z",
+      "generated_at": "2026-11-02T12:51:26.971224Z",
       "message": null,
       "observations": [
         {
@@ -1082,7 +1082,7 @@
     "LS": {
       "country_code": "LS",
       "country_name": "Lesotho",
-      "generated_at": "2026-11-01T11:40:32.436262Z",
+      "generated_at": "2026-11-02T12:59:40.189562Z",
       "message": null,
       "observations": [
         {
@@ -1129,7 +1129,7 @@
     "LY": {
       "country_code": "LY",
       "country_name": "Libya",
-      "generated_at": "2026-11-01T11:29:43.751017Z",
+      "generated_at": "2026-11-02T12:48:46.952403Z",
       "message": null,
       "observations": [
         {
@@ -1164,7 +1164,7 @@
     "MA": {
       "country_code": "MA",
       "country_name": "Morocco",
-      "generated_at": "2026-11-01T11:29:56.864834Z",
+      "generated_at": "2026-11-02T12:49:00.603419Z",
       "message": null,
       "observations": [
         {
@@ -1223,7 +1223,7 @@
     "MG": {
       "country_code": "MG",
       "country_name": "Madagascar",
-      "generated_at": "2026-11-01T11:37:25.904825Z",
+      "generated_at": "2026-11-02T12:56:33.186217Z",
       "message": null,
       "observations": [
         {
@@ -1258,7 +1258,7 @@
     "ML": {
       "country_code": "ML",
       "country_name": "Mali",
-      "generated_at": "2026-11-01T11:32:34.862913Z",
+      "generated_at": "2026-11-02T12:51:40.263117Z",
       "message": null,
       "observations": [
         {
@@ -1305,7 +1305,7 @@
     "MR": {
       "country_code": "MR",
       "country_name": "Mauritania",
-      "generated_at": "2026-11-01T11:32:47.960313Z",
+      "generated_at": "2026-11-02T12:51:53.516221Z",
       "message": null,
       "observations": [
         {
@@ -1340,7 +1340,7 @@
     "MU": {
       "country_code": "MU",
       "country_name": "Mauritius",
-      "generated_at": "2026-11-01T11:37:52.343299Z",
+      "generated_at": "2026-11-02T12:56:59.915982Z",
       "message": null,
       "observations": [
         {
@@ -1387,7 +1387,7 @@
     "MW": {
       "country_code": "MW",
       "country_name": "Malawi",
-      "generated_at": "2026-11-01T11:37:39.198679Z",
+      "generated_at": "2026-11-02T12:56:46.632563Z",
       "message": null,
       "observations": [
         {
@@ -1422,7 +1422,7 @@
     "MZ": {
       "country_code": "MZ",
       "country_name": "Mozambique",
-      "generated_at": "2026-11-01T11:38:05.432843Z",
+      "generated_at": "2026-11-02T12:57:13.365218Z",
       "message": null,
       "observations": [
         {
@@ -1469,7 +1469,7 @@
     "NA": {
       "country_code": "NA",
       "country_name": "Namibia",
-      "generated_at": "2026-11-01T11:40:45.710186Z",
+      "generated_at": "2026-11-02T12:59:53.577201Z",
       "message": null,
       "observations": [
         {
@@ -1528,7 +1528,7 @@
     "NE": {
       "country_code": "NE",
       "country_name": "Niger",
-      "generated_at": "2026-11-01T11:33:01.429450Z",
+      "generated_at": "2026-11-02T12:52:06.669501Z",
       "message": null,
       "observations": [
         {
@@ -1575,7 +1575,7 @@
     "NG": {
       "country_code": "NG",
       "country_name": "Nigeria",
-      "generated_at": "2026-11-01T11:33:14.188247Z",
+      "generated_at": "2026-11-02T12:52:19.574912Z",
       "message": null,
       "observations": [
         {
@@ -1634,7 +1634,7 @@
     "RW": {
       "country_code": "RW",
       "country_name": "Rwanda",
-      "generated_at": "2026-11-01T11:38:18.765647Z",
+      "generated_at": "2026-11-02T12:57:26.925750Z",
       "message": null,
       "observations": [
         {
@@ -1669,7 +1669,7 @@
     "SC": {
       "country_code": "SC",
       "country_name": "Seychelles",
-      "generated_at": "2026-11-01T11:38:31.619300Z",
+      "generated_at": "2026-11-02T12:57:39.948540Z",
       "message": null,
       "observations": [
         {
@@ -1704,7 +1704,7 @@
     "SD": {
       "country_code": "SD",
       "country_name": "Sudan",
-      "generated_at": "2026-11-01T11:30:09.964748Z",
+      "generated_at": "2026-11-02T12:49:13.856886Z",
       "message": null,
       "observations": [
         {
@@ -1739,7 +1739,7 @@
     "SL": {
       "country_code": "SL",
       "country_name": "Sierra Leone",
-      "generated_at": "2026-11-01T11:33:40.695539Z",
+      "generated_at": "2026-11-02T12:52:45.986563Z",
       "message": null,
       "observations": [
         {
@@ -1774,7 +1774,7 @@
     "SN": {
       "country_code": "SN",
       "country_name": "Senegal",
-      "generated_at": "2026-11-01T11:33:27.663585Z",
+      "generated_at": "2026-11-02T12:52:32.820178Z",
       "message": null,
       "observations": [
         {
@@ -1821,7 +1821,7 @@
     "SO": {
       "country_code": "SO",
       "country_name": "Somalia",
-      "generated_at": "2026-11-01T11:38:44.769740Z",
+      "generated_at": "2026-11-02T12:57:53.098997Z",
       "message": null,
       "observations": [
         {
@@ -1856,7 +1856,7 @@
     "SS": {
       "country_code": "SS",
       "country_name": "South Sudan",
-      "generated_at": "2026-11-01T11:38:59.274876Z",
+      "generated_at": "2026-11-02T12:58:06.356688Z",
       "message": null,
       "observations": [
         {
@@ -1879,7 +1879,7 @@
     "ST": {
       "country_code": "ST",
       "country_name": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
-      "generated_at": "2026-11-01T11:35:54.269591Z",
+      "generated_at": "2026-11-02T12:55:00.379233Z",
       "message": null,
       "observations": [
         {
@@ -1914,7 +1914,7 @@
     "SZ": {
       "country_code": "SZ",
       "country_name": "Eswatini",
-      "generated_at": "2026-11-01T11:40:19.261042Z",
+      "generated_at": "2026-11-02T12:59:26.902479Z",
       "message": null,
       "observations": [
         {
@@ -1949,7 +1949,7 @@
     "TD": {
       "country_code": "TD",
       "country_name": "Chad",
-      "generated_at": "2026-11-01T11:34:47.963884Z",
+      "generated_at": "2026-11-02T12:53:53.273070Z",
       "message": null,
       "observations": [
         {
@@ -1996,7 +1996,7 @@
     "TG": {
       "country_code": "TG",
       "country_name": "Togo",
-      "generated_at": "2026-11-01T11:33:53.683175Z",
+      "generated_at": "2026-11-02T12:52:59.231233Z",
       "message": null,
       "observations": [
         {
@@ -2043,7 +2043,7 @@
     "TN": {
       "country_code": "TN",
       "country_name": "Tunisia",
-      "generated_at": "2026-11-01T11:30:23.162222Z",
+      "generated_at": "2026-11-02T12:49:27.470088Z",
       "message": null,
       "observations": [
         {
@@ -2102,7 +2102,7 @@
     "TZ": {
       "country_code": "TZ",
       "country_name": "Tanzania",
-      "generated_at": "2026-11-01T11:39:12.391941Z",
+      "generated_at": "2026-11-02T12:58:19.736910Z",
       "message": null,
       "observations": [
         {
@@ -2156,7 +2156,7 @@
         {
           "as_of_period": "2026-Q4",
           "frequency": "ad_hoc",
-          "freshness": "recent",
+          "freshness": "historical",
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
@@ -2173,7 +2173,7 @@
     "UG": {
       "country_code": "UG",
       "country_name": "Uganda",
-      "generated_at": "2026-11-01T11:39:26.140415Z",
+      "generated_at": "2026-11-02T12:58:33.501815Z",
       "message": null,
       "observations": [
         {
@@ -2220,7 +2220,7 @@
     "ZA": {
       "country_code": "ZA",
       "country_name": "South Africa",
-      "generated_at": "2026-11-01T11:40:58.585130Z",
+      "generated_at": "2026-11-02T13:00:07.024595Z",
       "message": null,
       "observations": [
         {
@@ -2279,7 +2279,7 @@
     "ZM": {
       "country_code": "ZM",
       "country_name": "Zambia",
-      "generated_at": "2026-11-01T11:39:39.409049Z",
+      "generated_at": "2026-11-02T12:58:46.836413Z",
       "message": null,
       "observations": [
         {
@@ -2326,7 +2326,7 @@
     "ZW": {
       "country_code": "ZW",
       "country_name": "Zimbabwe",
-      "generated_at": "2026-11-01T11:39:52.954469Z",
+      "generated_at": "2026-11-02T12:59:00.491485Z",
       "message": null,
       "observations": [
         {
@@ -2350,7 +2350,7 @@
   "countries_failed": 0,
   "countries_refreshed": 54,
   "countries_requested": 54,
-  "generated_at": "2026-11-01T11:40:58Z",
+  "generated_at": "2026-11-02T13:00:07Z",
   "source": "Africa API country signals endpoint",
   "source_url": "https://africa-api.com/docs/signals"
 }

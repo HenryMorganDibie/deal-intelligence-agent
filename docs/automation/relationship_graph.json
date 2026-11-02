@@ -571,6 +571,66 @@
     "minerals": {
       "name": "Minerals",
       "kind": "organization"
+    },
+    "admaius": {
+      "name": "Admaius",
+      "kind": "organization"
+    },
+    "aba life": {
+      "name": "ABA Life",
+      "kind": "organization"
+    },
+    "banque du caire ipo": {
+      "name": "Banque du Caire IPO",
+      "kind": "organization"
+    },
+    "msmeda": {
+      "name": "MSMEDA",
+      "kind": "organization"
+    },
+    "factoring": {
+      "name": "Factoring",
+      "kind": "organization"
+    },
+    "edfi and acumen": {
+      "name": "EDFI and Acumen",
+      "kind": "organization"
+    },
+    "exceeds target": {
+      "name": "Exceeds Target",
+      "kind": "organization"
+    },
+    "united nigeria airlines": {
+      "name": "United Nigeria Airlines",
+      "kind": "organization"
+    },
+    "nigerian opl257 oil block": {
+      "name": "Nigerian OPL257 Oil Block",
+      "kind": "organization"
+    },
+    "zenith bank": {
+      "name": "Zenith Bank",
+      "kind": "organization"
+    },
+    "paramount bank kenya": {
+      "name": "Paramount Bank Kenya",
+      "kind": "organization"
+    },
+    "advtech": {
+      "name": "Advtech",
+      "kind": "organization"
+    },
+    "mathu": {
+      "name": "MathU",
+      "kind": "organization"
+    },
+    "gdi": {
+      "name": "GDI",
+      "kind": "organization"
+    },
+    "transcorp": {
+      "name": "Transcorp",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1804,7 +1864,138 @@
           "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOeF9seVEtNmdUYVNKdXNSbnZyYXppTVI0LVo4aHR3SkJKUGMxbVJ6VnVpV3BJZUxMVUszeVlCdkNKVldKdkhfTXVTNHlaQmh3U1B3aWRLSFZTV0k0T0szajFaS2ZHNElneURCa2dkaGdmQ21vUXNfYnlfamVudHFyTkphZTJtYWZGS1VDQUR6TzFmZkdmYl9Qc1ZfMTZoS1FOX3Uw?oc=5"
         }
       ]
+    },
+    "fdb85cca66ee0ea86d18": {
+      "id": "fdb85cca66ee0ea86d18",
+      "from": "admaius",
+      "to": "aba life",
+      "type": "equity_funding",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "ABA Life Secures $40Mn from Admaius to Test Morocco’s Unicorn Ambitions in Sovereign Health AI",
+          "publisher": "Launch Base Africa",
+          "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPSUxvaThTQUYxdTVzZjdkZ216REZvUlByOXdrTFpibEdVVFdaVDkyMVFPNlplRzVCQlR1TFZXUllEaTVQNWNKdUw1TTAyT2RQaTBTajlzWVR0blBWR2pneV9BWEp0NVowWExNVWFLLUM4UnJRQTZudllXcE5ZT01PVGdsVzY2b0syZDBmQ3lQTlNfQnRnQ1I2UXN0SFp6cHZHLXA2YW9VMDVia25CRGYwa3FNLUxiSmtZSlFBY0pfQTFKMnJ5ZDI3R2VjWE1rdw?oc=5"
+        }
+      ]
+    },
+    "95efcd274b31c080c67c": {
+      "id": "95efcd274b31c080c67c",
+      "from": "ebrd",
+      "to": "banque du caire ipo",
+      "type": "ipo",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "EBRD invests US$ 100 million in Egypt's Banque du Caire IPO",
+          "publisher": "EBRD",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNcnZUTTdzb096aTdOeDVNOWdRaENBZzJyLU1xbnFNVkhPTzcxMnpqNS1sbUxfdXNSanRRVzdpR2N5MS02d1B6V0hrT3hscHFlVzZ5QTZRdkdOTW5jdW0xNUlqV0NYSXRlcUtfT1VuZ0NGNXg0Y0l0eTFkdklCV0ZKaGRsSF80ZGZDZWl1bVJqNzVVdVVvS01BSThBZzBFOWZxSlV6VDdTVWllR2V5MGx3M2I2WVBEM1d3?oc=5"
+        },
+        {
+          "title": "EBRD Invests $100 Million In Egypt's Banque Du Caire IPO",
+          "publisher": "TradingView",
+          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPWWRDQzV6U0ptQW1GQ2V3M2lDOHdVT1d5OGV6Smp4ME9LanRZZ3JKTGJTYlMtcXI3MHJzVVhqcDBkZFhLeEFwSHRuU0RzcGN5ZF9HUmxKeWg5M3V5Qk54NHZlcFItNWtjVHZCamdTemtXMDhQWWcxWUZuZFpxNU5rZTB3QXd3SEZSczhBbWhKQUc2SkVHbl9Tb3laZFA1T21zR2lzOEVSMUsxUVMteHpfOFhkaWpZRkMxSTE4b0gtQ1hySFU?oc=5"
+        }
+      ]
+    },
+    "b1b2f8729b483c09b72a": {
+      "id": "b1b2f8729b483c09b72a",
+      "from": "msmeda",
+      "to": "factoring",
+      "type": "debt_financing",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "ZAWYA: Egypt: Tawasoa for Factoring secures $537,908 loan from MSMEDA to finance SMEs",
+          "publisher": "TradingView",
+          "url": "https://news.google.com/rss/articles/CBMi7wFBVV95cUxPSHNaak9JdDFtaVFoR2dPR0l1NG85Y0NCem9WeVNncDNEeUdLSVZxNlUxS0x1amt4d1JEa05JT2xXUHlOZGVYbFNmYzBxd2hCb3Y4eXVPQXhVTzZ4eXZJV3kwUG0wWE5xUTBPS0RmSHNoOG5nOVJ4UER4M2lCRnNhMDZNMzR3MXA1OXpSRUx0X2R3MmlzblZHSTR3WTgtWUwwTzBwendVX3NnV3FQSU50ZG15UWdraThiQzBIQ2lDeC1yOUhlMzFWamoyTk1kMnBCNjhMOTJPVXhrMVluWmRQRTlZdFNETXllaWdXak5OOA?oc=5"
+        }
+      ]
+    },
+    "7702e9b3ea4d8867b258": {
+      "id": "7702e9b3ea4d8867b258",
+      "from": "edfi and acumen",
+      "to": "vitara",
+      "type": "equity_funding",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "EDFI and Acumen invest in Ghana’s Vitara",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE5pU2dqS1hya3FhWXM5TzAtRjFYTVdwODNiRTFwV2ZoUUJFU0l0MlBoS25xcDJ3WUZodk9MbTRRallMVHlYRTMwWVIyQ3l1TjhZOUdXYnRxODZuenF5dWg3Zk1jYnpmWVpQdlFSVmswTWlJY1l4dU1DVHZKeHNIcm8?oc=5"
+        }
+      ]
+    },
+    "e877bf17c2bb3dd816f5": {
+      "id": "e877bf17c2bb3dd816f5",
+      "from": "exceeds target",
+      "to": "united nigeria airlines",
+      "type": "equity_funding",
+      "first_seen": "2026-11-01",
+      "sources": [
+        {
+          "title": "United Nigeria Airlines Raises N22bn From Investors, Exceeds Target",
+          "publisher": "Anambra people magazine",
+          "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPdmZ6My1lMVZEYW1wcTQza0RqVjhBLUtYOWlEeUVqb0YwNlY4MzA0c2ptRGRHeXZPTHlFRTZjbmlTejhzQUdKMHZMaHljb3lUZnJoT3hGWnVnNzUtZndWcExIYVl6R3ZQTlhGaXRyX1FLOV8zM3Z4TXZzVUdRakVzNUVHZDkyNkFpVlFCTDNPRjgyX2kzOEMtQU43QjBnQlZRdlpmUU5PcG9JWGc?oc=5"
+        }
+      ]
+    },
+    "87390b2292c9190b6724": {
+      "id": "87390b2292c9190b6724",
+      "from": "sapetro",
+      "to": "nigerian opl257 oil block",
+      "type": "exit",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "TotalEnergies Sells 40% Stake in Nigerian OPL257 Oil Block to SAPETRO",
+          "publisher": "Arbiterz",
+          "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQY3pJd0pvZW90anBGcWtndVBMUXVEc0pNSkhjY1dSTll3czNUbGpGWi1qdVFQSzZmOTBkQmx5b1E3U1ljeWEtai1BbUU4UkMwUGZOZDNOQkx5ZzZqd09TQ2k3bGNBNnF0YUJiTWd0UTZJdWI0QlRaZGprLVdHWEZHejFyQjhVRS1vOUNZX2JpSTlHdzN5?oc=5"
+        }
+      ]
+    },
+    "446664306b5fe3843817": {
+      "id": "446664306b5fe3843817",
+      "from": "zenith bank",
+      "to": "paramount bank kenya",
+      "type": "acquisition",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Zenith Bank Bought Paramount Bank Kenya for KSh3.47bn",
+          "publisher": "The Kenyan Wallstreet",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQMEx0RHI5azZJcGF5UzRSY0dSbUExWjBQZjJObm1PZWMzZ3JfMjhuM19KajlxZ095SDhvNTUtRzdFcnNjZXJOSW9SY3FYSXNKZ2lCa3RmOFBIbjN6ZF83WWcya3pEU0RoSGMyeWxmb2JBc2Q5UFc2ZGl2dlZMWUdiSFZzbWdjQQ?oc=5"
+        }
+      ]
+    },
+    "7ce6c215f12358df4bc6": {
+      "id": "7ce6c215f12358df4bc6",
+      "from": "advtech",
+      "to": "mathu",
+      "type": "acquisition",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "South Africa's Advtech Acquires 25% Stake in AI Education Startup MathU",
+          "publisher": "We are Tech",
+          "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQSkVja0V0U1lrLWJzZEpoTnMxV1BFcTRlYkJwaFpLamVrX2UtaEFNaFpwS3dqOXhwWTdnTHlSOXAtQjIyNFFIYWZVVjhITENuUXViVFNkQWRJa1JER1ZpTkRIczByUmZOUFJFVXBHMHIxOWFfand4MnBmemptRmRuTW5jVVhmZ3I5VEh1V1NCVVFSbTAxUmU5THhFY2NmN2ZOMVVoTE13eE0zcDBqQ3hKekhXS21jUkt3Y2VGeHpKcm5HNHF3c1pJ?oc=5"
+        }
+      ]
+    },
+    "b674ea846a771ba52510": {
+      "id": "b674ea846a771ba52510",
+      "from": "gdi",
+      "to": "transcorp",
+      "type": "acquisition",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Sisco-backed GDI acquires UAE’s Transcorp to anchor its regional cold-chain expansion",
+          "publisher": "EnterpriseAM",
+          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPLURkWFVhS1pCUDVvU2NKRmpOY3pjMmdmWng1bGJmUEJRb3BTenQwSXFyaWtZTE9famYxTnJnR0ZyUDRua0xsR01sMC0xY09LSnRac1J5RUhMQ3dObEpsZUJrNm4wVVhLNTVFT2UxMXk1RUxEYVd2bWQzZnV1MXVwMkd1RXZ4VUk3T3dQcGJ4dWxIVUlzT3p1TjAxSFNkUUVyMlpmU2VnbFVCSDVWbm0yY0t3aUFqaXdLQU1peU5BbXJRRlFyZE9MbzNVS0U?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-01T19:07:31.752729+00:00"
+  "updated_at": "2026-11-02T13:01:28.016299+00:00"
 }
