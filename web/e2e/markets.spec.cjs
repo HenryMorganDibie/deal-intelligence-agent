@@ -322,3 +322,26 @@ test("password reset page validates confirmation and submits only the new passwo
   await expect(page.getByRole("status")).toContainText("Your password has been updated");
   expect(submitted).toEqual({ action: "update-password", password: "long-test-password-123" });
 });
+
+test("sign-up enforces the password rules and the retyped password before it can submit", async ({ page }) => {
+  await page.goto("/account?mode=sign-up");
+  await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
+  await page.getByLabel("Email").fill("ada@example.com");
+  await page.getByLabel("Username").fill("ada_l");
+  await page.getByLabel("Nickname").fill("Ada");
+  const submit = page.getByRole("button", { name: "Create account", exact: true });
+
+  await page.getByLabel("Password", { exact: true }).fill("weakpass");
+  await expect(page.getByText("At least 12 characters")).toBeVisible();
+  await expect(submit).toBeDisabled();
+
+  await page.getByLabel("Password", { exact: true }).fill("Kettle-Harbour-91!");
+  await page.getByLabel("Retype password").fill("Kettle-Harbour-91?");
+  await expect(page.getByText("Passwords do not match")).toBeVisible();
+  await expect(submit).toBeDisabled();
+
+  await page.getByLabel("Retype password").fill("Kettle-Harbour-91!");
+  await expect(page.getByText("✓ Passwords match")).toBeVisible();
+  await expect(page.getByText("Very weak")).toHaveCount(0);
+  await expect(submit).toBeEnabled();
+});

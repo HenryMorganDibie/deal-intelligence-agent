@@ -22,6 +22,8 @@ module.exports = defineConfig({
       SUPABASE_URL: "https://test-project.supabase.co",
       SUPABASE_PUBLISHABLE_KEY: "test-publishable-key",
       NEXT_PUBLIC_SITE_URL: "https://test.example",
+      // The app pages need an account; these tests run without one. Ignored in a Vercel production deploy.
+      DI_E2E_AUTH_BYPASS: "1",
     },
   },
   timeout: 30_000,
