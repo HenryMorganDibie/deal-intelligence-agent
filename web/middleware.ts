@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
 import { AUTH_STATE_COOKIE, AUTH_STATE_TTL_SECONDS, readAuthState, signAuthState } from "./lib/auth-state";
 
@@ -55,7 +55,7 @@ async function accountFacts(accessToken: string, sub: string): Promise<{ mfa: bo
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
   // Browser tests run against a local production build without an account; never in a Vercel production deploy.
   if (process.env.DI_E2E_AUTH_BYPASS === "1" && process.env.VERCEL_ENV !== "production") return NextResponse.next();
   if (!SUPABASE_URL || !SUPABASE_KEY) return redirectTo(request, "/account");
@@ -93,6 +93,16 @@ export async function middleware(request: NextRequest) {
     const facts = await accountFacts(accessToken, claims.sub);
     if (!facts) return redirectTo(request, "/account");
     state = { sub: claims.sub, ...facts, exp: 0 };
+    // Record that this account used the app today (for the owner's admin page). This runs only when the
+    // 30-minute account check is renewed, never per page, and never delays the response.
+    event.waitUntil(
+      fetch(`${SUPABASE_URL}/rest/v1/rpc/touch_my_activity`, {
+        method: "POST",
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+        body: "{}",
+        cache: "no-store",
+      }).catch(() => undefined),
+    );
     if (STATE_SECRET) stateCookie = await signAuthState({ sub: claims.sub, ...facts }, STATE_SECRET);
   }
 

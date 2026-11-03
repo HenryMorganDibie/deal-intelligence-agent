@@ -1256,6 +1256,29 @@ async def admin_stats(request: Request) -> dict:
         return stats
 
 
+@router.post("/api/admin/accounts")
+async def admin_accounts(request: Request) -> Response:
+    """Who has an account and who uses the app, for the owner's page; needs DEAL_INTEL_ADMIN_KEY."""
+    try:
+        body = await request.json()
+    except ValueError:
+        body = {}
+    if not isinstance(body, dict) or not _admin_key_ok(body):
+        raise HTTPException(status_code=401, detail="Wrong key")
+    try:
+        days = max(1, min(int(body.get("days", 30) or 30), 365))
+    except (TypeError, ValueError):
+        days = 30
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_account_stats", {"p_days": days})
+    if not r.is_success:
+        log.error("admin_account_stats failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(status_code=502, detail="Account statistics unavailable")
+    # Email addresses: never cached anywhere on the way.
+    return Response(json.dumps(r.json()), media_type="application/json",
+                    headers={"Cache-Control": "no-store, private"})
+
+
 # ── Independent review labelling ─────────────────────────────────────────────
 
 def _review_token_hash(token: str) -> str:

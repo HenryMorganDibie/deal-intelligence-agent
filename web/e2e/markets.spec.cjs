@@ -351,3 +351,39 @@ test("sign-up enforces the password rules and the retyped password before it can
   await expect(page.getByText("Very weak")).toHaveCount(0);
   await expect(submit).toBeEnabled();
 });
+
+test("admin page lists accounts and who is using the app", async ({ page }) => {
+  const now = new Date().toISOString();
+  await page.route("**/api/admin/stats", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+    since: "2026-10-05", totals: { views: 10, visitors: 4, users: 2, returning_users: 1, engaged_visitors: 2 },
+    days: [], pages: [], actions: [], app_page_activity: [],
+  }) }));
+  await page.route("**/api/admin/feedback", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [] }) }));
+  let accountsBody;
+  await page.route("**/api/admin/accounts", (route) => {
+    accountsBody = route.request().postDataJSON();
+    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      since: "2026-10-05", days: 30,
+      totals: { accounts: 2, active_in_period: 1, returning_in_period: 1, new_in_period: 2, active_7d: 1, never_used: 1,
+                unconfirmed: 1, with_username: 1, google: 1, two_factor: 0 },
+      daily: [{ day: "2026-11-02", signups: 1, active: 0 }, { day: "2026-11-03", signups: 1, active: 1 }],
+      accounts: [
+        { email: "ada@example.com", username: "ada", display_name: "Ada", created_at: now, confirmed: true,
+          last_sign_in_at: now, last_seen_at: now, active_days: 3, providers: ["google"], two_factor: false, email_alerts: 1 },
+        { email: "new@example.com", username: null, display_name: null, created_at: now, confirmed: false,
+          last_sign_in_at: null, last_seen_at: null, active_days: 0, providers: ["email"], two_factor: false, email_alerts: 0 },
+      ],
+    }) });
+  });
+  await page.goto("/admin");
+  await page.getByPlaceholder("Admin key").fill("owner-key");
+  await page.getByRole("button", { name: "Show" }).click();
+  await expect(page.getByRole("heading", { name: "Accounts" })).toBeVisible();
+  expect(accountsBody).toEqual({ key: "owner-key", days: 30 });
+  await expect(page.getByText("@ada · ada@example.com")).toBeVisible();
+  await expect(page.getByText("Google · 1 watchlist email")).toBeVisible();
+  await page.getByLabel("Filter accounts").selectOption("never");
+  await expect(page.getByText("new@example.com")).toBeVisible();
+  await expect(page.getByText("ada@example.com")).toHaveCount(0);
+  await page.screenshot({ path: "test-results/admin-accounts.png", fullPage: true });
+});

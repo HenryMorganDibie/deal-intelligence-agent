@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { browserVisitorId } from "../../lib/tracking";
+import { AccountsPanel } from "../../components/admin/AccountsPanel";
 
 type Row = { views: number; visitors: number; users: number };
 type ActionRow = { action: string; completions: number; clients: number };
@@ -56,6 +57,7 @@ export default function Admin() {
   const [key, setKey] = useState("");
   const [days, setDays] = useState(30);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [loadedKey, setLoadedKey] = useState("");
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [error, setError] = useState("");
   const [linkRole, setLinkRole] = useState<"a" | "b" | "adjudicator">("a");
@@ -89,6 +91,7 @@ export default function Admin() {
       });
       if (!r.ok) throw new Error(r.status === 401 ? "Wrong key" : "Stats unavailable");
       setStats(await r.json());
+      setLoadedKey(k);
       localStorage.setItem("di_admin", k);
       const feedbackResponse = await fetch(`${API}/api/admin/feedback`, {
         method: "POST",
@@ -163,7 +166,7 @@ export default function Admin() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 text-[0.9375rem]">
       <meta name="robots" content="noindex" />
-      <h1 className="text-2xl font-semibold">Usage</h1>
+      <h1 className="text-2xl font-semibold">Usage and accounts</h1>
       <p className="mt-1 text-[color:var(--muted)]">Only you can see this. This browser is excluded from the counts.</p>
 
       <form
@@ -215,6 +218,8 @@ export default function Admin() {
           <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
             Since {stats.since}. Unique browsers are anonymous browser IDs, not verified people. Engaged browsers viewed two or more pages or used a feature; single-view browsers include crawlers and link previews, which are no longer counted from this release. This dashboard excludes this browser. Analysis and research runs are keyed by a salted IP hash, so runs from this network are also excluded; that can include other people using the same network.
           </p>
+
+          <AccountsPanel adminKey={loadedKey} days={days} />
 
           <h2 className="mt-8 font-semibold">Independent review: labelling links</h2>
           <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
