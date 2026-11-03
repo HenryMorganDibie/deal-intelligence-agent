@@ -22,6 +22,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 os.environ.setdefault("DEAL_INTEL_DATA_DIR", "/tmp/deal-intel-data")
+# Secrets pasted into GitHub often carry a stray space or line break; the database compares them exactly.
+for _name in ("DEAL_INTEL_API_SECRET", "SUPABASE_PUBLISHABLE_KEY", "GROQ_API_KEY", "OLLAMA_API_KEY",
+              "OPENCODE_API_KEY", "SENDBYTE_API_KEY"):
+    if os.environ.get(_name):
+        os.environ[_name] = os.environ[_name].strip()
 # A one-off bearer token for this process only, set before the app reads its configuration.
 os.environ["CRON_SECRET"] = secrets.token_urlsafe(32)
 
