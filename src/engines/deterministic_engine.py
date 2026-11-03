@@ -64,6 +64,10 @@ SOURCE_CREDIBILITY: dict[str, float] = {
     "Vanguard Nigeria":      0.68,
     "Premium Times Nigeria": 0.67,
     "Disrupt Africa":        0.65,
+    "The Big Deal":          0.70,              # tracks every disclosed African startup round
+    "Launch Base Africa":    0.65,
+    "Benjamindada":          0.62,
+    "TechMoran":             0.62,
     "Bayport Finance":       0.65,
     # Publisher names as Google News reports them (matched as substrings)
     "Businessday":           0.80,   # Businessday NG

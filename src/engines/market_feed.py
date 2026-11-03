@@ -189,7 +189,7 @@ async def _replace_failed_outlets(client: httpx.AsyncClient, failed: dict[str, s
 
 # Outlets that publish only African business and deal news: their headlines need no country named.
 AFRICA_ONLY_OUTLETS = {"africa private equity news", "disrupt africa", "agence ecofin", "financial afrik",
-                       "financial afrik (fr)"}
+                       "financial afrik (fr)", "the big deal", "launch base africa", "benjamindada", "techmoran"}
 
 
 def is_africa_outlet(publisher: str) -> bool:
