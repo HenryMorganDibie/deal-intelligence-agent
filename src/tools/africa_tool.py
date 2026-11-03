@@ -85,7 +85,7 @@ AFRICAN_NEWS_FEEDS = {
     "Mail & Guardian Business": _site_news("mg.co.za", "ZA", extra="business"),
     # ── East Africa ──────────────────────────────────────────────────────
     "Nation Africa":            "https://nation.africa/kenya/rss.xml",
-    "Daily Monitor Uganda":     "https://www.monitor.co.ug/rss.xml",
+    "Daily Monitor Uganda":     _site_news("monitor.co.ug", "UG", extra="business"),
     "The East African":         "https://www.theeastafrican.co.ke/rss.xml",
     "Standard Media Kenya":     "https://www.standardmedia.co.ke/rss/business.php",
     "Business Daily Africa":    "https://www.businessdailyafrica.com/bd/rss.xml",
