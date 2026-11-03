@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { WatchlistEmailAlerts } from "../../../../components/app/WatchlistEmailAlerts";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pill, usd, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
@@ -9,7 +10,7 @@ import { apiUrl, del, get, post } from "../../../../lib/market";
 
 type Alert = { kind: string; id: string; day: string | null; title: string; signal_type?: string; deal_type?: string; amount_usd?: number | null; url?: string; publisher?: string; why: string[]; country?: string | null; countries?: string[]; duplicate_reports_merged?: number; source_count?: number; independent_stories?: number | null; verification?: string | null; sources?: { publisher?: string | null; url?: string | null; date?: string | null; title?: string | null }[] };
 type Quality = { alert_count: number; duplicate_reports_merged: number; with_source_evidence: number; source_evidence_coverage_pct: number | null; with_two_or_more_independent_stories: number; with_verification_label: number; accuracy_estimate: null; note: string };
-type Delivery = { attempted_at: string; delivered: boolean; attempt_count: number; http_status: number | null; alert_count: number; error_code: string | null };
+type Delivery = { attempted_at: string; delivered: boolean; attempt_count: number; http_status: number | null; alert_count: number; error_code: string | null; channel?: "webhook" | "email" };
 type Watchlist = { id: string; name: string; companies: string[]; countries: string[]; signal_types: string[]; include_deals: boolean; webhook_url: string | null; delivery_frequency: "daily" | "weekly"; last_delivered_at: string | null };
 type ReviewState = "unreviewed" | "reviewed" | "dismissed";
 type ReviewMap = Record<string, ReviewState>;
@@ -40,7 +41,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
       })
       .catch(() => setActionError("Review state could not be loaded. Check that the alert-review database migration has been applied."));
     get<{ deliveries: Delivery[] }>(`/api/watchlists/${encodeURIComponent(params.id)}/delivery`)
-      .then((result) => setDeliveries(result.deliveries ?? []))
+      .then((result) => setDeliveries((result.deliveries ?? []).filter((d) => (d.channel ?? "webhook") === "webhook")))
       .catch(() => setDeliveries([]));
   }, [params.id]);
 
@@ -128,6 +129,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
         <button type="button" onClick={remove} className="btn btn-ghost text-risk">Delete</button>
       </div>
       {actionError && <ErrorNote message={actionError} />}
+      <WatchlistEmailAlerts watchlistId={w.id} frequency={w.delivery_frequency} />
       {w.webhook_url && (
         <section className="mt-5 rounded-lg border hairline p-4" aria-label="Webhook delivery health">
           <h2 className="eyebrow">Webhook delivery</h2>

@@ -59,7 +59,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from src.data import africa_countries as ac
 from src.engines import company_profile, country_profile, coverage, country_risk, deals as deals_mod, investors, market_risk
-from src.engines import research as research_mod, watch, official_sources
+from src.engines import research as research_mod, watch, official_sources, email_alerts
 
 log = logging.getLogger("deal_intel.market")
 router = APIRouter()
@@ -1021,10 +1021,10 @@ async def watchlist_feed(wl_id: str) -> Response:
 async def watchlist_delivery_history(wl_id: str) -> dict:
     await _get_watchlist(wl_id)
     async with httpx.AsyncClient(timeout=15) as client:
-        response = await _rpc(client, "latest_watchlist_delivery", {"p_id": wl_id})
+        response = await _rpc(client, "watchlist_delivery_history", {"p_id": wl_id})
     if not response.is_success:
-        log.warning("latest_watchlist_delivery failed: %s %s", response.status_code, response.text[:300])
-        raise HTTPException(502, "Webhook delivery history could not be loaded.")
+        log.warning("watchlist_delivery_history failed: %s %s", response.status_code, response.text[:300])
+        raise HTTPException(502, "Delivery history could not be loaded.")
     return {"deliveries": response.json() or []}
 
 
@@ -1037,6 +1037,54 @@ async def delete_watchlist(wl_id: str) -> dict:
         log.error("remove_watchlist failed: %s %s", r.status_code, r.text[:300])
         raise HTTPException(502, "The watchlist could not be deleted.")
     return {"deleted": True}
+
+
+def _unsubscribe_page(title: str, body: str, form_token: Optional[str] = None) -> Response:
+    import html as _html
+    form = ""
+    if form_token:
+        form = ('<form method="post"><input type="hidden" name="token" value="' + _html.escape(form_token) + '">'
+                '<button type="submit" style="background:#0f172a;color:#fff;border:0;border-radius:6px;'
+                'padding:10px 16px;font-size:15px;cursor:pointer">Stop these emails</button></form>')
+    page = ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" '
+            'content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">'
+            f'<title>{_html.escape(title)}</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,'
+            'Helvetica,Arial,sans-serif;max-width:520px;margin:64px auto;padding:0 16px;color:#0f172a;line-height:1.5">'
+            f'<h1 style="font-size:22px">{_html.escape(title)}</h1><p>{_html.escape(body)}</p>{form}</body></html>')
+    return Response(page, media_type="text/html", headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
+
+
+@router.get("/api/watchlists/email/unsubscribe")
+async def watchlist_email_unsubscribe_page(token: str = "") -> Response:
+    # A GET only asks for confirmation, so link scanners in mail systems cannot unsubscribe anyone.
+    if not re.fullmatch(r"[0-9a-f]{64}", token or ""):
+        return _unsubscribe_page("Link not recognised", "This unsubscribe link is incomplete or invalid.")
+    return _unsubscribe_page("Stop watchlist emails?",
+                             "You will no longer receive alert emails for this watchlist. You can turn them back on "
+                             "from the watchlist page at any time.", form_token=token)
+
+
+@router.post("/api/watchlists/email/unsubscribe")
+async def watchlist_email_unsubscribe(request: Request, token: str = "") -> Response:
+    # Handles both the confirmation form and the one-click unsubscribe that mail clients send (RFC 8058).
+    if not token:
+        from urllib.parse import parse_qs
+        body = (await request.body())[:2048].decode("utf-8", "replace")
+        token = (parse_qs(body).get("token") or [""])[0]
+    if not re.fullmatch(r"[0-9a-f]{64}", token or ""):
+        return _unsubscribe_page("Link not recognised", "This unsubscribe link is incomplete or invalid.")
+    if not _configured():
+        raise HTTPException(503, "The API is not configured.")
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "unsubscribe_watchlist_email", {"p_token": token})
+    if not r.is_success:
+        log.error("unsubscribe_watchlist_email failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(502, "Could not update your email preferences. Please try again.")
+    rows = r.json() or []
+    if not rows:
+        return _unsubscribe_page("Link not recognised", "This unsubscribe link is no longer valid.")
+    return _unsubscribe_page("You are unsubscribed",
+                             f"Alert emails for \"{rows[0].get('watchlist_name') or 'this watchlist'}\" have stopped.")
 
 
 def _public_host(url: str) -> bool:
@@ -1736,7 +1784,15 @@ async def cron_ingest(
         if r2.status_code != 200:
             log.error("event ingestion write failed: status=%s body=%s", r2.status_code, r2.text[:300])
             raise HTTPException(502, "Event ingestion failed while saving records. The scheduled run must be retried.")
-        hooks = await _rpc(client, "webhook_watchlists", {})
+        hooks = await _rpc(client, "deliverable_watchlists", {})
+        recipients_response = await _rpc(client, "watchlist_email_recipients", {})
+    recipients: dict[str, list[dict]] = {}
+    if recipients_response.status_code == 200:
+        for row in recipients_response.json() or []:
+            recipients.setdefault(str(row["watchlist_id"]), []).append(row)
+    else:
+        log.warning("watchlist email recipients lookup failed: status=%s", recipients_response.status_code)
+    emails_sent = 0
     if hooks.status_code != 200:
         log.warning("watchlist webhook lookup failed after successful ingestion: status=%s body=%s",
                     hooks.status_code, hooks.text[:300])
@@ -1745,7 +1801,9 @@ async def cron_ingest(
     for wl in (hooks.json() if hooks.status_code == 200 and not month else []):
         if not watch.delivery_due(wl.get("delivery_frequency", "daily"), last_delivered_at=wl.get("last_delivered_at")):
             continue
-        if not _public_host(wl["webhook_url"]):
+        use_webhook = bool(wl.get("webhook_url")) and _public_host(wl["webhook_url"])
+        subscribers = recipients.get(str(wl["id"]), [])
+        if not use_webhook and not subscribers:
             continue
         if wl.get("delivery_frequency") == "weekly" and wl.get("last_delivered_at"):
             last_delivery = datetime.fromisoformat(wl["last_delivered_at"].replace("Z", "+00:00"))
@@ -1796,21 +1854,48 @@ async def cron_ingest(
             {"alert_key": f"{a['kind']}:{a['id']}", "fingerprint": watch.alert_fingerprint(a)}
             for a in alerts
         ]
-        result = await watch.deliver_webhook(
-            wl["webhook_url"],
-            watch.webhook_payload(wl, alerts, _watch_link(wl["id"])),
-            watch.delivery_idempotency_key(wl["id"], alerts),
-        )
+        batch_key = watch.delivery_idempotency_key(wl["id"], alerts)
+        result = {"delivered": False}
+        if use_webhook:
+            result = await watch.deliver_webhook(
+                wl["webhook_url"], watch.webhook_payload(wl, alerts, _watch_link(wl["id"])), batch_key)
+        email_result = {"sent": 0, "error": None}
+        if subscribers:
+            async with httpx.AsyncClient() as mail_client:
+                for sub in subscribers:
+                    unsubscribe = email_alerts.unsubscribe_link(sub["unsubscribe_token"])
+                    subject, html_body, text_body = email_alerts.render(
+                        wl, alerts, _watch_link(wl["id"]), unsubscribe, sub.get("display_name"))
+                    sent = await email_alerts.send(
+                        mail_client, sub["email"], subject, html_body, text_body, unsubscribe,
+                        email_alerts.idempotency_key(batch_key, sub["unsubscribe_token"]))
+                    if sent["sent"]:
+                        email_result["sent"] += 1
+                    else:
+                        email_result["error"] = sent["error"]
+            emails_sent += email_result["sent"]
+        # Alerts count as delivered when any channel delivered them, so email subscribers never get repeats
+        # because a webhook on the same watchlist is failing.
+        any_delivered = bool(result["delivered"]) or email_result["sent"] > 0
         try:
             async with httpx.AsyncClient(timeout=15) as client:
-                saved = await _rpc(client, "record_watchlist_delivery", {
-                    "p_id": wl["id"], "p_delivered": result["delivered"],
-                    "p_attempt_count": result["attempts"], "p_http_status": result["status_code"],
-                    "p_alert_count": len(alerts), "p_error_code": result["error"],
-                })
-                if not saved.is_success:
-                    log.warning("watchlist delivery outcome could not be recorded: %s", saved.status_code)
-                if result["delivered"]:
+                if use_webhook:
+                    saved = await _rpc(client, "record_watchlist_delivery", {
+                        "p_id": wl["id"], "p_delivered": result["delivered"],
+                        "p_attempt_count": result["attempts"], "p_http_status": result["status_code"],
+                        "p_alert_count": len(alerts), "p_error_code": result["error"],
+                    })
+                    if not saved.is_success:
+                        log.warning("watchlist delivery outcome could not be recorded: %s", saved.status_code)
+                if subscribers:
+                    saved = await _rpc(client, "record_watchlist_email_delivery", {
+                        "p_id": wl["id"], "p_delivered": email_result["sent"] > 0,
+                        "p_recipient_count": len(subscribers), "p_alert_count": len(alerts),
+                        "p_error_code": email_result["error"],
+                    })
+                    if not saved.is_success:
+                        log.warning("watchlist email outcome could not be recorded: %s", saved.status_code)
+                if any_delivered:
                     recorded = await _rpc(client, "record_watchlist_alerts_delivered", {
                         "p_id": wl["id"], "p_candidates": candidates_to_record,
                     })
@@ -1827,6 +1912,7 @@ async def cron_ingest(
             "events_detected": len(new_events), "events_saved": r2.json(), "deals_reclassified": len(reclassified),
             "headlines_translated": len(translated),
             "webhooks_delivered": delivered, "webhook_lookup_ok": hooks.status_code == 200,
+            "alert_emails_sent": emails_sent, "email_configured": bool(email_alerts.api_key()),
             "alerts_suppressed": bool(month)}
 
 
