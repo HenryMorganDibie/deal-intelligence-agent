@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-02T22:52:40.239131+00:00",
+  "updated_at": "2026-11-03T12:27:58.605767+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 64,
+      "new_review_items_today": 70,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 6,
+      "new_review_items_today": 1,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 117,
-      "new_observations_today": 1,
-      "unreviewed_flagged_observations": 16,
+      "observations_collected": 125,
+      "new_observations_today": 8,
+      "unreviewed_flagged_observations": 17,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 102,
-      "entities": 171,
+      "relationships": 114,
+      "entities": 189,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,35 +177,32 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 117,
-    "new_rows": 1,
+    "collected_tickers": 125,
+    "new_rows": 8,
     "failures": [
-      "DYT.CS",
-      "EABL.NR",
-      "EALR.CA",
-      "EAPC.NR",
-      "EASB.CA",
-      "EBDP.CA",
-      "EBSC.CA",
-      "ECAP.CA",
-      "ECOC.BV",
-      "ECS.JO",
-      "EDBM.CA"
+      "EDFM.CA",
+      "EEII.CA",
+      "EFG.JO",
+      "EGCH.CA"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 171,
-    "relationships": 102,
-    "source_links": 115,
+    "nodes": 189,
+    "relationships": 114,
+    "source_links": 134,
     "most_connected": [
       {
         "name": "EBRD",
         "degree": 7
       },
       {
+        "name": "Afreximbank",
+        "degree": 5
+      },
+      {
         "name": "Sapetro",
-        "degree": 4
+        "degree": 5
       },
       {
         "name": "Amsons Group",
@@ -216,11 +213,11 @@
         "degree": 3
       },
       {
-        "name": "Afreximbank",
+        "name": "Sterling Oil",
         "degree": 3
       },
       {
-        "name": "Sterling Oil",
+        "name": "BII",
         "degree": 3
       },
       {
@@ -233,10 +230,6 @@
       },
       {
         "name": "NCBA",
-        "degree": 2
-      },
-      {
-        "name": "RMBV",
         "degree": 2
       }
     ]

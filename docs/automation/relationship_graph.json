@@ -683,6 +683,78 @@
     "lifts kenya pipeline stock": {
       "name": "Lifts Kenya Pipeline Stock",
       "kind": "organization"
+    },
+    "veenocks": {
+      "name": "Veenocks",
+      "kind": "organization"
+    },
+    "m kopa": {
+      "name": "M-KOPA",
+      "kind": "organization"
+    },
+    "kilpitek oy": {
+      "name": "KilpiTek Oy",
+      "kind": "organization"
+    },
+    "advent": {
+      "name": "Advent",
+      "kind": "organization"
+    },
+    "vermeg": {
+      "name": "Vermeg",
+      "kind": "organization"
+    },
+    "high": {
+      "name": "High",
+      "kind": "organization"
+    },
+    "veenocks tile manufacturing expansion": {
+      "name": "Veenocks Tile Manufacturing Expansion",
+      "kind": "organization"
+    },
+    "sandvik": {
+      "name": "Sandvik",
+      "kind": "organization"
+    },
+    "undisclosed company": {
+      "name": "Undisclosed company",
+      "kind": "organization"
+    },
+    "thoroughtec simulation": {
+      "name": "ThoroughTec Simulation",
+      "kind": "organization"
+    },
+    "stonepeak": {
+      "name": "Stonepeak",
+      "kind": "organization"
+    },
+    "castrol": {
+      "name": "Castrol",
+      "kind": "organization"
+    },
+    "publicis groupe": {
+      "name": "Publicis Groupe",
+      "kind": "organization"
+    },
+    "liveramp": {
+      "name": "LiveRamp",
+      "kind": "organization"
+    },
+    "golden goliath": {
+      "name": "Golden Goliath",
+      "kind": "organization"
+    },
+    "egyptian gold blocks": {
+      "name": "Egyptian Gold Blocks",
+      "kind": "organization"
+    },
+    "ghana publishing": {
+      "name": "Ghana Publishing",
+      "kind": "organization"
+    },
+    "security press amid vat debt": {
+      "name": "Security Press Amid VAT Debt",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1147,6 +1219,11 @@
           "title": "Ghanaian Agritech Vitara Bags $2M From EU-Backed AgriFI and Acumen to Digitise Shea Supply Chain",
           "publisher": "Launch Base Africa",
           "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE81X0xVMGZZamh5cHJDMXhMM0RENHRxX1hPZ2Mwd0NpVWk4THZGTHB6RlBXVDFnQXByeXVzTS16YlN6RmdiSXJVYUl6Rm1vbmRhY0otU2tUaWJUeEt5REdDZmRNZk8yaldXd2hyZV9lbzdyQQ?oc=5"
+        },
+        {
+          "title": "Ghanaian Agritech Vitara Bags $2M From EU-Backed AgriFI and Acumen to Digitise Shea Supply Chain",
+          "publisher": "Launch Base Africa",
+          "url": "https://launchbaseafrica.com/2026/10/26/vitara-agritech-funding/?utm_source=rss&utm_medium=rss&utm_campaign=vitara-agritech-funding"
         }
       ]
     },
@@ -1470,6 +1547,16 @@
           "title": "Madica secures $6m from Flourish Ventures to extend African pre-seed investment pilot",
           "publisher": "- Disrupt Africa",
           "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQbl9iY0NJTzBsQk1KSEc0dVhXOXdDWV9XYWc2U2Ryd3RwX3VTYlp0dHB5d2VVN2VpVGFWeDhDV3p0OEpqbkhMOGlGZmpvaVVtelZpMXo5OW9PLWZfN3FrWEczYkdHcWxEbFVscEtjTDRLWlR4dF9Hay1ZOW5aS0JISXJLTTZXMnl6VVl2WldkcmF1YjhHbzA3QkgzcDV2dDBlM1c0dDBkZ3BEektOcmZ2TFZieDhmYi1GUjZNNmd4MA?oc=5"
+        },
+        {
+          "title": "Madica Secures $6M from Flourish Ventures to Extend African Pre-Seed Investment Pilot",
+          "publisher": "Launch Base Africa",
+          "url": "https://launchbaseafrica.com/2026/10/27/madica-secures-6m-from-flourish-ventures-to-extend-african-pre-seed-investment-pilot/?utm_source=rss&utm_medium=rss&utm_campaign=madica-secures-6m-from-flourish-ventures-to-extend-african-pre-seed-investment-pilot"
+        },
+        {
+          "title": "Flourish Ventures backs Madica with $6 million",
+          "publisher": "Benjamindada",
+          "url": "https://thecondia.com/madica-flourish-ventures-pre-seed-pilot-extension/"
         }
       ]
     },
@@ -1512,6 +1599,11 @@
           "title": "BII Backs Okra Solar with $7m Debt Facility to Scale Mesh-Grids in Nigeria",
           "publisher": "Launch Base Africa",
           "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFBYQkFqbllFSFE2aE1qMVBUVzk2NTFyTWFBOFlhaUFLLTNoYXNMc25KS0VoVy04VlJnVF9uZWZSWXNKRjFCd25sSFNGczcwYVM0R01IcExzdF9iOEV1WERkQg?oc=5"
+        },
+        {
+          "title": "BII Backs Okra Solar with $7m Debt Facility to Scale Mesh-Grids in Nigeria",
+          "publisher": "Launch Base Africa",
+          "url": "https://launchbaseafrica.com/2026/10/29/okra-solar/?utm_source=rss&utm_medium=rss&utm_campaign=okra-solar"
         }
       ]
     },
@@ -1928,6 +2020,11 @@
           "title": "ABA Life Secures $40Mn from Admaius to Test Morocco’s Unicorn Ambitions in Sovereign Health AI",
           "publisher": "Launch Base Africa",
           "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPSUxvaThTQUYxdTVzZjdkZ216REZvUlByOXdrTFpibEdVVFdaVDkyMVFPNlplRzVCQlR1TFZXUllEaTVQNWNKdUw1TTAyT2RQaTBTajlzWVR0blBWR2pneV9BWEp0NVowWExNVWFLLUM4UnJRQTZudllXcE5ZT01PVGdsVzY2b0syZDBmQ3lQTlNfQnRnQ1I2UXN0SFp6cHZHLXA2YW9VMDVia25CRGYwa3FNLUxiSmtZSlFBY0pfQTFKMnJ5ZDI3R2VjWE1rdw?oc=5"
+        },
+        {
+          "title": "ABA Life Secures $40Mn from Admaius to Test Morocco’s Unicorn Ambitions in Sovereign Health AI",
+          "publisher": "Launch Base Africa",
+          "url": "https://launchbaseafrica.com/2026/11/02/aba-life-secures-40mn-from-admaius-to-test-moroccos-unicorn-ambitions-in-sovereign-health-ai/?utm_source=rss&utm_medium=rss&utm_campaign=aba-life-secures-40mn-from-admaius-to-test-moroccos-unicorn-ambitions-in-sovereign-health-ai"
         }
       ]
     },
@@ -2078,6 +2175,11 @@
           "title": "IFC invests $100m in Banque du Caire IPO to boost business financing in Egypt",
           "publisher": "Daily News Egypt",
           "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQNF9PTGxRWVprMlpUSW1yUkx3dV9ETHdBYjgtalFxR3N1M1BMVkNfcUVMSFFqblRoTjd0NkxhWE1oQjJ0MGZNQThfV09VWVlnLUNlYlZ5WHFIUTkzSW1JaUZEQmlCVHJVR3lmNFFoMmtBRGkzanZyMndmUGZmRlp6cVZoc3I5cFZVajRiNTNVSk04SnBMZ0V3Y25USkw0NDNiLTlINFlPWUFpUjE1UmFoTHhaVjhDUQ?oc=5"
+        },
+        {
+          "title": "EBRD, IFC invest US$ 200m in Banque du Caire IPO",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQYUJtUGJndm1CRFdLeFl6eU9iWjhYN2NBUGlsYTVPd0taQnVuU3dxS1JSclhHZEFhTF8wN2hyWE9CZXFra0FDRDhreGZ1X3ZYbXNYV29OcEE1U3NmRXBvdlNEZFdUX1ZqOGFJZ3pMTFZfZnNtaDV0U1ZaYUpDMUZnOTJqNTR6dVFPOEhxdmNOOXVBODhuOGZTZGtrZm0xUQ?oc=5"
         }
       ]
     },
@@ -2178,7 +2280,180 @@
           "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPcFB0R19pU1BQSGxQUUFUZHlzbEtlMFM2ckgwTjVVamJLNUVFODRXNFIyeldsMW51LVdzdGxoaDBzRURuSmhoSEFoR2cyQWtUOU5yem5HTnJxelhFZWNRVVFodWczbW1aZEo4R1NNRTNENmZyX0tPZzJHdnhkLXhLZHpDNmpVZW1wZnM1N29yc0J0THRjV0J3UFN3cWQwc3NCSGxTbUZCLXN5eHRxd0NMaklpd2I1eVk5YTEtOdIBwgFBVV95cUxOWU5TWGd5b3hJREw0X1pGcDYyVTVxcnF4SVRiR0kwSGlsY2RUUDRqdG1McEJHbnhpV3FiVHYySVJ2UDZtTXRkWVpkSXhLNjdvdE5DQnExYmU1V1VJQy1KUGJNbnVkQXRJY1hINDdWa01GQkFCU2pFY3VyNnQwc1R6VWQyMjZBNFdUNHRoV1pTSzZNTUo0Y19EbWxBNUtCOHhVVDRmSlF2VFkzb1hzaERqY2pfVDdsbjNQZmkzQU01bXpWdw?oc=5"
         }
       ]
+    },
+    "88f586e8292e7cb8f56d": {
+      "id": "88f586e8292e7cb8f56d",
+      "from": "afreximbank",
+      "to": "veenocks",
+      "type": "debt_financing",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "Afreximbank provides $81.9 million loan to Veenocks for Ogun tile factory expansion",
+          "publisher": "Nairametrics",
+          "url": "https://nairametrics.com/2026/11/03/afreximbank-provides-81-9-million-loan-to-veenocks-for-ogun-tile-factory-expansion/"
+        },
+        {
+          "title": "Afreximbank provides $81.9m loan for Veenocks’ tile plant expansion in Ogun",
+          "publisher": "Realnews Magazine",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPQlJCb19tNFlkYmpHRGxYVTdtckpheWJFMlJ2MXBSVTFWUmI3S0Y0SG53TVpQaEVEcmM3WXEyRzV3aHR0bWVxdktaRVZjUms0WTBzSjk0UklNRE52WjFVa0F3UnotV042RmEtd1lqbElIbUdrencxN2Jxa1A4R2pVQXVNbzN6cDZJUWNuY0pUdmc2bS1Sano0VlZac0VEdERScmVnOFhn?oc=5"
+        }
+      ]
+    },
+    "9d4966367097adee448c": {
+      "id": "9d4966367097adee448c",
+      "from": "m kopa",
+      "to": "kilpitek oy",
+      "type": "acquisition",
+      "first_seen": "2026-10-08",
+      "sources": [
+        {
+          "title": "M-KOPA’s KilpiTek Oy acquisition brings its device-locking advantage in-house",
+          "publisher": "Benjamindada",
+          "url": "https://thecondia.com/mkopa-acquires-kilipitek-oy-for-8m/"
+        }
+      ]
+    },
+    "57b8946758d64eeb8d94": {
+      "id": "57b8946758d64eeb8d94",
+      "from": "advent",
+      "to": "vermeg",
+      "type": "acquisition",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "US private equity firm Advent to acquire Vermeg in strategic deal",
+          "publisher": "African Manager",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOMXFFczllc0FkNm9qaU9VaGtHTEFKMTdEdmxoVVkzM0FxTnZ1dmYyWHgtNzdpRHptSGp2QWt5dldSWFRKV0V5UDNMT3NId2xWcFpndXBza3hVU01QSVdqLVpSbHh5NUEyb2Rod2Z5b3ZFU2k0cjhmSlBubWdwalNmREV2WnVIbGQ0dWZOZk5SbXRzdDN6LXZwQW9sZFQ?oc=5"
+        }
+      ]
+    },
+    "b6be40781291b5939f0a": {
+      "id": "b6be40781291b5939f0a",
+      "from": "bii",
+      "to": "high",
+      "type": "equity_funding",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "BII to Invest £2.25bn in Africa's High‑Risk Markets",
+          "publisher": "Briefs Finance",
+          "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxQYmR3bnU5UTJyLXhNQzVZTmh4d1lmdkhsRnUwSllxTXQ4MTR2UXVYQnNDaUJ3TWlsdWFYN2t2ZG1GVHpkNjRRR2N6cVFmVDEyWUZrV2ZZbElmckhrTlpIbk1MWk5OR3FKOEhTNmgyWllvSUxPRFJXX25WT1V0X05nOE8zLUZ3bXBFV0lHVlBoOEttZw?oc=5"
+        }
+      ]
+    },
+    "29e46d4430900cb4ad3f": {
+      "id": "29e46d4430900cb4ad3f",
+      "from": "afreximbank",
+      "to": "veenocks tile manufacturing expansion",
+      "type": "debt_financing",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "Afreximbank Approves $81.9 Million Loan For Veenocks Tile Manufacturing Expansion In Ogun State",
+          "publisher": "streamlinefeed.co.ke",
+          "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNbnpRZmdkLVg1dV9rUUFtXzZ4MXBKVE1qWFVLcU5HN2s3VWl4OVNhTG5LbFVXdGhrb2o5eER4TlBscGlVUmZ6Vy16UXRDSjB6cUJGWXV3S2syMXB3XzFJY2lLbjJ6VHJTb2E5MzdxaFEybllUZ0g1SnVWeWNsc0VCcTZiREJFS3lKNHl4T3JFeWVsUzVkMHdlVFlqeWotWVlBakhfUnRnU0lJTjJia0hj?oc=5"
+        }
+      ]
+    },
+    "ea584d0e5ad8df3f8598": {
+      "id": "ea584d0e5ad8df3f8598",
+      "from": "sandvik",
+      "to": "undisclosed company",
+      "type": "acquisition",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "Sandvik completes acquisition of South African company",
+          "publisher": "marketscreener.com",
+          "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNbFN2Z3NVcW81MElIS0lSaU5KSVpLTGhxUXJ5OW5EVXF4ZXRjTW9CZ3RhYXdDMC0wV01xblpRbHROLWVLRzdscmhldFpPWnUxUUwwNS1XbWNnbmpVMnVra19RVzRZNXpwWUtqdlZoN09keUVnb1ZNMTNheDU4YllzNjMwcVpuMmQ1V3hTRzUyb2tIbHFwRG5XVFhIVC1yd0duR0taY1ZCQ1VBRVE?oc=5"
+        }
+      ]
+    },
+    "9e47955437be1723dc89": {
+      "id": "9e47955437be1723dc89",
+      "from": "sandvik",
+      "to": "thoroughtec simulation",
+      "type": "acquisition",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "Sandvik Finalizes Purchase of South Africa's ThoroughTec Simulation",
+          "publisher": "marketscreener.com",
+          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxOM1FpN001MUw0cEk0REJKdEpCemtBUGQxbHhvdGQ4MHhOYnhQRXc0TGE4UGVIV1FZbGM1dU1zVTRNeHBKNkswYzFGb0lXWnFpOEtNYlBGNHFtbVhQbW4zdlBFZ2xMYkFrc0prTnlfZTNEenU0b2pmcGJvdnVlWEVWNjFPNFFfR3JkMm1SZU1uSVM1MEZ1VVQtc3FTbVRvQkwtSnVoeE1OOWNHenRjRXFXMWVhdUJsMEdVLU9kcw?oc=5"
+        }
+      ]
+    },
+    "55dca2fe5c7932cfd47b": {
+      "id": "55dca2fe5c7932cfd47b",
+      "from": "stonepeak",
+      "to": "castrol",
+      "type": "acquisition",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Stonepeak completes acquisition of 65% stake in Castrol from BP By Investing.com",
+          "publisher": "Investing.com South Africa",
+          "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNLVFPNzNSZGlxNFAyNVBTYUs5LTVVU2xCMFhuMklMbWduZ3Fxc2Jsbk9pZkVHdF91NWdXSlNhZDVXUnI0SGdkSVBlRHFNX0FEc1dMdVk1ZW5Xa0tCUEJsbERTR2tWclFEYnJHQmt6Ti1qYVdveWRnd1NLc1V4QWRaSy1lZHBPSHlSRFhOUkduRkxLZWkwbW1kQ2cxVklPaURiVFRMdkRZVWYzbWpkbDdyMHVtRURUMjJfc0pnUnVXSGs?oc=5"
+        }
+      ]
+    },
+    "96d0180f896ba99cb4f6": {
+      "id": "96d0180f896ba99cb4f6",
+      "from": "publicis groupe",
+      "to": "liveramp",
+      "type": "acquisition",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Publicis Groupe completes LiveRamp acquisition By Investing.com",
+          "publisher": "Investing.com South Africa",
+          "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOS1MwSG5TcUVSa09INzBwVGpNSWtYNk5mdUhoT1hRQmFvSVk3NWc5b0dPaEphbDNEWUxCWG1JQlhSM2E2Nm81dllTdzFacWtFRlU1cF9iZXlWMm9JNDFab3dDVlhNZDVpamlFaGlKYjFYRjUydENtSFhoOF8yQTI0TzBwUUQzR1duNHBZZlIxeWNkcUxLZ3MyZGdEcHh1b0Z0bzlqUU54Y3Jvck0?oc=5"
+        }
+      ]
+    },
+    "257ccbbf44d16198b2e7": {
+      "id": "257ccbbf44d16198b2e7",
+      "from": "golden goliath",
+      "to": "egyptian gold blocks",
+      "type": "acquisition",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Golden Goliath Acquires 40% Interest in Egyptian Gold Blocks",
+          "publisher": "TipRanks",
+          "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQNEluQlAzN25hRXNDRjdPNy1KSzBnOVJkeGgwOUZHSDRpYjdjTl9XX1p4Ull3eTZaamFFR1VJeUxGRm04NkowOG8zcHRRMC03ekRTcmlBdlk4bUdUbzRxNWIteWQ3WENDSHpOejlaZkJncTUyeGFEY0ljQUN6eE4wQjVFUk53blBQWnZjSkNObHJDVkI2Q2hEdEtFWDJPdjczU200cGhvVGhRUDFOMnpPRQ?oc=5"
+        }
+      ]
+    },
+    "dd6cd2ec13aab82551aa": {
+      "id": "dd6cd2ec13aab82551aa",
+      "from": "ghana publishing",
+      "to": "security press amid vat debt",
+      "type": "debt_financing",
+      "first_seen": "2026-11-02",
+      "sources": [
+        {
+          "title": "Ghana Publishing Invests €1.5m in Security Press Amid VAT Debt",
+          "publisher": "News Ghana",
+          "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxNVjNyZEstLXU3M2NBTGxfODkxNVdWZEFoUi12QTBxUUFjenNITnVpeTNVVUVTTWJnYnZOdlExQ3FwZDZqam1ka2lJYzJNNk1WYldha3hfNzdmNFBrMlMzQThXcGlxQnRvY0p6cm5YaWRGSHhYck85UzFNcTN4QVlsQS1UZ2R0NUFvQUtrRWNUZldKQQ?oc=5"
+        }
+      ]
+    },
+    "eee6d928ce1c022bd498": {
+      "id": "eee6d928ce1c022bd498",
+      "from": "sapetro",
+      "to": "totalenergies",
+      "type": "acquisition",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "Nigerian billionaire TY Danjuma's SAPETRO buys 40% stake in TotalEnergies offshore oil block",
+          "publisher": "Billionaires.Africa",
+          "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxPSXM0eGdXWGwydEVUUEEyQk95b251c1dVNndXb0Zmb1c1bFY0ZzdCWF9jTjdST2k2QVRhUlZacHVINTBxQVNkU0VtcFFmekFMX2RMM1NkVXNxenN4bG4wWmV2OWNDX1laNjB3Szh3VEZhcllnOXF5RzhtbVQwUmpvM195SjVvdU8wRDlxazVPMTJJNzZIMlh3cnRKMENubHhoX0g4cV9aN0xXMUk0Qno5eC1LcXBDSUxvay1PWDRqbGhSZE5mcVd1bmlVYzJyQlU?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-02T22:52:35.720668+00:00"
+  "updated_at": "2026-11-03T12:27:54.120085+00:00"
 }

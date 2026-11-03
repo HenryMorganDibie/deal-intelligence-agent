@@ -368,3 +368,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-02", "market": "africa", "status": "no_annual_data_returned", "ticker": "ECOC.BV"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-02", "market": "africa", "status": "no_annual_data_returned", "ticker": "ECS.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-02", "market": "africa", "status": "no_annual_data_returned", "ticker": "EDBM.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "status": "no_annual_data_returned", "ticker": "EDFM.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "status": "no_annual_data_returned", "ticker": "EEII.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EEL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "status": "no_annual_data_returned", "ticker": "EFG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EFIC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EFID.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EFIH.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-03", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Eaagads-Limited-Audited-financial-statements-for-the-period-ended-31-March-2026.pdf", "status": "collected", "ticker": "EGAD.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EGAL.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EGAS.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EGBE.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "status": "no_annual_data_returned", "ticker": "EGCH.CA"}
