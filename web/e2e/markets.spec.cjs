@@ -378,9 +378,9 @@ test("admin page lists accounts and who is using the app", async ({ page }) => {
   await page.goto("/admin");
   await page.getByPlaceholder("Admin key").fill("owner-key");
   await page.getByRole("button", { name: "Show" }).click();
-  await expect(page.getByRole("heading", { name: "Accounts" })).toBeVisible();
-  expect(accountsBody).toEqual({ key: "owner-key", days: 30 });
+  await expect(page.getByRole("heading", { name: "Accounts", exact: true })).toBeVisible();
   await expect(page.getByText("@ada · ada@example.com")).toBeVisible();
+  expect(accountsBody).toEqual({ key: "owner-key", days: 30 });
   await expect(page.getByText("Google · 1 watchlist email")).toBeVisible();
   await page.getByLabel("Filter accounts").selectOption("never");
   await expect(page.getByText("new@example.com")).toBeVisible();
