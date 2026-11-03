@@ -19,11 +19,20 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   group: historical-backfill
   cancel-in-progress: false
+
+env:
+  SUPABASE_URL: https://ygvpormskihofvgntldo.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_oEqYxYLm60MdGk5JA-QfgQ_6z7uSozn
+  DEAL_INTEL_APP_URL: https://deal-intelligence.app
+  DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
+  GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+  OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+  OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+  SENDBYTE_API_KEY: ${{ secrets.SENDBYTE_API_KEY }}
 
 jobs:
   years:
@@ -52,7 +61,15 @@ jobs:
       max-parallel: 2
       matrix: ${{ fromJSON(needs.years.outputs.matrix) }}
     steps:
-      - name: Backfill ${{ matrix.year }}, one month per request
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install the API's dependencies
+        run: pip install --disable-pip-version-check -r requirements.txt
+      - name: Backfill ${{ matrix.year }}, one month per call
         env:
           YEAR: ${{ matrix.year }}
         run: |
@@ -61,19 +78,9 @@ jobs:
           for m in 01 02 03 04 05 06 07 08 09 10 11 12; do
             month="${YEAR}-${m}"
             if [[ "$month" > "$(date -u +%Y-%m)" ]]; then break; fi
-            # OIDC tokens are short-lived, so each month gets a fresh one.
-            token="$(curl --fail --silent --show-error --max-time 15 \
-              -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api" | jq -er '.value')" || { failed+=("$month"); continue; }
-            echo "::add-mask::${token}"
             echo "Backfilling ${month}"
-            if ! curl --fail-with-body --silent --show-error --max-time 290 \
-                 --retry 2 --retry-delay 10 --retry-all-errors \
-                 -H "Authorization: Bearer ${token}" -H "Accept: application/json" \
-                 "https://deal-intelligence-api.vercel.app/api/cron/ingest?month=${month}" \
-                 | jq -c '{mode, headlines, deals_detected, events_detected}'; then
-              failed+=("$month")
-            fi
+            python scripts/run_cron.py "/api/cron/ingest?month=${month}" > out.txt 2>&1 || failed+=("$month")
+            grep -E "HTTP|::error" out.txt || true
           done
           if [ "${#failed[@]}" -gt 0 ]; then
             echo "::warning::Months to re-run for ${YEAR}: ${failed[*]}"

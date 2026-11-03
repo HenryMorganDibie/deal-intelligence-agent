@@ -2,10 +2,8 @@ name: Live deal ingestion
 
 on:
   schedule:
-    # Deals are refreshed twice a day by Vercel cron (vercel.json), timed to the African business day:
-    #   04:11 UTC, before the working day opens (05:11 Lagos, 06:11 Johannesburg, 07:11 Nairobi)
-    #   15:11 UTC, after the exchanges close (17:11 Johannesburg, 16:11 Lagos, 18:11 Nairobi)
-    # Vercel's free plan fires each within the hour. This run is the nightly maintenance pass:
+    # Deals are refreshed twice a day by scheduled-api-jobs.yml (04:11 and 15:11 UTC). This run is the nightly
+    # maintenance pass, run on GitHub's runner rather than as a Vercel function:
     # it re-scans the rolling 7 days as a backstop, records country risk and refreshes Corporate
     # of the Week. GitHub often starts scheduled runs hours late, so nothing time-critical rests on it.
     - cron: "17 18 * * *"
@@ -13,11 +11,20 @@ on:
 
 permissions:
   contents: write
-  id-token: write
 
 concurrency:
   group: live-deal-ingestion
   cancel-in-progress: false
+
+env:
+  SUPABASE_URL: https://ygvpormskihofvgntldo.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_oEqYxYLm60MdGk5JA-QfgQ_6z7uSozn
+  DEAL_INTEL_APP_URL: https://deal-intelligence.app
+  DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
+  GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+  OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+  OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+  SENDBYTE_API_KEY: ${{ secrets.SENDBYTE_API_KEY }}
 
 jobs:
   ingest:
@@ -28,67 +35,30 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install the API's dependencies
+        run: pip install --disable-pip-version-check -r requirements.txt
 
-      - name: Request short-lived GitHub Actions OIDC token
-        id: oidc
-        run: |
-          set -euo pipefail
-          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
-            echo "::error::GitHub Actions OIDC token endpoint is unavailable. Check the workflow id-token: write permission."
-            exit 1
-          fi
-          response="$(curl --fail-with-body --silent --show-error --max-time 15 \
-            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api")"
-          token="$(printf '%s' "$response" | jq -er '.value')"
-          echo "::add-mask::${token}"
-          echo "token=$token" >> "$GITHUB_OUTPUT"
+      - name: Collect recent deals, deliver watchlist alerts, and record country risk for all 54 markets
+        run: python scripts/run_cron.py /api/cron/ingest /api/cron/country-snapshot
 
-      - name: Collect recent deal announcements and deliver watchlist webhooks
-        env:
-          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
-        run: |
-          set -euo pipefail
-          curl --fail-with-body --silent --show-error \
-            --max-time 240 \
-            --retry 2 --retry-delay 5 --retry-all-errors \
-            -H "Authorization: Bearer ${OIDC_TOKEN}" \
-            -H "Accept: application/json" \
-            "https://deal-intelligence-api.vercel.app/api/cron/ingest"
-
-      - name: Capture auditable country risk snapshots for all 54 markets
-        env:
-          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
-        run: |
-          set -euo pipefail
-          curl --fail-with-body --silent --show-error \
-            --max-time 120 \
-            --retry 2 --retry-delay 5 --retry-all-errors \
-            -H "Authorization: Bearer ${OIDC_TOKEN}" \
-            -H "Accept: application/json" \
-            "https://deal-intelligence-api.vercel.app/api/cron/country-snapshot"
-
-      # A manual run also backfills each month of 2026. The API caps each request
-      # to one month so timeouts and feed failures can be retried without losing progress.
+      # A manual run also backfills each month of 2026, one month per call so a failure costs one month.
       - name: Backfill 2026 deal and corporate-event history
         if: github.event_name == 'workflow_dispatch'
-        env:
-          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
           set -euo pipefail
           month="2026-01-01"
           current_month="$(date -u +%Y-%m-01)"
+          paths=()
           while [[ "$month" < "$current_month" || "$month" == "$current_month" ]]; do
-            month_key="$(date -u -d "$month" +%Y-%m)"
-            echo "Backfilling ${month_key}"
-            curl --fail-with-body --silent --show-error \
-              --max-time 240 \
-              --retry 2 --retry-delay 5 --retry-all-errors \
-              -H "Authorization: Bearer ${OIDC_TOKEN}" \
-              -H "Accept: application/json" \
-              "https://deal-intelligence-api.vercel.app/api/cron/ingest?month=${month_key}"
+            paths+=("/api/cron/ingest?month=$(date -u -d "$month" +%Y-%m)")
             month="$(date -u -d "$month + 1 month" +%Y-%m-01)"
           done
+          python scripts/run_cron.py "${paths[@]}"
 
       - name: Refresh Corporate of the Week from the updated database
         run: |

@@ -36,22 +36,6 @@
   ],
   "crons": [
     {
-      "path": "/api/cron/label",
-      "schedule": "17 6 * * *"
-    },
-    {
-      "path": "/api/cron/ingest",
-      "schedule": "11 4 * * *"
-    },
-    {
-      "path": "/api/cron/ingest",
-      "schedule": "11 15 * * *"
-    },
-    {
-      "path": "/api/cron/showcase",
-      "schedule": "53 6 * * *"
-    },
-    {
       "path": "/api/cron/market-snapshot",
       "schedule": "23 17 * * 1-5"
     }

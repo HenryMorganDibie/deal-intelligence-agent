@@ -1,7 +1,9 @@
 name: Market snapshot
 
 # Records the day's quotes for every exchange, the benchmark indices and dollar rates. The Vercel cron runs it
-# every weekday after the African closes; this workflow runs it on demand (a first snapshot, or a missed day).
+# every weekday after the African closes, from Paris, because some exchange sites (Tunis) answer only European
+# addresses; this workflow runs it on demand (a first snapshot, or a missed day). The instruments refresh runs
+# here on GitHub's runner.
 on:
   workflow_dispatch:
 
@@ -13,12 +15,22 @@ concurrency:
   group: market-snapshot
   cancel-in-progress: false
 
+env:
+  SUPABASE_URL: https://ygvpormskihofvgntldo.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_oEqYxYLm60MdGk5JA-QfgQ_6z7uSozn
+  DEAL_INTEL_APP_URL: https://deal-intelligence.app
+  DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
+  GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+  OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+  OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+  SENDBYTE_API_KEY: ${{ secrets.SENDBYTE_API_KEY }}
+
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
-      - name: Record the snapshot
+      - name: Record the snapshot (on Vercel, from Paris)
         run: |
           set -euo pipefail
           oidc="$(curl --fail-with-body --silent --show-error --max-time 15 \
@@ -28,9 +40,13 @@ jobs:
           curl --fail-with-body --silent --show-error --max-time 290 \
             -H "Authorization: Bearer ${oidc}" -H "Accept: application/json" \
             "https://deal-intelligence-api.vercel.app/api/cron/market-snapshot"
-          echo
-          # ETFs, Treasury bills, bonds, policy and deposit rates, unlisted funds: a separate request, so neither
-          # can push the other past the function's time limit. The response lists any source that failed.
-          curl --fail-with-body --silent --show-error --max-time 290 \
-            -H "Authorization: Bearer ${oidc}" -H "Accept: application/json" \
-            "https://deal-intelligence-api.vercel.app/api/cron/market-instruments"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install the API's dependencies
+        run: pip install --disable-pip-version-check -r requirements.txt
+      - name: Refresh ETFs, Treasury bills, bonds, policy and deposit rates, unlisted funds
+        run: python scripts/run_cron.py /api/cron/market-instruments
