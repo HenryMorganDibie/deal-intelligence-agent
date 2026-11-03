@@ -1,50 +1,46 @@
-"""Report outlet feeds that fail or return no items, so a dead source is noticed within a week.
+"""Check every outlet feed and replace the ones that died.
 
-    python scripts/check_feeds.py          # exits 1 when any feed fails outright
+    python scripts/check_feeds.py          # report only
+    python scripts/check_feeds.py --heal   # also save replacements to src/data/feed_overrides.json
+
+A replacement always comes from the same outlet (its advertised feed, a standard feed address on its site, or
+Google News limited to its site), and is dropped as soon as the preferred feed works again. Exits 1 only when an
+outlet has no working feed at all.
 """
 from __future__ import annotations
 
+import argparse
 import asyncio
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import httpx  # noqa: E402
-
-from src.engines.market_feed import parse_feed  # noqa: E402
-from src.tools.africa_tool import AFRICAN_NEWS_FEEDS  # noqa: E402
-
-HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) deal-intelligence-agent/1.0"}
+from src.engines import feed_healing  # noqa: E402
 
 
-async def check(client: httpx.AsyncClient, sem: asyncio.Semaphore, name: str, url: str) -> tuple[str, int, str]:
-    async with sem:
-        for attempt in range(2):
-            try:
-                response = await client.get(url)
-                response.raise_for_status()
-                return name, len(parse_feed(response.text)), ""
-            except Exception as exc:  # noqa: BLE001 - every failure is reported, none is fatal
-                error = f"{type(exc).__name__} {getattr(getattr(exc, 'response', None), 'status_code', '')}".strip()
-                await asyncio.sleep(3 * (attempt + 1))
-        return name, -1, error
-
-
-async def main() -> int:
-    sem = asyncio.Semaphore(6)
-    async with httpx.AsyncClient(timeout=25, follow_redirects=True, headers=HEADERS) as client:
-        results = await asyncio.gather(*(check(client, sem, n, u) for n, u in AFRICAN_NEWS_FEEDS.items()))
-    failed = [r for r in results if r[1] < 0]
-    empty = [r for r in results if r[1] == 0]
-    for name, _, error in failed:
-        print(f"::error::{name} failed: {error} ({AFRICAN_NEWS_FEEDS[name]})")
-    for name, _, _ in empty:
-        print(f"::warning::{name} returned no items in its window ({AFRICAN_NEWS_FEEDS[name]})")
-    print(f"{len(results) - len(failed) - len(empty)}/{len(results)} feeds returned items; "
-          f"{len(empty)} empty, {len(failed)} failed.")
-    return 1 if failed else 0
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--heal", action="store_true", help="save replacements for dead feeds")
+    args = parser.parse_args()
+    before = feed_healing.load_overrides()
+    overrides, changes, unresolved, dormant = asyncio.run(feed_healing.heal_all(overrides=before))
+    for line in changes:
+        print(f"::notice::{line}")
+    for line in dormant:
+        print(f"::warning::{line}")
+    for line in unresolved:
+        print(f"::error::{line}")
+    for name, entry in sorted(overrides.items()):
+        print(f"{name}: reading {entry['url']} since {entry.get('since', '?')} ({entry.get('reason', '')})")
+    if args.heal and overrides != before:
+        feed_healing.save_overrides(overrides)
+        print(f"Saved {len(overrides)} replacement(s).")
+    from src.tools.africa_tool import AFRICAN_NEWS_FEEDS
+    print(f"{len(AFRICAN_NEWS_FEEDS) - len(unresolved)}/{len(AFRICAN_NEWS_FEEDS)} outlets have a working feed; "
+          f"{len(overrides)} on a replacement, {len(dormant)} dormant.")
+    return 1 if unresolved else 0
 
 
 if __name__ == "__main__":
-    sys.exit(asyncio.run(main()))
+    sys.exit(main())

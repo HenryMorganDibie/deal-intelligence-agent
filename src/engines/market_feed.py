@@ -151,12 +151,40 @@ async def _fetch(client: httpx.AsyncClient, sem: asyncio.Semaphore, url: str, la
             failures.append(label)
             log.warning("feed %s unavailable: %s", label, e)
             return []
-    items = parse_feed(r.text, default_publisher=label if "news.google" not in url else "")
+    return _label_items(parse_feed(r.text, default_publisher=label if "news.google" not in url else ""),
+                        label, country, africa_source)
+
+
+def _label_items(items: list[dict], label: str, country: Optional[Country], africa_source: bool) -> list[dict]:
     for it in items:
+        if not it.get("publisher") and label:
+            it["publisher"] = label
         it["country_hint"] = country.iso2 if country else None
         it["africa_source"] = africa_source or is_africa_outlet(it.get("publisher", ""))
         it["feed"] = label
     return items
+
+
+async def _replace_failed_outlets(client: httpx.AsyncClient, failed: dict[str, str], africa: dict[str, bool],
+                                  limit: int = 12) -> list[list[dict]]:
+    """Read each failed outlet from a replacement found on the spot, so no headlines are lost while a feed is down.
+    The daily health job saves lasting replacements; this only covers the gap."""
+    from src.engines.feed_healing import find_replacement
+    sem = asyncio.Semaphore(6)
+
+    async def one(name: str, url: str) -> list[dict]:
+        async with sem:
+            try:
+                new_url, items = await find_replacement(client, name, url, exclude=(url,))
+            except Exception as exc:  # noqa: BLE001 - a failed replacement leaves the outlet out of this run
+                log.warning("replacement search for %s failed: %s", name, type(exc).__name__)
+                return []
+        if new_url:
+            log.warning("feed %s replaced for this run by %s (%d items)", name, new_url, len(items))
+        return _label_items(items, name, None, africa.get(name, False))
+
+    chosen = list(failed.items())[:limit]
+    return await asyncio.gather(*(one(n, u) for n, u in chosen)) if chosen else []
 
 
 # Outlets that publish only African business and deal news: their headlines need no country named.
@@ -171,10 +199,10 @@ def is_africa_outlet(publisher: str) -> bool:
 async def collect(window: str = "when:2d", include_feeds: bool = True, include_countries: bool = True,
                   concurrency: int = 12, timeout: float = 20) -> list[dict]:
     """Headlines from every source for the window, de-duplicated by title."""
-    from src.tools.africa_tool import AFRICAN_NEWS_FEEDS
+    from src.engines.feed_healing import effective_feeds, is_site_news
+    outlets = effective_feeds() if include_feeds else {}
     jobs: list[tuple[str, str, Optional[Country], bool]] = []
-    if include_feeds:
-        jobs += [(url, name, None, is_africa_outlet(name)) for name, url in AFRICAN_NEWS_FEEDS.items()]
+    jobs += [(url, name, None, is_africa_outlet(name)) for name, url in outlets.items()]
     jobs += [(u, label, c, False) for u, label, c in pan_african_queries(window)]
     if include_countries:
         jobs += [(u, label, c, False) for u, label, c in country_queries(window)]
@@ -183,6 +211,14 @@ async def collect(window: str = "when:2d", include_feeds: bool = True, include_c
     failures: list[str] = []
     async with httpx.AsyncClient(timeout=timeout, follow_redirects=True, headers=headers) as client:
         batches = await asyncio.gather(*(_fetch(client, sem, u, label, c, a, failures) for u, label, c, a in jobs))
+        # An outlet whose feed failed, or a direct feed that came back empty, is read from a replacement instead.
+        dead = {label: u for (u, label, _, _), batch in zip(jobs[:len(outlets)], batches)
+                if label in outlets and (label in failures or (not batch and not is_site_news(u)))}
+        if dead:
+            replaced = await _replace_failed_outlets(client, dead, {n: is_africa_outlet(n) for n in dead})
+            batches = list(batches) + list(replaced)
+            recovered = {n for n, b in zip(dead, replaced) if b}
+            failures = [f for f in failures if f not in recovered]
     if jobs and len(failures) == len(jobs):
         raise RuntimeError(f"All {len(jobs)} market-news feeds failed; refusing to report a successful empty refresh.")
     if failures:

@@ -1,25 +1,52 @@
 name: News feed health
 
-# Weekly check that every outlet feed still answers with headlines; a failed run names the feeds to replace.
+# Daily: checks every outlet feed and, when one has died, saves a replacement from the same outlet (its advertised
+# feed, a standard feed address on its site, or Google News limited to its site) to src/data/feed_overrides.json.
+# Ingestion also switches on the spot, so a dead feed never costs headlines; this makes the switch lasting, and
+# drops it when the original feed works again. A failed run means an outlet has no working feed at all.
 on:
   schedule:
-    - cron: "29 5 * * 1"
+    - cron: "29 3 * * *"            # before the 04:11 ingestion
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: feed-health
+  cancel-in-progress: false
 
 jobs:
-  check:
+  heal:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: pip
           cache-dependency-path: requirements.txt
       - run: pip install --disable-pip-version-check -r requirements.txt
-      - name: Check every outlet feed
-        run: python scripts/check_feeds.py
+      - name: Check feeds and save replacements
+        id: heal
+        run: python scripts/check_feeds.py --heal
+        continue-on-error: true
+      - name: Commit replacements
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/feed_overrides.json
+          if git diff --cached --quiet; then
+            echo "No feed changes."
+          else
+            git commit -m "Update news feed replacements"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+      - name: Report outlets with no working feed
+        if: steps.heal.outcome == 'failure'
+        run: exit 1

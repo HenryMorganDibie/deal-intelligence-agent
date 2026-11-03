@@ -57,10 +57,10 @@ GSE_ANNOUNCEMENTS  = "https://gse.com.gh/listed-companies/company-news/"
 
 # Some outlets block automated readers or no longer publish a feed. For those, Google News limited to the outlet's
 # own site gives the same headlines (each links to the outlet's article) for the last two days.
+# If any feed here dies, src/engines/feed_healing.py finds the outlet's replacement automatically.
 def _site_news(site: str, country: str, lang: str = "en", extra: str = "") -> str:
-    from urllib.parse import quote
-    query = quote(f"site:{site} {extra} when:2d".replace("  ", " "))
-    return f"https://news.google.com/rss/search?q={query}&hl={lang}-{country}&gl={country}&ceid={country}:{lang}"
+    from src.engines.feed_healing import site_news_url
+    return site_news_url(site, country, lang, extra)
 
 
 # ─── African Financial News RSS Feeds ────────────────────────────────────────
@@ -769,7 +769,7 @@ class AfricaTool:
         # African news RSS feeds
         rss_tasks = [
             self._fetch_rss(url, name)
-            for name, url in AFRICAN_NEWS_FEEDS.items()
+            for name, url in __import__("src.engines.feed_healing", fromlist=["x"]).effective_feeds().items()
         ]
 
         # Geo-scoped Google News queries
