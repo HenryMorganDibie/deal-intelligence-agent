@@ -755,6 +755,38 @@
     "security press amid vat debt": {
       "name": "Security Press Amid VAT Debt",
       "kind": "organization"
+    },
+    "stronger": {
+      "name": "Stronger",
+      "kind": "organization"
+    },
+    "oil": {
+      "name": "Oil",
+      "kind": "organization"
+    },
+    "xrg": {
+      "name": "XRG",
+      "kind": "organization"
+    },
+    "australian lng project": {
+      "name": "Australian LNG Project",
+      "kind": "organization"
+    },
+    "airtel malawi": {
+      "name": "Airtel Malawi",
+      "kind": "organization"
+    },
+    "mwk": {
+      "name": "MWK",
+      "kind": "organization"
+    },
+    "pramac": {
+      "name": "Pramac",
+      "kind": "organization"
+    },
+    "new way power": {
+      "name": "New Way Power",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -2180,6 +2212,11 @@
           "title": "EBRD, IFC invest US$ 200m in Banque du Caire IPO",
           "publisher": "Africa Business Communities",
           "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQYUJtUGJndm1CRFdLeFl6eU9iWjhYN2NBUGlsYTVPd0taQnVuU3dxS1JSclhHZEFhTF8wN2hyWE9CZXFra0FDRDhreGZ1X3ZYbXNYV29OcEE1U3NmRXBvdlNEZFdUX1ZqOGFJZ3pMTFZfZnNtaDV0U1ZaYUpDMUZnOTJqNTR6dVFPOEhxdmNOOXVBODhuOGZTZGtrZm0xUQ?oc=5"
+        },
+        {
+          "title": "IFC Invests USD 100m in Banque du Caire IPO to Expand Business Lending in Egypt",
+          "publisher": "Devdiscourse",
+          "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxQckxjRW5jTHg3c012WnJ5S1JYdUZVVDBGd0ppOFdIZmZrWWZJTS03dW1UV0tYVnhGVVhBb1Z1WU80dUVRTjA2MU5TdW9zVU53M0d6QVQyZGhsVWstODY3bjNhV1UwdVFnaDV6R0cwU3Z1dERpQVNMVU82emw2SnVmeXhyXzFudVE5RG9CQ29yXzBtb2hlRzBCQmJmNHE2ZWFyLU5IdndlR2hXekIzV01TcTYwaVE4aGUwZUtpbF9aaGtEQnR0NjBLRk9hUHBOZlNLZmVn0gHTAUFVX3lxTFByTGNFbmNMeDdzTXZacnlLUlh1RlVUMEZ3Smk4V0hmZmtZZklNLTd1bVRXS1hWeEZVWEFvVnVZTzR1RVFOMDYxTlN1b3NVTnczR3pBVDJkaGxVay04NjduM2FXVTB1UWdoNXpHRzBTdnV0RGlBU0xVTzZ6bDZKdWZ5eHJfMW51UTlEb0JDb3JfMG1vaGVHMEJCYmY0cTZlYXItTkh2d2VHaFd6QjNXTVNxNjBpUThoZTBlS2lsX1poa0RCdHQ2MEtGT2FQcE5mU0tmZWc?oc=5"
         }
       ]
     },
@@ -2297,6 +2334,11 @@
           "title": "Afreximbank provides $81.9m loan for Veenocks’ tile plant expansion in Ogun",
           "publisher": "Realnews Magazine",
           "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPQlJCb19tNFlkYmpHRGxYVTdtckpheWJFMlJ2MXBSVTFWUmI3S0Y0SG53TVpQaEVEcmM3WXEyRzV3aHR0bWVxdktaRVZjUms0WTBzSjk0UklNRE52WjFVa0F3UnotV042RmEtd1lqbElIbUdrencxN2Jxa1A4R2pVQXVNbzN6cDZJUWNuY0pUdmc2bS1Sano0VlZac0VEdERScmVnOFhn?oc=5"
+        },
+        {
+          "title": "Afreximbank provides $81.9 million loan to Veenocks for Ogun tile factory expansion",
+          "publisher": "Nairametrics",
+          "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQNUFPQ18teTFRWG9GZlNjZkFaMnZWRVU2bTc5RjJKU0lXaXFpSlJKb2lMbTV2Rl9GY1dibUZNT3o4bDlWWG1OMmhkUGptOVMwdXFPa3Z3YWc2ZS1DYUQ3NGVJTXhuWTN0bGFGNFRobm45cWRiWXZza1ZhcnZQbG5ibllwcTVVdmVXZHNZSmtxWUZhSjFkUTRiaG56Y292OGs4WHh0Q1pPWTAyV1ZaREE0ZHZXYlVzREdtT1Fn?oc=5"
         }
       ]
     },
@@ -2352,6 +2394,11 @@
         {
           "title": "Afreximbank Approves $81.9 Million Loan For Veenocks Tile Manufacturing Expansion In Ogun State",
           "publisher": "streamlinefeed.co.ke",
+          "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNbnpRZmdkLVg1dV9rUUFtXzZ4MXBKVE1qWFVLcU5HN2s3VWl4OVNhTG5LbFVXdGhrb2o5eER4TlBscGlVUmZ6Vy16UXRDSjB6cUJGWXV3S2syMXB3XzFJY2lLbjJ6VHJTb2E5MzdxaFEybllUZ0g1SnVWeWNsc0VCcTZiREJFS3lKNHl4T3JFeWVsUzVkMHdlVFlqeWotWVlBakhfUnRnU0lJTjJia0hj?oc=5"
+        },
+        {
+          "title": "Afreximbank Approves $81.9 Million Loan For Veenocks Tile Manufacturing Expansion In Ogun State",
+          "publisher": "https://streamlinefeed.co.ke/",
           "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNbnpRZmdkLVg1dV9rUUFtXzZ4MXBKVE1qWFVLcU5HN2s3VWl4OVNhTG5LbFVXdGhrb2o5eER4TlBscGlVUmZ6Vy16UXRDSjB6cUJGWXV3S2syMXB3XzFJY2lLbjJ6VHJTb2E5MzdxaFEybllUZ0g1SnVWeWNsc0VCcTZiREJFS3lKNHl4T3JFeWVsUzVkMHdlVFlqeWotWVlBakhfUnRnU0lJTjJia0hj?oc=5"
         }
       ]
@@ -2453,7 +2500,63 @@
           "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxPSXM0eGdXWGwydEVUUEEyQk95b251c1dVNndXb0Zmb1c1bFY0ZzdCWF9jTjdST2k2QVRhUlZacHVINTBxQVNkU0VtcFFmekFMX2RMM1NkVXNxenN4bG4wWmV2OWNDX1laNjB3Szh3VEZhcllnOXF5RzhtbVQwUmpvM195SjVvdU8wRDlxazVPMTJJNzZIMlh3cnRKMENubHhoX0g4cV9aN0xXMUk0Qno5eC1LcXBDSUxvay1PWDRqbGhSZE5mcVd1bmlVYzJyQlU?oc=5"
         }
       ]
+    },
+    "03e8847073fb096eb31a": {
+      "id": "03e8847073fb096eb31a",
+      "from": "stronger",
+      "to": "oil",
+      "type": "equity_funding",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "Nigeria, France Seek Stronger Investment in Oil, Gas Sector",
+          "publisher": "MSME Africa",
+          "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNcnpIS3hVSy1sUGxTYWM4LXlKUmdvTmhvT18yMGVmV2cxOGFxU2xrOWp1WWUzVV8yQUZGdVI2dlpicU1yek1fVURfZWhnbDRFSHVaUHdLd0lKRFFGRV81OXR1OWUyd282Q2hVN29QSGRmbWhkc2pTVWRlZ2piMGlXM0EyeUpiVGstekxIc0QwN1o?oc=5"
+        }
+      ]
+    },
+    "e5dcf73f66a23ce95427": {
+      "id": "e5dcf73f66a23ce95427",
+      "from": "xrg",
+      "to": "australian lng project",
+      "type": "acquisition",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "ADNOC’s XRG to Buy $1.45 Bn Stake in Australian LNG Project from Shell",
+          "publisher": "Egypt Oil & Gas",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOcEhSVnZWS1VodHpLaFVkeWU5akJhUllDVEF1cWVrdmNqZy1zRzJSV05yQ0dzdVRIT1NJMWNYNWtQT3dsVzZyUHVONThsMjNhOXRGWEFhVjE5SWlrV0JEOVN2dm5YQkZubllNOWhEdkwtTDg0dVZqOVkwSUEzSHhoWjNmV3h1STExRXhlR2gzQnU1ZTAxZTNydnFvci0?oc=5"
+        }
+      ]
+    },
+    "82b29da6715e20116430": {
+      "id": "82b29da6715e20116430",
+      "from": "airtel malawi",
+      "to": "mwk",
+      "type": "equity_funding",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "Airtel Malawi invests MWK 23 mln in digital learning and cybersecurity education",
+          "publisher": "Telecompaper",
+          "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxPd1ZSVktoODBQcWJPek4xQkVGa1RaNFQ5elJYUUlvRklkczJGNGNDbkhnVC1pZ3dCTmxVaWkwc3RBZUl3c3ZFei1tT2pQODNyeE1IWXRkYUN6T2o0Yl9maEdLTUdMb3lOX0lvZ1Nkdkotckc5aGp0ZFFxNWZFaWhCR09WZDdGempOUlduZGtDaGpwaXZCUkV3TGQ3TzM4NnE3UzRrbmtjYjFTcEhLNHRsRjRRY0pDckQzQ2lLNmdzdGE?oc=5"
+        }
+      ]
+    },
+    "f34d4d214ad140ab5059": {
+      "id": "f34d4d214ad140ab5059",
+      "from": "pramac",
+      "to": "new way power",
+      "type": "acquisition",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "Pramac acquires South Africa’s New Way Power",
+          "publisher": "International Rental News",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNTzlZR2NvTDlzSVJwOGJsSlNXN1pkNFpIMmh2ZEJQekt6d0t0OHFoQlY1UzBkVzFJdzFlMG83X2Jra3hOcnQzOWozZVZidUJpYWxjb2t2aU1CbUhfNldudlJkcFFsb29KdDdkN0RSNnBFNnFRWkFTaDhDSXowMVBPenp4U2Vtb09WekJkRjZ5V3dQd0huQVY3eE9GNU8zdDBwMG5RZ0RRQQ?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-03T12:27:54.120085+00:00"
+  "updated_at": "2026-11-03T20:38:06.540226+00:00"
 }
