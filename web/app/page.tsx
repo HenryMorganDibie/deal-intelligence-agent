@@ -10,7 +10,7 @@ import { MarketsToday } from "../components/MarketsToday";
 import corporateOfWeekArchive from "../data/corporate-of-week.json";
 import { ArrowRight, Container, Reveal } from "../components/primitives";
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
 type CorporateSource = { publisher: string; title: string; url: string; date: string | null; kind: string };
 type CorporateSelection = {

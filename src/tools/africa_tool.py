@@ -55,34 +55,42 @@ SHARENET_BASE      = "https://www.sharenet.co.za"
 NSE_KENYA_DISC     = "https://www.nse.co.ke/regulatory-framework/announcements/company-announcements.html"
 GSE_ANNOUNCEMENTS  = "https://gse.com.gh/listed-companies/company-news/"
 
+# Some outlets block automated readers or no longer publish a feed. For those, Google News limited to the outlet's
+# own site gives the same headlines (each links to the outlet's article) for the last two days.
+def _site_news(site: str, country: str, lang: str = "en", extra: str = "") -> str:
+    from urllib.parse import quote
+    query = quote(f"site:{site} {extra} when:2d".replace("  ", " "))
+    return f"https://news.google.com/rss/search?q={query}&hl={lang}-{country}&gl={country}&ceid={country}:{lang}"
+
+
 # ─── African Financial News RSS Feeds ────────────────────────────────────────
 AFRICAN_NEWS_FEEDS = {
     # ── Nigeria ──────────────────────────────────────────────────────────
     "BusinessDay Nigeria":      "https://businessday.ng/feed/",
     "TechCabal":                "https://techcabal.com/feed/",
-    "Stears":                   "https://stears.co/feed/",
+    "Stears":                   _site_news("stears.co", "NG"),
     "Nairametrics":             "https://nairametrics.com/feed/",
     "Vanguard Nigeria":         "https://www.vanguardngr.com/feed/",
     "ThisDay Nigeria":          "https://www.thisdaylive.com/feed/",
     "Premium Times Nigeria":    "https://www.premiumtimesng.com/feed",
-    "The Guardian Nigeria":     "https://guardian.ng/feed/",
+    "The Guardian Nigeria":     _site_news("guardian.ng", "NG"),
     "Punch Nigeria":            "https://punchng.com/feed/",
     "Channels TV Business":     "https://www.channelstv.com/feed/",
     # ── South Africa ─────────────────────────────────────────────────────
     "Moneyweb":                 "https://www.moneyweb.co.za/feed/",
-    "BusinessLive SA":          "https://www.businesslive.co.za/rss/",
+    "BusinessDay SA":           "https://www.businessday.co.za/arc/outboundfeeds/rss/",
     "Daily Maverick Business":  "https://www.dailymaverick.co.za/rss/",
-    "Fin24":                    "https://www.news24.com/fin24/rss",
-    "IOL Business Report":      "https://www.iol.co.za/business-report/rss",
-    "Mail & Guardian Business": "https://mg.co.za/feed/",
+    "News24 Business":          _site_news("news24.com/business", "ZA"),
+    "IOL":                      "https://iol.co.za/rss/",
+    "Mail & Guardian Business": _site_news("mg.co.za", "ZA", extra="business"),
     # ── East Africa ──────────────────────────────────────────────────────
-    "Nation Africa":            "https://nation.africa/rss/",
-    "Daily Monitor Uganda":     "https://www.monitor.co.ug/Uganda/Business/rss/",
-    "The East African":         "https://www.theeastafrican.co.ke/rss/",
+    "Nation Africa":            "https://nation.africa/kenya/rss.xml",
+    "Daily Monitor Uganda":     "https://www.monitor.co.ug/rss.xml",
+    "The East African":         "https://www.theeastafrican.co.ke/rss.xml",
     "Standard Media Kenya":     "https://www.standardmedia.co.ke/rss/business.php",
-    "Business Daily Africa":    "https://www.businessdailyafrica.com/rss/",
-    "Rwanda New Times":         "https://www.newtimes.co.rw/rss.xml",
-    "The Citizen Tanzania":     "https://www.thecitizen.co.tz/tanzania/rss/",
+    "Business Daily Africa":    "https://www.businessdailyafrica.com/bd/rss.xml",
+    "Rwanda New Times":         _site_news("newtimes.co.rw", "RW"),
+    "The Citizen Tanzania":     _site_news("thecitizen.co.tz", "TZ"),
     # ── Pan-African / Tech ────────────────────────────────────────────────
     "The Africa Report":        "https://www.theafricareport.com/feed/",
     "African Business":         "https://african.business/feed",
@@ -90,33 +98,31 @@ AFRICAN_NEWS_FEEDS = {
     "Disrupt Africa":           "https://disrupt-africa.com/feed/",
     "Ventureburn":              "https://ventureburn.com/feed/",
     "WeeTracker":               "https://weetracker.com/feed/",
-    "TechPoint Africa":         "https://techpoint.africa/feed/",
-    "Quartz Africa":            "https://qz.com/africa/rss",
+    "TechPoint Africa":         _site_news("techpoint.africa", "NG"),
+    "Quartz Africa":            _site_news("qz.com", "GB", extra="africa"),
     # ── Ghana ─────────────────────────────────────────────────────────────
-    "Graphic Business Ghana":   "https://www.graphic.com.gh/business/feed",
-    "Citi Business Ghana":      "https://citinewsroom.com/category/business/feed/",
-    "GhanaWeb Business":        "https://www.ghanaweb.com/GhanaHomePage/business/rss.xml",
+    "Graphic Business Ghana":   "https://www.graphic.com.gh/business/business-news.feed?type=rss",
+    "Citi Business Ghana":      _site_news("citinewsroom.com", "GH", extra="business"),
+    "GhanaWeb Business":        _site_news("ghanaweb.com", "GH", extra="business"),
     # ── Francophone Africa ────────────────────────────────────────────────
-    "Jeune Afrique Economie":   "https://www.jeuneafrique.com/sections/economie/feed/",
+    "Jeune Afrique":            "https://www.jeuneafrique.com/feed/",
     # ── Egypt / North Africa ──────────────────────────────────────────────
     "Daily News Egypt":         "https://dailynewsegypt.com/feed/",
-    "Egypt Today Business":     "https://www.egypttoday.com/rss/Category/54",
+    "Egypt Today Business":     _site_news("egypttoday.com", "EG", extra="business"),
     # ── Ethiopia / Horn of Africa ─────────────────────────────────────────
     "Addis Fortune":            "https://addisfortune.news/feed/",
-    "The Reporter Ethiopia":    "https://www.thereporterethiopia.com/rss.xml",
+    "The Reporter Ethiopia":    "https://www.thereporterethiopia.com/feed/",
     # ── North Africa / Maghreb ────────────────────────────────────────────
-    "Morocco World News":       "https://www.moroccoworldnews.com/category/business/feed/",
+    "Morocco World News":       _site_news("moroccoworldnews.com", "MA", extra="economy"),
     "Egypt Independent":        "https://egyptindependent.com/feed/",
-    "Al-Ahram Weekly Business": "https://weekly.ahram.org.eg/rss.xml",
+    "Ahram Online Business":    _site_news("english.ahram.org.eg", "EG", extra="business"),
     # ── West Africa / Francophone ─────────────────────────────────────────
-    "Agence Ecofin":            "https://www.agenceecofin.com/rss/toute-l-actualite",
-    "Financial Afrik (FR)":     "https://www.financialafrik.com/fr/feed/",
+    "Agence Ecofin":            _site_news("agenceecofin.com", "SN", lang="fr"),
     "SenePlus":                 "https://www.seneplus.com/rss.xml",
-    "BRVM Actualites":          "https://www.brvm.org/fr/rss/actualites",
+    "BRVM Actualites":          "https://www.brvm.org/fr/rss.xml",
     # ── Southern / Central Africa ─────────────────────────────────────────
     "Zimbabwe Independent":     "https://theindependent.co.zw/feed/",
     "Zambia Daily Mail":        "https://www.daily-mail.co.zm/feed/",
-    "BusinessReport SA":        "https://www.iol.co.za/business-report/rss",
 }
 
 # ─── Private Capital & Institutional Sources (HTML scraping) ─────────────────

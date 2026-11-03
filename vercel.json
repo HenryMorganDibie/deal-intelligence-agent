@@ -3,7 +3,7 @@
   "ignoreCommand": "exit 1",
   "functions": {
     "api/index.py": {
-      "maxDuration": 300,
+      "maxDuration": 180,
       "includeFiles": "{src/**,docs/*.json,docs/backtest_predictions.csv,docs/automation/learned_ranker.json,evaluation/**/*.jsonl,evaluation/**/results*.json,evaluation/review/**}",
       "excludeFiles": "{web/**,evaluation/review/*/pool.jsonl}"
     },

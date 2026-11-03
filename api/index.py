@@ -34,6 +34,7 @@ from datetime import date, datetime, timedelta, timezone  # noqa: E402
 
 import httpx  # noqa: E402
 from fastapi import FastAPI, HTTPException, Request  # noqa: E402
+from fastapi.responses import Response  # noqa: E402
 from fastapi.concurrency import run_in_threadpool  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from pydantic import BaseModel, Field, field_validator  # noqa: E402
@@ -67,23 +68,26 @@ _PUBLIC_MARKET_CACHE_EXACT = {
 }
 
 
-# Market data changes at most every 30 minutes (deals twice a day), so a few minutes at the edge costs no freshness
-# and saves a function run per repeat visit.
-_PUBLIC_MARKET_CACHE_PREFIX = {"/api/markets/": 300, "/api/companies/directory": 300}
+# Deals and events change twice a day and markets at most hourly, so the shared edge cache can hold responses for
+# a while; each held response is a function run saved for every visitor in that region. Stale copies are served
+# while a fresh one is fetched in the background.
+_PUBLIC_MARKET_CACHE_PREFIX = {"/api/markets/": 900, "/api/companies/directory": 1800}
 
 
 def _public_market_cache_ttl(path: str) -> int | None:
     path = path.rstrip("/") or "/"
     if path == "/api/markets/instruments":
-        return 900
+        return 1800
+    if path in ("/api/showcase", "/api/evaluation", "/api/return-forecast", "/api/coverage", "/api/currencies"):
+        return 3600
     if path in _PUBLIC_MARKET_CACHE_EXACT:
-        return 300
+        return 1800
     if path.startswith("/api/evaluation/files/"):
         return 3600
     if path.startswith(("/api/deals/", "/api/investors/", "/api/sectors/")):
-        return 300
+        return 1800
     if path.startswith("/api/countries/"):
-        return 3600 if path.endswith("/history") else 300
+        return 3600 if path.endswith("/history") else 1800
     return next((ttl for prefix, ttl in _PUBLIC_MARKET_CACHE_PREFIX.items() if path.startswith(prefix)), None)
 
 
@@ -98,6 +102,13 @@ async def cache_public_market_gets(request: Request, call_next):
             f"public, max-age=0, s-maxage={ttl}, stale-while-revalidate={ttl * 5}"
         )
     return response
+
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots_txt() -> Response:
+    # The API is for the app, not for search engines: crawlers that follow API links run functions for nothing.
+    return Response("User-agent: *\nDisallow: /\n", media_type="text/plain",
+                    headers={"Cache-Control": "public, max-age=86400, s-maxage=86400"})
 
 
 class AnalyseBody(BaseModel):

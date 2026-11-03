@@ -52,6 +52,8 @@ SOURCE_CREDIBILITY: dict[str, float] = {
     "BusinessDay Nigeria":   0.80,
     "Moneyweb":              0.80,
     "BusinessLive SA":       0.79,
+    "BusinessDay SA":        0.79,              # BusinessLive was renamed BusinessDay
+    "News24 Business":       0.74,
     "The Africa Report":     0.78,
     "African Business":      0.77,
     "Nation Africa":         0.74,
