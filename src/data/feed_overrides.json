@@ -1,1 +1,12 @@
-{}
+{
+  "Nation Africa": {
+    "url": "https://news.google.com/rss/search?q=site%3Anation.africa%20when%3A2d&hl=en-KE&gl=KE&ceid=KE:en",
+    "since": "2026-11-04",
+    "reason": "preferred feed: HTTPStatusError 404"
+  },
+  "SenePlus": {
+    "url": "https://news.google.com/rss/search?q=site%3Aseneplus.com%20when%3A2d&hl=fr-SN&gl=SN&ceid=SN:fr",
+    "since": "2026-11-04",
+    "reason": "preferred feed: ReadTimeout"
+  }
+}
