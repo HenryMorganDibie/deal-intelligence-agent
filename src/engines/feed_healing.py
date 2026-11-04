@@ -32,6 +32,7 @@ OVERRIDES_PATH = Path(__file__).resolve().parents[1] / "data" / "feed_overrides.
 COMMON_FEED_PATHS = ("/feed/", "/rss/", "/rss.xml", "/feed.xml", "/index.xml", "/atom.xml", "/rss",
                      "/arc/outboundfeeds/rss/", "/feeds/posts/default")
 STALE_AFTER_DAYS = 45                 # a feed whose newest item is older than this has stopped updating
+CONFIRM_WINDOW_DAYS = 60              # how far back a Google News fallback is checked before it is trusted
 _ALTERNATE = re.compile(r"<link\b[^>]*>", re.IGNORECASE)
 
 # Country and language used for an outlet's Google News fallback (outlets already read through Google News carry
@@ -181,8 +182,9 @@ async def find_replacement(client: httpx.AsyncClient, name: str, preferred: str,
         if url in exclude:
             continue
         if is_site_news(url):
-            # A quiet outlet can have nothing in two days; check a fortnight to confirm it is indexed at all.
-            wide = url.replace("when%3A2d", "when%3A14d")
+            # A quiet outlet (a newsletter posting a few times a month) can have nothing in two days or even two
+            # weeks; look back 60 days to confirm Google News indexes it at all. Collection still reads two days.
+            wide = url.replace("when%3A2d", f"when%3A{CONFIRM_WINDOW_DAYS}d")
             ok, _, _ = await probe(client, wide, require_fresh=False)
             if ok:
                 _, items, _ = await probe(client, url, require_fresh=False)
@@ -217,7 +219,8 @@ async def heal_all(feeds: Optional[dict[str, str]] = None, overrides: Optional[d
         async with sem:
             ok, items, reason = await probe(client, preferred, require_fresh=not is_site_news(preferred))
             if is_site_news(preferred) and not ok and reason == "no items":
-                ok, _, _ = await probe(client, preferred.replace("when%3A2d", "when%3A14d"), require_fresh=False)
+                ok, _, _ = await probe(client, preferred.replace("when%3A2d", f"when%3A{CONFIRM_WINDOW_DAYS}d"),
+                                      require_fresh=False)
             if ok:
                 if name in current:
                     changes.append(f"{name}: preferred feed works again, override removed")

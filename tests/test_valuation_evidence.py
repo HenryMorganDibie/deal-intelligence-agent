@@ -1,5 +1,5 @@
 """Valuation inputs are checked against evidence, not accepted on the strength of a URL."""
-from datetime import date
+from datetime import date, timedelta
 
 from src.engines import valuation_evidence as ve
 
@@ -68,8 +68,10 @@ def test_evidence_endpoint_uses_the_listing_and_profile(monkeypatch):
 
     monkeypatch.setattr(hm, "_configured", lambda: False)
     hm._markets_cache.clear()
+    # The endpoint grades against the real clock, so the close is always yesterday's.
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
     markets.save_local({"quotes": {"ngx": [{"symbol": "DANGCEM", "name": "Dangote Cement", "price": 1341.9,
-                                            "date": "2026-10-27", "mcap": 22.6e12, "shares": 16.87e9}]},
+                                            "date": yesterday, "mcap": 22.6e12, "shares": 16.87e9}]},
                         "indices": [], "fx": {}})
 
     async def fake_company(**kw):
@@ -77,7 +79,7 @@ def test_evidence_endpoint_uses_the_listing_and_profile(monkeypatch):
     monkeypatch.setattr(hm, "company", fake_company)
     monkeypatch.setattr(ve, "fetch_text", lambda url, client=None: (DOC, "ok"))
     body = {k: v for k, v in _inputs().items()}
-    body.update(exchange="ngx", symbol="DANGCEM")
+    body.update(exchange="ngx", symbol="DANGCEM", price_date=yesterday)
     r = TestClient(api.app).post("/api/valuation/evidence", json=body).json()
     assert r["fields"]["price"]["status"] == "verified" and r["grade"] == "B"
 

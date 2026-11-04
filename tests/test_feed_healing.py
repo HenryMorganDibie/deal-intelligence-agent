@@ -140,3 +140,18 @@ def test_unreachable_outlet_with_no_replacement_is_an_error(monkeypatch):
     monkeypatch.setattr(fh.httpx, "AsyncClient", lambda **kw: client_for({}))
     _, _, unresolved, dormant = run(fh.heal_all(feeds, {}))
     assert unresolved and not dormant
+
+
+def test_quiet_newsletter_blocked_on_its_host_falls_back_to_site_news(monkeypatch):
+    """Substack refuses data-centre addresses; a newsletter posting monthly has nothing in two weeks on Google News."""
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        if url.startswith("https://news.google.com/"):
+            body = rss() if f"when%3A{fh.CONFIRM_WINDOW_DAYS}d" in url else "<rss><channel></channel></rss>"
+            return httpx.Response(200, text=body, headers={"content-type": "application/xml"})
+        return httpx.Response(403, text="blocked", headers={"content-type": "text/html"})
+    monkeypatch.setattr(fh.httpx, "AsyncClient", lambda **kw: _RealClient(transport=httpx.MockTransport(handler)))
+    overrides, _, unresolved, _ = run(fh.heal_all({"The Big Deal": "https://thebigdeal.substack.com/feed"}, {}))
+    assert not unresolved
+    url = overrides["The Big Deal"]["url"]
+    assert "site%3Athebigdeal.substack.com" in url and "when%3A2d" in url
