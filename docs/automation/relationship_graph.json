@@ -831,6 +831,58 @@
     "instacart": {
       "name": "Instacart",
       "kind": "organization"
+    },
+    "greater": {
+      "name": "Greater",
+      "kind": "organization"
+    },
+    "mental health services": {
+      "name": "Mental Health Services",
+      "kind": "organization"
+    },
+    "4dx ventures": {
+      "name": "4DX Ventures",
+      "kind": "organization"
+    },
+    "enza": {
+      "name": "Enza",
+      "kind": "organization"
+    },
+    "dott services limited": {
+      "name": "DOTT Services Limited",
+      "kind": "organization"
+    },
+    "archimed": {
+      "name": "ARCHIMED",
+      "kind": "organization"
+    },
+    "standard biotools": {
+      "name": "Standard BioTools",
+      "kind": "organization"
+    },
+    "yellow card": {
+      "name": "Yellow Card",
+      "kind": "organization"
+    },
+    "gomoney": {
+      "name": "GoMoney",
+      "kind": "organization"
+    },
+    "uni o europeia": {
+      "name": "União Europeia",
+      "kind": "organization"
+    },
+    "fundo verde": {
+      "name": "Fundo Verde",
+      "kind": "organization"
+    },
+    "agdevco ventures": {
+      "name": "AgDevCo Ventures",
+      "kind": "organization"
+    },
+    "newman": {
+      "name": "Newman",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -2704,7 +2756,110 @@
           "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPVWNYbEd5WkJjNzFmeC1aOTBOVGl6aDhVel9jTHhuQzJQRGVSWmpVN3FEZkNISE9vZk9JclM2YmVVZHRLU2lDS2M0Q3lIclBDUHoySWw2dDVkWFRSWmZvLW1PcmhrUkFRaUh6UmFWMlNSOUE2TXVQaERQLUVNMG5MOXBGOGg5UjM2RndWNmNuNHhhN20zTmhWSw?oc=5"
         }
       ]
+    },
+    "e5c428fd219cbfbfda7e": {
+      "id": "e5c428fd219cbfbfda7e",
+      "from": "greater",
+      "to": "mental health services",
+      "type": "equity_funding",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "Clinical Psychologists Seek Greater Investment in Mental Health Services for Victims of Insecurity",
+          "publisher": "ThisDay Nigeria",
+          "url": "https://www.thisdaylive.com/2026/11/04/clinical-psychologists-seek-greater-investment-in-mental-health-services-for-victims-of-insecurity/"
+        }
+      ]
+    },
+    "88be62d5b65cfe9c58cd": {
+      "id": "88be62d5b65cfe9c58cd",
+      "from": "4dx ventures",
+      "to": "enza",
+      "type": "equity_funding",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "Enza Raises $6mn as Investors Bet on Africa’s Payments Plumbing",
+          "publisher": "Launch Base Africa",
+          "url": "https://launchbaseafrica.com/2026/11/04/enza-raises-6mn-as-investors-bet-on-africas-payments-plumbing/?utm_source=rss&utm_medium=rss&utm_campaign=enza-raises-6mn-as-investors-bet-on-africas-payments-plumbing"
+        }
+      ]
+    },
+    "1a77960ed7878708a4d3": {
+      "id": "1a77960ed7878708a4d3",
+      "from": "afreximbank",
+      "to": "dott services limited",
+      "type": "debt_financing",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "Afreximbank Backs DOTT Services Limited, Uganda with a US$28 Million Facility for Regional Engineering, Procurement and Construction (EPC) Projects",
+          "publisher": "Africa.com",
+          "url": "https://news.google.com/rss/articles/CBMi-AFBVV95cUxPeERHUTk3TU5rY3FjbFR3cGtwNXFScTdOUmloSXE5UlZISGRrRVR1VUZ5SXBfakxnVHotRWNTNENPNHFuS2M2eFFwQkNmRFVibWNNN1F1ak5FZWVhVlk0OWNfdlNVSzV1bUlGN09pbDk4enc3clB6NVRFSVZXdkVmcEtFWENDTGVsNEFnVUdGaU0xekg1clVhZ2hCVzVCOVRXdmFzcWF0bWZONlZtY1RVa0lvejdNa0FCYWItd0hleWRBTzYwM3gzVmNFa0JnaS1fV3Fkb2FoQ2VJZUZWU3NqclNkTUFoNUxNRXlnWHlxT1VGcE43TnphSw?oc=5"
+        },
+        {
+          "title": "Afreximbank backs DOTT Services Limited, Uganda with a US$28 million Facility for regional EPC projects",
+          "publisher": "African Export-Import Bank",
+          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQRUh0aHdNTEVFN3ZkdTd4R1VGV1dvWmNIdFJMb1RhWXdyWEN0QTR4c1BJb3ZPVC1OQXJ2YlpybDVFRWRPM3pyNzNIeFlZYmY2UDU1T25zcDVzNVRSdGEzR24wT3V1XzdjRlRxbzhfNTY4VnJRUkE3UFVqVFpra2h5dHdESVNmNE1vTWgtM0Zod3Zfa2pKRThiUHMwNUFhMWliSWtVVnk1Ym5PUmM4Z1BQNlZxclM4Y0NVVktjbC1reVhnc1Zlc1BRdUh3?oc=5"
+        }
+      ]
+    },
+    "8284d8c572ee6edfe83d": {
+      "id": "8284d8c572ee6edfe83d",
+      "from": "archimed",
+      "to": "standard biotools",
+      "type": "acquisition",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "ARCHIMED completes acquisition of Standard BioTools unit By Investing.com",
+          "publisher": "Investing.com South Africa",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxObDBIQXZneHNyU1JNNUItbXJfZ29FN29RRHl2TmRPSmFjNzlMeEdLcmRSemxIbzhTTGhNclhLWlJpa09FdmFUTC1vaFVzczlGWGlVVEdVYTdXTDdMQ2ZrMnNUbFdYSmZHRG5Ha1poVV9SeW1mWElLNjUzN0tZSU15bEFLVGZaaDNDLVZpR0dXN1BOeV9nU2JJSHI5R1ltallVQl9VbGVtY2NwWlk0NFhQZWI2d3FEN0dr?oc=5"
+        }
+      ]
+    },
+    "b7d9e0d1b33583d5465d": {
+      "id": "b7d9e0d1b33583d5465d",
+      "from": "yellow card",
+      "to": "gomoney",
+      "type": "acquisition",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "Yellow Card completes GoMoney acquisition for Brazil entry, Chris Maurice notes",
+          "publisher": "Traders Union",
+          "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPbTB1T2dwWjlQMmp6VjB5NTRPLUxkOE9KOWNKOXltMngtdWhhdGVxamlRTmFUYWNBNW9GRTNvQnppcVc4VHJ2ZEczbmhiSmd6R1R0VldBSUVBcVlMMFFXQ21wVHV2VFNNRDBYbkpQXzFOZXZ3aHphTHVOZk9PaDdPWGVUOFdvTzZram9SWHl3dw?oc=5"
+        }
+      ]
+    },
+    "de589990919482218f24": {
+      "id": "de589990919482218f24",
+      "from": "uni o europeia",
+      "to": "fundo verde",
+      "type": "equity_funding",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "União Europeia investe 50 milhões de dólares no Fundo Verde para o Clima em Moçambique",
+          "publisher": "Rádio Moçambique",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPcHR3Nk5IVUNUUWc4U3l1aktrZzJwYTBveERLSlBzSno3OHhYdFpDUWtPZXpnZk5VWjlOOUhDWTFPenBId3djWlhnMlgxOEJlRGRZSTNjRHdKN0RNQlNXVWhWbzV4eUlxVUlJRnlNSk8zYzRDMmZ5QjF1cG1yUmU5T3FmVU1jVmNSWnY4VmZWUlFmMkVvRlFDZnZ2Y1F3MXBDeTV6NlpmQ1Ywc3py?oc=5"
+        }
+      ]
+    },
+    "905ee724833e414690c3": {
+      "id": "905ee724833e414690c3",
+      "from": "agdevco ventures",
+      "to": "newman",
+      "type": "equity_funding",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "AgDevCo Ventures invests $3 million in Uganda’s Newman’s to drive agribusiness growth",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOMENRZktRT1BpWVBaT05pb3dtbnF0R3g4OG8zWnN6ajRMeWFlQVlURGZ6NTNld0YwczE0eGZRUF9pbUZrR0dyRGtiSVYwekprcEVWNG1iXzBXb2t3WWo1cVRnUDhIZ0dvR19fWXFxaWFaMVYtbnMteXF5OUVmeFlaS0xuWURjWkstendkMEJTVS1jUEZVTDZYb0U0OGhkX01rRlNUVllrME5QS0JJdGplQ21iNkc?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-04T12:39:47.291960+00:00"
+  "updated_at": "2026-11-04T20:55:02.599251+00:00"
 }

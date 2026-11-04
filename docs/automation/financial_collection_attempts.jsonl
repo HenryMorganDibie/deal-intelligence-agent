@@ -404,3 +404,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EMI.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EMN.JO"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "ENAMELWA.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ENGC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ENX.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EOH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EOSB.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EPCO.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EPE.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EPP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EPPK.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EPS.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EQD.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EQS.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EQTY.NR"}
