@@ -392,3 +392,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "status": "no_annual_data_returned", "ticker": "EKHO.CA"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-03", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/32857_EKOCORP_PLC _AUDITED_FINANCIAL_STATEMENT_FOR_2020_FIN.pdf", "status": "collected", "ticker": "EKOCORP.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-03", "market": "africa", "status": "no_annual_data_returned", "ticker": "ELEC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "ELI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "ELKA.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "ELLAHLAKES.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "ELNA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "ELR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "ELSH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "ELWA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EMFD.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EMH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EMI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EMN.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "ENAMELWA.LG"}

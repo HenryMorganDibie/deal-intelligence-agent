@@ -787,6 +787,50 @@
     "new way power": {
       "name": "New Way Power",
       "kind": "organization"
+    },
+    "ngx group chairman": {
+      "name": "NGX Group Chairman",
+      "kind": "organization"
+    },
+    "african markets integration as top priority": {
+      "name": "African markets integration as top priority",
+      "kind": "organization"
+    },
+    "autoliv": {
+      "name": "Autoliv",
+      "kind": "organization"
+    },
+    "italian": {
+      "name": "Italian",
+      "kind": "organization"
+    },
+    "eib": {
+      "name": "EIB",
+      "kind": "organization"
+    },
+    "aruwa capital": {
+      "name": "Aruwa Capital",
+      "kind": "organization"
+    },
+    "polysmart packaging": {
+      "name": "Polysmart Packaging",
+      "kind": "organization"
+    },
+    "umios": {
+      "name": "Umios",
+      "kind": "organization"
+    },
+    "high liner foods": {
+      "name": "High Liner Foods",
+      "kind": "organization"
+    },
+    "doordash": {
+      "name": "DoorDash",
+      "kind": "organization"
+    },
+    "instacart": {
+      "name": "Instacart",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1017,6 +1061,11 @@
           "title": "Nedbank acquires NCBA after Kenya deal",
           "publisher": "Africa Business Communities",
           "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPRncyV2l3R01IanRNRTNrNGtjTkVUc3lFY0FRakpCR0FTbHlpaWxwVWhTZ0RoZlRjTnI3UEpVakNzZTRiaVIzQVhQVzNMRk5xRkZlZVlMSGpVY2JvOXlkZ0dvNWg5WTYxRkV1WUp5OFRqelNLd1VPWjlRLTAwSmNBSDJCSGRuZnc?oc=5"
+        },
+        {
+          "title": "Nedbank Completes NCBA Takeover as NSE Turnover Surges",
+          "publisher": "Khusoko",
+          "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNYURTckRkRm42OWlLVEE1QUg2V2oyT2FCelJsYkY5Q3R0NTVNbGRKMTg3R25uSmUtWFZLYWV3UUtIdDBUWE90blFnS3JnWnFZcC0xamZfYndnTFVhTkFHSWRiYnVGM01PTzRkZDBkTHR6dVQxZlVvd0JVbVJXNFBTT0Z3?oc=5"
         }
       ]
     },
@@ -2081,6 +2130,11 @@
           "title": "EBRD invests US$ 100 million in Egypt's Banque du Caire IPO",
           "publisher": "Frontier Africa Reports",
           "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNQ1pTZEJJTFJldEo1RHh0QmxMV2tDQWpiazNUMlhQcnJtOUJVOHQ3N0lLR0RZWjE5MHNzdEc3LV9MUU1qektqczh1ZmlzMDVDTk84NzJETEVnVGhaRDBWY0ladk9uSHFaS00yNHNIZzBweW5TeDR3VlBScHpmWlVTZ25peWVnN0U1dWZ5WWhwQ0w0SHBOaG5PQVVRNmhtaGhDQjFvSlBXUQ?oc=5"
+        },
+        {
+          "title": "EBRD invests US$100 million in Banque du Caire IPO to advance Egypt’s bank listing and private ownership",
+          "publisher": "fundsforNGOs News",
+          "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQaWZjTEJhaTdOd0hVX2FoM1dzcUlMczJCWTBNZUUzck1FMlRHbEREa2E2aFJ3SHFzcF9BVFhHOHg5VzBzNENCRC1HN2VWcDVReml2OVFQdjJJV0ZoN1hCRUcxRlQtekNWQjgxUloyUDJpTDdzanVraWpuaHV4b0FzOE9NZ2lpMFZSU25DbUh3WXBDWXFhNEpSSXpn?oc=5"
         }
       ]
     },
@@ -2217,6 +2271,11 @@
           "title": "IFC Invests USD 100m in Banque du Caire IPO to Expand Business Lending in Egypt",
           "publisher": "Devdiscourse",
           "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxQckxjRW5jTHg3c012WnJ5S1JYdUZVVDBGd0ppOFdIZmZrWWZJTS03dW1UV0tYVnhGVVhBb1Z1WU80dUVRTjA2MU5TdW9zVU53M0d6QVQyZGhsVWstODY3bjNhV1UwdVFnaDV6R0cwU3Z1dERpQVNMVU82emw2SnVmeXhyXzFudVE5RG9CQ29yXzBtb2hlRzBCQmJmNHE2ZWFyLU5IdndlR2hXekIzV01TcTYwaVE4aGUwZUtpbF9aaGtEQnR0NjBLRk9hUHBOZlNLZmVn0gHTAUFVX3lxTFByTGNFbmNMeDdzTXZacnlLUlh1RlVUMEZ3Smk4V0hmZmtZZklNLTd1bVRXS1hWeEZVWEFvVnVZTzR1RVFOMDYxTlN1b3NVTnczR3pBVDJkaGxVay04NjduM2FXVTB1UWdoNXpHRzBTdnV0RGlBU0xVTzZ6bDZKdWZ5eHJfMW51UTlEb0JDb3JfMG1vaGVHMEJCYmY0cTZlYXItTkh2d2VHaFd6QjNXTVNxNjBpUThoZTBlS2lsX1poa0RCdHQ2MEtGT2FQcE5mU0tmZWc?oc=5"
+        },
+        {
+          "title": "IFC invests $100 million in Banque du Caire IPO to expand financing for Egyptian SMEs",
+          "publisher": "fundsforNGOs News",
+          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQZV9FbnNxSUV1MFVYazlZTTRRSGhjYV9iWUduai11RWZFSkZ5TDVyRHA0VzMxcWFUcEt0QWJxNnRySHB2S2hFQ29CZ2ZOUEJadWhqanRsWm0tZmt3Rkc5UlhiTHlSTTdtLWE2d3NPLWIwOFNHTFdnRWZ4dHk1ajdPcGZMZE01SGZxbVJfbTdIUklCUE9nSTFwOFZXYXNyeV9Ia1VEMkktYkJTelJ5NHc?oc=5"
         }
       ]
     },
@@ -2554,9 +2613,98 @@
           "title": "Pramac acquires South Africa’s New Way Power",
           "publisher": "International Rental News",
           "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNTzlZR2NvTDlzSVJwOGJsSlNXN1pkNFpIMmh2ZEJQekt6d0t0OHFoQlY1UzBkVzFJdzFlMG83X2Jra3hOcnQzOWozZVZidUJpYWxjb2t2aU1CbUhfNldudlJkcFFsb29KdDdkN0RSNnBFNnFRWkFTaDhDSXowMVBPenp4U2Vtb09WekJkRjZ5V3dQd0huQVY3eE9GNU8zdDBwMG5RZ0RRQQ?oc=5"
+        },
+        {
+          "title": "Pramac acquires South Africa’s New Way Power",
+          "publisher": "Power Progress",
+          "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQaHRqZEx0ellpSFJ1bHE1dVlUMV8yNjNMSWs0ZWpNRjFlZFM1OGFya3EydUVlNjhvTmZSYzZCTTJqNEVqMEVrYjd6eWdKN19Uc2J0c1BwQlJtLUsyeEFva3NJWV9SZFlaeWYzMTdkXzA2SWljZGI3SmNjQWpHTDVMWFV2UGVUdEVsRzlEOG1NbVNIQnNOQVBHaS1R?oc=5"
+        }
+      ]
+    },
+    "96fe308690b2dacdb9fc": {
+      "id": "96fe308690b2dacdb9fc",
+      "from": "ngx group chairman",
+      "to": "african markets integration as top priority",
+      "type": "equity_funding",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "NGX Group Chairman backs African markets integration as top priority",
+          "publisher": "Nairametrics",
+          "url": "https://nairametrics.com/2026/11/04/ngx-group-chairman-backs-african-markets-integration-as-top-priority/"
+        }
+      ]
+    },
+    "2eafeafae2a09b778202": {
+      "id": "2eafeafae2a09b778202",
+      "from": "autoliv",
+      "to": "italian",
+      "type": "acquisition",
+      "first_seen": "2026-11-03",
+      "sources": [
+        {
+          "title": "Autoliv completes acquisition of Italian seatbelt maker MCF By Investing.com",
+          "publisher": "Investing.com South Africa",
+          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNU3ZQeXNFcG04NmpSbDh1LURCN1N2MHllZWFIdzNibHdNeU03bDFJM1Y2TFZXZURNVnFTQXd6VWZqVDZUOFVfcmtKbWNuUXhUX1c4VXF5bUp4MS1iOFJtVEJnWXhyMEZ4cTlYZmdIQkJkWnVSWnIzNVRzQ2dNaWxPQThwNVlyTnplN1NYR0M5NDgzbWdHX1VqRXJpNzNnbkhmMVl3UGV4Q3R0aHduNDlOdFJVSEk4OU42OG5INA?oc=5"
+        }
+      ]
+    },
+    "1e45b198a816e95faf20": {
+      "id": "1e45b198a816e95faf20",
+      "from": "eib",
+      "to": "dandara",
+      "type": "debt_financing",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "EIB Provides $90m financing for Egypt’s Dandara solar project",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQWWFZZW8zMTIzNzJfS012dkdTcEN6dm0tOXoydDJIM20ySVRxNFlYc3JOcFJQREo1akVPV2F6R3lQcjU3WDlLdlVpWmlUbXlfUzg3QnlJUDhFeE1Temd5eFhVcXJxLU5ESnJmZnFkc2ZCR2ZUS3hNUTRfazA1d096WVhqMG1CM2RnT19VOTVsVjZQSEluLXlBcnB4MzlMTGZPTWtrRTFfdDR1ZDB0UjF3ZEF2aGV3RzFU?oc=5"
+        }
+      ]
+    },
+    "4da937b665e765707fc2": {
+      "id": "4da937b665e765707fc2",
+      "from": "aruwa capital",
+      "to": "polysmart packaging",
+      "type": "equity_funding",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "Aruwa Capital invests in Polysmart Packaging to expand Nigeria’s PET recycling capacity",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPY2hMZHhkamlfNFQydUI0dGg4a2JrZkhmbUxIVDFKS2VTaGV3cVpBSU9FaHotT2Nzazktd0xKbU5aMEV2a2s0LXlOU3QwVmpaY3FHVmVxWS1rX3E3bW9DRF91aFRNX21idUNyS0Jvb3ktaVVyRG9FX3lpRzdTNEhyR2luWDRUWDY3ODN3ZTBFdHVwV2dKOUtPTDBRSktQb2xJNFFJMUlzTWpGNnROT042TWhza0NxbWY5MUE?oc=5"
+        }
+      ]
+    },
+    "4a36f4d2ef5c74781627": {
+      "id": "4a36f4d2ef5c74781627",
+      "from": "umios",
+      "to": "high liner foods",
+      "type": "acquisition",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "Japan’s Umios acquires High Liner Foods, expanding its footprint into Canada",
+          "publisher": "Food Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNMVFYM3dfU3k4MzN1Z0t0dlBORjhjTUszS2NoSlNQakVXbG51LVlVTUJ2THlUMXdjZVVYTnhZV09ES3NFY00xd1RRRG4wSlBHUDc3Vmp1R3NaenRmMmtCaGZYbjVvYThtWUdjaW1yamxpVW42Y0M1MmdtVEc4SzRMU0hFemdXanRsMXNxUkJ2LTA5QmkzdU85bHhFVm1pVTRLTzNYZk8xaFBQd0E?oc=5"
+        }
+      ]
+    },
+    "51e6d9ad5e93418cd36b": {
+      "id": "51e6d9ad5e93418cd36b",
+      "from": "doordash",
+      "to": "instacart",
+      "type": "acquisition",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "DoorDash to acquire Instacart in US$17B grocery delivery deal",
+          "publisher": "Food Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPVWNYbEd5WkJjNzFmeC1aOTBOVGl6aDhVel9jTHhuQzJQRGVSWmpVN3FEZkNISE9vZk9JclM2YmVVZHRLU2lDS2M0Q3lIclBDUHoySWw2dDVkWFRSWmZvLW1PcmhrUkFRaUh6UmFWMlNSOUE2TXVQaERQLUVNMG5MOXBGOGg5UjM2RndWNmNuNHhhN20zTmhWSw?oc=5"
         }
       ]
     }
   },
-  "updated_at": "2026-11-03T20:38:06.540226+00:00"
+  "updated_at": "2026-11-04T12:39:47.291960+00:00"
 }
