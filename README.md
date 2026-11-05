@@ -1,345 +1,201 @@
-# Deal Intelligence Agent
+# Deal Intelligence
 
 > **Proprietary software. All rights reserved.** This repository is the private property of Henry Chukwunwike Dibie (Deal Intelligence). No licence is granted to use, copy, clone, modify or distribute any part of it. See [LICENSE](LICENSE). Licensing enquiries: info@deal-intelligence.app
 
-An autonomous multi-agent deal intelligence system for **US and African markets**, covering all 54 African countries. Deterministic signal engine + LLM explanation layer (Claude and Groq) + compound event detection + alpha scoring + backtesting + deals database + investors and funds + company financials + country, currency and sector risk + source-grounded research + monitoring and alerts + institutional audit trail.
+Deal and market intelligence for **all 54 African countries** (and US listings): private deals, corporate events,
+investors, listed markets, government securities, country risk, company briefs and source-grounded research, in one
+signed-in web app.
 
-Built for PE firms, credit analysts, research houses, hedge funds, and corporate finance teams.
+**Live:** [deal-intelligence.app](https://deal-intelligence.app)
 
----
-
-## What It Covers
-
-| Capability | What it does | Where |
-|---|---|---|
-| **Company profiles and financial statements** | NGX and NSE Kenya audited statements parsed from the filed PDFs (Group current and prior year) and checked with accounting identities, each figure marked verified, inconsistent or unchecked; Yahoo Finance statements and multiples for JSE, EGX, Casablanca, US and European listings, cross-checked against SEC XBRL for SEC filers; exchange profile (board, auditor, sector) | `financials.py`, `company_profile.py` |
-| **PE, VC, debt and M&A transactions** | 1,700+ deals over two years across 48 countries, extracted daily from African business and private-capital publications in English, French and Portuguese: type, parties, amount in USD (at the year's official rate), stake, round, stage, sector, country, every source linked | `deals.py`, `market_feed.py` |
-| **Investors, funds, LPs and GP activity** | Every party gets a role (investor, lender, acquirer, seller, LP, GP); a registry of Africa-focused DFIs, multilaterals, PE, VC, sovereign and pension investors resolves name variants (BII = CDC Group, BAD = AfDB); profiles, leaderboards, fund closes with their LPs | `investors.py` |
-| **Valuations and comparable deals** | Reported and stake-implied valuations, comparables scored on sector, type, country and size with size and valuation quartiles, listed multiples | `deals.py`, `market_risk.py` |
-| **Country, currency and sector risk** | All 54 countries: a 0 to 100 score from World Bank governance and macro indicators with every component and formula shown; 42 currencies: regime, spot vs official, depreciation, volatility; sector risk from the balance of adverse events and deal flow | `country_risk.py`, `market_risk.py` |
-| **Research reports and source-grounded AI search** | Questions answered only from numbered evidence (deals, events, risk, investors, live news); citations checked, invalid ones removed, uncited sentences reported; explicit years and relative periods constrain news search; undated queries retry broader RSS search when recent results miss the query intent; country and sector reports | `research.py` |
-| **Corporate event monitoring and alerts** | Daily feed of corporate events and deals across all 54 countries; watchlists by company, country and event type with an RSS feed and webhooks | `market_feed.py`, `watch.py` |
-| **Historical outcomes and signal evaluation** | Walk-forward backtest (about 2,000 US and African companies, 18 monthly dates, re-run monthly), precision vs base rate (lift), recall, price hit rates, severity breakdown; live briefs labelled daily | `historical_backtest.py`, [docs/BACKTEST.md](docs/BACKTEST.md) |
-| **Data coverage and verification by country** | For each country: prices, statements, filings, news edition and languages, regulators, risk-data coverage, deals and events, and a verification tier (A, B, C) | `coverage.py` |
-
-Data is what public sources carry: undisclosed private deals that no one reports cannot appear, and most African exchanges outside NGX and NSE Kenya publish no machine-readable filings (they are tier C). The coverage page states this per country.
+Built for PE and VC firms, DFIs, credit analysts, research houses and corporate finance teams.
 
 ---
 
-## What Makes This Different
+## What it covers
 
-| Dimension | Typical AI finance tool | This system |
-|-----------|------------------------|-------------|
-| Signal detection | LLM decides | Deterministic rule engine — reproducible, auditable |
-| Severity | LLM opinion | Rule-strength bands (stated thresholds); CRITICAL needs two independent sources |
-| Compound events | None | 14 typed interaction rules (cascading/reinforcing/contradictory) |
-| LLM role | Primary decision maker | Explanation only — cannot invent signals |
-| Confidence | Opaque float | Per-signal calibrated event probability; the brief-level figure is its mean across confirmed signals (not an LLM self-rating). Evidence quality is shown separately as a 7-component rubric. |
-| Evidence | Keyword hits | 9 typed financial clause categories (going concern, covenant breach, etc.) |
-| Alpha score | None | 0–100 composite with stated design weights, validated in the backtest (confirmation rate 13% / 25% / 40% across alpha thirds), SHAP-style breakdown, measured moves after similar flags |
-| Backtesting | None | Precision, recall, F1, hit rate, benchmark-adjusted return and drawdown per signal type, against automatically labelled outcomes |
-| Adaptive calibration | None | Outcome-aware severity from analyst feedback |
-| Portfolio intelligence | None | Portfolio risk aggregation + contagion cluster detection |
-| Company memory | None | Longitudinal EMA risk profiles + trend detection |
-| Entity resolution | None | Canonical registry + LEI/CIK/ticker deduplication |
-| Market data | None | yfinance auto-outcome fetching (US + African listed) |
-| Audit trail | None | SHA-256 hash-chained append-only log, tamper detection |
-| Compliance mode | None | Signal suppression, human review flags, disclaimers |
-| Graph intelligence | None | NetworkX entity graph + contagion risk detection |
-| Monitoring | None | Continuous watchlist + Slack/webhook alerting |
-| Replay | None | Deterministic as-of-date historical reproduction |
-| African markets | None | All 54 countries: national news editions in their languages, every regulator and central bank, 49 RSS feeds, 48 PE/DFI/regulatory sources |
+| Area | What it does |
+|---|---|
+| **Deals** | 5,100+ PE, VC, debt and M&A transactions extracted from African business and private-capital news in English, French and Portuguese, refreshed twice a day: parties and their roles, amount in USD, stake, round, stage, sector, country, every source linked, field-level verification |
+| **Corporate events** | 5,300+ events across the 54 countries (results, leadership changes, regulatory actions, listings, defaults), classified by a deterministic engine |
+| **Investors and funds** | Investor, lender, acquirer, LP and GP roles; a registry of Africa-focused DFIs, multilaterals, PE, VC, sovereign and pension investors that resolves name variants; leaderboards, profiles, fund closes with their LPs; investors named in round articles are read automatically |
+| **Listed markets** | Daily quotes for 24 exchanges (JSE, NGX, EGX, NSE Kenya, Casablanca, BRVM, GSE, SEM, Tunis, Botswana, Dar es Salaam, Lusaka, Malawi, Namibia, Rwanda, Zimbabwe, Uganda, Ethiopia, Victoria Falls, BVMAC, BODIVA, Algiers, Eswatini, MERJ), delayed intraday for JSE and NGX, indices, movers, sectors and dollar rates; a cross-exchange screener and company directory |
+| **Government securities and rates** | Treasury bills from central banks and auction results (Nigeria, Kenya, Ghana, South Africa, Morocco, The Gambia, Seychelles, Tanzania, Zambia, Uganda, Malawi, Botswana, the eight WAEMU states and the CEMAC curve), each yield reconciled with the issuer's own price convention; individual Kenyan bonds; policy rates; bank deposit rates; Lagos and Nairobi ETFs; unlisted funds |
+| **Portfolios and valuation** | Holdings valued at the latest closes, monitoring, comparisons; DCF and multiples with every input checked against exchange data and the filing it came from; country cost of equity with its build-up |
+| **Company briefs** | Signals from SEC EDGAR, exchange disclosures and news, scored by a deterministic rule engine; the language model explains confirmed findings and cannot invent signals |
+| **Research and reports** | Answers built only from numbered evidence (deals, events, risk, investors, live news), with citations checked and invalid ones removed; country and sector reports |
+| **Country, currency and sector risk** | A 0 to 100 score for every country from World Bank governance and macro indicators, with each component shown; 42 currencies (regime, official vs parallel, depreciation, volatility); sector risk from adverse events and deal flow |
+| **Watchlists and alerts** | Watchlists by company, country and event type with RSS, webhooks, and email alerts to the signed-in account's verified address (one-click unsubscribe) |
+| **Evaluation** | Walk-forward historical backtest, live outcome labelling, and published held-out scores for deal extraction and attribution (see [Evaluation](#evaluation)) |
+
+Data is what public sources carry: undisclosed private deals cannot appear, and most exchanges outside NGX and NSE
+Kenya publish no machine-readable filings. The coverage page states this per country.
 
 ---
 
-## 8-Node Pipeline
+## How it is built
+
+```
+News, filings, exchanges, central banks
+        │  collected on GitHub Actions (scheduled jobs, scripts/run_cron.py)
+        ▼
+Deterministic engines ── deals, events, investors, quotes, instruments, risk
+        │  written through shared-secret database functions
+        ▼
+Supabase (Postgres, Auth) ── row level security; writes only via functions
+        │
+        ├── API (FastAPI on Vercel, api/index.py) ── public data cached at the edge
+        └── Web app (Next.js 14 on Vercel, web/) ── sign-in required for /app
+```
+
+**Principles**
+
+- **Deterministic first.** Signals, deals and events come from stated rules that give the same answer every time.
+  The language model writes explanations and narratives only; if it is unavailable, briefs are still produced from
+  the engine's findings and labelled as such.
+- **Every figure has a source.** Deals link their stories, statements are checked with accounting identities, yields
+  are reconciled with the issuer's prices, valuation inputs are checked against the filing.
+- **Reported limits.** Coverage tiers per country, sample sizes and 95% intervals on every evaluation figure.
+
+**Company brief pipeline (8 nodes)**
 
 ```
 Request
-  → DataCollection    (SEC EDGAR + 49 African feeds + 48 PE sources + global news, concurrent)
-  → DeterministicEngine  (70+ rules, NER, semantic extraction, corroboration — zero LLM)
-  → LLMExplanation    (explains confirmed candidates only — cannot invent signals)
-  → AlphaScoring      (0–100 composite + SHAP breakdown + measured moves after similar flags)
-  → SignalInteraction  (17 direction-aware compound event rules; compound-adjusted score shown beside alpha, untested)
-  → BriefSynthesis    (narrative only — all signal data locked)
-  → PostProcessing    (warehouse + company memory + entity graph)
+  → DataCollection       SEC EDGAR, African exchange disclosures, 50 outlet feeds, 48 PE and institutional sources
+  → DeterministicEngine  70+ rules, entity recognition, corroboration (no language model)
+  → LLMExplanation       explains confirmed candidates only
+  → AlphaScoring         0 to 100 composite with attribution and measured moves after similar flags
+  → SignalInteraction    direction-aware compound event rules
+  → BriefSynthesis       narrative only; signal data is locked
+  → PostProcessing       warehouse, company memory, entity graph
   → AnalystBrief
 ```
 
 ---
 
-## Quickstart
+## Hosted app
+
+| Piece | Where | Notes |
+|---|---|---|
+| Web | Vercel project `deal-intelligence-app`, root `web/` | Landing page, sign-in, and the app (`/app`) |
+| API | Vercel project `deal-intelligence-api`, repository root (`vercel.json`) | All routes are listed at the top of `src/hosted_market.py` |
+| Database and auth | Supabase | Schema in `supabase/migrations/`; tables have row level security, writes go through functions that require `DEAL_INTEL_API_SECRET` |
+| Scheduled jobs | GitHub Actions | See [Scheduled jobs](#scheduled-jobs); only the weekday market snapshot remains a Vercel cron (it must run from Europe) |
+| Email | SendByte | Account emails (through Supabase SMTP) and watchlist alerts |
+
+**App sections:** Deals, Investors, Companies, Markets (overview, screener, compare, investments, portfolio,
+monitoring, valuation), Market briefs, Briefs, Research, Countries, Watchlists, Coverage, Evaluation.
+
+**Accounts.** Opening the app requires an account. Sign-up takes an email, a unique username and a nickname; passwords
+must be at least 12 characters with mixed character types, are checked against known data breaches, and must be typed
+twice. Google sign-in, email confirmation, password reset, optional two-factor sign-in with an authenticator app
+(enforced on the server for data access), and sign-out from all devices are supported. The edge middleware
+(`web/middleware.ts`) verifies the session signature on every app request.
+
+**Admin.** `/admin`, unlocked with `DEAL_INTEL_ADMIN_KEY`, shows anonymous visits and feature use, plus every
+account: sign-up method, confirmation, username, last use and active days. Activity is recorded at most once per
+30 minutes per account, never per page.
+
+**Usage limits.** Public datasets are cached at Vercel's edge for 15 to 60 minutes, so repeat visits do not run
+functions. The API domain disallows crawlers.
+
+### Environment
+
+| Project | Variables |
+|---|---|
+| API | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `DEAL_INTEL_API_SECRET` (must match `private.config.api_secret`), `ALLOWED_ORIGINS`, `CRON_SECRET`, `DEAL_INTEL_APP_URL`, `DEAL_INTEL_ADMIN_KEY`, model keys (`OPENCODE_API_KEY`, `OLLAMA_API_KEY`, `GROQ_API_KEY`, optional `ANTHROPIC_API_KEY`), `SENDBYTE_API_KEY` |
+| Web | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `AUTH_STATE_SECRET` |
+| GitHub Actions secrets | `DEAL_INTEL_API_SECRET`, `GROQ_API_KEY`, `OLLAMA_API_KEY`, `OPENCODE_API_KEY`, `SENDBYTE_API_KEY`, `AFRICA_API_KEY` (optional) |
+
+Secrets are stored only as Vercel sensitive variables or GitHub Actions secrets, never in the repository.
+
+Model providers are tried in order and the next one is used on any failure; `DEAL_INTEL_PROVIDER` pins one.
+
+---
+
+## Scheduled jobs
+
+The jobs run the API's own route handlers in-process on GitHub's runners (`scripts/run_cron.py`), so they cost no
+Vercel function time.
+
+| Workflow | When (UTC) | What it does |
+|---|---|---|
+| `scheduled-api-jobs.yml` | 04:11 and 15:11; 06:17; 06:53 | Deal and event ingestion with watchlist webhooks and emails; brief outcome labelling; showcase refresh |
+| `live-deal-ingestion.yml` | 18:17 | Nightly ingestion pass, country risk snapshots, Corporate of the Week |
+| `market-intraday.yml` | hourly 07:12 to 15:12, weekdays | Intraday quotes and government securities, ETFs, rates and funds |
+| `market-snapshot.yml` | on demand | Snapshot (on Vercel, from Paris) and the instruments refresh |
+| `enrich-round-investors.yml` | 19:04 | Reads round articles that name no investor and records the investors named |
+| `feed-health.yml` | 03:29 | Checks every outlet feed and saves replacements for dead ones (below) |
+| `daily-learning-pipeline.yml` | 04:37 and 14:37 | Macro signals and the daily research and evaluation refresh |
+| `backtest.yml` | monthly | Walk-forward historical backtest |
+| `historical-backfill.yml` | on demand | Deal history back to 2010, one month per call |
+| `python-quality-gates.yml`, `web-quality-gates.yml` | every push | Tests, lint, type check, build, browser tests |
+
+**Self-healing news feeds.** When an outlet's feed fails, comes back empty or stops updating, its replacement is found
+from the outlet itself: the feed its homepage advertises, a standard feed address on its site, then Google News
+limited to its site. Ingestion switches on the spot so no headlines are lost; the daily job saves lasting replacements
+to `src/data/feed_overrides.json` and drops one when the original works again. A run fails only when an active outlet
+cannot be reached at all; outlets that publish nothing anywhere are reported as dormant.
+
+---
+
+## Local development
 
 ```bash
 # For authorised collaborators only; see LICENSE.
 git clone https://github.com/HenryMorganDibie/deal-intelligence-agent
 cd deal-intelligence-agent
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=sk-ant-...
+uvicorn api.index:app --port 8787                      # API
+cd web && npm install && npm run dev                   # http://localhost:3000
 ```
 
-Optional configuration:
+Point `NEXT_PUBLIC_API_URL` in `web/.env.local` at `http://localhost:8787`. Without database variables the API uses
+local files in `data/`.
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `DEAL_INTEL_PROVIDER` | `auto` | `auto` uses every provider with a key, Claude first then Groq, falling through on any failure; `anthropic` or `groq` to pin one |
-| `DEAL_INTEL_GROQ_MODEL` | `openai/gpt-oss-120b` | Groq model (falls back to `qwen/qwen3.8-27b`) |
-| `DEAL_INTEL_ANTHROPIC_MODEL` | `claude-opus-5-5` | Claude model for explanation and synthesis |
-| `DEAL_INTEL_EFFORT` | `high` | Claude effort level (`low`, `medium`, `high`, `xhigh`, `max`) |
-| `DEAL_INTEL_WEBHOOK_URL` | unset | Default webhook for monitoring alerts |
-| `AFRICA_API_KEY` | GitHub Actions secret | Optional Africa API key used by the scheduled country-data workflow to refresh source-attributed current/monthly signals; the key is never needed by Vercel and signals do not change annual risk scores |
-
-If the LLM is unavailable (no key, outage, or a declined request), the brief is still
-produced from the deterministic engine's findings, labelled as such and flagged for
-human review.
-
-### Deals, Countries, Research, Companies
+### Command line
 
 ```bash
-python main.py deals --ingest                       # read every feed now (54 countries)
-python main.py deals --backfill 24                  # two years of history (date-restricted searches)
+python main.py deals --ingest                          # read every feed now
 python main.py deals --search Moniepoint --country NG
-python main.py deals --reextract                    # re-apply the extractor to the kept headlines
-python main.py deals --upload                       # push to the hosted database
-python main.py countries                            # risk ranking for the 54 countries
-python main.py countries --country SN               # risk components and currency for one country
-python main.py countries --refresh                  # re-download World Bank indicators (slow)
-# Optional: add AFRICA_API_KEY under GitHub repository Settings → Secrets and variables → Actions; the existing scheduled workflow publishes the supplemental snapshot
+python main.py countries --country SN                  # risk components and currency for one country
 python main.py research "Which Kenyan fintechs raised money this year, and from whom?"
 python main.py profile --company "Dangote Cement" --ticker DANGCEM.LG
-python main.py analyse --company Sonatel --country SN
-```
-
-### Core Analysis
-
-Brief-level event probability is the mean of the calibrated probabilities for its confirmed signals; it is omitted when no signals are confirmed. It is not an LLM self-assessment.
-
-```bash
-python main.py analyse --company "GTBank" --ticker GTCO
-python main.py analyse --company "WeWork" --compliance --output markdown --out-file brief.md
-python main.py analyse --company "SVB Financial" --signals credit_risk debt_restructuring --output json
-```
-
-### Backtesting
-
-```bash
-python main.py backtest --synthetic    # framework demo with seeded data
-python main.py outcomes --auto-label   # label past predictions (price vs benchmark, SEC filings)
-python main.py backtest --run          # against real warehouse outcomes
-python main.py backtest --report       # show latest results
-```
-
-### Portfolio Intelligence
-
-```bash
-python main.py portfolio --name africa_fund --add "GTBank" --ticker GTCO --weight 0.2 --market Africa
-python main.py portfolio --name africa_fund --add "Safaricom" --ticker SCOM --weight 0.15 --market Africa
+python main.py analyse --company "GTBank" --ticker GTCO --output markdown
+python main.py backtest --report
 python main.py portfolio --name africa_fund --risk
-```
-
-### Market Data (Automated Outcomes)
-
-```bash
-python main.py marketdata --price AAPL
-python main.py marketdata --volatility GTCO.LG
-# African listings whose symbol is also a US ticker need the exchange suffix:
-# SLM is Sallie Mae; use SLM.JO for Sanlam (likewise MTN.JO, UBA.LG, ...)
-python main.py marketdata --auto-outcome --company "Apple" --ticker AAPL \
-  --signal m_and_a_activity --severity high --date 2024-01-15
-```
-
-### Entity Resolution
-
-```bash
-python main.py entities --register "GTBank" --ticker GTCO \
-  --aliases "Guaranty Trust Bank" "GTBank Plc" --cik "" --lei ""
-python main.py entities --resolve "GTBank Plc"
-python main.py entities --merge "Guaranty Trust Bank" "GTBank Plc"
-python main.py entities --stats
-```
-
-### Alpha Explanation
-
-```bash
-# After running an analysis, get SHAP-style breakdown via JSON output:
-python main.py analyse --company "WeWork" --output json | python3 -c \
-  "import json,sys; d=json.load(sys.stdin); [print(json.dumps(s['alpha_score'],indent=2)) for s in d['detected_signals'] if s.get('alpha_score')]"
-```
-
-### Monitoring
-
-```bash
-python main.py monitor --add "GTBank" "Shoprite" "Safaricom"
-python main.py monitor --run-once
-python main.py monitor --run --interval 3600
-python main.py monitor --alerts
-```
-
-### Feedback & Calibration
-
-```bash
-python main.py feedback --submit company=WeWork signal_type=m_and_a_activity \
-  feedback_type=false_positive original_severity=high
-python main.py feedback --stats
-python main.py calibration --report
-```
-
-### Replay
-
-```bash
-python main.py replay --company "Credit Suisse" --date "2023-02-01"
-```
-
-### Audit & Graph
-
-```bash
+python main.py replay --company "Credit Suisse" --date 2023-02-01
 python main.py audit --verify
-python main.py graph --contagion "Bed Bath Beyond"
-python main.py graph --summary
 ```
 
----
-
-## Hosted App
-
-**Live:** [deal-intelligence.app](https://deal-intelligence.app) (API: `deal-intelligence-api.vercel.app`)
-
-The web app in `web/` (Next.js 14, Tailwind) is the landing page plus the app. There are no
-accounts: anyone can run an analysis, each brief gets a shareable link, and a visitor's list
-of briefs is kept in their own browser. The pipeline runs in `api/index.py`, a FastAPI
-function that reuses this repository's code unchanged.
-
-| Piece | Where | Notes |
-|---|---|---|
-| Web | Vercel project, root directory `web/` | `NEXT_PUBLIC_API_URL`, optional `NEXT_PUBLIC_SITE_URL` |
-| API | Vercel project, repository root (`vercel.json`) | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `DEAL_INTEL_API_SECRET`, `ALLOWED_ORIGINS`, `CRON_SECRET`, `DEAL_INTEL_APP_URL`, `ANTHROPIC_API_KEY` and/or `GROQ_API_KEY`, `DEAL_INTEL_PER_VISITOR_DAILY` (1,000), `DEAL_INTEL_GLOBAL_DAILY` (1,000) |
-| Storage | Supabase | briefs, runs, outcomes, prices, LLM cache, deals, events and watchlists behind functions (`supabase/migrations/`) |
-| Crons | Vercel (daily) | `/api/cron/ingest` reads every feed into deals and events and delivers webhooks; `/api/cron/label` labels brief outcomes and snapshots NGX/NSE prices; `/api/cron/showcase` runs the pipeline on a fixed list of US and African companies (`engines/showcase.py`) for the landing page, stored apart from visitors' briefs |
-
-App pages: Briefs, Research, Deals, Investors, Companies, Countries, Alerts, Coverage, Evaluation. The API routes are listed at the top of `src/hosted_market.py`.
-
-Writes go through database functions that require `DEAL_INTEL_API_SECRET`, which only the
-API holds, so the public key can read a brief by its id and nothing else. Visitors are
-counted by a salted hash of their IP (never the IP itself) for the daily limits. To see
-usage, run `select * from private.daily_usage;` in the Supabase SQL editor (runs, distinct
-visitors, completed and failed per day); page views are in Vercel Web Analytics. Without
-an LLM key (Claude or Groq) briefs and research answers come from the deterministic engine only and say so.
-The admin usage dashboard excludes the browser viewing it from page views and feature
-actions. Analysis and research runs use a salted IP hash, so the dashboard also omits
-runs from the current network; this may include other people sharing that network.
-Daily rate limits continue to use the same salted IP hash.
-
-Local development:
-
-```bash
-pip install -r requirements.txt && uvicorn api.index:app --port 8787   # API
-cd web && npm install && npm run dev                                    # http://localhost:3000
-```
-
-with `web/.env.local` pointing `NEXT_PUBLIC_API_URL` at `http://localhost:8787`.
+Other command groups: `outcomes`, `marketdata`, `entities`, `explain`, `monitor`, `feedback`, `calibration`,
+`memory`, `registry`, `graph`. Run `python main.py <group> --help`.
 
 ---
 
-## Data Sources
-
-**US:** SEC EDGAR (8-K with item codes, 10-K, 10-Q, SC 13D/13G, Form 4 open-market trades, DEF 14A), Yahoo Finance RSS, Google News US
-
-**African Exchanges:** official disclosures from NGX Nigeria (exchange document library), NSE Kenya (exchange document library) and JSE South Africa (SENS, current day); GSE Ghana, Egyptian Exchange (EGX), Casablanca and BRVM via news search and scraped sources
-
-**African News (49 RSS feeds):** Nigeria (10), South Africa (6), East Africa (7), Pan-African (8), Ghana (3), North Africa/Maghreb (3), West Africa/Francophone (4), Southern Africa (3), Horn of Africa (2), Ethiopia (2)
-
-**Private Capital & Institutional (48 scraped sources):**
-- PE/Deal Flow: GPCA, PSG Capital, Africa PE News × 4 categories, AVCA
-- DFIs: IFC, AfDB, Proparco, DBSA, BII, FMO
-- VC: Partech Africa, Novastar, Kepple Africa, TLcom, Catalyst Fund
-- Credit: Rand Merchant Bank, Standard Bank Research
-- Exchanges: EGX, Casablanca, BRVM, DSE Tanzania, USE Uganda, RSE Rwanda
-- Regulators: SEC Nigeria, FSCA SA, CMA Kenya, CBN, SARB
-- Ratings/Macro: GCR Ratings, IMF Africa, World Bank Africa, Moody's Africa, Afreximbank
-
----
-
-## Project Structure
+## Project structure
 
 ```
 deal-intelligence-agent/
-├── main.py                              # CLI: 16 command groups
-├── requirements.txt                     # runtime (also used by the Vercel API)
-├── requirements-dev.txt                 # + pytest
-├── api/index.py                         # hosted API (FastAPI on Vercel)
-├── web/                                 # landing page + signed-in app (Next.js)
-├── README.md
-├── ARCHITECTURE.md                      # Full technical reference + honest limitations
-├── supabase/migrations/                 # hosted app schema (briefs, runs, outcomes)
-├── docs/BACKTEST.md                     # historical backtest report (+ backtest_summary.json)
+├── api/
+│   ├── index.py                 # hosted API (FastAPI): briefs, analysis, admin, caching rules
+│   └── market_snapshot.py       # daily market snapshot, deployed in Paris
 ├── src/
-│   ├── hosted_market.py                # API routes: countries, deals, investors, companies, research, alerts
-│   ├── data/
-│   │   ├── africa_countries.py         # the 54 countries: codes, languages, currency, exchange, regulators
-│   │   ├── country_indicators.json     # World Bank governance and macro snapshot (committed)
-│   │   └── measured_outcomes.json      # backtest observations, hit rates and moves; pooled hourly with live outcomes
-│   ├── schemas/models.py               # All Pydantic types (25+ models)
-│   ├── engines/                        # 21 deterministic intelligence engines
-│   │   ├── deterministic_engine.py     # 70+ rules, NER, credibility
-│   │   ├── signal_interaction.py       # 17 direction-aware compound event rules
-│   │   ├── calibration.py             # Severity bands + measured hit rates
-│   │   ├── measured.py                # measured outcome tables (from the backtest)
-│   │   ├── adaptive_calibration.py    # Outcome-aware severity adjustment
-│   │   ├── confidence.py              # 7-component evidence-quality breakdown per signal
-│   │   ├── semantic.py                # 9 typed financial clause categories
-│   │   ├── alpha_scorer.py            # 0–100 composite + measured moves
-│   │   ├── alpha_explainer.py         # SHAP-style attribution breakdown
-│   │   ├── signal_registry.py         # Signal metadata; patterns derived from the engine rules
-│   │   ├── feedback.py                # Analyst corrections + source EMA
-│   │   ├── audit_log.py               # SHA-256 hash-chained audit trail
-│   │   ├── warehouse.py               # SQLite event warehouse (8 tables)
-│   │   ├── replay.py                  # Deterministic historical replay
-│   │   ├── backtest.py                # Precision/recall/F1/hit rate/abnormal return/drawdown
-│   │   ├── outcome_labeller.py        # Automatic outcomes: benchmark-adjusted moves, SEC ground truth
-│   │   ├── company_memory.py          # Longitudinal EMA risk profiles
-│   │   ├── market_data.py             # yfinance auto-outcome fetching
-│   │   ├── market_impact.py           # Outcome tracking + accuracy metrics
-│   │   ├── portfolio.py               # Portfolio risk aggregation
-│   │   ├── entity_resolver.py         # Canonical registry + LEI/CIK/alias
-│   │   ├── graph_intelligence.py      # NetworkX entity graph + contagion
-│   │   ├── monitoring.py              # Watchlist + Slack/webhook alerts (CLI)
-│   │   ├── deals.py                   # deal extraction, merging, search, comparables
-│   │   ├── market_feed.py             # daily feed: 54-country searches + RSS -> deals and events
-│   │   ├── investors.py               # investor registry, roles, profiles, funds and LPs
-│   │   ├── financials.py              # statement parsing (NGX, NSE Kenya PDFs), Yahoo, SEC XBRL, checks
-│   │   ├── company_profile.py         # company profiles: identity, market, statements, private markets
-│   │   ├── country_risk.py            # 54-country risk scores from World Bank indicators
-│   │   ├── market_risk.py             # currency risk, sector risk, valuation view
-│   │   ├── research.py                # source-grounded research and reports
-│   │   ├── watch.py                   # watchlist matching, RSS, webhooks
-│   │   ├── coverage.py                # coverage and verification tier per country
-│   │   └── historical_backtest.py     # walk-forward historical backtest
-│   ├── tools/
-│   │   ├── edgar_tool.py              # SEC EDGAR API
-│   │   ├── africa_tool.py             # 49 feeds + 48 PE/institutional sources
-│   │   └── news_tool.py               # Global RSS + relevance scoring
-│   ├── agents/
-│   │   ├── collection_agent.py        # Node 1: 3-pipeline concurrent
-│   │   ├── signal_agent.py            # Nodes 2–6: det. engine → LLM → alpha → synthesis
-│   │   └── graph.py                   # 8-node LangGraph orchestration
-│   └── utils/
-│       └── formatter.py               # Terminal (Rich), JSON, Markdown
-├── data/                               # Auto-created on first run
-│   ├── warehouse.db                   # SQLite (8 tables)
-│   ├── feedback.json                  # Analyst corrections
-│   ├── audit_log.jsonl                # Immutable hash-chained trail
-│   ├── company_memory.json            # Risk profiles
-│   ├── market_outcomes.json           # Outcome tracking
-│   ├── backtest_results.json          # Backtest history
-│   ├── entity_registry.json           # Canonical entity registry
-│   ├── entity_graph.json              # NetworkX graph
-│   ├── watchlist.json                 # Monitoring watchlist
-│   ├── portfolios.json                # Portfolio definitions
-│   └── alerts.json                    # Alert history
-└── tests/
-    ├── conftest.py                    # Redirects every data store to a per-test temp dir
-    ├── test_all.py                    # pipeline, engines, API
-    └── test_africa_data.py            # countries, risk, deals, investors, financials, research, alerts
+│   ├── hosted_market.py         # API routes: deals, events, investors, markets, watchlists, research, cron jobs
+│   ├── engines/                 # deterministic engines: deals, market_feed, feed_healing, markets, instruments,
+│   │                            #   investors, financials, valuation, country_risk, research, watch, email_alerts,
+│   │                            #   backtest, calibration, alpha scoring, audit log, entity graph, ...
+│   ├── tools/                   # SEC EDGAR, African exchanges and feeds, global news
+│   ├── agents/                  # brief pipeline (LangGraph) and model providers
+│   └── data/                    # countries, indicators, measured outcomes, feed replacements
+├── web/                         # Next.js app: landing, accounts, app, admin; middleware.ts gates /app
+├── supabase/migrations/         # database schema and functions
+├── scripts/                     # run_cron.py, check_feeds.py, data refresh scripts
+├── evaluation/                  # labelled sets and scorers
+├── docs/                        # backtest report and summaries
+├── tests/                       # Python tests (data stores redirected to a temp dir)
+├── ARCHITECTURE.md              # technical reference and limitations
+└── LICENSE                      # proprietary
 ```
 
 ---
@@ -347,34 +203,34 @@ deal-intelligence-agent/
 ## Testing
 
 ```bash
-pip install -r requirements-dev.txt
-pytest -q
+pip install -r requirements-dev.txt && pytest -q      # 972 Python tests
+cd web && npm run test:markets && npm run lint && npm run typecheck
 ```
 
-**546 tests** (`pytest`; they never touch the real `data/` directory) across every layer: schemas, deterministic engine (all 8 signal types), signal interaction (all compound rules + alpha multipliers), warehouse (7 tables, store/retrieve, history), replay (config snapshot, deterministic run, diff comparison), backtesting (all signal types, metrics structure, F1 formula, max drawdown), company memory (EMA updates, trend detection, signal density), confidence decomposition (all 7 components), semantic extraction (all 9 clause types), adaptive calibration, market data (ticker resolution, invalid ticker handling, African exchange suffixes), portfolio intelligence (CRUD, risk aggregation, contagion detection, risk levels), entity resolver (register/resolve/aliases/CIK/ticker/merge/normalisation/stats), alpha explainer (all components, SHAP attribution, compound boost, compliance notes), African sources expansion (BRVM/EGX/Casablanca/IMF/World Bank/GCR/Ecofin/Morocco present), collection agent (3-pipeline merge, deduplication, fault isolation), graph integration, automatic outcome labelling (benchmark-adjusted returns, SEC ground truth, recall), French-language detection, the hosted API, the 54-country registry, country and currency risk formulas, deal extraction (amounts, roles, stages, rejection of non-deals) in three languages, investor roles, statement parsing and accounting checks, citation validation, watchlist matching and webhook safety, coverage tiers.
+The web gates also build the app and run Playwright browser tests (accounts, password rules, markets, admin). Tests
+never touch the real `data/` directory or the hosted database.
 
 ## Evaluation
 
-Signals, deals and attribution are measured on published, labelled sets with sample sizes and 95%
-intervals, with development and held-out sets kept apart (`evaluation/README.md`):
+Signals, deals and attribution are measured on published, labelled sets with sample sizes and 95% intervals, with
+development and held-out sets kept apart (`evaluation/README.md`):
 
 ```bash
 python main.py backtest --evaluation          # signal outcomes: event confirmation and market reaction, separately
 python -m evaluation.deals.score              # deal extraction, deduplication, identity resolution
-python -m evaluation.attribution.score       # is a news event about the named company? (real headlines)
+python -m evaluation.attribution.score        # is a news event about the named company? (real headlines)
 ```
 
-Held-out results (14 Oct 2026): 82% [75–88] of extracted deal records are genuine transactions,
-92% [85–96] of deal-like headlines are caught, 71% [61–79] of records have every field right;
-on a random sample of 400 real news headlines, attribution finds 30% [20–42] of real events at
-86% [65–95] precision, with false alarms on 1% of headlines that report no event. Each deal page shows field-level verification: corroborated by independent stories,
-single source, derived, classified, uncertain or not disclosed.
+Held-out results (14 October 2026): 82% [75 to 88] of extracted deal records are genuine transactions, 92% [85 to 96]
+of deal-like headlines are caught, and 71% [61 to 79] of records have every field right. On 400 real news headlines,
+attribution finds 30% [20 to 42] of real events at 86% [65 to 95] precision, with false alarms on 1% of headlines
+that report no event.
 
 ---
 
 ## Author
 
-**Henry Dibie** — ML Systems Engineer & Data Scientist
+**Henry Chukwunwike Dibie**, ML Systems Engineer and Data Scientist
 [github.com/HenryMorganDibie](https://github.com/HenryMorganDibie) · [linkedin.com/in/kinghenrymorgan](https://linkedin.com/in/kinghenrymorgan)
 
 ## Licence
