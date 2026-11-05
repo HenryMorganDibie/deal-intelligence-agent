@@ -101,7 +101,7 @@ account: sign-up method, confirmation, username, last use and active days. Activ
 - Collection, ingestion, alerts and market refreshes run on GitHub Actions, not Vercel; only the weekday market
   snapshot is a Vercel cron.
 - A deployment empties the edge cache and restarts every function, so each project redeploys only when something it
-  serves changed (`scripts/vercel-ignore-api.sh`, `web/scripts/vercel-ignore-web.sh`). Automatic data commits that
+  serves changed (`deploy/vercel-ignore-api.sh`, `web/deploy/vercel-ignore-web.sh`; kept out of `scripts/`, which `.vercelignore` removes). Automatic data commits that
   only the jobs or the other project read no longer redeploy it.
 - Public datasets are cached at the edge for 15 to 60 minutes, so repeat visits do not run functions, and the API
   domain disallows crawlers.

@@ -9,7 +9,7 @@ if [ -z "$prev" ] || ! git cat-file -e "${prev}^{commit}" 2>/dev/null; then
 fi
 changed="$(git diff --name-only "$prev" HEAD)"
 # Paths the API never reads at runtime.
-ignored='^(web/|\.github/|tests/|scripts/|supabase/|evaluation/review/[^/]+/pool\.jsonl$|[^/]+\.md$|docs/[^/]+\.md$|LICENSE$|src/data/feed_overrides\.json$)'
+ignored='^(web/|\.github/|tests/|scripts/|supabase/|deploy/|evaluation/review/[^/]+/pool\.jsonl$|[^/]+\.md$|docs/[^/]+\.md$|LICENSE$|src/data/feed_overrides\.json$)'
 if [ -n "$changed" ] && printf '%s\n' "$changed" | grep -qvE "$ignored"; then
   echo "API files changed: building."; printf '%s\n' "$changed" | grep -vE "$ignored" | head -20; exit 1
 fi
