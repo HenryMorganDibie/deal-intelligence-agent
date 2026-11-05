@@ -963,6 +963,38 @@
     "education institution": {
       "name": "Education Institution",
       "kind": "organization"
+    },
+    "brazilian": {
+      "name": "Brazilian",
+      "kind": "organization"
+    },
+    "you": {
+      "name": "You",
+      "kind": "organization"
+    },
+    "adc": {
+      "name": "ADC",
+      "kind": "organization"
+    },
+    "mendes": {
+      "name": "Mendes",
+      "kind": "organization"
+    },
+    "ausc": {
+      "name": "AUSC",
+      "kind": "organization"
+    },
+    "african stablecoin payments startup yellow card": {
+      "name": "African Stablecoin Payments Startup Yellow Card",
+      "kind": "organization"
+    },
+    "brazilian crypto firm gomoney": {
+      "name": "Brazilian Crypto Firm GoMoney",
+      "kind": "organization"
+    },
+    "4dx ventures enza": {
+      "name": "4DX Ventures. Enza",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -2934,6 +2966,11 @@
           "title": "Yellow Card acquires GoMoney to enter Brazil",
           "publisher": "Techpoint Africa",
           "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE93RTNDdHJuR3liUE94U1F2RE5NX3NOUGRndjJhVnVyT1lWYkxwVElFUzdjVTZ6Y1Z4X2duVGVNQlRNeTc5WU00aG5KeGZhQlZJZXBuSWRGZXM1cjRCSmktal9Xa2hJZw?oc=5"
+        },
+        {
+          "title": "Yellow Card Acquires GoMoney, Establishing Direct Operations In Brazil",
+          "publisher": "Independent Newspaper Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNRVlMTTZ1ZmNFSlFGeU8yeHRYT2RPandkeUhCT1p2dnpIcVlJUUxpdjZFRVUybG5lT1VqUTBmaGRwYUNQOHphcFYtZkZzN3pCSThFMFNUQlE4clJDcGJZNkkwU3JMUGZCeUFDajdwT3Z0MTZqMGdWVnNMQ2lYOXhIN2p0Q3p6QWhfT0FhbnBIN3hOR3JvR0hEbw?oc=5"
         }
       ]
     },
@@ -2976,6 +3013,11 @@
           "title": "AFD signs $60 million loan deals with BOI, Sterling Bank to support Nigerian businesses",
           "publisher": "Nairametrics",
           "url": "https://nairametrics.com/2026/11/05/afd-signs-60-million-loan-deals-with-boi-sterling-bank-to-support-nigerian-businesses/"
+        },
+        {
+          "title": "AFD signs $60 million loan deals with BOI, Sterling Bank to support Nigerian businesses",
+          "publisher": "Nairametrics",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQcGpVLXo0MVgtTDZlZXMwekNCX1BEcjhjREJJekg1UU4xZlExc0U1MHQyTDZIT1g2NUhQYmd4SEpubzl3VG5rb19HOUJUS0JRbG9URVZJa1doN0ZTaGpuOTNYNUJXVy1jWjZGQ2dtNFlNbXFZeTJYWkZfeGVpam1OUDJBcDZzVS04dDBfMWN3TWlSRkJvWm5nUlBtSUpSNTJucVZURDhPMTRnZ3dpVlluRGpxSl9uOHlJalNiNGYwVQ?oc=5"
         }
       ]
     },
@@ -3132,7 +3174,77 @@
           "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5VR1dhTjFtWng4S0RKQTFXUll5YTExYkwyZnhQai1HTDBRQXdTYmY4VWtGZU4yYTlWdnd6WWV3enlHbl9XMUVWLVNwX201Nms2bnNaTGItdmVYNm5qTnpwMDBmWkVTTk9LZlRUWEhMaEZMLURzZlE?oc=5"
         }
       ]
+    },
+    "9caf502e3c813b0368a8": {
+      "id": "9caf502e3c813b0368a8",
+      "from": "yellow card",
+      "to": "brazilian",
+      "type": "acquisition",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "Yellow Card acquires Brazilian crypto firm GoMoney, expands Latin American operations",
+          "publisher": "Nairametrics",
+          "url": "https://nairametrics.com/2026/11/05/yellow-card-acquires-brazilian-crypto-firm-gomoney-expands-latin-american-operations/"
+        }
+      ]
+    },
+    "46f8a1f7173afffc2522": {
+      "id": "46f8a1f7173afffc2522",
+      "from": "you",
+      "to": "adc",
+      "type": "acquisition",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "Bwala to David Mark-led exco: You took over ADC leadership undemocratically and hoped all is well",
+          "publisher": "Vanguard Nigeria",
+          "url": "https://www.vanguardngr.com/2026/11/bwala-to-david-mark-led-exco-you-took-over-adc-leadership-undemocratically-and-hoped-all-is-well/"
+        }
+      ]
+    },
+    "e4e49a16eadfc7c56e7b": {
+      "id": "e4e49a16eadfc7c56e7b",
+      "from": "mendes",
+      "to": "ausc",
+      "type": "acquisition",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "Mozambique's Mendes takes over AUSC leadership",
+          "publisher": "Daily Monitor",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOYVBCanE0YnpGcEctU2cybUhlRGZjU005LXRLMFRGMW9yU09vUjNpcVlZSlpzcFdkT2treDJkQWVPcDItYVdWZFF3M21fbFFELWQ1R1hWRmhWX3JCRFVBQ0M4ZUp1Z0RCRERNektrSE52RWd2X0xVS21DMU1mTm0zNXZaTmVtWGZzaGluTUtIaWhwYXI0eklPVUVDRnNKUUpFSzRfb18yQzVnUQ?oc=5"
+        }
+      ]
+    },
+    "4f2bb1809199d04f688a": {
+      "id": "4f2bb1809199d04f688a",
+      "from": "african stablecoin payments startup yellow card",
+      "to": "brazilian crypto firm gomoney",
+      "type": "acquisition",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "African Stablecoin Payments Startup Yellow Card Acquires Brazilian Crypto Firm GoMoney",
+          "publisher": "WeeTracker",
+          "url": "https://weetracker.com/2026/11/05/yellow-card-acquires-brazilian-crypto-firm-gomoney/"
+        }
+      ]
+    },
+    "444468fb9a58fcde18b5": {
+      "id": "444468fb9a58fcde18b5",
+      "from": "4dx ventures enza",
+      "to": "enza",
+      "type": "equity_funding",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "Enza raises $6m round led by 4DX Ventures",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxQZkxqZm9sRHZVTnA4OUZXTTQ2VkxiSlFLcEZoM21Qbk9EMkpRTF9iS0x6N2xvUkhwN3JwZ25qUjJEUlE1Znl5cTlUaUZ0M1VUQ0NlaWM4VkM2ZHcyVDVhMzBIcDdOQ0ZXbW8wX1JhaEpfd05FaEZGdW9NeDNjZFpsNUJhdk9TNmJQUlE?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-05T12:55:23.909896+00:00"
+  "updated_at": "2026-11-05T21:13:24.927679+00:00"
 }

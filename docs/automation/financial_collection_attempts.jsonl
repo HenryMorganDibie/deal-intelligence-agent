@@ -428,3 +428,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ETO.JO"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-05", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46470_E-TRANZACT_INTERNATIONAL_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "ETRANZACT.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ETRS.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-05", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47950_EUNISELL_INTERLINKED_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2026_FINANCIAL_STATEMENTS_SEPTEMBER_2026.pdf", "status": "collected", "ticker": "EUNISELL.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EUZ.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "EVANSMED.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "EVRD.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EXP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EXPA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EXX.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "FAB.GH"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-05", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/ILAM-Fahari-I-REIT-Full-Year-Results.pdf", "status": "collected", "ticker": "FAHR.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "FAIT.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "FAITA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "FBR.JO"}
