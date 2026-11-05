@@ -387,3 +387,31 @@ test("admin page lists accounts and who is using the app", async ({ page }) => {
   await expect(page.getByText("ada@example.com")).toHaveCount(0);
   await page.screenshot({ path: "test-results/admin-accounts.png", fullPage: true });
 });
+
+test("the app header has an account menu that signs out", async ({ page }) => {
+  let signedOut = false;
+  await page.route("**/api/portfolio/auth", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ status: signedOut ? 401 : 200, contentType: "application/json", body: JSON.stringify(signedOut
+        ? { authenticated: false }
+        : { authenticated: true, user: { email: "ada@example.com" }, profile: { username: "ada_l", displayName: "Ada" }, mfa: { enrolled: false } }) });
+      return;
+    }
+    expect(route.request().postDataJSON()).toEqual({ action: "sign-out" });
+    signedOut = true;
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+  });
+  await page.goto("/app/deals");
+  const trigger = page.getByRole("button", { name: "Account menu for Ada" });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  await expect(page.getByRole("menu", { name: "Account" })).toContainText("@ada_l");
+  await expect(page.getByRole("menu", { name: "Account" })).toContainText("ada@example.com");
+  await expect(page.getByRole("menuitem", { name: "Password and security" })).toHaveAttribute("href", "/account/security");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu", { name: "Account" })).toHaveCount(0);
+  await trigger.click();
+  await page.getByRole("menuitem", { name: "Sign out" }).click();
+  await page.waitForURL("**/account");
+  expect(signedOut).toBe(true);
+});

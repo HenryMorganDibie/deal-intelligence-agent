@@ -198,7 +198,8 @@ export async function POST(request: NextRequest) {
     if (action === "sign-out" || action === "sign-out-everywhere") {
       const session = await getPortfolioSession().catch(() => null);
       if (session) {
-        await supabase(`/auth/v1/logout${action === "sign-out-everywhere" ? "?scope=global" : ""}`, { method: "POST", token: session.accessToken }).catch(() => undefined);
+        // Supabase's logout defaults to every device; a plain sign-out ends only this session.
+        await supabase(`/auth/v1/logout?scope=${action === "sign-out-everywhere" ? "global" : "local"}`, { method: "POST", token: session.accessToken }).catch(() => undefined);
       }
       clearPortfolioAuthCookies();
       dropAuthState();
