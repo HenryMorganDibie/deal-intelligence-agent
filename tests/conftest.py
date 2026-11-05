@@ -7,7 +7,12 @@ after each test, which also undoes path overrides made inside test bodies.
 """
 from __future__ import annotations
 
+import os
+
 import pytest
+
+# Tests call the API many times a minute from one address; the per-IP limit is tested on its own.
+os.environ.setdefault("DEAL_INTEL_IP_PER_MINUTE", "0")
 
 # (module, attribute, file name) for every persistent store under data/.
 _STORES = [

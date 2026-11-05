@@ -107,7 +107,8 @@ account: sign-up method, confirmation, username, last use and active days. Activ
   domain disallows crawlers.
 - Briefs, research answers and reports, the only long-running requests, are capped at 15 per visitor and 100 in
   total per day (`DEAL_INTEL_PER_VISITOR_DAILY`, `DEAL_INTEL_GLOBAL_DAILY`).
-- A Vercel Firewall rule limits each IP to 120 API requests a minute, so floods are stopped at the edge.
+- The API answers more than 120 requests a minute from one IP with an immediate 429, before any database or
+  model work (`DEAL_INTEL_IP_PER_MINUTE`), so traffic that bypasses the cache costs milliseconds.
 
 ### Environment
 

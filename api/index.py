@@ -53,6 +53,41 @@ CRON_SECRET = os.environ.get("CRON_SECRET", "")
 ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 
 app = FastAPI(title="Deal Intelligence API", docs_url=None, redoc_url=None, openapi_url=None)
+
+# ── Per-IP rate limit ──
+# Answers a flood with an immediate 429 before any database or model work, so scripted traffic that bypasses the
+# edge cache (for example with changing query strings) costs milliseconds, not seconds. Counted per instance in a
+# one-minute fixed window; normal app use is far below the limit. Registered before CORS so CORS wraps the 429.
+IP_PER_MINUTE = int(os.environ.get("DEAL_INTEL_IP_PER_MINUTE", "120"))
+_ip_window: dict[str, tuple[int, int]] = {}
+
+
+def _rate_limited(ip: str, now: float) -> bool:
+    minute = int(now // 60)
+    start, count = _ip_window.get(ip, (minute, 0))
+    if start != minute:
+        start, count = minute, 0
+    count += 1
+    _ip_window[ip] = (start, count)
+    if len(_ip_window) > 5000:                      # forget earlier minutes so memory stays bounded
+        for key in [k for k, (m, _) in _ip_window.items() if m != minute]:
+            _ip_window.pop(key, None)
+    return count > IP_PER_MINUTE
+
+
+@app.middleware("http")
+async def limit_requests_per_ip(request: Request, call_next):
+    if (IP_PER_MINUTE > 0 and request.method != "OPTIONS" and request.url.path != "/robots.txt"
+            and not (CRON_SECRET and request.headers.get("authorization") == f"Bearer {CRON_SECRET}")):
+        forwarded = request.headers.get("x-forwarded-for", "")
+        ip = forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
+        if _rate_limited(ip, time.time()):
+            return Response('{"detail":"Too many requests. Try again in a minute."}', status_code=429,
+                            media_type="application/json",
+                            headers={"Retry-After": "60", "Cache-Control": "no-store"})
+    return await call_next(request)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS or ["http://localhost:3000"],
