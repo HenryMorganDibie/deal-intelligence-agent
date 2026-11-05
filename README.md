@@ -96,8 +96,18 @@ twice. Google sign-in, email confirmation, password reset, optional two-factor s
 account: sign-up method, confirmation, username, last use and active days. Activity is recorded at most once per
 30 minutes per account, never per page.
 
-**Usage limits.** Public datasets are cached at Vercel's edge for 15 to 60 minutes, so repeat visits do not run
-functions. The API domain disallows crawlers.
+**Staying within Vercel's free allowance.** The hosting is kept inside the Hobby plan by design:
+
+- Collection, ingestion, alerts and market refreshes run on GitHub Actions, not Vercel; only the weekday market
+  snapshot is a Vercel cron.
+- A deployment empties the edge cache and restarts every function, so each project redeploys only when something it
+  serves changed (`scripts/vercel-ignore-api.sh`, `web/scripts/vercel-ignore-web.sh`). Automatic data commits that
+  only the jobs or the other project read no longer redeploy it.
+- Public datasets are cached at the edge for 15 to 60 minutes, so repeat visits do not run functions, and the API
+  domain disallows crawlers.
+- Briefs, research answers and reports, the only long-running requests, are capped at 15 per visitor and 100 in
+  total per day (`DEAL_INTEL_PER_VISITOR_DAILY`, `DEAL_INTEL_GLOBAL_DAILY`).
+- A Vercel Firewall rule limits each IP to 120 API requests a minute, so floods are stopped at the edge.
 
 ### Environment
 

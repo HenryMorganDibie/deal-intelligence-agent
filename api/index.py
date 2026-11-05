@@ -44,8 +44,11 @@ log = logging.getLogger("deal_intel.api")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_KEY = os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")
 API_SECRET = os.environ.get("DEAL_INTEL_API_SECRET", "")
-PER_VISITOR_DAILY = int(os.environ.get("DEAL_INTEL_PER_VISITOR_DAILY", "1000"))
-GLOBAL_DAILY = int(os.environ.get("DEAL_INTEL_GLOBAL_DAILY", "1000"))
+# Briefs, research answers and reports each run for up to a few minutes and call the language model, so their
+# daily caps keep the hosting within its free allowance even if someone scripts requests: 15 per visitor and
+# 100 for everyone together (real use is a few a day). Raise them with the environment variables when needed.
+PER_VISITOR_DAILY = int(os.environ.get("DEAL_INTEL_PER_VISITOR_DAILY", "15"))
+GLOBAL_DAILY = int(os.environ.get("DEAL_INTEL_GLOBAL_DAILY", "100"))
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 
