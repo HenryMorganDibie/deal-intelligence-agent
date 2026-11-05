@@ -1,5 +1,7 @@
 # Deal Intelligence Agent
 
+> **Proprietary software. All rights reserved.** This repository is the private property of Henry Chukwunwike Dibie (Deal Intelligence). No licence is granted to use, copy, clone, modify or distribute any part of it. See [LICENSE](LICENSE). Licensing enquiries: info@deal-intelligence.app
+
 An autonomous multi-agent deal intelligence system for **US and African markets**, covering all 54 African countries. Deterministic signal engine + LLM explanation layer (Claude and Groq) + compound event detection + alpha scoring + backtesting + deals database + investors and funds + company financials + country, currency and sector risk + source-grounded research + monitoring and alerts + institutional audit trail.
 
 Built for PE firms, credit analysts, research houses, hedge funds, and corporate finance teams.
@@ -69,6 +71,7 @@ Request
 ## Quickstart
 
 ```bash
+# For authorised collaborators only; see LICENSE.
 git clone https://github.com/HenryMorganDibie/deal-intelligence-agent
 cd deal-intelligence-agent
 pip install -r requirements.txt
@@ -373,3 +376,7 @@ single source, derived, classified, uncertain or not disclosed.
 
 **Henry Dibie** — ML Systems Engineer & Data Scientist
 [github.com/HenryMorganDibie](https://github.com/HenryMorganDibie) · [linkedin.com/in/kinghenrymorgan](https://linkedin.com/in/kinghenrymorgan)
+
+## Licence
+
+Proprietary. Copyright (c) 2026 Henry Chukwunwike Dibie. All rights reserved. See [LICENSE](LICENSE).
