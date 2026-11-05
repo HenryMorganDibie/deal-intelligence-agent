@@ -883,6 +883,86 @@
     "newman": {
       "name": "Newman",
       "kind": "organization"
+    },
+    "afd": {
+      "name": "AFD",
+      "kind": "organization"
+    },
+    "boi": {
+      "name": "BOI",
+      "kind": "organization"
+    },
+    "old mutual insure": {
+      "name": "Old Mutual Insure",
+      "kind": "organization"
+    },
+    "re corporate solutions sa": {
+      "name": "Re Corporate Solutions’ SA",
+      "kind": "organization"
+    },
+    "prodalim": {
+      "name": "Prodalim",
+      "kind": "organization"
+    },
+    "brenn o kem": {
+      "name": "Brenn-O-Kem",
+      "kind": "organization"
+    },
+    "michael dell": {
+      "name": "Michael Dell",
+      "kind": "organization"
+    },
+    "baldwin": {
+      "name": "Baldwin",
+      "kind": "organization"
+    },
+    "kifiya": {
+      "name": "Kifiya",
+      "kind": "organization"
+    },
+    "undisclosed engineering firm": {
+      "name": "Undisclosed engineering firm",
+      "kind": "organization"
+    },
+    "dott services": {
+      "name": "DOTT Services",
+      "kind": "organization"
+    },
+    "agilent": {
+      "name": "Agilent",
+      "kind": "organization"
+    },
+    "proscia": {
+      "name": "Proscia",
+      "kind": "organization"
+    },
+    "expand long term": {
+      "name": "Expand Long-term",
+      "kind": "organization"
+    },
+    "google org": {
+      "name": "Google.org",
+      "kind": "organization"
+    },
+    "helium health": {
+      "name": "Helium Health",
+      "kind": "organization"
+    },
+    "sierra leone and wfp": {
+      "name": "Sierra Leone and WFP",
+      "kind": "organization"
+    },
+    "sle": {
+      "name": "SLE",
+      "kind": "organization"
+    },
+    "export import bank of korea": {
+      "name": "Export-Import Bank of Korea",
+      "kind": "organization"
+    },
+    "education institution": {
+      "name": "Education Institution",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1118,6 +1198,11 @@
           "title": "Nedbank Completes NCBA Takeover as NSE Turnover Surges",
           "publisher": "Khusoko",
           "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNYURTckRkRm42OWlLVEE1QUg2V2oyT2FCelJsYkY5Q3R0NTVNbGRKMTg3R25uSmUtWFZLYWV3UUtIdDBUWE90blFnS3JnWnFZcC0xamZfYndnTFVhTkFHSWRiYnVGM01PTzRkZDBkTHR6dVQxZlVvd0JVbVJXNFBTT0Z3?oc=5"
+        },
+        {
+          "title": "Nedbank completes acquisition of 66% of Kenya’s NCBA",
+          "publisher": "BusinessDay SA",
+          "url": "https://www.businessday.co.za/companies/company-strategy/2026-11-05-nedbank-completes-acquisition-of-66-of-kenyas-ncba/"
         }
       ]
     },
@@ -2187,6 +2272,11 @@
           "title": "EBRD invests US$100 million in Banque du Caire IPO to advance Egypt’s bank listing and private ownership",
           "publisher": "fundsforNGOs News",
           "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQaWZjTEJhaTdOd0hVX2FoM1dzcUlMczJCWTBNZUUzck1FMlRHbEREa2E2aFJ3SHFzcF9BVFhHOHg5VzBzNENCRC1HN2VWcDVReml2OVFQdjJJV0ZoN1hCRUcxRlQtekNWQjgxUloyUDJpTDdzanVraWpuaHV4b0FzOE9NZ2lpMFZSU25DbUh3WXBDWXFhNEpSSXpn?oc=5"
+        },
+        {
+          "title": "EBRD invests $100m in Banque du Caire IPO to support Egypt’s privatisation programme",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNTHhWZGEzRUNXQkVfMW1qcU9ib0dWb1BBOUhxNGxoS3A2Q3BtcDBHekt0eTJQOFhrajA4elNzOG5kRjc2T0ZkSjBNMHlyTjhKNU5FSHdCNkRldzlsZEFPZElEVDRKeXg4bVBwZzNQQV9WOEFWUkRiTDQxU2hrdDVEWUdCWnBvWk1uTTRCVUFic0o4bUJYT05KRnV1WGdfQk4wR0p2bkhXYUZqclZsMWNWM2pwWjlqS2tmSlR6V0Z4Q0ZMekttdTRrSA?oc=5"
         }
       ]
     },
@@ -2768,6 +2858,11 @@
           "title": "Clinical Psychologists Seek Greater Investment in Mental Health Services for Victims of Insecurity",
           "publisher": "ThisDay Nigeria",
           "url": "https://www.thisdaylive.com/2026/11/04/clinical-psychologists-seek-greater-investment-in-mental-health-services-for-victims-of-insecurity/"
+        },
+        {
+          "title": "Clinical Psychologists Seek Greater Investment in Mental Health Services for Victims of Insecurity",
+          "publisher": "ThisDay Nigeria",
+          "url": "https://www.thisdaylive.com/2026/11/05/clinical-psychologists-seek-greater-investment-in-mental-health-services-for-victims-of-insecurity-2/"
         }
       ]
     },
@@ -2829,6 +2924,16 @@
           "title": "Yellow Card completes GoMoney acquisition for Brazil entry, Chris Maurice notes",
           "publisher": "Traders Union",
           "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPbTB1T2dwWjlQMmp6VjB5NTRPLUxkOE9KOWNKOXltMngtdWhhdGVxamlRTmFUYWNBNW9GRTNvQnppcVc4VHJ2ZEczbmhiSmd6R1R0VldBSUVBcVlMMFFXQ21wVHV2VFNNRDBYbkpQXzFOZXZ3aHphTHVOZk9PaDdPWGVUOFdvTzZram9SWHl3dw?oc=5"
+        },
+        {
+          "title": "Yellow Card Acquires Brazil’s GoMoney to Secure Direct LatAm Foothold",
+          "publisher": "Launch Base Africa",
+          "url": "https://launchbaseafrica.com/2026/11/05/yellow-card-acquires-brazils-gomoney-to-secure-direct-latam-foothold/?utm_source=rss&utm_medium=rss&utm_campaign=yellow-card-acquires-brazils-gomoney-to-secure-direct-latam-foothold"
+        },
+        {
+          "title": "Yellow Card acquires GoMoney to enter Brazil",
+          "publisher": "Techpoint Africa",
+          "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE93RTNDdHJuR3liUE94U1F2RE5NX3NOUGRndjJhVnVyT1lWYkxwVElFUzdjVTZ6Y1Z4X2duVGVNQlRNeTc5WU00aG5KeGZhQlZJZXBuSWRGZXM1cjRCSmktal9Xa2hJZw?oc=5"
         }
       ]
     },
@@ -2859,7 +2964,175 @@
           "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOMENRZktRT1BpWVBaT05pb3dtbnF0R3g4OG8zWnN6ajRMeWFlQVlURGZ6NTNld0YwczE0eGZRUF9pbUZrR0dyRGtiSVYwekprcEVWNG1iXzBXb2t3WWo1cVRnUDhIZ0dvR19fWXFxaWFaMVYtbnMteXF5OUVmeFlaS0xuWURjWkstendkMEJTVS1jUEZVTDZYb0U0OGhkX01rRlNUVllrME5QS0JJdGplQ21iNkc?oc=5"
         }
       ]
+    },
+    "05c7d1268db4106a54b7": {
+      "id": "05c7d1268db4106a54b7",
+      "from": "afd",
+      "to": "boi",
+      "type": "debt_financing",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "AFD signs $60 million loan deals with BOI, Sterling Bank to support Nigerian businesses",
+          "publisher": "Nairametrics",
+          "url": "https://nairametrics.com/2026/11/05/afd-signs-60-million-loan-deals-with-boi-sterling-bank-to-support-nigerian-businesses/"
+        }
+      ]
+    },
+    "e76c0c85e490322b7830": {
+      "id": "e76c0c85e490322b7830",
+      "from": "old mutual insure",
+      "to": "re corporate solutions sa",
+      "type": "acquisition",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "Old Mutual Insure to take over Swiss Re Corporate Solutions’ SA insurance portfolio",
+          "publisher": "News24",
+          "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPcjgyMWszTGxiNVp5em1IY0k5dDNsYlE3WTBxcGJTQjc5UGNzT3pPSy1jTkdzbkpmcWVqZndTZ21QWW1Cd003dWdjbDBRclFUbmI2c1JicndkT2tVR2g1bC1hdEFWLW56Wk40c3VoTTFZZUZTOUNIYXYtUjJBNU41dmMySWdORzlVQWptaWRBUVgyZEtEcS1fbC1pNkhLOXhGVkZ1WGRtXzUya0k5cUkxVjl1LUJrSnQ0SjBvTUd6QzdhME1uOERrcVpjOTdrMi1ha3lHWA?oc=5"
+        }
+      ]
+    },
+    "206158f92386e5ed5388": {
+      "id": "206158f92386e5ed5388",
+      "from": "prodalim",
+      "to": "brenn o kem",
+      "type": "acquisition",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "Prodalim Acquires South Africa’s Brenn-O-Kem, Expanding Its Global Circular Economy Platform with High-Value Grape-Based Specialty Ingredients",
+          "publisher": "Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQOVJLYlpWelJzX1FQZnQ0UkxxNWFIcm51elVZYUMtdUcwb2pYdWsxb3BTR2JzYlAxZncyY3VXNTJta3NOaVBnWk1vM05oY1FHUmx1a1dXeHo1VHpaOEV3YVhKVWs2TUhPaVhzbEw1YnpKdXI3anRicmNZU0IxLXVfeFNfN29ZUnkzaHRlWXBmc3dVZHhKdHU2LUhhTWtJMHVFYUNZ?oc=5"
+        }
+      ]
+    },
+    "c951a8b560fee2530230": {
+      "id": "c951a8b560fee2530230",
+      "from": "michael dell",
+      "to": "baldwin",
+      "type": "acquisition",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "Michael Dell’s Baldwin buyout draws $2.3 billion in loans",
+          "publisher": "Billionaires.Africa",
+          "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOOGNBMGVUbzI5ZXp1dDgzSTlFMHl0aFp2c1NqX3o1Vk9wT0tVSWdNcFIyUUs0aktlaDdGQnFjeC1nYXpXNHRkU25YeEFEQ3FnN0ZmLVZlN0F0Z3p1QkEtY3hFQUxuTTctQ0tFMTBYam44YXF3dG1Ua010N0U1S3IyRjhXaDd6Y1Joa0NLM1dXUHMyczl6SS1ScnhQMTF4bkQyckswRUFXX241YnVHeFk2bGRKOUZVMG90c3RTZFN4SUY2QmhqeHFoaFRKNUs5dVhZOEdtVlowZw?oc=5"
+        }
+      ]
+    },
+    "2a9da48ff9806ffe8188": {
+      "id": "2a9da48ff9806ffe8188",
+      "from": "ifc",
+      "to": "kifiya",
+      "type": "equity_funding",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "IFC Invests in Ethiopia’s Kifiya to Expand AI-Powered Agricultural Finance Across Africa",
+          "publisher": "StockMarket.et",
+          "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQQXJWbFJqemZubmlBWHNSWnhHU2k4WXlOODNSVG1tbFZTY1dHS21ZTjEwOUJSdmNCdEpoVE52cWlEYjlvOGowM2ZUZUF0UEpJTll4UU41WTZjbmY1UVpTNVdnc3lka0pMa0tCWGNpT0FBYnBHQk83NFN4TTl6VlZZdVduR3RHNEhWRF85TFJsSjhBc0VCbkJGSjdkR2U0VVloWkxNNHQ2MVZ0Y2p2dHlRSEpMNV93QQ?oc=5"
+        }
+      ]
+    },
+    "28ad2dad9a6c4fe0759c": {
+      "id": "28ad2dad9a6c4fe0759c",
+      "from": "afreximbank",
+      "to": "undisclosed engineering firm",
+      "type": "debt_financing",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "Afreximbank approves $28 million loan for Uganda engineering firm",
+          "publisher": "Businessfront",
+          "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxPY01oTVByRTRmYmRCTmRYa0pnREd4ZTNUYWttZHJpcFN0VDNzNEhEVHM5Y24yY2V4SXJGbzlVOWp2ajNiSVdhd21yd3k1U0p0TktvczItdnhERGNCajVNTkxKc18wTXJvU21CdG1hUFFQLVR5ZlZTLXFFcHJ4NXFOZXpNRHg?oc=5"
+        }
+      ]
+    },
+    "bb887d3e2980671ea57d": {
+      "id": "bb887d3e2980671ea57d",
+      "from": "afreximbank",
+      "to": "dott services",
+      "type": "debt_financing",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "Afreximbank backs DOTT Services with US$550m facility",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQcE90Mkx4cVFWSXYwZ2dKanAtaHRVbmJZek9IYUloWDZrTE9HUzFibmJIOUk1eURDQWUwWVp5ZEF4b2NsVDRzM3BubEVDazFzSWNtdFpORHJKMGJ1ZWpPMDJneEloWnBBc005dEdaeTZXTjhNVC11ZDFYMUxnLXlxSHNGd2taazFaeTdDWjZQZEdxZ3l0X1BVTU1LWkNXQnNQ?oc=5"
+        }
+      ]
+    },
+    "4bf369c72bd01b4ff45d": {
+      "id": "4bf369c72bd01b4ff45d",
+      "from": "agilent",
+      "to": "proscia",
+      "type": "acquisition",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "Agilent completes acquisition of Proscia for $240 million By Investing.com",
+          "publisher": "Investing.com South Africa",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNd2ZCOXkxa1RYdy1fR2RGVWwyRVFYdmxKd19NUTBSVENSUEZsbm1iSWxFNVhZZDlDS3o4aVlxTmM4QmxycGJ0cjR5MWRUMnZNY1I3NElleXd6M2UwVFJEZ2FscnpTajFPbThYakUweHJXOXNBU0ZkLW9DRlQwUWt4b1J5eXhKREFBM1k4czEtNnItR1Ffa2RBRnROMlV2OUxoQjBXNjdXdmh3b2V6R0lia3lnNkQ0SWFq?oc=5"
+        }
+      ]
+    },
+    "0ef8e52e33785fb76012": {
+      "id": "0ef8e52e33785fb76012",
+      "from": "expand long term",
+      "to": "ifc",
+      "type": "debt_financing",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "In Luanda, Angola, BoI, IFC Sign $50m Loan to Expand Long-term Financing for Nigerian MSMEs",
+          "publisher": "THISDAYLIVE",
+          "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNUkhwbXEzU18zVUdiYjNqQ2VjcUszbGpacUNCU0FzWGp0Z2xvZFhwdWIzckVDdURwamg1MEpFUnNBUGluWjNESnp0VDJ4Xy1wRWhpTlRaWl9hY0kwbG9fdkw4ZFlFMnAxVEt1WGtRNnJWazJYUndGcVBhOU1MM1dKT1BsZC0yOGFzdU9QU0U2N3VJOU9lcTZNU0xZTUJsN2I2LURQT0ZyQ2dpMHlQQnZNck5nVGZZeWR1dlJ3QTllVUZGMFZIelE?oc=5"
+        }
+      ]
+    },
+    "5d31cc29cce53a9e7561": {
+      "id": "5d31cc29cce53a9e7561",
+      "from": "google org",
+      "to": "helium health",
+      "type": "equity_funding",
+      "first_seen": "2026-11-04",
+      "sources": [
+        {
+          "title": "Google.org Backs Nigeria’s Helium Health with $2.5M to Bring Clinical AI to Maternal Healthcare",
+          "publisher": "Tech Build Africa",
+          "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBpLThEbDdWTnY0SGNveHNSOTM5aXdsb1FlajZDRE1NcVBFWF8yN29QYkg5TVQweTBtR1VEV3pVUld1d2hiQXhVVXluRjE5c21JdkVpVFBlRU9pUDEzSmpRRVZ5cDBxbkF3bGlUVjc0OVFELXAzMU11blMta0c?oc=5"
+        }
+      ]
+    },
+    "f0e149518dd51be69541": {
+      "id": "f0e149518dd51be69541",
+      "from": "sierra leone and wfp",
+      "to": "sle",
+      "type": "equity_funding",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "Sierra Leone and WFP commit SLE 158.4 million (about $6.6 million) to feed 276,000 schoolchildren in 2026/2027",
+          "publisher": "fundsforNGOs News",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNaFNzVklCZVJUUmUwanF0Yk9GOFhfRlQ4Rm0tb3ItcHVUMzBlYlpPTkVlRE1Yc1FGSlNlWFpxX0VPUFBodlVCMGx2VVRZQXJxOXdmZ1JWQjN6Rm5uVHpnOE53RUpQNEVQMnRzNmdKcTY3V0tOWjJ4b2U1M0hOYkhzeXRiREhzNF9Dbmc5b3J5ZFlNbXhtLVhEd1VJTTlXb1FCOFgzZjZyR0pCQQ?oc=5"
+        }
+      ]
+    },
+    "4a89f6228149be5dc442": {
+      "id": "4a89f6228149be5dc442",
+      "from": "export import bank of korea",
+      "to": "education institution",
+      "type": "debt_financing",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "Export-Import Bank of Korea to Provide $170 Million Loan for AI Education Institution in Tanzania",
+          "publisher": "BigGo Finance",
+          "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5VR1dhTjFtWng4S0RKQTFXUll5YTExYkwyZnhQai1HTDBRQXdTYmY4VWtGZU4yYTlWdnd6WWV3enlHbl9XMUVWLVNwX201Nms2bnNaTGItdmVYNm5qTnpwMDBmWkVTTk9LZlRUWEhMaEZMLURzZlE?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-04T20:55:02.599251+00:00"
+  "updated_at": "2026-11-05T12:55:23.909896+00:00"
 }

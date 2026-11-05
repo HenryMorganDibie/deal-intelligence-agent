@@ -416,3 +416,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EQD.CS"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EQS.JO"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-04", "market": "africa", "status": "no_annual_data_returned", "ticker": "EQTY.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "EQU.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ERN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ESAC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ESGI.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ESR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ESRS.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ETEL.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ETERNA.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ETIT.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ETO.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-05", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46470_E-TRANZACT_INTERNATIONAL_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "ETRANZACT.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "status": "no_annual_data_returned", "ticker": "ETRS.CA"}
