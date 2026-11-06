@@ -440,3 +440,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "FAIT.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "FAITA.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-05", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "FBR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-06", "market": "africa", "status": "no_annual_data_returned", "ticker": "FBRMA.CS"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-06", "market": "africa", "status": "no_annual_data_returned", "ticker": "FCMB.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-06", "market": "africa", "status": "no_annual_data_returned", "ticker": "FCR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-06", "market": "africa", "status": "no_annual_data_returned", "ticker": "FDP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-06", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "FERC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-06", "market": "africa", "status": "no_annual_data_returned", "ticker": "FFA.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-06", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "FFB.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-06", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "FGL.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-06", "market": "africa", "status": "no_annual_data_returned", "ticker": "FIDELITYBK.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-06", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46518_FIDSON_HEALTHCARE_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "FIDSON.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-06", "market": "africa", "status": "no_annual_data_returned", "ticker": "FIRED.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-06", "market": "africa", "status": "no_annual_data_returned", "ticker": "FIRSTALUM.LG"}

@@ -995,6 +995,14 @@
     "4dx ventures enza": {
       "name": "4DX Ventures. Enza",
       "kind": "organization"
+    },
+    "ssc group": {
+      "name": "SSC Group",
+      "kind": "organization"
+    },
+    "northern cape critical minerals projects": {
+      "name": "Northern Cape Critical Minerals Projects",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -3244,7 +3252,49 @@
           "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxQZkxqZm9sRHZVTnA4OUZXTTQ2VkxiSlFLcEZoM21Qbk9EMkpRTF9iS0x6N2xvUkhwN3JwZ25qUjJEUlE1Znl5cTlUaUZ0M1VUQ0NlaWM4VkM2ZHcyVDVhMzBIcDdOQ0ZXbW8wX1JhaEpfd05FaEZGdW9NeDNjZFpsNUJhdk9TNmJQUlE?oc=5"
         }
       ]
+    },
+    "652d5ae87d76adda7269": {
+      "id": "652d5ae87d76adda7269",
+      "from": "yellow card",
+      "to": "brazilian crypto firm gomoney",
+      "type": "acquisition",
+      "first_seen": "2026-11-06",
+      "sources": [
+        {
+          "title": "Yellow Card Acquires Brazilian Crypto Firm GoMoney",
+          "publisher": "Business Post Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNbmRvamFlcmhYTnFuNTZlQU1kV19XcGY2NlBzMjZVektMOTR0cVJZYWNoTTN3WlNwSXVqN1VuV1ZXQXFHWGZTbVhqbkpld2pzcGZyX3lZSE9PS3R0V3ZmSTY1SDRuQUlMeTk1dWM4ajlpaGJEZ3RhUTViOXc1bjRSTmFRTm8xZW5s?oc=5"
+        }
+      ]
+    },
+    "c8cf7c3647850c335312": {
+      "id": "c8cf7c3647850c335312",
+      "from": "airtel malawi",
+      "to": "network expansion",
+      "type": "equity_funding",
+      "first_seen": "2026-11-06",
+      "sources": [
+        {
+          "title": "Airtel Malawi Invests MWK81 Billion in Network Expansion as Data Traffic Surges",
+          "publisher": "TechAfrica News",
+          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNWXZLVUhBckREUU1oRExtMC1wbHltTHVxR0ZvdFNSc0dOQ2pKZTdzNjQ4MVZ3MGtDUXFldVlCWUZHZFdsc1BrazN6aEtUaGNnOFEtTUNWcWRhTjB0ZXNrcThlY1dweXVJbVRMaHpjdndrRmFkbTZWdmVzZTZkWnFSQ2huNUpCMVBnVVNMNER5aDRVSklObGJmcW1UYm5MVEs2T0JCZUZaRzZmMkZIcUxneWhHVnpzTVBfQVE?oc=5"
+        }
+      ]
+    },
+    "15dd22bd8e2f262b6cfd": {
+      "id": "15dd22bd8e2f262b6cfd",
+      "from": "ssc group",
+      "to": "northern cape critical minerals projects",
+      "type": "acquisition",
+      "first_seen": "2026-11-05",
+      "sources": [
+        {
+          "title": "SSC Group takes 30% stake in Marula’s Northern Cape Critical Minerals Projects",
+          "publisher": "African Mining Online",
+          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNYzBNY205cUtoeVdtY3A1V0ZNMjQzUjJOTlRIdW5xbFo1eDdCMlZFa0I5RC16MHdNS2xiMWQ2elhtLVY3eVcwRFJIWXNPQkN5S0pNN083aDlxbWNDVkdKRVItaWpEd3lFN3J3cEdXX24wQ2xEQVJUWTYyZUJWZDlUTXVtc3hmcjVKZm44aXFMWXZzdTBlU2FDX1RoTGQxOFFmVGNwaGlfMjVoeTNvTGNaLWlKazdkeEZnQm9mYg?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-05T21:13:24.927679+00:00"
+  "updated_at": "2026-11-06T12:37:13.551122+00:00"
 }
