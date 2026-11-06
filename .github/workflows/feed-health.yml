@@ -1,4 +1,4 @@
-name: News feed health
+name: News feed and price source health
 
 # Daily: checks every outlet feed and, when one has died, saves a replacement from the same outlet (its advertised
 # feed, a standard feed address on its site, or Google News limited to its site) to src/data/feed_overrides.json.
@@ -47,6 +47,10 @@ jobs:
             git pull --rebase origin main
             git push origin HEAD:main
           fi
-      - name: Report outlets with no working feed
-        if: steps.heal.outcome == 'failure'
+      - name: Check exchange price sources
+        id: prices
+        run: python scripts/check_price_sources.py
+        continue-on-error: true
+      - name: Report outlets with no working feed, or exchanges with no working price source
+        if: steps.heal.outcome == 'failure' || steps.prices.outcome == 'failure'
         run: exit 1

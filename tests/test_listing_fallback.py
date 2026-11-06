@@ -55,7 +55,9 @@ def test_no_fallback_without_a_previous_list_or_for_exchanges_without_a_second_s
 
 
 def test_ytd_is_dropped_across_a_year_end():
-    rows = markets._carry_forward([{"symbol": "X", "price": 10.0, "date": "2026-12-31", "ytd": 0.5}])
-    rows[0].update(price=11.0, date="2027-01-02")
-    (q,) = markets._rescale(rows)
-    assert "ytd" not in q and q["price"] == 11.0
+    from src.engines import price_sources
+    previous = [{"symbol": "X", "price": 10.0, "date": "2026-12-31", "ytd": 0.5},
+                {"symbol": "Y", "price": 20.0, "date": "2026-12-31", "ytd": 0.1}]
+    rows, verdict = price_sources.reprice(previous, {"X": {"price": 11.0, "date": "2027-01-02"},
+                                                     "Y": {"price": 20.0, "date": "2027-01-02"}}, "test")
+    assert verdict == "ok" and all("ytd" not in q for q in rows) and rows[0]["price"] == 11.0

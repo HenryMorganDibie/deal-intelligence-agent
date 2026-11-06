@@ -2008,7 +2008,7 @@ async def cron_market_snapshot(request: Request) -> dict:
     return {"status": "ok", "rows_written": written,
             "exchanges": {k: len(v) for k, v in snap["quotes"].items()},
             "indices": len(snap["indices"]), "currencies": len(snap["fx"].get("rates") or {}),
-            "failed": snap["errors"]}
+            "failed": snap["errors"], "fallback_sources": snap.get("fallback_sources") or {}}
 
 
 @router.get("/api/cron/market-instruments")
