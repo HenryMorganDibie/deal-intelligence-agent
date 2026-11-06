@@ -1003,6 +1003,34 @@
     "northern cape critical minerals projects": {
       "name": "Northern Cape Critical Minerals Projects",
       "kind": "organization"
+    },
+    "reluctant": {
+      "name": "Reluctant",
+      "kind": "organization"
+    },
+    "despite growing opportunities": {
+      "name": "Despite Growing Opportunities",
+      "kind": "organization"
+    },
+    "fox": {
+      "name": "Fox",
+      "kind": "organization"
+    },
+    "roku": {
+      "name": "Roku",
+      "kind": "organization"
+    },
+    "nebank": {
+      "name": "Nebank",
+      "kind": "organization"
+    },
+    "ncba group": {
+      "name": "NCBA Group",
+      "kind": "organization"
+    },
+    "undisclosed energy business": {
+      "name": "Undisclosed energy business",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -3294,7 +3322,63 @@
           "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNYzBNY205cUtoeVdtY3A1V0ZNMjQzUjJOTlRIdW5xbFo1eDdCMlZFa0I5RC16MHdNS2xiMWQ2elhtLVY3eVcwRFJIWXNPQkN5S0pNN083aDlxbWNDVkdKRVItaWpEd3lFN3J3cEdXX24wQ2xEQVJUWTYyZUJWZDlUTXVtc3hmcjVKZm44aXFMWXZzdTBlU2FDX1RoTGQxOFFmVGNwaGlfMjVoeTNvTGNaLWlKazdkeEZnQm9mYg?oc=5"
         }
       ]
+    },
+    "2a7049838f245ce1a00c": {
+      "id": "2a7049838f245ce1a00c",
+      "from": "reluctant",
+      "to": "despite growing opportunities",
+      "type": "acquisition",
+      "first_seen": "2026-11-06",
+      "sources": [
+        {
+          "title": "Africa Prosperity Summit: Why Banks Are Reluctant to Acquire Fintech Startups Despite Growing Opportunities",
+          "publisher": "Techeconomy",
+          "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNX0VEUEZuWHJOUTdza1ZQZlJkTTlxMlNqQnVRS3hON1A0dklJUm1IOUF1U292NEE0Vkg4Ui1tZ3lydjhxeUs2YTZhME1pZTZpU3JMSDhTc3d5aFVQSm12RzZzQ3pjc0hwOEpoUkRBZFBtNVpMdlNOZk5BX3FBcXZpcFpVM0tkYmJTbTU4bWpZQWZTOExYTS1LQ19tSTAtSG44bV9zM1JJY25FMDVDQVR2Tk11aERoN29MMWdQUXRiUVFvLVpFRWNtTw?oc=5"
+        }
+      ]
+    },
+    "3e4337ea830d10bb1ad8": {
+      "id": "3e4337ea830d10bb1ad8",
+      "from": "fox",
+      "to": "roku",
+      "type": "acquisition",
+      "first_seen": "2026-11-06",
+      "sources": [
+        {
+          "title": "Fox finalizes acquisition of Roku for $22 billion",
+          "publisher": "Bénin Web TV",
+          "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE9EaVFKQVE1N0hqZFlyRWVWWGRDY1VrVmszdzh0dVRLRmpkRXNQbHUxLUNqMHNPM3NZdHh2bm1NdjZxTXBWNEFZME9NUEpqanQ2S3VyM1FkM0VwcEhkRzBxTGpreGI5WkxLalo0OGlTa1FGZGg5MlRrOEN0N2FsVEk?oc=5"
+        }
+      ]
+    },
+    "47741df7b551bd081e68": {
+      "id": "47741df7b551bd081e68",
+      "from": "nebank",
+      "to": "ncba group",
+      "type": "acquisition",
+      "first_seen": "2026-11-06",
+      "sources": [
+        {
+          "title": "Nebank acquires majority stake in NCBA Group",
+          "publisher": "African Law & Business",
+          "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPOW1hb3NadlU1WHEwQXdscG56Y29XRkt5QTAxUjkzU1ZIeWtRb0pucUlqRWR4Wi1tcEZtQ3o4Q1F6ZkxPRjg5S0JZMkYtVnR6RlJ3SXZQZ1lJdzhnMWMzMmVXeWhkQWd2ZE9GY1VaZzJjSW1LeVdudEtUS3JtS3paUU05Ui1vaVRRMDcwNWxB?oc=5"
+        }
+      ]
+    },
+    "c6d1df76992103f8cd20": {
+      "id": "c6d1df76992103f8cd20",
+      "from": "dangote",
+      "to": "undisclosed energy business",
+      "type": "equity_funding",
+      "first_seen": "2026-11-06",
+      "sources": [
+        {
+          "title": "Dangote invests $2.5B in Namibia’s energy business",
+          "publisher": "Semafor",
+          "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQUWo5ZFN6WHY4YmRXTU8xTUlvQkhzcHlqdVJoOFFraUxucUpvLThXdG5kdTJ5eDhjUXRaZmdpWGlRUElyMEdWcElWYmh4Qkd6U2loTXJSNVNvT09WX190U0ZpUjd2a3JmaGROdUpwNHRfblRMSW1UOTg3QmJkSHpFV2tKXzFJMnhMSUxCZTBTcW9rbmgz?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-06T12:37:13.551122+00:00"
+  "updated_at": "2026-11-06T20:33:10.278099+00:00"
 }

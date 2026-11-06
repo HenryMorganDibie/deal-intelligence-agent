@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-06T12:37:18.153829+00:00",
+  "updated_at": "2026-11-06T20:33:14.191583+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 58,
+      "new_review_items_today": 71,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 0,
+      "new_review_items_today": 4,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 152,
-      "new_observations_today": 4,
-      "unreviewed_flagged_observations": 21,
+      "observations_collected": 158,
+      "new_observations_today": 6,
+      "unreviewed_flagged_observations": 22,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 151,
-      "entities": 251,
+      "relationships": 155,
+      "entities": 258,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,24 +177,22 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 152,
-    "new_rows": 4,
+    "collected_tickers": 158,
+    "new_rows": 6,
     "failures": [
-      "FBRMA.CS",
-      "FCMB.LG",
-      "FCR.JO",
-      "FDP.JO",
-      "FFA.JO",
-      "FIDELITYBK.LG",
-      "FIRED.CA",
-      "FIRSTALUM.LG"
+      "FLOURMILL.LG",
+      "FML.GH",
+      "FORTISMFB.LG",
+      "FSE.JO",
+      "FSRP.JO",
+      "FTGH.NR"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 251,
-    "relationships": 151,
-    "source_links": 186,
+    "nodes": 258,
+    "relationships": 155,
+    "source_links": 190,
     "most_connected": [
       {
         "name": "Afreximbank",
@@ -209,15 +207,15 @@
         "degree": 5
       },
       {
+        "name": "Dangote",
+        "degree": 4
+      },
+      {
         "name": "IFC",
         "degree": 4
       },
       {
         "name": "Amsons Group",
-        "degree": 3
-      },
-      {
-        "name": "Dangote",
         "degree": 3
       },
       {
