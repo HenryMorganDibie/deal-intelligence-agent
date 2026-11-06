@@ -48,7 +48,7 @@ def test_gse_takes_the_latest_day_and_cleans_codes():
 
 
 def test_dse_mse_and_rse():
-    assert ps.parse_dse(DSE, date(2026, 11, 6))["CRDB"] == {"price": 2820.0, "date": "2026-11-06", "chg_1d": 0.0}
+    assert ps.parse_dse(DSE, "2026-11-06")["CRDB"] == {"price": 2820.0, "date": "2026-11-06", "chg_1d": 0.0}
     assert ps.parse_mse(MSE) == {"NBM": {"price": 8849.88, "date": "2026-11-06"}}
     bk = ps.parse_rse(RSE, "2026-11-06")["BOK"]
     assert bk["price"] == 701 and bk["prev"] == 700 and bk["value"] == 210300

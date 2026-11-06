@@ -196,12 +196,8 @@ _DSE_TICK = re.compile(r'font-bold text-white">([A-Z][A-Z0-9-]{1,11})</span><spa
                        r'(?:<span[^>]*>(?:<svg.*?</svg>|<span[^>]*></span>)?(-?[\d.]+)<!-- -->%)?', re.S)
 
 
-def parse_dse(page: str, today: date) -> dict[str, dict]:
-    recent = [d for d in re.findall(r"20\d\d-\d\d-\d\d", page)
-              if (today - timedelta(days=10)).isoformat() <= d <= today.isoformat()]
-    if not recent:
-        return {}
-    day = statistics.mode(recent)                     # the session date the page's data carries most often
+def parse_dse(page: str, day: str) -> dict[str, dict]:
+    """The exchange's live ticker; it carries no date of its own, so it is dated by the last completed session."""
     out = {}
     for sym, price, chg in _DSE_TICK.findall(page):
         p = _num(price)
@@ -214,7 +210,7 @@ def parse_dse(page: str, today: date) -> dict[str, dict]:
 def dse_official(client: httpx.Client, today: date) -> dict[str, dict]:
     """Dar es Salaam Stock Exchange: the exchange's own market ticker."""
     r = _get(client, "https://dse.co.tz/")
-    return parse_dse(r.text, today) if r is not None else {}
+    return parse_dse(r.text, latest_session(today, close_utc_hour=13)) if r is not None else {}
 
 
 _MSE_TICK = re.compile(r'<div class="ticker__item">\s*<span>([A-Z][A-Z0-9]{1,9})</span>\s*'
