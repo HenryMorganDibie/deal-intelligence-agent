@@ -255,15 +255,85 @@ def _load_rpc_pages(kind: str, since: str) -> list[dict]:
     raise RuntimeError(f"{kind} exceeded the {_RPC_MAX_PAGES}-page safety limit")
 
 
+# Database egress: a full history download is about 3.7 MB compressed, while the data changes only when ingestion
+# runs. A loaded copy is kept and, every _TTL seconds, checked against store_version() (a few hundred bytes); only
+# rows changed since are then downloaded. A full reload happens on a cold start, when the counts cannot be
+# reconciled, and at least once a day as a safety net.
+_FULL_RELOAD_AFTER = 86400
+_versions: dict[str, dict] = {}         # kind -> {"count", "changed"} as of the loaded copy
+_full_loaded_at: dict[str, float] = {}
+
+
+def _store_version() -> dict:
+    r = _rpc_sync("store_version", {"p_since": HISTORY_START.isoformat()}, 15)
+    r.raise_for_status()
+    data = r.json()
+    if not isinstance(data, dict):
+        raise ValueError("store_version returned no object")
+    return data
+
+
+def _sort_rows(kind: str, rows: list[dict]) -> list[dict]:
+    date_key = "announced" if kind == "deals" else "day"
+    rows.sort(key=lambda row: (row.get(date_key) is not None, row.get(date_key) or ""), reverse=True)
+    return rows
+
+
+def _refresh_changed(kind: str, rows: list[dict]) -> Optional[list[dict]]:
+    """The cached rows brought up to date with only the rows changed since, or None when a full reload is due."""
+    before = _versions.get(kind)
+    if not before or time.monotonic() - _full_loaded_at.get(kind, 0) > _FULL_RELOAD_AFTER:
+        return None
+    now = (_store_version().get(kind) or {})
+    if now.get("count") == before.get("count") and now.get("changed") == before.get("changed"):
+        return rows                                     # nothing changed: no download at all
+    if not before.get("changed"):
+        return None
+    r = _rpc_sync("list_changed_rows", {"p_kind": kind, "p_since": HISTORY_START.isoformat(),
+                                        "p_changed_after": before["changed"], "p_limit": 2000}, 30)
+    r.raise_for_status()
+    payload = r.json()
+    changed = payload.get("rows") if isinstance(payload, dict) else None
+    if not isinstance(changed, list) or len(changed) >= int(payload.get("limit") or 2000):
+        return None                                     # too many changes to patch: reload everything
+    by_id = {row.get("id"): row for row in rows}
+    for row in changed:
+        if isinstance(row, dict) and row.get("id"):
+            by_id[row["id"]] = row
+    merged = list(by_id.values())
+    if len(merged) != now.get("count"):
+        return None                                     # rows were removed: reload everything
+    _versions[kind] = now
+    log.info("%s refreshed with %d changed rows instead of a full reload", kind, len(changed))
+    return _sort_rows(kind, merged)
+
+
 def _load(kind: str) -> list[dict]:
     hit = _cache.get(kind)
     if hit and time.monotonic() - hit[0] < _TTL:
         return hit[1]
     rows: list[dict] = []
+    if _configured() and hit:
+        try:
+            refreshed = _refresh_changed(kind, hit[1])
+        except (httpx.HTTPError, ValueError, RuntimeError, TypeError) as e:
+            log.warning("incremental refresh of %s failed, reloading in full: %s", kind, e)
+            refreshed = None
+        if refreshed is not None:
+            _cache[kind] = (time.monotonic(), refreshed)
+            return refreshed
     if _configured():
         since = HISTORY_START.isoformat()
         try:
+            try:                                        # the version before paging, so no change slips between
+                version = _store_version().get(kind)
+            except (httpx.HTTPError, ValueError) as e:
+                log.warning("store_version unavailable: %s", e)
+                version = None
             rows = _load_rpc_pages(kind, since)
+            if version:
+                _versions[kind] = version
+                _full_loaded_at[kind] = time.monotonic()
         except (httpx.HTTPError, ValueError, RuntimeError) as e:
             log.error("loading %s failed: %s", kind, e)
             if hit:
@@ -1945,7 +2015,7 @@ async def cron_ingest(
 # ── African equity markets ───────────────────────────────────────────────────
 
 _markets_cache: dict[str, tuple[float, dict]] = {}
-_MARKETS_TTL = 600
+_MARKETS_TTL = 1800  # snapshots change hourly at most; each read is ~0.1 MB of database egress
 
 
 def _market_snapshot() -> dict:

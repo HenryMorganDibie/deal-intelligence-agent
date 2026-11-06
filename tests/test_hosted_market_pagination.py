@@ -8,6 +8,15 @@ from fastapi import HTTPException
 import src.hosted_market as hm
 
 
+@pytest.fixture(autouse=True)
+def _no_version_check(monkeypatch):
+    """These tests cover full paging; the incremental refresh has its own tests (test_incremental_store.py)."""
+    def unavailable():
+        raise ValueError("store_version not under test")
+    monkeypatch.setattr(hm, "_store_version", unavailable)
+    monkeypatch.setattr(hm, "_cache", {})
+
+
 def _response(rows: list[dict], max_id: str | None = "z", status_code: int = 200) -> MagicMock:
     response = MagicMock()
     response.status_code = status_code
