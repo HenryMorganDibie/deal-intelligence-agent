@@ -290,6 +290,43 @@ def event_id(title: str) -> str:
     return hashlib.sha1(re.sub(r"\W+", " ", title.lower()).strip().encode()).hexdigest()[:16]
 
 
+# Countries outside Africa, in English, French and Portuguese spellings. A story that names one of these and no
+# African country is foreign news a country search happened to return ("Paraguay's Ueno Bank" for a French-language
+# Senegal query), so it must not inherit the search's country.
+_FOREIGN_COUNTRIES = re.compile(r"(?i)\b(" + "|".join([
+    "united states", "u\\.s\\.", "usa", "états-unis", "etats-unis", "estados unidos", "america", "amérique",
+    "canada", "mexico", "mexique", "méxico", "brazil", "brésil", "brasil", "argentina", "argentine", "chile", "chili",
+    "colombia", "colombie", "peru", "pérou", "paraguay", "paraguai", "uruguay", "uruguai", "bolivia", "bolivie",
+    "venezuela", "ecuador", "équateur", "cuba", "haiti", "haïti", "jamaica", "jamaïque", "panama", "costa rica",
+    "guatemala", "honduras", "nicaragua", "el salvador", "dominican republic", "république dominicaine",
+    "united kingdom", "royaume-uni", "reino unido", "britain", "england", "angleterre", "scotland", "ireland",
+    "irlande", "france", "germany", "allemagne", "alemanha", "spain", "espagne", "espanha", "portugal", "italy",
+    "italie", "itália", "netherlands", "pays-bas", "belgium", "belgique", "switzerland", "suisse", "austria",
+    "autriche", "sweden", "suède", "norway", "norvège", "denmark", "danemark", "finland", "finlande", "poland",
+    "pologne", "russia", "russie", "rússia", "ukraine", "ucrânia", "turkey", "türkiye", "turquie", "greece",
+    "grèce", "romania", "roumanie", "hungary", "hongrie", "czech republic", "serbia", "serbie",
+    "china", "chine", "japan", "japon", "japão", "south korea", "corée du sud", "north korea", "corée du nord",
+    "india", "inde", "índia", "pakistan", "bangladesh", "sri lanka", "indonesia", "indonésie", "malaysia", "malaisie",
+    "singapore", "singapour", "thailand", "thaïlande", "vietnam", "viêt nam", "philippines", "taiwan", "taïwan",
+    "hong kong", "australia", "australie", "austrália", "new zealand", "nouvelle-zélande", "saudi arabia",
+    "arabie saoudite", "arábia saudita", "united arab emirates", "émirats arabes unis", "emirados árabes", "qatar",
+    "kuwait", "koweït", "bahrain", "bahreïn", "oman", "iran", "irã", "iraq", "irak", "israel", "israël", "jordan",
+    "jordanie", "lebanon", "liban", "syria", "syrie", "yemen", "yémen", "afghanistan", "kazakhstan", "uzbekistan",
+]) + r")\b")
+
+
+_AFRICA_WORD = re.compile(r"(?i)\b(africa|african|afrique|africain|africaine|áfrica|africano|africana)")
+
+
+def names_only_foreign_countries(text: str) -> bool:
+    """True when a headline names a country outside Africa and nothing African: no African country (hyphenated
+    pairs such as "Zambia-Saudi" included) and no mention of Africa."""
+    text = text or ""
+    if not _FOREIGN_COUNTRIES.search(text) or _AFRICA_WORD.search(text):
+        return False
+    return not countries_in_text(text.replace("-", " "))
+
+
 def to_events(items: Iterable[dict], min_score: float = 0.7) -> list[dict]:
     """Corporate events: headlines that match a signal rule at min_score or above."""
     out = []
@@ -301,8 +338,9 @@ def to_events(items: Iterable[dict], min_score: float = 0.7) -> list[dict]:
         signal_type, score = max(hits, key=lambda h: h[1])
         if not is_corporate_event(title, signal_type.value):
             continue                                    # a fine, probe or resignation about people or politics
-        countries = [c.iso2 for c in countries_in_text(f"{title} {it.get('snippet', '')}")]
-        if not countries and it.get("country_hint"):
+        text = f"{title} {it.get('snippet', '')}"
+        countries = [c.iso2 for c in countries_in_text(text)]
+        if not countries and it.get("country_hint") and not names_only_foreign_countries(text):
             countries.append(it["country_hint"])
         out.append({
             "id": event_id(title),
