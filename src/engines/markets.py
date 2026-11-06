@@ -373,6 +373,9 @@ def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = N
     indices = parse_indices(page, today)
     if ex.source == "listing":
         quotes = parse_listing(page, ex, today)
+        if not quotes and previous and ex.key in _LISTING_FALLBACK:
+            # The listing site is unavailable: reprice the last known list from a second source.
+            return _LISTING_FALLBACK[ex.key](previous, client), indices
         if ex.key == "ngx":
             quotes = _overlay_ngx(quotes, client)
         if ex.key == "egx":
@@ -824,6 +827,48 @@ def _overlay_ngx(quotes: list[dict], client: httpx.Client) -> list[dict]:
                 q["chg_1d"] = round(o["price"] / prev - 1, 6)
         q.update({k: o[k] for k in ("volume", "value", "trades") if o.get(k) is not None})
     return quotes
+
+
+def _carry_forward(previous: list[dict]) -> list[dict]:
+    """Copies of the last snapshot's rows, remembering each price so derived figures can be rescaled."""
+    rows = []
+    for q in previous:
+        if q.get("symbol") and isinstance(q.get("price"), (int, float)) and q["price"] > 0:
+            rows.append({**q, "_old_price": q["price"], "_old_date": q.get("date")})
+    return rows
+
+
+def _rescale(rows: list[dict]) -> list[dict]:
+    """After repricing: market cap and year-to-date move with the price (same calendar year only); rows the second
+    source did not reprice keep their old figures and date, so they still read as stale."""
+    for q in rows:
+        old, new = q.pop("_old_price"), q["price"]
+        old_date = q.pop("_old_date")
+        if new == old and q.get("date") == old_date:
+            continue
+        ratio = new / old
+        if q.get("shares"):
+            q["mcap"] = round(q["shares"] * new, 2)
+        elif isinstance(q.get("mcap"), (int, float)):
+            q["mcap"] = round(q["mcap"] * ratio, 2)
+        same_year = bool(old_date) and bool(q.get("date")) and str(old_date)[:4] == str(q["date"])[:4]
+        if isinstance(q.get("ytd"), (int, float)) and same_year:
+            q["ytd"] = round((1 + q["ytd"]) * ratio - 1, 6)
+        elif not same_year:
+            q.pop("ytd", None)
+    return rows
+
+
+def _ngx_from_official(previous: list[dict], client: httpx.Client) -> list[dict]:
+    """Nigerian Exchange when the listing site is down: NGX's own daily list (the official close, with volume
+    and value) applied to the last known list of companies."""
+    return _rescale(_overlay_ngx(_carry_forward(previous), client))
+
+
+# Exchanges with a second source for when african-markets.com is unavailable (it was down for maintenance from
+# 29 October 2026). Others keep their last snapshot, shown as stale. Yahoo is no fallback for Cairo: its EGX
+# quotes stopped updating in July 2024.
+_LISTING_FALLBACK = {"ngx": _ngx_from_official}
 
 
 def fetch_fx(client: httpx.Client, today: Optional[date] = None) -> dict:
