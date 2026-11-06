@@ -237,6 +237,16 @@ def parse_indices(page: str, today: Optional[date] = None) -> list[dict]:
 
 # ── Exchanges' own lists ──────────────────────────────────────────────────────
 
+def _previous_weekday(day: Optional[str]) -> Optional[str]:
+    try:
+        d = date.fromisoformat(day or "") - timedelta(days=1)
+    except ValueError:
+        return None
+    while d.weekday() >= 5:
+        d -= timedelta(days=1)
+    return d.isoformat()
+
+
 def parse_ngx_doclib(rows: object) -> dict[str, dict]:
     """{symbol: {price, prev, volume, value, trades, date, sector}} from NGX's daily equities list."""
     out: dict[str, dict] = {}
@@ -244,10 +254,15 @@ def parse_ngx_doclib(rows: object) -> dict[str, dict]:
         if not isinstance(r, dict):
             continue
         sym, close = (r.get("Symbol") or "").strip().upper(), r.get("ClosePrice")
+        day, prev = (r.get("TradeDate") or "")[:10] or None, r.get("PrevClosingPrice")
+        if sym and (not isinstance(close, (int, float)) or close <= 0) and isinstance(prev, (int, float)) and prev > 0:
+            # NGX leaves the close blank for many shares (often until well after the session); the previous close
+            # is then the latest official price, dated the trading day before (weekends skipped).
+            close, prev, day = prev, None, _previous_weekday(day)
         if not sym or not isinstance(close, (int, float)) or close <= 0:
             continue
-        out[sym] = {"price": float(close), "prev": r.get("PrevClosingPrice"), "volume": r.get("Volume"),
-                    "value": r.get("Value"), "trades": r.get("Trades"), "date": (r.get("TradeDate") or "")[:10] or None,
+        out[sym] = {"price": float(close), "prev": prev, "volume": r.get("Volume"),
+                    "value": r.get("Value"), "trades": r.get("Trades"), "date": day,
                     "sector": (r.get("Sector") or "").strip().title() or None}
     return out
 

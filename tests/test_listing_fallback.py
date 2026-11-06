@@ -38,8 +38,14 @@ def test_ngx_is_repriced_from_the_official_list_when_the_listing_site_is_down():
     assert abs(mtn["chg_1d"] - (837 / 830 - 1)) < 1e-6
     oko = by["OKOMUOIL"]
     assert oko["mcap"] == round(953_910_000_000.0 * 1.1, 2)                # scaled when shares are unknown
-    quiet = by["QUIET"]                                                     # no close yet: stays stale, honestly
-    assert quiet["price"] == 5.0 and quiet["date"] == "2026-10-29"
+    quiet = by["QUIET"]                         # no close yet: the previous close, dated the trading day before
+    assert quiet["price"] == 5.0 and quiet["date"] == "2026-11-05"
+
+
+def test_previous_close_is_dated_the_trading_day_before():
+    parsed = markets.parse_ngx_doclib([{"Symbol": "A", "ClosePrice": None, "PrevClosingPrice": 2.5,
+                                        "TradeDate": "2026-11-09T00:00:00"}])          # a Monday
+    assert parsed["A"]["price"] == 2.5 and parsed["A"]["date"] == "2026-11-06" and parsed["A"]["prev"] is None
 
 
 def test_no_fallback_without_a_previous_list_or_for_exchanges_without_a_second_source():
