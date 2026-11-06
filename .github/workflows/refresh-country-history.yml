@@ -61,5 +61,5 @@ jobs:
             echo "Historical indicator data unchanged; no commit required."
           else
             git commit -m "Refresh historical country indicator source data"
-            git push origin HEAD:main
+            bash scripts/push_with_retry.sh main
           fi

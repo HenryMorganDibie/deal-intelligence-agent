@@ -71,5 +71,5 @@ jobs:
             echo "Corporate of the Week archive is unchanged."
           else
             git commit -m "Refresh Corporate of the Week archive"
-            git push origin HEAD:main
+            bash scripts/push_with_retry.sh main
           fi

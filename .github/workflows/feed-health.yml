@@ -44,8 +44,7 @@ jobs:
             echo "No feed changes."
           else
             git commit -m "Update news feed replacements"
-            git pull --rebase origin main
-            git push origin HEAD:main
+            bash scripts/push_with_retry.sh main
           fi
       - name: Check exchange price sources
         id: prices

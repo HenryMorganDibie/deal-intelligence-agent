@@ -55,13 +55,4 @@ jobs:
             exit 0
           fi
           git commit -m "Refresh evidence-backed Corporate of the Week"
-          for attempt in 1 2 3; do
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "main moved during publish; rebasing generated archive onto latest main (attempt $attempt)"
-            git fetch origin main
-            git rebase origin/main
-          done
-          echo "::error::Could not publish the weekly selection to main after retries."
-          exit 1
+          bash scripts/push_with_retry.sh main
