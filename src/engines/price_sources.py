@@ -127,7 +127,7 @@ def brvm_official(client: httpx.Client, today: date) -> dict[str, dict]:
 
 
 _SIKA_ROW = re.compile(
-    r'<td class="allf"><a href="/marches/cotation_([A-Z]{3,6})\.[a-z]{2}">([^<]+)</a></td>\s*'
+    r'<td class="allf"><a href="/marches/cotation_([A-Z0-9]{2,12})(?:\.[a-z]{2})?">([^<]+)</a></td>\s*'
     r"<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*<td>([^<]*)</td>\s*"
     r'<td><b>([^<]*)</b></td>\s*<td class="[^"]*">([^<]*)</td>')
 
@@ -144,10 +144,17 @@ def parse_sikafinance(page: str, day: str) -> dict[str, dict]:
     return out
 
 
-def sikafinance_brvm(client: httpx.Client, today: date) -> dict[str, dict]:
-    """BRVM: sikafinance.com's list of every quoted share (an established West African market-data site)."""
-    r = _get(client, "https://www.sikafinance.com/marches/aaz")
-    return parse_sikafinance(r.text, latest_session(today, close_utc_hour=16)) if r is not None else {}
+def sikafinance(place: str, close_utc_hour: int = 16) -> Callable[[httpx.Client, date], dict[str, dict]]:
+    """sikafinance.com (an established African market-data site) list of every quoted share on one market. It
+    publishes no session date, so prices are dated by the market's last completed session."""
+    def fetch(client: httpx.Client, today: date) -> dict[str, dict]:
+        r = _get(client, f"https://www.sikafinance.com/marches/aaz?placeCode={place}")
+        return parse_sikafinance(r.text, latest_session(today, close_utc_hour=close_utc_hour)) if r is not None else {}
+    fetch.__doc__ = f"sikafinance.com market '{place}'"
+    return fetch
+
+
+sikafinance_brvm = sikafinance("br")
 
 
 def parse_gse_rows(rows: list) -> dict[str, dict]:
@@ -261,18 +268,64 @@ def rse_official(client: httpx.Client, today: date) -> dict[str, dict]:
 
 # Ordered, vetted sources per exchange (used when the primary listing site fails), and the codes a source spells
 # differently from the stored list.
+_SA_ROW = re.compile(r'<a href="/quote/[a-z]+/([A-Z0-9.\-]{1,12})/">[^<]*</a>.*?<td class="slw[^"]*">([^<]*)</td>'
+                     r'.*?<td class="[^"]*">[^<]*</td>.*?<td class="[^"]*">([^<]*)</td>'
+                     r'.*?<td class="[^"]*">([^<]*)</td>', re.S)
+
+
+def parse_stockanalysis(page: str, day: str) -> dict[str, dict]:
+    """stockanalysis.com exchange list: symbol, name, market cap, price, % change, revenue."""
+    out = {}
+    for sym, name, price, chg in _SA_ROW.findall(page):
+        p = _num(price)
+        if p and p > 0 and sym not in out:
+            c = _num(chg)
+            out[sym] = {"price": p, "date": day, "name": html_mod.unescape(name).strip(),
+                        "chg_1d": round(c / 100, 6) if c is not None else None}
+    return out
+
+
+def stockanalysis(slug: str, close_utc_hour: int) -> Callable[[httpx.Client, date], dict[str, dict]]:
+    """stockanalysis.com (an established market-data site) list of every share on one exchange, dated by the
+    exchange's last completed session."""
+    def fetch(client: httpx.Client, today: date) -> dict[str, dict]:
+        r = _get(client, f"https://stockanalysis.com/list/{slug}/")
+        return parse_stockanalysis(r.text, latest_session(today, close_utc_hour=close_utc_hour)) if r is not None else {}
+    fetch.__doc__ = f"stockanalysis.com list '{slug}'"
+    return fetch
+
+
+# Session close in UTC, for sources that publish no date: West Africa 16:00, North Africa 15:00, East and Southern
+# Africa 13:00 to 15:00.
 SOURCES: dict[str, list[tuple[str, Callable[[httpx.Client, date], dict[str, dict]]]]] = {
-    "ngx": [("NGX official list", ngx_official)],
+    "ngx": [("NGX official list", ngx_official), ("sikafinance", sikafinance("ng", 14))],
     "brvm": [("BRVM official", brvm_official), ("sikafinance", sikafinance_brvm)],
-    "gse": [("GSE official", gse_official)],
-    "dse": [("DSE official", dse_official)],
-    "mse": [("MSE official", mse_official)],
-    "rse": [("RSE official", rse_official)],
+    "gse": [("GSE official", gse_official), ("sikafinance", sikafinance("gh", 15))],
+    # sikafinance labels its Tanzanian list "Ethiopie" (placeCode et); the agreement check confirms it each run.
+    "dse": [("DSE official", dse_official), ("sikafinance", sikafinance("et", 13))],
+    "mse": [("MSE official", mse_official), ("sikafinance", sikafinance("mw", 13))],
+    "rse": [("RSE official", rse_official), ("sikafinance", sikafinance("rw", 11))],
+    "bvc": [("sikafinance", sikafinance("ma", 15))],
+    "sem": [("sikafinance", sikafinance("mu", 11))],
+    "bse": [("sikafinance", sikafinance("bw", 13))],
+    "luse": [("sikafinance", sikafinance("zm", 13))],
+    "bvmt": [("sikafinance", sikafinance("tn", 13))],
+    "nse": [("sikafinance", sikafinance("ke", 13))],
+    "use": [("sikafinance", sikafinance("ug", 13))],
+    "sgbv": [("sikafinance", sikafinance("dz", 13))],
+    "egx": [("stockanalysis", stockanalysis("egyptian-stock-exchange", 13))],
+    "zse": [("stockanalysis", stockanalysis("zimbabwe-stock-exchange", 11))],
+    "nsx": [("stockanalysis", stockanalysis("namibian-stock-exchange", 15))],
 }
 ALIASES: dict[str, dict[str, str]] = {
     "rse": {"BOK": "BK", "BLR": "BRL"},
     "mse": {"NBS": "NBSMW"},
 }
+
+
+def _base(symbol: str) -> str:
+    """'ADH.MA' -> 'ADH': stored codes sometimes carry an exchange suffix that other sources leave off."""
+    return re.sub(r"\.[A-Z]{2}$", "", symbol.upper())
 
 
 # ── Repricing ─────────────────────────────────────────────────────────────────
@@ -282,8 +335,15 @@ def reprice(previous: list[dict], priced: dict[str, dict], source: str,
     """(rows, verdict). Rows are the previous list repriced from `priced`; the verdict is "ok" or why the source
     was rejected (too few known companies priced, or prices that disagree with the last known ones)."""
     aliases = aliases or {}
-    priced = {aliases.get(sym, sym): q for sym, q in priced.items()}
     known = {q["symbol"]: q for q in previous if q.get("symbol") and isinstance(q.get("price"), (int, float))}
+    by_base = {_base(sym): sym for sym in known}
+    resolved = {}
+    for sym, q in priced.items():
+        sym = aliases.get(sym, sym)
+        stored = sym if sym in known else by_base.get(_base(sym))
+        if stored and stored not in resolved:
+            resolved[stored] = q
+    priced = resolved
     matched = [s for s in priced if s in known and known[s]["price"] > 0]
     needed = max(2, -(-len(known) // 3))                # at least a third of the known companies, and two
     if len(matched) < min(needed, len(known)):

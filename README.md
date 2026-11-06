@@ -142,6 +142,14 @@ Vercel function time.
 | `historical-backfill.yml` | on demand | Deal history back to 2010, one month per call |
 | `python-quality-gates.yml`, `web-quality-gates.yml` | every push | Tests, lint, type check, build, browser tests |
 
+**Self-healing market prices.** Each exchange has an ordered list of vetted price sources
+(`src/engines/price_sources.py`): its own website first, then established market-data sites (sikafinance.com,
+stockanalysis.com). When the primary source returns nothing, the next is tried on the same run. A source is used
+only if it prices at least a third of the companies already known and its prices agree with the last known ones
+(median move within a factor of two); single implausible jumps are ignored, and shares no source prices keep their
+old date so they read as stale. Rows record their source, and the daily health job tests every source. New sources
+are added only after review: a price from an unvetted site could be wrong and would be shown as fact.
+
 **Self-healing news feeds.** When an outlet's feed fails, comes back empty or stops updating, its replacement is found
 from the outlet itself: the feed its homepage advertises, a standard feed address on its site, then Google News
 limited to its site. Ingestion switches on the spot so no headlines are lost; the daily job saves lasting replacements

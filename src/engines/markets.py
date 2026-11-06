@@ -360,7 +360,24 @@ def _get(client: httpx.Client, url: str, **kw) -> Optional[httpx.Response]:
 
 def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = None,
                    previous: Optional[list[dict]] = None) -> tuple[list[dict], list[dict]]:
-    """(quotes, indices) for one exchange; the index table rides along on every african-markets page."""
+    """(quotes, indices) for one exchange from its primary source, falling back to the exchange's next credible
+    source (src/engines/price_sources.py) when the primary returns nothing."""
+    try:
+        quotes, indices = _fetch_primary(ex, client, today, previous)
+    except Exception as e:                              # a broken primary still gets its fallback
+        log.warning("primary source failed for %s: %r", ex.key, e)
+        quotes, indices = [], []
+    if not quotes and ex.source != "index_only":
+        from src.engines import price_sources
+        quotes, _source, notes = price_sources.fallback(ex.key, previous, client, today)
+        if notes:
+            log.warning("market snapshot fallback for %s: %s", ex.key, "; ".join(notes))
+    return quotes, indices
+
+
+def _fetch_primary(ex: Exchange, client: httpx.Client, today: Optional[date] = None,
+                   previous: Optional[list[dict]] = None) -> tuple[list[dict], list[dict]]:
+    """(quotes, indices) from an exchange's primary source; the index table rides along on african-markets pages."""
     if ex.source == "index_only":
         return [], []
     if ex.source == "use":
@@ -389,12 +406,7 @@ def fetch_exchange(ex: Exchange, client: httpx.Client, today: Optional[date] = N
     if ex.source == "listing":
         quotes = parse_listing(page, ex, today)
         if not quotes:
-            # The listing site failed: reprice the last known list from the exchange's next credible source.
-            from src.engines import price_sources
-            quotes, _source, notes = price_sources.fallback(ex.key, previous, client, today)
-            if notes:
-                log.warning("market snapshot fallback for %s: %s", ex.key, "; ".join(notes))
-            return quotes, indices
+            return [], indices                          # fetch_exchange tries the next credible source
         if ex.key == "ngx":
             quotes = _overlay_ngx(quotes, client)
         if ex.key == "egx":

@@ -96,3 +96,42 @@ def test_snapshot_falls_through_to_the_next_source(monkeypatch):
     client = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, text="<html>Maintenance</html>")))
     quotes, _ = markets.fetch_exchange(markets.EXCHANGES["rse"], client, date(2026, 11, 6), PREV)
     assert calls == ["broken", "good"] and next(q for q in quotes if q["symbol"] == "BK")["source"] == "good"
+
+
+SA = """<tr class="s"><td class="s">1</td><td class="sym s"><a href="/quote/egx/COMI/">COMI</a></td>
+<td class="slw s">Commercial International Bank Egypt (CIB) S.A.E.</td><td class="s">435.86B</td><td class="s">128.00</td>
+<td class="rg s">1.18%</td><td class="tr s">139.17B</td></tr>"""
+SIKA_TN = """<tr> <td class="allf"><a href="/marches/cotation_AETEC">AETECH</a></td> <td>0.41</td> <td>0.41</td> <td>0.41</td>
+ <td>1&#xA0;000</td> <td> 410 </td> <td><b>0.41</b></td> <td class="quote_up2">0.00%</td> </tr>"""
+
+
+def test_stockanalysis_list():
+    q = ps.parse_stockanalysis(SA, "2026-11-06")["COMI"]
+    assert q["price"] == 128.0 and q["chg_1d"] == 0.0118 and q["name"].startswith("Commercial International")
+
+
+def test_sikafinance_codes_without_a_country_suffix():
+    assert ps.parse_sikafinance(SIKA_TN, "2026-11-06")["AETEC"]["price"] == 0.41
+
+
+def test_suffixed_stored_codes_match_bare_source_codes():
+    previous = [{"symbol": "ADH.MA", "price": 30.0, "date": "2026-10-28"},
+                {"symbol": "ATW", "price": 700.0, "date": "2026-10-28"}]
+    rows, verdict = ps.reprice(previous, {"ADH": {"price": 31.0, "date": "2026-11-06"},
+                                          "ATW": {"price": 705.0, "date": "2026-11-06"}}, "sikafinance")
+    assert verdict == "ok" and {r["symbol"]: r["price"] for r in rows} == {"ADH.MA": 31.0, "ATW": 705.0}
+
+
+def test_exchanges_with_their_own_primary_source_also_fall_back(monkeypatch):
+    monkeypatch.setitem(ps.SOURCES, "use", [("backup", lambda c, d: {"MTNU": {"price": 210.0, "date": "2026-11-06"},
+                                                                       "SBU": {"price": 30.0, "date": "2026-11-06"}})])
+    monkeypatch.setattr(markets, "_use_quotes", lambda client, today: [])            # the primary returns nothing
+    previous = [{"symbol": "MTNU", "price": 200.0, "date": "2026-10-28"}, {"symbol": "SBU", "price": 29.0, "date": "2026-10-28"}]
+    client = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(503)))
+    quotes, _ = markets.fetch_exchange(markets.EXCHANGES["use"], client, date(2026, 11, 6), previous)
+    assert {q["symbol"]: q["price"] for q in quotes} == {"MTNU": 210.0, "SBU": 30.0}
+
+
+def test_every_exchange_with_a_listing_primary_has_a_second_source():
+    listing = {k for k, e in markets.EXCHANGES.items() if e.source == "listing"}
+    assert listing <= set(ps.SOURCES), sorted(listing - set(ps.SOURCES))
