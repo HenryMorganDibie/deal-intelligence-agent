@@ -1047,6 +1047,14 @@
     "land": {
       "name": "Land",
       "kind": "organization"
+    },
+    "t3 defense": {
+      "name": "T3 Defense",
+      "kind": "organization"
+    },
+    "keepzone ai": {
+      "name": "KeepZone AI",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -3364,6 +3372,11 @@
           "title": "Fox finalizes acquisition of Roku for $22 billion",
           "publisher": "Bénin Web TV",
           "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE9EaVFKQVE1N0hqZFlyRWVWWGRDY1VrVmszdzh0dVRLRmpkRXNQbHUxLUNqMHNPM3NZdHh2bm1NdjZxTXBWNEFZME9NUEpqanQ2S3VyM1FkM0VwcEhkRzBxTGpreGI5WkxLalo0OGlTa1FGZGg5MlRrOEN0N2FsVEk?oc=5"
+        },
+        {
+          "title": "Fox completes acquisition of Roku, trading to be halted on Nasdaq By Investing.com",
+          "publisher": "Investing.com South Africa",
+          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQUS1IME5NZDY0QU9OSzJRMU5GYk1XY0NMNzVTRmk4Z0xkMk96V0tGNzNPNUxZZDF6Zzg3clVlb2ZUSlhDTjBKa0RkVG14dzk1YXZJRl9fbk13RkQ1WlhDZFZqWlpQMjEwVHc0NDhMaE5sU2ZtelVnMUZicG5PVk9TbFpONFFWMm93aFpzWTdOeHpKNGZ3RTRLbUJfWDBxNzJ6RVFRbWx6cnhMV042Y2d0a19neDBWanBTMjhncnZjdlJVbUU?oc=5"
         }
       ]
     },
@@ -3411,6 +3424,11 @@
           "title": "MTN Nigeria Invests N864.8bn in Network Expansion Amid Rising Data Consumption Demand",
           "publisher": "Nigeria Communications Week",
           "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxOeXpnbUpZQnlBdDlBWWZWTC12Y2szcTlVdGladURKQTlTaHdOamFMd29obW15cVI1SlJ0cHVTTUZiWG5EQ0RuakN3OGt5dUZvWlJUUUJzR3dhR19FemRkMVNUNkIxZm02UTNEUGd4R0RNcDNjMG04Y3Rhb2F2VWhyMEFjRW84SmRRRWcxNjh4QmdzWEROM2ZZLUVFZHZyNkJoaW1CT2ZUMmtyOUJ1dl90MjItekRYUXJTMWdWaHhOU0xiQUlWV2JGM0FaUTd3S0NyU2c?oc=5"
+        },
+        {
+          "title": "MTN Nigeria Invests N864.8bn in Network Expansion Amid Rising Data Consumption Demand",
+          "publisher": "Nigeria Communications Week",
+          "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPY29hUjJjTkFvb2FVOFpaVWh5WUJuNDQzOHhFWTVzc2RjQTF5NXJmc1NjOG50QnBveFJhZ1JXYkV6ZUdUWHBXdmwxRmdaWTBPN1Z1R0JMem9uQmxnbEU0X1J5dlhMT2taUV9BTE9ySVp2SXhYWkRZT3NiQnR5VUxta1psWDU2WVhHbzNCOGdCWkpXYkdTbnJ0a0NDYUstNW5kSTJLeFdaVUJsMlR3dnlMV3dYUlFYZUJtNU5jamhsN3FDQ0lmMkNUUUZuM3NqSXlGQ3hmdHdUWQ?oc=5"
         }
       ]
     },
@@ -3427,7 +3445,21 @@
           "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNeGhhZUZqSjk5ekllSGQ1amhwb2o5QXgyamtLNWY1clQtLWJReEJqdWRpWF9yeDFWc1NPYUpYcEl4ZkhkR2laUUZ1d1dCTU12N2Y4Z2VJZU1PV1hMMVhwSHpQaEJrMHp6WGFwZGEzNjJRbm5NWkRZZFpMN1ktMEU4RkhCZzVDa1RaRlY3d0I3OXBSNWcwTnFtUDhvbEF6MkNBRWtMVjViMDBvV3IwZjVJMg?oc=5"
         }
       ]
+    },
+    "038c33b1155a1f9d3741": {
+      "id": "038c33b1155a1f9d3741",
+      "from": "t3 defense",
+      "to": "keepzone ai",
+      "type": "acquisition",
+      "first_seen": "2026-11-07",
+      "sources": [
+        {
+          "title": "T3 Defense completes acquisition of KeepZone AI with amended terms By Investing.com",
+          "publisher": "Investing.com South Africa",
+          "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxQZkswdkZhTGllR3VRZjlkRGdSTjl2TlA0VllNSFpQaVgwU3BLTWFnNlNfLTB6U0VaMFlTa2VhbllPTk9FZVp1SDdYYkFNVWV6THNpeTJqT2toQ1FlZEJ0OEx4TjFsa2JIRjBoM0ZNMlZJWEVDM0ZvbGFVY28tQXRVeWo5anNWNVQ5MGlDWFlpaFpjbjkySW5tUHVLd0Z5bXc0Yi1jd3U5RnhITHJMMC1xcUZ2S1BGZUtDdU56ZmNkNFNlQ2xKZUE?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-07T11:28:52.147472+00:00"
+  "updated_at": "2026-11-07T19:00:44.297839+00:00"
 }

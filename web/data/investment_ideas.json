@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-07T11:28:55.709629+00:00",
+  "updated_at": "2026-11-07T19:00:48.543048+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 51,
+      "new_review_items_today": 63,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 159,
-      "new_observations_today": 1,
-      "unreviewed_flagged_observations": 22,
+      "observations_collected": 162,
+      "new_observations_today": 3,
+      "unreviewed_flagged_observations": 23,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 157,
-      "entities": 262,
+      "relationships": 158,
+      "entities": 264,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,27 +177,25 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 159,
-    "new_rows": 1,
+    "collected_tickers": 162,
+    "new_rows": 3,
     "failures": [
-      "FTSC.BV",
-      "FVT.JO",
-      "GAM.JO",
-      "GAZ.CS",
-      "GBG.JO",
-      "GBI.JO",
-      "GCAPPA.LG",
-      "GCB.GH",
-      "GDN.JO",
-      "GDWA.CA",
-      "GEREGU.LG"
+      "GETO.CA",
+      "GGBL.GH",
+      "GGCC.CA",
+      "GIHD.CA",
+      "GIY.JO",
+      "GLAXOSMITH.LG",
+      "GLD.GH",
+      "GLI.JO",
+      "GMCI.CA"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 262,
-    "relationships": 157,
-    "source_links": 193,
+    "nodes": 264,
+    "relationships": 158,
+    "source_links": 196,
     "most_connected": [
       {
         "name": "Afreximbank",

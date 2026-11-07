@@ -476,3 +476,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GDN.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GDWA.CA"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GEREGU.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GETO.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GFI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GGBL.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GGCC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GIHD.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GIY.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GLAXOSMITH.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GLD.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GLI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GLN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GMCI.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GML.JO"}
