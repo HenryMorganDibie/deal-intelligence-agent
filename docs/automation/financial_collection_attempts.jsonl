@@ -464,3 +464,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-06", "market": "africa", "status": "no_annual_data_returned", "ticker": "FTGH.NR"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-06", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47109_FORTIS_GLOBAL_INSURANCE_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_JUNE_2026.pdf", "status": "collected", "ticker": "FTGINSURE.LG"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-06", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/FTN_COCOA_2025_AUDITED_FINANCIAL_STATEMENTS.pdf", "status": "collected", "ticker": "FTNCOCOA.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "FTSC.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "FVT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "FWRY.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GAM.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GAZ.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GBG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GBI.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GCAPPA.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GCB.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GDN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GDWA.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GEREGU.LG"}

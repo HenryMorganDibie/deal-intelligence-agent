@@ -1031,6 +1031,22 @@
     "undisclosed energy business": {
       "name": "Undisclosed energy business",
       "kind": "organization"
+    },
+    "mtn nigeria": {
+      "name": "MTN Nigeria",
+      "kind": "organization"
+    },
+    "network expansion amid rising data consumption demand": {
+      "name": "Network Expansion Amid Rising Data Consumption Demand",
+      "kind": "organization"
+    },
+    "govt": {
+      "name": "Govt",
+      "kind": "organization"
+    },
+    "land": {
+      "name": "Land",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -3376,9 +3392,42 @@
           "title": "Dangote invests $2.5B in Namibia’s energy business",
           "publisher": "Semafor",
           "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQUWo5ZFN6WHY4YmRXTU8xTUlvQkhzcHlqdVJoOFFraUxucUpvLThXdG5kdTJ5eDhjUXRaZmdpWGlRUElyMEdWcElWYmh4Qkd6U2loTXJSNVNvT09WX190U0ZpUjd2a3JmaGROdUpwNHRfblRMSW1UOTg3QmJkSHpFV2tKXzFJMnhMSUxCZTBTcW9rbmgz?oc=5"
+        },
+        {
+          "title": "Dangote invests $2.5B in Namibia's energy business",
+          "publisher": "Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPdzExWDBIUGhiZkkwYU1wR2hJcnFVM01ELXFzN21nUFBVblR0aUp4dWd0dHI1bUc5RDFleGVwd19iWVlDb2FwWUQtX3N3bXF4eXViSzNUbjRNTzBnRW9jSE52WFVOSk1RbUVQLWpTMXA3WmFIY0JheUZwT1RncTFJcXB6WGNsUVBVN0lDYnVJNA?oc=5"
+        }
+      ]
+    },
+    "b9cb2232612dcf43b504": {
+      "id": "b9cb2232612dcf43b504",
+      "from": "mtn nigeria",
+      "to": "network expansion amid rising data consumption demand",
+      "type": "equity_funding",
+      "first_seen": "2026-11-06",
+      "sources": [
+        {
+          "title": "MTN Nigeria Invests N864.8bn in Network Expansion Amid Rising Data Consumption Demand",
+          "publisher": "Nigeria Communications Week",
+          "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxOeXpnbUpZQnlBdDlBWWZWTC12Y2szcTlVdGladURKQTlTaHdOamFMd29obW15cVI1SlJ0cHVTTUZiWG5EQ0RuakN3OGt5dUZvWlJUUUJzR3dhR19FemRkMVNUNkIxZm02UTNEUGd4R0RNcDNjMG04Y3Rhb2F2VWhyMEFjRW84SmRRRWcxNjh4QmdzWEROM2ZZLUVFZHZyNkJoaW1CT2ZUMmtyOUJ1dl90MjItekRYUXJTMWdWaHhOU0xiQUlWV2JGM0FaUTd3S0NyU2c?oc=5"
+        }
+      ]
+    },
+    "a7d26936aa99fec45250": {
+      "id": "a7d26936aa99fec45250",
+      "from": "govt",
+      "to": "land",
+      "type": "acquisition",
+      "first_seen": "2026-11-07",
+      "sources": [
+        {
+          "title": "Govt Moves To Acquire Land From Select Owners In Nairobi And Kiambu",
+          "publisher": "The Kenya Times",
+          "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNeGhhZUZqSjk5ekllSGQ1amhwb2o5QXgyamtLNWY1clQtLWJReEJqdWRpWF9yeDFWc1NPYUpYcEl4ZkhkR2laUUZ1d1dCTU12N2Y4Z2VJZU1PV1hMMVhwSHpQaEJrMHp6WGFwZGEzNjJRbm5NWkRZZFpMN1ktMEU4RkhCZzVDa1RaRlY3d0I3OXBSNWcwTnFtUDhvbEF6MkNBRWtMVjViMDBvV3IwZjVJMg?oc=5"
         }
       ]
     }
   },
-  "updated_at": "2026-11-06T20:33:10.278099+00:00"
+  "updated_at": "2026-11-07T11:28:52.147472+00:00"
 }
