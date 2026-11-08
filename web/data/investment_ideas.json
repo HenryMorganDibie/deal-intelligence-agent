@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-08T11:44:15.518521+00:00",
+  "updated_at": "2026-11-08T19:01:22.050966+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 75,
+      "new_review_items_today": 54,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 0,
+      "new_review_items_today": 1,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,9 +48,9 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 166,
+      "observations_collected": 170,
       "new_observations_today": 4,
-      "unreviewed_flagged_observations": 25,
+      "unreviewed_flagged_observations": 26,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
@@ -177,17 +177,17 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 166,
+    "collected_tickers": 170,
     "new_rows": 4,
     "failures": [
-      "GNI.LG",
-      "GOCO.CA",
-      "GOIL.GH",
-      "GOLDINSURE.LG",
-      "GOUR.CA",
-      "GPPL.CA",
-      "GRCA.CA",
-      "GREENWETF.LG"
+      "GRF.JO",
+      "GSH.JO",
+      "GSPECPLC.LG",
+      "GSR.GH",
+      "GTEX.CA",
+      "GTHE.CA",
+      "GTM.CS",
+      "GTR.JO"
     ],
     "retry_after_days": 2
   },

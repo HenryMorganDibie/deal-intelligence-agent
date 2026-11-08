@@ -500,3 +500,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GPPL.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GRCA.CA"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GREENWETF.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GRF.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GRT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GSH.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GSPECPLC.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GSR.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GSSC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GTC.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-08", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46482_GUARANTY_TRUST_HOLDING_COMPANY_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "GTCO.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GTEX.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GTHE.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GTM.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GTR.JO"}
