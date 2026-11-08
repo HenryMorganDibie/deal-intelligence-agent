@@ -488,3 +488,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GLN.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "status": "no_annual_data_returned", "ticker": "GMCI.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-07", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GML.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GND.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GNDP.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GNI.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GOCO.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GOIL.GH"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-08", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/Golden_Guinea_-_2024_Audited_Accounts.pdf", "status": "collected", "ticker": "GOLDBREW.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GOLDINSURE.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GOUR.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "GPL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GPPL.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GRCA.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-08", "market": "africa", "status": "no_annual_data_returned", "ticker": "GREENWETF.LG"}

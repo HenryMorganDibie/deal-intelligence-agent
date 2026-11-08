@@ -1055,6 +1055,18 @@
     "keepzone ai": {
       "name": "KeepZone AI",
       "kind": "organization"
+    },
+    "nexim": {
+      "name": "NEXIM",
+      "kind": "organization"
+    },
+    "uganda aviation academy": {
+      "name": "Uganda Aviation Academy",
+      "kind": "organization"
+    },
+    "cessna": {
+      "name": "Cessna",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -3459,7 +3471,35 @@
           "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxQZkswdkZhTGllR3VRZjlkRGdSTjl2TlA0VllNSFpQaVgwU3BLTWFnNlNfLTB6U0VaMFlTa2VhbllPTk9FZVp1SDdYYkFNVWV6THNpeTJqT2toQ1FlZEJ0OEx4TjFsa2JIRjBoM0ZNMlZJWEVDM0ZvbGFVY28tQXRVeWo5anNWNVQ5MGlDWFlpaFpjbjkySW5tUHVLd0Z5bXc0Yi1jd3U5RnhITHJMMC1xcUZ2S1BGZUtDdU56ZmNkNFNlQ2xKZUE?oc=5"
         }
       ]
+    },
+    "efc4fa2a2deb5c2eb43c": {
+      "id": "efc4fa2a2deb5c2eb43c",
+      "from": "afreximbank",
+      "to": "nexim",
+      "type": "debt_financing",
+      "first_seen": "2026-11-08",
+      "sources": [
+        {
+          "title": "Afreximbank Approves $30m Facility For NEXIM To Finance Export-Oriented SMEs",
+          "publisher": "New Telegraph",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQbm5uNjJOWUpYNjZrTWJiaXh6d0tFN0stY3ctM050Si1XYXUxUEtKdjluczFiN0xjamF6OXZxZmFwRklzVUI0TlNUSkdCaWNGOUJDc2dDUk9lMUxVMlAwUllrTUtsUVpXSHZ0UFQzNnIzbzRqZmpTOTFuVG12ai16ZmJJemNscGpuZkhCT2NvRlp0N3ZrSUpBX3NqUWtwVlJEUTFFTTlB?oc=5"
+        }
+      ]
+    },
+    "bdfce627ed5e2dc9765a": {
+      "id": "bdfce627ed5e2dc9765a",
+      "from": "uganda aviation academy",
+      "to": "cessna",
+      "type": "acquisition",
+      "first_seen": "2026-11-08",
+      "sources": [
+        {
+          "title": "Uganda Aviation Academy Acquires Cessna 421 In Fleet Expansion Drive",
+          "publisher": "Nilepost",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNWExJUll2ZklyaDNNeXgwU2FxcFJVZXZmMmFpbjZfWWJsZUl4cGJBbEZPbVBGQUFIVUZLX2x6dVZxUEdHYWt3R2tVYTQ4MHI5LVYtOXdpNHhzamNya0FFaGFsSUp6bFhxWllmUERNRElUNDR0YVFTOHlCNzBuck83enR2NFhHaG9vUHJYaHhKZG5rZ2Q0Z25SU2R2SVFWX2d1NG5PM0d30gGuAUFVX3lxTE1YRGZyX2h0RTZPaEJJM3YwS05YbkF3VzhmcnhROXFVWTI5S1VnVjFuTFo5SXNqM2EtdXpITmlfNWs2Rmd3dnJDWlBWSXYzRl9Gb28ta0JKSGxESU1jRVR3dHlXamNfOC1xMDNTeFJfbXVMWnBDTXQ3VnVpLUtYS09mRnhLNi05S3lscllGWkExTEFKMDRSQUhiekt0cERCdVpwTEJCTzVfb3piNkNfZw?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-07T19:00:44.297839+00:00"
+  "updated_at": "2026-11-08T11:44:13.182867+00:00"
 }
