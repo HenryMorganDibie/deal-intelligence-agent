@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-07T21:51:43.615639+00:00",
+  "updated_at": "2026-11-08T14:27:08.731637+00:00",
   "current": {
     "company": "Victoria Falls Hotel",
     "company_url": "/app/companies?name=Victoria%20Falls%20Hotel",
@@ -10,7 +10,7 @@
     "country": "ZW",
     "sector": "hospitality",
     "announced": "2026-11-04",
-    "score": 48.64,
+    "score": 47.21,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
@@ -30,9 +30,9 @@
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-10-31",
-    "period_end": "2026-11-06",
-    "selected_at": "2026-11-07T21:51:43.614033+00:00",
+    "period_start": "2026-11-01",
+    "period_end": "2026-11-07",
+    "selected_at": "2026-11-08T14:27:08.730226+00:00",
     "selection_version": 5,
     "companies": [
       {
@@ -44,7 +44,7 @@
         "country": "ZW",
         "sector": "hospitality",
         "announced": "2026-11-04",
-        "score": 48.64,
+        "score": 47.21,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +64,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-31",
-        "period_end": "2026-11-06",
-        "selected_at": "2026-11-07T21:51:43.614033+00:00",
+        "period_start": "2026-11-01",
+        "period_end": "2026-11-07",
+        "selected_at": "2026-11-08T14:27:08.730226+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +78,7 @@
         "country": "NG",
         "sector": "oil_gas",
         "announced": "2026-11-03",
-        "score": 52.16,
+        "score": 50.74,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +98,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-31",
-        "period_end": "2026-11-06",
-        "selected_at": "2026-11-07T21:51:43.614033+00:00",
+        "period_start": "2026-11-01",
+        "period_end": "2026-11-07",
+        "selected_at": "2026-11-08T14:27:08.730226+00:00",
         "selection_version": 5
       },
       {
@@ -112,7 +112,7 @@
         "country": "KE",
         "sector": "banking",
         "announced": "2026-11-03",
-        "score": 45.71,
+        "score": 44.29,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-31",
-        "period_end": "2026-11-06",
-        "selected_at": "2026-11-07T21:51:43.614033+00:00",
+        "period_start": "2026-11-01",
+        "period_end": "2026-11-07",
+        "selected_at": "2026-11-08T14:27:08.730226+00:00",
         "selection_version": 5
       },
       {
@@ -146,7 +146,7 @@
         "country": "BW",
         "sector": null,
         "announced": "2026-11-01",
-        "score": 44.36,
+        "score": 42.93,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -166,9 +166,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-10-31",
-        "period_end": "2026-11-06",
-        "selected_at": "2026-11-07T21:51:43.614033+00:00",
+        "period_start": "2026-11-01",
+        "period_end": "2026-11-07",
+        "selected_at": "2026-11-08T14:27:08.730226+00:00",
         "selection_version": 5
       }
     ],
@@ -3224,6 +3224,179 @@
           "period_start": "2026-10-31",
           "period_end": "2026-11-06",
           "selected_at": "2026-11-07T21:51:43.614033+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": []
+    },
+    {
+      "company": "Victoria Falls Hotel",
+      "company_url": "/app/companies?name=Victoria%20Falls%20Hotel",
+      "headline": "Shareholders give nod to Meikles’ US$15m Victoria Falls Hotel stake sale",
+      "deal_type": "insider_activity",
+      "amount_usd": null,
+      "country": "ZW",
+      "sector": "hospitality",
+      "announced": "2026-11-04",
+      "score": 47.21,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: insider activity",
+        "Event rule confidence: 0.85",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Herald.co.zw",
+          "title": "Shareholders give nod to Meikles’ US$15m Victoria Falls Hotel stake sale",
+          "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNYzBvWjN1bFdncEZnbFBxR2stMElHc3lRSjhBREF2cGZ3QlN6Nko4UmVvNFBjOS1tLWtTZ2xadkh1UGFpZXlsTTBfVzZOM0Z6bG44X2NsdkJDNjNaMlo4TFpadUFySlpWTjJySWFNOEU4YmE2ODIxbjdwYm9oaFZaODNLb3k5N21KajJ4X2hodklCc0tuUU04di1maEdhOGZrZGxGQQ?oc=5",
+          "date": "2026-11-04",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-01",
+      "period_end": "2026-11-07",
+      "selected_at": "2026-11-08T14:27:08.730226+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "Victoria Falls Hotel",
+          "company_url": "/app/companies?name=Victoria%20Falls%20Hotel",
+          "headline": "Shareholders give nod to Meikles’ US$15m Victoria Falls Hotel stake sale",
+          "deal_type": "insider_activity",
+          "amount_usd": null,
+          "country": "ZW",
+          "sector": "hospitality",
+          "announced": "2026-11-04",
+          "score": 47.21,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.85",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Herald.co.zw",
+              "title": "Shareholders give nod to Meikles’ US$15m Victoria Falls Hotel stake sale",
+              "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNYzBvWjN1bFdncEZnbFBxR2stMElHc3lRSjhBREF2cGZ3QlN6Nko4UmVvNFBjOS1tLWtTZ2xadkh1UGFpZXlsTTBfVzZOM0Z6bG44X2NsdkJDNjNaMlo4TFpadUFySlpWTjJySWFNOEU4YmE2ODIxbjdwYm9oaFZaODNLb3k5N21KajJ4X2hodklCc0tuUU04di1maEdhOGZrZGxGQQ?oc=5",
+              "date": "2026-11-04",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-01",
+          "period_end": "2026-11-07",
+          "selected_at": "2026-11-08T14:27:08.730226+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "NNPC",
+          "company_url": "/app/companies?name=NNPC",
+          "headline": "NNPC considers 5% to 10% stake sale in planned IPO",
+          "deal_type": "insider_activity",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "oil_gas",
+          "announced": "2026-11-03",
+          "score": 50.74,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.85",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "NNPC considers 5% to 10% stake sale in planned IPO",
+              "url": "https://nairametrics.com/2026/11/03/nnpc-considers-5-to-10-stake-sale-in-planned-ipo/",
+              "date": "2026-11-03",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-01",
+          "period_end": "2026-11-07",
+          "selected_at": "2026-11-08T14:27:08.730226+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "ABC Bank",
+          "company_url": "/app/companies?name=ABC%20Bank",
+          "headline": "ABC Bank’s Sh200 Million Loan Fraud Probe Continues: Forensic Report, Failed Court Gag Order, and a Family-Controlled Lender Already Drowning in Bad Loans and Capital Shortfalls",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": "banking",
+          "announced": "2026-11-03",
+          "score": 44.29,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Kenya Insights",
+              "title": "ABC Bank’s Sh200 Million Loan Fraud Probe Continues: Forensic Report, Failed Court Gag Order, and a Family-Controlled Lender Already Drowning in Bad Loans and Capital Shortfalls",
+              "url": "https://news.google.com/rss/articles/CBMipgJBVV95cUxPay1KVENueXB0RnUxR3F5V3lYbmoxb0FTTmhSNldCd29PSDBObGlBamQ0cFl2UFlnNWVhQlN0NjhJZGwza3J3OUJWaVZ6bmREc1BDdDl0TWNDazlzbzVVUzZtSEFwcDY3OUNsdFR4TWwzTnczbjgwSkJsT1BxMjFUSVpXREtnZldVVW1ldmgxZTJVLUJrdmpzR2FfR3pLTXVRMFk1M1NhV09QdEhOek9KV2Y3UWVwUmdTb1hyUVJNVVU0M3RzaXhjTFBNSVVxN0FPeER1YW1vMnR2Q3BSSEZIZVJyLTV2d2c3MmQybFFZV0FzVmp5Q3NTRmhreHdtX2tpazIwWHE3eFg5OGQwT195Y1R5Q1ByWVRtU3pmZTcwcHlGeGJxRHc?oc=5",
+              "date": "2026-11-03",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-01",
+          "period_end": "2026-11-07",
+          "selected_at": "2026-11-08T14:27:08.730226+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "De Beers",
+          "company_url": "/app/companies?name=De%20Beers",
+          "headline": "Botswana weighs $118mn De Beers stake increase to 25% as Signet, Richemont circle sale amid diamond slump",
+          "deal_type": "insider_activity",
+          "amount_usd": null,
+          "country": "BW",
+          "sector": null,
+          "announced": "2026-11-01",
+          "score": 42.93,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.85",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "IntelliNews",
+              "title": "Botswana weighs $118mn De Beers stake increase to 25% as Signet, Richemont circle sale amid diamond slump",
+              "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPdExrWl9OZDJmSzkwYWhsN1dBN2pzRExycVFDU1AtRWFUYk54YmFpd1BoZktqQkVFb0FfQ3hqdmQ5dU1oTFNpZU1mQnFFcUxJSDZvMkVBZDNyd2VaelRLWWdtcW9USDVFaWczRE5XT0pQRTA5SE5wRDVzM21qT0dIcUhHS0Yzdm9xV05QeTBuZ1hMWnpsY2VLWTdiMlBLRHJPODI3UjN2REtOMkpwa1lua2pqaDlXZWU3T0xQTG1UOWdEdDdheVdaYS1oNF9COHA4Nk5Xdg?oc=5",
+              "date": "2026-11-01",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-01",
+          "period_end": "2026-11-07",
+          "selected_at": "2026-11-08T14:27:08.730226+00:00",
           "selection_version": 5
         }
       ],
