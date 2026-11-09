@@ -20,7 +20,7 @@ from src.data.african_companies import AFRICAN_COMPANIES  # noqa: E402  (standar
 from src.data.africa_countries import countries_in_text, regulator_acronyms  # noqa: E402
 from src.engines.event_filters import is_corporate_event, listed_names, named_company  # noqa: E402
 
-DEFAULT_API = "https://deal-intelligence-api.vercel.app"
+DEFAULT_API = "https://api.deal-intelligence.app"
 DEFAULT_OUTPUT = Path("web/data/corporate-of-week.json")
 TYPE_WEIGHT = {
     "acquisition": 12, "merger": 12, "exit": 11, "ipo": 11,

@@ -29,7 +29,7 @@ def reply_to() -> str:
 
 
 def api_base() -> str:
-    return os.environ.get("DEAL_INTEL_API_PUBLIC_URL", "https://deal-intelligence-api.vercel.app").rstrip("/")
+    return os.environ.get("DEAL_INTEL_API_PUBLIC_URL", "https://api.deal-intelligence.app").rstrip("/")
 
 
 def unsubscribe_link(token: str) -> str:

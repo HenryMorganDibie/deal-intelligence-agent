@@ -55,7 +55,7 @@ jobs:
           if [ -n "${YEAR:-}" ]; then query="?year=${YEAR}"; fi
           curl --fail-with-body --silent --show-error --max-time 60 --retry 2 --retry-delay 10 --retry-all-errors \
             -H "Authorization: Bearer ${token}" \
-            "https://deal-intelligence-api.vercel.app/api/cron/review-export${query}" > export.json
+            "https://api.deal-intelligence.app/api/cron/review-export${query}" > export.json
           jq -e '.year and .files' export.json > /dev/null
 
       - name: Write the label files

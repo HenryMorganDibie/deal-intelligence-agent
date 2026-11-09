@@ -39,7 +39,7 @@ jobs:
           echo "::add-mask::${oidc}"
           curl --fail-with-body --silent --show-error --max-time 290 \
             -H "Authorization: Bearer ${oidc}" -H "Accept: application/json" \
-            "https://deal-intelligence-api.vercel.app/api/cron/market-snapshot"
+            "https://api.deal-intelligence.app/api/cron/market-snapshot"
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:

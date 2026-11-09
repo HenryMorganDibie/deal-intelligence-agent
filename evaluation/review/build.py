@@ -1,7 +1,7 @@
 """
 Draw a year's independent-review sample: headlines and report pairs for two human annotators.
 
-    python -m evaluation.review.build --year 2027 --from-api https://deal-intelligence-api.vercel.app
+    python -m evaluation.review.build --year 2027 --from-api https://api.deal-intelligence.app
     python -m evaluation.review.build --year 2026 --pool evaluation/review/2026/pool.jsonl --out /tmp/check
 
 Each year gets its own folder, evaluation/review/<year>/. A year that already has a manifest is
