@@ -1352,6 +1352,56 @@ async def admin_accounts(request: Request) -> Response:
                     headers={"Cache-Control": "no-store, private"})
 
 
+# ── Account emails (Supabase Send Email hook -> SendByte) ────────────────────
+
+@router.post("/api/auth/send-email")
+async def auth_send_email(request: Request) -> Response:
+    """Supabase Auth hands every account email here (signed, Standard Webhooks); it is written in the product's
+    design and sent through SendByte. Supabase treats an empty 200 as sent and shows the error otherwise."""
+    from src.engines import auth_emails
+
+    def error(status: int, message: str) -> Response:
+        return Response(json.dumps({"error": {"http_code": status, "message": message}}), status_code=status,
+                        media_type="application/json", headers={"Cache-Control": "no-store"})
+
+    body = (await request.body())[:200_000]
+    headers = {k.lower(): v for k, v in request.headers.items()}
+    try:
+        auth_emails.verify_signature(body, headers, auth_emails.hook_secrets())
+    except auth_emails.SignatureError as exc:
+        log.warning("send-email hook rejected: %s", exc)
+        return error(401, "Invalid signature.")
+    try:
+        payload = json.loads(body)
+    except ValueError:
+        return error(400, "Invalid payload.")
+    messages = auth_emails.messages(payload if isinstance(payload, dict) else {})
+    if not messages:
+        return Response("{}", media_type="application/json")
+    if not email_alerts.api_key():
+        log.error("send-email hook: SENDBYTE_API_KEY is not set")
+        return error(500, "Email delivery is not configured. Please try again later.")
+    async with httpx.AsyncClient() as client:
+        for m in messages:
+            result = await email_alerts.send(
+                client, m["to"], m["subject"], m["html"], m["text"], None,
+                auth_emails.idempotency_key(headers.get("webhook-id", ""), m["to"], m["role"]),
+                from_address=auth_emails.sender(), tags=["account", m["kind"]])
+            if not result["sent"]:
+                log.error("account email %s not sent: %s", m["kind"], result["error"])
+                return error(502, "The email could not be sent. Please try again in a moment.")
+    return Response("{}", media_type="application/json", headers={"Cache-Control": "no-store"})
+
+
+@router.get("/api/auth/send-email")
+async def auth_send_email_status() -> Response:
+    """Whether account emails can be sent: the hook secret and the SendByte key are both set (never their values)."""
+    from src.engines import auth_emails
+    status = {"hook_secret": bool(auth_emails.hook_secrets()), "sendbyte": bool(email_alerts.api_key())}
+    return Response(json.dumps({**status, "ready": all(status.values())}), media_type="application/json",
+                    headers={"Cache-Control": "no-store"})
+
+
 # ── Independent review labelling ─────────────────────────────────────────────
 
 def _review_token_hash(token: str) -> str:

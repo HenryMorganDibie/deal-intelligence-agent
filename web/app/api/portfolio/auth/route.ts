@@ -11,6 +11,8 @@ import { AUTH_STATE_COOKIE } from "../../../../lib/auth-state";
 import { displayNameProblem, normaliseUsername, passwordProblems, usernameProblem } from "../../../../lib/password-policy";
 import { passwordBreached } from "../../../../lib/pwned";
 
+
+const VERIFY_TYPES = ["signup", "email", "invite", "recovery", "magiclink", "email_change"];
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -184,11 +186,14 @@ export async function POST(request: NextRequest) {
     if (action === "verify-email") {
       const tokenHash = typeof body.tokenHash === "string" ? body.tokenHash : "";
       const type = typeof body.type === "string" ? body.type : "";
-      if (!/^[a-f0-9]{32,128}$/i.test(tokenHash) || !["signup", "email", "invite", "recovery"].includes(type)) {
+      if (!/^(pkce_)?[a-f0-9]{32,128}$/i.test(tokenHash) || !VERIFY_TYPES.includes(type)) {
         return fail("The confirmation link is invalid or expired.");
       }
       const response = await supabase("/auth/v1/verify", { method: "POST", body: JSON.stringify({ token_hash: tokenHash, type }) });
       const payload = (await response.json().catch(() => ({}))) as AuthPayload;
+      // With secure email change, the first of the two links is accepted without a session:
+      // the change completes once the other address confirms as well.
+      if (response.ok && type === "email_change" && !payload.access_token) return ok({ pending: true });
       if (!response.ok || !payload.access_token || !payload.refresh_token || !payload.user?.id) return fail("The confirmation link is invalid or expired.");
       setPortfolioAuthCookies(payload);
       dropAuthState();

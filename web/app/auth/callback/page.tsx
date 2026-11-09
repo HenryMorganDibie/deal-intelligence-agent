@@ -40,7 +40,7 @@ export default function AuthCallbackPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: "verify-email", tokenHash, type }),
           });
-        } else if (refreshToken && ["signup", "email", "invite", "recovery"].includes(fragmentType)) {
+        } else if (refreshToken && ["signup", "email", "invite", "recovery", "magiclink"].includes(fragmentType)) {
           response = await fetch("/api/portfolio/auth", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
