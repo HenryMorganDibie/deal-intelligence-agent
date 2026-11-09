@@ -6,6 +6,10 @@ prev="${VERCEL_GIT_PREVIOUS_SHA:-}"
 if [ -z "$prev" ] || ! git cat-file -e "${prev}^{commit}" 2>/dev/null; then
   echo "No previous deployment to compare with: building."; exit 1
 fi
+# The same commit again is a deliberate redeploy (usually to pick up a changed environment variable): build it.
+if [ "$(git rev-parse "$prev")" = "$(git rev-parse HEAD)" ]; then
+  echo "Redeploy of the same commit: building."; exit 1
+fi
 if git diff --quiet "$prev" HEAD -- . ':(exclude)e2e' ':(exclude)tests' ':(exclude)*.md'; then
   echo "Nothing under web/ changed: skipping this deployment."; exit 0
 fi

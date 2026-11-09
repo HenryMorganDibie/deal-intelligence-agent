@@ -8,9 +8,13 @@ if [ -z "$prev" ] || ! git cat-file -e "${prev}^{commit}" 2>/dev/null; then
   echo "No previous deployment to compare with: building."; exit 1
 fi
 changed="$(git diff --name-only "$prev" HEAD)"
+# The same commit again is a deliberate redeploy (usually to pick up a changed environment variable): build it.
+if [ -z "$changed" ]; then
+  echo "Redeploy of the same commit: building."; exit 1
+fi
 # Paths the API never reads at runtime.
 ignored='^(web/|\.github/|tests/|scripts/|supabase/|deploy/|evaluation/review/[^/]+/pool\.jsonl$|[^/]+\.md$|docs/[^/]+\.md$|LICENSE$|src/data/feed_overrides\.json$)'
-if [ -n "$changed" ] && printf '%s\n' "$changed" | grep -qvE "$ignored"; then
+if printf '%s\n' "$changed" | grep -qvE "$ignored"; then
   echo "API files changed: building."; printf '%s\n' "$changed" | grep -vE "$ignored" | head -20; exit 1
 fi
 echo "Nothing the API serves changed: skipping this deployment."; exit 0
