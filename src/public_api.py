@@ -39,9 +39,12 @@ class PublicApiError(Exception):
         self.status, self.code, self.message, self.headers = status, code, message, headers or {}
 
 
-async def _error_response(_: Request, exc: PublicApiError) -> JSONResponse:
+async def _error_response(request: Request, exc: PublicApiError) -> JSONResponse:
+    # A request that passed the key check was counted, so its error still reports the remaining allowance.
+    counted = getattr(request.state, "quota", None)
+    headers = {**(quota_headers(counted) if counted else {}), "Cache-Control": "no-store", **exc.headers}
     return JSONResponse({"error": {"code": exc.code, "message": exc.message, "docs": DOCS_URL}},
-                        status_code=exc.status, headers={"Cache-Control": "no-store", **exc.headers})
+                        status_code=exc.status, headers=headers)
 
 
 def install(app: FastAPI) -> None:
@@ -109,6 +112,7 @@ async def authorize(request: Request, response: Response, count: bool = True) ->
                                  "are used up. Upgrade, or wait for the allowance to reset.", headers)
         raise PublicApiError(401, "invalid_key", "That API key does not exist or has been revoked.",
                              {"WWW-Authenticate": "Bearer"})
+    request.state.quota = status
     response.headers.update(quota_headers(status))
     response.headers["Cache-Control"] = "no-store"
     return status

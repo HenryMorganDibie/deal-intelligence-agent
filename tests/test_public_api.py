@@ -117,6 +117,7 @@ def test_handler_errors_use_the_public_error_shape(metering, monkeypatch):
     r = TestClient(api.app).get("/v1/deals/nope", headers=auth())
     assert r.status_code == 404
     assert r.json()["error"] == {"code": "not_found", "message": "Deal not found.", "docs": public_api.DOCS_URL}
+    assert r.headers["x-ratelimit-remaining"] == "26"          # counted, so the allowance is still reported
 
 
 def test_investor_registry_is_left_out(metering, monkeypatch):
