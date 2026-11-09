@@ -9,7 +9,7 @@ one with any signal when the market has been quiet.
 """
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timedelta
 from typing import Optional
 
 # (company, ticker, market label). A spread of US and African exchanges.
@@ -128,6 +128,25 @@ def latest_per_company(summaries: list[dict]) -> list[dict]:
             seen.add(s.get("company"))
             out.append(s)
     return out
+
+
+def freshest(summaries: list[dict], window_hours: float = 36) -> list[dict]:
+    """Runs within a day and a half of the newest one, when any has findings.
+
+    Without this, a strong run from days ago keeps outranking newer ones until it leaves the
+    lookback window, and the landing page looks frozen on an old date.
+    """
+    def at(s: dict) -> Optional[datetime]:
+        try:
+            return datetime.fromisoformat(str(s.get("created_at")).replace("Z", "+00:00"))
+        except (TypeError, ValueError):
+            return None
+    stamps = [t for t in map(at, summaries) if t]
+    if not stamps:
+        return summaries
+    cutoff = max(stamps) - timedelta(hours=window_hours)
+    recent = [s for s in summaries if (at(s) or cutoff) > cutoff]
+    return recent if any(s.get("signal_count") for s in recent) else summaries
 
 
 def pick(summaries: list[dict]) -> Optional[dict]:

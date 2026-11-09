@@ -409,10 +409,11 @@ async def get_showcase() -> dict:
             recent = r.json() if r.status_code == 200 else []
             if any(s.get("signal_count") for s in recent):
                 break
-    recent = showcase.latest_per_company(recent)
+    recent = showcase.freshest(showcase.latest_per_company(recent))
     hero = showcase.pick(recent)
-    others = [s for s in recent if hero and s.get("company") != hero.get("company")]
-    out = {"hero": hero, "example": next((s for s in others if s.get("created_at")), None),
+    others = [s for s in recent if hero and s.get("company") != hero.get("company") and s.get("created_at")]
+    # The example is the strongest other company with findings, not merely the newest run (which can be empty).
+    out = {"hero": hero, "example": showcase.pick(others),
            "companies": [{"company": c, "ticker": t, "market": m} for c, t, m in showcase.COMPANIES]}
     if hero:
         _showcase_cache = (time.monotonic(), out)
