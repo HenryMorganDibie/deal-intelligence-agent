@@ -227,6 +227,10 @@ from src.hosted_market import router as market_router  # noqa: E402
 
 app.include_router(market_router)
 
+from src import public_api  # noqa: E402
+
+public_api.install(app)    # /v1: key-authenticated, metered, never edge-cached
+
 
 # Public read-only datasets are shared by every visitor. Let Vercel's edge cache
 # absorb repeated identical GETs instead of invoking the Python function each time.

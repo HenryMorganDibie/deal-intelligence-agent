@@ -59,7 +59,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from src.data import africa_countries as ac
 from src.engines import company_profile, country_profile, coverage, country_risk, deals as deals_mod, investors, market_risk
-from src.engines import research as research_mod, watch, official_sources, email_alerts
+from src.engines import research as research_mod, watch, official_sources, email_alerts, chat_formats
 
 log = logging.getLogger("deal_intel.market")
 router = APIRouter()
@@ -1101,6 +1101,39 @@ async def watchlist_delivery_history(wl_id: str) -> dict:
     return {"deliveries": response.json() or []}
 
 
+class WebhookTestBody(BaseModel):
+    url: str = Field(..., min_length=10, max_length=500)
+    name: str = Field("Your watchlist", max_length=80)
+
+
+_webhook_tests: dict[str, list[float]] = {}
+
+
+@router.post("/api/webhooks/test")
+async def test_webhook(body: WebhookTestBody, request: Request) -> dict:
+    """Send a clearly marked sample alert to a webhook, so Slack, Teams, Discord or Google Chat setup can be
+    checked before saving. At most 5 tests a minute per visitor."""
+    now = time.monotonic()
+    caller = _client_hash(request)
+    recent = [t for t in _webhook_tests.get(caller, []) if now - t < 60]
+    if len(recent) >= 5:
+        raise HTTPException(429, "Too many test messages. Wait a minute and try again.")
+    _webhook_tests[caller] = recent + [now]
+    if len(_webhook_tests) > 2000:
+        _webhook_tests.clear()
+    url = body.url.strip()
+    if not watch.valid_webhook(url) or not await run_in_threadpool(_public_host, url):
+        raise HTTPException(422, "Webhooks must be https URLs on a public host.")
+    wl = {"id": "test", "name": body.name.strip() or "Your watchlist"}
+    alerts = chat_formats.sample_alerts()
+    link = f"{APP_URL}/app/watchlists" if APP_URL else "https://deal-intelligence.app/app/watchlists"
+    payload = chat_formats.payload(url, wl, alerts, link, watch.webhook_payload(wl, alerts, link))
+    result = await watch.deliver_webhook(url, payload, "deal-intel-test-" + uuid.uuid4().hex[:24])
+    kind = chat_formats.destination(url)
+    return {"delivered": bool(result["delivered"]), "destination": kind, "label": chat_formats.LABELS[kind],
+            "status_code": result.get("status_code"), "error": result.get("error")}
+
+
 @router.delete("/api/watchlists/{wl_id}")
 async def delete_watchlist(wl_id: str) -> dict:
     await _get_watchlist(wl_id)
@@ -2004,8 +2037,9 @@ async def cron_ingest(
         batch_key = watch.delivery_idempotency_key(wl["id"], alerts)
         result = {"delivered": False}
         if use_webhook:
-            result = await watch.deliver_webhook(
-                wl["webhook_url"], watch.webhook_payload(wl, alerts, _watch_link(wl["id"])), batch_key)
+            link = _watch_link(wl["id"])
+            body = chat_formats.payload(wl["webhook_url"], wl, alerts, link, watch.webhook_payload(wl, alerts, link))
+            result = await watch.deliver_webhook(wl["webhook_url"], body, batch_key)
         email_result = {"sent": 0, "error": None}
         if subscribers:
             async with httpx.AsyncClient() as mail_client:

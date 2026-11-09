@@ -55,3 +55,6 @@ export const REQUESTS = [
     template: "Name:\nOrganisation:\nQuestion:\n",
   },
 ] as const;
+
+/** Public base URL of the key-authenticated API, as customers call it. */
+export const PUBLIC_API_BASE = `${(process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") || "https://deal-intelligence-api.vercel.app")}/v1`;

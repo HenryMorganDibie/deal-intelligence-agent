@@ -77,6 +77,7 @@ export function AccountMenu() {
           <div className="pt-1">
             <Link role="menuitem" href="/account/profile" className={itemClass} onClick={() => setOpen(false)}>Profile</Link>
             <Link role="menuitem" href="/account/security" className={itemClass} onClick={() => setOpen(false)}>Password and security</Link>
+            <Link role="menuitem" href="/app/api" className={itemClass} onClick={() => setOpen(false)}>API keys</Link>
             <button role="menuitem" type="button" onClick={signOut} disabled={busy} className={`${itemClass} disabled:opacity-60`}>
               {busy ? "Signing out…" : "Sign out"}
             </button>

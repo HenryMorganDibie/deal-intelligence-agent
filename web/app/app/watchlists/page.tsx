@@ -6,6 +6,7 @@ import { Container } from "../../../components/primitives";
 import { ErrorNote, Field, PageHeader, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { SIGNAL_TYPES, post } from "../../../lib/market";
+import { DESTINATION_LABEL, webhookDestination } from "../../../lib/webhooks";
 
 const KEY = "deal-intel:watchlists";
 type Saved = { id: string; name: string; created_at: string };
@@ -35,6 +36,25 @@ export default function WatchlistsPage() {
   const [deals, setDeals] = useState(true);
   const [webhook, setWebhook] = useState("");
   const [frequency, setFrequency] = useState<"daily" | "weekly">("daily");
+  const [testing, setTesting] = useState(false);
+  const [testNote, setTestNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const destination = webhookDestination(webhook);
+
+  async function sendTest() {
+    setTesting(true);
+    setTestNote(null);
+    try {
+      const r = await post<{ delivered: boolean; label: string; status_code: number | null; error: string | null }>(
+        "/api/webhooks/test", { url: webhook.trim(), name: name.trim() || "Your watchlist" });
+      setTestNote(r.delivered
+        ? { ok: true, text: `Test message sent to ${r.label}. Check the channel.` }
+        : { ok: false, text: `${r.label} did not accept the message${r.status_code ? ` (HTTP ${r.status_code})` : ""}. Check the URL and that the webhook is still active.` });
+    } catch (err) {
+      setTestNote({ ok: false, text: err instanceof ApiError ? err.message : "The test message could not be sent." });
+    } finally {
+      setTesting(false);
+    }
+  }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prefillNotice, setPrefillNotice] = useState<string | null>(null);
@@ -109,7 +129,7 @@ export default function WatchlistsPage() {
       <PageHeader eyebrow="Monitoring and alerts" title="Watch companies and countries.">
         A watchlist matches every corporate event (M&A, credit, distress, leadership, regulatory, earnings, restructuring,
         insider) and every deal in the daily feed. Follow it on its page, subscribe to its RSS feed in any reader, Slack or
-        email-by-RSS service, or give a webhook that receives new matches daily or as a weekly Friday digest. No account: the
+        email-by-RSS service, or send new matches straight to a Slack, Teams, Discord or Google Chat channel, daily or as a weekly Friday digest. No account: the
         watchlist&apos;s link is its key, so keep it private.
       </PageHeader>
 
@@ -146,8 +166,25 @@ export default function WatchlistsPage() {
           <input type="checkbox" checked={deals} onChange={(e) => setDeals(e.target.checked)} className="h-4 w-4 accent-verified" />
           Include deals involving these companies or countries
         </label>
-        <Field label="Webhook URL (optional, https)">
-          <input value={webhook} onChange={(e) => setWebhook(e.target.value)} placeholder="https://hooks.slack.com/..." className="field kbd" />
+        <Field label="Send alerts to Slack, Teams, Discord, Google Chat or any webhook (optional)">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              value={webhook}
+              onChange={(e) => { setWebhook(e.target.value); setTestNote(null); }}
+              placeholder="Paste the channel's webhook URL"
+              className="field kbd"
+              aria-describedby="webhook-help"
+            />
+            <button type="button" onClick={sendTest} disabled={!destination || testing} className="btn btn-ghost shrink-0">
+              {testing ? "Sending..." : "Send test message"}
+            </button>
+          </div>
+          <p id="webhook-help" className="mt-2 text-[0.8125rem] leading-relaxed text-[color:var(--dim)]">
+            {destination
+              ? <>Alerts will arrive formatted for <span className="text-[color:var(--text)]">{DESTINATION_LABEL[destination]}</span>.</>
+              : <>Alerts are formatted for the tool automatically. <Link href="/developers#chat" className="underline">How to get a webhook URL</Link>.</>}
+          </p>
+          {testNote && <p role="status" className={`mt-1 text-[0.8125rem] ${testNote.ok ? "text-verified" : "text-risk"}`}>{testNote.text}</p>}
         </Field>
         <Field label="Webhook delivery cadence">
           <select value={frequency} onChange={(e) => setFrequency(e.target.value as "daily" | "weekly")} className="field">

@@ -60,6 +60,7 @@ export function SiteFooter() {
         { label: "Evaluation", href: LINKS.evaluation },
         { label: "Coverage by country", href: "/app/coverage" },
         { label: "Known limits", href: "/limits" },
+        { label: "API and integrations", href: "/developers" },
       ],
     },
     {
