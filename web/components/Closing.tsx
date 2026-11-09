@@ -8,7 +8,7 @@ export function FinalCta() {
       <div
         aria-hidden
         className="absolute bottom-[-20rem] left-1/2 h-[34rem] w-[56rem] -translate-x-1/2 rounded-full blur-3xl"
-        style={{ background: "radial-gradient(closest-side, rgba(110,231,200,0.12), rgba(185,163,255,0.05) 55%, transparent)" }}
+        style={{ background: "radial-gradient(closest-side, rgb(var(--verified-rgb) / 0.12), rgb(var(--explain-rgb) / 0.05) 55%, transparent)" }}
       />
       <Container className="relative text-center">
         <Reveal>
@@ -105,7 +105,7 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="mx-auto mt-12 flex w-full max-w-page flex-wrap justify-between gap-3 px-4 text-[0.75rem] text-[color:var(--dim)] sm:px-6 lg:px-8">
-        <span>© {new Date().getFullYear()} Henry Dibie</span>
+        <span>© {new Date().getFullYear()} Deal Intelligence</span>
         <span className="kbd">Source-linked research. Evidence you can inspect. Uncertainty flagged.</span>
       </div>
     </footer>

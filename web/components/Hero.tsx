@@ -27,7 +27,7 @@ export function Hero({ pulse = null, brief = null }: { pulse?: Pulse | null; bri
       <div
         aria-hidden
         className="absolute left-1/2 top-[-18rem] h-[36rem] w-[60rem] -translate-x-1/2 rounded-full opacity-60 blur-3xl"
-        style={{ background: "radial-gradient(closest-side, rgba(110,231,200,0.14), rgba(185,163,255,0.06) 55%, transparent)" }}
+        style={{ background: "radial-gradient(closest-side, rgb(var(--verified-rgb) / 0.14), rgb(var(--explain-rgb) / 0.06) 55%, transparent)" }}
       />
 
       <Container className="relative grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
@@ -86,7 +86,7 @@ export function Hero({ pulse = null, brief = null }: { pulse?: Pulse | null; bri
           <div
             aria-hidden
             className="absolute -inset-6 -z-10 rounded-[28px] opacity-70 blur-2xl"
-            style={{ background: "radial-gradient(closest-side, rgba(110,231,200,0.10), transparent)" }}
+            style={{ background: "radial-gradient(closest-side, rgb(var(--verified-rgb) / 0.10), transparent)" }}
           />
           <HeroBrief brief={brief} />
         </Reveal>

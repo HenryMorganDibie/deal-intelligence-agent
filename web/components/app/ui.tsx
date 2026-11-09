@@ -48,16 +48,16 @@ export function ErrorNote({ message }: { message: string }) {
 }
 
 const TIER_STYLE: Record<string, string> = {
-  low: "text-verified border-[rgba(110,231,200,0.35)]",
-  moderate: "text-[#cfe9a8] border-[rgba(207,233,168,0.35)]",
-  elevated: "text-[#f5d58a] border-[rgba(245,213,138,0.35)]",
-  high: "text-risk border-[rgba(255,143,112,0.4)]",
-  severe: "text-[#ff6b6b] border-[rgba(255,107,107,0.5)]",
-  A: "text-verified border-[rgba(110,231,200,0.35)]",
-  B: "text-[#f5d58a] border-[rgba(245,213,138,0.35)]",
+  low: "text-verified border-verified/35",
+  moderate: "text-mild border-mild/35",
+  elevated: "text-caution border-caution/35",
+  high: "text-risk border-risk/40",
+  severe: "text-severe border-severe/50",
+  A: "text-verified border-verified/35",
+  B: "text-caution border-caution/35",
   C: "text-[color:var(--muted)] border-[color:var(--line)]",
-  verified: "text-verified border-[rgba(110,231,200,0.35)]",
-  inconsistent: "text-risk border-[rgba(255,143,112,0.4)]",
+  verified: "text-verified border-verified/35",
+  inconsistent: "text-risk border-risk/40",
   unchecked: "text-[color:var(--muted)] border-[color:var(--line)]",
 };
 

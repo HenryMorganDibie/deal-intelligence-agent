@@ -115,8 +115,8 @@ export function ArrowRight({ className = "" }: { className?: string }) {
 export function LogoMark({ className = "h-6 w-6" }: { className?: string }) {
   return (
     <svg aria-hidden viewBox="0 0 24 24" className={className} fill="none">
-      <rect x="1.5" y="1.5" width="21" height="21" rx="6" stroke="rgba(255,255,255,0.18)" />
-      <path d="M6 15.5h4.5l2-6 2.5 9 2-4H19" stroke="#6ee7c8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="1.5" y="1.5" width="21" height="21" rx="6" className="stroke-white/20" />
+      <path d="M6 15.5h4.5l2-6 2.5 9 2-4H19" className="stroke-verified" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

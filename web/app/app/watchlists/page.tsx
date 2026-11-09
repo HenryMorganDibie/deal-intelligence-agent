@@ -135,7 +135,7 @@ export default function WatchlistsPage() {
                   type="checkbox"
                   checked={types.includes(t)}
                   onChange={(e) => setTypes(e.target.checked ? [...types, t] : types.filter((x) => x !== t))}
-                  className="accent-[#6ee7c8]"
+                  className="accent-verified"
                 />
                 {words(t)}
               </label>
@@ -143,7 +143,7 @@ export default function WatchlistsPage() {
           </div>
         </fieldset>
         <label className="flex items-center gap-3 text-[0.875rem] text-[color:var(--muted)]">
-          <input type="checkbox" checked={deals} onChange={(e) => setDeals(e.target.checked)} className="h-4 w-4 accent-[#6ee7c8]" />
+          <input type="checkbox" checked={deals} onChange={(e) => setDeals(e.target.checked)} className="h-4 w-4 accent-verified" />
           Include deals involving these companies or countries
         </label>
         <Field label="Webhook URL (optional, https)">

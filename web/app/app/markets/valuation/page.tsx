@@ -115,9 +115,9 @@ const FIELD_LABEL: Record<string, string> = {
 };
 const STATUS_LABEL: Record<string, [string, string]> = {
   verified: ["Verified", "text-verified"], found: ["Found in source", "text-verified"],
-  found_unofficial: ["Found, unofficial source", "text-[#f5d58a]"], not_found: ["Not found in source", "text-risk"],
-  found_unlabelled: ["Not under its line item", "text-[#f5d58a]"],
-  differs_from_statement: ["Differs from the statement", "text-[#f5d58a]"],
+  found_unofficial: ["Found, unofficial source", "text-caution"], not_found: ["Not found in source", "text-risk"],
+  found_unlabelled: ["Not under its line item", "text-caution"],
+  differs_from_statement: ["Differs from the statement", "text-caution"],
   mismatch: ["Contradicted", "text-risk"], unchecked: ["Not checked", "text-[color:var(--muted)]"],
 };
 const STANDING_LABEL: Record<string, string> = {
@@ -705,7 +705,7 @@ export default function MarketsValuationPage() {
                 <div className="mt-4 rounded-xl border hairline p-4" aria-live="polite">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="eyebrow">Evidence for the inputs</p>
-                    {evidence ? <span className={`rounded-full border px-2.5 py-0.5 text-xs ${evidence.grade === "A" || evidence.grade === "B" ? "text-verified border-[rgba(110,231,200,0.35)]" : "text-risk border-[rgba(255,143,112,0.4)]"}`}>Grade {evidence.grade}</span> : null}
+                    {evidence ? <span className={`rounded-full border px-2.5 py-0.5 text-xs ${evidence.grade === "A" || evidence.grade === "B" ? "text-verified border-verified/35" : "text-risk border-risk/40"}`}>Grade {evidence.grade}</span> : null}
                   </div>
                   {evidenceBusy && <p className="mt-2 text-xs text-[color:var(--muted)]" role="status">Checking each input against exchange data, the filing and the cited document…</p>}
                   {!evidenceBusy && !evidence && <p className="mt-2 text-xs text-[color:var(--muted)]">The evidence check could not run. <button type="button" className="underline" onClick={() => void checkEvidence()}>Try again</button></p>}

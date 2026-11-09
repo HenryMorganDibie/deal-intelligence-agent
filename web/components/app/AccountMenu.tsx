@@ -68,7 +68,7 @@ export function AccountMenu() {
         <span className="hidden max-w-[9rem] truncate sm:inline">{name}</span>
       </button>
       {open && (
-        <div role="menu" aria-label="Account" className="absolute right-0 top-full mt-2 w-60 rounded-xl border hairline bg-[rgba(12,14,17,0.98)] p-2 shadow-xl">
+        <div role="menu" aria-label="Account" className="absolute right-0 top-full mt-2 w-60 rounded-xl border hairline bg-raised/[0.98] p-2 shadow-xl">
           <div className="border-b hairline px-3 pb-2 pt-1">
             <p className="truncate text-sm font-medium text-[color:var(--text)]">{name}</p>
             {session.profile?.username ? <p className="truncate text-xs text-[color:var(--muted)]">@{session.profile.username}</p> : null}

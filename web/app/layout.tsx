@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { OwnerAnalytics } from "../components/OwnerAnalytics";
+import { THEME_BOOT } from "../lib/theme";
 import { Track } from "../components/Track";
 import { SITE } from "../lib/site";
 import "./globals.css";
@@ -30,12 +31,16 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#07080a",
-  colorScheme: "dark",
+  colorScheme: "dark light",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${interTight.variable} ${mono.variable}`}>
+    // The theme script sets data-theme before hydration, hence suppressHydrationWarning on <html> only.
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${interTight.variable} ${mono.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      </head>
       <body className="font-sans min-h-screen">
         {children}
         <OwnerAnalytics />

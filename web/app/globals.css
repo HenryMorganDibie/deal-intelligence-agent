@@ -10,17 +10,63 @@
  * ---------------------------------------------------------------------- */
 :root {
   color-scheme: dark;
-  --bg: #07080a;
+  /* RGB channel triples feed the Tailwind colours (see tailwind.config.ts). */
+  --fg-rgb: 255 255 255;
+  --bg-rgb: 7 8 10;
+  --raised-rgb: 12 14 17;
+  --bone-rgb: 242 239 232;
+  --verified-rgb: 110 231 200;
+  --explain-rgb: 185 163 255;
+  --risk-rgb: 255 143 112;
+  --caution-rgb: 245 213 138;
+  --mild-rgb: 207 233 168;
+  --severe-rgb: 255 107 107;
+  --bg: rgb(var(--bg-rgb));
   --raised: #0c0d10;
   --panel: #101115;
-  --line: rgba(255, 255, 255, 0.07);
-  --line-strong: rgba(255, 255, 255, 0.12);
+  --line: rgb(var(--fg-rgb) / 0.07);
+  --line-strong: rgb(var(--fg-rgb) / 0.12);
   --text: #edebe5;
   --muted: #8f8f97;
   --dim: #5d5d66;
-  --verified: #6ee7c8;
-  --explain: #b9a3ff;
-  --risk: #ff8f70;
+  --verified: rgb(var(--verified-rgb));
+  --explain: rgb(var(--explain-rgb));
+  --risk: rgb(var(--risk-rgb));
+  --btn-bg: #f2efe8;
+  --btn-bg-hover: #ffffff;
+  --btn-text: #07080a;
+  --shadow: rgba(0, 0, 0, 0.85);
+  --gradient-top: #ffffff;
+  --gradient-bottom: rgba(237, 235, 229, 0.62);
+}
+
+/* Light theme, chosen by the reader with the theme switch (stored on their device). Accents are
+ * darkened so they keep AA contrast on a light page. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fg-rgb: 17 19 23;
+  --bg-rgb: 247 246 242;
+  --raised-rgb: 255 255 255;
+  --bone-rgb: 23 25 29;
+  --verified-rgb: 13 122 95;
+  --explain-rgb: 91 63 208;
+  --risk-rgb: 194 65 12;
+  --caution-rgb: 154 103 0;
+  --mild-rgb: 77 124 15;
+  --severe-rgb: 200 30 30;
+  --raised: #ffffff;
+  --panel: #ffffff;
+  --line: rgb(var(--fg-rgb) / 0.1);
+  --line-strong: rgb(var(--fg-rgb) / 0.17);
+  --text: #121418;
+  --muted: #555a64;
+  --dim: #767a84;
+  --btn-bg: #17191d;
+  --btn-bg-hover: #000000;
+  --btn-text: #f7f6f2;
+  --shadow: rgba(17, 19, 23, 0.18);
+  --gradient-top: #121418;
+  --gradient-bottom: rgba(18, 20, 24, 0.68);
 }
 
 html {
@@ -46,8 +92,8 @@ body {
 }
 
 ::selection {
-  background: rgba(110, 231, 200, 0.28);
-  color: #fff;
+  background: rgb(var(--verified-rgb) / 0.28);
+  color: var(--text);
 }
 
 :focus-visible {
@@ -59,15 +105,15 @@ body {
 /* Backgrounds ----------------------------------------------------------- */
 .grid-bg {
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    linear-gradient(to right, rgb(var(--fg-rgb) / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--fg-rgb) / 0.035) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 25%, #000 30%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 25%, #000 30%, transparent 75%);
 }
 
 .dots-bg {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-image: radial-gradient(rgb(var(--fg-rgb) / 0.08) 1px, transparent 1px);
   background-size: 16px 16px;
 }
 
@@ -130,7 +176,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(180deg, #fff 0%, rgba(237, 235, 229, 0.62) 100%);
+  background: linear-gradient(180deg, var(--gradient-top) 0%, var(--gradient-bottom) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -138,12 +184,12 @@ body {
 
 /* Surfaces -------------------------------------------------------------- */
 .panel {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.012));
+  background: linear-gradient(180deg, rgb(var(--fg-rgb) / 0.032), rgb(var(--fg-rgb) / 0.012));
   border: 1px solid var(--line);
   border-radius: 14px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 30px 80px -40px rgba(0, 0, 0, 0.85);
+    0 1px 0 rgb(var(--fg-rgb) / 0.04) inset,
+    0 30px 80px -40px var(--shadow);
 }
 
 .hairline {
@@ -163,7 +209,7 @@ body {
   z-index: -1;
   opacity: 0;
   transition: opacity 0.3s ease;
-  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.06), transparent 45%);
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(var(--fg-rgb) / 0.06), transparent 45%);
 }
 .spotlight:hover::before {
   opacity: 1;
@@ -178,7 +224,7 @@ body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
-  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border: 1px dashed rgb(var(--fg-rgb) / 0.16);
   border-radius: 999px;
   padding: 0.2rem 0.55rem;
   white-space: nowrap;
@@ -208,20 +254,20 @@ body {
     color 0.2s ease;
 }
 .btn-primary {
-  background: #f2efe8;
-  color: #07080a;
+  background: var(--btn-bg);
+  color: var(--btn-text);
 }
 .btn-primary:hover {
-  background: #fff;
+  background: var(--btn-bg-hover);
 }
 .btn-ghost {
   border: 1px solid var(--line-strong);
   color: var(--text);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgb(var(--fg-rgb) / 0.02);
 }
 .btn-ghost:hover {
-  border-color: rgba(255, 255, 255, 0.24);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgb(var(--fg-rgb) / 0.24);
+  background: rgb(var(--fg-rgb) / 0.05);
 }
 .btn .arrow {
   transition: transform 0.2s ease;
@@ -237,7 +283,7 @@ body {
   padding: 0 0.875rem;
   border-radius: 10px;
   border: 1px solid var(--line-strong);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgb(var(--fg-rgb) / 0.03);
   color: var(--text);
   font-size: 0.9375rem;
   transition: border-color 0.2s ease, background-color 0.2s ease;
@@ -246,12 +292,12 @@ body {
   color: var(--dim);
 }
 .field:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgb(var(--fg-rgb) / 0.2);
 }
 .field:focus {
   outline: none;
-  border-color: rgba(110, 231, 200, 0.6);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgb(var(--verified-rgb) / 0.6);
+  background: rgb(var(--fg-rgb) / 0.05);
 }
 
 }
@@ -297,7 +343,7 @@ body {
   left: 0;
   right: 0;
   height: 40%;
-  background: linear-gradient(180deg, transparent, rgba(110, 231, 200, 0.06), transparent);
+  background: linear-gradient(180deg, transparent, rgb(var(--verified-rgb) / 0.06), transparent);
   animation: scan 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   pointer-events: none;
 }
@@ -387,8 +433,10 @@ details[open] .faq-icon {
 /* Professional newsletter print/PDF output */
 @media print {
   @page { size: A4; margin: 16mm 15mm 18mm; }
-  :root {
+  :root, :root[data-theme="light"] {
     color-scheme: light;
+    --fg-rgb: 23 25 29; --bg-rgb: 255 255 255;
+    --verified-rgb: 39 120 95; --explain-rgb: 88 66 160; --risk-rgb: 167 53 34;
     --bg: #ffffff; --raised: #ffffff; --panel: #ffffff;
     --line: #d9dde3; --line-strong: #cbd0d8; --text: #17191d;
     --muted: #444b55; --dim: #59616d; --verified: #27785f;

@@ -231,7 +231,7 @@ export default function MarketsMonitoringPage() {
                   {event.headline_en ? <p className="mt-1 text-xs text-[color:var(--dim)]" dir="rtl">{event.headline}</p> : null}
                   {event.measured && event.measured.grade && event.measured.grade !== "insufficient" ? (
                     <div className="mt-3 rounded-lg border hairline p-3 text-xs leading-relaxed">
-                      <p><span className={event.measured.grade === "proven" ? "text-verified" : event.measured.grade === "indicative" ? "text-[#f5d58a]" : "text-[color:var(--muted)]"}>{event.measured.label}</span></p>
+                      <p><span className={event.measured.grade === "proven" ? "text-verified" : event.measured.grade === "indicative" ? "text-caution" : "text-[color:var(--muted)]"}>{event.measured.label}</span></p>
                       {event.measured.move_10d ? (
                         <p className="mt-1 text-[color:var(--muted)]">
                           After {event.measured.move_10d.n.toLocaleString()} past events of this kind, the share price moved a median {event.measured.move_10d.median > 0 ? "+" : ""}{event.measured.move_10d.median.toFixed(1)}% against its market over 10 days (middle half {event.measured.move_10d.p25.toFixed(1)}% to {event.measured.move_10d.p75 > 0 ? "+" : ""}{event.measured.move_10d.p75.toFixed(1)}%).

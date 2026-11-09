@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { LINKS } from "../lib/site";
 import { Container, LogoMark } from "./primitives";
+import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
   { href: "/platform", label: "Platform" },
@@ -35,7 +36,7 @@ export function SiteNav() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        scrolled || open ? "border-b hairline bg-[rgba(7,8,10,0.78)] backdrop-blur-xl" : "border-b border-transparent"
+        scrolled || open ? "border-b hairline bg-ink/80 backdrop-blur-xl" : "border-b border-transparent"
       }`}
     >
       <Container className="flex h-16 items-center justify-between">
@@ -53,6 +54,7 @@ export function SiteNav() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <a href={LINKS.methodology} className="btn btn-ghost hidden h-9 px-3.5 text-sm xl:inline-flex">
             Methodology
           </a>

@@ -143,9 +143,9 @@ export function compact(v: number | null | undefined): string {
 // Background for a heatmap cell: green for gains, red for losses, deeper with size (capped at ±5% a day,
 // ±50% year to date).
 export function heat(v: number | null | undefined, cap: number): string {
-  if (v === null || v === undefined || !Number.isFinite(v)) return "rgba(255,255,255,0.04)";
+  if (v === null || v === undefined || !Number.isFinite(v)) return "rgb(var(--fg-rgb) / 0.04)";
   const a = Math.min(1, Math.abs(v) / cap) * 0.55 + 0.06;
-  return v >= 0 ? `rgba(110,231,200,${a.toFixed(3)})` : `rgba(255,143,112,${a.toFixed(3)})`;
+  return v >= 0 ? `rgb(var(--verified-rgb) / ${a.toFixed(3)})` : `rgb(var(--risk-rgb) / ${a.toFixed(3)})`;
 }
 
 export function companyHref(q: Pick<Quote, "exchange" | "symbol" | "name">): string {

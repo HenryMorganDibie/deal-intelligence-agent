@@ -173,7 +173,7 @@ export default function Dashboard() {
                   type="checkbox"
                   checked={compliance}
                   onChange={(e) => setCompliance(e.target.checked)}
-                  className="h-4 w-4 accent-[#6ee7c8]"
+                  className="h-4 w-4 accent-verified"
                 />
                 <span className="text-[0.875rem] text-[color:var(--muted)]">Compliance mode (stricter)</span>
               </label>

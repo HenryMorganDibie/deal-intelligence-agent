@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { LINKS } from "../../lib/site";
 import { Container, LogoMark } from "../primitives";
 import { AccountMenu } from "./AccountMenu";
+import { ThemeToggle } from "../ThemeToggle";
 
 const NAV: [string, string][] = [
   ["/app", "Briefs"],
@@ -32,7 +33,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b hairline bg-[rgba(7,8,10,0.85)] backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b hairline bg-ink/85 backdrop-blur-xl">
         <Container className="flex h-14 items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-6">
             <Link href="/" className="flex shrink-0 items-center gap-2.5 text-[0.9375rem] font-medium tracking-tight">
@@ -70,7 +71,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </summary>
               <nav
                 aria-label="Data and quality"
-                className="absolute right-0 top-full mt-2 w-52 rounded-xl border hairline bg-[rgba(12,14,17,0.98)] p-2 shadow-xl"
+                className="absolute right-0 top-full mt-2 w-52 rounded-xl border hairline bg-raised/[0.98] p-2 shadow-xl"
               >
                 {QUALITY_LINKS.map(([href, label]) => {
                   const active = pathname === href || (href !== "/methodology" && pathname.startsWith(href));
@@ -91,6 +92,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 })}
               </nav>
             </details>
+            <ThemeToggle />
             <AccountMenu />
           </div>
         </Container>

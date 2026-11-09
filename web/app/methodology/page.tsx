@@ -28,7 +28,7 @@ function Label({ kind }: { kind: "measured" | "design" }) {
   return (
     <span
       className={`ml-2 rounded-full border px-2 py-0.5 align-middle text-[0.6875rem] ${
-        kind === "measured" ? "border-[rgba(110,231,200,0.35)] text-verified" : "border-[color:var(--line)] text-[color:var(--dim)]"
+        kind === "measured" ? "border-verified/35 text-verified" : "border-[color:var(--line)] text-[color:var(--dim)]"
       }`}
     >
       {kind === "measured" ? "Measured" : "Design choice"}
