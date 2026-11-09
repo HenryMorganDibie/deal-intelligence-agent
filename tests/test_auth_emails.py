@@ -102,7 +102,8 @@ def test_hook_endpoint(monkeypatch):
     assert r.status_code == 200 and r.json() == {}
     assert sent == [("ada@example.com", "Confirm your email for Deal Intelligence", None, ["account", "signup"])]
     status = client.get("/api/auth/send-email").json()
-    assert status == {"hook_secret": True, "sendbyte": True, "ready": True}
+    assert status == {"hook_secret": True, "sendbyte": True, "ready": True,
+                      "sender": "Deal Intelligence <account@deal-intelligence.app>"}
 
 
 def test_hook_reports_a_failed_send(monkeypatch):
@@ -117,3 +118,8 @@ def test_hook_reports_a_failed_send(monkeypatch):
     body = json.dumps({"user": USER, "email_data": {"email_action_type": "recovery", "token_hash": "e" * 56}}).encode()
     r = TestClient(api.app).post("/api/auth/send-email", content=body, headers=sign(body))
     assert r.status_code == 502 and "could not be sent" in r.json()["error"]["message"]
+
+
+def test_mis_pasted_hook_secret_reads_as_missing(monkeypatch):
+    monkeypatch.setenv("SEND_EMAIL_HOOK_SECRET", "v1,whsec_not base64 at all!")
+    assert ae.hook_secrets() == []

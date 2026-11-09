@@ -41,7 +41,8 @@ def hook_secrets() -> list[bytes]:
         if not part:
             continue
         try:
-            keys.append(base64.b64decode(part))
+            # Strict: a mis-pasted secret must read as missing, not as a key that never matches.
+            keys.append(base64.b64decode(part, validate=True))
         except ValueError:
             continue
     return keys

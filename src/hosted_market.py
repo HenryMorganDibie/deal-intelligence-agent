@@ -1398,7 +1398,8 @@ async def auth_send_email_status() -> Response:
     """Whether account emails can be sent: the hook secret and the SendByte key are both set (never their values)."""
     from src.engines import auth_emails
     status = {"hook_secret": bool(auth_emails.hook_secrets()), "sendbyte": bool(email_alerts.api_key())}
-    return Response(json.dumps({**status, "ready": all(status.values())}), media_type="application/json",
+    return Response(json.dumps({**status, "ready": all(status.values()), "sender": auth_emails.sender()}),
+                    media_type="application/json",
                     headers={"Cache-Control": "no-store"})
 
 
