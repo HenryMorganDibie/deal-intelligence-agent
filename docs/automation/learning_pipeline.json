@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-08T19:01:22.050966+00:00",
+  "updated_at": "2026-11-09T13:32:39.611489+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 54,
+      "new_review_items_today": 83,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 1,
+      "new_review_items_today": 7,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 170,
-      "new_observations_today": 4,
+      "observations_collected": 175,
+      "new_observations_today": 5,
       "unreviewed_flagged_observations": 26,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 160,
-      "entities": 267,
+      "relationships": 170,
+      "entities": 283,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {

@@ -1067,6 +1067,70 @@
     "cessna": {
       "name": "Cessna",
       "kind": "organization"
+    },
+    "4dx": {
+      "name": "4DX",
+      "kind": "organization"
+    },
+    "victory park capital": {
+      "name": "Victory Park Capital",
+      "kind": "organization"
+    },
+    "yoco": {
+      "name": "Yoco",
+      "kind": "organization"
+    },
+    "tlg capital": {
+      "name": "TLG Capital",
+      "kind": "organization"
+    },
+    "koolboks": {
+      "name": "Koolboks",
+      "kind": "organization"
+    },
+    "proparco and eu": {
+      "name": "Proparco and EU",
+      "kind": "organization"
+    },
+    "ecobank drc": {
+      "name": "Ecobank DRC",
+      "kind": "organization"
+    },
+    "first assurance": {
+      "name": "First Assurance",
+      "kind": "organization"
+    },
+    "absa insurance": {
+      "name": "Absa Insurance",
+      "kind": "organization"
+    },
+    "mtn group": {
+      "name": "MTN Group",
+      "kind": "organization"
+    },
+    "econet burundi": {
+      "name": "Econet Burundi",
+      "kind": "organization"
+    },
+    "solar powered telecom network": {
+      "name": "Solar-Powered Telecom Network",
+      "kind": "organization"
+    },
+    "qatarenergy": {
+      "name": "QatarEnergy",
+      "kind": "organization"
+    },
+    "25pc": {
+      "name": "25pc",
+      "kind": "organization"
+    },
+    "pel": {
+      "name": "PEL",
+      "kind": "organization"
+    },
+    "namibia offshore exploration block": {
+      "name": "Namibia Offshore Exploration Block",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -3497,9 +3561,154 @@
           "title": "Uganda Aviation Academy Acquires Cessna 421 In Fleet Expansion Drive",
           "publisher": "Nilepost",
           "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNWExJUll2ZklyaDNNeXgwU2FxcFJVZXZmMmFpbjZfWWJsZUl4cGJBbEZPbVBGQUFIVUZLX2x6dVZxUEdHYWt3R2tVYTQ4MHI5LVYtOXdpNHhzamNya0FFaGFsSUp6bFhxWllmUERNRElUNDR0YVFTOHlCNzBuck83enR2NFhHaG9vUHJYaHhKZG5rZ2Q0Z25SU2R2SVFWX2d1NG5PM0d30gGuAUFVX3lxTE1YRGZyX2h0RTZPaEJJM3YwS05YbkF3VzhmcnhROXFVWTI5S1VnVjFuTFo5SXNqM2EtdXpITmlfNWs2Rmd3dnJDWlBWSXYzRl9Gb28ta0JKSGxESU1jRVR3dHlXamNfOC1xMDNTeFJfbXVMWnBDTXQ3VnVpLUtYS09mRnhLNi05S3lscllGWkExTEFKMDRSQUhiekt0cERCdVpwTEJCTzVfb3piNkNfZw?oc=5"
+        },
+        {
+          "title": "Uganda Aviation Academy Acquires Cessna 421 Golden Eagle as Part of Fleet Expansion",
+          "publisher": "Avi-Go",
+          "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9mdWNSSjRheHMyaTlJOThfclZTa3hKSkY2YmFEaERWUFljM3YwZWFXQXMyMklYNklCLWhZTWluVFN0WHNUX3ZLTTh5bjRPLXBRUHB1TzBrei1sX1I2eTM5SHgxekQwZ1dZaU1hVDR1Z2xGQzQ?oc=5"
+        }
+      ]
+    },
+    "3e8d345a70705e3f398f": {
+      "id": "3e8d345a70705e3f398f",
+      "from": "4dx",
+      "to": "enza",
+      "type": "equity_funding",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Enza Raises $6 Million From 4DX, UK’s BII to Expand Across Africa’s Payments Market",
+          "publisher": "TechMoran",
+          "url": "https://techmoran.com/2026/11/09/enza-raises-6-million-from-4dx-uks-bii-to-expand-across-africas-payments-market/"
+        }
+      ]
+    },
+    "347f75a471bb51fe71d8": {
+      "id": "347f75a471bb51fe71d8",
+      "from": "victory park capital",
+      "to": "yoco",
+      "type": "debt_financing",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "South African Fintech Yoco Secures USD 100 M Credit Facility From Victory Park Capital",
+          "publisher": "WeeTracker",
+          "url": "https://weetracker.com/2026/11/09/yoco-100-million-credit-facility-victory-park-capital/"
+        }
+      ]
+    },
+    "356787e1bb855cf0c3bd": {
+      "id": "356787e1bb855cf0c3bd",
+      "from": "tlg capital",
+      "to": "koolboks",
+      "type": "debt_financing",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Nigeria’s Koolboks secures credit facility from TLG Capital to fund inventory growth",
+          "publisher": "- Disrupt Africa",
+          "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPc2NBYWNNVVdkRE52TUNxWEwzcXVGdG1RYXEzZU1LOUE1RlJyMzdOdlM0QnpTQTFnQ3ltekV6bkp1MUp6bHBKcXpMT3dlSHB2S2lQSzY0MGY4LWFpVXpBUkZTWjVMcjlUXy1odmw0eVRxbUhQNGNLSlAtNW9qbmlaT2lpRzc4M1ROZjBacU5jZENLaHlJUFNWUjhFNjVSWE85WUtOdkhFY0M1UXI2YzZQSzRMZ0RmR2k4SnlGZWh3?oc=5"
+        }
+      ]
+    },
+    "7cf876d918dba899162b": {
+      "id": "7cf876d918dba899162b",
+      "from": "proparco and eu",
+      "to": "ecobank drc",
+      "type": "equity_funding",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Proparco and EU back Ecobank DRC with $10 million guarantee to boost SME financing",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQWGEtY3NrM213ZVQ0OEU0a2ItMDRwaWRrdXRKeGlFd3BhZXFmc3FUdUNKYjF2THlaMGJpcE1FWHZJeEE0eW9mcUgyQ0hQQmdXM21zSXdoMmF1a2RGRm9VZzdnbUJMd2VoLTc1dmdwa09vUGJoYTFZOFowMzZfOWNMVUdFR3lDamxWa3BLeENkeTdBN19KLW51Zy11d0Uxa0xDaHBCZ3RIMmhNeDh3ZVVueGpRYw?oc=5"
+        }
+      ]
+    },
+    "e7c65a94fba6f98c6782": {
+      "id": "e7c65a94fba6f98c6782",
+      "from": "first assurance",
+      "to": "absa insurance",
+      "type": "acquisition",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "First Assurance Completes Absa Insurance Buyout, Controlling KSh33.54bn in Assets",
+          "publisher": "The Kenyan Wallstreet",
+          "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxOZWNndkNiSnFnX2ZuS0pEYXZMa2dIN3N5WklvUXBaeF8taTdnN0p6cng2YS1DazRwOW9tcy0wSng4UzkwTm8xZkEwaERFRGZqU29jM3JJRzlmOHNidHhqRFBORDk1WmxyR2NpYndnNjBaXzNNN1I4VEczd0J0eTJUOU9OMHhkZGoxWVR6QmR1OHFOZ2lvSG9mWDVMYUVxRjExS0JPRmFIcGFwQTBCaTlDRlF3?oc=5"
+        }
+      ]
+    },
+    "93eee2ece8ae215eb430": {
+      "id": "93eee2ece8ae215eb430",
+      "from": "mtn group",
+      "to": "network expansion",
+      "type": "equity_funding",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "MTN Group Invests R28.8 Billion in Network Expansion, Subscribers Reach 322.9 Million as Data Revenue Jumps 28.2 Percent",
+          "publisher": "TelecomLead",
+          "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxOdEM4SjR3djdRdl8yWjJabm03WVpkMlhoRWdCYnlaUU5oV3RpQW1UdW01N180VDVIMjFkYWJvTVg1azh5YWlBeFNRMUc2cmgwaHFRa01jSnpxYjRvWkwzRTYwMmt0YWtaaXZiNk5ORnhUZl9JNDVMdVRZS243eUkzbWdaVFRoMWRNY3hPVFRCSHBZZHljbERGUUlMd2Jzd1g0S3dIMGNUS1FyYnp2SUZjbzZuc280Q21HZndmN3RQZElIWjM3c29WNUR3aDZPempPRDVJbEVQWTVJTU4zN1JuMkl0UzZMZ3lTVGY5Rzln0gH2AUFVX3lxTFBkRVgzVy14QkNVTVlnRUJPNUVqUFlpRkZ4LWFUVmEzV1R1djdEczJvNE5OUHZrYmNRVEx3Szh5QVBuQXpzUi1wZEkzVmVqeXh6a19valYya2VrRXR6STRRUC1Hb3EyNnlNVVg0djdoTU5RX0p4OUM3U1EzdkFSTlo4cUJMYXAyclk0RlZ4eHZfazEzY2dhMEtBaktIYkktLTA5WE5WcDVPWUxoU3pRUGRtQ1hld3hyN2NLVzBzTjBJS1lTam5DUDFzYVM5RFB2czdWaFl2elNEWHVIdkFUbmFtMnVPaXB5bktQXzVLNGJpZTBNenQydw?oc=5"
+        }
+      ]
+    },
+    "b5a0b4413b6bb4d6fdff": {
+      "id": "b5a0b4413b6bb4d6fdff",
+      "from": "econet burundi",
+      "to": "solar powered telecom network",
+      "type": "equity_funding",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Econet Burundi Invests $6.5 Million in Solar-Powered Telecom Network",
+          "publisher": "TechAfrica News",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOcDVFZmhPQ1RFeU9RTlhOcnprTWZDWi1mRWh3MGladjc3NG1hbkltbC1tNGVSM3kxNGpyQnFGWlBIRThiSkxOYVBjNHdFVU1SYWxqNmloX3FTTEpVOGVMYURuTXdJSDh2dmFvSG5LZUdwdjhNbmk5UG85aDZLeHJneE1fQU15THZvd0VsY2piNW9vbGxZRHpTOXBvMGlXTlZldno2WlQ4YV91UQ?oc=5"
+        }
+      ]
+    },
+    "22bca72b33ca780e4b29": {
+      "id": "22bca72b33ca780e4b29",
+      "from": "qatarenergy",
+      "to": "25pc",
+      "type": "acquisition",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "QatarEnergy acquires 25pc stake in offshore Namibia exploration block",
+          "publisher": "TradeArabia",
+          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNZTdVUWNpSEQ0b3QtMVRrZjVDLTJsM2x5QTNBRFhLMnczRVc1OUF1VzlEZFpkOW1TbWxzaVk2UVRHN3BYLWI5SU9oekFNM2lyOWRTWGdpeE5oWk40Qkx1dEI0YTlyMXJsR0FKSk52NEcwVUlORjVKZDJJMVd3UnZrNlFOZkhfUUVTeldFQmp6ZVZicFJpVmJmbVNrTGNlM1dXemtDUzdkRkQxZVg2Ymc?oc=5"
+        }
+      ]
+    },
+    "66b6b26a25c5f848b06a": {
+      "id": "66b6b26a25c5f848b06a",
+      "from": "qatarenergy",
+      "to": "pel",
+      "type": "acquisition",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "QatarEnergy agrees to buy 25% of Namibia’s PEL 82 licence from Chevron",
+          "publisher": "Oil & Gas Middle East",
+          "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5RNXVZRlNFZ2JtNmpLbUE0UWdiU0xmSDNfSUp1NFlZRzJIUVZxTERwQmo5d1RHRE9GYURobE9yYXEzb2s2WGF2TEpYdTNsTU5IVi1UR1k1TlVLcTcyRU5fT2J4cEJMLVlLTmVkb2NXZzBXSlZJaHc?oc=5"
+        }
+      ]
+    },
+    "1d39c9788c749dcb3b43": {
+      "id": "1d39c9788c749dcb3b43",
+      "from": "qatarenergy",
+      "to": "namibia offshore exploration block",
+      "type": "exit",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Chevron to Sell Stake in Namibia Offshore Exploration Block to QatarEnergy",
+          "publisher": "marketscreener.com",
+          "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNU0dPazM5YlEyOUxNVkhaUVhKMlU1VEswMElEUHJQSEZpUlZNUFRHVnh6MmF0T3JKRkkzNmZmcnN0T3oxcUhOa1dqMjhDUFMzYVBORm1TVHJ3cVZGT3RDbjNIdlIxRENtWTJhSkZVcjlpeUExU0NlM3lPaUFZd0pDNnBfREJiZlhzTDFMUHVMS1JJU25nZkxJcnJ0MGJET3JfakVEVTRUTUI0NlZER3p0YnRDbU54M2d5TUxhVUlCLXAyVGpwUGc?oc=5"
         }
       ]
     }
   },
-  "updated_at": "2026-11-08T19:01:18.816301+00:00"
+  "updated_at": "2026-11-09T13:32:37.253632+00:00"
 }
