@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-09T13:32:39.611489+00:00",
+  "updated_at": "2026-11-09T23:33:30.780302+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 83,
+      "new_review_items_today": 56,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 7,
+      "new_review_items_today": 1,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 175,
-      "new_observations_today": 5,
-      "unreviewed_flagged_observations": 26,
+      "observations_collected": 181,
+      "new_observations_today": 6,
+      "unreviewed_flagged_observations": 28,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 170,
-      "entities": 283,
+      "relationships": 181,
+      "entities": 300,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,23 +177,22 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 175,
-    "new_rows": 5,
+    "collected_tickers": 181,
+    "new_rows": 6,
     "failures": [
-      "GTWL.CA",
-      "GUARANTY.LG",
-      "GUINNESS.LG",
-      "GWEB.GH",
-      "HAFR.NR",
-      "HBL.NR",
-      "HEL.NR"
+      "HFCK.NR",
+      "HIL.JO",
+      "HORDS.GH",
+      "HPA.JO",
+      "HPR.JO",
+      "HPS.CS"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 283,
-    "relationships": 170,
-    "source_links": 209,
+    "nodes": 300,
+    "relationships": 181,
+    "source_links": 220,
     "most_connected": [
       {
         "name": "Afreximbank",
@@ -201,7 +200,11 @@
       },
       {
         "name": "EBRD",
-        "degree": 7
+        "degree": 8
+      },
+      {
+        "name": "QatarEnergy",
+        "degree": 6
       },
       {
         "name": "Sapetro",
@@ -229,10 +232,6 @@
       },
       {
         "name": "Airtel Kenya",
-        "degree": 3
-      },
-      {
-        "name": "Network Expansion",
         "degree": 3
       }
     ]

@@ -1131,6 +1131,74 @@
     "namibia offshore exploration block": {
       "name": "Namibia Offshore Exploration Block",
       "kind": "organization"
+    },
+    "nigeria must deliberately": {
+      "name": "Nigeria Must Deliberately",
+      "kind": "organization"
+    },
+    "next generation of leaders": {
+      "name": "Next Generation of Leaders",
+      "kind": "organization"
+    },
+    "epic edges capital": {
+      "name": "Epic Edges Capital",
+      "kind": "organization"
+    },
+    "ethiopian gaming startup rise of fearless": {
+      "name": "Ethiopian Gaming Startup Rise of Fearless",
+      "kind": "organization"
+    },
+    "egypt s benban solar project adds battery storage as ebrd": {
+      "name": "Egypt's Benban solar project adds battery storage as EBRD",
+      "kind": "organization"
+    },
+    "63 5 mln investment energy business": {
+      "name": "$63.5 mln investment - Energy - Business",
+      "kind": "organization"
+    },
+    "namibian offshore exploration licens": {
+      "name": "Namibian Offshore Exploration Licens",
+      "kind": "organization"
+    },
+    "nefer benban": {
+      "name": "Nefer Benban",
+      "kind": "organization"
+    },
+    "damen": {
+      "name": "Damen",
+      "kind": "organization"
+    },
+    "wakty": {
+      "name": "Wakty",
+      "kind": "organization"
+    },
+    "futureview asset management": {
+      "name": "Futureview Asset Management",
+      "kind": "organization"
+    },
+    "zichis": {
+      "name": "Zichis",
+      "kind": "organization"
+    },
+    "botswana plans to double de beers stake": {
+      "name": "Botswana Plans to Double De Beers Stake",
+      "kind": "organization"
+    },
+    "gareth penny": {
+      "name": "Gareth Penny",
+      "kind": "organization"
+    },
+    "chevron": {
+      "name": "Chevron",
+      "kind": "organization"
+    },
+    "block": {
+      "name": "Block",
+      "kind": "organization"
+    },
+    "qatar": {
+      "name": "Qatar",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -3708,7 +3776,161 @@
           "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNU0dPazM5YlEyOUxNVkhaUVhKMlU1VEswMElEUHJQSEZpUlZNUFRHVnh6MmF0T3JKRkkzNmZmcnN0T3oxcUhOa1dqMjhDUFMzYVBORm1TVHJ3cVZGT3RDbjNIdlIxRENtWTJhSkZVcjlpeUExU0NlM3lPaUFZd0pDNnBfREJiZlhzTDFMUHVMS1JJU25nZkxJcnJ0MGJET3JfakVEVTRUTUI0NlZER3p0YnRDbU54M2d5TUxhVUlCLXAyVGpwUGc?oc=5"
         }
       ]
+    },
+    "f8eab6870ff67da137bf": {
+      "id": "f8eab6870ff67da137bf",
+      "from": "nigeria must deliberately",
+      "to": "next generation of leaders",
+      "type": "equity_funding",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Gbajabiamila: Nigeria Must Deliberately Invest in Next Generation of Leaders",
+          "publisher": "ThisDay Nigeria",
+          "url": "https://www.thisdaylive.com/2026/11/09/gbajabiamila-nigeria-must-deliberately-invest-in-next-generation-of-leaders/"
+        }
+      ]
+    },
+    "947fc45ba0661bd2fc0f": {
+      "id": "947fc45ba0661bd2fc0f",
+      "from": "epic edges capital",
+      "to": "ethiopian gaming startup rise of fearless",
+      "type": "equity_funding",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Ethiopian Gaming Startup Rise Of Fearless Raises USD 1 M From Epic Edges Capital",
+          "publisher": "WeeTracker",
+          "url": "https://weetracker.com/2026/11/09/rise-of-fearless-raises-1-million-epic-edges-capital/"
+        }
+      ]
+    },
+    "f7710480ef032c967a33": {
+      "id": "f7710480ef032c967a33",
+      "from": "egypt s benban solar project adds battery storage as ebrd",
+      "to": "63 5 mln investment energy business",
+      "type": "equity_funding",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Egypt's Benban solar project adds battery storage as EBRD backs $63.5 mln investment - Energy - Business",
+          "publisher": "Ahram Online",
+          "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE1raFFfQkxMNVk3LUpJaUxVeTR1SmhJcWlOWkZ0SklYckZmZktiMVlLOTgwYXdib3Z1WVd0RUV4UlJaMGNxMHFvV0RBbXFLWTc5MFQtYjl1dTI?oc=5"
+        }
+      ]
+    },
+    "cb7d35392664b6663511": {
+      "id": "cb7d35392664b6663511",
+      "from": "qatarenergy",
+      "to": "namibian offshore exploration licens",
+      "type": "acquisition",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "QatarEnergy Acquires Interest in Namibian Offshore Exploration Licens",
+          "publisher": "Egypt Oil & Gas",
+          "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPTDN3ck9LQkdsVHU5WGpuT29La25UVGFmRmQ5TGJzd1BOTmQ5VGFRTGZFTEJTNzh2UXJDSFJrSFZlWkJGZlMybFRFYVU1WkJDU3JOV1htRkJ1Znh2UnJRSG4ycEZySFIyQVk1dDlJWEY3SWlBcjlTWUd3WFdwZkVyMGxSVHpxcGdUaW80S0lMRDJGWDVGSEpETlFyS0VuS2pIY0E?oc=5"
+        }
+      ]
+    },
+    "bd6f9bd711b8d0fa8f9a": {
+      "id": "bd6f9bd711b8d0fa8f9a",
+      "from": "ebrd",
+      "to": "nefer benban",
+      "type": "equity_funding",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "EBRD backs Egypt's Nefer Benban solar plus storage project with $63.5mln package",
+          "publisher": "TradingView",
+          "url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxQRXc4OXRaMDZtdFNYb0hVYWR1eWFEY2dzSVBLeUVEQ2tuMk5qVkdqSWVWcENFbno4VDlLMEJPbGhTUmhvcXdHOTlRcmc5RWlzdWtkN1RhOWZSY0dUWkRId2JMZUNHSGNxM0Izb2cxRnlIYndDbUhRZm5ESmIwSFFOVVRfS09HRVA3a2tMRWpSYmx6VW83WWZWOXA0bml5THpyc3FSdTB6a1lPZEJ3MGhJckRra3kwVXg4MFM2OUptcjV0SkxDS0pMd3NUaS1tV1VEME9LSi14blNRVEdfY0JNR2paTnpzWi1FWEcw?oc=5"
+        }
+      ]
+    },
+    "34ab541e99413885c22c": {
+      "id": "34ab541e99413885c22c",
+      "from": "damen",
+      "to": "wakty",
+      "type": "acquisition",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Damen Announces Acquisition of Wakty at Cairo ICT 2026, Strengthening Its Position in Egypt’s Digital Payments Market",
+          "publisher": "الاقتصادي نيوز",
+          "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxNVFNnLXVwMmY0OE5GTVVzQVhfUXBfaU93Vzc0Xy1xSFAzeEhaejZESkstSnhtVFY1a01TejZ1RHJrLU9qajlDQkx2NS1ZYnA3dTBTOExzS0l0UmVEQlpadlp2SU41U2JqY0xZRjdIY1lONVI4R0Y4Wjh0d1FkSHRPbEpJZWNwQVZwRnJEcUx4TE45SnM5M0tzanlvNWJEamNBSzFWYzIydk9iOE1KMmo2aWM4U3I3b2phSzg0YS1Hazk0Tnc2TVBPamVkQTR2d0RLdEJ0aDFkWVY0YXRDRnZV?oc=5"
+        }
+      ]
+    },
+    "dfcbcce49e45b61061be": {
+      "id": "dfcbcce49e45b61061be",
+      "from": "futureview asset management",
+      "to": "zichis",
+      "type": "acquisition",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Futureview Asset Management Acquires 10.45% Stake in Zichis",
+          "publisher": "Business Post Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxNS1E0NjM4OGJVUi1aZTNoMEVZZUQzYXU4OGZLbi1sSzctcU5xSDlnTDBpZE41WG4wdGw5UXJCX1FfejRBeWdxb05hLVBwMUdDZjU3WTZiTm9xRDZBQmRoejNQYmdrWm8zbHdnZzFFV3o1NWRfNTlFQjZNQXpLUW50Qng0eFNXXzY0THRqQlZSNGRnMkNVVmc?oc=5"
+        }
+      ]
+    },
+    "d1a53441a13ec640c069": {
+      "id": "d1a53441a13ec640c069",
+      "from": "botswana plans to double de beers stake",
+      "to": "gareth penny",
+      "type": "equity_funding",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "Botswana Plans to Double De Beers Stake, Backs Gareth Penny-Led Consortium",
+          "publisher": "Yahoo Finance Singapore",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxORDIwcmU4d3pzZ2hVNXgwbHBGNjNEdlRmVUNJdFBOaVIxaXBXSEp4cnVZX2pQa3Y1ZF9Oa1UtVXNvNDN6YUQ1QjJ1RnFVZUZHWEQzcVd2QlNWQ05fOUJDTXBqODAxZ3hiUW1hVmVBdG4xcE1JX2VrZ3Bnc2p0QV82R2tQMHhlNjJPa0E?oc=5"
+        }
+      ]
+    },
+    "1c833fd4fd166c7704c1": {
+      "id": "1c833fd4fd166c7704c1",
+      "from": "qatarenergy",
+      "to": "chevron",
+      "type": "acquisition",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "QatarEnergy to acquire 25% stake in Chevron oil block in Namibia",
+          "publisher": "Businessfront",
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxORWZOb0VtVkNLVVFJQlZEdmhLcVVQYkdRQ3UzWWFrM1NmbkI2cjVGVTgwLWFaVnlleXlSMVlFZmhOYzNfYkVOM1BXRmVFU2R3THg0WjdFXzZCcVVLRXNkRURHSjZQMHNLZFNhUDJrajVyVjBJTmtZbnlEMmNTNGhtZElqOTMxX1RJ?oc=5"
+        }
+      ]
+    },
+    "d0de9d5ab1544b01ecf0": {
+      "id": "d0de9d5ab1544b01ecf0",
+      "from": "qatarenergy",
+      "to": "block",
+      "type": "acquisition",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "QatarEnergy Acquires 25% Stake in Namibia Oil Block from Chevron (CVX)",
+          "publisher": "GuruFocus",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOdnp1VTVQODZCM1MzNzBvN3Bxc3Bta2g5ZHlEWUN1X2RXWF9LWDlGbEJFRlpTREtONC0wSG1ENFd5LUZWZzFzcXBnV0dCdVRoZUc4MG5Ud25zYlJhODFGX1VuMmsyeVJMcWl1d0pBdmpwekNQNUFrODVzVDlwbGpOTk5nYzFjLUx3VllLQ3k1c1lxMTFMclJzNDVLVE0yMUpLOHNuS1h2ZXBMQQ?oc=5"
+        }
+      ]
+    },
+    "e07afd82ca1ee61310d8": {
+      "id": "e07afd82ca1ee61310d8",
+      "from": "qatar",
+      "to": "chevron",
+      "type": "acquisition",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "After turning to the world's largest economy for gas supplies, Qatar takes stake in Chevron's oil block in Africa's newest oil hotspot as Iran war threatens its energy exports",
+          "publisher": "Business Insider Africa",
+          "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxNTXo1am9oYlFFSUk3aXYzS05FUGdxTWt2cmlWWFkxYzZXSkNkNndNNnNLdEZiSFpXMTlCajJ5d2UxbTRIaGstNE9yOGF4cUZjZFI0dGJLOGgzN1h1N2QtemtVT2tEaEYxbzlHRFlFLXlrZkhFc0JJcUJOVm1HdE9MX2dCRXo4VnRXWENGeXBmRHV4Rmh3YjNRTjZsY2VFQy1vdENmOWpmanlqRXpsazJtUUV2MFBxYzA1VnF0ZDRaRGxSOEdSbTd2MmhEYmZ3eWxLbjBwNVFFTQ?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-09T13:32:37.253632+00:00"
+  "updated_at": "2026-11-09T23:33:27.729220+00:00"
 }
