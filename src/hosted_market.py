@@ -195,9 +195,8 @@ def _behavioral_interest_scores() -> dict[str, float]:
 
 def _client_hash(request: Request) -> str:
     import hashlib
-    forwarded = request.headers.get("x-forwarded-for", "")
-    ip = forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
-    return hashlib.sha256(f"{API_SECRET}:{ip}".encode()).hexdigest()[:32]
+    from src.request_identity import caller_ip
+    return hashlib.sha256(f"{API_SECRET}:{caller_ip(request)}".encode()).hexdigest()[:32]
 
 
 # ── Data store (Supabase when configured, local files otherwise), cached per instance ──
@@ -1360,6 +1359,28 @@ async def admin_stats(request: Request) -> dict:
         behavioral = await _rpc(client, "behavioral_signal_stats", {"p_days": days})
         stats["behavioral_signals"] = behavioral.json() if behavioral.is_success else {"status": "unavailable"}
         return stats
+
+
+@router.post("/api/admin/plan")
+async def admin_plan(request: Request) -> Response:
+    """Move an account to another plan from the owner's page; needs DEAL_INTEL_ADMIN_KEY."""
+    try:
+        body = await request.json()
+    except ValueError:
+        body = {}
+    if not isinstance(body, dict) or not _admin_key_ok(body):
+        raise HTTPException(status_code=401, detail="Wrong key")
+    email, plan = str(body.get("email") or "").strip(), str(body.get("plan") or "").strip()
+    if not email or len(email) > 320 or not re.fullmatch(r"[a-z_]{2,30}", plan):
+        raise HTTPException(status_code=422, detail="Give an account email and a plan.")
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_set_plan", {"p_email": email, "p_plan": plan})
+    if not r.is_success:
+        if "unknown_plan" in r.text or "unknown_account" in r.text:
+            raise HTTPException(status_code=404, detail="That account or plan does not exist.")
+        log.error("admin_set_plan failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(status_code=502, detail="The plan could not be changed.")
+    return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
 
 
 @router.post("/api/admin/accounts")

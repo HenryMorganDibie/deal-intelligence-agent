@@ -14,16 +14,21 @@ type Account = {
   providers: string[];
   two_factor: boolean;
   email_alerts: number;
+  plan?: string;
+  api_used?: number;
+  api_keys?: number;
 };
+type Plan = { id: string; label: string; monthly_requests: number };
 type AccountStats = {
   since: string;
   days: number;
   totals: Record<string, number>;
   daily: { day: string; signups: number; active: number }[];
   accounts: Account[];
+  plans?: Plan[];
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
+import { apiUrl } from "../../lib/api-base";
 
 function when(value: string | null): string {
   if (!value) return "never";
@@ -41,11 +46,35 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "never" | "unconfirmed">("all");
+  const [saving, setSaving] = useState<string | null>(null);
+  const [planNote, setPlanNote] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function changePlan(account: Account, plan: string) {
+    const label = data?.plans?.find((p) => p.id === plan)?.label ?? plan;
+    if (!window.confirm(`Move ${account.email} to the ${label} plan? Their monthly API allowance changes straight away.`)) return;
+    setSaving(account.email);
+    setPlanNote(null);
+    try {
+      const r = await fetch(apiUrl("/api/admin/plan"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: adminKey, email: account.email, plan }),
+        cache: "no-store",
+      });
+      if (!r.ok) throw new Error(r.status === 401 ? "Wrong key" : r.status === 404 ? "That account or plan no longer exists" : "The plan could not be changed");
+      setData((d) => d && { ...d, accounts: d.accounts.map((a) => (a.email === account.email ? { ...a, plan } : a)) });
+      setPlanNote({ ok: true, text: `${account.email} is now on ${label}.` });
+    } catch (e) {
+      setPlanNote({ ok: false, text: (e as Error).message });
+    } finally {
+      setSaving(null);
+    }
+  }
 
   useEffect(() => {
     if (!adminKey) return;
     setError("");
-    fetch(`${API}/api/admin/accounts`, {
+    fetch(apiUrl("/api/admin/accounts"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key: adminKey, days }),
@@ -92,7 +121,7 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
       </div>
       <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
         {t.active_7d} active in the last 7 days · {t.never_used} never opened the app · {t.unconfirmed} unconfirmed email ·{" "}
-        {t.with_username} chose a username · {t.google} use Google · {t.two_factor} use two-factor sign-in. An account counts
+        {t.with_username} chose a username · {t.google} use Google · {t.two_factor} use two-factor sign-in · {t.paid ?? 0} on a paid plan · {t.api_users ?? 0} with API keys. An account counts
         as active on a day when it opened the app that day.
       </p>
 
@@ -113,6 +142,7 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
         </div>
       )}
 
+      {planNote && <p role="status" className={`mt-4 text-sm ${planNote.ok ? "text-verified" : "text-risk"}`}>{planNote.text}</p>}
       <div className="mt-4 flex flex-wrap gap-2">
         <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search email, username or name"
           aria-label="Search accounts" className="min-w-0 flex-1 rounded-lg border hairline bg-transparent px-3 py-2" />
@@ -125,13 +155,14 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
         </select>
       </div>
       <div className="mt-2 overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="text-[color:var(--muted)]">
             <tr>
               <th className="py-2 pr-3 font-normal">Account</th>
               <th className="py-2 pr-3 font-normal">Joined</th>
               <th className="py-2 pr-3 font-normal">Last used</th>
               <th className="py-2 pr-3 font-normal">Active days</th>
+              <th className="py-2 pr-3 font-normal">Plan</th>
               <th className="py-2 font-normal">Details</th>
             </tr>
           </thead>
@@ -145,6 +176,22 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
                 <td className="py-2 pr-3 whitespace-nowrap">{a.created_at.slice(0, 10)}</td>
                 <td className="py-2 pr-3 whitespace-nowrap">{when(a.last_seen_at)}</td>
                 <td className="py-2 pr-3">{a.active_days}</td>
+                <td className="py-2 pr-3">
+                  <select
+                    value={a.plan ?? "free"}
+                    onChange={(e) => changePlan(a, e.target.value)}
+                    disabled={saving === a.email || !data.plans}
+                    aria-label={`Plan for ${a.email}`}
+                    className="rounded-md border hairline bg-transparent px-2 py-1 text-[0.8125rem]"
+                  >
+                    {(data.plans ?? [{ id: "free", label: "Free", monthly_requests: 30 }]).map((p) => (
+                      <option key={p.id} value={p.id}>{p.label}</option>
+                    ))}
+                  </select>
+                  <div className="mt-1 whitespace-nowrap text-[0.75rem] text-[color:var(--muted)]">
+                    {(a.api_used ?? 0).toLocaleString("en-US")} API calls this month{a.api_keys ? ` · ${a.api_keys} key${a.api_keys === 1 ? "" : "s"}` : ""}
+                  </div>
+                </td>
                 <td className="py-2 text-[0.8125rem] text-[color:var(--muted)]">
                   {[a.providers.includes("google") ? "Google" : "Email & password",
                     a.confirmed ? null : "email not confirmed",
@@ -156,7 +203,7 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={5} className="py-3 text-[color:var(--muted)]">No accounts match.</td></tr>
+              <tr><td colSpan={6} className="py-3 text-[color:var(--muted)]">No accounts match.</td></tr>
             )}
           </tbody>
         </table>

@@ -10,7 +10,7 @@ export const alt = "Deal Intelligence: deal signals you can audit, with the late
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
+import { API_CONFIGURED, apiHeaders, apiUrl } from "../lib/api-base";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/^https?:\/\//, "").replace(/\/$/, "")
   || "deal-intelligence.app";
 
@@ -52,9 +52,9 @@ const usd = (v: number) =>
 const count = (v: number) => v.toLocaleString("en-US");
 
 async function json<T>(path: string): Promise<T | null> {
-  if (!API_URL) return null;
+  if (!API_CONFIGURED) return null;
   try {
-    const r = await fetch(`${API_URL}${path}`, { next: { revalidate }, signal: AbortSignal.timeout(2500) });
+    const r = await fetch(apiUrl(path), { headers: apiHeaders(), next: { revalidate }, signal: AbortSignal.timeout(2500) });
     return r.ok ? ((await r.json()) as T) : null;
   } catch {
     return null;

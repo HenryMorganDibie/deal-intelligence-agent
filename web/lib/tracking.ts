@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
+import { API_CONFIGURED, apiUrl } from "./api-base";
 
 export type ProductAction =
   | "deals_loaded"
@@ -53,10 +53,10 @@ function visitorId(): string | null {
 }
 
 function send(payload: Record<string, string>) {
-  if (!API_URL) return;
+  if (!API_CONFIGURED) return;
   const body = new Blob([JSON.stringify(payload)], { type: "text/plain" });
-  if (navigator.sendBeacon?.(`${API_URL}/api/track`, body)) return;
-  void fetch(`${API_URL}/api/track`, { method: "POST", body, keepalive: true })
+  if (navigator.sendBeacon?.(apiUrl("/api/track"), body)) return;
+  void fetch(apiUrl("/api/track"), { method: "POST", body, keepalive: true })
     .catch((error: unknown) => console.warn("Could not send anonymous usage tracking.", error));
 }
 

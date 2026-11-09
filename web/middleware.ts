@@ -55,7 +55,30 @@ async function accountFacts(accessToken: string, sub: string): Promise<{ mfa: bo
   }
 }
 
+// Browser calls to the data API arrive at this site's /api/data/* and are forwarded to the API's /api/* with the
+// web app's secret added here, on the server. The API refuses /api/* requests without it, so its internal routes
+// cannot be used as a free substitute for the key-authenticated /v1. Cookies stay on this site: the API never
+// sees sign-in tokens. The visitor's address travels in a header the API trusts only alongside the secret, so
+// per-visitor limits keep working.
+const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || "").trim().replace(/\/$/, "");
+const WEB_SECRET = process.env.DEAL_INTEL_WEB_SECRET || "";
+
+function proxyToApi(request: NextRequest): NextResponse {
+  if (!API_ORIGIN) return NextResponse.json({ detail: "The API is not configured." }, { status: 503 });
+  const rest = request.nextUrl.pathname.slice("/api/data/".length);
+  const target = new URL(`${API_ORIGIN}/api/${rest}${request.nextUrl.search}`);
+  const headers = new Headers(request.headers);
+  headers.delete("cookie");
+  headers.delete("authorization");
+  if (WEB_SECRET) headers.set("x-deal-intel-client", WEB_SECRET);
+  const ip = request.ip || (request.headers.get("x-forwarded-for") || "").split(",")[0].trim();
+  if (ip) headers.set("x-deal-intel-client-ip", ip);
+  else headers.delete("x-deal-intel-client-ip");
+  return NextResponse.rewrite(target, { request: { headers } });
+}
+
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
+  if (request.nextUrl.pathname.startsWith("/api/data/")) return proxyToApi(request);
   // Browser tests run against a local production build without an account; never in a Vercel production deploy.
   if (process.env.DI_E2E_AUTH_BYPASS === "1" && process.env.VERCEL_ENV !== "production") return NextResponse.next();
   if (!SUPABASE_URL || !SUPABASE_KEY) return redirectTo(request, "/account");
@@ -119,4 +142,4 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   return response;
 }
 
-export const config = { matcher: ["/app", "/app/:path*"] };
+export const config = { matcher: ["/app", "/app/:path*", "/api/data/:path*"] };

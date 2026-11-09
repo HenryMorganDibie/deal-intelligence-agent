@@ -45,6 +45,7 @@ jobs:
       - name: Draw the sample from the public API
         env:
           YEAR: ${{ inputs.year }}
+          DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
         run: |
           YEAR="${YEAR:-$(date -u +%Y)}"
           echo "YEAR=$YEAR" >> "$GITHUB_ENV"

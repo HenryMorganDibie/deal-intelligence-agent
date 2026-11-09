@@ -5,12 +5,12 @@
  * Returns null when the API is unreachable; callers fall back to static copy.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
+import { API_CONFIGURED, apiHeaders, apiUrl } from "./api-base";
 export const REVALIDATE = 1800;
 /** Cached API responses are keyed to the deployed commit, so a deploy (such as the monthly backtest
  * commit) never serves numbers fetched before it. */
 const BUILD = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ?? "";
-const fresh = (path: string) => `${API_URL}${path}${BUILD ? `${path.includes("?") ? "&" : "?"}build=${BUILD}` : ""}`;
+const fresh = (path: string) => `${apiUrl(path)}${BUILD ? `${path.includes("?") ? "&" : "?"}build=${BUILD}` : ""}`;
 
 export type PulseCountry = { code: string; name: string };
 
@@ -91,9 +91,9 @@ export type Pulse = {
 };
 
 export async function getPulse(): Promise<Pulse | null> {
-  if (!API_URL) return null;
+  if (!API_CONFIGURED) return null;
   try {
-    const resp = await fetch(fresh("/api/pulse"), { next: { revalidate: REVALIDATE } });
+    const resp = await fetch(fresh("/api/pulse"), { headers: apiHeaders(), next: { revalidate: REVALIDATE } });
     if (!resp.ok) return null;
     return (await resp.json()) as Pulse;
   } catch {
@@ -191,9 +191,9 @@ export type ShowcaseBrief = {
 export type Showcase = { hero: ShowcaseBrief | null; example: ShowcaseBrief | null };
 
 export async function getShowcase(): Promise<Showcase | null> {
-  if (!API_URL) return null;
+  if (!API_CONFIGURED) return null;
   try {
-    const resp = await fetch(fresh("/api/showcase"), { next: { revalidate: 300 } });
+    const resp = await fetch(fresh("/api/showcase"), { headers: apiHeaders(), next: { revalidate: 300 } });
     if (!resp.ok) return null;
     return (await resp.json()) as Showcase;
   } catch {
@@ -220,9 +220,9 @@ export type Quality = {
 };
 
 export async function getQuality(): Promise<Quality | null> {
-  if (!API_URL) return null;
+  if (!API_CONFIGURED) return null;
   try {
-    const resp = await fetch(fresh("/api/evaluation"), { next: { revalidate: REVALIDATE } });
+    const resp = await fetch(fresh("/api/evaluation"), { headers: apiHeaders(), next: { revalidate: REVALIDATE } });
     if (!resp.ok) return null;
     const e = await resp.json();
     const ho = e?.data_quality?.heldout_extraction;
@@ -249,11 +249,11 @@ export function ciText(x: QualityCI): string {
 
 /** Today's market snapshot (exchange tiles, movers) and how many companies are on record, for the landing page. */
 export async function getMarkets(): Promise<{ overview: import("./markets-data").Overview; companies: { listed: number; private: number } | null } | null> {
-  if (!API_URL) return null;
+  if (!API_CONFIGURED) return null;
   try {
     const [o, d] = await Promise.all([
-      fetch(fresh("/api/markets/overview"), { next: { revalidate: REVALIDATE } }),
-      fetch(fresh("/api/companies/directory?limit=1"), { next: { revalidate: REVALIDATE } }),
+      fetch(fresh("/api/markets/overview"), { headers: apiHeaders(), next: { revalidate: REVALIDATE } }),
+      fetch(fresh("/api/companies/directory?limit=1"), { headers: apiHeaders(), next: { revalidate: REVALIDATE } }),
     ]);
     if (!o.ok) return null;
     const overview = await o.json();

@@ -39,6 +39,8 @@ from fastapi.concurrency import run_in_threadpool  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from pydantic import BaseModel, Field, field_validator  # noqa: E402
 
+from src.request_identity import caller_ip  # noqa: E402
+
 log = logging.getLogger("deal_intel.api")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
@@ -79,9 +81,7 @@ def _rate_limited(ip: str, now: float) -> bool:
 async def limit_requests_per_ip(request: Request, call_next):
     if (IP_PER_MINUTE > 0 and request.method != "OPTIONS" and request.url.path != "/robots.txt"
             and not (CRON_SECRET and request.headers.get("authorization") == f"Bearer {CRON_SECRET}")):
-        forwarded = request.headers.get("x-forwarded-for", "")
-        ip = forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
-        if _rate_limited(ip, time.time()):
+        if _rate_limited(caller_ip(request), time.time()):
             return Response('{"detail":"Too many requests. Try again in a minute."}', status_code=429,
                             media_type="application/json",
                             headers={"Retry-After": "60", "Cache-Control": "no-store"})
@@ -172,10 +172,8 @@ def _headers() -> dict[str, str]:
 
 
 def _client_hash(request: Request) -> str:
-    """Salted hash of the caller's IP (Vercel sets x-forwarded-for)."""
-    forwarded = request.headers.get("x-forwarded-for", "")
-    ip = forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
-    return hashlib.sha256(f"{API_SECRET}:{ip}".encode()).hexdigest()[:32]
+    """Salted hash of the caller's IP (Vercel sets x-forwarded-for; the web app's proxy passes the visitor's)."""
+    return hashlib.sha256(f"{API_SECRET}:{caller_ip(request)}".encode()).hexdigest()[:32]
 
 
 async def _rpc(client: httpx.AsyncClient, fn: str, args: dict) -> httpx.Response:
@@ -230,6 +228,27 @@ app.include_router(market_router)
 from src import public_api  # noqa: E402
 
 public_api.install(app)    # /v1: key-authenticated, metered, never edge-cached
+
+
+# ── Internal routes serve the web app only ──
+# Registered last, so it runs first. /api/* answers trusted callers (the web app's secret, or the scheduled jobs'
+# server secret) and refuses everyone else with a pointer to /v1. Cached responses vary on the secret header, so
+# Vercel's edge cache can never hand a copy made for the app to a caller without it.
+@app.middleware("http")
+async def internal_routes_for_the_app_only(request: Request, call_next):
+    from src import request_identity as rid
+    path = request.url.path
+    gated = rid.enforced() and not rid.is_open_path(path)
+    if gated and request.method != "OPTIONS" and not rid.trusted(request):
+        return Response(json.dumps({"detail": "This endpoint serves the Deal Intelligence app. For programmatic "
+                                              "access use the API with a key: https://deal-intelligence.app/developers"}),
+                        status_code=403, media_type="application/json", headers={"Cache-Control": "no-store"})
+    response = await call_next(request)
+    if path.startswith("/api/") and not rid.is_open_path(path):
+        vary = response.headers.get("vary", "")
+        if rid.CLIENT_HEADER not in vary.lower():
+            response.headers["Vary"] = f"{vary}, X-Deal-Intel-Client" if vary else "X-Deal-Intel-Client"
+    return response
 
 
 # Public read-only datasets are shared by every visitor. Let Vercel's edge cache

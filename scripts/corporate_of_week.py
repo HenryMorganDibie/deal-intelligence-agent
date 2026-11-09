@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import sys
 import unicodedata
@@ -74,7 +75,10 @@ def normalise(value: str | None) -> str:
 
 
 def request_json(url: str) -> dict:
-    req = Request(url, headers={"Accept": "application/json", "User-Agent": "DealIntelligence-CorporateOfWeek/1.0"})
+    headers = {"Accept": "application/json", "User-Agent": "DealIntelligence-CorporateOfWeek/1.0"}
+    if os.environ.get("DEAL_INTEL_API_SECRET"):          # the API's internal routes answer trusted callers only
+        headers["X-Deal-Intel-Client"] = os.environ["DEAL_INTEL_API_SECRET"]
+    req = Request(url, headers=headers)
     with urlopen(req, timeout=30) as response:
         if response.status != 200:
             raise RuntimeError(f"API returned HTTP {response.status} for {url}")

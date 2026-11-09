@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
+import { apiUrl } from "../../lib/api-base";
 
 type Headline = { item_id: string; title: string; publisher: string | null; date: string | null };
 type Pair = { item_id: string; a: Headline; b: Headline };
@@ -28,7 +28,7 @@ const ROLE_LABEL = { a: "Annotator A", b: "Annotator B", adjudicator: "Adjudicat
 const words = (s: string) => s.replaceAll("_", " ");
 
 async function call<T>(path: string, body: unknown): Promise<T> {
-  const r = await fetch(`${API}${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const r = await fetch(apiUrl(path), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error((data as { detail?: string }).detail ?? "Request failed");
   return data as T;

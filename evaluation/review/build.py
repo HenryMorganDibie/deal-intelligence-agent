@@ -19,6 +19,7 @@ Pool sources:
 from __future__ import annotations
 
 import json
+import os
 import random
 import re
 import sys
@@ -95,7 +96,10 @@ def pool_from_export(export: Path, out: Path) -> None:
 
 
 def _get(url: str) -> dict:
-    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "independent-review"}), timeout=60) as r:
+    headers = {"User-Agent": "independent-review"}
+    if os.environ.get("DEAL_INTEL_API_SECRET"):          # the API's internal routes answer trusted callers only
+        headers["X-Deal-Intel-Client"] = os.environ["DEAL_INTEL_API_SECRET"]
+    with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as r:
         return json.loads(r.read())
 
 

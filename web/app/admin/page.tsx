@@ -1,5 +1,6 @@
 "use client";
 
+import { apiUrl } from "../../lib/api-base";
 import { useEffect, useState } from "react";
 import { browserVisitorId } from "../../lib/tracking";
 import { AccountsPanel } from "../../components/admin/AccountsPanel";
@@ -50,7 +51,7 @@ type Stats = {
   behavioral_signals?: BehavioralSignals;
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
+
 
 /** Owner-only usage page. Opening it marks this browser as the owner's, so its visits are not counted. */
 export default function Admin() {
@@ -67,7 +68,7 @@ export default function Admin() {
   async function createLink() {
     setError("");
     try {
-      const r = await fetch(`${API}/api/admin/review/annotators`, {
+      const r = await fetch(apiUrl(`/api/admin/review/annotators`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, role: linkRole, name: linkName }),
@@ -84,7 +85,7 @@ export default function Admin() {
   async function load(k: string, d: number) {
     setError("");
     try {
-      const r = await fetch(`${API}/api/admin/stats`, {
+      const r = await fetch(apiUrl(`/api/admin/stats`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: k, days: d, visitor: browserVisitorId() }),
@@ -93,7 +94,7 @@ export default function Admin() {
       setStats(await r.json());
       setLoadedKey(k);
       localStorage.setItem("di_admin", k);
-      const feedbackResponse = await fetch(`${API}/api/admin/feedback`, {
+      const feedbackResponse = await fetch(apiUrl(`/api/admin/feedback`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: k }),
@@ -107,7 +108,7 @@ export default function Admin() {
 
   async function markFeedbackReviewed(id: string) {
     try {
-      const response = await fetch(`${API}/api/admin/feedback/${encodeURIComponent(id)}/review`, {
+      const response = await fetch(apiUrl(`/api/admin/feedback/${encodeURIComponent(id)}/review`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key }),

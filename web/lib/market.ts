@@ -1,7 +1,7 @@
 import { ApiError } from "./api";
 import { trackProductAction, type ProductAction } from "./tracking";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
+import { API_CONFIGURED, apiUrl as baseApiUrl, apiHeaders } from "./api-base";
 
 export async function get<T>(path: string, params?: Record<string, string | number | undefined | null>): Promise<T> {
   return request<T>(path + query(params));
@@ -20,7 +20,7 @@ export async function del<T>(path: string): Promise<T> {
 }
 
 export function apiUrl(path: string): string {
-  return `${API_URL}${path}`;
+  return baseApiUrl(path);
 }
 
 function query(params?: Record<string, string | number | undefined | null>): string {
@@ -30,10 +30,10 @@ function query(params?: Record<string, string | number | undefined | null>): str
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  if (!API_URL) throw new ApiError("The API is not configured.", 503);
+  if (!API_CONFIGURED) throw new ApiError("The API is not configured.", 503);
   let resp: Response;
   try {
-    resp = await fetch(`${API_URL}${path}`, init);
+    resp = await fetch(baseApiUrl(path), { ...init, headers: apiHeaders(init?.headers) });
   } catch {
     throw new ApiError("Could not reach the service. Check your connection and try again.", 0);
   }

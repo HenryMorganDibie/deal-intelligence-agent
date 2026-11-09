@@ -42,6 +42,8 @@ jobs:
         run: python -m pytest scripts/test_corporate_of_week.py -q
 
       - name: Select companies from distinct, source-linked corporate events
+        env:
+          DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
         run: python scripts/corporate_of_week.py
 
       - name: Commit weekly selection and archive directly to main

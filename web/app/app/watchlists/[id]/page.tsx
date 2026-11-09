@@ -1,12 +1,13 @@
 "use client";
 
+import { publicApiUrl } from "../../../../lib/api-base";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { WatchlistEmailAlerts } from "../../../../components/app/WatchlistEmailAlerts";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pill, usd, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
-import { apiUrl, del, get, post } from "../../../../lib/market";
+import { del, get, post } from "../../../../lib/market";
 
 type Alert = { kind: string; id: string; day: string | null; title: string; signal_type?: string; deal_type?: string; amount_usd?: number | null; url?: string; publisher?: string; why: string[]; country?: string | null; countries?: string[]; duplicate_reports_merged?: number; source_count?: number; independent_stories?: number | null; verification?: string | null; sources?: { publisher?: string | null; url?: string | null; date?: string | null; title?: string | null }[] };
 type Quality = { alert_count: number; duplicate_reports_merged: number; with_source_evidence: number; source_evidence_coverage_pct: number | null; with_two_or_more_independent_stories: number; with_verification_label: number; accuracy_estimate: null; note: string };
@@ -110,7 +111,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
   if (error) return <Container className="py-14"><ErrorNote message={error} /></Container>;
   if (!data) return <Container className="py-14"><Loading /></Container>;
   const { watchlist: w, alerts } = data;
-  const feed = apiUrl(`/api/watchlists/${w.id}/feed.xml`);
+  const feed = publicApiUrl(`/api/watchlists/${w.id}/feed.xml`);
   const reviewedCount = alerts.filter((a) => review[a.kind + ":" + a.id] === "reviewed").length;
   const dismissedCount = alerts.filter((a) => review[a.kind + ":" + a.id] === "dismissed").length;
   return (

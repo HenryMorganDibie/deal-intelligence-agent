@@ -1,7 +1,7 @@
 import type { Brief, Severity } from "./brief";
 import { trackProductAction } from "./tracking";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ?? "";
+import { API_CONFIGURED, apiHeaders, apiUrl } from "./api-base";
 
 export type AnalyseInput = {
   company: string;
@@ -38,10 +38,10 @@ export class ApiError extends Error {
 }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
-  if (!API_URL) throw new ApiError("The analysis API is not configured.", 503);
+  if (!API_CONFIGURED) throw new ApiError("The analysis API is not configured.", 503);
   let resp: Response;
   try {
-    resp = await fetch(`${API_URL}${path}`, init);
+    resp = await fetch(apiUrl(path), { ...init, headers: apiHeaders(init?.headers) });
   } catch {
     throw new ApiError("Could not reach the analysis service. Check your connection and try again.", 0);
   }
