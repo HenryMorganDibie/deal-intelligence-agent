@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { PublicPage } from "../../components/PublicPage";
 import { Container } from "../../components/primitives";
-import { PUBLIC_API_BASE } from "../../lib/site";
+import { CONTACT_EMAIL, PUBLIC_API_BASE } from "../../lib/site";
 
 export const metadata: Metadata = {
   title: "API and integrations | Deal Intelligence",
@@ -66,6 +66,10 @@ export default function DevelopersPage() {
           delivered to Slack, Microsoft Teams, Discord, Google Chat or any webhook. Create a key on the{" "}
           <Link href="/app/api" className="underline">API keys page</Link> once you have an account.
         </p>
+        <p className="mt-6 max-w-3xl rounded-xl border border-verified/30 bg-verified/[0.06] px-4 py-3 text-[0.875rem] leading-relaxed" role="note">
+          <span className="font-medium text-[color:var(--text)]">Free during early access.</span>{" "}
+          <span className="text-[color:var(--muted)]">Paid plans are coming soon; everyone who joins before then gets founding-member pricing, kept for as long as they stay subscribed.</span>
+        </p>
         <nav aria-label="On this page" className="mt-8 flex flex-wrap gap-2 text-sm">
           {[["#start", "Quick start"], ["#plans", "Plans"], ["#endpoints", "Endpoints"], ["#errors", "Errors"], ["#chat", "Slack, Teams and chat"], ["#webhooks", "Webhook payload"]].map(([href, label]) => (
             <a key={href} href={href} className="rounded-full border hairline px-3 py-1.5 text-[color:var(--muted)] hover:text-[color:var(--text)]">{label}</a>
@@ -96,7 +100,12 @@ for e in r.json()["events"]:
             </table>
           </div>
           <p>Every request made with a key counts, whatever its result, except <span className={`kbd ${ink}`}>/v1/usage</span>. Usage is per account and shared by all its keys. The allowance resets on the 1st of each month (UTC). Each response carries <span className={`kbd ${ink}`}>X-RateLimit-Limit</span>, <span className={`kbd ${ink}`}>X-RateLimit-Remaining</span> and <span className={`kbd ${ink}`}>X-RateLimit-Reset</span> (Unix time). Bursts above 120 requests a minute from one address are slowed down.</p>
-          <p>Need more than your plan? <Link href="/contact" className="underline">Get in touch</Link>.</p>
+          <p>
+            Every plan is free during early access, with founding-member pricing for everyone who joins before paid plans
+            launch. Need more than 30 requests a month for a team, an integration or research? Request Pro access from the{" "}
+            <Link href="/app/api" className="underline">API keys page</Link> or write to{" "}
+            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Pro API access request")}`} className="underline">{CONTACT_EMAIL}</a>.
+          </p>
         </Section>
 
         <Section id="endpoints" title="Endpoints">
