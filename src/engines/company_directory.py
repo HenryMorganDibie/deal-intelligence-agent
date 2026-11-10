@@ -55,9 +55,11 @@ def private_companies(deals: Iterable[dict]) -> list[dict]:
     """One row per company the deals database names as a transaction's target, newest activity first."""
     groups: dict[str, list[dict]] = {}
     for d in deals:
-        target = (d.get("target") or "").strip()
-        if d.get("deal_type") not in _TARGET_TYPES or not target or target.lower().startswith("undisclosed"):
-            continue
+        target = deals_mod.clean_company_name((d.get("target") or "").strip()) or ""
+        if d.get("deal_type") not in _TARGET_TYPES or not target or target.lower().startswith("undisclosed") \
+                or not deals_mod.is_company_name(target):
+            continue                                    # a place, a project, an asset or a sentence names no company
+        d = {**d, "target": target}
         key = company_key(target)
         if key:
             groups.setdefault(key, []).append(d)
@@ -110,9 +112,9 @@ def event_companies(events: Iterable[dict]) -> list[dict]:
     from src.engines.event_filters import is_public_institution, named_company
     groups: dict[str, dict] = {}
     for e in events:
-        name = named_company(e.get("headline_en") or e.get("headline") or "")
-        if is_public_institution(name):
-            continue                                    # the World Bank or a central bank is not a company
+        name = deals_mod.clean_company_name(named_company(e.get("headline_en") or e.get("headline") or ""))
+        if is_public_institution(name) or not deals_mod.is_company_name(name):
+            continue                                    # the World Bank, a central bank, or a phrase that names no company
         key = company_key(name)
         if not name or not key or not e.get("country"):
             continue

@@ -63,3 +63,38 @@ def test_real_names_that_look_like_fragments_stay(name):
 def test_full_control_of_a_company_is_the_company():
     assert deals.reclassify({"deal_type": "acquisition", "target": "Full Control of De Beers", "buyer": "Anglo American",
                              "headline": "x"}) == {"target": "De Beers"}
+
+
+@pytest.mark.parametrize("raw, clean", [
+    ("Kenyan Re-Commerce Startup Badili", "Badili"), ("SA Fintech Yoco", "Yoco"), ("Bedding Maker Dolidol", "Dolidol"),
+    ("PAYG Solar Company PEG Africa", "PEG Africa"), ("Arthur Eze’s Oranto Petroleum", "Oranto Petroleum"),
+    ("Kenya's Credit Bank", "Credit Bank"), ("Stake In First Mutual Holdings", "First Mutual Holdings"),
+    ("Africell Uganda Assets", "Africell Uganda"), ("Acquire Avanz Capital", "Avanz Capital"),
+    ("Helios Sports and Entertainment Group Reportedly", "Helios Sports and Entertainment Group"),
+    ("Last Tranche of Vodacom Shares", "Vodacom"), ("Pollman's Tours and Safaris", "Pollman's Tours and Safaris"),
+    ("Guarantee Company Limited", "Guarantee Company Limited"), ("Zurich Insurance Company South Africa", "Zurich Insurance Company South Africa"),
+])
+def test_company_names_are_cleaned(raw, clean):
+    assert deals.clean_company_name(raw) == clean
+
+
+@pytest.mark.parametrize("name", ["Egypt", "Fund", "Shares", "Operations", "Arua Airport Upgrade Project",
+                                  "Infantino, credits FIFA investment for World Cup breakthrough", "gold miner",
+                                  "Kenyan water and recycling company", "Next Billion Edtech Prize", "Nigerian Bank",
+                                  "Shallow Water Oil and Gas Fields", "South African Assets"])
+def test_non_companies_are_rejected(name):
+    assert not deals.is_company_name(deals.clean_company_name(name))
+
+
+@pytest.mark.parametrize("name", ["First Bank", "Credit Bank", "Apollo Agriculture", "Balwin Properties", "City Lodge",
+                                  "Malawi Telecom", "Uganda Airlines", "Coris Investment Group", "TIB Development Bank",
+                                  "European Investment Bank", "Dangote Refinery", "iKhokha", "icolo.io", "Carbon Credits"])
+def test_real_companies_pass(name):
+    assert deals.is_company_name(deals.clean_company_name(name))
+
+
+def test_a_deal_whose_target_names_no_company_is_excluded():
+    assert "excluded" in deals.reclassify({"deal_type": "equity_funding", "target": "Arua Airport Upgrade Project",
+                                           "headline": "AfDB backs Arua Airport Upgrade Project"})
+    assert deals.reclassify({"deal_type": "equity_funding", "target": "SA Fintech Yoco",
+                             "headline": "SA Fintech Yoco Snags $100m"}).get("target") == "Yoco"

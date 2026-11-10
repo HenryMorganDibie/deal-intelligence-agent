@@ -636,6 +636,13 @@ def reclassify(deal: dict) -> Optional[dict]:
                                                        for i in deal["investors"]):
         deal = {**deal, "investors": [i for i in deal["investors"] if not _AMOUNT_AS_NAME.match(str(i).strip())]}
         parties_fix["investors"] = deal["investors"]
+    if isinstance(deal.get("target"), str) and deal["target"].strip() and not deal["target"].lower().startswith("undisclosed"):
+        cleaned = clean_company_name(deal["target"])
+        if not is_company_name(cleaned):
+            return {"excluded": "reclassified: the target names no company (a place, a project, an asset or a sentence)"}
+        if cleaned != deal["target"]:
+            parties_fix["target"] = cleaned
+            deal = {**deal, "target": cleaned}
     if isinstance(deal.get("target"), str) and _CONTROL_OF.match(deal["target"]):
         parties_fix["target"] = _CONTROL_OF.sub("", deal["target"])          # "Full Control of De Beers"
         deal = {**deal, "target": parties_fix["target"]}
@@ -2384,3 +2391,110 @@ def strong_same_report(a: dict, b: dict) -> bool:
     if ha and hb and not ha & hb:
         return False
     return True
+
+
+# ── Company names ─────────────────────────────────────────────────────────────
+# A transaction's target, or a company a headline names, is often read with words around it: a description
+# ("Kenyan Re-Commerce Startup Badili"), an owner ("Arthur Eze's Oranto Petroleum"), an asset ("Africell Uganda
+# Assets", "Stake In First Mutual Holdings") or a verb ("Acquire Avanz Capital"). clean_company_name keeps the
+# company; is_company_name says whether what is left names one at all.
+
+_NAME_ROLE_WORDS = (r"Startup|Start-up|Fintech|FinTech|Insurtech|InsurTech|Femtech|FemTech|Edtech|EdTech|Agritech|AgriTech|"
+               r"Healthtech|HealthTech|Proptech|Platform|Firm|Maker|Manufacturer|Provider|Operator|Producer|Retailer|"
+               r"Lender|Company|Group")
+_LEGAL = re.compile(r"(?i)^(?:ltd|limited|plc|inc|llc|sa|s\.a\.?|s\.a\.s|pty|co|corp|corporation|holdings?|group)\.?$")
+_LEADING_VERB = re.compile(r"(?i)^(?:acquire|acquires|buy|buys|sell|sells|to|ceo|chairman|md|full\s+ownership\s+of|"
+                           r"(?:sell\s+)?stake\s+(?:in|to)|additional\s+shares\s+in|unit\s+of|subsidiary\s+of|"
+                           r"(?:last\s+)?tranche\s+of|proportion\s+of)\s+(?=\S)")
+_ASSET_TAIL = re.compile(r"\s+(?:Assets?|Business|Unit|Subsidiary|Shares|Arm|Operations|Portfolio|Division)$")
+_CORPORATE_TAIL = re.compile(r"(?i)\b(?:group|holdings?|bank|petroleum|cement|ltd|limited|plc|energy|industries|"
+                             r"education|capital|telecom|insurance|airways|mining|resources|foods?|breweries|motors)$")
+# Words that make a phrase a sentence whatever else it holds ("... amid rising demand", "vows investment").
+_SENTENCE_WORDS = {"amid", "vows", "pledges", "reforms", "agenda", "push", "diagnosis", "welfare", "paywall",
+                   "reportedly", "urges", "cites", "deepens", "targets", "budget", "prioritise", "mired"}
+# Words that make a phrase a project, place or programme unless a corporate word anchors it ("Coris Investment
+# Group", "TIB Development Bank", "Dangote Petroleum Refinery" are companies; "Arua Airport Upgrade Project" is not).
+_PROJECT_WORDS = {"investment", "investments", "partnership", "plan", "project", "projects", "tournament", "league",
+                  "forum", "summit", "conference", "prize", "drive", "economy", "hub", "rehabilitation",
+                  "rehabilitate", "integration", "priority", "bid", "block", "fields", "connectivity",
+                  "transaction", "sector", "industry", "road", "refinery", "growth", "development",
+                  "privatização", "abastecimento", "adaption", "adaptation", "consultancy", "player", "miner",
+                  "speakers", "programme", "program", "revival"}
+_NATIONAL_COMPANY_WORDS = {"telecom", "telecoms", "airways", "airlines", "railways", "breweries", "cement", "power",
+                           "post", "ports", "petroleum", "insurance", "re"}
+_ANCHOR_WORDS = {"bank", "group", "holdings", "holding", "management", "ltd", "limited", "plc", "insurance",
+                 "corporation", "petroleum", "investments", "company", "finance", "fund", "capital", "ventures",
+                 "partners"}
+_EMPTY_WORDS = {"shares", "share", "stake", "operations", "additional", "assets", "asset", "business", "unit",
+                "subsidiary", "portfolio", "division", "arm", "fund", "funds", "oil", "gas", "pipeline", "partners",
+                "development", "startup", "firm", "company", "companies", "platform", "group", "bank", "mega",
+                "retailer", "maker", "provider", "operator", "producer", "manufacturer", "lender", "fintech",
+                "insurtech", "edtech", "agritech", "the", "and", "of", "a", "an", "new", "home", "appliances", "drone",
+                "breakfast", "cereal", "avocado", "packaging", "mobile", "money", "brand", "highly", "prospective",
+                "high", "grade", "lithium", "uranium", "hydropower", "marginal", "field", "advanced", "critical",
+                "metal", "capital", "telecom", "energy", "insurance", "resources", "mining", "industries",
+                "technologies", "solutions", "services", "investment", "investments", "africa", "african", "south",
+                "north", "east", "west", "central", "southern", "northern", "eastern", "western", "proportion",
+                "tranche", "last", "retail", "payment", "payments", "agribusiness", "b2b", "ai", "steel", "prize"}
+
+
+def clean_company_name(name: Optional[str]) -> Optional[str]:
+    """The company inside a name read with words around it; None when nothing is left."""
+    if not name:
+        return name
+    n = re.split(r"\s+[—|]\s+", name.strip())[0].strip(" ,.;:-–—'’\"")      # "... — article includes a paywall"
+    n = re.sub(r"(?i)\s+(?:reportedly|officially|formally)$", "", n)
+    for _ in range(2):
+        n = _LEADING_VERB.sub("", n).strip()
+    # "Arthur Eze's Oranto Petroleum", "Kenya's Credit Bank": the owner's or the country's company.
+    m = re.match(r"^(?P<owner>[^’']{1,40})[’']s\s+(?P<co>.+)$", n)
+    if m and (_is_place(m.group("owner")) or (len(m.group("co").split()) >= 2 and _CORPORATE_TAIL.search(m.group("co")))):
+        n = m.group("co")
+    # "Kenyan Re-Commerce Startup Badili", "PAYG Solar Company PEG Africa", "SA Fintech Yoco": the name after
+    # the last role word, when one follows and it is not a legal suffix ("Guarantee Company Limited" stays).
+    parts = re.split(rf"\b(?:{_NAME_ROLE_WORDS})\b", n)
+    if len(parts) > 1:
+        tail = parts[-1].strip(" ,'’")
+        words = tail.split()
+        # The tail must itself name something: not "Companies", "Prize" or a place ("... Company South Africa").
+        if words and words[0][:1].isupper() and not _LEGAL.match(words[0]) and words[0].lower() not in ("of", "and") \
+                and is_company_name(tail) and not _is_place(tail):
+            n = tail
+    if (cut := _ASSET_TAIL.sub("", n)) != n and is_company_name(cut):
+        n = cut                                                              # "Africell Uganda Assets"
+    return n.strip() or None
+
+
+def is_company_name(name: Optional[str]) -> bool:
+    """Whether a (cleaned) name names a company rather than a place, a generic word, an asset or a sentence."""
+    n = (name or "").strip()
+    if not n or _not_a_party(n) or _is_place_only(n):
+        return False
+    words = n.split()
+    if n[:1].islower() and (" " in n or not re.search(r"[A-Z.\d]", n)):    # "gold miner", not "iKhokha" or "icolo.io"
+        return False
+    lowered = [re.sub(r"[^\w-]", "", w.lower()) for w in words]
+    if any(w in _SENTENCE_WORDS for w in lowered):
+        return False
+    if len(words) >= 3 and sum(1 for w in words if w[:1].islower() and w not in ("and", "of", "de", "du", "la", "et")) >= 2:
+        return False                                                         # "Kenyan water and recycling company"
+    owned_asset = len(words) == 2 and lowered[1] in ("refinery", "refineries") and words[0][:1].isupper() \
+        and not _is_place(words[0])                                         # "Dangote Refinery", not "Cabinda Refinery"
+    if owned_asset:
+        return True
+    if any(w in _PROJECT_WORDS for w in lowered) and not any(w in _ANCHOR_WORDS for w in lowered):
+        return False
+    meaningful = [w for w in lowered if w and w not in _EMPTY_WORDS and not _is_place(w) and not _is_descriptor(w)
+                  and not _LEGAL.match(w)]
+    if meaningful:
+        return True
+    # "First Bank", "Credit Bank": a capitalised word before Bank/Group/Holdings names a company, unless the word is
+    # a place or a demonym ("Nigerian Bank", "Malawi Bank").
+    if len(words) != 2 or not words[0][:1].isupper():
+        return False
+    if _is_place(words[0]):
+        # "Malawi Telecom", "Tunisie Telecom", "Uganda Airlines": a country's national company.
+        return lowered[1] in _NATIONAL_COMPANY_WORDS
+    return (lowered[1] in _ANCHOR_WORDS or lowered[1] == "industries") \
+        and lowered[0] not in ("mega", "the", "south", "north", "east", "west", "nigerian", "kenyan", "ghanaian",
+                               "additional", "major", "full", "new", "investment", "development", "private")
