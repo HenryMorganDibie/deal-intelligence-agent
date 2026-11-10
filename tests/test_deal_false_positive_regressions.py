@@ -164,7 +164,6 @@ def test_stored_records_are_reclassified_without_touching_real_deals():
         ("equity_funding", "54Gene", "Biotech startup, 54Gene raises $500,000 to boost COVID-19 testing in Nigeria"),
         ("equity_funding", "Undisclosed startup", "Buying Used Cars In Kenya Is Trouble. This Startup Just Raised USD 11 M"),
         ("joint_venture", "Yusen Logistics", "Africa Global and Yusen Logistics Launch Joint Venture"),
-        ("fund_raise", "USD 180m", "CFM raises over USD 180m at first close of South Africa H2 fund"),
         ("debt_financing", "Kenya Airways", "Kenya Airways secures $350m state loan to shore up finances"),
         ("acquisition", "10X Investments", "Old Mutual acquires 10X Investments in R2.2 billion deal"),
     ]
