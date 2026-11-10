@@ -536,3 +536,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-09", "market": "africa", "status": "no_annual_data_returned", "ticker": "HPA.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-09", "market": "africa", "status": "no_annual_data_returned", "ticker": "HPR.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-09", "market": "africa", "status": "no_annual_data_returned", "ticker": "HPS.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "HRHO.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "HSP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "HUG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "HUL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "HWA.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "HWN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "HYP.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "IAINSURE.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "IAM.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "IAP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "IBCT.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "IBMC.CS"}

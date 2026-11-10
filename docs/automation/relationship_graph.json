@@ -1199,6 +1199,78 @@
     "qatar": {
       "name": "Qatar",
       "kind": "organization"
+    },
+    "cashi": {
+      "name": "Cashi",
+      "kind": "organization"
+    },
+    "mtn": {
+      "name": "MTN",
+      "kind": "organization"
+    },
+    "ihs": {
+      "name": "IHS",
+      "kind": "organization"
+    },
+    "virgin active": {
+      "name": "Virgin Active",
+      "kind": "organization"
+    },
+    "german": {
+      "name": "German",
+      "kind": "organization"
+    },
+    "sunu group": {
+      "name": "SUNU Group",
+      "kind": "organization"
+    },
+    "iea": {
+      "name": "IEA",
+      "kind": "organization"
+    },
+    "brics partnership bid cites trade and investment opportunities": {
+      "name": "BRICS Partnership Bid, Cites Trade And Investment Opportunities",
+      "kind": "organization"
+    },
+    "olam agri": {
+      "name": "Olam Agri",
+      "kind": "organization"
+    },
+    "delta": {
+      "name": "Delta",
+      "kind": "organization"
+    },
+    "ecobank kenya": {
+      "name": "Ecobank Kenya",
+      "kind": "organization"
+    },
+    "ksh 1m": {
+      "name": "Ksh. 1M",
+      "kind": "organization"
+    },
+    "newman foods": {
+      "name": "Newman Foods",
+      "kind": "organization"
+    },
+    "botswana to double de beers stake to 30": {
+      "name": "Botswana to double De Beers stake to 30%",
+      "kind": "organization"
+    },
+    "85": {
+      "name": "85%",
+      "kind": "organization"
+    },
+    "chevron operated namibia": {
+      "name": "Chevron-operated Namibia",
+      "kind": "organization"
+    },
+    "pel82": {
+      "name": "PEL82",
+      "kind": "organization"
+    },
+    "namibian offshore exploration block": {
+      "name": "Namibian Offshore Exploration Block",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -2058,6 +2130,11 @@
           "title": "BII Backs Okra Solar with $7m Debt Facility to Scale Mesh-Grids in Nigeria",
           "publisher": "Launch Base Africa",
           "url": "https://launchbaseafrica.com/2026/10/29/okra-solar/?utm_source=rss&utm_medium=rss&utm_campaign=okra-solar"
+        },
+        {
+          "title": "Okra Solar secures $7m debt facility from BII to scale mesh-grids in Nigeria",
+          "publisher": "- Disrupt Africa",
+          "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOTHc4UE9JaXdwb1VhZy05d0huTHRCVml5NktsOWItdlZpQkRJRzNTYVNHS2JRWWFPc2xyenRWMC1xOGlmaGxMRVh1Tk1RY2lvYUJERmxmN3BEbVBfRm9ZbjFEOGNxTW5JRDdwM2dZNmlPZWRiUnZiV2NxTXFLTWZtZ2xYaGotMWxyUzVuU00xdjZpSHRJbWJRT01vWkJpTS1ETGpqSGRXQ3psUTdUd3FxOHRRaw?oc=5"
         }
       ]
     },
@@ -3858,6 +3935,11 @@
           "title": "Damen Announces Acquisition of Wakty at Cairo ICT 2026, Strengthening Its Position in Egypt’s Digital Payments Market",
           "publisher": "الاقتصادي نيوز",
           "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxNVFNnLXVwMmY0OE5GTVVzQVhfUXBfaU93Vzc0Xy1xSFAzeEhaejZESkstSnhtVFY1a01TejZ1RHJrLU9qajlDQkx2NS1ZYnA3dTBTOExzS0l0UmVEQlpadlp2SU41U2JqY0xZRjdIY1lONVI4R0Y4Wjh0d1FkSHRPbEpJZWNwQVZwRnJEcUx4TE45SnM5M0tzanlvNWJEamNBSzFWYzIydk9iOE1KMmo2aWM4U3I3b2phSzg0YS1Hazk0Tnc2TVBPamVkQTR2d0RLdEJ0aDFkWVY0YXRDRnZV?oc=5"
+        },
+        {
+          "title": "Damen Announces Acquisition Of Wakty At Cairo ICT 2026, Strengthening Its Position In Egypt’s Digital Payments Market",
+          "publisher": "followict",
+          "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOZk84VW9ETTJQNDdZVm9iV0JObmg1UUNQeDVhTjdJZVFYQkZpaHo2dUxBWC10WHJDZG42ZWx6dTJ1ZTNNa21yaHRIQVBoT2xKT1FvTlFwaVFaNFo4TzFMSlRETVp2cUR4MmU5SEllNklNQl9sd1NHQzR0TG5odERUUkpyMW9CRHoxdU1mR0dvZ2dsUWZVem8zNi1hZzNHU1NiMGdMNm1IVHE3Z3U2ZXlvVnh1SW0zTUNoemtGMGduaWdqeFpTbGw3Z3IwMmlMQXdEazZRN1YzYVpTQQ?oc=5"
         }
       ]
     },
@@ -3914,6 +3996,11 @@
           "title": "QatarEnergy Acquires 25% Stake in Namibia Oil Block from Chevron (CVX)",
           "publisher": "GuruFocus",
           "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOdnp1VTVQODZCM1MzNzBvN3Bxc3Bta2g5ZHlEWUN1X2RXWF9LWDlGbEJFRlpTREtONC0wSG1ENFd5LUZWZzFzcXBnV0dCdVRoZUc4MG5Ud25zYlJhODFGX1VuMmsyeVJMcWl1d0pBdmpwekNQNUFrODVzVDlwbGpOTk5nYzFjLUx3VllLQ3k1c1lxMTFMclJzNDVLVE0yMUpLOHNuS1h2ZXBMQQ?oc=5"
+        },
+        {
+          "title": "QatarEnergy Acquires 25% Stake in Namibia Oil Block from Chevron (CVX)",
+          "publisher": "GuruFocus",
+          "url": "https://news.google.com/rss/articles/CBMizAJBVV95cUxOeWZNMk1oQno1bU1lUzlDTFZ4d0hWaEo4clF4Qk9xeGJoQmM3VkVtaUFneUlNaXp5R05ISy1JUVpiSm1RY3g5am5wdlpXYWdENkRoZmhqVTg5a280YjE0MXI0TUJRVVhiMGdwbnVGbjVGRE04MmcyTzFSS3pPZnEwdzAwazhyQ1VNUVNqdHVsTzdYNXZ5T1E5dzY0Qi1VU1AzSElBZF9GN19LanVXVlh1YWowUk5weFN1bWRSMTZQNy1RRmowTmhfVVVYdGwwalBIWVdMdTZTcmFKbTN0OUZGdDQwOTZFNTlTcEZBRzhQMUdoNlRmd19IcEQ2MEtsSDdRRWk1NGFxSHNlOHFXTkRpSHcwN0FsdDR3TlYwcE1mTm9GOWxHOVFydUZZY1NpOWF6QkMwMW9famw0MjRRcmxrOUtlV2Jydnd3SDhGMw?oc=5"
         }
       ]
     },
@@ -3930,7 +4017,180 @@
           "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxNTXo1am9oYlFFSUk3aXYzS05FUGdxTWt2cmlWWFkxYzZXSkNkNndNNnNLdEZiSFpXMTlCajJ5d2UxbTRIaGstNE9yOGF4cUZjZFI0dGJLOGgzN1h1N2QtemtVT2tEaEYxbzlHRFlFLXlrZkhFc0JJcUJOVm1HdE9MX2dCRXo4VnRXWENGeXBmRHV4Rmh3YjNRTjZsY2VFQy1vdENmOWpmanlqRXpsazJtUUV2MFBxYzA1VnF0ZDRaRGxSOEdSbTd2MmhEYmZ3eWxLbjBwNVFFTQ?oc=5"
         }
       ]
+    },
+    "8163a564444701637e10": {
+      "id": "8163a564444701637e10",
+      "from": "proparco",
+      "to": "cashi",
+      "type": "equity_funding",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "Proparco backs Sudanese fintech Cashi with €600,000, its first deal in the country",
+          "publisher": "Dealroom",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPQjVOMVJhMzJsQnZLbms4TUNpdkZqR240dFU5R1B5QnQ5a1VzSVdfaTNEVEppQjFjbEh4Q0RrVnlaQUc3bmpXSVBUSk5Yc0ZaaHY2RE5RYU9XdlFnMTVyLTkzR2EwZ2hjNFdxckpYSlFzeE9QZTJubEU1LWxLRUx0YmhFcmZzMGZPVzFXRnBuYVZyZWlSR01QVndPU3Nzblh5d1ZyazhFRXFwQ01nZ1JYR1AzZEU?oc=5"
+        },
+        {
+          "title": "Proparco invests €600,000 in Cashi to expand digital financial services in Sudan",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPV1JKMlNBWVlyMlN1MGRCUTdGTUN0Z0F4RGtyWFN0VWZGRnl0RVRYYXNoS21tcHBsQVlOTFp0cXA0cklvNjZ1RTRDbkhjS0xHQ3JJaWtpTkU2T0lWY3IwcGtqUHEyc2EtelJ6UUthNEV5Q2hiMEZNZTRfbldaOVhhNGdzLXVOZ3lrcGFYalZpWV82Z3UyTkhqbUx6NmQ1TlNSVHh0LTZtMjg2VGZzZDAtRQ?oc=5"
+        }
+      ]
+    },
+    "b4c3222db7d99a36d46a": {
+      "id": "b4c3222db7d99a36d46a",
+      "from": "mtn",
+      "to": "ihs",
+      "type": "acquisition",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "MTN's $2.2 Billion IHS Takeover Still Awaits CEMAC Approval After 170 Days",
+          "publisher": "Business in Cameroon",
+          "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxNZ1hPcUNZVmVmaGl1djhHRmJWemJrX25kdEUxbXpzVHp6cGVuT002bTFWbTVURzdBaDB2aTlZQ0g2U1hyUi0wSHh1dVRjano5aWlrVl9IS3VZT09jVEhEOUlORGZSMFlZOE82cWV4NURSLUx1MWE4c3ZzTHpLc1doUHJ5MXJnMDdFUTg3TFNJNzZyWE1kRkIzSlBldWNyR2RSUWpHM1BBY3ZwdmZxT0FuZW5fRDlSd1FaQTlYRDVObjJpMTdKN1g0aTNnTEZRck1mSkE?oc=5"
+        }
+      ]
+    },
+    "b7a20c0f8a036ab5f7ad": {
+      "id": "b7a20c0f8a036ab5f7ad",
+      "from": "virgin active",
+      "to": "german",
+      "type": "acquisition",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "Billionaire Christo Wiese's Virgin Active buys German gyms",
+          "publisher": "Billionaires.Africa",
+          "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxOeG5iazB0QXByV2d2a294R0VtSzBpN2xMaS1EOUhaS0ZnYktFcHFqdWtSdTRTSWdheWFrcWNwU3VnbUwtby1SYkNsUXY4Qno4eTFhRXJTZVlpOGN5MVFsQU13M195UFJTMGJkenRqM0lMQlVfamFkOHd6aGsxa0VISDh5ZDlNVFl3NUkxLTlDS3dyR0M0TWF2V3dJZE5tTU5rbTZZS2R0b0h1MExYZV90am40bmNWLWhFTzUtZjJnWUxWeHlicmdPS0lFVQ?oc=5"
+        }
+      ]
+    },
+    "43a644d114e4ecac8df1": {
+      "id": "43a644d114e4ecac8df1",
+      "from": "ifc",
+      "to": "sunu group",
+      "type": "equity_funding",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "Banking: IFC to invest up to $29 million in SUNU Group’s banking holding company",
+          "publisher": "Africa News Agency",
+          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxOMGJNLVVuNXFIZFQ0OF9OZld0ckFvbWRwQmh4SE5lZWRQSGJIUHJrbHlJWHkzRTJnY29DLWFrdmZ2bTVnTHlQR0JzSjNCSmNnUHlzdjdZc0hEakNQdGxfcmRJOXZhOVAzTm5XSEYxUmJ1dWRLRjIzNW8teDhtdjB3amhQdGpsWkxhZHhnUGRmMWhEZjBvTzY5RXFEQXlJbXQ1LTl5bThjTTVFTktkblE?oc=5"
+        }
+      ]
+    },
+    "6c2ffb27f4a1ffcb874d": {
+      "id": "6c2ffb27f4a1ffcb874d",
+      "from": "iea",
+      "to": "brics partnership bid cites trade and investment opportunities",
+      "type": "equity_funding",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "IEA Backs Ghana’s BRICS Partnership Bid, Cites Trade And Investment Opportunities",
+          "publisher": "Peacefmonline.com",
+          "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQOEQ0R2hfNWRnUXpnWTlMMFYwNVNUWnducC02MGN3d1UzQlhqaFhkbnQ4eFhzQ3pxVENNUWpkRVFGQWZJams3dGdoV25Ga3I5ZjRpTXRFSmEwV0VkVEZUblNTWUh3QnpReWcwVWoxblNuRnoxRkkydjdwanJzLVlKWVF1M3hZb3JzaU1TVm1EM1drczF5SnFIdFhNQXlRMExNR2RlTUZpRUJNTjMtWmRSeVFfZExjZnpnZ2ZybFdDYnIxdw?oc=5"
+        }
+      ]
+    },
+    "dfd9754e72c3c4de2d59": {
+      "id": "dfd9754e72c3c4de2d59",
+      "from": "olam agri",
+      "to": "delta",
+      "type": "equity_funding",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "Olam Agri invests $70m in Delta feed mill",
+          "publisher": "The Sun Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE1hc2FDMXhYdzRieGdSOVNJYmJhSjd3NzRKLTdHdzlldGE3bmkxNkxKcWllQW5FaUNrdW5JTmVGTVpfWFF0eXlVeENIZ0lOWUN6SE9NR3pndDJ5Y1FxNXpIUDc4ZFFwZ2xsM2Vv?oc=5"
+        }
+      ]
+    },
+    "28b2a6baff9b28baf098": {
+      "id": "28b2a6baff9b28baf098",
+      "from": "ecobank kenya",
+      "to": "ksh 1m",
+      "type": "equity_funding",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "Ecobank Kenya invests Ksh. 1M in digital lab at Thamuru Primary School in Thika",
+          "publisher": "HapaKenya -",
+          "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQallMS0tvdWhmRWRKMUxrQ3FueGlwNkRLSXVWN3RxY1J6LWZDVzMxYk9YUzlDVkRzRldOOEk1Rm1jNTlBdnpNVGg4TmhoeHhjWm11dldfSnNON2VwamVXa1R4OXcwOGpCa0tPSmJGV2pJWVFfb1M5OHU5YnVIWEJQdGNzcWhkVmRZdmR4STQ0T1JncWMxUEF1SmstNnlGejRIVkl1ZkRmWUlMVWU2ZU1reTNB?oc=5"
+        }
+      ]
+    },
+    "2430b8261f1cec0a4b5b": {
+      "id": "2430b8261f1cec0a4b5b",
+      "from": "agdevco ventures",
+      "to": "newman foods",
+      "type": "equity_funding",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "AgDevCo Ventures invests US$3M in Uganda’s Newman Foods fresh produce expansion",
+          "publisher": "Food Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNLURSUVh1Zzc0UGN6WWNSZHE0NlJfS1B0WGRMMFFic2tOSHBKTEx0UHdtZkx3UVRKUDQxWjBxTWRLcnExTTJ0WV8xcGxPODVBZGM0dGlIUnpBaGo1RmdnNUoxc1luLXhOU1FDYzVsZDN3SXlFMDQ4Q1dWM0xTYWRKV2NEd0I5c1RCdy1yb2hxdzZlWHk4bHl1LWtqUDFkNlJ1ZDU4NzhKTFl1bWxtWFpv?oc=5"
+        }
+      ]
+    },
+    "b68f8608a4d873e067ea": {
+      "id": "b68f8608a4d873e067ea",
+      "from": "botswana to double de beers stake to 30",
+      "to": "85",
+      "type": "equity_funding",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "Botswana to double De Beers stake to 30%, backs Penny-led consortium for Anglo’s 85%",
+          "publisher": "IntelliNews",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNcjMzci1aUjZJVjQ5MEE1UHJTTmt5YTVsM2RxcV9ZbEV0emh2SzV6SVh2Ql9scENlSVpMVFVPT3AySk5nLUd3TzEza192d0xfS240UXByazdUaElMc3oyUzlrNlM4anY4S19SWElpcER3bTF2NWlveWdlM005YmRPSXdUbEFsOVNNdkNtbk5HQjV6czBfa1FOcVpMdC1Kc1BIcURtWDlNUU82SjBEZm1hb2dwdEFvMjVV?oc=5"
+        }
+      ]
+    },
+    "f009d15c3c8f4f6fe57e": {
+      "id": "f009d15c3c8f4f6fe57e",
+      "from": "qatarenergy",
+      "to": "chevron operated namibia",
+      "type": "acquisition",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "QatarEnergy acquires 25% stake in Chevron-operated Namibia exploration block",
+          "publisher": "The Energy Year",
+          "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPVDhOQ2VGUTJmNFNBeGZMRDNIQVl2NTc1alR6aTVqVC1NZ3I2UGtjVWRxYnJhQXRPcTFDN0NQa25XQjhYaHpYVXpoVG53UHZqdlh4eUdvWHkzYng1eXBxaDRkU3Z5X0lVbDVvZzh0bDFTQTkwejFHbFR4WFNZeFJHYjVZbTg1OHlsQXhUX1hnRXVNT05uU3pWdVg3VVBfdEVmcGhBUUFKdEJxamM?oc=5"
+        }
+      ]
+    },
+    "0077f9f73f653d4c797c": {
+      "id": "0077f9f73f653d4c797c",
+      "from": "qatarenergy",
+      "to": "pel82",
+      "type": "acquisition",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "QatarEnergy to acquire 25% stake in Namibia’s PEL82 licence",
+          "publisher": "Yahoo Finance",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPNFM4UDVOR0YzbGRac18xSl9CckJXWXk0SW95S0F4a3pWbmF5ODNBdENUQmRobVFQODc0MVJnd2k0ckt1ekNqVFU5REpjckhGcGtZVDh2LWxjQkxCaU90aGlNRjNKUWxNQ2FtTEtCbEF1Mi1sQTI4eU81ekloZjB6TEhvOUdoT2pJMGc?oc=5"
+        }
+      ]
+    },
+    "d5eb8eb3b33194b03e27": {
+      "id": "d5eb8eb3b33194b03e27",
+      "from": "qatarenergy",
+      "to": "namibian offshore exploration block",
+      "type": "acquisition",
+      "first_seen": "2026-11-09",
+      "sources": [
+        {
+          "title": "QatarEnergy Acquires 25% Stake In Chevron's Namibian Offshore Exploration Block",
+          "publisher": "Forbes Middle East",
+          "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPSmVYR1dDemx0OVpGSU5HN1FjZm93Mm5SXy1OdW5hcU9ZUG5IT3RVSS15b2tsTURUbGJ5V19nSVUwa1Z1MHQzbm5Hb2paamViclJIWlhId2szSjB4WENFa2oxakZ1eHF0UnVXWXhFVXlVeEJIYmNGUnlSczVfaVI4NkFid2I1WFlPNkRiSE1DVVVvbGdMYzNIV1BQc0VmQ01yb05jSU4ySFk2c2lraXBEUTYzdGZKUQ?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-09T23:33:27.729220+00:00"
+  "updated_at": "2026-11-10T13:06:38.814668+00:00"
 }
