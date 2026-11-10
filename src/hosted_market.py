@@ -1946,6 +1946,23 @@ _DESCRIPTIVE_TARGET_WORDS = {"label", "studio", "startup", "company", "firm", "b
                              "subsidiary", "provider", "app", "network", "fund", "manager"}
 
 
+_FUND_NAME = re.compile(r"(?i)\bfund(?:\s+(?:[IVX]+|\d+))?$")
+
+
+def _fund_house_name(kept: Optional[str], other: Optional[str]) -> dict:
+    """The manager's name for a merged fund close ("Ninety One" over "Africa Credit Opps Fund", "Climate Fund
+    Managers" over "CFM"); the fund's own name is kept as fund_name."""
+    names = [n for n in (kept, other) if n]
+    managers = [n for n in names if not _FUND_NAME.search(n)]
+    funds = [n for n in names if _FUND_NAME.search(n)]
+    out: dict = {}
+    if managers:
+        out["target"] = max(managers, key=lambda n: (len(n.split()) > 1, len(n)))   # the full name over an abbreviation
+    if funds:
+        out["fund_name"] = max(funds, key=len)
+    return out
+
+
 def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
     """Stored records that are two reports of one transaction (deals.strong_same_report): the fuller record
     keeps both reports' sources and the other points at it. A reviewer's decision stands."""
@@ -1955,7 +1972,15 @@ def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
         current = out.get(d["id"], d)
         if current.get("merged_into") or current.get("excluded") or current.get("reviewed_on"):
             continue
-        for token in deals_mod._name_tokens(current.get("target")):
+        keys = set(deals_mod._name_tokens(current.get("target")))
+        if current.get("deal_type") == "fund_raise":
+            # A fund close is reported under the manager, its abbreviation or the fund's name ("CFM", "Climate
+            # Fund Managers", "SA-H2 Fund"): fund raises are also grouped by abbreviation and headline words.
+            target = current.get("target") or ""
+            keys |= {f"fr:{k}" for k in (deals_mod._acronym(target), re.sub(r"[^A-Za-z]", "", target).upper()) if len(k) >= 2}
+            keys |= {f"frh:{t}" for t in deals_mod.normalise_name(current.get("headline")).split()
+                     if len(t) >= 4 and t not in deals_mod._GENERIC_TARGET_WORDS}
+        for token in keys:
             buckets[token].append(current)
 
     def fuller(x: dict) -> tuple:
@@ -1983,6 +2008,8 @@ def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
                 kt, dt = deals_mod._name_tokens(merged.get("target")), deals_mod._name_tokens(drop.get("target"))
                 if dt > kt and not (kt - _DESCRIPTIVE_TARGET_WORDS - investors._DEMONYMS):
                     merged["target"] = drop.get("target")
+                if keep.get("deal_type") == drop.get("deal_type") == "fund_raise":
+                    merged.update(_fund_house_name(merged.get("target"), drop.get("target")))
                 out[keep["id"]] = merged
                 out[drop["id"]] = {**out.get(drop["id"], drop), "merged_into": keep["id"]}
                 absorbed.add(drop["id"])

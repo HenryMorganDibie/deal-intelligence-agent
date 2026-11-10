@@ -337,7 +337,7 @@ def _clean_name(name: Optional[str]) -> Optional[str]:
         return None
     n = name.strip(" ,.;:'’\"-")
     n = _BACKED.sub("", n)
-    n = re.sub(r"(?i)^(?:[A-Z][\w.]*[\s-]){0,2}?[A-Za-z]+-(?:based|founded|first|focused|headquartered|owned|listed)\s+", "", n)
+    n = re.sub(r"(?i)^(?:[A-Z][\w.]*[\s-]){0,2}?[A-Za-z]+-(?:based|founded|first|focus+ed|headquartered|owned|listed)\s+", "", n)
     n = re.sub(r"^.*?-managed\s+", "", n)
     n = re.split(r"\s+(?:That|Which|Who|Behind|After|Before|As|With)\b", n)[0]
     n = n.strip("'\"‘’“” ")
@@ -552,6 +552,63 @@ _BACKED_IN_HEADLINE = re.compile(r"((?:[A-Z][\w&.]*[\s-]?){1,4})-[Bb]acked\s")
 _INVESTMENT_FIRM = re.compile(r"\b(?:Ventures?|Capital|Partners|Fund|Investments?)\b")
 
 
+_FUND_JUNK_NAMES = {"million", "billion", "first", "second", "third", "final", "south", "north", "east", "west",
+                    "impact", "seals", "agrifood", "close", "fund", "new", "in brief"}
+_FUND_VERBS = (r"(?i:(?:fund\s+)?(?:lands|raises|raised|secures|closes|closed|reaches|reached|hits|announces|seals|completes|"
+               r"achieves|makes|marks|holds|comes\s+to|launches))")
+
+
+def _fund_name_from_headline(headline: str) -> tuple[Optional[str], Optional[str]]:
+    """(manager or fund, investor joining the close) named by a fund-close headline, or (None, None)."""
+    for text in dict.fromkeys([headline.split(":")[-1].strip(), headline]):
+        lp = re.search(rf"^(?P<lp>{NAME})\s+(?i:(?:joins|anchors|backs)\s+(?:the\s+)?(?:first|second|third|final|interim)"
+                       rf"\s+close\s+(?:of|for))\s+(?P<n>{NAME})", text)
+        if lp:
+            name = re.split(r"['’]s\b", lp.group("n"))[0]
+            return _clean_name(name), _clean_name(lp.group("lp"))
+        m = re.search(rf"^(?P<n>{NAME})\s+{_FUND_VERBS}\b", text) \
+            or re.search(rf"\b(?i:(?:first|second|third|final|interim)\s+close\s+(?:for|of|on)\s+(?:the\s+)?)(?P<n>{NAME})", text)
+        if m:
+            name = _clean_name(re.split(r"['’]s\b", m.group("n"))[0])
+            if name and not _bad_fund_name(name):
+                return name, None
+    return None, None
+
+
+def _bad_fund_name(name: Optional[str]) -> bool:
+    n = (name or "").strip()
+    return not n or n.lower() in _FUND_JUNK_NAMES or _not_a_party(n) or _is_place_only(n)
+
+
+def fund_raise_fix(deal: dict) -> Optional[dict]:
+    """Corrections to a stored fund raise: padded names ("Aruwa Capital Exceeds Targeted", "VC Breega"), junk
+    names recovered from the headline ("Million" -> "Enko Capital", "First" -> "BluePeak Private Capital Fund
+    II"), an investor stored as the manager ("Proparco joins first close of DPI's ADP IV fund"), and a target
+    size stored as money raised ("first close on Africa fund targeting $1bn"). {"excluded": ...} when no
+    manager can be named at all."""
+    headline = deal.get("headline") or ""
+    target = deal.get("target") or ""
+    out: dict = {}
+    cleaned = re.sub(r"\s+Exceeds\s+Target(?:ed)?$", "", target)
+    cleaned = re.sub(r"^(?:(?:African|Pan-African|[A-Z][a-z]+-based)\s+)?(?:VC|PE\s+firm|investor)\s+(?=[A-Z])", "", cleaned)
+    if cleaned != target:
+        out["target"] = target = cleaned
+    name, lp = _fund_name_from_headline(headline)
+    if lp and normalise_name(lp) == normalise_name(target) and name:
+        out["target"] = name
+        out["investors"] = list(dict.fromkeys([*(deal.get("investors") or []), lp]))
+    elif _bad_fund_name(target):
+        if not name:
+            return {"excluded": "reclassified: a fund raise with no named manager"}
+        out["target"] = name
+    amount = deal.get("amount")
+    tm = re.search(r"(?i)\b(?:targeting|target\s+of|targets|eyes|looks\s+to|nears)\s+(?P<a>[^,;|]{1,30})", headline)
+    if amount and tm and any(abs(v - amount) <= max(1.0, amount * 0.01) and c == deal.get("currency")
+                             for v, c in parse_amounts(tm.group("a"))):
+        out.update({"amount": None, "amount_usd": None, "fund_target_usd": deal.get("amount_usd")})
+    return out or None
+
+
 def reclassify(deal: dict) -> Optional[dict]:
     """What the current rules change in a stored record: {"excluded": reason}, or a corrected deal type for a
     bond, loan, listing or fund close stored as an equity round. None when the record stands."""
@@ -559,6 +616,13 @@ def reclassify(deal: dict) -> Optional[dict]:
     # Prose caught by a deal verb ("Don't Sell Your Votes", "He Acquires Porsche") is not a transaction; a
     # question word in front of a real party ("Why TGI Sold Chivita") is dropped and the record kept.
     parties_fix: dict = {}
+    if deal.get("deal_type") == "fund_raise":
+        fixed = fund_raise_fix(deal)
+        if fixed and "excluded" in fixed:
+            return fixed
+        if fixed:
+            deal = {**deal, **fixed}
+            parties_fix.update(fixed)
     # A figure stored as the company ("USD 180m"): a fund raise takes the manager the headline opens with
     # ("Kuramo Capital lands NGN 48B first close"); anything else cannot be recovered and is excluded.
     if isinstance(deal.get("target"), str) and _AMOUNT_AS_NAME.match(deal["target"].strip()):
@@ -2176,6 +2240,61 @@ def _party_match(x, y):
             return True
     return False
 
+def _close_stage(headline: Optional[str]) -> Optional[str]:
+    m = re.search(r"(?i)\b(first|second|third|final|interim|hard)\s+close\b", headline or "")
+    return m.group(1).lower() if m else None
+
+
+def _acronym(name: Optional[str]) -> str:
+    words = [w for w in re.split(r"[\s-]+", name or "") if w and w.lower() not in {"of", "and", "the", "&", "for"}]
+    return "".join(w[0] for w in words).upper() if len(words) >= 2 else ""
+
+
+def _fund_brand_match(a: dict, b: dict) -> bool:
+    """Two fund-raise reports name the same house: a shared distinctive word ("Kuramo"), an abbreviation
+    ("CFM" for Climate Fund Managers, "DPI" for Development Partners International), or one record's name
+    appearing in the other's headline ("Ninety One secures $404m for Africa Credit Opps Fund 3")."""
+    ta, tb = a.get("target") or "", b.get("target") or ""
+    ca, cb = _report_core(ta), _report_core(tb)
+    if _distinctive(ca & cb):
+        return True
+    for x, y in ((ta, tb), (tb, ta)):
+        if x.strip() and _acronym(y) == re.sub(r"[^A-Za-z]", "", x).upper() and len(x.strip()) >= 2:
+            return True
+    for name, core, other in ((ta, ca, b.get("headline")), (tb, cb, a.get("headline"))):
+        text = f" {normalise_name(other or '')} "
+        words = set(text.split())
+        key = {t for t in core if len(t) >= 3 and t not in _GENERIC_TARGET_WORDS}
+        phrase = normalise_name(name)
+        if (key and key <= words) or (len(phrase) >= 6 and f" {phrase} " in text):   # "SA-H2 Fund"
+            return True
+    return False
+
+
+def _same_fund_close(a: dict, b: dict, gap: int) -> Optional[bool]:
+    """True or False when both reports describe a fund close; None to fall back to the general rules.
+
+    One fund's close is reported by the manager, the fund and its investors, often weeks apart and under
+    different names. Matching is by house (_fund_brand_match), the same close stage, compatible amounts and a
+    window of up to 120 days when the amounts agree; the identical article republished is always one close."""
+    ha, hb = normalise_name(a.get("headline")), normalise_name(b.get("headline"))
+    if ha and ha == hb:
+        return True
+    sa, sb = _close_stage(a.get("headline")), _close_stage(b.get("headline"))
+    if sa and sb and sa != sb:
+        return False
+    if not (sa and sb) or not _fund_brand_match(a, b):
+        return None
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    if ua and ub and max(ua, ub) / min(ua, ub) > 1.5 and not _names_close_size(a, b):
+        return False
+    agree = bool(ua and ub) and max(ua, ub) / min(ua, ub) <= 1.1
+    if gap > (120 if agree else 60 if not (ua and ub) else 14):
+        return False
+    xa, xb = set(a.get("countries") or [a.get("country")]) - {None}, set(b.get("countries") or [b.get("country")]) - {None}
+    return not (xa and xb and not xa & xb)
+
+
 def _names_close_size(a: dict, b: dict) -> bool:
     """One LP's commitment reported beside the fund's close: "EIB invests $37.5m in Tanmiya fund as it reaches $130m
     close" names the larger record's amount in its own headline, so both are the same close."""
@@ -2192,6 +2311,8 @@ def strong_same_report(a: dict, b: dict) -> bool:
         return False
     ma = {"acquisition", "merger", "exit"}
     ta, tb = a.get("deal_type"), b.get("deal_type")
+    if ta == tb == "fund_raise" and (verdict := _same_fund_close(a, b, gap)) is not None:
+        return verdict
     if ta == tb:
         if gap > 14:
             return False

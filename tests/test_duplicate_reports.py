@@ -129,3 +129,15 @@ def test_the_fund_close_is_kept_when_an_lp_commitment_folds_into_it():
     out: dict = {}
     hm._merge_stored_duplicates([close, lp], out)
     assert out["lp"]["merged_into"] == "close" and out["close"]["amount_usd"] == 130e6
+
+
+def test_a_fund_and_its_manager_report_one_close():
+    from src.engines import deals as dm
+    fund = {"deal_type": "fund_raise", "announced": "2026-07-07", "target": "Kuramo Africa Opportunity Fund IV",
+            "countries": [], "headline": "Kuramo Africa Opportunity Fund IV reaches first close"}
+    manager = {"deal_type": "fund_raise", "announced": "2026-07-21", "target": "Kuramo Capital", "amount": 48e9,
+               "currency": "NGN", "amount_usd": 31.6e6, "countries": ["NG"],
+               "headline": "Kuramo Capital lands NGN 48B first close for Africa fund from Nigerian pensions"}
+    assert dm.strong_same_report(fund, manager)
+    assert not dm.strong_same_report(fund, {**manager, "headline": "Kuramo Capital lands NGN 48B final close"})
+    assert dm._clean_name("Africa-focussed Kuramo Capital Management") == "Kuramo Capital Management"
