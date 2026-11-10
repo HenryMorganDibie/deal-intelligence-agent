@@ -86,3 +86,31 @@ def test_a_mixed_equity_and_debt_round_reported_both_ways_is_one():
     assert dm.strong_same_report(a, b)
     far = {**b, "amount_usd": 30_000_000}
     assert not dm.strong_same_report(a, far)                     # amounts too far apart: two different raises
+
+
+def test_an_lp_commitment_and_the_fund_close_are_one_deal():
+    from src.engines import deals as dm
+    close = {"deal_type": "fund_raise", "announced": "2026-10-26", "target": "Tanmiya Capital", "amount": 130e6,
+             "currency": "USD", "amount_usd": 130e6, "countries": ["EG"], "investors": ["EIB", "IFC"],
+             "headline": "Tanmiya Capital closes second Egypt growth fund at $130m, backed by $37.5m EIB commitment"}
+    lp = {"deal_type": "fund_raise", "announced": "2026-10-26", "target": "Tanmiya fund", "amount": 37.5e6,
+          "currency": "USD", "amount_usd": 37.5e6, "countries": ["EG"], "investors": ["EIB"],
+          "headline": "EIB invests $37.5m in Tanmiya fund as it reaches $130m close"}
+    assert dm.strong_same_report(close, lp) and dm.strong_same_report(lp, close)
+    other = {**lp, "headline": "EIB invests $37.5m in Tanmiya fund"}           # no close size named: kept apart
+    assert not dm.strong_same_report(close, other)
+
+
+def test_a_figure_is_never_a_party():
+    from src.engines import deals as dm
+    assert dm._not_a_party("USD 180m") and dm._not_a_party("$5 million") and not dm._not_a_party("CFM")
+    assert not dm._not_a_party("3i") and not dm._not_a_party("54gene") and not dm._not_a_party("1776")
+    assert dm._not_a_party("20M") and dm._not_a_party("Ksh.500") and dm._not_a_party("NGN 48B")
+    fix = dm.reclassify({"deal_type": "fund_raise", "target": "USD 180m", "amount": 180e6, "currency": "USD",
+                         "headline": "CFM raises over USD 180m at first close of South Africa H2 fund | Hydrogen News"})
+    assert fix == {"target": "CFM"} or fix.get("target") == "CFM"
+    assert "excluded" in dm.reclassify({"deal_type": "acquisition", "target": "Ksh.4", "buyer": "UNEP",
+                                        "headline": "UNEP invests Ksh.4 billion to support Kenya’s climate action"})
+    kept = dm.reclassify({"deal_type": "equity_funding", "target": "Twiga Foods", "investors": ["1776", "Wamda Capital"],
+                          "headline": "Twiga Foods raises $10.3m in Series A Investment Round"})
+    assert kept is None

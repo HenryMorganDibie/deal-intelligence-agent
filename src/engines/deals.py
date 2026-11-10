@@ -559,6 +559,19 @@ def reclassify(deal: dict) -> Optional[dict]:
     # Prose caught by a deal verb ("Don't Sell Your Votes", "He Acquires Porsche") is not a transaction; a
     # question word in front of a real party ("Why TGI Sold Chivita") is dropped and the record kept.
     parties_fix: dict = {}
+    # A figure stored as the company ("USD 180m"): a fund raise takes the manager the headline opens with
+    # ("Kuramo Capital lands NGN 48B first close"); anything else cannot be recovered and is excluded.
+    if isinstance(deal.get("target"), str) and _AMOUNT_AS_NAME.match(deal["target"].strip()):
+        opener = re.match(rf"^\s*(?P<n>{NAME})\s+(?:lands|raises|secures|closes|reaches|hits|announces)\b", headline)
+        name = _clean_name(opener.group("n")) if opener and deal.get("deal_type") == "fund_raise" else None
+        if not name or _not_a_party(name):
+            return {"excluded": "reclassified: a figure, not a named party"}
+        deal = {**deal, "target": name}
+        parties_fix["target"] = name
+    if isinstance(deal.get("investors"), list) and any(isinstance(i, str) and _AMOUNT_AS_NAME.match(i.strip())
+                                                       for i in deal["investors"]):
+        deal = {**deal, "investors": [i for i in deal["investors"] if not _AMOUNT_AS_NAME.match(str(i).strip())]}
+        parties_fix["investors"] = deal["investors"]
     for key in ("target", "buyer", "seller"):
         name = deal.get(key)
         if not isinstance(name, str):
@@ -956,8 +969,18 @@ _PROSE_PARTY = re.compile(r"^(?:I|We|You|They|He|She|It|Your|Our|My|Their|His|He
 # is not the pronoun "Us", and "IT" is not "It".
 
 
+# "USD 180m", "$5 million", "N2bn": a figure caught where a name should be.
+# A bare number can be a name ("1776", the venture firm), so a currency or a size suffix is required.
+_CUR = r"(?:US\$|USD|US|EUR|GBP|ZAR|NGN|KES|EGP|GHS|R|N|KSh\.?|Ksh\.?|\$|€|£|₦)"
+_MULT = r"(?:m|mn|bn|b|k|million|billion|thousand)"
+_AMOUNT_AS_NAME = re.compile(rf"(?i)^(?:{_CUR}\s*[\d.,]+\s*{_MULT}?|{_CUR}?\s*[\d.,]+\s*{_MULT})$")
+
+
 def _not_a_party(name: Optional[str]) -> bool:
-    return bool(name) and bool(_PROSE_PARTY.search(name.strip()))
+    if not name:
+        return False
+    n = name.strip()
+    return bool(_PROSE_PARTY.search(n) or _AMOUNT_AS_NAME.match(n))
 
 
 def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = None,
@@ -2153,6 +2176,15 @@ def _party_match(x, y):
             return True
     return False
 
+def _names_close_size(a: dict, b: dict) -> bool:
+    """One LP's commitment reported beside the fund's close: "EIB invests $37.5m in Tanmiya fund as it reaches $130m
+    close" names the larger record's amount in its own headline, so both are the same close."""
+    big, small = (a, b) if (a.get("amount_usd") or 0) >= (b.get("amount_usd") or 0) else (b, a)
+    amount, cur = big.get("amount"), big.get("currency")
+    return bool(amount) and any(c == cur and abs(v - amount) <= max(1.0, amount * 0.01)
+                                for v, c in parse_amounts(small.get("headline") or ""))
+
+
 def strong_same_report(a: dict, b: dict) -> bool:
     try:
         gap = abs((date.fromisoformat(a["announced"][:10]) - date.fromisoformat(b["announced"][:10])).days)
@@ -2185,7 +2217,7 @@ def strong_same_report(a: dict, b: dict) -> bool:
         if not _junk_party(x) and not _junk_party(y) and not _party_match(x, y):
             return False
     ua, ub = a.get("amount_usd"), b.get("amount_usd")
-    if ua and ub and max(ua, ub) / min(ua, ub) > 1.5:
+    if ua and ub and max(ua, ub) / min(ua, ub) > 1.5 and not (ta == tb == "fund_raise" and _names_close_size(a, b)):
         return False
     # Same target and date alone are not enough: something else must corroborate it (a named party on both
     # reports, matching amounts, or both headlines reporting that kind of transaction).
