@@ -1957,7 +1957,13 @@ def _fund_house_name(kept: Optional[str], other: Optional[str]) -> dict:
     funds = [n for n in names if _FUND_NAME.search(n)]
     out: dict = {}
     if managers:
-        out["target"] = max(managers, key=lambda n: (len(n.split()) > 1, len(n)))   # the full name over an abbreviation
+        # The kept name stands ("Aqua-Spark", not "Aqua-Spark Africa"), unless it only abbreviates the other
+        # ("CFM" for "Climate Fund Managers").
+        choice = kept if kept in managers else managers[0]
+        for m in managers:
+            if m != choice and deals_mod._acronym(m) == re.sub(r"[^A-Za-z]", "", choice).upper():
+                choice = m
+        out["target"] = choice
     if funds:
         out["fund_name"] = max(funds, key=len)
     return out

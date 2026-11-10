@@ -92,3 +92,5 @@ def test_merged_closes_show_the_manager_and_keep_the_fund_name():
     kept = next(v for v in out.values() if not v.get("merged_into"))
     assert kept["target"] == "Climate Fund Managers" and sum(1 for v in out.values() if v.get("merged_into")) == 1
     assert hm._fund_house_name("Africa Credit Opps Fund", "Ninety One") == {"target": "Ninety One", "fund_name": "Africa Credit Opps Fund"}
+    assert hm._fund_house_name("Aqua-Spark", "Aqua-Spark Africa")["target"] == "Aqua-Spark"
+    assert hm._fund_house_name("CFM", "Climate Fund Managers")["target"] == "Climate Fund Managers"
