@@ -636,6 +636,9 @@ def reclassify(deal: dict) -> Optional[dict]:
                                                        for i in deal["investors"]):
         deal = {**deal, "investors": [i for i in deal["investors"] if not _AMOUNT_AS_NAME.match(str(i).strip())]}
         parties_fix["investors"] = deal["investors"]
+    if isinstance(deal.get("target"), str) and _CONTROL_OF.match(deal["target"]):
+        parties_fix["target"] = _CONTROL_OF.sub("", deal["target"])          # "Full Control of De Beers"
+        deal = {**deal, "target": parties_fix["target"]}
     for key in ("target", "buyer", "seller"):
         name = deal.get(key)
         if not isinstance(name, str):
@@ -1028,7 +1031,13 @@ _KENYAN_COUNTIES = {"Kwale", "Kilifi", "Mombasa", "Kisumu", "Nakuru", "Kiambu", 
 # ("Don't Sell Your Votes", "Why We Sold Our Stake"), never a company name. Whole words only, so MyBucks stays.
 _PROSE_PARTY = re.compile(r"^(?:I|We|You|They|He|She|It|Your|Our|My|Their|His|Her|Its|Us|Them|Should|Would|Could|"
                           r"Never|Please|Stop|Let|Do|Does|Don['’]t|Doesn['’]t|Won['’]t|Can['’]t)\b(?![.&-])|\b\w+n['’]t\b"
-                          r"|^(?:How|Why|When|Where)\s+the\b|\s(?:Can|Could|Should|Would|Must)(?:\s|$)")
+                          r"|^(?:How|Why|When|Where)\s+the\b|\s(?:Can|Could|Should|Would|Must)(?:\s|$)"
+                          # "Botswana Still", "Botswana Plans to Double De Beers Stake", "Angola Makes Bold Move",
+                          # "Botswana to double De Beers stake to 30%": a subject followed by its verb.
+                          r"|^\S+\s+(?:Still|Plans?|Planning|Contemplat\w+|Muddies|Makes|Wants|Seeks|Aims?|Moves?|Eyes|"
+                          r"Considers?|Mulls?|Mulling|Weighs|Targets|Hopes|Vows|Pledges|to)\b"
+                          # "Gulf Help", "UAE and Oman Support", "in Line to", "a Reduced stake", "Without De Beers".
+                          r"|\s(?:Help|Support|Backing)$|^(?:Line|Reduced|Outright|Majority|Minority)$|\sWithout\s")
 # Case-sensitive on purpose: "US" (the United States, as in "US International Development Finance Corporation")
 # is not the pronoun "Us", and "IT" is not "It".
 
@@ -1044,7 +1053,10 @@ def _not_a_party(name: Optional[str]) -> bool:
     if not name:
         return False
     n = name.strip()
-    return bool(_PROSE_PARTY.search(n) or _AMOUNT_AS_NAME.match(n))
+    return bool(_PROSE_PARTY.search(n) or _AMOUNT_AS_NAME.match(n) or re.fullmatch(r"[\d.,]+\s*%", n))   # "85%"
+
+
+_CONTROL_OF = re.compile(r"(?i)^(?:full\s+|majority\s+|minority\s+|controlling\s+)?(?:control|stake|ownership)\s+(?:of|in)\s+(?=[A-Z])")
 
 
 def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = None,

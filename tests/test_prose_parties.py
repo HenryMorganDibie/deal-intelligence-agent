@@ -44,3 +44,22 @@ def test_us_is_the_united_states_not_a_pronoun():
     assert deals.reclassify({"deal_type": "equity_funding", "target": "Cassava",
                              "investors": ["US International Development Finance Corporation", "Finnfund"],
                              "headline": "Strive Masiyiwa's Cassava secures $90m equity investment"}) is None
+
+
+@pytest.mark.parametrize("name", ["85%", "Botswana Still", "Botswana Plans to Double De Beers Stake",
+                                  "Botswana to double De Beers stake to 30%", "Angola Makes Bold Move", "Makes Move",
+                                  "Botswana Contemplating", "Gulf Help", "UAE and Oman Support", "Line", "Reduced",
+                                  "More Diamonds Without De Beers"])
+def test_headline_fragments_are_not_parties(name):
+    assert deals._not_a_party(name)
+
+
+@pytest.mark.parametrize("name", ["Anglo American", "Botswana Diamonds", "Global Diamond Consortium", "Moves Africa",
+                                  "Help Lesotho", "Majority Holdings", "First Line Ventures", "Eyes on Africa Capital"])
+def test_real_names_that_look_like_fragments_stay(name):
+    assert not deals._not_a_party(name)
+
+
+def test_full_control_of_a_company_is_the_company():
+    assert deals.reclassify({"deal_type": "acquisition", "target": "Full Control of De Beers", "buyer": "Anglo American",
+                             "headline": "x"}) == {"target": "De Beers"}
