@@ -51,3 +51,9 @@ def test_compound_firm_names_are_kept_whole():
     assert deals_mod.reclassify({"deal_type": "equity_funding", "investors": ["Magic Fund", "Plug", "Play"],
                                  "headline": "Bypa-ss raises $1m pre-seed", "target": "Bypa-ss"}) == \
         {"investors": ["Magic Fund", "Plug and Play"]}
+
+
+def test_an_approval_word_is_not_part_of_the_buyer():
+    fix = deals_mod.reclassify({"deal_type": "acquisition", "buyer": "Batian Fund Cleared", "target": "Riverside Towers",
+                                "headline": "GenAfrica-Backed Batian Fund Cleared to Buy Riverside Towers in Nairobi"})
+    assert fix == {"buyer": "Batian Fund"}

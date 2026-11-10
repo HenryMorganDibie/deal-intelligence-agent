@@ -509,6 +509,9 @@ def reclassify(deal: dict) -> Optional[dict]:
     if deal.get("deal_type") in ("acquisition", "merger") and normalise_name(deal.get("buyer")) in _APPROVAL_WORDS:
         m = _APPROVED_BUYER.search(headline)
         parties_fix["buyer"] = _clean_name(m.group("subj")) if m else None
+    if deal.get("deal_type") in ("acquisition", "merger") and isinstance(deal.get("buyer"), str) \
+            and (stripped := strip_approval_tail(deal["buyer"])) != deal["buyer"]:
+        parties_fix["buyer"] = stripped or None
     if isinstance(deal.get("investors"), list) and (rejoined := rejoin_compound_names(deal["investors"])) != deal["investors"]:
         parties_fix["investors"] = rejoined
     if isinstance(deal.get("lead_investors"), list) and \
@@ -773,6 +776,14 @@ def rejoin_compound_names(names: list) -> list:
             out.append(names[i])
             i += 1
     return out
+
+
+# "Batian Fund Cleared to Buy ...", "X Approved to Acquire ...": the approval word is not part of the buyer's name.
+_APPROVAL_TAIL = re.compile(r"\s+(?:Cleared|Approved|Allowed|Authori[sz]ed|Permitted)$", re.IGNORECASE)
+
+
+def strip_approval_tail(name):
+    return _APPROVAL_TAIL.sub("", name).strip() if isinstance(name, str) else name
 
 
 # "Moniepoint Gets Green Light to Acquire ...": the approval phrase is not the buyer.
@@ -1302,6 +1313,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         deal["buyer"] = _clean_name(m.group("subj")) if m else None
         if deal.get("investors") and normalise_name(str(deal["investors"][0])) in _APPROVAL_WORDS:
             deal["investors"] = [deal["buyer"]] if deal["buyer"] else []
+    if deal["deal_type"] in ("acquisition", "merger") and deal.get("buyer"):
+        deal["buyer"] = strip_approval_tail(deal["buyer"]) or None
     deal["id"] = deal_id(deal)
     # Last-mile invariant: a series numeral alone is never a valid fund target.
     if deal["deal_type"] == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", str(deal.get("target") or "").strip()):
