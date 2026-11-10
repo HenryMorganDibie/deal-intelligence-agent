@@ -42,8 +42,17 @@ def country_name(code: Optional[str]) -> Optional[str]:
     return c.name if c else None
 
 
+def _distinct(names: list[str]) -> list[str]:
+    """Drop a name that repeats another's start ("Victory Park Capital Advisors" after "Victory Park Capital")."""
+    out: list[str] = []
+    for n in names:
+        if n and not any(n.lower().startswith(o.lower()) or o.lower().startswith(n.lower()) for o in out):
+            out.append(n)
+    return out
+
+
 def _join(names: list[str]) -> str:
-    names = [n for n in names if n]
+    names = _distinct(names)
     if len(names) <= 1:
         return "".join(names)
     return ", ".join(names[:-1]) + " and " + names[-1]
@@ -66,7 +75,8 @@ def summary(d: dict) -> Optional[str]:
         rnd = d.get("round")
         what = " ".join(x for x in (amount, f"{rnd} round" if rnd and rnd != "undisclosed" else None) if x) or "new funding"
         verb, names = _investors(d)
-        return f"{target} raised {what}" + (f", {verb} {_join(names)}" if names else "")
+        sep = ", " if verb == "led by" else " "
+        return f"{target} raised {what}" + (f"{sep}{verb} {_join(names)}" if names else "")
     if kind == "debt_financing" and target:
         _, names = _investors(d)
         return f"{target} secured {amount + ' in ' if amount else ''}debt financing" + (f" from {_join(names)}" if names else "")
@@ -88,9 +98,13 @@ def summary(d: dict) -> Optional[str]:
 
 
 def source(d: dict) -> tuple[Optional[str], Optional[str]]:
-    """(publisher, url) of the earliest dated source."""
+    """(publisher, url) of the earliest dated source. A news-aggregator redirect is too long and opaque to post,
+    so its link is left out and the publisher is named; the deal page lists every source."""
     srcs = sorted((s for s in d.get("sources") or [] if s.get("url")), key=lambda s: s.get("date") or "9999")
-    return (srcs[0].get("publisher"), srcs[0]["url"]) if srcs else (None, None)
+    direct = [s for s in srcs if "news.google.com" not in s["url"]]
+    if direct:
+        return direct[0].get("publisher"), direct[0]["url"]
+    return (srcs[0].get("publisher"), None) if srcs else (None, None)
 
 
 def deal_link(d: dict) -> str:
@@ -126,7 +140,7 @@ def deal_of_the_day(d: dict) -> dict:
     linkedin = "\n\n".join(x for x in (
         f"Deal of the day: {line}.",
         context or None,
-        f"Source: {publisher or 'original report'}, {url}" if url else None,
+        (f"Source: {publisher or 'original report'}, {url}" if url else f"Source: {publisher}" if publisher else None),
         f"Every deal we track links to its sources. Explore the full record: {deal_link(d)}",
         HASHTAGS,
     ) if x)
@@ -137,8 +151,19 @@ def deal_of_the_day(d: dict) -> dict:
             "x": x if x_length(x) <= X_LIMIT else None}
 
 
+def _same_company(a: Optional[str], b: Optional[str]) -> bool:
+    """'SA Fintech Yoco' and 'Yoco' are one company: every word of the shorter name is in the longer."""
+    wa, wb = set((a or "").lower().split()), set((b or "").lower().split())
+    return bool(wa and wb) and (wa <= wb or wb <= wa)
+
+
 def roundup(deals: list[dict], label: str) -> Optional[dict]:
-    top = ranked(deals)[:5]
+    top: list[dict] = []
+    for d in ranked(deals):                  # one line per company: its largest deal in the window
+        if not any(_same_company(d.get("target"), t.get("target")) for t in top):
+            top.append(d)
+        if len(top) == 5:
+            break
     if len(top) < 2:
         return None
     lines = [f"{i}. {summary(d)}" + (f" ({country_name(d.get('country'))})" if country_name(d.get("country")) else "")

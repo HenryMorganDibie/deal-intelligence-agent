@@ -24,6 +24,21 @@ def test_sentences_use_only_stored_facts():
                            amount_usd=2.3e9)) == "Helios sold its 40% stake in Vivo Energy to Vitol for $2.3B"
     assert cd.summary(deal(4, deal_type="acquisition", buyer=None)) is None      # missing parties: no post
     assert cd.money(12_500_000) == "$12.5M" and cd.money(None) is None
+    assert cd.summary(deal(5, investors=["TPG"])) == "Company 5 raised $5M Series A round from TPG"
+    assert cd.summary(deal(6, deal_type="debt_financing", investors=["Victory Park Capital", "Victory Park Capital Advisors"])) \
+        == "Company 6 secured $6M in debt financing from Victory Park Capital"
+
+
+def test_aggregator_links_are_left_out_but_the_publisher_is_named():
+    d = deal(1, sources=[{"url": "https://news.google.com/rss/articles/CBMi", "publisher": "Business Insider Africa"}])
+    post = cd.deal_of_the_day(d)["linkedin"]
+    assert "news.google.com" not in post and "Source: Business Insider Africa" in post
+
+
+def test_a_company_appears_once_in_the_roundup():
+    out = cd.roundup([deal(9, target="Yoco"), deal(5, target="SA Fintech Yoco", deal_type="debt_financing"), deal(2)],
+                     "the last 24 hours")
+    assert out["deal_ids"] == ["d9", "d2"]
 
 
 def test_daily_drafts_lead_with_the_largest_deal_and_fit_on_x():
