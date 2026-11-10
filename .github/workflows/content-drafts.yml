@@ -2,7 +2,8 @@ name: Post drafts
 
 # Each morning, after the 04:11 UTC deal ingestion, asks the API to email the owner LinkedIn and X post drafts built
 # from the newest deals. It runs on Vercel (where the email key and the recipient address are kept) and takes about
-# a second of function time. Nothing is posted anywhere; the owner publishes by hand.
+# a second of function time. Nothing is posted anywhere; the owner publishes by hand. It then tells Bing and the
+# other IndexNow engines about the site's public pages, so new deal pages are indexed quickly.
 on:
   schedule:
     - cron: "41 5 * * *"      # 06:41 in Lagos, 08:41 in Nairobi
@@ -33,3 +34,6 @@ jobs:
             "https://api.deal-intelligence.app/api/cron/content-drafts")"
           echo "$out" | jq .
           echo "$out" | jq -e '.sent == true or .drafts == 0' > /dev/null
+      - uses: actions/checkout@v4
+      - name: Submit public pages to IndexNow
+        run: python3 scripts/indexnow.py
