@@ -108,3 +108,23 @@ def test_sends_once_per_day_to_the_configured_owner(cron, monkeypatch):
 def test_requires_a_scheduled_caller(monkeypatch):
     monkeypatch.setattr(hm, "_authorized_cron", lambda r: False)
     assert client().get("/api/cron/content-drafts").status_code == 401
+
+
+def test_a_figure_from_the_companys_history_is_not_the_deal():
+    from src.engines import deals
+    d = deals.extract_deal("After channelling $397 million to 40,000 businesses, TPG-backed Yoco secures $100 million "
+                           "from US investor to take South African lending in-house", published="2026-11-09")
+    assert d["amount_usd"] == 100e6 and d["investors"] == [] and d["existing_backers"] == ["TPG"]
+
+
+def test_stored_records_drop_history_figures_and_existing_backers():
+    from src.engines import deals
+    fix = deals.reclassify({"deal_type": "equity_funding", "target": "Yoco", "amount": 397e6, "currency": "USD",
+                            "amount_usd": 397e6, "announced": "2026-11-09", "investors": ["TPG"],
+                            "headline": "After channelling $397 million to 40,000 businesses, TPG-backed Yoco secures "
+                                        "$100 million from US investor to take South African lending in-house"})
+    assert fix["amount_usd"] == 100e6 and fix["investors"] == [] and fix["existing_backers"] == ["TPG"]
+    fund = {"deal_type": "fund_raise", "target": "Undisclosed private equity firm", "investors": ["Dangote"],
+            "amount": 140e6, "currency": "USD",
+            "headline": "Dangote-Backed Private Equity Firm Secures $140 Million In Initial Funding For $500 Million Fund"}
+    assert deals.reclassify(fund) is None or "investors" not in deals.reclassify(fund)

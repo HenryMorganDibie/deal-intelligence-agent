@@ -82,6 +82,11 @@ _INSTRUMENT_AFTER = re.compile(r"(?i)^\W{0,3}(?:\S+\s+){0,2}?(loan|facility|fina
                                r"stake|deal|bond|notes|raise|seed|series|debt|credit|acquisition|buyout|fund|prêt|financement)\b")
 _PLEDGE_BEFORE = re.compile(r"(?i)\b(promet|promises?|pledges?|vows?|plans?\s+to\s+invest|to\s+invest|commits?\s+to\s+invest)"
                             r"\s+(?:\S+\s+){0,2}$")
+# "After channelling $397 million to 40,000 businesses, Yoco secures $100 million": money already lent or paid out
+# by the company, or a figure in a leading "After ..." clause, describes its history, not the deal.
+_DEPLOYED_BEFORE = re.compile(r"(?i)\b(?:channel+(?:ing|ed)|disburs(?:ing|ed)|lent|lending|deploy(?:ing|ed)|"
+                              r"pa(?:id|ying)\s+out|process(?:ing|ed)|transact(?:ing|ed))\s+(?:\S+\s+){0,2}$")
+_LEADING_CLAUSE = re.compile(r"(?i)^\s*(?:after|having|since|with\s+over|with\s+more\s+than)\b[^,]{0,120},")
 # "$7 billion fertiliser expansion": the cost of a project, not the deal.
 _PROJECT_AFTER = re.compile(r"(?i)^\W{0,3}(?:\S+\s+){0,2}?(expansion|project|programme|plan|refinery|port|airport|plant|"
                             r"factory|complex|corridor|pipeline|railway)\b")
@@ -103,6 +108,11 @@ def deal_amount(text: str) -> Optional[tuple[float, str]]:
         found.append((m, parsed[0]))
     if not found:
         return None
+    lead = _LEADING_CLAUSE.match(text)
+    if len(found) > 1:
+        rest = [(m, a) for m, a in found if not _DEPLOYED_BEFORE.search(text[max(0, m.start() - 40): m.start()])
+                and not (lead and m.start() < lead.end())]
+        found = rest or found
     usable = [(m, a) for m, a in found if not _PLEDGE_BEFORE.search(text[max(0, m.start() - 40): m.start()])
               and not _MARKET_AFTER.match(text[m.end():])
               and not (len(found) > 1 and _PROJECT_AFTER.match(text[m.end():]))]
@@ -538,6 +548,10 @@ def not_a_deal(headline: str, target: Optional[str], deal_type: Optional[str] = 
     return None
 
 
+_BACKED_IN_HEADLINE = re.compile(r"((?:[A-Z][\w&.]*[\s-]?){1,4})-[Bb]acked\s")
+_INVESTMENT_FIRM = re.compile(r"\b(?:Ventures?|Capital|Partners|Fund|Investments?)\b")
+
+
 def reclassify(deal: dict) -> Optional[dict]:
     """What the current rules change in a stored record: {"excluded": reason}, or a corrected deal type for a
     bond, loan, listing or fund close stored as an equity round. None when the record stands."""
@@ -556,6 +570,21 @@ def reclassify(deal: dict) -> Optional[dict]:
             parties_fix[key] = bare
     if isinstance(deal.get("investors"), list) and any(isinstance(i, str) and _not_a_party(i) for i in deal["investors"]):
         return {"excluded": "reclassified: a sentence, not a named party"}
+    # A figure from the company's history ("After channelling $397 million ...") stored as the deal's amount.
+    if deal.get("amount") and (picked := deal_amount(headline)) and picked[1] == deal.get("currency") \
+            and abs(picked[0] - deal["amount"]) >= 1 \
+            and any(abs(v - deal["amount"]) < 1 and c == deal.get("currency") for v, c in parse_amounts(headline)):
+        year = int(str(deal.get("announced") or "")[:4]) if str(deal.get("announced") or "")[:4].isdigit() else None
+        parties_fix.update({"amount": picked[0], "amount_usd": to_usd(picked[0], picked[1], year)})
+    # "TPG-backed Yoco secures ...": an existing shareholder stored as a participant. Funds keep their backers (LPs).
+    if (bm := _BACKED_IN_HEADLINE.search(headline)) and isinstance(deal.get("investors"), list) \
+            and deal.get("deal_type") != "fund_raise" and not _INVESTMENT_FIRM.search(deal.get("target") or ""):
+        backers = {normalise_name(n) for n in _split_names(bm.group(1))}
+        own = normalise_name(deal.get("target"))
+        kept = [n for n in deal["investors"] if normalise_name(n) not in backers and normalise_name(n) != own]
+        if kept != deal["investors"]:
+            parties_fix["investors"] = kept
+            parties_fix["existing_backers"] = [n for n in deal["investors"] if normalise_name(n) in backers]
     # Corrections to the parties, which leave the record in place.
     if deal.get("deal_type") in ("acquisition", "merger") and normalise_name(deal.get("buyer")) in _APPROVAL_WORDS:
         m = _APPROVED_BUYER.search(headline)
@@ -1288,10 +1317,12 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
                                                                             or _FUND_FOR.search(title)):
             deal_type = "fund_raise"             # "raises $169m to back South African businesses"
 
-    if backed:
-        for n in _split_names(backed.group(1)):
-            if n not in investors:
-                investors.append(n)
+    # "IFC-backed Ventures Platform raises $84M" (a fund): IFC is an LP in that fund. "TPG-backed Yoco secures
+    # $100m" (a company): TPG is an existing shareholder, not shown to be in this deal, so it is kept apart.
+    existing_backers = [n for n in _split_names(backed.group(1))] if backed else []
+    if deal_type == "fund_raise" or _INVESTMENT_FIRM.search(target or ""):
+        investors += [n for n in existing_backers if n not in investors]
+        existing_backers = []
     if deal_type in ("equity_funding", "debt_financing"):
         fm = _FROM.search(_normalise_case(title))
         if fm:
@@ -1405,6 +1436,7 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         "buyer": buyer,
         "seller": seller,
         "investors": investors,
+        **({"existing_backers": existing_backers} if existing_backers else {}),
         "amount": amount,
         "currency": currency,
         "amount_usd": usd,
