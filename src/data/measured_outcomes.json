@@ -1,5 +1,5 @@
 {
- "companies": 1761,
+ "companies": 1792,
  "method": "Confirmation: share of flags followed within 90 days by a confirming filing, disclosure or credible report. Moves: market-adjusted return over 10 calendar days after the flag (first close on or after day 10). Figures with fewer than 10 observations are reported as insufficient history; smaller groups are smoothed toward their parent rate with 5 pseudo-observations.",
  "observations": [
   [
@@ -58928,7 +58928,7 @@
   [
    "m_and_a_activity",
    "low",
-   false,
+   true,
    true,
    1.88,
    "unspecified",
@@ -82554,7 +82554,7 @@
    "m_and_a_activity",
    "low",
    false,
-   null,
+   false,
    null,
    "unspecified",
    "africa"
@@ -82785,6 +82785,24 @@
    "africa"
   ],
   [
+   "insider_activity",
+   "low",
+   null,
+   null,
+   null,
+   "unspecified",
+   "africa"
+  ],
+  [
+   "leadership_change",
+   "low",
+   false,
+   false,
+   null,
+   "unspecified",
+   "africa"
+  ],
+  [
    "leadership_change",
    "low",
    false,
@@ -82795,9 +82813,9 @@
   ]
  ],
  "overall_confirmation": {
-  "confirmed": 1336,
-  "labelled": 5969,
-  "rate": 0.2238
+  "confirmed": 1337,
+  "labelled": 5970,
+  "rate": 0.224
  },
  "period": "2025-01-15 to 2026-06-15",
  "signals": {
@@ -84220,7 +84238,7 @@
         "p75": 4.48,
         "share_negative": 0.341
        },
-       "predictions": 109
+       "predictions": 110
       }
      },
      "type": {
@@ -84236,7 +84254,7 @@
        "p75": 4.47,
        "share_negative": 0.309
       },
-      "predictions": 138
+      "predictions": 139
      }
     },
     "us": {
@@ -84378,7 +84396,7 @@
       "p75": 3.98,
       "share_negative": 0.442
      },
-     "predictions": 256
+     "predictions": 257
     },
     "medium": {
      "direction": {
@@ -84501,7 +84519,7 @@
      "p75": 3.48,
      "share_negative": 0.455
     },
-    "predictions": 2222
+    "predictions": 2223
    }
   },
   "leadership_change": {
@@ -84571,8 +84589,8 @@
       "unspecified": {
        "confirmation": {
         "confirmed": 7,
-        "labelled": 92,
-        "rate": 0.0761
+        "labelled": 93,
+        "rate": 0.0753
        },
        "moves": {
         "median": 1.0,
@@ -84581,14 +84599,14 @@
         "p75": 4.81,
         "share_negative": 0.488
        },
-       "predictions": 92
+       "predictions": 93
       }
      },
      "type": {
       "confirmation": {
        "confirmed": 21,
-       "labelled": 334,
-       "rate": 0.0629
+       "labelled": 335,
+       "rate": 0.0627
       },
       "moves": {
        "median": 0.57,
@@ -84597,7 +84615,7 @@
        "p75": 4.23,
        "share_negative": 0.464
       },
-      "predictions": 334
+      "predictions": 335
      }
     },
     "us": {
@@ -84699,8 +84717,8 @@
     "low": {
      "confirmation": {
       "confirmed": 130,
-      "labelled": 566,
-      "rate": 0.2297
+      "labelled": 567,
+      "rate": 0.2293
      },
      "moves": {
       "median": 0.58,
@@ -84709,7 +84727,7 @@
       "p75": 3.81,
       "share_negative": 0.44
      },
-     "predictions": 566
+     "predictions": 567
     },
     "medium": {
      "confirmation": {
@@ -84792,8 +84810,8 @@
    "type": {
     "confirmation": {
      "confirmed": 1078,
-     "labelled": 2640,
-     "rate": 0.4083
+     "labelled": 2641,
+     "rate": 0.4082
     },
     "moves": {
      "median": 0.17,
@@ -84802,7 +84820,7 @@
      "p75": 3.27,
      "share_negative": 0.484
     },
-    "predictions": 2640
+    "predictions": 2641
    }
   },
   "m_and_a_activity": {
@@ -85064,9 +85082,9 @@
       },
       "unspecified": {
        "confirmation": {
-        "confirmed": 89,
+        "confirmed": 90,
         "labelled": 959,
-        "rate": 0.0928
+        "rate": 0.0938
        },
        "moves": {
         "median": 0.04,
@@ -85080,9 +85098,9 @@
      },
      "type": {
       "confirmation": {
-       "confirmed": 207,
+       "confirmed": 208,
        "labelled": 1773,
-       "rate": 0.1168
+       "rate": 0.1173
       },
       "moves": {
        "median": 0.27,
@@ -85128,9 +85146,9 @@
     },
     "low": {
      "confirmation": {
-      "confirmed": 121,
+      "confirmed": 122,
       "labelled": 1835,
-      "rate": 0.0659
+      "rate": 0.0665
      },
      "moves": {
       "median": 0.23,
@@ -85281,9 +85299,9 @@
    },
    "type": {
     "confirmation": {
-     "confirmed": 221,
+     "confirmed": 222,
      "labelled": 2443,
-     "rate": 0.0905
+     "rate": 0.0909
     },
     "moves": {
      "median": 0.29,
