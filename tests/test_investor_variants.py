@@ -50,3 +50,30 @@ def test_profile_and_portfolio_follow_the_merged_name():
     p = inv.profile(deals, "Ribbit")
     assert p["name"] == "Ribbit Capital" and p["deal_count"] == 2
     assert {row["company"] for row in inv.portfolio(deals, "Ribbit")} == {"Kuda", "Chipper Cash"}
+
+
+def _acq(i, buyer, target="Some Insurer"):
+    return {"id": f"a{i}", "deal_type": "acquisition", "buyer": buyer, "target": target, "announced": "2026-03-01"}
+
+
+def test_a_company_and_its_investment_arm_are_linked_not_merged():
+    deals = [_acq(1, "Old Mutual"), _acq(2, "Old Mutual"), _acq(3, "Old Mutual"),
+             _deal(1, ["Old Mutual Private Equity"]), _deal(2, ["Old Mutual Private Equity"])]
+    board = names(inv.leaderboard(deals, limit=50))
+    assert board["Old Mutual"] == 3 and board["Old Mutual Private Equity"] == 2
+    assert inv.profile(deals, "Old Mutual")["related"] == [{"name": "Old Mutual Private Equity", "relation": "investment arm"}]
+    assert inv.profile(deals, "Old Mutual Private Equity")["related"] == [{"name": "Old Mutual", "relation": "parent company"}]
+
+
+def test_a_short_name_that_only_invests_is_the_firm_itself():
+    deals = [_deal(1, ["AgDevCo"]), _deal(2, ["AgDevCo"]), _deal(3, ["AgDevCo Ventures"])]
+    assert names(inv.leaderboard(deals, limit=50)) == {"AgDevCo": 3}
+
+
+def test_nationalities_bare_suffixes_and_brand_words_never_merge():
+    deals = [_deal(1, ["Norwegian Investment Fund"]), _acq(2, "Norwegians"), _deal(3, ["Greenlight"]),
+             _deal(4, ["Green Light"])]
+    board = names(inv.leaderboard(deals, limit=50))
+    assert "Norwegian Investment Fund" in board and "Greenlight" in board and "Green Light" in board
+    assert inv.fold_key("Partners") is None and inv.fold_key("Partner") is None
+    assert inv.fold_key("Norwegians") != inv.fold_key("Norwegian Investment Fund")

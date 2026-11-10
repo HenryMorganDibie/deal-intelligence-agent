@@ -296,6 +296,16 @@ _DISPLAY: dict[str, str] = {}
 # remains. A core that is an ordinary word is not evidence ("Play" and "Play Ventures", "ReNew" and "Renew
 # Capital" are different businesses), and neither is a short one unless it is an acronym or has a digit.
 _VARIANTS: dict[str, str] = {}
+# A company and its investment arm ("Old Mutual" and "Old Mutual Private Equity", "Orange" and "Orange
+# Ventures") are related but not one investor: the company buys and sells businesses, the arm invests. They are
+# linked, never merged. A bare name that only ever invests ("Ribbit", "Novastar") is the firm's short form.
+_RELATED: dict[str, list[dict]] = {}
+_ARM_WORDS = {"capital", "partners", "ventures", "venture", "vc", "fund", "funds", "investment", "investments",
+              "private", "equity", "asset", "management", "impact", "pe"}
+_DEMONYMS = {"norwegian", "nigerian", "kenyan", "ghanaian", "egyptian", "moroccan", "ethiopian", "ugandan", "tanzanian",
+             "rwandan", "zambian", "zimbabwean", "senegalese", "ivorian", "tunisian", "american", "british", "french",
+             "german", "dutch", "chinese", "indian", "emirati", "saudi", "japanese", "swiss", "swedish", "danish",
+             "canadian", "israeli", "mauritian", "south africa", "southafrica"}
 _LEARNING = False
 _LEARNED_FOR: Optional[tuple] = None
 _FOLD_TAIL_PAIRS = (("private", "equity"), ("asset", "management"), ("venture", "capital"), ("venture", "partners"),
@@ -309,7 +319,9 @@ _AMBIGUOUS_CORES = {
     "distributed", "savannah", "savanna", "oppenheimer", "delta", "alpha", "omega", "nova", "zenith", "phoenix",
     "horizon", "frontier", "catalyst", "impact", "future", "momentum", "legacy", "pioneer", "crescent", "atlas",
     "titan", "vertex", "quantum", "unity", "harvest", "sahara", "nile", "black star", "blackstar", "public",
-    "emerging", "new", "next", "seed", "angel", "angels", "investor", "investors", "partners", "ventures"}
+    "emerging", "new", "next", "seed", "angel", "angels", "investor", "investors", "partners", "ventures",
+    # Common brand words more than one firm uses: "Greenlight" is not evidence that two Green Lights are one.
+    "greenlight", "onestop", "one stop", "green light"}
 
 
 _GENERIC_TOKENS = {"africa", "infrastructure", "energy", "climate", "green", "agri", "agriculture", "health",
@@ -336,9 +348,11 @@ def fold_key(name: Optional[str]) -> Optional[str]:
     if tokens and all(t in _GENERIC_TOKENS for t in tokens):
         # "Africa Infrastructure" is a description shared by many funds: such names must match in full.
         tokens = full
-    if tokens and len(tokens[-1]) > 3 and tokens[-1].endswith("s") and not tokens[-1].endswith("ss"):
-        tokens[-1] = tokens[-1][:-1]                    # "DFS Labs" -> lab
+    if len(tokens) >= 2 and len(tokens[-1]) > 3 and tokens[-1].endswith("s") and not tokens[-1].endswith("ss"):
+        tokens[-1] = tokens[-1][:-1]                    # "DFS Labs" -> lab (a lone word: "Norwegians" is not a firm)
     core = " ".join(tokens)
+    if core in _DEMONYMS or (len(tokens) == 1 and tokens[0] in _FOLD_TAIL | _ARM_WORDS | {"partner"}):
+        return None                                     # a nationality or a bare "Partners" names nobody
     squashed = core.replace(" ", "")
     if not squashed or core in _AMBIGUOUS_CORES or squashed in _AMBIGUOUS_CORES or core in _COMMON_WORDS:
         return None
@@ -357,21 +371,37 @@ def learn_variants(deals: list[dict]) -> None:
              sum(len(str(d.get("investors") or "")) for d in deals))
     if stamp == _LEARNED_FOR:
         return
-    raw_counts: Counter = Counter()
+    # (raw name, role) occurrences, with roles as parties() assigns them.
+    raw_roles: Counter = Counter()
     for d in deals:
-        for field in ("buyer", "seller"):
-            raw_counts[d.get(field)] += 1
-        if d.get("deal_type") == "fund_raise":
-            raw_counts[d.get("target")] += 1
-        for raw in (d.get("investors") or []) + (d.get("lead_investors") or []):
-            raw_counts[raw] += 1
+        t = d.get("deal_type")
+        if t in ("equity_funding", "debt_financing"):
+            role = "investor" if t == "equity_funding" else "lender"
+            raw_roles[(d.get("buyer"), role)] += 1
+            for raw in d.get("investors") or []:
+                raw_roles[(raw, role)] += 1
+        elif t in ("acquisition", "merger", "exit"):
+            raw_roles[(d.get("buyer"), "acquirer")] += 1
+            raw_roles[(d.get("seller"), "seller")] += 1
+        elif t == "fund_raise":
+            raw_roles[(d.get("target"), "gp")] += 1
+            for raw in d.get("investors") or []:
+                raw_roles[(raw, "lp")] += 1
+        for raw in d.get("lead_investors") or []:
+            raw_roles[(raw, "investor")] += 1
     _LEARNING = True
     try:
+        resolved: dict[str, list[str]] = {}
         counts: Counter = Counter()
-        for raw, k in raw_counts.items():           # each distinct spelling is resolved once
-            if isinstance(raw, str):
-                for c in split_names(raw):
-                    counts[c] += k
+        roles: dict[str, Counter] = defaultdict(Counter)
+        for (raw, role), k in raw_roles.items():
+            if not isinstance(raw, str):
+                continue
+            if raw not in resolved:                     # each distinct spelling is resolved once
+                resolved[raw] = split_names(raw)
+            for c in resolved[raw]:
+                counts[c] += k
+                roles[c][role] += k
     finally:
         _LEARNING = False
     groups: dict[str, list[str]] = defaultdict(list)
@@ -379,9 +409,29 @@ def learn_variants(deals: list[dict]) -> None:
         if (key := fold_key(name)):
             groups[key].append(name)
     variants: dict[str, str] = {}
+    related: dict[str, list[dict]] = defaultdict(list)
+
+    def corporate(name: str) -> bool:
+        r = roles[name]
+        return r["acquirer"] + r["seller"] >= r["investor"] + r["lender"] + r["lp"] + r["gp"] and \
+            r["acquirer"] + r["seller"] > 0
+
     for names in groups.values():
         if len(names) < 2:
             continue
+        # A bare company name next to "<name> Ventures/Private Equity/...": if the bare name mostly buys and
+        # sells businesses it is the parent company, kept apart and linked to its investment arm.
+        bare = min(names, key=lambda n: (len(normalise_name(n).split()), len(n)))
+        bare_key = normalise_name(bare)
+        arms = [n for n in names if n != bare and normalise_name(n).startswith(bare_key + " ")
+                and set(normalise_name(n)[len(bare_key):].split()) <= _ARM_WORDS]
+        if arms and corporate(bare):
+            names = [n for n in names if n != bare]
+            arm_display = max(names, key=lambda n: (counts[n], len(n), n))
+            related[bare].append({"name": arm_display, "relation": "investment arm"})
+            related[arm_display].append({"name": bare, "relation": "parent company"})
+            if len(names) < 2:
+                continue
         registered = [n for n in names if normalise_name(n) in _ALIAS]
         if len({_ALIAS[normalise_name(n)].name for n in registered}) > 1:
             continue                                    # two different registry investors: never merge them
@@ -389,7 +439,8 @@ def learn_variants(deals: list[dict]) -> None:
         for n in names:
             if n != display:
                 variants[n] = display
-    _VARIANTS, _LEARNED_FOR = variants, stamp
+    global _RELATED
+    _VARIANTS, _RELATED, _LEARNED_FOR = variants, dict(related), stamp
 
 _DESCRIPTOR = re.compile(
     r"^(?:(?:South\s+African|Nigerian|Kenyan|Ghanaian|Egyptian|Moroccan|Ethiopian|Ugandan|Tanzanian|Rwandan|"
@@ -643,6 +694,7 @@ def _profile(name: str, rows: list[tuple[dict, str]]) -> dict:
     recent = sorted(rows, key=lambda r: r[0].get("announced") or "", reverse=True)
     return {
         "name": name,
+        "related": _RELATED.get(name, []),
         "type": entry.kind if entry else _inferred_kind(name, roles),
         "type_inferred": entry is None,
         "hq": entry.hq if entry else None,

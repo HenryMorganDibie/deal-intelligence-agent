@@ -27,6 +27,7 @@ type Profile = {
   rounds_by_stage?: Record<string, number>;
   portfolio?: { company: string; first_deal: string | null; role: string; deal_id: string; status: string; status_date: string | null }[];
   fund_lifecycle?: { fund: string | null; announced: string; amount_usd: number | null; years_since: number; phase: string; note: string } | null;
+  related?: { name: string; relation: string }[];
 };
 
 export default function InvestorPage({ params }: { params: { name: string } }) {
@@ -53,6 +54,18 @@ export default function InvestorPage({ params }: { params: { name: string } }) {
           {p.hq ? `Headquarters: ${p.hq}. ` : ""}
           {p.first_seen ? `Active in the database from ${p.first_seen} to ${p.last_seen}.` : "No recorded deals yet."}
         </PageHeader>
+        {p.related && p.related.length > 0 && (
+          <p className="mt-3 text-[0.875rem] text-[color:var(--muted)]">
+            {p.related.map((r, i) => (
+              <span key={r.name}>
+                {i > 0 ? " · " : ""}
+                {r.relation === "investment arm" ? "Investment arm: " : r.relation === "parent company" ? "Part of " : `${words(r.relation)}: `}
+                <Link href={`/app/investors/${encodeURIComponent(r.name)}`} className="underline hover:text-[color:var(--text)]">{r.name}</Link>
+              </span>
+            ))}
+            . Counted separately: the company buys and sells businesses, the arm invests.
+          </p>
+        )}
         <Link href={`/app/watchlists?follow=${encodeURIComponent(p.name)}`} className="btn btn-ghost mt-4 inline-flex h-9 px-4 text-sm">
           Follow this investor
         </Link>
