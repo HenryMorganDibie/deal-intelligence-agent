@@ -80,3 +80,14 @@ def test_a_named_borrower_is_recovered_from_the_headline():
     deal = {"deal_type": "debt_financing", "target": "Boost Output",
             "headline": "Ogun: Afreximbank Grants Veenocks $81.9m Loan To Boost Output"}
     assert deals_mod.beneficiary_target_fix(deal) == {"target": "Veenocks"}
+
+
+@pytest.mark.parametrize("headline,signal,corporate", [
+    ("Word Bank backs infrastructure fund to help Kenya ease debt pressure", "credit_risk", False),
+    ("World Bank approves $500m loan for Nigeria power sector", "credit_risk", False),
+    ("Central Bank of Nigeria fines Zenith Bank N1bn", "regulatory_action", True),     # the bank fined is a company
+    ("Access Bank posts record profit", "earnings_surprise", True),
+])
+def test_a_public_institution_acting_is_not_a_corporate_event(headline, signal, corporate):
+    from src.engines.event_filters import is_corporate_event
+    assert is_corporate_event(headline, signal) is corporate

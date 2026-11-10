@@ -160,6 +160,11 @@ def is_corporate_event(headline: str, signal_type: Optional[str] = None) -> bool
     if _PUBLIC_FUNDS.search(text):
         return False
     name = named_company(text)
+    if is_public_institution(name):
+        # The World Bank, a central bank or the IMF acting is not a company's event, and "Bank" in its own name
+        # is not a corporate word ("Word Bank backs infrastructure fund to help Kenya ease debt pressure").
+        text = text.replace(name, " ")
+        name = named_company(text)
     listed = _listed_pattern()
     names_listed = bool(listed and listed.search(text))
     political = bool(_NON_CORPORATE.search(text))
