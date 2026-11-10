@@ -1010,6 +1010,7 @@ def enrich(snapshot: dict, today: Optional[date] = None) -> list[dict]:
             if q.get("ytd") is not None and q["ytd"] <= SUSPECT_YTD:
                 row["ytd_suspect"] = True
             out.append(row)
+    _classify_securities(out)
     _mark_cross_listings(out)
     return out
 
@@ -1028,11 +1029,73 @@ def _strict_key(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", _STRICT_NOISE.sub(" ", (name or "").lower().replace("&", " and "))).strip()
 
 
+# ── Security type ─────────────────────────────────────────────────────────────
+# An exchange's price list holds more than ordinary shares: preference shares, second share classes, notes and
+# structured products (FirstRand's ETNs, UBS and Standard Bank AMCs), fund units, and dollar lines. Each row is
+# given a `security` type and a name that says what it is, and the share screen shows ordinary shares by default.
+
+# Dual-listed companies trade as two distinct ordinary shares, one per listed company.
+_DUAL_LISTED_NAMES = {("jse", "INL"): "Investec Ltd", ("jse", "INP"): "Investec plc",
+                      ("jse", "NY1"): "Ninety One Ltd", ("jse", "N91"): "Ninety One plc"}
+# Preference shares whose symbol does not follow the base-plus-P pattern.
+_PREFERENCE_SYMBOLS = {("jse", "DSBP"): "Discovery", ("jse", "SBPP"): "Standard Bank", ("jse", "INPR"): "Investec Ltd",
+                       ("jse", "INPP"): "Investec plc", ("jse", "INPPR"): "Investec plc (rand)",
+                       ("jse", "AOVP"): "African and Overseas Enterprises"}
+# Second classes of ordinary shares, named for the class.
+_SHARE_CLASSES = {("jse", "EMN"): "eMedia Holdings N shares", ("jse", "EMH"): "eMedia Holdings ordinary shares",
+                  ("jse", "FTA"): "Fairvest A shares", ("jse", "FTB"): "Fairvest B shares",
+                  ("jse", "SOLBE1"): "Sasol BEE ordinary shares"}
+_NOTE_NAME = re.compile(r"(?i)\b(?:ETN|exchange\s+traded\s+note|AMC|actively\s+managed\s+certificate|structured)\b|^UBS\b|\bUBS\s+AG\b")
+_FUND_NAME = re.compile(r"(?i)\b(?:ETF|exchange\s+traded\s+fund|unit\s+trust|index\s+fund)\b")
+_PREF_NAME = re.compile(r"(?i)\b(?:pref(?:erence|erred|erential)?|PREF)\b")
+
+
+def _base_name(name: str) -> str:
+    return re.sub(r"(?i)\s+(?:limited|ltd|plc|group|holdings?)\.?$", "", (name or "").strip()) or name
+
+
+def classify_security(row: dict, siblings: dict[tuple[str, str], dict]) -> dict:
+    """{"security": type, "name": display name} for one listing. `siblings` maps (exchange, symbol) to rows, so a
+    preference share can be recognised as its company's symbol plus P (CPI -> CPIP, GND -> GNDP)."""
+    ex, sym, name = row.get("exchange") or "", (row.get("symbol") or "").upper(), row.get("name") or ""
+    key = (ex, sym)
+    if key in _DUAL_LISTED_NAMES:
+        return {"security": "ordinary", "name": _DUAL_LISTED_NAMES[key]}
+    if key in _SHARE_CLASSES:
+        return {"security": "share_class", "name": _SHARE_CLASSES[key]}
+    if key in _PREFERENCE_SYMBOLS:
+        return {"security": "preference", "name": f"{_PREFERENCE_SYMBOLS[key]} preference shares"}
+    if _NOTE_NAME.search(name) or (ex == "jse" and re.fullmatch(r"[A-Z]{2}ETN[CQ]|AMC\d{3}", sym)):
+        return {"security": "note", "name": name}
+    if _FUND_NAME.search(name):
+        return {"security": "fund", "name": name}
+    if _PREF_NAME.search(name):
+        return {"security": "preference", "name": name}
+    for cut in ("P", "PR"):
+        base = siblings.get((ex, sym[: -len(cut)])) if sym.endswith(cut) and len(sym) > len(cut) + 1 else None
+        if base and _strict_key(base.get("name") or "") == _strict_key(name):
+            return {"security": "preference", "name": f"{_base_name(name)} preference shares"}
+    if sym.endswith("USD") and siblings.get((ex, sym[:-3])):
+        return {"security": "usd_line", "name": f"{name} (US dollar line)"}
+    return {"security": "ordinary", "name": name}
+
+
+def _classify_securities(rows: list[dict]) -> None:
+    siblings = {(r.get("exchange"), (r.get("symbol") or "").upper()): r for r in rows}
+    for r in rows:
+        fixed = classify_security(r, siblings)
+        if fixed["name"] != r.get("name"):
+            r["listed_name"] = r.get("name")           # the exchange's own label, kept for search and audit
+        r.update(fixed)
+
+
 def _mark_cross_listings(rows: list[dict]) -> None:
     """Mark the secondary listings of a company listed on several exchanges (Equity Group in Nairobi, Kigali and
     Dar es Salaam); their caps are the group's, so exchange and sector totals count the primary listing only."""
     groups: dict[str, list[dict]] = {}
     for r in rows:
+        if r.get("security", "ordinary") != "ordinary":
+            continue                                   # a preference share or a note is not another listing of the company
         k = _strict_key(r.get("name") or "")
         if k:
             groups.setdefault(k, []).append(r)
@@ -1196,12 +1259,19 @@ _SORTS = {"mcap": lambda r: -(r.get("mcap_usd") or 0), "chg_1d": lambda r: -(r.g
           "pe": lambda r: r.get("pe") or 1e9, "dividend": lambda r: -(r.get("dividend_yield") or 0)}
 
 
+SECURITY_SETS = {"shares": {"ordinary", "share_class"}, "preference": {"preference"},
+                 "notes": {"note", "fund"}, "dollar_lines": {"usd_line"}, "all": None}
+
+
 def screener(snapshot: dict, exchange: Optional[str] = None, sector: Optional[str] = None,
              min_mcap_usd: Optional[float] = None, q: Optional[str] = None, include_stale: bool = False,
-             sort: str = "mcap", limit: int = 100, offset: int = 0, today: Optional[date] = None) -> dict:
-    """Filtered, sorted shares across every exchange; one page of `limit` rows from `offset`."""
+             sort: str = "mcap", limit: int = 100, offset: int = 0, today: Optional[date] = None,
+             securities: str = "shares") -> dict:
+    """Filtered, sorted listings across every exchange; one page of `limit` rows from `offset`. Ordinary shares by
+    default; `securities` = "preference", "notes" (notes, structured products and fund units) or "all"."""
     every = enrich(snapshot, today)
-    rows = every
+    wanted = SECURITY_SETS.get(securities, SECURITY_SETS["shares"])
+    rows = [r for r in every if wanted is None or r.get("security", "ordinary") in wanted]
     if exchange:
         rows = [r for r in rows if r["exchange"] == exchange]
     if sector:

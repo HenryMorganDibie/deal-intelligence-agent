@@ -40,6 +40,17 @@ def _fold_described(groups: dict[str, list[dict]]) -> dict[str, list[dict]]:
     return groups
 
 
+def company_key(name: str) -> str:
+    """One key per company however its name is written: case and legal suffixes are ignored ("Kasapreko PLC",
+    "Moniepoint Inc", "NCBA Group", "FIDO"), but a country stays ("MTN Nigeria" is not "MTN Group"). A name that
+    would shrink to a generic word or nothing keeps its full form ("Capital Group" is not "Capital")."""
+    strict = markets._strict_key(name)
+    words = strict.split()
+    if not strict or len(strict) < 3 or (len(words) == 1 and words[0] in deals_mod._GENERIC_TARGET_WORDS):
+        return deals_mod.normalise_name(name)
+    return strict
+
+
 def private_companies(deals: Iterable[dict]) -> list[dict]:
     """One row per company the deals database names as a transaction's target, newest activity first."""
     groups: dict[str, list[dict]] = {}
@@ -47,15 +58,18 @@ def private_companies(deals: Iterable[dict]) -> list[dict]:
         target = (d.get("target") or "").strip()
         if d.get("deal_type") not in _TARGET_TYPES or not target or target.lower().startswith("undisclosed"):
             continue
-        key = deals_mod.normalise_name(target)
+        key = company_key(target)
         if key:
             groups.setdefault(key, []).append(d)
     out = []
     for key, rows in _fold_described(groups).items():
         rows.sort(key=lambda d: d.get("announced") or "", reverse=True)
         latest = rows[0]
-        # The plainest spelling names the company ("Moniepoint", not "Billion-Dollar Fintech Moniepoint").
-        name = next((d["target"] for d in rows if deals_mod.normalise_name(d["target"]) == key), latest["target"])
+        # The plainest spelling names the company ("Moniepoint", not "Billion-Dollar Fintech Moniepoint"); among
+        # spellings of the plain name ("Kasapreko", "Kasapreko PLC"), the one used most, then the newest.
+        plain = [d["target"] for d in rows if company_key(d["target"]) == key]
+        counts = {n: plain.count(n) for n in plain}
+        name = max(plain, key=lambda n: (counts[n], -plain.index(n))) if plain else latest["target"]
         raised = [d for d in rows if d["deal_type"] in ("equity_funding", "debt_financing") and d.get("amount_usd")]
         marks = [d for d in rows if d.get("reported_valuation_usd") or d.get("implied_valuation_usd")]
         investors: list[str] = []
@@ -99,7 +113,7 @@ def event_companies(events: Iterable[dict]) -> list[dict]:
         name = named_company(e.get("headline_en") or e.get("headline") or "")
         if is_public_institution(name):
             continue                                    # the World Bank or a central bank is not a company
-        key = deals_mod.normalise_name(name)
+        key = company_key(name)
         if not name or not key or not e.get("country"):
             continue
         g = groups.setdefault(key, {"kind": "private", "key": key, "name": name, "country": e.get("country"),
@@ -114,7 +128,7 @@ def event_companies(events: Iterable[dict]) -> list[dict]:
 def curated_companies() -> list[dict]:
     """The curated list of African companies the product recognises in headlines."""
     from src.data.african_companies import AFRICAN_COMPANIES
-    return [{"kind": "private", "key": deals_mod.normalise_name(n), "name": n, "country": iso, "sector": None,
+    return [{"kind": "private", "key": company_key(n), "name": n, "country": iso, "sector": None,
              "deal_count": 0, "source": "curated list"} for n, iso in AFRICAN_COMPANIES.items() if iso]
 
 
@@ -123,7 +137,10 @@ def directory(snapshot: dict, deals: Iterable[dict], today: Optional[date] = Non
     """Listed and private companies in one list. A private record that matches a listing in its country (exact
     name or symbol) is folded into the listing as its transaction history. Companies known only from corporate
     events or the curated list follow, when they match nothing already listed."""
-    listed = [_listed_row(q) for q in markets.enrich(snapshot, today)]
+    # Companies, not every security: preference shares, notes, structured products, fund units and dollar lines
+    # are not more companies. A cross-listing stays, labelled secondary, so a country filter still finds it.
+    listed = [_listed_row(q) for q in markets.enrich(snapshot, today)
+              if q.get("security", "ordinary") in ("ordinary", "share_class")]
     by_key: dict[tuple[str, str], dict] = {}
     for row in listed:
         for k in {markets._strict_key(row["name"]), deals_mod.normalise_name(row["name"])}:
@@ -139,8 +156,8 @@ def directory(snapshot: dict, deals: Iterable[dict], today: Optional[date] = Non
                        investors=p["investors"])
         else:
             out.append(p)
-    known = {(deals_mod.normalise_name(r["name"]), r.get("country")) for r in out} | \
-            {deals_mod.normalise_name(r["name"]) for r in out}
+    known = {(k, r.get("country")) for r in out for k in (deals_mod.normalise_name(r["name"]), company_key(r["name"]))} | \
+            {k for r in out for k in (deals_mod.normalise_name(r["name"]), company_key(r["name"]))}
     for extra in [*event_companies(events), *curated_companies()]:
         k = extra["key"]
         if not k or k in known or (k, extra["country"]) in known or by_key.get((k, extra["country"])):

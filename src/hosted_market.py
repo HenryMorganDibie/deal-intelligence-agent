@@ -2435,12 +2435,13 @@ async def markets_screener(
     min_mcap_usd: Optional[float] = Query(None, ge=0), q: Optional[str] = Query(None, max_length=80),
     sort: Literal["mcap", "chg_1d", "ytd", "value", "name", "pe", "dividend"] = "mcap",
     include_stale: bool = False, limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0, le=100_000),
+    securities: Literal["shares", "preference", "notes", "dollar_lines", "all"] = "shares",
 ) -> dict:
-    """Shares across every exchange, filtered and sorted, one page at a time."""
+    """Listings across every exchange, filtered and sorted, one page at a time (ordinary shares by default)."""
     from src.engines import markets
     snap = await run_in_threadpool(_market_snapshot)
     return markets.screener(snap, exchange=exchange, sector=sector, min_mcap_usd=min_mcap_usd, q=q, sort=sort,
-                            include_stale=include_stale, limit=limit, offset=offset)
+                            include_stale=include_stale, limit=limit, offset=offset, securities=securities)
 
 
 @router.get("/api/markets/search")

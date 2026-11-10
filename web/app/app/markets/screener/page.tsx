@@ -100,8 +100,8 @@ function PrivateCompanies() {
 const SIZES: [string, string][] = [["", "Any size"], ["10000000", "$10m+"], ["100000000", "$100m+"],
   ["1000000000", "$1bn+"]];
 
-type Filters = { exchange: string; sector: string; min_mcap_usd: string; q: string; sort: string; include_stale: string };
-const EMPTY: Filters = { exchange: "", sector: "", min_mcap_usd: "", q: "", sort: "mcap", include_stale: "" };
+type Filters = { exchange: string; sector: string; min_mcap_usd: string; q: string; sort: string; include_stale: string; securities: string };
+const EMPTY: Filters = { exchange: "", sector: "", min_mcap_usd: "", q: "", sort: "mcap", include_stale: "", securities: "" };
 
 function toCsv(rows: Screener["rows"]): string {
   const head = ["exchange", "symbol", "name", "sector", "currency", "price", "chg_1d", "ytd", "ytd_usd", "mcap_usd", "date"];
@@ -204,6 +204,15 @@ export default function ScreenerPage() {
               {SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </Field>
+          <Field label="Securities">
+            <select value={f.securities} onChange={set("securities")} className="field">
+              <option value="">Ordinary shares</option>
+              <option value="preference">Preference shares</option>
+              <option value="notes">Notes, structured products and funds</option>
+              <option value="dollar_lines">US dollar lines</option>
+              <option value="all">Everything listed</option>
+            </select>
+          </Field>
           <Field label="Prices">
             <select value={f.include_stale} onChange={set("include_stale")} className="field">
               <option value="">Priced in the last week</option>
@@ -218,7 +227,7 @@ export default function ScreenerPage() {
       {view === "listed" && data && (
         <section className="mt-6">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[color:var(--dim)]">
-            <span>{data.total.toLocaleString()} shares</span>
+            <span>{data.total.toLocaleString()} {f?.securities && f.securities !== "dollar_lines" ? "listings" : "shares"}</span>
             <button onClick={download} disabled={exporting} className="underline-offset-4 hover:underline disabled:opacity-60">
               {exporting ? "Preparing CSV…" : `Download CSV (all ${data.total.toLocaleString()})`}
             </button>
