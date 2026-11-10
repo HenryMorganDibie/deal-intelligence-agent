@@ -35,6 +35,9 @@ export default function DealPage({ params }: { params: { id: string } }) {
       <Link href="/app/deals" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">
         ← All deals
       </Link>
+      <Link href={`/deals/${d.id}`} className="ml-4 text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">
+        Public page to share ↗
+      </Link>
       <div className="mt-4">
         <PageHeader eyebrow={`${words(d.deal_type)} · ${words(d.stage)}`} title={d.target ?? d.headline}>
           {d.headline}

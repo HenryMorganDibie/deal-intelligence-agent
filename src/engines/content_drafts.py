@@ -18,6 +18,7 @@ from datetime import date, timedelta
 from typing import Optional
 
 from src.data import africa_countries as ac
+from src.engines import deal_sanity
 
 APP = "https://deal-intelligence.app"
 X_LIMIT = 280
@@ -108,7 +109,8 @@ def source(d: dict) -> tuple[Optional[str], Optional[str]]:
 
 
 def deal_link(d: dict) -> str:
-    return f"{APP}/app/deals/{d['id']}"
+    """The deal's public page: readable without an account, so a shared link opens to the deal."""
+    return f"{APP}/deals/{d['id']}"
 
 
 def x_length(text: str) -> int:
@@ -205,11 +207,16 @@ def week_in_review(deals: list[dict], start: date, end: date) -> Optional[dict]:
 
 
 def build(deals: list[dict], today: date) -> dict:
-    """All of today's drafts. The daily window is yesterday and today (UTC), widened to three days when quiet."""
+    """All of today's drafts. The daily window is yesterday and today (UTC), widened to three days when quiet.
+    Deals the sanity checks flag are held out of every draft and listed for review instead."""
     window = in_window(deals, today - timedelta(days=1), today)
     label = "the last 24 hours"
     if len(window) < 2:
         window, label = in_window(deals, today - timedelta(days=3), today), "the last three days"
+    flagged = deal_sanity.review(window)
+    held_back = [{"id": d["id"], "summary": summary(d) or d.get("headline"), "reasons": flagged[d["id"]],
+                  "link": deal_link(d)} for d in ranked(window) if d["id"] in flagged]
+    window = [d for d in window if d["id"] not in flagged]
     drafts = []
     if window:
         drafts.append(deal_of_the_day(ranked(window)[0]))
@@ -217,9 +224,12 @@ def build(deals: list[dict], today: date) -> dict:
             drafts.append(r)
     if today.weekday() == 0:
         start, end = today - timedelta(days=7), today - timedelta(days=1)
-        if (w := week_in_review(in_window(deals, start, end), start, end)):
+        week = in_window(deals, start, end)
+        week_flags = deal_sanity.review(week)
+        if (w := week_in_review([d for d in week if d["id"] not in week_flags], start, end)):
             drafts.append(w)
-    return {"date": today.isoformat(), "window": label, "deals_in_window": len(window), "drafts": drafts}
+    return {"date": today.isoformat(), "window": label, "deals_in_window": len(window), "drafts": drafts,
+            "held_back": held_back}
 
 
 # ── Email ────────────────────────────────────────────────────────────────────
@@ -244,6 +254,18 @@ def render_email(result: dict) -> tuple[str, str, str]:
                 blocks.append(f'<p style="margin:10px 0 0;color:#5b6470;font-size:12px">{platform}{count}</p>'
                               f'<div style="{box}">{html.escape(d[key])}</div>')
                 text += [f"-- {platform}{count} --", d[key], ""]
+    held = result.get("held_back") or []
+    if held:
+        blocks.append(f'<h2 style="font-size:16px;margin:28px 0 4px">Held back for review ({len(held)})</h2>'
+                      '<p style="color:#5b6470;font-size:13px;margin:0 0 8px">These looked wrong to the automatic '
+                      'checks, so they are not in any draft. Open each to check it.</p>')
+        text += [f"== Held back for review ({len(held)}) ==", ""]
+        for h in held[:15]:
+            reasons = "; ".join(h["reasons"])
+            blocks.append(f'<p style="font-size:13px;margin:8px 0"><a href="{html.escape(h["link"])}">'
+                          f'{html.escape(h["summary"] or h["id"])}</a><br><span style="color:#5b6470">'
+                          f'{html.escape(reasons)}</span></p>')
+            text += [f"- {h['summary']}", f"  {reasons}", f"  {h['link']}", ""]
     body = (f'<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#14171c;max-width:640px">'
             f'<h1 style="font-size:20px">{html.escape(subject)}</h1><p>{html.escape(intro)}</p>{"".join(blocks)}'
             f'<p style="color:#5b6470;font-size:12px;margin-top:28px">Sent by Deal Intelligence to its owner. '

@@ -1826,6 +1826,7 @@ async def cron_content_drafts(request: Request, dry_run: bool = False) -> dict:
     if not sent["sent"]:
         log.error("content drafts email failed: %s", sent["error"])
     return {"date": result["date"], "drafts": len(result["drafts"]), "deals_in_window": result["deals_in_window"],
+            "held_back": len(result.get("held_back") or []),
             "sent": sent["sent"], "error": sent["error"]}
 
 
