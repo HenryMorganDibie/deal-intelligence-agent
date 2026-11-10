@@ -376,9 +376,11 @@ def events() -> list[dict]:
 
 
 def _country_or_404(code: str) -> ac.Country:
-    c = ac.get(code)
+    """A country from its ISO code ("NG", "ng", "NGA") or its name ("Nigeria", "Ivory Coast")."""
+    value = (code or "").strip()
+    c = ac.get(value) or (next(iter(ac.countries_in_text(value)), None) if len(value) > 3 else None)
     if c is None:
-        raise HTTPException(404, "Unknown country code. Use an ISO code such as NG, KE or SN.")
+        raise HTTPException(404, "Unknown country. Use a name such as Nigeria or an ISO code such as NG.")
     return c
 
 

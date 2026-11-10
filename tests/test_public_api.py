@@ -141,3 +141,11 @@ def test_country_names_are_accepted(metering, monkeypatch):
     monkeypatch.setattr(hm, "event_feed", fake_feed)
     TestClient(api.app).get("/v1/events?country=Ivory%20Coast", headers=auth())
     assert seen["country"] == "CI"
+
+
+def test_app_country_filters_accept_names_and_codes():
+    from src import hosted_market as hm
+    assert {hm._country_or_404(v).iso2 for v in ("NG", "ng", "NGA", "Nigeria", "nigeria")} == {"NG"}
+    assert hm._country_or_404("Ivory Coast").iso2 == "CI"
+    with pytest.raises(HTTPException):
+        hm._country_or_404("Nig")

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, Field, Loading, PageHeader, Pagination, Table, Td, usd, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
+import { AFRICAN_COUNTRIES } from "../../../../lib/countries";
 import { get } from "../../../../lib/market";
 import { asOf, companyHref, directoryHref, quoteWhen, pct, price, tone, type Directory, type Screener } from "../../../../lib/markets-data";
 
@@ -22,6 +23,8 @@ const PRIVATE_SORTS: [string, string][] = [["recent", "Latest activity"], ["rais
   ["size", "Latest valuation"], ["deals", "Most deals"], ["name", "Name"]];
 const SECTOR_GROUPS = ["Financials", "Telecom", "Technology", "Oil & Gas", "Utilities", "Health Care", "Agriculture",
   "Basic Materials", "Consumer Goods", "Consumer Services", "Industrials", "Real Estate"];
+
+const COUNTRY_NAME = new Map(AFRICAN_COUNTRIES);
 
 type PrivateFilters = { q: string; country: string; sector: string; sort: string };
 
@@ -51,7 +54,10 @@ function PrivateCompanies() {
           <input value={f.q} onChange={set("q")} placeholder="Company name" className="field" />
         </Field>
         <Field label="Country">
-          <input value={f.country} onChange={set("country")} placeholder="Nigeria or NG" className="field" />
+          <select value={f.country} onChange={set("country")} className="field">
+            <option value="">All countries</option>
+            {AFRICAN_COUNTRIES.map(([iso, name]) => <option key={iso} value={iso}>{name}</option>)}
+          </select>
         </Field>
         <Field label="Sector">
           <select value={f.sector} onChange={set("sector")} className="field">
@@ -74,7 +80,7 @@ function PrivateCompanies() {
             {data.rows.map((r) => (
               <tr key={r.name + (r.country ?? "")}>
                 <Td><Link href={directoryHref(r)} className="hover:underline">{r.name}</Link>{r.acquired ? <span className="block text-xs text-[color:var(--dim)]">acquired</span> : null}</Td>
-                <Td className="text-xs">{r.country ?? ""}</Td>
+                <Td className="text-xs">{COUNTRY_NAME.get(r.country ?? "") ?? r.country ?? ""}</Td>
                 <Td className="text-xs text-[color:var(--muted)]">{r.sector ?? ""}</Td>
                 <Td className="kbd">{r.deal_count}</Td>
                 <Td className="kbd">{r.equity_raised_usd ? usd(r.equity_raised_usd) : ""}</Td>
