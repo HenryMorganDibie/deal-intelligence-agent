@@ -1,5 +1,5 @@
 {
- "companies": 1792,
+ "companies": 1825,
  "method": "Confirmation: share of flags followed within 90 days by a confirming filing, disclosure or credible report. Moves: market-adjusted return over 10 calendar days after the flag (first close on or after day 10). Figures with fewer than 10 observations are reported as insufficient history; smaller groups are smoothed toward their parent rate with 5 pseudo-observations.",
  "observations": [
   [
@@ -82810,12 +82810,84 @@
    null,
    "executive_appointment",
    "africa"
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   false,
+   null,
+   "unspecified",
+   "africa"
+  ],
+  [
+   "m_and_a_activity",
+   "medium",
+   false,
+   false,
+   null,
+   "unspecified",
+   "africa"
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null,
+   "capital_raise",
+   "africa"
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null,
+   "strategic_review",
+   "africa"
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null,
+   "strategic_review",
+   "africa"
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   null,
+   null,
+   "strategic_review",
+   "africa"
+  ],
+  [
+   "m_and_a_activity",
+   "low",
+   false,
+   true,
+   null,
+   "unspecified",
+   "africa"
+  ],
+  [
+   "m_and_a_activity",
+   "medium",
+   false,
+   true,
+   null,
+   "unspecified",
+   "africa"
   ]
  ],
  "overall_confirmation": {
   "confirmed": 1337,
-  "labelled": 5970,
-  "rate": 0.224
+  "labelled": 5978,
+  "rate": 0.2237
  },
  "period": "2025-01-15 to 2026-06-15",
  "signals": {
@@ -84845,7 +84917,7 @@
       "capital_raise": {
        "confirmation": {
         "confirmed": 0,
-        "labelled": 29,
+        "labelled": 30,
         "rate": 0.0
        },
        "moves": {
@@ -84855,7 +84927,7 @@
         "p75": 1.04,
         "share_negative": 0.571
        },
-       "predictions": 29
+       "predictions": 30
       },
       "divestiture": {
        "confirmation": {
@@ -84929,8 +85001,8 @@
       "strategic_review": {
        "confirmation": {
         "confirmed": 1,
-        "labelled": 25,
-        "rate": 0.04
+        "labelled": 28,
+        "rate": 0.0357
        },
        "moves": {
         "median": 0.94,
@@ -84939,13 +85011,13 @@
         "p75": 8.82,
         "share_negative": 0.4
        },
-       "predictions": 25
+       "predictions": 28
       },
       "unspecified": {
        "confirmation": {
         "confirmed": 5,
-        "labelled": 285,
-        "rate": 0.0175
+        "labelled": 289,
+        "rate": 0.0173
        },
        "moves": {
         "median": 0.82,
@@ -84954,14 +85026,14 @@
         "p75": 4.73,
         "share_negative": 0.446
        },
-       "predictions": 285
+       "predictions": 289
       }
      },
      "type": {
       "confirmation": {
        "confirmed": 14,
-       "labelled": 670,
-       "rate": 0.0209
+       "labelled": 678,
+       "rate": 0.0206
       },
       "moves": {
        "median": 0.43,
@@ -84970,7 +85042,7 @@
        "p75": 4.12,
        "share_negative": 0.469
       },
-      "predictions": 670
+      "predictions": 678
      }
     },
     "us": {
@@ -85147,8 +85219,8 @@
     "low": {
      "confirmation": {
       "confirmed": 122,
-      "labelled": 1835,
-      "rate": 0.0665
+      "labelled": 1841,
+      "rate": 0.0663
      },
      "moves": {
       "median": 0.23,
@@ -85157,13 +85229,13 @@
       "p75": 3.54,
       "share_negative": 0.481
      },
-     "predictions": 1835
+     "predictions": 1841
     },
     "medium": {
      "confirmation": {
       "confirmed": 19,
-      "labelled": 223,
-      "rate": 0.0852
+      "labelled": 225,
+      "rate": 0.0844
      },
      "moves": {
       "median": 0.51,
@@ -85172,7 +85244,7 @@
       "p75": 4.41,
       "share_negative": 0.462
      },
-     "predictions": 223
+     "predictions": 225
     }
    },
    "by_subtype": {
@@ -85194,8 +85266,8 @@
     "capital_raise": {
      "confirmation": {
       "confirmed": 1,
-      "labelled": 43,
-      "rate": 0.0233
+      "labelled": 44,
+      "rate": 0.0227
      },
      "moves": {
       "median": 0.96,
@@ -85204,7 +85276,7 @@
       "p75": 3.42,
       "share_negative": 0.381
      },
-     "predictions": 43
+     "predictions": 44
     },
     "divestiture": {
      "confirmation": {
@@ -85284,8 +85356,8 @@
     "strategic_review": {
      "confirmation": {
       "confirmed": 11,
-      "labelled": 80,
-      "rate": 0.1375
+      "labelled": 83,
+      "rate": 0.1325
      },
      "moves": {
       "median": 0.27,
@@ -85294,14 +85366,14 @@
       "p75": 2.71,
       "share_negative": 0.444
      },
-     "predictions": 80
+     "predictions": 83
     }
    },
    "type": {
     "confirmation": {
      "confirmed": 222,
-     "labelled": 2443,
-     "rate": 0.0909
+     "labelled": 2451,
+     "rate": 0.0906
     },
     "moves": {
      "median": 0.29,
@@ -85310,7 +85382,7 @@
      "p75": 3.57,
      "share_negative": 0.474
     },
-    "predictions": 2443
+    "predictions": 2451
    }
   },
   "regulatory_action": {
