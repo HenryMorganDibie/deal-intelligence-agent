@@ -34,7 +34,7 @@ export function Hero({ pulse = null, brief = null }: { pulse?: Pulse | null; bri
         <div className="min-w-0">
           <Reveal>
             <a
-              href="#platform"
+              href="/platform"
               className="inline-flex items-center gap-2 rounded-full border hairline bg-white/[0.03] py-1 pl-1 pr-3 text-[0.8125rem] text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
             >
               <span className="rounded-full bg-verified/15 px-2 py-0.5 kbd text-[0.6875rem] text-verified">New</span>
