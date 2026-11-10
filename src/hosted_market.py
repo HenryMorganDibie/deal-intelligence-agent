@@ -1913,6 +1913,11 @@ def _reclassify_stored(existing: dict[str, dict], merged: dict[str, dict]) -> di
     return out
 
 
+_DESCRIPTIVE_TARGET_WORDS = {"label", "studio", "startup", "company", "firm", "business", "platform", "bank", "insurer",
+                             "lender", "fintech", "hospital", "miner", "brewery", "operator", "group", "unit", "stake",
+                             "subsidiary", "provider", "app", "network", "fund", "manager"}
+
+
 def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
     """Stored records that are two reports of one transaction (deals.strong_same_report): the fuller record
     keeps both reports' sources and the other points at it. A reviewer's decision stands."""
@@ -1942,6 +1947,11 @@ def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
                 keep, drop = (a, b) if fuller(a) >= fuller(b) else (b, a)
                 merged = deals_mod.merge(out.get(keep["id"], keep), out.get(drop["id"], drop))
                 merged["id"] = keep["id"]
+                # A kept target that is only a description ("Kenyan Label") takes the other report's real name
+                # ("Kenyan Label AI Records"); a real name is never swapped for a longer description.
+                kt, dt = deals_mod._name_tokens(merged.get("target")), deals_mod._name_tokens(drop.get("target"))
+                if dt > kt and not (kt - _DESCRIPTIVE_TARGET_WORDS - investors._DEMONYMS):
+                    merged["target"] = drop.get("target")
                 out[keep["id"]] = merged
                 out[drop["id"]] = {**out.get(drop["id"], drop), "merged_into": keep["id"]}
                 absorbed.add(drop["id"])

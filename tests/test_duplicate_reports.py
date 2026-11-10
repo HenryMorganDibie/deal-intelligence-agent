@@ -65,3 +65,14 @@ def test_a_sale_and_its_completed_acquisition_are_one_transaction():
     b = deal(target="Honeywell Flour Mills", buyer="FMN", announced="2022-04-30",
              headline="FMN completes acquisition of Honeywell Flour Mills")
     assert dm.strong_same_report(a, b)
+
+
+def test_the_more_specific_target_name_is_kept():
+    from src import hosted_market as hm
+    a = deal(id="a", target="Kenyan Label AI Records", buyer="UMG", announced="2018-03-05",
+             headline="UMG Buys Majority Stake in Kenyan Label AI Records")
+    b = deal(id="b", target="Kenyan Label", buyer="Universal Music Group", announced="2018-03-04",
+             headline="Universal Music Group Purchases Stake In Kenyan Label",
+             sources=[{"url": "x"}, {"url": "y"}])
+    out = hm._reclassify_stored({"a": a, "b": b}, {})
+    assert out["a"]["merged_into"] == "b" and out["b"]["target"] == "Kenyan Label AI Records"
