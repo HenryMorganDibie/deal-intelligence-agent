@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import re
+from difflib import SequenceMatcher
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
@@ -35,7 +36,33 @@ _SUFFIXED_NAME = re.compile(
     r"Telecom|Cement|Breweries|Petroleum|Energy|Mining|Resources|Industries|Motors|Foods|Capital)\b")
 _HEADLINE_VERBS = {"revokes", "fines", "suspends", "sanctions", "orders", "approves", "acquires", "appoints", "sues",
                    "probes", "charges", "bans", "warns", "names", "picks", "backs", "buys", "sells", "fined", "hits",
-                   "court", "regulator", "exclusive", "breaking", "update", "new", "why", "how", "after", "as"}
+                   "court", "regulator", "exclusive", "breaking", "update", "new", "why", "how", "after", "as",
+                   # People moving in or out of a company: "Yewande Olagbende Joins Solad Power Group Board".
+                   "joins", "leaves", "quits", "exits", "hires", "welcomes", "elects", "promotes", "retires",
+                   "launches", "signs", "secures", "wins", "raises", "partners", "completes", "announces",
+                   "invests", "targets", "rejects", "denies", "eyes", "plans", "says", "expands", "enters"}
+
+# Development lenders and public bodies: they act on companies but are not the corporate of a corporate event.
+# Matched loosely, so a misspelt headline ("Word Bank backs infrastructure fund") is still recognised.
+_INSTITUTION_NAMES = ("world bank", "international monetary fund", "international finance corporation",
+                      "african development bank", "afreximbank", "african export import bank",
+                      "european investment bank", "development bank of southern africa", "islamic development bank",
+                      "british international investment", "arab bank for economic development in africa",
+                      "central bank", "reserve bank", "african union", "united nations", "european union")
+
+
+def is_public_institution(name: Optional[str]) -> bool:
+    """A development lender or public body, allowing for a misspelling or a country prefix."""
+    key = re.sub(r"[^a-z ]+", " ", (name or "").lower())
+    key = " ".join(key.split())
+    if not key:
+        return False
+    if re.search(r"\b(?:central|reserve)\s+bank\b", key):
+        return True                                     # "Central Bank of Nigeria", "South African Reserve Bank"
+    if re.fullmatch(r"bank of (?:ghana|uganda|tanzania|botswana|mauritius|zambia|namibia|mozambique|algeria|"
+                    r"sierra leone|south sudan|sudan|eritrea|libya|cape verde|sao tome and principe)", key):
+        return True                                     # central banks named "Bank of <country>" ("Bank of Africa" is a bank)
+    return any(key == n or (len(key) >= 6 and SequenceMatcher(None, key, n).ratio() >= 0.88) for n in _INSTITUTION_NAMES)
 # "Intels' bid to restrain...", "Glo's licence": a possessive followed by something a company has.
 _CORPORATE_POSSESSION = re.compile(
     r"\b(?P<name>[A-Z][\w&.-]{2,})(?:['’]s?|['’])\s+(?:bid|licen[cs]e|shares|shareholders|appeal|suit|petition|"
@@ -106,8 +133,13 @@ def named_company(headline: str) -> Optional[str]:
         return m.group(0)
     if m := _SUFFIXED_NAME.search(text):
         words = m.group(0).split()
-        while len(words) > 1 and words[0].lower() in _HEADLINE_VERBS:
-            words.pop(0)                                # "Sudan Revokes Abu Dhabi Islamic Bank" -> the bank
+        # Keep what follows the last headline verb: "Sudan Revokes Abu Dhabi Islamic Bank" -> the bank,
+        # "Yewande Olagbende Joins Solad Power Group" -> Solad Power Group.
+        verbs = [i for i, w in enumerate(words) if w.lower() in _HEADLINE_VERBS]
+        if verbs:
+            words = words[verbs[-1] + 1:]
+        if len(words) < 2:
+            return None                                 # a bare "Group" or "Bank" names nobody
         return " ".join(words)
     m = _CORPORATE_POSSESSION.search(text)
     if m and not _PERSON_CUE.search(text):

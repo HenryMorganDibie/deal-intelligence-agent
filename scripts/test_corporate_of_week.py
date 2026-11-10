@@ -1,6 +1,6 @@
 from datetime import date
 
-from scripts.corporate_of_week import build, matched_events, score_deal, select_company
+from scripts.corporate_of_week import build, company_universe, matched_events, score_deal, select_company
 
 
 def test_matching_event_requires_company_name_in_headline():
@@ -214,3 +214,15 @@ def test_headline_words_places_institutions_and_foreign_buyers_are_not_companies
                "publisher": "News", "country": "NG"} for i, e in enumerate(events)]
     result = select_company(deals, events, date(2026, 10, 19), date(2026, 10, 25))
     assert [row["company"] for row in result["companies"]] == ["Geregu Power"]
+
+
+def test_universe_takes_the_company_not_the_headline_and_skips_misspelt_institutions():
+    events = [
+        {"headline": "Yewande Olagbende Joins Solad Power Group Board of Directors"},
+        {"headline": "Word Bank backs infrastructure fund to help Kenya ease debt pressure"},
+    ]
+    universe = company_universe([], [e["headline"] for e in events], events)
+    names = set(universe.values())
+    assert "Solad Power Group" in names
+    assert not any("Olagbende" in n for n in names)
+    assert "Word Bank" not in names

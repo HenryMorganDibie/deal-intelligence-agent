@@ -93,10 +93,12 @@ def _listed_row(q: dict) -> dict:
 def event_companies(events: Iterable[dict]) -> list[dict]:
     """Companies corporate events name (a results warning, a regulator's fine, a board change), one row each,
     with how many events and the latest; for companies that appear in no recorded transaction."""
-    from src.engines.event_filters import named_company
+    from src.engines.event_filters import is_public_institution, named_company
     groups: dict[str, dict] = {}
     for e in events:
         name = named_company(e.get("headline_en") or e.get("headline") or "")
+        if is_public_institution(name):
+            continue                                    # the World Bank or a central bank is not a company
         key = deals_mod.normalise_name(name)
         if not name or not key or not e.get("country"):
             continue

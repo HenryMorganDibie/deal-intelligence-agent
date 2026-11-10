@@ -18,7 +18,7 @@ from urllib.request import Request, urlopen
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.data.african_companies import AFRICAN_COMPANIES  # noqa: E402  (standard library only)
 from src.data.africa_countries import countries_in_text, regulator_acronyms  # noqa: E402
-from src.engines.event_filters import is_corporate_event, listed_names, named_company  # noqa: E402
+from src.engines.event_filters import is_corporate_event, is_public_institution, listed_names, named_company  # noqa: E402
 
 DEFAULT_API = "https://api.deal-intelligence.app"
 DEFAULT_OUTPUT = Path("web/data/corporate-of-week.json")
@@ -160,7 +160,8 @@ def company_universe(deals: list[dict], corpus: list[str], events: list[dict] | 
         if (n := named_company(str(event.get("headline") or ""))):
             named.setdefault(normalise(n), n)
     for key, name in named.items():
-        if key in out or is_generic_company(name) or INSTITUTIONS.match(name) or key in CURRENCIES \
+        if key in out or is_generic_company(name) or INSTITUTIONS.match(name) or is_public_institution(name) \
+                or key in CURRENCIES \
                 or key in _INSTITUTIONAL_NOUNS or all(w in _PLACE_WORDS for w in key.split()):
             continue
         if " " not in key and re.search(r"(?<![\w])" + re.escape(key) + r"(?![\w])", text):
@@ -168,7 +169,8 @@ def company_universe(deals: list[dict], corpus: list[str], events: list[dict] | 
         out[key] = name
     for key, n in counts.items():
         name = display[key]
-        if key in curated or is_generic_company(name) or INSTITUTIONS.match(name) or key in CURRENCIES \
+        if key in curated or is_generic_company(name) or INSTITUTIONS.match(name) or is_public_institution(name) \
+                or key in CURRENCIES \
                 or FOREIGN_MARKET.fullmatch(name.rstrip(".")) or key in _INSTITUTIONAL_NOUNS:
             continue
         words = key.split()
