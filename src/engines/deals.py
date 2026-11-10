@@ -560,6 +560,10 @@ def reclassify(deal: dict) -> Optional[dict]:
             # Same figure, wrong currency ("$16.7 million CAD" stored as US dollars).
             year = int(str(deal.get("announced") or "")[:4]) if str(deal.get("announced") or "")[:4].isdigit() else None
             parties_fix.update({"currency": cur, "amount_usd": to_usd(value, cur, year)})
+    if deal.get("deal_type") in ("equity_funding", "debt_financing") and (fix := beneficiary_target_fix(deal)):
+        if "excluded" in fix:
+            return fix
+        parties_fix.update(fix)
     change = _reclassify_type(deal, headline)
     return {**parties_fix, **(change or {})} if (parties_fix or change) else None
 
@@ -827,6 +831,42 @@ _APPROVAL_TAIL = re.compile(r"\s+(?:Cleared|Approved|Allowed|Authori[sz]ed|Permi
 
 def strip_approval_tail(name):
     return _APPROVAL_TAIL.sub("", name).strip() if isinstance(name, str) else name
+
+
+# A group of beneficiaries is not a company: "to extend loans to MSMEs", "to Support Local Businesses and SMEs".
+_SME_WORDS = re.compile(r"(?i)\b(?:m?smes?|msmes?|small\s+businesses)\b")
+_BENEFICIARY_TARGET = re.compile(r"(?i)\b(?:m?smes?|msmes?|small\s+businesses)\b|^(?:support|boost)\b")
+_GRANTED_TO = re.compile(r"\b(?i:grants?|extends?|lends?|gives?|awards?)\s+(?P<name>[A-Z][\w&'’.-]*(?:\s+[A-Z][\w&'’.-]*){0,3})"
+                         r"\s+(?:a\s+)?(?:[$€£₦]|US\$|USD|EUR)")
+_SUPPORTED_COMPANY = re.compile(r"(?i)^(?:support|boost)\s+(?P<name>.+\b(?:company|bank|corporation|plc|limited|ltd))\b")
+_RAISER = re.compile(r"^(?P<subj>.+?)\s+(?:raises|secures|closes|lands|bags|obtains|gets)\b", re.IGNORECASE)
+_NAMED_LOAN = re.compile(r"\bwith\s+\S+\s+(?P<name>[A-Z][\w&'’.-]*(?:\s+[A-Z][\w&'’.-]*){0,3})\s+(?:loan|facility|credit\s+line)\b")
+_LEAD_ENTITY = re.compile(r"^(?P<name>[A-Z][A-Z&.-]{2,})\s*:")
+
+
+def beneficiary_target_fix(deal: dict) -> Optional[dict]:
+    """A deal whose target is a group of beneficiaries ("MSMEs", "Support SMEs"): the company the headline names
+    (the raiser, a named borrower bank, or the entity a headline is filed under), else, with no company at all,
+    a development programme rather than a company transaction."""
+    target = (deal.get("target") or "").strip()
+    if not target or not _BENEFICIARY_TARGET.search(target):
+        return None
+    headline = deal.get("headline") or ""
+    m = _RAISER.match(headline)
+    name = _clean_name(m.group("subj")) if m else None
+    if not name and (m := _GRANTED_TO.search(headline)):
+        name = m.group("name")
+    if not name and (m := _SUPPORTED_COMPANY.match(target)):
+        name = m.group("name")
+    if not name and (m := _NAMED_LOAN.search(headline)):
+        name = m.group("name")
+    if not name and (m := _LEAD_ENTITY.match(headline)) and not countries_in_text(m.group("name")):
+        name = m.group("name")
+    if name and not _BENEFICIARY_TARGET.search(name):
+        return {"target": name}
+    if _SME_WORDS.search(target):
+        return {"excluded": "reclassified: a development programme for unnamed businesses, not a company transaction"}
+    return None                                         # "Boost mining sector": not ours to judge, left as is
 
 
 # "Moniepoint Gets Green Light to Acquire ...": the approval phrase is not the buyer.
@@ -2064,6 +2104,11 @@ def strong_same_report(a: dict, b: dict) -> bool:
             return False
     elif ta in ma and tb in ma:
         if gap > 3:
+            return False
+    elif {ta, tb} == {"equity_funding", "debt_financing"}:
+        # A round mixing equity and debt is often reported once as each; only with near-identical amounts.
+        ua0, ub0 = a.get("amount_usd"), b.get("amount_usd")
+        if gap > 3 or not (ua0 and ub0) or max(ua0, ub0) / min(ua0, ub0) > 1.1:
             return False
     else:
         return False

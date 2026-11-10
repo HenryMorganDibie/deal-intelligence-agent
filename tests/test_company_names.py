@@ -57,3 +57,26 @@ def test_an_approval_word_is_not_part_of_the_buyer():
     fix = deals_mod.reclassify({"deal_type": "acquisition", "buyer": "Batian Fund Cleared", "target": "Riverside Towers",
                                 "headline": "GenAfrica-Backed Batian Fund Cleared to Buy Riverside Towers in Nairobi"})
     assert fix == {"buyer": "Batian Fund"}
+
+
+@pytest.mark.parametrize("headline,target,expected", [
+    ("YC-backed fintech Numida raises $12.3M led by Serena Ventures to extend loans to MSMEs beyond Uganda", "MSMEs",
+     {"target": "Numida"}),
+    ("BII backs Côte d'Ivoire SMEs with €30m NSIA Banque loan", "Côte d'Ivoire SMEs", {"target": "NSIA Banque"}),
+    ("BDEAC: BADEA Extends €30 Million Loan to Support Central African SMEs", "Support Central African SMEs",
+     {"target": "BDEAC"}),
+    ("AfDB Approves USD4m Partial Credit Guarantee to Support Tanzania Mortgage Refinance Company",
+     "Support Tanzania Mortgage Refinance Company", {"target": "Tanzania Mortgage Refinance Company"}),
+    ("Zambia: African Development Bank Approves $20 Million Trade Finance Guarantee to Boost SMEs", "Boost SMEs",
+     {"excluded": "reclassified: a development programme for unnamed businesses, not a company transaction"}),
+    ("Mauritania: African Development Bank grants $150 million loan to Boost mining sector", "Boost mining sector", None),
+])
+def test_a_group_of_beneficiaries_is_not_the_company(headline, target, expected):
+    deal = {"deal_type": "debt_financing", "target": target, "headline": headline}
+    assert deals_mod.beneficiary_target_fix(deal) == expected
+
+
+def test_a_named_borrower_is_recovered_from_the_headline():
+    deal = {"deal_type": "debt_financing", "target": "Boost Output",
+            "headline": "Ogun: Afreximbank Grants Veenocks $81.9m Loan To Boost Output"}
+    assert deals_mod.beneficiary_target_fix(deal) == {"target": "Veenocks"}

@@ -76,3 +76,13 @@ def test_the_more_specific_target_name_is_kept():
              sources=[{"url": "x"}, {"url": "y"}])
     out = hm._reclassify_stored({"a": a, "b": b}, {})
     assert out["a"]["merged_into"] == "b" and out["b"]["target"] == "Kenyan Label AI Records"
+
+
+def test_a_mixed_equity_and_debt_round_reported_both_ways_is_one():
+    a = deal(deal_type="debt_financing", target="Numida", amount_usd=12_300_000, announced="2022-09-28",
+             headline="YC-backed fintech Numida raises $12.3M led by Serena Ventures to extend loans")
+    b = deal(deal_type="equity_funding", target="Numida", amount_usd=12_846_154, announced="2022-09-28",
+             headline="Numida secures $16.7 million CAD in Serena Ventures-led round")
+    assert dm.strong_same_report(a, b)
+    far = {**b, "amount_usd": 30_000_000}
+    assert not dm.strong_same_report(a, far)                     # amounts too far apart: two different raises
