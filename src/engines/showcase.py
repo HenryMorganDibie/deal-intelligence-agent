@@ -12,13 +12,14 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta
 from typing import Optional
 
-# (company, ticker, market label). A spread of US and African exchanges.
+# (company, ticker, market label). African companies across NGX, JSE and NSE Kenya, plus Jumia, which is
+# listed in New York and operates in Africa, so its SEC filings are covered too.
 COMPANIES: list[tuple[str, str, str]] = [
-    ("Intel", "INTC", "Nasdaq"),
+    ("Jumia", "JMIA", "NYSE"),
     ("Dangote Cement", "DANGCEM.LG", "NGX"),
     ("MTN Group", "MTN.JO", "JSE"),
     ("Safaricom", "SCOM.NR", "NSE Kenya"),
-    ("Boeing", "BA", "NYSE"),
+    ("Guaranty Trust Holding", "GTCO.LG", "NGX"),
     ("MTN Nigeria", "MTNN.LG", "NGX"),
     ("Naspers", "NPN.JO", "JSE"),
     ("Equity Group", "EQTY.NR", "NSE Kenya"),
@@ -117,6 +118,13 @@ def strength(summary: dict) -> tuple:
     """Order for choosing the brief to show: more severe, then higher alpha, then newer."""
     return (_SEVERITY_RANK.get(summary.get("severity") or "", 0) if summary.get("signal_count") else 0,
             summary.get("top_alpha") or 0, summary.get("created_at") or "")
+
+
+def current_only(summaries: list[dict]) -> list[dict]:
+    """Runs for companies still on the list, so a company taken off it stops appearing at once rather than
+    lingering until its old runs leave the lookback window."""
+    names = {c for c, _, _ in COMPANIES}
+    return [s for s in summaries if s.get("company") in names]
 
 
 def latest_per_company(summaries: list[dict]) -> list[dict]:

@@ -3,7 +3,7 @@ import { Container, Heading, Reveal, Section } from "./primitives";
 
 const words = (v: string | null | undefined) => (v ? v.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase()) : "n/a");
 
-/** An excerpt of a real brief: the latest showcase run when there is one, else a Boeing run of 13 Oct 2026. */
+/** An excerpt of a real brief: the latest showcase run when there is one, else the Dangote Cement run of 6 Nov 2026. */
 export function Example({ brief = null }: { brief?: ShowcaseBrief | null }) {
   const live = brief && brief.created_at ? brief : null;
   const sig = live?.signals[0];
@@ -19,20 +19,20 @@ export function Example({ brief = null }: { brief?: ShowcaseBrief | null }) {
         [`Skipped, not about ${live.company}`, String(live.off_target ?? "n/a")],
       ]
     : [
-        ["Company", "Boeing"],
-        ["Ticker", "BA"],
-        ["Severity", "MEDIUM"],
-        ["Top alpha", "65.1 / 100"],
-        ["Liquidity", "Large cap"],
+        ["Company", "Dangote Cement"],
+        ["Ticker", "DANGCEM.LG · NGX"],
+        ["Severity", "HIGH"],
+        ["Top alpha", "78.5 / 100"],
+        ["Liquidity", "Mid cap"],
         ["Systemic risk", "Isolated"],
-        ["Sources reviewed", "62"],
-        ["Skipped, not about Boeing", "21"],
+        ["Sources reviewed", "66"],
+        ["Skipped, not about Dangote Cement", "13"],
       ];
-  const file = `brief-${(live?.company ?? "Boeing").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.md`;
-  const date = live ? shortDate(live.created_at) : "13 Oct 2026";
+  const file = `brief-${(live?.company ?? "Dangote Cement").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.md`;
+  const date = live ? shortDate(live.created_at) : "6 Nov 2026";
   const lede = !live
-    ? "An excerpt from a live run, with no LLM configured. The brief still arrives: the narrative falls back to the deterministic findings, says so, and asks for human review."
-    : "An excerpt from this week's runs, regenerated every day on a fixed list of US and African companies. Every signal, source and review flag below was decided by the rule engine; the full brief adds the model-written narrative.";
+    ? "An excerpt from a showcase run on Dangote Cement. Every signal, source and review flag below was decided by the rule engine; the full brief adds the model-written narrative."
+    : "An excerpt from this week's runs, regenerated every day on a fixed list of African companies. Every signal, source and review flag below was decided by the rule engine; the full brief adds the model-written narrative.";
   return (
     <Section id="example" labelledBy="example-title">
       <Container>
@@ -115,15 +115,15 @@ export function Example({ brief = null }: { brief?: ShowcaseBrief | null }) {
                   </>
                 ) : (
                   <>
-                    <p className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-verified">Signal 1 · Leadership change · Medium</p>
+                    <p className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-verified">Signal 1 · Insider activity · High</p>
                     <p className="mt-3 text-[1rem] leading-relaxed">
-                      Item 5.02: Departure or Appointment of Directors or Certain Officers
+                      DANGCEM: DirectorsDealings: Notification of Insider Dealing - Omode Emmanuel Oladimeji
                     </p>
-                    <p className="kbd mt-1 text-[0.75rem] text-[color:var(--dim)]">SEC EDGAR · Form 8-K · credibility 1.00</p>
+                    <p className="kbd mt-1 text-[0.75rem] text-[color:var(--dim)]">NGX Disclosure · 1.00 credibility</p>
                     <div className="mt-5 rounded-[10px] border border-risk/25 bg-risk/[0.05] p-4">
                       <p className="kbd text-[0.6875rem] uppercase tracking-[0.12em] text-risk">⚑ Human review required before acting</p>
                       <p className="mt-2 text-[0.875rem] text-[color:var(--muted)]">
-                        LLM narrative synthesis unavailable. 1 signal was confirmed by the deterministic engine and is listed below.
+                        Insider Activity: Alpha score 78 ≥ threshold 70
                       </p>
                     </div>
                   </>

@@ -54,7 +54,7 @@ export function Coverage() {
           id="coverage-title"
           title={
             <>
-              Built for US and African markets,{" "}
+              Built for African markets,{" "}
               <span className="text-[color:var(--muted)]">from the exchanges&apos; own records.</span>
             </>
           }

@@ -130,7 +130,7 @@ export default async function Image() {
               <span>you can audit.</span>
             </div>
             <div style={{ display: "flex", marginTop: 22, fontSize: 24, lineHeight: 1.4, color: C.muted, width: 520 }}>
-              Private-market deals, company signals and country risk across Africa and the US. Every number traces to a source.
+              Private-market deals, company signals and country risk across all 54 African countries. Every number traces to a source.
             </div>
           </div>
 

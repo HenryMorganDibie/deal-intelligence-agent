@@ -83,7 +83,7 @@ export function SiteFooter() {
             Deal Intelligence
           </a>
           <p className="mt-4 max-w-xs text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">
-            Deal intelligence for African and US markets. Research tooling, not investment advice.
+            Deal intelligence for African markets. Research tooling, not investment advice.
           </p>
         </div>
         {cols.map((c) => (

@@ -11,10 +11,10 @@ import { addToHistory, readHistory, removeFromHistory, type HistoryItem } from "
 import { get } from "../../lib/market";
 
 const EXAMPLES = [
-  { company: "Intel", ticker: "INTC" },
-  { company: "Boeing", ticker: "BA" },
+  { company: "MTN Nigeria", ticker: "MTNN.LG" },
+  { company: "Safaricom", ticker: "SCOM.NR" },
   { company: "Naspers", ticker: "NPN.JO" },
-  { company: "GTBank", ticker: "GTCO.LG" },
+  { company: "Jumia", ticker: "JMIA" },
 ];
 
 type RecentMarketBrief = { id: string; title: string; created_at: string; scope_label: string; period_start: string; period_end: string; transaction_count: string | number };
@@ -114,9 +114,9 @@ export default function Dashboard() {
           Analyse a company.
         </h1>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
-          US companies are matched to SEC EDGAR by name or ticker. For African listings, add the exchange suffix: .JO
-          (JSE), .LG (NGX) or .NR (NSE Kenya). For any of the 54 African countries, add the country code so news is
-          searched in that country&apos;s own edition and languages.
+          For African listings, add the exchange suffix: .JO (JSE), .LG (NGX) or .NR (NSE Kenya). For any of the 54
+          African countries, add the country code so news is searched in that country&apos;s own edition and languages.
+          Companies listed or reporting in the US, such as Jumia, are matched to their SEC filings by name or ticker.
         </p>
 
         {running ? (

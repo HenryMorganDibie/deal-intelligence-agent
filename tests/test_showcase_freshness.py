@@ -28,3 +28,8 @@ def test_falls_back_to_all_runs_when_the_latest_day_has_no_findings():
 def test_unparseable_dates_leave_the_list_unchanged():
     runs = [{"company": "X", "created_at": None, "signal_count": 1}]
     assert showcase.freshest(runs) == runs
+
+
+def test_companies_taken_off_the_list_stop_appearing():
+    runs = [{"company": "Intel"}, {"company": "MTN Nigeria"}, {"company": "Jumia"}]
+    assert [r["company"] for r in showcase.current_only(runs)] == ["MTN Nigeria", "Jumia"]

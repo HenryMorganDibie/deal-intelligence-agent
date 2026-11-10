@@ -6,12 +6,12 @@ import { SIGNAL_TYPE, label, moveRange, shortDate, type ShowcaseBrief } from "..
 /**
  * Hero product visual: a brief assembling itself, step by step. With a showcase brief
  * (the pipeline run daily on a fixed company list) every figure comes from that run;
- * without one, the figures below are from a run on Intel on 13 Oct 2026.
+ * without one, the figures below are from the showcase run on MTN Nigeria on 1 Nov 2026.
  */
 const FALLBACK_STEPS = [
-  { label: "Collect", detail: "4 SEC filings · 70 news items" },
-  { label: "Rule engine", detail: "2 candidates · 10 off-target skipped" },
-  { label: "Attribute", detail: "1 story about another company dropped" },
+  { label: "Collect", detail: "9 filings · 67 news items" },
+  { label: "Rule engine", detail: "5 candidates · 18 off-target skipped" },
+  { label: "Attribute", detail: "every story names the company" },
   { label: "Score", detail: "alpha + evidence quality" },
   { label: "Brief", detail: "human review required" },
 ];
@@ -20,16 +20,16 @@ const FALLBACK_SIGNALS = [
   {
     type: "Insider activity",
     sev: "HIGH",
-    move: "-3.0% to +1.0%",
-    text: "Form 4: open-market purchase of 105,263 shares ($10.0M) by the CEO",
-    source: "SEC EDGAR · Form 4",
+    move: "-2.5% to +3.5%",
+    text: "MTNN: DirectorsDealings: Notification of Share Dealing by Insider - Moses Oyerinde",
+    source: "NGX Disclosure · 1.00 credibility",
   },
   {
-    type: "Earnings surprise",
-    sev: "CRITICAL",
-    move: "-2.2% to +0.9%",
-    text: "Intel forecast crushes estimates as AI boom boosts chip demand",
-    source: "Reuters · 0.95 credibility",
+    type: "Leadership change",
+    sev: "MEDIUM",
+    move: "-2.8% to +3.1%",
+    text: "MTN Nigeria Communications PLC: exit of Mrs. Eyitope Kola-Oyeneyin from the Board",
+    source: "NGX Disclosure · 1.00 credibility",
   },
 ];
 
@@ -53,8 +53,8 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 function view(b: ShowcaseBrief | null | undefined): View {
   if (!b || !b.signal_count) {
     return {
-      date: "13 Oct 2026",
-      command: "python main.py analyse --company Intel --ticker INTC",
+      date: "1 Nov 2026",
+      command: 'python main.py analyse --company "MTN Nigeria" --ticker MTNN.LG',
       steps: FALLBACK_STEPS,
       signals: FALLBACK_SIGNALS,
       dropped: null, // Static fallback headlines have no live source/date validation.
