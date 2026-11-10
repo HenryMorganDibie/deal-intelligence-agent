@@ -1,0 +1,95 @@
+from datetime import date
+
+import pytest
+from fastapi.testclient import TestClient
+
+from src import hosted_market as hm
+from src.engines import content_drafts as cd
+
+TODAY = date(2026, 11, 10)          # a Tuesday
+
+
+def deal(i, **kw):
+    base = {"id": f"d{i}", "announced": "2026-11-09", "country": "NG", "deal_type": "equity_funding",
+            "target": f"Company {i}", "amount_usd": 1e6 * i, "round": "Series A", "investors": ["Partech", "TLcom"],
+            "sources": [{"url": f"https://news.example/{i}", "publisher": "TechCabal", "date": "2026-11-09"}]}
+    return {**base, **kw}
+
+
+def test_sentences_use_only_stored_facts():
+    assert cd.summary(deal(1, lead_investors=["Partech"])) == "Company 1 raised $1M Series A round, led by Partech"
+    assert cd.summary(deal(2, deal_type="acquisition", buyer="MTN", target="Ayoba", stake_pct=None,
+                           amount_usd=None)) == "MTN acquired Ayoba"
+    assert cd.summary(deal(3, deal_type="exit", seller="Helios", target="Vivo Energy", buyer="Vitol", stake_pct=40,
+                           amount_usd=2.3e9)) == "Helios sold its 40% stake in Vivo Energy to Vitol for $2.3B"
+    assert cd.summary(deal(4, deal_type="acquisition", buyer=None)) is None      # missing parties: no post
+    assert cd.money(12_500_000) == "$12.5M" and cd.money(None) is None
+
+
+def test_daily_drafts_lead_with_the_largest_deal_and_fit_on_x():
+    out = cd.build([deal(1), deal(9, target="Moniepoint"), deal(3), deal(5, announced="2026-10-01")], TODAY)
+    kinds = [d["kind"] for d in out["drafts"]]
+    assert kinds == ["Deal of the day", "Roundup"] and out["deals_in_window"] == 3
+    top = out["drafts"][0]
+    assert top["deal_ids"] == ["d9"] and "Moniepoint raised $9M" in top["linkedin"]
+    assert "https://news.example/9" in top["linkedin"]
+    for d in out["drafts"]:
+        assert d["x"] is None or cd.x_length(d["x"]) <= cd.X_LIMIT
+        assert "—" not in d["linkedin"] and "—" not in (d["x"] or "")
+
+
+def test_monday_adds_the_week_in_review():
+    week = [deal(i, announced=f"2026-11-0{i + 2}", investors=["Partech"]) for i in range(1, 6)]
+    out = cd.build(week, date(2026, 11, 9))
+    review = next(d for d in out["drafts"] if d["kind"] == "Week in review")
+    assert "5 deals tracked, $15M disclosed" in review["linkedin"] and "Partech (5 deals)" in review["linkedin"]
+
+
+def test_quiet_days_widen_the_window_then_send_nothing():
+    assert cd.build([deal(1, announced="2026-11-07")], TODAY)["window"] == "the last three days"
+    out = cd.build([], TODAY)
+    assert out["drafts"] == [] and "no new deals" in cd.render_email(out)[0]
+
+
+def test_email_escapes_and_labels_each_platform():
+    subject, body, text = cd.render_email(cd.build([deal(1, target="A&B <Co>"), deal(2)], TODAY))
+    assert "2 ready" in subject and "A&amp;B &lt;Co&gt;" in body and "LinkedIn" in text and "-- X (" in text
+
+
+@pytest.fixture
+def cron(monkeypatch):
+    monkeypatch.setattr(hm, "_authorized_cron", lambda r: True)
+    monkeypatch.setattr(hm, "deals", lambda: [deal(1), deal(2)])
+    sent = []
+
+    async def fake_send(client, to, subject, body, text, unsubscribe, key, **kw):
+        sent.append((to, subject, key))
+        return {"sent": True, "status": 200, "error": None}
+    monkeypatch.setattr(hm.email_alerts, "send", fake_send)
+    return sent
+
+
+def client():
+    from fastapi import FastAPI
+    app = FastAPI()
+    app.include_router(hm.router)
+    return TestClient(app)
+
+
+def test_nothing_is_sent_without_a_recipient(cron, monkeypatch):
+    monkeypatch.delenv("CONTENT_DRAFTS_TO", raising=False)
+    r = client().get("/api/cron/content-drafts")
+    assert r.status_code == 200 and r.json()["sent"] is False and cron == []
+
+
+def test_sends_once_per_day_to_the_configured_owner(cron, monkeypatch):
+    monkeypatch.setenv("CONTENT_DRAFTS_TO", "owner@example.com")
+    r = client().get("/api/cron/content-drafts")
+    assert r.json()["sent"] is True and cron[0][0] == "owner@example.com"
+    client().get("/api/cron/content-drafts")
+    assert cron[0][2] == cron[1][2]          # same idempotency key: the provider delivers it once
+
+
+def test_requires_a_scheduled_caller(monkeypatch):
+    monkeypatch.setattr(hm, "_authorized_cron", lambda r: False)
+    assert client().get("/api/cron/content-drafts").status_code == 401

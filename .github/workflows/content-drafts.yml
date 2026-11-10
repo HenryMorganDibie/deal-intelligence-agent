@@ -1,0 +1,35 @@
+name: Post drafts
+
+# Each morning, after the 04:11 UTC deal ingestion, asks the API to email the owner LinkedIn and X post drafts built
+# from the newest deals. It runs on Vercel (where the email key and the recipient address are kept) and takes about
+# a second of function time. Nothing is posted anywhere; the owner publishes by hand.
+on:
+  schedule:
+    - cron: "41 5 * * *"      # 06:41 in Lagos, 08:41 in Nairobi
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: content-drafts
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Email today's drafts
+        run: |
+          set -euo pipefail
+          oidc="$(curl --fail-with-body --silent --show-error --max-time 15 \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api" | jq -er '.value')"
+          echo "::add-mask::${oidc}"
+          out="$(curl --fail-with-body --silent --show-error --max-time 120 \
+            -H "Authorization: Bearer ${oidc}" -H "Accept: application/json" \
+            "https://api.deal-intelligence.app/api/cron/content-drafts")"
+          echo "$out" | jq .
+          echo "$out" | jq -e '.sent == true or .drafts == 0' > /dev/null

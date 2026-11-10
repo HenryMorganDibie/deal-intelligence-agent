@@ -101,6 +101,7 @@ def _authorized_cron(request: Request) -> bool:
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/enrich-round-investors.yml@refs/heads/main",
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/market-snapshot.yml@refs/heads/main",
             "HenryMorganDibie/deal-intelligence-agent/.github/workflows/market-intraday.yml@refs/heads/main",
+            "HenryMorganDibie/deal-intelligence-agent/.github/workflows/content-drafts.yml@refs/heads/main",
         }
         return (
             claims.get("repository") == "HenryMorganDibie/deal-intelligence-agent"
@@ -1803,6 +1804,30 @@ async def evaluation() -> dict:
 
 
 # ── Scheduled rolling ingestion ──────────────────────────────────────────────
+
+@router.get("/api/cron/content-drafts")
+async def cron_content_drafts(request: Request, dry_run: bool = False) -> dict:
+    """Email the owner today's social post drafts, built from the deal database (engines/content_drafts).
+
+    The recipient is CONTENT_DRAFTS_TO, kept in the API's environment and never in the code; unset, nothing is
+    sent. One email per day: a repeated run reuses the day's idempotency key, so it is never delivered twice."""
+    if not _authorized_cron(request):
+        raise HTTPException(status_code=401, detail="Scheduled workflow authorization required.")
+    from src.engines import content_drafts
+    result = content_drafts.build(deals(), datetime.now(timezone.utc).date())
+    to = os.environ.get("CONTENT_DRAFTS_TO", "").strip()
+    if dry_run or not to:
+        return {**result, "sent": False, "reason": "dry run" if dry_run else "CONTENT_DRAFTS_TO is not set"}
+    subject, body, text = content_drafts.render_email(result)
+    async with httpx.AsyncClient() as client:
+        sent = await email_alerts.send(client, to, subject, body, text, None,
+                                       email_alerts.idempotency_key(f"content-drafts-{result['date']}", "owner"),
+                                       tags=["content-drafts"])
+    if not sent["sent"]:
+        log.error("content drafts email failed: %s", sent["error"])
+    return {"date": result["date"], "drafts": len(result["drafts"]), "deals_in_window": result["deals_in_window"],
+            "sent": sent["sent"], "error": sent["error"]}
+
 
 @router.get("/api/cron/country-snapshot")
 async def cron_country_snapshot(request: Request) -> dict:
