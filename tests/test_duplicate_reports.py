@@ -97,8 +97,9 @@ def test_an_lp_commitment_and_the_fund_close_are_one_deal():
           "currency": "USD", "amount_usd": 37.5e6, "countries": ["EG"], "investors": ["EIB"],
           "headline": "EIB invests $37.5m in Tanmiya fund as it reaches $130m close"}
     assert dm.strong_same_report(close, lp) and dm.strong_same_report(lp, close)
-    other = {**lp, "headline": "EIB invests $37.5m in Tanmiya fund"}           # no close size named: kept apart
-    assert not dm.strong_same_report(close, other)
+    # Without the close size, an LP's commitment to the same house's fund within weeks is still part of the close.
+    other = {**lp, "headline": "EIB invests $37.5m in Tanmiya fund"}
+    assert dm.strong_same_report(close, other)
 
 
 def test_a_figure_is_never_a_party():

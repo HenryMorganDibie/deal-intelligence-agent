@@ -2240,6 +2240,14 @@ def _party_match(x, y):
             return True
     return False
 
+_LP_COMMITMENT = re.compile(r"(?i)\b(?:commits?|committed|invests?|invested|anchors?|anchored)\s+(?:\S+\s+){0,3}?"
+                            r"(?:in|into|to)\b|\bsecures?\s+(?:\S+\s+){1,3}?from\s+[A-Z]")
+
+
+def _lp_commitment(headline: Optional[str]) -> bool:
+    return bool(_LP_COMMITMENT.search(headline or ""))
+
+
 def _close_stage(headline: Optional[str]) -> Optional[str]:
     m = re.search(r"(?i)\b(first|second|third|final|interim|hard)\s+close\b", headline or "")
     return m.group(1).lower() if m else None
@@ -2280,6 +2288,14 @@ def _same_fund_close(a: dict, b: dict, gap: int) -> Optional[bool]:
     ha, hb = normalise_name(a.get("headline")), normalise_name(b.get("headline"))
     if ha and ha == hb:
         return True
+    # One LP's commitment ("Proparco commits $5m to Novastar fund", "Fund II secures $12m from Proparco") beside
+    # the fund's own raise by the same house is part of that raise.
+    la, lb = _lp_commitment(a.get("headline")), _lp_commitment(b.get("headline"))
+    if la != lb:
+        lp, fund = (a, b) if la else (b, a)
+        ul, uf = lp.get("amount_usd"), fund.get("amount_usd")
+        if ul and uf and uf >= ul * 1.5 and gap <= 120 and _fund_brand_match(a, b):
+            return True
     sa, sb = _close_stage(a.get("headline")), _close_stage(b.get("headline"))
     if sa and sb and sa != sb:
         return False

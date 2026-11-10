@@ -94,3 +94,23 @@ def test_merged_closes_show_the_manager_and_keep_the_fund_name():
     assert hm._fund_house_name("Africa Credit Opps Fund", "Ninety One") == {"target": "Ninety One", "fund_name": "Africa Credit Opps Fund"}
     assert hm._fund_house_name("Aqua-Spark", "Aqua-Spark Africa")["target"] == "Aqua-Spark"
     assert hm._fund_house_name("CFM", "Climate Fund Managers")["target"] == "Climate Fund Managers"
+
+
+@pytest.mark.parametrize("lp, fund", [
+    (r("Tanmiya Capital", "2026-10-28", 37.5e6, "EIB invests $37.5m in Tanmiya Capital Fund II to support Egyptian SMEs"),
+     r("Tanmiya Capital", "2026-10-26", 130e6, "Tanmiya Capital closes second Egypt growth fund at $130m, backed by $37.5m EIB commitment")),
+    (r("Novastar fund", "2026-04-29", 5e6, "Proparco commits $5m to Novastar fund"),
+     r("Novastar Ventures", "2026-03-31", 147e6, "Novastar Ventures closes $147 million fund for African startups")),
+    (r("Adenia Entrepreneurial Fund I", "2026-03-27", 16.3e6, "DEG commits €15m to Adenia Entrepreneurial Fund I", cur="EUR", amt=15e6),
+     r("Adenia Partners", "2026-03-19", 180e6, "Adenia Partners completes $180m first close for African SME-focused fund")),
+    (r("Acumen Resilient Agriculture Fund II", "2026-07-27", 12e6, "Acumen Resilient Agriculture Fund II secures $12m from Proparco"),
+     r("Acumen", "2026-07-16", 90e6, "Acumen Raises USD 90 M For Africa Climate-Resilient Agriculture Fund")),
+])
+def test_an_lp_commitment_folds_into_the_fund_raise(lp, fund):
+    assert d.strong_same_report(lp, fund) and d.strong_same_report(fund, lp)
+
+
+def test_two_funds_of_one_house_stay_apart():
+    a = r("AfricInvest", "2022-05-26", 411e6, "AfricInvest secures $411 million for its AfricInvest Fund IV")
+    b = r("AfricInvest", "2022-07-19", 119.6e6, "AfricInvest and Cathay Innovation reach final close of Pan-African fund at €110M", cur="EUR", amt=110e6)
+    assert not d.strong_same_report(a, b)
