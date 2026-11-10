@@ -32,7 +32,11 @@ DEAL_TYPES = ("acquisition", "merger", "equity_funding", "debt_financing", "fund
 # ── Amounts ───────────────────────────────────────────────────────────────────
 
 _CURRENCY_SYMBOLS = {
-    "us$": "USD", "usd": "USD", "$": "USD", "€": "EUR", "eur": "EUR", "£": "GBP", "gbp": "GBP",
+    "us$": "USD", "usd": "USD", "$": "USD",
+    "ca$": "CAD", "c$": "CAD", "cad": "CAD", "canadian dollar": "CAD", "canadian dollars": "CAD",
+    "au$": "AUD", "a$": "AUD", "aud": "AUD", "australian dollar": "AUD", "australian dollars": "AUD",
+    "nz$": "NZD", "new zealand dollar": "NZD", "new zealand dollars": "NZD", "hk$": "HKD", "hong kong dollar": "HKD",
+    "hong kong dollars": "HKD", "s$": "SGD", "singapore dollar": "SGD", "singapore dollars": "SGD", "€": "EUR", "eur": "EUR", "£": "GBP", "gbp": "GBP",
     "₦": "NGN", "n": "NGN", "ngn": "NGN", "naira": "NGN",
     "ksh": "KES", "kshs": "KES", "kes": "KES", "sh": "KES",
     "r": "ZAR", "zar": "ZAR", "rand": "ZAR",
@@ -51,10 +55,10 @@ _MULTIPLIERS = {
     "bn": 1e9, "b": 1e9, "billion": 1e9, "billions": 1e9, "milliard": 1e9, "milliards": 1e9,
     "mil milhões": 1e9, "trillion": 1e12, "tn": 1e12,
 }
-_PREFIX_CUR = r"(?P<pc>US\$|USD|\$|€|EUR|£|GBP|₦|N(?=\d)|NGN|KSh?s?|KES|R(?=\s?\d)|ZAR|GH₵|GHS|GHC|EGP|E£|LE|MAD|CFA|FCFA|XOF|XAF|TZS|UGX|RWF|ETB|ZMW|BWP|MUR|AOA|Kz|MZN|TND|DZD|NAD)"
+_PREFIX_CUR = r"(?P<pc>US\$|CA\$|C\$|AU\$|A\$|NZ\$|HK\$|S\$|CAD|AUD|USD|\$|€|EUR|£|GBP|₦|N(?=\d)|NGN|KSh?s?|KES|R(?=\s?\d)|ZAR|GH₵|GHS|GHC|EGP|E£|LE|MAD|CFA|FCFA|XOF|XAF|TZS|UGX|RWF|ETB|ZMW|BWP|MUR|AOA|Kz|MZN|TND|DZD|NAD)"
 _NUMBER = r"(?P<num>\d{1,3}(?:[,\s]\d{3})+(?:\.\d+)?|\d+(?:[.,]\d+)?)"
 _MULT = r"(?P<mult>trillion|billions?|millions?|milliards?|mil\s+milhões|milhões|milhoes|thousand|bn|mln|mn|tn|[mbk])\b"
-_SUFFIX_CUR = r"(?P<sc>naira|rand|cedis|dirhams|egyptian\s+pounds|birr|kwacha|pula|kwanza|meticais|FCFA|CFA|USD|EUR|dollars?|euros?|\$)"
+_SUFFIX_CUR = r"(?P<sc>(?:canadian|australian|new\s+zealand|hong\s+kong|singapore)\s+dollars?|CAD|AUD|naira|rand|cedis|dirhams|egyptian\s+pounds|birr|kwacha|pula|kwanza|meticais|FCFA|CFA|USD|EUR|dollars?|euros?|\$)"
 _AMOUNT_PREFIXED = re.compile(rf"(?<![\w.]){_PREFIX_CUR}\s?{_NUMBER}\s?(?:{_MULT})?", re.IGNORECASE)
 _AMOUNT_SUFFIXED = re.compile(rf"{_NUMBER}\s?{_MULT}\s*(?:de\s+|d['’]\s*)?{_SUFFIX_CUR}", re.IGNORECASE)
 
@@ -135,6 +139,8 @@ def parse_amounts(text: str) -> list[tuple[float, str]]:
             cur = _CURRENCY_SYMBOLS.get(re.sub(r"\s+", " ", cur_raw))
         if not cur:
             continue
+        if cur == "USD":
+            cur = _other_dollar(text, m.start(), m.end()) or cur
         # A bare number with no multiplier is a price or a count, not a deal size.
         if not mult and value < 100_000:
             continue
@@ -142,10 +148,38 @@ def parse_amounts(text: str) -> list[tuple[float, str]]:
     return out
 
 
+# "$16.7 million CAD", "C$2m", "A$54m", "20 million Australian dollars": a dollar that is not the US dollar.
+_OTHER_DOLLAR_AFTER = re.compile(r"(?i)^\s*(?:\(|\s)?(CAD|AUD|NZD|HKD|SGD|Canadian\s+dollars?|Australian\s+dollars?|"
+                                 r"New\s+Zealand\s+dollars?|Hong\s+Kong\s+dollars?|Singapore\s+dollars?)\b")
+_OTHER_DOLLAR_BEFORE = re.compile(r"(?:\b(?:CA?|C|A|AU|NZ|HK|S))$")
+_OTHER_DOLLAR_CODES = {"cad": "CAD", "canadian": "CAD", "aud": "AUD", "australian": "AUD", "nzd": "NZD", "new": "NZD",
+                       "hkd": "HKD", "hong": "HKD", "sgd": "SGD", "singapore": "SGD"}
+_DOLLAR_PREFIX_CODES = {"C": "CAD", "CA": "CAD", "A": "AUD", "AU": "AUD", "NZ": "NZD", "HK": "HKD", "S": "SGD"}
+
+
+def _other_dollar(text: str, start: int, end: int) -> Optional[str]:
+    after = _OTHER_DOLLAR_AFTER.match(text[end:end + 30])
+    if after:
+        return _OTHER_DOLLAR_CODES[after.group(1).split()[0].lower()]
+    if text[start:start + 1] == "$":
+        before = _OTHER_DOLLAR_BEFORE.search(text[max(0, start - 3):start])
+        if before:
+            return _DOLLAR_PREFIX_CODES.get(before.group(0))
+    return None
+
+
 _CURRENCY_CODES = set(_CURRENCY_SYMBOLS.values()) | {"CFA", "FCFA"}
 
 # Fallback USD rates (units per USD) when no live or annual rate is supplied.
-_FALLBACK_PER_USD = {"USD": 1.0, "EUR": 0.92, "GBP": 0.78, "XOF": 600.0, "XAF": 600.0}
+_FALLBACK_PER_USD = {"USD": 1.0, "EUR": 0.92, "GBP": 0.78, "XOF": 600.0, "XAF": 600.0, "CAD": 1.36, "AUD": 1.52,
+                     "NZD": 1.65, "HKD": 7.8, "SGD": 1.35}
+# Annual average units per US dollar for the non-African dollars (central-bank averages, rounded).
+_OTHER_DOLLAR_PER_USD = {
+    "CAD": {2015: 1.28, 2016: 1.33, 2017: 1.30, 2018: 1.30, 2019: 1.33, 2020: 1.34, 2021: 1.25, 2022: 1.30,
+            2023: 1.35, 2024: 1.37, 2025: 1.40, 2026: 1.38},
+    "AUD": {2015: 1.33, 2016: 1.35, 2017: 1.30, 2018: 1.34, 2019: 1.44, 2020: 1.45, 2021: 1.33, 2022: 1.44,
+            2023: 1.51, 2024: 1.52, 2025: 1.56, 2026: 1.53},
+}
 
 
 def to_usd(value: float, currency: str, year: Optional[int] = None,
@@ -154,6 +188,9 @@ def to_usd(value: float, currency: str, year: Optional[int] = None,
     if currency == "USD":
         return value
     per_usd = rates(currency, year) if rates else None
+    if per_usd is None and currency in _OTHER_DOLLAR_PER_USD:
+        table = _OTHER_DOLLAR_PER_USD[currency]
+        per_usd = table.get(year) if year in table else table[max(table)] if year and year > max(table) else None
     if per_usd is None:
         per_usd = _annual_rate(currency, year)
     if per_usd is None:
@@ -517,6 +554,12 @@ def reclassify(deal: dict) -> Optional[dict]:
     if isinstance(deal.get("lead_investors"), list) and \
             (rejoined := rejoin_compound_names(deal["lead_investors"])) != deal["lead_investors"]:
         parties_fix["lead_investors"] = rejoined
+    if deal.get("currency") == "USD" and deal.get("amount") and (parsed := deal_amount(headline)):
+        value, cur = parsed
+        if cur != "USD" and abs(value - deal["amount"]) < 1:
+            # Same figure, wrong currency ("$16.7 million CAD" stored as US dollars).
+            year = int(str(deal.get("announced") or "")[:4]) if str(deal.get("announced") or "")[:4].isdigit() else None
+            parties_fix.update({"currency": cur, "amount_usd": to_usd(value, cur, year)})
     change = _reclassify_type(deal, headline)
     return {**parties_fix, **(change or {})} if (parties_fix or change) else None
 
