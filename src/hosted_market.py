@@ -1973,6 +1973,9 @@ def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
                 if not deals_mod.strong_same_report(a, b):
                     continue
                 keep, drop = (a, b) if fuller(a) >= fuller(b) else (b, a)
+                # One LP's commitment beside a fund's close: the close (the larger figure) is the deal.
+                if a.get("deal_type") == b.get("deal_type") == "fund_raise" and a.get("amount_usd") and b.get("amount_usd"):
+                    keep, drop = (a, b) if a["amount_usd"] >= b["amount_usd"] else (b, a)
                 merged = deals_mod.merge(out.get(keep["id"], keep), out.get(drop["id"], drop))
                 merged["id"] = keep["id"]
                 # A kept target that is only a description ("Kenyan Label") takes the other report's real name

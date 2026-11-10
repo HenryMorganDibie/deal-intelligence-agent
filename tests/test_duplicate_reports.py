@@ -114,3 +114,18 @@ def test_a_figure_is_never_a_party():
     kept = dm.reclassify({"deal_type": "equity_funding", "target": "Twiga Foods", "investors": ["1776", "Wamda Capital"],
                           "headline": "Twiga Foods raises $10.3m in Series A Investment Round"})
     assert kept is None
+
+
+def test_the_fund_close_is_kept_when_an_lp_commitment_folds_into_it():
+    from src import hosted_market as hm
+    close = {"id": "close", "deal_type": "fund_raise", "announced": "2026-10-26", "target": "Tanmiya Capital",
+             "amount": 130e6, "currency": "USD", "amount_usd": 130e6, "countries": ["EG"], "investors": ["IFC"],
+             "sources": [{"url": "https://a.example", "publisher": "A"}],
+             "headline": "Tanmiya Capital closes second Egypt growth fund at $130m, backed by $37.5m EIB commitment"}
+    lp = {"id": "lp", "deal_type": "fund_raise", "announced": "2026-10-26", "target": "Tanmiya fund", "amount": 37.5e6,
+          "currency": "USD", "amount_usd": 37.5e6, "countries": ["EG"], "investors": ["EIB"],
+          "sources": [{"url": f"https://b{i}.example", "publisher": f"B{i}"} for i in range(4)],
+          "headline": "EIB invests $37.5m in Tanmiya fund as it reaches $130m close"}
+    out: dict = {}
+    hm._merge_stored_duplicates([close, lp], out)
+    assert out["lp"]["merged_into"] == "close" and out["close"]["amount_usd"] == 130e6
