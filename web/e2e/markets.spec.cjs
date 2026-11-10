@@ -189,7 +189,7 @@ test("monitoring presents explicit empty and feed-error states", async ({ page }
     baseCurrency: "USD",
     holdings: [{ id: "monitor-h1", name: "Example Bank", ticker: "EXBANK", country: "Nigeria" }],
   })));
-  const eventsRoute = /\/api\/events(?:\?.*)?$/;
+  const eventsRoute = /\/api\/(?:data\/)?events(?:\?.*)?$/;
   await page.route(eventsRoute, route => route.fulfill({
     status: 200,
     contentType: "application/json",
@@ -354,13 +354,13 @@ test("sign-up enforces the password rules and the retyped password before it can
 
 test("admin page lists accounts and who is using the app", async ({ page }) => {
   const now = new Date().toISOString();
-  await page.route("**/api/admin/stats", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+  await page.route("**/api/data/admin/stats", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
     since: "2026-10-05", totals: { views: 10, visitors: 4, users: 2, returning_users: 1, engaged_visitors: 2 },
     days: [], pages: [], actions: [], app_page_activity: [],
   }) }));
-  await page.route("**/api/admin/feedback", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [] }) }));
+  await page.route("**/api/data/admin/feedback", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [] }) }));
   let accountsBody;
-  await page.route("**/api/admin/accounts", (route) => {
+  await page.route("**/api/data/admin/accounts", (route) => {
     accountsBody = route.request().postDataJSON();
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
       since: "2026-10-05", days: 30,

@@ -97,8 +97,11 @@ def pool_from_export(export: Path, out: Path) -> None:
 
 def _get(url: str) -> dict:
     headers = {"User-Agent": "independent-review"}
-    if os.environ.get("DEAL_INTEL_API_SECRET"):          # the API's internal routes answer trusted callers only
-        headers["X-Deal-Intel-Client"] = os.environ["DEAL_INTEL_API_SECRET"]
+    # The API's internal routes answer trusted callers only. Stored secrets often carry a trailing newline,
+    # which is not allowed in a header, so it is trimmed.
+    secret = os.environ.get("DEAL_INTEL_API_SECRET", "").strip()
+    if secret:
+        headers["X-Deal-Intel-Client"] = secret
     with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as r:
         return json.loads(r.read())
 

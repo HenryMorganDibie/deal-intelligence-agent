@@ -76,8 +76,11 @@ def normalise(value: str | None) -> str:
 
 def request_json(url: str) -> dict:
     headers = {"Accept": "application/json", "User-Agent": "DealIntelligence-CorporateOfWeek/1.0"}
-    if os.environ.get("DEAL_INTEL_API_SECRET"):          # the API's internal routes answer trusted callers only
-        headers["X-Deal-Intel-Client"] = os.environ["DEAL_INTEL_API_SECRET"]
+    # The API's internal routes answer trusted callers only. Stored secrets often carry a trailing newline,
+    # which is not allowed in a header, so it is trimmed.
+    secret = os.environ.get("DEAL_INTEL_API_SECRET", "").strip()
+    if secret:
+        headers["X-Deal-Intel-Client"] = secret
     req = Request(url, headers=headers)
     with urlopen(req, timeout=30) as response:
         if response.status != 200:

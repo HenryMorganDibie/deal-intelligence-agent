@@ -48,10 +48,10 @@ def is_open_path(path: str) -> bool:
 
 
 def trusted(request: Request) -> bool:
-    presented = request.headers.get(CLIENT_HEADER, "")
+    presented = request.headers.get(CLIENT_HEADER, "").strip()
     if not presented:
         return False
-    for secret in (web_secret(), os.environ.get("DEAL_INTEL_API_SECRET", "")):
+    for secret in (web_secret().strip(), os.environ.get("DEAL_INTEL_API_SECRET", "").strip()):
         if secret and hmac.compare_digest(presented.encode(), secret.encode()):
             return True
     return False

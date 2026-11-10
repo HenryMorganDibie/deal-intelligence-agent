@@ -179,7 +179,7 @@ def render(kind: str, user: dict, data: dict, recipient_role: str = "current") -
               f"</a> now and write to {SUPPORT_EMAIL}.")
     email = e(user.get("email") or "")
     new_email = e(user.get("new_email") or "")
-    token, token_new = data.get("token") or "", data.get("token_new") or ""
+    token = data.get("token") or ""
     hash_, hash_new = data.get("token_hash") or "", data.get("token_hash_new") or ""
 
     def build(subject, heading, paras, *, button=None, code=None, note=None, alert=False, preheader=None):
