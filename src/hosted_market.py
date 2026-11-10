@@ -1909,7 +1909,42 @@ def _reclassify_stored(existing: dict[str, dict], merged: dict[str, dict]) -> di
             if twin:
                 fixed["merged_into"] = twin["id"]
         out[d["id"]] = fixed
+    _merge_stored_duplicates(visible, out)
     return out
+
+
+def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
+    """Stored records that are two reports of one transaction (deals.strong_same_report): the fuller record
+    keeps both reports' sources and the other points at it. A reviewer's decision stands."""
+    from collections import defaultdict as _dd
+    buckets: dict[str, list[dict]] = _dd(list)
+    for d in visible:
+        current = out.get(d["id"], d)
+        if current.get("merged_into") or current.get("excluded") or current.get("reviewed_on"):
+            continue
+        for token in deals_mod._name_tokens(current.get("target")):
+            buckets[token].append(current)
+
+    def fuller(x: dict) -> tuple:
+        return (bool(x.get("amount_usd")), len(x.get("sources") or []), x.get("buyer") is not None,
+                -(int((x.get("announced") or "9999")[:4]) if (x.get("announced") or "")[:4].isdigit() else 9999), x["id"])
+
+    absorbed: set[str] = set()
+    for group in buckets.values():
+        if len(group) > 80:                             # a common word, not a company: never compared wholesale
+            continue
+        for i, a in enumerate(group):
+            for b in group[i + 1:]:
+                if a["id"] == b["id"] or a["id"] in absorbed or b["id"] in absorbed:
+                    continue
+                if not deals_mod.strong_same_report(a, b):
+                    continue
+                keep, drop = (a, b) if fuller(a) >= fuller(b) else (b, a)
+                merged = deals_mod.merge(out.get(keep["id"], keep), out.get(drop["id"], drop))
+                merged["id"] = keep["id"]
+                out[keep["id"]] = merged
+                out[drop["id"]] = {**out.get(drop["id"], drop), "merged_into": keep["id"]}
+                absorbed.add(drop["id"])
 
 
 @router.get("/api/cron/ingest")

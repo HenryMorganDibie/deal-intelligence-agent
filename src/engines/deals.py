@@ -1614,6 +1614,8 @@ def same_transaction(a: dict, b: dict) -> bool:
     ipo_pair = types == {"ipo", "equity_funding"} and _same_transaction_type(a, b)
     if not _same_transaction_type(a, b):
         return False
+    if strong_same_report(a, b):
+        return True
 
     if _undisclosed_match(a, b, gap):
         return True
@@ -1944,3 +1946,111 @@ def comparables(deals: Iterable[dict], *, sector: Optional[str] = None, country:
             "deals": top, "size_usd": stats(sizes), "implied_valuation_usd": stats(vals),
             "method": "similarity = 3 same sector + 2 same type + 2 same country (1 same region) "
                       "+ 2 within 3x size (1 within 10x); deals scoring 3 or more"}
+
+
+# ── Two reports of one transaction that the name test misses ─────────────────
+# Outlets describe the same deal differently: "UMG" and "Universal Music Group", "Leading Nigerian Studio ROK" and
+# "ROK", a round reported once by its lead ("CardinalStone leads investment in Arnergy Solar") and once by its size
+# ("Arnergy raises $18M"). These count as one transaction only on strong evidence: the same kind of deal within
+# two weeks (an exit and an acquisition within three days), the same distinctive target once descriptions are set
+# aside, and no conflicting fact (a different named buyer or seller, amounts more than 50% apart, a different stake,
+# different countries). A listing needs the exact same company ("Dangote" is not "Dangote Petroleum Refinery").
+
+
+_TXN_WORDS = {
+    "ma": re.compile(r"(?i)\b(acqui[rs]\w*|buys?|bought|purchas\w*|takes?\s+over|takeover|sells?|sold|divest\w*|exits?|"
+                     r"stake|merg\w*|rach[eè]te\w*|c[eè]de\w*|adquir\w*|compra\w*)\b"),
+    "funding": re.compile(r"(?i)\b(rais\w*|invest\w*|funding|round|secur\w*|backs?|leads?|seed|series|l[eè]ve\w*|"
+                          r"financ\w*|loan|debt|facility|ipo|listing|lists?|debut\w*)\b"),
+    "fund_raise": re.compile(r"(?i)\b(close[sd]?|closing|fund|raises?|commitment|anchors?)\b"),
+}
+
+
+def _inv():
+    from src.engines import investors
+    return investors
+
+_GENERIC_TARGET_WORDS = {"additional", "shares", "share", "stake", "stakes", "development", "network", "expansion", "venture",
+           "ventures", "fund", "funds", "business", "operations", "unit", "assets", "asset", "project", "company",
+           "group", "holdings", "bank", "insurance", "capital", "partners", "national", "first", "standard",
+           "united", "general", "international", "global", "new", "option", "interest", "majority", "minority",
+           "portfolio", "subsidiary", "subsidiaries", "names", "pipeline", "energy", "power", "oil", "gas", "mining"}
+_JUNK_PARTY_WORDS = {"investors", "investor", "consortium", "ceo", "public", "local", "nigerians", "kenyans",
+                    "shareholders", "government", "gov", "govt", "state", "option", "why", "popular", "presidential",
+                    "candidate", "tycoon", "billionaire", "firm", "group"}
+
+def _report_core(n):
+    return _name_tokens(n) - {"s"}
+
+def _distinctive(tokens):
+    return any(len(t) >= 3 and t not in _GENERIC_TARGET_WORDS for t in tokens)
+
+def _junk_party(p):
+    if not p:
+        return True
+    toks = set(normalise_name(p).split())
+    return not _inv().split_names(p) or toks <= _JUNK_PARTY_WORDS | {t for t in toks if _is_descriptor(t)}
+
+def _party_match(x, y):
+    nx, ny = normalise_name(x), normalise_name(y)
+    if not nx or not ny:
+        return False
+    if nx == ny or _inv().canonical(x) == _inv().canonical(y):
+        return True
+    tx, ty = set(nx.split()), set(ny.split())
+    if (tx <= ty or ty <= tx) and _distinctive(tx & ty):
+        return True
+    sx, sy = nx.replace(" ", ""), ny.replace(" ", "")
+    if min(len(sx), len(sy)) >= 4 and (sx in sy or sy in sx):
+        return True
+    for short, long_ in ((x, y), (y, x)):
+        words = [w for w in re.split(r"[\s&-]+", long_) if w and w[0].isalpha()]
+        if re.fullmatch(r"[A-Z]{2,6}", short.strip()) and len(words) >= 2 and "".join(w[0] for w in words).upper().startswith(short.strip()):
+            return True
+    return False
+
+def strong_same_report(a: dict, b: dict) -> bool:
+    try:
+        gap = abs((date.fromisoformat(a["announced"][:10]) - date.fromisoformat(b["announced"][:10])).days)
+    except Exception:
+        return False
+    ma = {"acquisition", "merger", "exit"}
+    ta, tb = a.get("deal_type"), b.get("deal_type")
+    if ta == tb:
+        if gap > 14:
+            return False
+    elif ta in ma and tb in ma:
+        if gap > 3:
+            return False
+    else:
+        return False
+    ca, cb = _report_core(a.get("target")), _report_core(b.get("target"))
+    if not ca or not cb or not (ca <= cb or cb <= ca) or not _distinctive(ca & cb):
+        return False
+    if "ipo" in (ta, tb) and ca != cb:
+        return False
+    for f in ("buyer", "seller"):
+        x, y = a.get(f), b.get(f)
+        if ta != tb and f == "buyer":
+            continue                     # an exit's "buyer" field and an acquisition's are not comparable
+        if not _junk_party(x) and not _junk_party(y) and not _party_match(x, y):
+            return False
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    if ua and ub and max(ua, ub) / min(ua, ub) > 1.5:
+        return False
+    # Same target and date alone are not enough: something else must corroborate it (a named party on both
+    # reports, matching amounts, or both headlines reporting that kind of transaction).
+    party_both = any(not _junk_party(a.get(f)) and not _junk_party(b.get(f)) for f in ("buyer", "seller"))
+    words = _TXN_WORDS["fund_raise" if "fund_raise" in (ta, tb) else "ma" if ta in ma else "funding"]
+    if not (party_both or (ua and ub) or (words.search(a.get("headline") or "") and words.search(b.get("headline") or ""))):
+        return False
+    if _stakes_differ(a, b):
+        return False
+    sa, sb = set(a.get("countries") or [a.get("country")]) - {None}, set(b.get("countries") or [b.get("country")]) - {None}
+    if sa and sb and not sa & sb:
+        return False
+    ha = {c.iso2 for c in countries_in_text(a.get("headline") or "")}
+    hb = {c.iso2 for c in countries_in_text(b.get("headline") or "")}
+    if ha and hb and not ha & hb:
+        return False
+    return True
