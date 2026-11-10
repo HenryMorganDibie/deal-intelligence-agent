@@ -57,7 +57,7 @@ export function SiteNav() {
           <a href={LINKS.methodology} className="btn btn-ghost hidden h-9 px-3.5 text-sm xl:inline-flex">
             Methodology
           </a>
-          <a href="/app" className="btn btn-primary hidden h-9 px-3.5 text-sm sm:inline-flex">
+          <a href="/app/deals" className="btn btn-primary hidden h-9 px-3.5 text-sm sm:inline-flex">
             Open app
           </a>
           <button
@@ -96,7 +96,7 @@ export function SiteNav() {
               <a href={LINKS.methodology} className="btn btn-ghost h-10 flex-1 text-sm">
                 Methodology
               </a>
-              <a href="/app" className="btn btn-primary h-10 flex-1 text-sm">
+              <a href="/app/deals" className="btn btn-primary h-10 flex-1 text-sm">
                 Open app
               </a>
             </div>

@@ -133,7 +133,7 @@ export default function Dashboard() {
                   maxLength={120}
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
-                  placeholder="Intel"
+                  placeholder="MTN Nigeria"
                   className="field"
                 />
               </label>
@@ -143,7 +143,7 @@ export default function Dashboard() {
                   maxLength={20}
                   value={ticker}
                   onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                  placeholder="INTC"
+                  placeholder="MTNN"
                   className="field kbd"
                 />
               </label>
@@ -155,7 +155,7 @@ export default function Dashboard() {
                   maxLength={3}
                   value={country}
                   onChange={(e) => setCountry(e.target.value.toUpperCase())}
-                  placeholder="SN"
+                  placeholder="NG"
                   className="field kbd"
                 />
               </label>

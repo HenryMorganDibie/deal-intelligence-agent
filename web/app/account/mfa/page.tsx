@@ -8,7 +8,7 @@ import { AuthCard, Notice, authAction, safeNext } from "../../../components/auth
 // The second sign-in step for accounts with an authenticator app.
 export default function MfaPage() {
   const router = useRouter();
-  const [next, setNext] = useState("/app");
+  const [next, setNext] = useState("/app/deals");
   const [factorId, setFactorId] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);

@@ -9,7 +9,7 @@ import { displayNameProblem, normaliseUsername, usernameProblem } from "../../..
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [next, setNext] = useState("/app");
+  const [next, setNext] = useState("/app/deals");
   const [loaded, setLoaded] = useState(false);
   const [onboarding, setOnboarding] = useState(true);
   const [username, setUsername] = useState("");

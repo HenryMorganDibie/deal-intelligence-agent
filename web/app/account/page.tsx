@@ -18,7 +18,7 @@ export default function AccountPage() {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
-  const [next, setNext] = useState("/app");
+  const [next, setNext] = useState("/app/deals");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);

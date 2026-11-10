@@ -56,7 +56,7 @@ export default function AuthCallbackPage() {
           if (active) setMessage(payload.error || "The confirmation link is invalid or expired.");
           return;
         }
-        router.replace(type === "recovery" || fragmentType === "recovery" || next === "password-reset" ? "/account/reset-password" : "/app");
+        router.replace(type === "recovery" || fragmentType === "recovery" || next === "password-reset" ? "/account/reset-password" : "/app/deals");
       } catch {
         if (active) setMessage("Could not confirm the account. Return to sign in and try again.");
       }

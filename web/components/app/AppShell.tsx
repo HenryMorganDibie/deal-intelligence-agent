@@ -8,14 +8,16 @@ import { Container, LogoMark } from "../primitives";
 import { AccountMenu } from "./AccountMenu";
 import { ThemeToggle } from "../ThemeToggle";
 
+// Deals first: it is where "Open app" lands and what a first visit should see. Briefs and research, which run
+// the language model, follow the live data.
 const NAV: [string, string][] = [
-  ["/app", "Briefs"],
-  ["/app/research", "Research"],
-  ["/app/markets", "Markets"],
   ["/app/deals", "Deals"],
+  ["/app/markets", "Markets"],
   ["/app/investors", "Investors"],
   ["/app/companies", "Companies"],
   ["/app/countries", "Countries"],
+  ["/app", "Briefs"],
+  ["/app/research", "Research"],
   ["/app/watchlists", "Alerts"],
 ];
 
