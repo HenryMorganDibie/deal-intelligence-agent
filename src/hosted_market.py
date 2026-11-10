@@ -351,7 +351,9 @@ def _load(kind: str) -> list[dict]:
 
 def deals() -> list[dict]:
     """Deals the product shows; merged duplicates and excluded non-transactions stay stored for audit."""
-    return [d for d in _load("deals") if deals_mod.is_visible(d)]
+    visible = [d for d in _load("deals") if deals_mod.is_visible(d)]
+    investors.learn_variants(visible)                   # one name per investor firm across every page (cached)
+    return visible
 
 
 def _visible_events(rows: list[dict]) -> list[dict]:

@@ -242,6 +242,13 @@ _ACRONYMS: dict[str, Investor] = {a: inv for inv in REGISTRY for a in inv.aliase
 
 
 def canonical(name: Optional[str]) -> Optional[str]:
+    """Registry name for a known investor, or the name as given, folded onto the one name the deal record
+    uses for that firm when it appears in several spellings (see learn_variants)."""
+    c = _canonical_raw(name)
+    return _VARIANTS.get(c, c) if c and not _LEARNING else c
+
+
+def _canonical_raw(name: Optional[str]) -> Optional[str]:
     """Registry name for a known investor, or the name as given."""
     if not name:
         return None
@@ -266,7 +273,7 @@ def canonical(name: Optional[str]) -> Optional[str]:
     # A description before a name: "Billionaire Joe Lonsdale", "South African PE Firm Harith".
     described = _DESCRIPTOR.match(name.strip())
     if described and described.group("rest")[:1].isupper() and len(described.group("rest")) >= 3:
-        return canonical(described.group("rest"))
+        return _canonical_raw(described.group("rest"))
     corporate = _CORPORATE_ALIASES.get(key)
     if corporate:
         return corporate
@@ -279,6 +286,111 @@ def canonical(name: Optional[str]) -> Optional[str]:
 
 
 _DISPLAY: dict[str, str] = {}
+
+# ── One firm, several spellings ──────────────────────────────────────────────
+# Headlines name the same investor in different ways: "Y Combinator" and "YCombinator", "DFS Lab" and
+# "DFS Labs", "Ribbit" and "Ribbit Capital", "Novastar Ventures" and "Novastar fund". Without folding, each
+# spelling became its own investor with a share of the firm's deals. Two names are one firm when, after
+# spacing, punctuation, "African"/"Africa", a plural and trailing investment words (Capital, Partners,
+# Ventures, Fund, Investments, Asset Management, Private Equity, VC) are set aside, the same distinctive core
+# remains. A core that is an ordinary word is not evidence ("Play" and "Play Ventures", "ReNew" and "Renew
+# Capital" are different businesses), and neither is a short one unless it is an acronym or has a digit.
+_VARIANTS: dict[str, str] = {}
+_LEARNING = False
+_LEARNED_FOR: Optional[tuple] = None
+_FOLD_TAIL_PAIRS = (("private", "equity"), ("asset", "management"), ("venture", "capital"), ("venture", "partners"),
+                    ("capital", "partners"), ("investment", "advisors"), ("investment", "advisers"),
+                    ("investment", "managers"), ("investment", "partners"))
+_FOLD_TAIL = {"capital", "partners", "partner", "ventures", "venture", "vc", "fund", "funds", "investment",
+              "investments", "management", "managers", "advisors", "advisers", "llc", "lp", "llp", "bv"}
+_AMBIGUOUS_CORES = {
+    "play", "vision", "rise", "spark", "apex", "equator", "variant", "endeavor", "endeavour", "renew", "social",
+    "village", "growth", "development", "finance", "platform", "south", "north", "european", "beyond", "glint",
+    "distributed", "savannah", "savanna", "oppenheimer", "delta", "alpha", "omega", "nova", "zenith", "phoenix",
+    "horizon", "frontier", "catalyst", "impact", "future", "momentum", "legacy", "pioneer", "crescent", "atlas",
+    "titan", "vertex", "quantum", "unity", "harvest", "sahara", "nile", "black star", "blackstar", "public",
+    "emerging", "new", "next", "seed", "angel", "angels", "investor", "investors", "partners", "ventures"}
+
+
+_GENERIC_TOKENS = {"africa", "infrastructure", "energy", "climate", "green", "agri", "agriculture", "health",
+                   "digital", "tech", "technology", "finance", "financial", "development", "impact", "growth",
+                   "opportunity", "opportunities", "fintech", "sustainable", "renewable", "power", "mining", "real",
+                   "estate", "property", "pan", "east", "west", "north", "south", "central", "southern", "northern",
+                   "eastern", "western", "sub", "saharan", "sahel", "frontier", "emerging", "markets", "global",
+                   "international", "world", "fund", "capital", "investment", "partners"}
+
+
+def fold_key(name: Optional[str]) -> Optional[str]:
+    """The firm a name refers to, for matching spellings; None when the remaining core is not distinctive."""
+    if not name:
+        return None
+    tokens = re.sub(r"\bafrican\b", "africa", normalise_name(name)).split()
+    full = list(tokens)
+    while len(tokens) > 1:
+        if tuple(tokens[-2:]) in _FOLD_TAIL_PAIRS:
+            tokens = tokens[:-2]
+        elif tokens[-1] in _FOLD_TAIL:
+            tokens = tokens[:-1]
+        else:
+            break
+    if tokens and all(t in _GENERIC_TOKENS for t in tokens):
+        # "Africa Infrastructure" is a description shared by many funds: such names must match in full.
+        tokens = full
+    if tokens and len(tokens[-1]) > 3 and tokens[-1].endswith("s") and not tokens[-1].endswith("ss"):
+        tokens[-1] = tokens[-1][:-1]                    # "DFS Labs" -> lab
+    core = " ".join(tokens)
+    squashed = core.replace(" ", "")
+    if not squashed or core in _AMBIGUOUS_CORES or squashed in _AMBIGUOUS_CORES or core in _COMMON_WORDS:
+        return None
+    acronym = bool(re.fullmatch(r"[A-Z0-9]{3,}", name.split()[0]))
+    if len(squashed) < 5 and not any(ch.isdigit() for ch in squashed) and not acronym:
+        return None
+    return squashed
+
+
+def learn_variants(deals: list[dict]) -> None:
+    """Learn which spellings in these deals are one firm, and the name to show for it: the registry name when
+    one spelling is a known investor, else the spelling used most (ties: the fuller name). Recomputed only
+    when the deal record changes."""
+    global _VARIANTS, _LEARNING, _LEARNED_FOR
+    stamp = (len(deals), deals[0].get("id") if deals else None, deals[-1].get("id") if deals else None,
+             sum(len(str(d.get("investors") or "")) for d in deals))
+    if stamp == _LEARNED_FOR:
+        return
+    raw_counts: Counter = Counter()
+    for d in deals:
+        for field in ("buyer", "seller"):
+            raw_counts[d.get(field)] += 1
+        if d.get("deal_type") == "fund_raise":
+            raw_counts[d.get("target")] += 1
+        for raw in (d.get("investors") or []) + (d.get("lead_investors") or []):
+            raw_counts[raw] += 1
+    _LEARNING = True
+    try:
+        counts: Counter = Counter()
+        for raw, k in raw_counts.items():           # each distinct spelling is resolved once
+            if isinstance(raw, str):
+                for c in split_names(raw):
+                    counts[c] += k
+    finally:
+        _LEARNING = False
+    groups: dict[str, list[str]] = defaultdict(list)
+    for name in counts:
+        if (key := fold_key(name)):
+            groups[key].append(name)
+    variants: dict[str, str] = {}
+    for names in groups.values():
+        if len(names) < 2:
+            continue
+        registered = [n for n in names if normalise_name(n) in _ALIAS]
+        if len({_ALIAS[normalise_name(n)].name for n in registered}) > 1:
+            continue                                    # two different registry investors: never merge them
+        display = registered[0] if registered else max(names, key=lambda n: (counts[n], len(n), n))
+        for n in names:
+            if n != display:
+                variants[n] = display
+    _VARIANTS, _LEARNED_FOR = variants, stamp
+
 _DESCRIPTOR = re.compile(
     r"^(?:(?:South\s+African|Nigerian|Kenyan|Ghanaian|Egyptian|Moroccan|Ethiopian|Ugandan|Tanzanian|Rwandan|"
     r"Zambian|Zimbabwean|Senegalese|Ivorian|Tunisian|African|Pan-African|American|US|U\.S\.|UK|British|French|German|"
@@ -398,6 +510,7 @@ def parties(deal: dict) -> list[tuple[str, str]]:
 def profiles(deals: Iterable[dict]) -> dict[str, dict]:
     """Every party's profile, keyed by canonical name."""
     deals = list(deals)
+    learn_variants(deals)
     by_party: dict[str, list[tuple[dict, str]]] = defaultdict(list)
     for d in deals:
         for name, role in parties(d):
@@ -444,6 +557,8 @@ INVESTMENT_PERIOD_YEARS = 5      # a closed-end fund typically invests for about
 def portfolio(deals: list[dict], name: str) -> list[dict]:
     """Companies this party backed or bought, with what happened to each afterwards: a later round, an exit
     (sale, acquisition by someone else, IPO), or nothing recorded yet."""
+    learn_variants(deals)
+    name = canonical(name) or name
     rows = [(d, role) for d in deals for n, role in parties(d) if n == name and role in ("investor", "acquirer", "lender")]
     by_target: dict[str, dict] = {}
     for d, role in sorted(rows, key=lambda r: r[0].get("announced") or ""):
@@ -477,6 +592,8 @@ def fund_lifecycle(deals: list[dict], name: str, today: Optional[str] = None) ->
     """The latest fund this party raised as manager, and where it likely is in its life: investing (within
     about five years of the close) or harvesting (beyond it, when exits are due)."""
     from datetime import date
+    learn_variants(deals)
+    name = canonical(name) or name
     raised = [d for d in deals if d.get("deal_type") == "fund_raise" and d.get("announced")
               and name in {n for n, role in parties(d) if role == "gp"}]
     if not raised:
@@ -554,6 +671,8 @@ def _profile(name: str, rows: list[tuple[dict, str]]) -> dict:
 
 def profile(deals: Iterable[dict], name: str) -> Optional[dict]:
     """One party's profile (any alias works), or None if it appears in no deal."""
+    deals = list(deals)
+    learn_variants(deals)
     target = canonical(name)
     rows = [(d, role) for d in deals for n, role in parties(d) if n == target]
     if not rows:
