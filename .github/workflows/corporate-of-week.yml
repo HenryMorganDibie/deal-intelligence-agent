@@ -47,6 +47,12 @@ jobs:
         run: python scripts/corporate_of_week.py
 
       - name: Commit weekly selection and archive directly to main
+        env:
+          DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
+          # If another job rebuilt the archive meanwhile, rebuild on top of its version instead of merging.
+          REGENERATE_CMD: python scripts/corporate_of_week.py
+          REGENERATE_PATHS: web/data/corporate-of-week.json
+          COMMIT_MSG: Refresh evidence-backed Corporate of the Week
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"

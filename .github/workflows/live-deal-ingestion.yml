@@ -71,5 +71,7 @@ jobs:
             echo "Corporate of the Week archive is unchanged."
           else
             git commit -m "Refresh Corporate of the Week archive"
-            bash scripts/push_with_retry.sh main
+            # If another job rebuilt the archive meanwhile, rebuild on top of its version instead of merging.
+            REGENERATE_CMD="python scripts/corporate_of_week.py" REGENERATE_PATHS=web/data/corporate-of-week.json \
+              COMMIT_MSG="Refresh Corporate of the Week archive" bash scripts/push_with_retry.sh main
           fi
