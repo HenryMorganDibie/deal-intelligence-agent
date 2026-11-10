@@ -98,3 +98,18 @@ def test_a_deal_whose_target_names_no_company_is_excluded():
                                            "headline": "AfDB backs Arua Airport Upgrade Project"})
     assert deals.reclassify({"deal_type": "equity_funding", "target": "SA Fintech Yoco",
                              "headline": "SA Fintech Yoco Snags $100m"}).get("target") == "Yoco"
+
+
+@pytest.mark.parametrize("raw, expected", [
+    ("25pc", None), ("Land", None), ("100MW", None), ("Shs17.8bn", None), ("OPL257", None), ("Ogun State", None),
+    ("Lake Malawi", None), ("Australian", None), ("Chris Kirubi", None), ("Madonna", None), ("Fiscal Year", None),
+    ("First Green Bond", None), ("Camerounais Alain Nkontchou", None),
+    ("60pc of UUNET Kenya", "UUNET Kenya"), ("Zambian Neobank Lupiya", "Lupiya"), ("Le Consortium Enko Capital", "Enko Capital"),
+    ("Quickmart IPO", "Quickmart"), ("Music Streaming Giant Deezer", "Deezer"), ("Kenya-based Charm Industries", "Charm Industries"),
+    ("Huawei Helps Telecom Egypt", "Telecom Egypt"), ("Troubled Precision Air Amid Mounting Losses", "Precision Air"),
+    ("Lake Harvest", "Lake Harvest"), ("Pioneer Foods", "Pioneer Foods"), ("4G Capital", "4G Capital"), ("54gene", "54gene"),
+    ("African Mobile Games Publisher Carry1st", "Carry1st"), ("Iconic Cape Grace Hotel", "Cape Grace Hotel"),
+])
+def test_company_resolution_after_the_full_review(raw, expected):
+    name, reason = deals.resolve_company(raw)
+    assert (name if reason is None else None) == expected

@@ -14,10 +14,12 @@ reports cannot appear, and amounts are as reported.
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import statistics
 import unicodedata
 from datetime import date
+from pathlib import Path
 from typing import Callable, Iterable, Optional
 
 from src.data.africa_countries import COUNTRIES, countries_in_text, get as get_country
@@ -637,8 +639,10 @@ def reclassify(deal: dict) -> Optional[dict]:
         deal = {**deal, "investors": [i for i in deal["investors"] if not _AMOUNT_AS_NAME.match(str(i).strip())]}
         parties_fix["investors"] = deal["investors"]
     if isinstance(deal.get("target"), str) and deal["target"].strip() and not deal["target"].lower().startswith("undisclosed"):
-        cleaned = clean_company_name(deal["target"])
-        if not is_company_name(cleaned):
+        cleaned, category = resolve_company(deal["target"])
+        if category in ("people", "phrases_products_and_generic"):
+            return {"excluded": f"reviewed: the target is not a company ({category.split('_')[0]})"}
+        if category == "not_a_company":
             return {"excluded": "reclassified: the target names no company (a place, a project, an asset or a sentence)"}
         if cleaned != deal["target"]:
             parties_fix["target"] = cleaned
@@ -2401,7 +2405,8 @@ def strong_same_report(a: dict, b: dict) -> bool:
 
 _NAME_ROLE_WORDS = (r"Startup|Start-up|Fintech|FinTech|Insurtech|InsurTech|Femtech|FemTech|Edtech|EdTech|Agritech|AgriTech|"
                r"Healthtech|HealthTech|Proptech|Platform|Firm|Maker|Manufacturer|Provider|Operator|Producer|Retailer|"
-               r"Lender|Company|Group")
+               r"Lender|Company|Comapny|Group|Neobank|ISP|App|Biotech|Giant|Agency|Automaker|Investor|Innovator|"
+               r"Shoemaker|Enterprise|Alum|Bottler|Trader|Seller|Promoter|Broker|Publisher|Bank(?=\s+[A-Z][a-z]+[A-Z])")
 _LEGAL = re.compile(r"(?i)^(?:ltd|limited|plc|inc|llc|sa|s\.a\.?|s\.a\.s|pty|co|corp|corporation|holdings?|group)\.?$")
 _LEADING_VERB = re.compile(r"(?i)^(?:acquire|acquires|buy|buys|sell|sells|to|ceo|chairman|md|full\s+ownership\s+of|"
                            r"(?:sell\s+)?stake\s+(?:in|to)|additional\s+shares\s+in|unit\s+of|subsidiary\s+of|"
@@ -2420,6 +2425,14 @@ _PROJECT_WORDS = {"investment", "investments", "partnership", "plan", "project",
                   "transaction", "sector", "industry", "road", "refinery", "growth", "development",
                   "privatização", "abastecimento", "adaption", "adaptation", "consultancy", "player", "miner",
                   "speakers", "programme", "program", "revival"}
+_FIGURE_NAME = re.compile(r"(?i)^\d[\d.,]*\s*(?:pc|%|mw|gw|kw|mhz)\b|^(?:shs?|ksh|ugx|mwk|rwf|mk|p|n|sh)[\s.]*\d"
+                          r"|^\d[\d.,]*\s*(?:mw|gw)\s|^(?:ugx|shs?|ksh|mwk|rwf|sh)\.?$")
+_LICENCE_NAME = re.compile(r"(?i)^(?:(?:two|three|four|five)\s+)?(?:OMLs?|OPLs?|PELs?|PEL\s?\d+|OPL\s?\d+|OML\s?\d+)\b")
+_REGION_NAME = re.compile(r"\s(?:State|Region|Province|County|Basin|Corridor|Copperbelt)$")
+_WATER_OR_MOUNTAIN = re.compile(r"^(?:Lake|Mt\.?|Mount)\s+(?P<rest>.+)$")
+_NATIONALITIES = {"australian", "aussie", "brazilian", "danish", "german", "italian", "spanish", "south-african",
+                  "american", "british", "french", "chinese", "indian", "japanese", "canadian", "swiss", "dutch",
+                  "norwegian", "swedish", "finnish", "turkish", "russian", "portuguese", "emirati", "saudi"}
 _NATIONAL_COMPANY_WORDS = {"telecom", "telecoms", "airways", "airlines", "railways", "breweries", "cement", "power",
                            "post", "ports", "petroleum", "insurance", "re"}
 _ANCHOR_WORDS = {"bank", "group", "holdings", "holding", "management", "ltd", "limited", "plc", "insurance",
@@ -2444,6 +2457,17 @@ def clean_company_name(name: Optional[str]) -> Optional[str]:
         return name
     n = re.split(r"\s+[—|]\s+", name.strip())[0].strip(" ,.;:-–—'’\"")      # "... — article includes a paywall"
     n = re.sub(r"(?i)\s+(?:reportedly|officially|formally)$", "", n)
+    n = re.sub(r"(?i)^\d+(?:\.\d+)?\s*(?:pc|%|per\s*cent)\s+of\s+", "", n)            # "60pc of UUNET Kenya"
+    n = re.sub(r"^(?:[A-Z][\w.-]*\s+){0,2}?[A-Za-z]+[- ][Bb]ased\s+(?=[A-Z])", "", n)    # "Kenya-based Charm Industries"
+    n = re.sub(r"^(?:Le\s+Consortium|Management\s+Buy-Out\s+of|Yas\s+Parent|Out|Off|Inside|System|La|Le)\s+(?=[A-Z])", "", n)
+    n = re.sub(r"^[A-Z][\w-]*\s+Helps\s+(?=[A-Z])", "", n)                               # "Capital Helps Busbud"
+    n = re.sub(r"^(?:Iconic|Historic|Landmark|Famous|Popular|Troubled|Struggling|Defunct)\s+(?=[A-Z])", "", n)
+    n = re.split(r"\s+(?:Amid|Despite|After)\s+", n)[0]                                    # "Precision Air Amid Mounting Losses"
+    n = re.sub(r"^(?:L[’']\s*)?(?:espagnol|équato-guinéen|Canadien|Canadienne|Camerounais|Marocaine?|"
+               r"Sénégalais|Ivoirien)\s+(?=[A-Z])", "", n)                                 # "L'espagnol Adam Foods"
+    n = re.sub(r"(?i)\s+(?:back|aiming|ceo|ipo|bond|deal|stocks|forced\s+directors|entire\s+interests|parent\s+company|"
+               r"competitor|share|listing\s+of\s+.*)$", "", n)                            # "Quickmart IPO", "Airtel Africa Aiming"
+    n = re.sub(r"^([A-Z][\w&-]*(?:\s+[A-Z][\w&-]*)*?)s?[’']\s+(?=[A-Z])", lambda m: "" if _is_place(m.group(1)) else m.group(0), n)
     for _ in range(2):
         n = _LEADING_VERB.sub("", n).strip()
     # "Arthur Eze's Oranto Petroleum", "Kenya's Credit Bank": the owner's or the country's company.
@@ -2476,6 +2500,12 @@ def is_company_name(name: Optional[str]) -> bool:
     lowered = [re.sub(r"[^\w-]", "", w.lower()) for w in words]
     if any(w in _SENTENCE_WORDS for w in lowered):
         return False
+    if _FIGURE_NAME.search(n) or _LICENCE_NAME.match(n) or _REGION_NAME.search(n):
+        return False                                     # "25pc", "100MW", "Shs17.8bn", "OPL257", "Ogun State"
+    if (wm := _WATER_OR_MOUNTAIN.match(n)) and _is_place(wm.group("rest")):
+        return False                                     # "Lake Malawi", not "Lake Harvest"
+    if len(words) == 1 and lowered[0] in _NATIONALITIES:
+        return False                                     # "Australian", "Danish", "South-African"
     if len(words) >= 3 and sum(1 for w in words if w[:1].islower() and w not in ("and", "of", "de", "du", "la", "et")) >= 2:
         return False                                                         # "Kenyan water and recycling company"
     owned_asset = len(words) == 2 and lowered[1] in ("refinery", "refineries") and words[0][:1].isupper() \
@@ -2495,6 +2525,48 @@ def is_company_name(name: Optional[str]) -> bool:
     if _is_place(words[0]):
         # "Malawi Telecom", "Tunisie Telecom", "Uganda Airlines": a country's national company.
         return lowered[1] in _NATIONAL_COMPANY_WORDS
+    if _is_place(words[1]) and lowered[0] in _NATIONAL_COMPANY_WORDS:
+        return True                                      # "Telecom Egypt"
     return (lowered[1] in _ANCHOR_WORDS or lowered[1] == "industries") \
         and lowered[0] not in ("mega", "the", "south", "north", "east", "west", "nigerian", "kenyan", "ghanaian",
                                "additional", "major", "full", "new", "investment", "development", "private")
+
+
+_NAME_REVIEW_FILE = Path(__file__).resolve().parents[1] / "data" / "company_name_review.json"
+_NAME_REVIEW: Optional[dict] = None
+
+
+def _name_review() -> dict:
+    global _NAME_REVIEW
+    if _NAME_REVIEW is None:
+        try:
+            raw = json.loads(_NAME_REVIEW_FILE.read_text())
+        except (OSError, ValueError):
+            raw = {}
+        cats = raw.get("not_companies") or {}
+        _NAME_REVIEW = {"rename": raw.get("rename") or {},
+                        "category": {n.casefold(): cat for cat, names in cats.items() for n in names}}
+    return _NAME_REVIEW
+
+
+def reviewed_name(name: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+    """(corrected name, None) or (name, category) from the reviewed list in data/company_name_review.json, where
+    category is "people", "places_and_assets" or "phrases_products_and_generic" for names that are not companies."""
+    if not name:
+        return name, None
+    review = _name_review()
+    fixed = review["rename"].get(name.strip(), name.strip())
+    return fixed, review["category"].get(fixed.casefold())
+
+
+def resolve_company(name: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+    """(company name, None), or (name, reason) when it is not a company: "people", "places_and_assets",
+    "phrases_products_and_generic" (from the reviewed list, checked on the name as read and as cleaned) or
+    "not_a_company" (the general checks)."""
+    raw, category = reviewed_name(name)
+    if category:
+        return raw, category
+    cleaned, category = reviewed_name(clean_company_name(raw))
+    if category:
+        return cleaned, category
+    return (cleaned, None) if is_company_name(cleaned) else (cleaned, "not_a_company")
