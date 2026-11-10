@@ -5,7 +5,7 @@ import { PublicPage } from "../../../components/PublicPage";
 import { Container } from "../../../components/primitives";
 import { Stat, usd, words } from "../../../components/app/ui";
 import { apiHeaders, apiUrl } from "../../../lib/api-base";
-import type { Deal } from "../../../lib/market";
+import type { Deal, Verification } from "../../../lib/market";
 
 /**
  * Public, read-only view of one deal: the facts and their sources, readable without an account, so links shared
@@ -14,7 +14,7 @@ import type { Deal } from "../../../lib/market";
  */
 export const revalidate = 3600;
 
-type DealResponse = { deal: Deal; parties: { name: string; role: string }[] };
+type DealResponse = { deal: Deal; parties: { name: string; role: string }[]; verification?: Verification };
 
 async function load(id: string): Promise<DealResponse | null> {
   try {
@@ -71,9 +71,10 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 export default async function PublicDealPage({ params }: { params: { id: string } }) {
   const data = await load(params.id);
   if (!data) notFound();
-  const { deal: d, parties } = data;
+  const { deal: d, parties, verification: v } = data;
   const where = country(d.country);
-  const corroborated = d.verification === "corroborated" || (d.independent_stories ?? 0) >= 2;
+  const tier = v?.tier ?? d.verification ?? ((d.independent_stories ?? 0) >= 2 ? "corroborated" : "single source");
+  const stories = v?.independent_stories ?? d.independent_stories;
   const next = encodeURIComponent(`/app/deals/${d.id}`);
   const sources = [...d.sources].sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
   return (
@@ -93,8 +94,10 @@ export default async function PublicDealPage({ params }: { params: { id: string 
           <Stat label="First reported" value={d.announced ?? "n/a"} />
           <Stat
             label="Verification"
-            value={corroborated ? "Corroborated" : "Single source"}
-            note={corroborated ? "Two or more independent reports" : "One report so far; treat figures with care"}
+            value={tier === "official" ? "Official" : tier === "corroborated" ? "Corroborated" : "Single source"}
+            note={tier === "official" ? "From an official filing or announcement"
+              : tier === "corroborated" ? `${stories ?? "Several"} independent reports`
+              : "One report so far; treat figures with care"}
           />
         </div>
 
