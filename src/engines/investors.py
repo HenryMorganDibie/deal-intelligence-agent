@@ -245,6 +245,8 @@ def canonical(name: Optional[str]) -> Optional[str]:
     """Registry name for a known investor, or the name as given, folded onto the one name the deal record
     uses for that firm when it appears in several spellings (see learn_variants)."""
     c = _canonical_raw(name)
+    if c:
+        c = _REVIEWED_SAME.get(normalise_name(c), c)    # a reviewed identity wins over every automatic rule
     return _VARIANTS.get(c, c) if c and not _LEARNING else c
 
 
@@ -296,6 +298,30 @@ _DISPLAY: dict[str, str] = {}
 # remains. A core that is an ordinary word is not evidence ("Play" and "Play Ventures", "ReNew" and "Renew
 # Capital" are different businesses), and neither is a short one unless it is an acronym or has a digit.
 _VARIANTS: dict[str, str] = {}
+
+
+def _load_reviewed() -> tuple[dict[str, str], list[frozenset]]:
+    """Reviewed identities (src/data/investor_identities.json): names verified to be one firm, and look-alikes
+    verified to be different firms. Each entry carries its evidence and source."""
+    import json
+    from pathlib import Path
+    try:
+        data = json.loads((Path(__file__).resolve().parents[1] / "data" / "investor_identities.json").read_text())
+    except (OSError, ValueError):
+        return {}, []
+    same = {normalise_name(n): e["use"] for e in data.get("same", []) for n in [e["use"], *e.get("names", [])]}
+    different = [frozenset(normalise_name(n) for n in e.get("names", [])) for e in data.get("different", [])]
+    return same, different
+
+
+_REVIEWED_SAME, _REVIEWED_DIFFERENT = _load_reviewed()
+
+
+def _reviewed_apart(a: str, b: str) -> bool:
+    ka, kb = normalise_name(a), normalise_name(b)
+    return any(ka in group and kb in group for group in _REVIEWED_DIFFERENT)
+
+
 # A company and its investment arm ("Old Mutual" and "Old Mutual Private Equity", "Orange" and "Orange
 # Ventures") are related but not one investor: the company buys and sells businesses, the arm invests. They are
 # linked, never merged. A bare name that only ever invests ("Ribbit", "Novastar") is the firm's short form.
@@ -418,6 +444,9 @@ def learn_variants(deals: list[dict]) -> None:
 
     for names in groups.values():
         if len(names) < 2:
+            continue
+        # Look-alikes reviewed as different firms are never merged: keep the most-used name's group only.
+        if any(_reviewed_apart(a, b) for a in names for b in names if a != b):
             continue
         # A bare company name next to "<name> Ventures/Private Equity/...": if the bare name mostly buys and
         # sells businesses it is the parent company, kept apart and linked to its investment arm.

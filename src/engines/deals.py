@@ -504,6 +504,21 @@ def reclassify(deal: dict) -> Optional[dict]:
     """What the current rules change in a stored record: {"excluded": reason}, or a corrected deal type for a
     bond, loan, listing or fund close stored as an equity round. None when the record stands."""
     headline = deal.get("headline") or ""
+    # Corrections to the parties, which leave the record in place.
+    parties_fix: dict = {}
+    if deal.get("deal_type") in ("acquisition", "merger") and normalise_name(deal.get("buyer")) in _APPROVAL_WORDS:
+        m = _APPROVED_BUYER.search(headline)
+        parties_fix["buyer"] = _clean_name(m.group("subj")) if m else None
+    if isinstance(deal.get("investors"), list) and (rejoined := rejoin_compound_names(deal["investors"])) != deal["investors"]:
+        parties_fix["investors"] = rejoined
+    if isinstance(deal.get("lead_investors"), list) and \
+            (rejoined := rejoin_compound_names(deal["lead_investors"])) != deal["lead_investors"]:
+        parties_fix["lead_investors"] = rejoined
+    change = _reclassify_type(deal, headline)
+    return {**parties_fix, **(change or {})} if (parties_fix or change) else None
+
+
+def _reclassify_type(deal: dict, headline: str) -> Optional[dict]:
     if reason := not_a_deal(headline, deal.get("target"), deal.get("deal_type")):
         return {"excluded": f"reclassified: {reason}"}
     if deal.get("deal_type") == "debt_financing" and _DFI_OWN_FUNDING.search(headline):
@@ -537,7 +552,7 @@ def normalise_name(name: Optional[str]) -> str:
 # Each: (deal_type, compiled pattern). Named groups: subj (the actor), obj (the counterparty).
 _AUX = (r"(?:\s+(?:has|have|will|is|are|to|set\s+to|agrees?\s+to|agreed\s+to|moves?\s+to|plans?\s+to|in\s+talks\s+to|"
         r"aims?\s+to|looks?\s+to|hopes?\s+to|wants?\s+to|seeks?\s+to|targets?\s+to|is\s+considering|considers|mulls|"
-        r"weighs|(?:wins?|gets?|receives?|secures?|obtains?)\s+(?:\S+\s+){0,2}?(?:approval|nod|clearance)\s+to))*")
+        r"weighs|(?:wins?|gets?|receives?|secures?|obtains?)\s+(?:\S+\s+){0,2}?(?:approval|nod|clearance|green\s*light|go-ahead)\s+to))*")
 _STAKE_IN = (r"(?:(?:an?\s+|the\s+)?(?:\S+\s+){0,3}?(?:stake|interest|shareholding|holding)\s+in\s+"
              r"|(?:up\s+to\s+|about\s+|nearly\s+|around\s+|almost\s+|over\s+)?\d{1,3}(?:[.,]\d+)?\s?%\s+"
              r"(?:of\s+|da\s+|do\s+|de\s+|du\s+|des\s+|in\s+))")
@@ -728,9 +743,43 @@ def classify_sector(text: str) -> Optional[str]:
     return best
 
 
+# Firms whose name contains "and" or "&": a list of investors is split on those words, so these are kept whole.
+COMPOUND_NAMES = ("Plug and Play", "Procter & Gamble", "Johnson & Johnson", "Ernst & Young", "Marks and Spencer",
+                  "Barnes & Noble", "Bill & Melinda Gates Foundation", "Goodwell & Partners", "Kepple & Verod")
+
+
 def _split_names(s: str) -> list[str]:
-    parts = re.split(r"\s*,\s*|\s+and\s+|\s*&\s+(?=[A-Z])", s)
-    return [n for n in (_clean_name(p) for p in parts) if n]
+    protected = s
+    for i, name in enumerate(COMPOUND_NAMES):
+        protected = re.sub(re.escape(name).replace(r"\ and\ ", r"\s+and\s+").replace(r"\ \&\ ", r"\s*&\s*"),
+                           f"\x00{i}\x00", protected, flags=re.IGNORECASE)
+    parts = re.split(r"\s*,\s*|\s+and\s+|\s*&\s+(?=[A-Z])", protected)
+    restored = [re.sub(r"\x00(\d+)\x00", lambda m: COMPOUND_NAMES[int(m.group(1))], p) for p in parts]
+    return [n for n in (_clean_name(p) for p in restored) if n]
+
+
+def rejoin_compound_names(names: list) -> list:
+    """Undo an earlier split of a compound firm name in a stored list: ["Plug", "Play"] -> ["Plug and Play"]."""
+    out: list = []
+    i = 0
+    while i < len(names):
+        for compound in COMPOUND_NAMES:
+            pieces = re.split(r"\s+(?:and|&)\s+", compound)
+            if [str(n).strip().lower() for n in names[i:i + len(pieces)]] == [p.lower() for p in pieces]:
+                out.append(compound)
+                i += len(pieces)
+                break
+        else:
+            out.append(names[i])
+            i += 1
+    return out
+
+
+# "Moniepoint Gets Green Light to Acquire ...": the approval phrase is not the buyer.
+_APPROVAL_WORDS = {"green light", "greenlight", "go ahead", "approval", "nod", "clearance", "regulatory approval"}
+_APPROVED_BUYER = re.compile(
+    r"(?P<subj>[A-Z][\w&.'’-]*(?:\s+[A-Z][\w&.'’-]*){0,5})\s+(?:Gets?|Wins?|Receives?|Secures?|Obtains?)\s+"
+    r"(?:the\s+|regulatory\s+|CBN\s+|CBK\s+)?(?:Green\s*light|Go-ahead|Approval|Nod|Clearance)\b", re.IGNORECASE)
 
 
 def _recover_target_from_title(title: str, deal_type: str) -> Optional[str]:
@@ -1247,6 +1296,12 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         "headline": title,
         "sources": [{"publisher": publisher, "url": url, "publisher_url": publisher_url or None, "date": published, "title": title, "stage": stage}],
     }
+    # "Moniepoint Gets Green Light to Acquire ...": the approval phrase is not the buyer, the subject before it is.
+    if deal["deal_type"] in ("acquisition", "merger") and normalise_name(deal.get("buyer")) in _APPROVAL_WORDS:
+        m = _APPROVED_BUYER.search(title)
+        deal["buyer"] = _clean_name(m.group("subj")) if m else None
+        if deal.get("investors") and normalise_name(str(deal["investors"][0])) in _APPROVAL_WORDS:
+            deal["investors"] = [deal["buyer"]] if deal["buyer"] else []
     deal["id"] = deal_id(deal)
     # Last-mile invariant: a series numeral alone is never a valid fund target.
     if deal["deal_type"] == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", str(deal.get("target") or "").strip()):

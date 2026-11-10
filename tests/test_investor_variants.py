@@ -77,3 +77,21 @@ def test_nationalities_bare_suffixes_and_brand_words_never_merge():
     assert "Norwegian Investment Fund" in board and "Greenlight" in board and "Green Light" in board
     assert inv.fold_key("Partners") is None and inv.fold_key("Partner") is None
     assert inv.fold_key("Norwegians") != inv.fold_key("Norwegian Investment Fund")
+
+
+def test_reviewed_identities_merge_and_reviewed_lookalikes_stay_apart():
+    deals = [_deal(1, ["Beco"]), _deal(2, ["Beco Capital"]), _acq(3, "Enko"), _deal(4, ["Enko Capital"]),
+             _deal(5, ["Spark"]), _deal(6, ["Spark Capital"]), _deal(7, ["Variant"]), _deal(8, ["Variant Investments"])]
+    board = names(inv.leaderboard(deals, limit=50))
+    assert board["Beco Capital"] == 2 and "Beco" not in board
+    assert board["Enko Capital"] == 2 and "Enko" not in board          # reviewed: overrides the parent/arm rule
+    for n in ("Spark", "Spark Capital", "Variant", "Variant Investments"):
+        assert board[n] == 1, n
+
+
+def test_every_reviewed_entry_cites_a_specific_source():
+    import json
+    from pathlib import Path
+    data = json.loads((Path(inv.__file__).resolve().parents[1] / "data" / "investor_identities.json").read_text())
+    for e in data["same"]:
+        assert e["evidence"] and e["source"].startswith("https://") and e["source"].rstrip("/").count("/") >= 3, e["use"]
