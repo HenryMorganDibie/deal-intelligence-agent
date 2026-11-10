@@ -1271,6 +1271,22 @@
     "namibian offshore exploration block": {
       "name": "Namibian Offshore Exploration Block",
       "kind": "organization"
+    },
+    "okra": {
+      "name": "Okra",
+      "kind": "organization"
+    },
+    "chevron operated offshore exploration block": {
+      "name": "Chevron-Operated Offshore Exploration Block",
+      "kind": "organization"
+    },
+    "raenest": {
+      "name": "Raenest",
+      "kind": "organization"
+    },
+    "remitise": {
+      "name": "Remitise",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -1511,6 +1527,11 @@
           "title": "Nedbank completes acquisition of 66% of Kenya’s NCBA",
           "publisher": "BusinessDay SA",
           "url": "https://www.businessday.co.za/companies/company-strategy/2026-11-05-nedbank-completes-acquisition-of-66-of-kenyas-ncba/"
+        },
+        {
+          "title": "Nedbank acquires 66% stake in NCBA for N$2.93 billion",
+          "publisher": "Windhoek Observer",
+          "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxNU2ZERXE2ckhtem90SThRNVB1MUxoUW5qemZzWFJQRjVqTnNianlpRGttVjM4X0VYN243ZUNKNWp4azNaclNuaXQxWF9qeUJadUFzRXdMb2YzTGg0UmczblJqN1FpZ3VZN1FHb01YRTVfdmRuSUs1c0U0YzVrTldwUGZ3TTY?oc=5"
         }
       ]
     },
@@ -2135,6 +2156,11 @@
           "title": "Okra Solar secures $7m debt facility from BII to scale mesh-grids in Nigeria",
           "publisher": "- Disrupt Africa",
           "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOTHc4UE9JaXdwb1VhZy05d0huTHRCVml5NktsOWItdlZpQkRJRzNTYVNHS2JRWWFPc2xyenRWMC1xOGlmaGxMRVh1Tk1RY2lvYUJERmxmN3BEbVBfRm9ZbjFEOGNxTW5JRDdwM2dZNmlPZWRiUnZiV2NxTXFLTWZtZ2xYaGotMWxyUzVuU00xdjZpSHRJbWJRT01vWkJpTS1ETGpqSGRXQ3psUTdUd3FxOHRRaw?oc=5"
+        },
+        {
+          "title": "Okra Solar Secures USD 7 M Debt Facility From BII For Nigeria Expansion",
+          "publisher": "WeeTracker",
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNajRLQm9TaHJBV21WWkc5MFFWQzZxSUU4emlIcGRXR0lWZlhERURDV2tTTF8zZUM5QW0wWUgzRnNQdVU1RUUwbFE1djJraVpUNFh1bFg3dW02dmRwYVlUZE0waVNuLWY0elpORXFfcEpNNGxVU09iMHdBZmRlSU5iWTNwNlJYc1Vz?oc=5"
         }
       ]
     },
@@ -3809,6 +3835,11 @@
           "title": "Econet Burundi Invests $6.5 Million in Solar-Powered Telecom Network",
           "publisher": "TechAfrica News",
           "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOcDVFZmhPQ1RFeU9RTlhOcnprTWZDWi1mRWh3MGladjc3NG1hbkltbC1tNGVSM3kxNGpyQnFGWlBIRThiSkxOYVBjNHdFVU1SYWxqNmloX3FTTEpVOGVMYURuTXdJSDh2dmFvSG5LZUdwdjhNbmk5UG85aDZLeHJneE1fQU15THZvd0VsY2piNW9vbGxZRHpTOXBvMGlXTlZldno2WlQ4YV91UQ?oc=5"
+        },
+        {
+          "title": "Econet Burundi Invests $6.5 Million in Solar-Powered Telecom Network",
+          "publisher": "nextbillion.net",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxPbGRZRmt0N00tVW4yUEFxeWNrSVhhYjRKSHZrTmlaRGxyTUR0dnYtTmtyMy1rOHZObHVIaVAtdFJTX2IyamZnVmsyUlZ1bzFsNmtwSTY4b0hHWDk0UjFmdVVfMDRNVFdPdGpYNnNuTVE0VF9abDNBNThhVEl0Q3puR2lncU15cnlhYVpDWjV4NVZhTFNjVzFUSU9xNUlkZw?oc=5"
         }
       ]
     },
@@ -3837,6 +3868,11 @@
           "title": "QatarEnergy agrees to buy 25% of Namibia’s PEL 82 licence from Chevron",
           "publisher": "Oil & Gas Middle East",
           "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5RNXVZRlNFZ2JtNmpLbUE0UWdiU0xmSDNfSUp1NFlZRzJIUVZxTERwQmo5d1RHRE9GYURobE9yYXEzb2s2WGF2TEpYdTNsTU5IVi1UR1k1TlVLcTcyRU5fT2J4cEJMLVlLTmVkb2NXZzBXSlZJaHc?oc=5"
+        },
+        {
+          "title": "QatarEnergy Buys 25% Stake in Namibia's PEL 82 from Chevron - News and Statistics",
+          "publisher": "IndexBox",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQVVdHZ0d4VjNKS3JUcVcySzdja2djT1owM1k0bEx3MFdVUDVXZEQ0bXZLQlBXYTNFc3R0R2F5SjI4RDhtZjkwcDhxdE4tNm81ZktoOVdYZkl3Z2swWU84LXczRUttelNkUXdEczgzOHQwT0NCN3FnOHhMd21yQ0xkRHJhbVVFM0JpN01IVXo5S3hfN2M3R3FQZ0E2elY0RHU5QkV1ZG9LYw?oc=5"
         }
       ]
     },
@@ -3879,6 +3915,11 @@
           "title": "Ethiopian Gaming Startup Rise Of Fearless Raises USD 1 M From Epic Edges Capital",
           "publisher": "WeeTracker",
           "url": "https://weetracker.com/2026/11/09/rise-of-fearless-raises-1-million-epic-edges-capital/"
+        },
+        {
+          "title": "Ethiopian Gaming Startup Rise Of Fearless Raises USD 1 M From Epic Edges Capital",
+          "publisher": "WeeTracker",
+          "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxONWdCd3g5ZTltbmtTT0hJbXg4dktKUXFQSm1DVE1teEQwWGhhWkFhMGlFb0JXSUNQOVctb09Fa3UzOFdjX1hfOThyWGFGYkdrNWV1VkRtbjhtU0VuY2pMdFlTOWRrTWpXdXgyUlZqNlRVQWFuOEp2b29oaGo1NkU3R0VFN2NWWkxwd2tFYUxSQ2M?oc=5"
         }
       ]
     },
@@ -3940,6 +3981,11 @@
           "title": "Damen Announces Acquisition Of Wakty At Cairo ICT 2026, Strengthening Its Position In Egypt’s Digital Payments Market",
           "publisher": "followict",
           "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOZk84VW9ETTJQNDdZVm9iV0JObmg1UUNQeDVhTjdJZVFYQkZpaHo2dUxBWC10WHJDZG42ZWx6dTJ1ZTNNa21yaHRIQVBoT2xKT1FvTlFwaVFaNFo4TzFMSlRETVp2cUR4MmU5SEllNklNQl9sd1NHQzR0TG5odERUUkpyMW9CRHoxdU1mR0dvZ2dsUWZVem8zNi1hZzNHU1NiMGdMNm1IVHE3Z3U2ZXlvVnh1SW0zTUNoemtGMGduaWdqeFpTbGw3Z3IwMmlMQXdEazZRN1YzYVpTQQ?oc=5"
+        },
+        {
+          "title": "Damen announces acquisition of Wakty at Cairo ICT 2026, strengthening its position in Egypt’s digital payments market",
+          "publisher": "Zawya",
+          "url": "https://news.google.com/rss/articles/CBMiiAJBVV95cUxPc2luUnBkZE85S3R2a21EaDlyenUyem5fMmlIX3ZYX0l2VGs1REhxYk1CZERCSzVCNF9tTVQxS0lyMTN5UHUxLVpzbDRVQ0NtTndJalE3VFl6UmtWRVpzLTB6V2VxRlBNSFM2R0pnUTRtdUYtRmhqajVPQmlHbGNzNlRwMnZxUkdscmRhLWl4cHRHT2pRUFZPVHpBTlQ3b0hIRldCMEFNQktDcEVoQi1xbmR6LUdoOEh0QjI3UWtua3dGRUVlbzBrS3FKWDVoazRTckVFR1J3dDk3TkZxUkhoTFZ4ZDliUXQzbHZzaXlJV1Rha08yLXRnNzk0dTM0dklsZHR2bUtCXzQ?oc=5"
         }
       ]
     },
@@ -3982,6 +4028,11 @@
           "title": "QatarEnergy to acquire 25% stake in Chevron oil block in Namibia",
           "publisher": "Businessfront",
           "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxORWZOb0VtVkNLVVFJQlZEdmhLcVVQYkdRQ3UzWWFrM1NmbkI2cjVGVTgwLWFaVnlleXlSMVlFZmhOYzNfYkVOM1BXRmVFU2R3THg0WjdFXzZCcVVLRXNkRURHSjZQMHNLZFNhUDJrajVyVjBJTmtZbnlEMmNTNGhtZElqOTMxX1RJ?oc=5"
+        },
+        {
+          "title": "QatarEnergy buys 25% of Chevron oil exploration license",
+          "publisher": "The Namibian",
+          "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNSElfVmQ0S2dyLXNsSXNMYUFMaUQ4c3FBQkNCeEdfeWlGUE9Lb1kwQWtFSzJqd2xmdk9Wb1pOVG9rbVpHd3ZRSUFYc3BKUTNZbjZNeVMwSFpKaDZLRzM1ZElmZEVFNXJpZldtaHBkY3MzQVowblJycEthMmxEZjl3SUliTU1Sd3Fybm8w?oc=5"
         }
       ]
     },
@@ -4174,6 +4225,11 @@
           "title": "QatarEnergy to acquire 25% stake in Namibia’s PEL82 licence",
           "publisher": "Yahoo Finance",
           "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPNFM4UDVOR0YzbGRac18xSl9CckJXWXk0SW95S0F4a3pWbmF5ODNBdENUQmRobVFQODc0MVJnd2k0ckt1ekNqVFU5REpjckhGcGtZVDh2LWxjQkxCaU90aGlNRjNKUWxNQ2FtTEtCbEF1Mi1sQTI4eU81ekloZjB6TEhvOUdoT2pJMGc?oc=5"
+        },
+        {
+          "title": "QatarEnergy to acquire 25% stake in Namibia’s PEL82 licence",
+          "publisher": "Offshore Technology",
+          "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxOYVh0TzFSbmFIUXg4WG5PUnQ5bzhyWmw2YV9SWG5qRWtUb1BxempkY3VqajR4QkpzbFJXZElaNUdiTFJ0Z3F2MFRrbXhYNUtiUklVeWpRdnNnVHpkc2JqbnczUjlyLU41YUYxM1FuUjg4aFptYWlZMlNFSll0akl1aVkxR1RVNWpSMXY2RU5B?oc=5"
         }
       ]
     },
@@ -4190,7 +4246,49 @@
           "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPSmVYR1dDemx0OVpGSU5HN1FjZm93Mm5SXy1OdW5hcU9ZUG5IT3RVSS15b2tsTURUbGJ5V19nSVUwa1Z1MHQzbm5Hb2paamViclJIWlhId2szSjB4WENFa2oxakZ1eHF0UnVXWXhFVXlVeEJIYmNGUnlSczVfaVI4NkFid2I1WFlPNkRiSE1DVVVvbGdMYzNIV1BQc0VmQ01yb05jSU4ySFk2c2lraXBEUTYzdGZKUQ?oc=5"
         }
       ]
+    },
+    "3691e7b55bbfad9721ff": {
+      "id": "3691e7b55bbfad9721ff",
+      "from": "bii",
+      "to": "okra",
+      "type": "equity_funding",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "BII invests $7m in Okra to expand clean energy access in Nigeria",
+          "publisher": "The Guardian Nigeria News",
+          "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPWi1RX2RKWHhBQS1pRnA2MHZFM1o3RWJVMk5HYmxmVng2a1d4R244Qnh6WE5NLUNFOXluSEkxSkVvSzJwSTMxMUl3TGV6UFJ2WEU2dFVhYVg1a2syWVl6MjBkYkdMZUJlWE5uNDRSWHlBU3VwT2lJZkNXZUIwOWhfWmR6OTFKOEFQTnZmUDlpZHBtbmd0TVE?oc=5"
+        }
+      ]
+    },
+    "44e5936ccaf6073660e3": {
+      "id": "44e5936ccaf6073660e3",
+      "from": "qatarenergy",
+      "to": "chevron operated offshore exploration block",
+      "type": "acquisition",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "QatarEnergy to Acquire 25% Stake in Chevron-Operated Offshore Exploration Block in Namibia",
+          "publisher": "DNE Africa",
+          "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNenNOaUFOQzVoTWpYMXYxZmtncDlqUzFiMk9ST25HMTJIS1EwVTM0THdiTjNCdUZvaHVyVDNWcjFRUjExcURtdHA0NjJ4WHVFNFJkU0hncVBOTU5oeVFPbjBBcGtUNDRSaFNqOGwxRnFQMVR3UDZYNy1oQlZEamF1QXlpZTFzbFhjRlk0V0FVXzFYVDBIdE5LaGljTTM1ZGdLWlBsS044Mm94UnpscVREMWNJeGpGTFI0Y3BnVGRpVmdQZw?oc=5"
+        }
+      ]
+    },
+    "6449497099fd3c3217fa": {
+      "id": "6449497099fd3c3217fa",
+      "from": "raenest",
+      "to": "remitise",
+      "type": "acquisition",
+      "first_seen": "2026-11-10",
+      "sources": [
+        {
+          "title": "Nigerian Fintech Raenest Acquires UK Payments Company Remitise To Expand Globally",
+          "publisher": "WeeTracker",
+          "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPMzIxaFpXdXBCWEZDQ3VSYy16NEsyV0VEek5PZm5XU0FiLTI2WnVoYWg1Ymc3UF91UFJBeGJPWGVwVXBWSUNJUlFGbDVaQVM5Tkk3THhRU3ZNVGl5cXlTRzZiSEpaemNiMmoyZmdEdTh6ZDRxTXpPVXRjSUR2R01NaEFJdjRDcFU?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-10T13:06:38.814668+00:00"
+  "updated_at": "2026-11-10T20:59:45.846178+00:00"
 }

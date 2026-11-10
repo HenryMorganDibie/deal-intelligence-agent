@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-10T13:06:43.282010+00:00",
+  "updated_at": "2026-11-10T20:59:50.350268+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 61,
+      "new_review_items_today": 56,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 184,
-      "new_observations_today": 3,
+      "observations_collected": 185,
+      "new_observations_today": 1,
       "unreviewed_flagged_observations": 29,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,22 +57,22 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 193,
-      "entities": 318,
+      "relationships": 196,
+      "entities": 322,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
       "id": "learned_ranking",
       "name": "Learned ranking",
       "status": "promoted",
-      "eligible_backtest_rows": 5969,
+      "eligible_backtest_rows": 5970,
       "holdout_metrics": {
         "learned_ranker": {
           "n": 1477,
           "positives": 282,
           "base_rate": 0.190928,
           "precision_at_20pct": 0.462838,
-          "brier": 0.125064
+          "brier": 0.125081
         },
         "alpha_baseline": {
           "n": 1477,
@@ -86,7 +86,7 @@
           "positives": 282,
           "base_rate": 0.190928,
           "precision_at_20pct": 0.190928,
-          "brier": 0.156385
+          "brier": 0.1564
         }
       },
       "promoted": true,
@@ -177,32 +177,34 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 184,
-    "new_rows": 3,
+    "collected_tickers": 185,
+    "new_rows": 1,
     "failures": [
-      "HSP.JO",
-      "HUL.JO",
-      "HWA.JO",
-      "HWN.JO",
-      "IAINSURE.LG",
-      "IAM.CS",
-      "IAP.JO",
-      "IBCT.CA",
-      "IBMC.CS"
+      "ICAL.CA",
+      "ICFC.CA",
+      "ICID.CA",
+      "ICLE.CA",
+      "ICMI.CA",
+      "IDHC.CA",
+      "IDQ.JO",
+      "IDRE.CA",
+      "IFAP.CA",
+      "IHL.JO",
+      "IIL.GH"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 318,
-    "relationships": 193,
-    "source_links": 236,
+    "nodes": 322,
+    "relationships": 196,
+    "source_links": 247,
     "most_connected": [
       {
-        "name": "Afreximbank",
-        "degree": 9
+        "name": "QatarEnergy",
+        "degree": 10
       },
       {
-        "name": "QatarEnergy",
+        "name": "Afreximbank",
         "degree": 9
       },
       {
@@ -222,6 +224,10 @@
         "degree": 4
       },
       {
+        "name": "BII",
+        "degree": 4
+      },
+      {
         "name": "Amsons Group",
         "degree": 3
       },
@@ -232,10 +238,6 @@
       {
         "name": "Sterling Oil",
         "degree": 3
-      },
-      {
-        "name": "BII",
-        "degree": 3
       }
     ]
   },
@@ -243,10 +245,10 @@
     "status": "promoted",
     "promoted": true,
     "source": "docs/backtest_predictions.csv",
-    "eligible_rows": 5969,
-    "training_rows": 4492,
+    "eligible_rows": 5970,
+    "training_rows": 4493,
     "holdout_rows": 1477,
-    "training_positive_labels": 1054,
+    "training_positive_labels": 1055,
     "holdout_positive_labels": 282,
     "train_through": "2026-02-15",
     "holdout_from": "2026-03-15",
@@ -256,7 +258,7 @@
         "positives": 282,
         "base_rate": 0.190928,
         "precision_at_20pct": 0.462838,
-        "brier": 0.125064
+        "brier": 0.125081
       },
       "alpha_baseline": {
         "n": 1477,
@@ -270,7 +272,7 @@
         "positives": 282,
         "base_rate": 0.190928,
         "precision_at_20pct": 0.190928,
-        "brier": 0.156385
+        "brier": 0.1564
       }
     },
     "promotion_rule": "Promote only if holdout precision@top-20% beats alpha by at least 2 percentage points and Brier score beats the prevalence baseline."
