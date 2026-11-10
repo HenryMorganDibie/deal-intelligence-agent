@@ -128,3 +128,13 @@ def test_stored_records_drop_history_figures_and_existing_backers():
             "amount": 140e6, "currency": "USD",
             "headline": "Dangote-Backed Private Equity Firm Secures $140 Million In Initial Funding For $500 Million Fund"}
     assert deals.reclassify(fund) is None or "investors" not in deals.reclassify(fund)
+
+
+def test_a_repeat_run_on_the_same_day_is_not_a_failure(cron, monkeypatch):
+    monkeypatch.setenv("CONTENT_DRAFTS_TO", "owner@example.com")
+
+    async def duplicate(*a, **kw):
+        return {"sent": False, "status": 409, "error": "http_409"}
+    monkeypatch.setattr(hm.email_alerts, "send", duplicate)
+    body = client().get("/api/cron/content-drafts").json()
+    assert body["sent"] is True and body["already_sent"] is True

@@ -1823,11 +1823,13 @@ async def cron_content_drafts(request: Request, dry_run: bool = False) -> dict:
         sent = await email_alerts.send(client, to, subject, body, text, None,
                                        email_alerts.idempotency_key(f"content-drafts-{result['date']}", "owner"),
                                        tags=["content-drafts"])
+    if sent["error"] == "http_409":           # today's email was already delivered; a repeat run is not a failure
+        sent = {"sent": True, "status": 409, "error": None, "already_sent": True}
     if not sent["sent"]:
         log.error("content drafts email failed: %s", sent["error"])
     return {"date": result["date"], "drafts": len(result["drafts"]), "deals_in_window": result["deals_in_window"],
             "held_back": len(result.get("held_back") or []),
-            "sent": sent["sent"], "error": sent["error"]}
+            "sent": sent["sent"], "error": sent["error"], "already_sent": bool(sent.get("already_sent"))}
 
 
 @router.get("/api/cron/country-snapshot")
