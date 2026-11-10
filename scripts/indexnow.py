@@ -14,7 +14,8 @@ KEY = "c5628a9c5a15747df9b85d0bb07ab312"
 
 
 def main() -> int:
-    with urlopen(f"https://{HOST}/sitemap.xml", timeout=30) as r:
+    with urlopen(Request(f"https://{HOST}/sitemap.xml", headers={"User-Agent": "DealIntelligence-IndexNow/1.0"}),
+                 timeout=30) as r:
         urls = re.findall(r"<loc>([^<]+)</loc>", r.read().decode())
     if not urls:
         print("sitemap is empty; nothing to submit")
@@ -22,7 +23,8 @@ def main() -> int:
     body = json.dumps({"host": HOST, "key": KEY, "keyLocation": f"https://{HOST}/{KEY}.txt",
                        "urlList": urls[:10000]}).encode()
     req = Request("https://api.indexnow.org/indexnow", data=body, method="POST",
-                  headers={"Content-Type": "application/json; charset=utf-8"})
+                  headers={"Content-Type": "application/json; charset=utf-8",
+                           "User-Agent": "DealIntelligence-IndexNow/1.0"})
     with urlopen(req, timeout=30) as r:
         print(f"submitted {len(urls)} URLs: HTTP {r.status}")
         return 0 if r.status in (200, 202) else 1
