@@ -331,6 +331,7 @@ def _clean_name(name: Optional[str]) -> Optional[str]:
     n = re.sub(r"^.*?-managed\s+", "", n)
     n = re.split(r"\s+(?:That|Which|Who|Behind|After|Before|As|With)\b", n)[0]
     n = n.strip("'\"‘’“” ")
+    n = re.sub(r"^(?:Why|How|When|Where)\s+(?=[A-Z])", "", n)       # "Why TGI Sold Chivita": the seller is TGI
     n = re.sub(r"^(?:Le|La|Les|L['’]|O|A|Os|As)\s+(?=[A-Z])", "", n)
     n = re.sub(r"^L['’][a-zéèêàç]+\s+", "", n)                       # "L'indien A2MP"
     n = re.sub(r"^[LD]['’](?=[A-ZÀ-Ý])", "", n)                       # "L’Égypte" is Égypte
@@ -541,8 +542,21 @@ def reclassify(deal: dict) -> Optional[dict]:
     """What the current rules change in a stored record: {"excluded": reason}, or a corrected deal type for a
     bond, loan, listing or fund close stored as an equity round. None when the record stands."""
     headline = deal.get("headline") or ""
-    # Corrections to the parties, which leave the record in place.
+    # Prose caught by a deal verb ("Don't Sell Your Votes", "He Acquires Porsche") is not a transaction; a
+    # question word in front of a real party ("Why TGI Sold Chivita") is dropped and the record kept.
     parties_fix: dict = {}
+    for key in ("target", "buyer", "seller"):
+        name = deal.get(key)
+        if not isinstance(name, str):
+            continue
+        bare = re.sub(r"^(?:Why|How|When|Where)\s+(?=[A-Z])", "", name)
+        if _not_a_party(bare) or (key == "target" and bare != name and _is_place(bare)):
+            return {"excluded": "reclassified: a sentence, not a named party"}
+        if bare != name:
+            parties_fix[key] = bare
+    if isinstance(deal.get("investors"), list) and any(isinstance(i, str) and _not_a_party(i) for i in deal["investors"]):
+        return {"excluded": "reclassified: a sentence, not a named party"}
+    # Corrections to the parties, which leave the record in place.
     if deal.get("deal_type") in ("acquisition", "merger") and normalise_name(deal.get("buyer")) in _APPROVAL_WORDS:
         m = _APPROVED_BUYER.search(headline)
         parties_fix["buyer"] = _clean_name(m.group("subj")) if m else None
@@ -904,6 +918,19 @@ _KENYAN_COUNTIES = {"Kwale", "Kilifi", "Mombasa", "Kisumu", "Nakuru", "Kiambu", 
                     "Kakamega", "Bungoma", "Meru", "Nyeri", "Kajiado", "Narok", "Lamu", "Marsabit", "Busia"}
 
 
+# A party that starts with a pronoun, a possessive or a negated verb is ordinary prose caught by a deal verb
+# ("Don't Sell Your Votes", "Why We Sold Our Stake"), never a company name. Whole words only, so MyBucks stays.
+_PROSE_PARTY = re.compile(r"^(?:I|We|You|They|He|She|It|Your|Our|My|Their|His|Her|Its|Us|Them|Should|Would|Could|"
+                          r"Never|Please|Stop|Let|Do|Does|Don['’]t|Doesn['’]t|Won['’]t|Can['’]t)\b(?![.&-])|\b\w+n['’]t\b"
+                          r"|^(?:How|Why|When|Where)\s+the\b|\s(?:Can|Could|Should|Would|Must)(?:\s|$)")
+# Case-sensitive on purpose: "US" (the United States, as in "US International Development Finance Corporation")
+# is not the pronoun "Us", and "IT" is not "It".
+
+
+def _not_a_party(name: Optional[str]) -> bool:
+    return bool(name) and bool(_PROSE_PARTY.search(name.strip()))
+
+
 def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = None,
                  publisher: str = "", url: str = "", publisher_url: str = "", country_hint: Optional[str] = None,
                  africa_source: bool = False,
@@ -1243,6 +1270,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None                              # lending to a state is sovereign finance, not a company deal
     if deal_type in ("acquisition", "merger", "exit", "ipo", "fund_raise") and not target:
         return None                              # who or what changed hands must be named
+    if any(_not_a_party(p) for p in (target, buyer, seller, *investors)):
+        return None                              # "Don't Sell Your Votes": advice, not a transaction
     if deal_type == "fund_raise" and amount is None and not re.search(r"(?i)\b(first|final|second|third|interim|hard|\d(?:st|nd|rd|th))\s+close", title):
         return None
     # Bonds placed on a regional market are debt.
