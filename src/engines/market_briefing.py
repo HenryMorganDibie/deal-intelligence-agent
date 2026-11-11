@@ -203,10 +203,10 @@ def currency_post(overview: dict) -> Optional[dict]:
     text = (f"African currencies against the US dollar this year:\n\n"
             f"Strongest: {', '.join(c['currency'] + ' ' + pct(c['ytd_vs_usd']) for c in ranked[:3])}\n"
             f"Weakest: {', '.join(c['currency'] + ' ' + pct(c['ytd_vs_usd']) for c in ranked[::-1][:3])}\n\n"
-            f"{APP}/app/markets")
+            f"{APP}/markets")
     if _x_len(text) > X_LIMIT:
         text = f"Strongest African currency against the dollar this year: {best['currency']} {pct(best['ytd_vs_usd'])}. " \
-               f"Weakest: {worst['currency']} {pct(worst['ytd_vs_usd'])}. {APP}/app/markets"
+               f"Weakest: {worst['currency']} {pct(worst['ytd_vs_usd'])}. {APP}/markets"
     return {"kind": "Currencies", "deal_ids": [], "x": text, "linkedin": text}
 
 
@@ -214,10 +214,10 @@ def tbill_post(recent: list[tuple[str, str, float, str]]) -> Optional[dict]:
     if len(recent) < 2:
         return None
     lines = [f"{name}: {y:.2f}% ({tenor})" for name, tenor, y, _ in recent[:5]]
-    text = "This week's Treasury bill auctions in Africa:\n\n" + "\n".join(lines) + f"\n\n{APP}/app/markets"
+    text = "This week's Treasury bill auctions in Africa:\n\n" + "\n".join(lines) + f"\n\n{APP}/markets"
     while _x_len(text) > X_LIMIT and len(lines) > 2:
         lines.pop()
-        text = "This week's Treasury bill auctions in Africa:\n\n" + "\n".join(lines) + f"\n\n{APP}/app/markets"
+        text = "This week's Treasury bill auctions in Africa:\n\n" + "\n".join(lines) + f"\n\n{APP}/markets"
     return {"kind": "Treasury bills", "deal_ids": [], "x": text, "linkedin": text}
 
 
@@ -229,10 +229,10 @@ def movers_post(gainers: list[dict], losers: list[dict], names: dict) -> Optiona
     text = (f"Biggest movers on African exchanges on the last trading day:\n\n"
             + "\n".join(f"Up: {_share(r, names)} {pct(r['chg_1d'])}" for r in gainers[:2]) + "\n"
             + "\n".join(f"Down: {_share(r, names)} {pct(r['chg_1d'])}" for r in losers[:2])
-            + f"\n\n{APP}/app/markets")
+            + f"\n\n{APP}/markets")
     if _x_len(text) > X_LIMIT:
         text = (f"Biggest movers on African exchanges: {_share(gainers[0], names)} {pct(gainers[0]['chg_1d'])}, "
-                f"{_share(losers[0], names)} {pct(losers[0]['chg_1d'])}. {APP}/app/markets")
+                f"{_share(losers[0], names)} {pct(losers[0]['chg_1d'])}. {APP}/markets")
     return {"kind": "Stock movers", "deal_ids": [], "x": text if _x_len(text) <= X_LIMIT else None, "linkedin": text}
 
 

@@ -175,10 +175,10 @@ def roundup(deals: list[dict], label: str) -> Optional[dict]:
     lines = [f"{i}. {summary(d)}" + (f" ({country_name(d.get('country'))})" if country_name(d.get("country")) else "")
              for i, d in enumerate(top, 1)]
     linkedin = "\n\n".join([f"African deals, {label}:", "\n".join(lines),
-                            f"Sources for every deal, plus investors and country data: {APP}/app/deals", HASHTAGS])
+                            f"Sources for every deal, plus investors and country data: {APP}/deals", HASHTAGS])
     x_lines, x = [], None
     for d in top:
-        candidate = "\n".join([f"African deals, {label}:", *x_lines, f"- {summary(d)}", f"{APP}/app/deals"])
+        candidate = "\n".join([f"African deals, {label}:", *x_lines, f"- {summary(d)}", f"{APP}/deals"])
         if x_length(candidate) > X_LIMIT:
             break
         x_lines.append(f"- {summary(d)}")
@@ -203,9 +203,9 @@ def week_in_review(deals: list[dict], start: date, end: date) -> Optional[dict]:
     repeat = [(n, c) for n, c in backers.most_common(3) if c >= 2]
     if repeat:
         parts.append("Most active investors: " + _join([f"{n} ({c} deals)" for n, c in repeat]) + ".")
-    parts += [f"Every figure links to its sources: {APP}/app/deals", HASHTAGS]
+    parts += [f"Every figure links to its sources: {APP}/deals", HASHTAGS]
     x = f"The week in African deals: {len(deals)} tracked" + (f", {money(total)} disclosed" if total else "") \
-        + (f". Busiest market: {countries.most_common(1)[0][0]}" if countries else "") + f". {APP}/app/deals"
+        + (f". Busiest market: {countries.most_common(1)[0][0]}" if countries else "") + f". {APP}/deals"
     return {"kind": "Week in review", "deal_ids": [d["id"] for d in top], "linkedin": "\n\n".join(parts),
             "x": x if x_length(x) <= X_LIMIT else None}
 
@@ -278,11 +278,11 @@ def market_post(overview: Optional[dict]) -> Optional[dict]:
     if not lines:
         return None
     x_lines = list(lines)                         # X drops lines to fit; LinkedIn keeps them all
-    x = "\n\n".join(x_lines + [f"{APP}/app/markets"])
+    x = "\n\n".join(x_lines + [f"{APP}/markets"])
     while x_length(x) > X_LIMIT and len(x_lines) > 1:
         x_lines.pop()
-        x = "\n\n".join(x_lines + [f"{APP}/app/markets"])
-    linkedin = "\n\n".join(lines + [f"Prices, sectors and currencies across African exchanges: {APP}/app/markets",
+        x = "\n\n".join(x_lines + [f"{APP}/markets"])
+    linkedin = "\n\n".join(lines + [f"Prices, sectors and currencies across African exchanges: {APP}/markets",
                                      HASHTAGS])
     return {"kind": "Markets", "deal_ids": [], "linkedin": linkedin, "x": x if x_length(x) <= X_LIMIT else None}
 
