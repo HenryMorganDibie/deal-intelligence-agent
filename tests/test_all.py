@@ -3997,8 +3997,8 @@ class TestHostedApi:
             headers={"x-forwarded-for": "203.0.113.7"},
         )
 
-        assert response.json() == {"ok": True, "behavioral_signals": {"ok": True}}
-        assert rpc.await_count == 2
+        assert response.json() == {"ok": True, "behavioral_signals": {"ok": True}, "plan_funnel": {"ok": True}}
+        assert rpc.await_count == 3
         assert rpc.await_args_list[0].args[1] == "visit_stats"
         assert rpc.await_args_list[0].args[2] == {
             "p_days": 7,
@@ -4007,6 +4007,8 @@ class TestHostedApi:
         }
         assert rpc.await_args_list[1].args[1] == "behavioral_signal_stats"
         assert rpc.await_args_list[1].args[2] == {"p_days": 7}
+        assert rpc.await_args_list[2].args[1] == "plan_funnel"
+        assert rpc.await_args_list[2].args[2] == {"p_days": 7}
 
     def test_admin_stats_rejects_malformed_owner_browser_id(self, monkeypatch):
         import src.hosted_market as hm

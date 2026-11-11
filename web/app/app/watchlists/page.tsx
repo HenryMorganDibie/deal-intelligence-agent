@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
+import { ProBadge } from "../../../components/app/PlanLinks";
+import { usePlan } from "../../../lib/plan";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, Field, PageHeader, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
@@ -28,6 +30,8 @@ function writeSaved(rows: Saved[]) {
 }
 
 export default function WatchlistsPage() {
+  const plan = usePlan();
+  const alertsLocked = plan !== null && !plan.alerts_max;
   const [saved, setSaved] = useState<Saved[]>([]);
   const [name, setName] = useState("");
   const [companies, setCompanies] = useState("");
@@ -192,9 +196,16 @@ export default function WatchlistsPage() {
             <option value="weekly">Weekly digest, Friday UTC</option>
           </select>
         </Field>
-        <button type="submit" disabled={busy} className="btn btn-primary">
-          {busy ? "Creating..." : "Create watchlist"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="submit" disabled={busy} className="btn btn-primary">
+            {busy ? "Creating..." : "Create watchlist"}
+          </button>
+          {alertsLocked && (
+            <span className="inline-flex items-center text-sm text-[color:var(--muted)]">
+              Watchlist alerts are part of Pro<ProBadge source="watchlist_create" />
+            </span>
+          )}
+        </div>
         {error && <ErrorNote message={error} />}
       </form>
 

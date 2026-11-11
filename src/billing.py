@@ -118,6 +118,8 @@ async def checkout(body: CheckoutBody) -> dict:
         if account.get("status") in ("active", "attention") and account.get("subscription_code"):
             raise HTTPException(409, "You already have a subscription. Manage it from your account to change plans.")
         code, amount, label = await plan_code(client, body.plan, body.interval, body.currency)
+        from src import plans
+        await plans.record(body.user_id, "checkout_started", f"{body.plan} {body.interval} {body.currency}")
         tx = await _paystack(client, "POST", "/transaction/initialize", {
             "email": account["email"], "amount": amount, "currency": body.currency, "plan": code,
             "callback_url": f"{APP_URL}/account/billing?checkout=done",
@@ -197,6 +199,9 @@ async def apply_event(payload: dict, client: httpx.AsyncClient) -> dict:
         "p_next": data.get("next_payment_date") or subscription.get("next_payment_date")}
     with_currency = {**apply_args, "p_currency": currency if currency in ("NGN", "USD") else None}
     result = await _db(client, "billing_apply", with_currency, apply_args)
+    if (result or {}).get("applied") and event == "charge.success":
+        from src import plans
+        await plans.record(account["user_id"], "paid", f"{plan} {interval or ''}".strip())
     return {"event": event, **(result or {})}
 
 

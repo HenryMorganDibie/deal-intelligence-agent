@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, Field, Loading, PageHeader, Pagination, Table, Td, usd, words } from "../../../../components/app/ui";
+import { ProBadge } from "../../../../components/app/PlanLinks";
 import { ApiError } from "../../../../lib/api";
+import { usePlan } from "../../../../lib/plan";
 import { AFRICAN_COUNTRIES } from "../../../../lib/countries";
 import { get } from "../../../../lib/market";
 import { asOf, companyHref, directoryHref, quoteWhen, pct, price, tone, type Directory, type Screener } from "../../../../lib/markets-data";
@@ -123,6 +125,9 @@ export default function ScreenerPage() {
   const [offset, setOffset] = useState(0);
   const [limit, setLimit] = useState(50);
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const plan = usePlan();
+  const canExport = !plan || plan.exports;          // unknown: let the server decide
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
@@ -149,6 +154,7 @@ export default function ScreenerPage() {
   async function download() {
     if (!data || !f || exporting) return;
     setExporting(true);
+    setExportError(null);
     try {
       const params = Object.fromEntries(Object.entries(f).filter(([, v]) => v));
       const rows: Screener["rows"] = [];
@@ -160,7 +166,8 @@ export default function ScreenerPage() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "The export could not be completed.");
+      // Shown under the button: the table stays on screen.
+      setExportError(e instanceof ApiError ? e.message : "The export could not be completed.");
     } finally {
       setExporting(false);
     }
@@ -234,10 +241,15 @@ export default function ScreenerPage() {
         <section className="mt-6">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[color:var(--dim)]">
             <span>{data.total.toLocaleString()} {f?.securities && f.securities !== "dollar_lines" ? "listings" : "shares"}</span>
-            <button onClick={download} disabled={exporting} className="underline-offset-4 hover:underline disabled:opacity-60">
-              {exporting ? "Preparing CSV…" : `Download CSV (all ${data.total.toLocaleString()})`}
-            </button>
+            {canExport ? (
+              <button onClick={download} disabled={exporting} className="underline-offset-4 hover:underline disabled:opacity-60">
+                {exporting ? "Preparing CSV…" : `Download CSV (all ${data.total.toLocaleString()})`}
+              </button>
+            ) : (
+              <span className="inline-flex items-center">Download CSV<ProBadge source="screener_csv" /></span>
+            )}
           </div>
+          {exportError && <ErrorNote message={exportError} />}
           <Table head={["Company", "Exchange", "Sector", "Price", "Today", "YTD (local)", "YTD (USD)", "Market cap", "P/E", "Yield", "Traded (USD)", "As of"]} minWidth="72rem">
             {data.rows.map((r) => (
               <tr key={`${r.exchange}:${r.symbol}`} className={r.stale ? "opacity-60" : ""}>

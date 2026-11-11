@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SeePlansLink } from "./PlanLinks";
 import type { ReactNode } from "react";
 import type { Deal } from "../../lib/market";
 
@@ -48,7 +49,7 @@ export function ErrorNote({ message }: { message: string }) {
       {upgrade && (
         <>
           {" "}
-          <Link href="/account/billing" className="font-medium text-verified underline-offset-4 hover:underline">See plans →</Link>
+          <SeePlansLink source="limit" />
         </>
       )}
     </p>

@@ -49,7 +49,58 @@ type Stats = {
   actions?: ActionRow[];
   app_page_activity?: PageActivity[];
   behavioral_signals?: BehavioralSignals;
+  plan_funnel?: PlanFunnel;
 };
+
+type FunnelCount = { accounts: number; times: number };
+type PlanFunnel = {
+  status?: string; days?: number; accounts?: number; free_accounts?: number; new_accounts?: number;
+  paying_accounts?: number; free_using_briefs?: number; events?: Record<string, FunnelCount>;
+};
+
+/** Free to paid: who uses the free allowance, who meets a limit, who looks at the plans, who pays. */
+function FunnelPanel({ funnel }: { funnel?: PlanFunnel }) {
+  if (!funnel || funnel.status === "unavailable") {
+    return <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">Conversion figures are unavailable right now.</p>;
+  }
+  const ev = funnel.events ?? {};
+  const n = (k: string) => ev[k]?.accounts ?? 0;
+  const hitLimit = n("limit_ai_month") + n("limit_ai_day") + n("limit_alert") + n("limit_export");
+  const tiles: [number, string][] = [
+    [funnel.free_accounts ?? 0, `free accounts (${funnel.new_accounts ?? 0} new)`],
+    [funnel.free_using_briefs ?? 0, "free accounts using briefs"],
+    [hitLimit, "met a Pro limit"],
+    [n("see_plans"), "opened the plans"],
+    [n("checkout_started"), "started a checkout"],
+    [n("paid"), "paid"],
+    [funnel.paying_accounts ?? 0, "paying now"],
+  ];
+  const limits: [string, string][] = [
+    ["limit_ai_month", "used the 30 monthly briefs"], ["limit_ai_day", "used the 15 daily briefs"],
+    ["limit_alert", "tried to create an alert"], ["limit_export", "tried to download a CSV"],
+  ];
+  return (
+    <>
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {tiles.map(([value, label]) => (
+          <div key={label} className="panel p-4">
+            <div className="text-2xl font-semibold">{value.toLocaleString("en-US")}</div>
+            <div className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">{label}</div>
+          </div>
+        ))}
+      </div>
+      <ul className="mt-3 space-y-1 text-[0.8125rem] text-[color:var(--muted)]">
+        {limits.map(([k, label]) => (
+          <li key={k}>{n(k).toLocaleString("en-US")} accounts {label} ({(ev[k]?.times ?? 0).toLocaleString("en-US")} times)</li>
+        ))}
+      </ul>
+      <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
+        Last {funnel.days ?? 30} days, counted by account. If many free accounts use briefs but few meet a limit or
+        open the plans, the free allowance is too generous; if many meet a limit and few pay, look at price or Pro&apos;s value.
+      </p>
+    </>
+  );
+}
 
 
 
@@ -219,6 +270,9 @@ export default function Admin() {
           <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
             Since {stats.since}. Unique browsers are anonymous browser IDs, not verified people. Engaged browsers viewed two or more pages or used a feature; single-view browsers include crawlers and link previews, which are no longer counted from this release. This dashboard excludes this browser. Analysis and research runs are keyed by a salted IP hash, so runs from this network are also excluded; that can include other people using the same network.
           </p>
+
+          <h2 className="mt-8 font-semibold">Free to paid</h2>
+          <FunnelPanel funnel={stats.plan_funnel} />
 
           <AccountsPanel adminKey={loadedKey} days={days} />
 

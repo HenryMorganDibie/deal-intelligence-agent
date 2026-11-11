@@ -1,8 +1,8 @@
 """
 What a signed-in account's plan allows, checked on the server for every limited feature.
 
-  AI runs   briefs, research and market briefs together, counted per month (Free 3, Pro 100, Team 500)
-  Alerts    watchlists the account has (Free 3)
+  AI runs   briefs, research and market briefs together, counted per month (Free 30, Pro 100, Team 500)
+  Alerts    watchlists the account has (Pro and above)
   Exports   bulk CSV export of the screener (paid plans)
 
 Limits live in the api_plans table. The account comes from the web app's proxy (request_identity.account). A
@@ -31,6 +31,21 @@ _TTL = 30.0
 def _upgrade(message: str) -> HTTPException:
     # 402 tells the app to offer an upgrade rather than show an error.
     return HTTPException(402, message)
+
+
+PLAN_EVENTS = {"limit_ai_month", "limit_ai_day", "limit_alert", "limit_export", "see_plans", "checkout_started", "paid"}
+
+
+async def record(user: Optional[str], event: str, detail: Optional[str] = None) -> None:
+    """Note a step in the free-to-paid funnel for the owner's admin page. Never fails the request it belongs to."""
+    if not user or event not in PLAN_EVENTS or not hm._configured():
+        return
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            await hm._rpc(client, "record_plan_event", {"p_user": user, "p_event": event,
+                                                         "p_detail": (detail or "")[:60] or None})
+    except Exception as e:                      # analytics must never break the product
+        log.warning("plan event %s not recorded: %s", event, e)
 
 
 def _who(request: Request) -> Optional[str]:
@@ -72,6 +87,7 @@ async def use_ai(request: Request) -> None:
     out = r.json() or {}
     _cache.pop(user, None)
     if not out.get("ok"):
+        await record(user, "limit_ai_month", str(out.get("limit", 0)))
         if not out.get("limit"):
             raise _upgrade("Briefs and research runs are part of Pro. Browsing deals, companies, markets and "
                            "countries stays free.")
@@ -85,6 +101,8 @@ async def check_alert_slot(request: Request) -> Optional[str]:
     if not user or not hm._configured():
         return user
     lim = await limits(user, fresh=True)
+    if lim.get("alerts_used", 0) >= lim.get("alerts_max", 0):
+        await record(user, "limit_alert", lim.get("plan"))
     if not lim.get("alerts_max"):
         raise _upgrade("Alerts are part of Pro: email, Slack or Teams when a deal or event matches. Browsing stays free.")
     if lim.get("alerts_used", 0) >= lim.get("alerts_max", 0):
@@ -98,4 +116,5 @@ async def check_export(request: Request) -> None:
     if not user or not hm._configured():
         return
     if not (await limits(user)).get("exports"):
+        await record(user, "limit_export")
         raise _upgrade("CSV export is included in Pro and Team. Upgrade to download the full list.")

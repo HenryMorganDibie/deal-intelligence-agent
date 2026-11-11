@@ -881,6 +881,8 @@ async def _reserve(request: Request, label: str) -> int:
             "per_client_daily": await per_client_daily(request), "global_daily": GLOBAL_DAILY})
     if r.status_code != 200:
         if "client_limit" in r.text:
+            from src import plans, request_identity
+            await plans.record(request_identity.account(request), "limit_ai_day")
             raise HTTPException(429, f"You have used today's {PER_VISITOR_DAILY} free briefs and research runs. The limit "
                                      "resets at 00:00 UTC; Pro has no daily limit.")
         if "global_limit" in r.text:
@@ -1391,7 +1393,23 @@ async def admin_stats(request: Request) -> dict:
         stats = r.json()
         behavioral = await _rpc(client, "behavioral_signal_stats", {"p_days": days})
         stats["behavioral_signals"] = behavioral.json() if behavioral.is_success else {"status": "unavailable"}
+        funnel = await _rpc(client, "plan_funnel", {"p_days": days})
+        stats["plan_funnel"] = funnel.json() if funnel.is_success else {"status": "unavailable"}
         return stats
+
+
+class PlanEventBody(BaseModel):
+    event: Literal["see_plans"]
+    source: str = Field("", max_length=40, pattern=r"^[a-z0-9_-]*$")
+
+
+@router.post("/api/plan-event")
+async def plan_event(body: PlanEventBody, request: Request) -> dict:
+    """The app notes that a signed-in account opened the plans (from a limit message or a Pro label). Only that one
+    event is accepted from the browser; limits, checkouts and payments are recorded by the server itself."""
+    from src import plans, request_identity
+    await plans.record(request_identity.account(request), body.event, body.source or None)
+    return {"ok": True}
 
 
 @router.post("/api/admin/plan")

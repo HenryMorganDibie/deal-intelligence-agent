@@ -143,3 +143,28 @@ def test_paid_accounts_have_no_daily_cap_and_free_accounts_keep_it(env):
     plans._cache.clear()
     assert asyncio.run(hm.per_client_daily(req(account))) >= 1_000_000
     assert asyncio.run(hm.per_client_daily(req([]))) == hm.PER_VISITOR_DAILY
+
+
+def test_limits_and_plan_views_are_recorded_for_the_funnel(env, monkeypatch):
+    recorded = []
+
+    async def fake_rpc(client, fn, args):
+        if fn == "record_plan_event":
+            recorded.append((args["p_event"], args.get("p_detail")))
+            from tests.test_plan_limits import FakeResponse as R
+            return R(None)
+        if fn == "plan_limits":
+            return FakeResponse({"plan": "free", "exports": False, "ai_monthly": 30, "ai_used": 30,
+                                 "alerts_max": 0, "alerts_used": 0})
+        if fn == "consume_feature":
+            return FakeResponse({"ok": False, "limit": 30})
+        return FakeResponse(None, 500)
+    monkeypatch.setattr(hm, "_rpc", fake_rpc)
+    monkeypatch.setattr(hm, "_market_snapshot", lambda: {"quotes": {}, "fx": {}})
+    client = TestClient(api.app)
+    assert client.post("/api/research", json={"question": "Kenya banks"}, headers=app_headers()).status_code == 402
+    assert client.post("/api/watchlists", json={"name": "K", "countries": ["KE"]}, headers=app_headers()).status_code == 402
+    assert client.get("/api/markets/screener?limit=500", headers=app_headers()).status_code == 402
+    assert client.post("/api/plan-event", json={"event": "see_plans", "source": "screener"}, headers=app_headers()).json() == {"ok": True}
+    assert client.post("/api/plan-event", json={"event": "paid"}, headers=app_headers()).status_code == 422
+    assert [e for e, _ in recorded] == ["limit_ai_month", "limit_alert", "limit_export", "see_plans"]

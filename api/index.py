@@ -318,6 +318,8 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
     if resp.status_code != 200:
         message = resp.text
         if "client_limit" in message:
+            from src import request_identity
+            await plans.record(request_identity.account(request), "limit_ai_day")
             raise HTTPException(429, f"You have run {PER_VISITOR_DAILY} analyses today. The limit resets at 00:00 UTC; "
                                      "Pro has no daily limit.")
         if "global_limit" in message:
