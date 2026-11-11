@@ -1,0 +1,44 @@
+/** Plans as the pricing page and the account's billing page show them. Prices come from the database
+ * (billing_catalog); what each plan includes is described here. */
+
+export type CatalogPlan = {
+  id: "free" | "pro" | "team" | "institutional";
+  label: string;
+  monthly_requests: number;
+  seats: number;
+  self_serve: boolean;
+  price_month_ngn: number | null;
+  price_year_ngn: number | null;
+};
+
+/** Used only if the database cannot be reached, so the page still renders; the database is the source of truth. */
+export const FALLBACK_CATALOG: CatalogPlan[] = [
+  { id: "free", label: "Free", monthly_requests: 30, seats: 1, self_serve: false, price_month_ngn: 0, price_year_ngn: 0 },
+  { id: "pro", label: "Pro", monthly_requests: 3000, seats: 1, self_serve: true, price_month_ngn: 7500, price_year_ngn: 75000 },
+  { id: "team", label: "Team", monthly_requests: 15000, seats: 5, self_serve: true, price_month_ngn: 25000, price_year_ngn: 250000 },
+  { id: "institutional", label: "Institutional", monthly_requests: 100000, seats: 25, self_serve: false, price_month_ngn: null, price_year_ngn: null },
+];
+
+export const PLAN_FEATURES: Record<CatalogPlan["id"], { blurb: string; features: string[] }> = {
+  free: {
+    blurb: "Explore African private markets.",
+    features: ["Deals, companies, investors and countries", "3 alerts", "Public deal pages to share", "30 API requests a month"],
+  },
+  pro: {
+    blurb: "For analysts, founders and investors.",
+    features: ["Everything in Free", "Unlimited alerts by email, Slack or Teams", "CSV exports", "Company briefs and research",
+      "Full investor histories", "3,000 API requests a month"],
+  },
+  team: {
+    blurb: "For funds, advisers and corporate teams.",
+    features: ["Everything in Pro", "Up to 5 people", "15,000 API requests a month", "Priority support"],
+  },
+  institutional: {
+    blurb: "For institutions that need more.",
+    features: ["Everything in Team", "Custom data and coverage", "100,000 API requests a month", "Invoicing and onboarding"],
+  },
+};
+
+export function naira(amount: number): string {
+  return `₦${amount.toLocaleString("en-NG")}`;
+}

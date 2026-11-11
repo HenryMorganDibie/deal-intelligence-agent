@@ -67,8 +67,9 @@ export default function DevelopersPage() {
           <Link href="/app/api" className="underline">API keys page</Link> once you have an account.
         </p>
         <p className="mt-6 max-w-3xl rounded-xl border border-verified/30 bg-verified/[0.06] px-4 py-3 text-[0.875rem] leading-relaxed" role="note">
-          <span className="font-medium text-[color:var(--text)]">Free during early access.</span>{" "}
-          <span className="text-[color:var(--muted)]">Paid plans are coming soon; everyone who joins before then gets founding-member pricing, kept for as long as they stay subscribed.</span>
+          <span className="font-medium text-[color:var(--text)]">Start free with 30 requests a month.</span>{" "}
+          <span className="text-[color:var(--muted)]">Pro (3,000) and Team (15,000) are priced in naira on the{" "}
+            <Link href="/pricing" className="underline">pricing page</Link>; subscribe now and keep the founding price while you stay subscribed.</span>
         </p>
         <nav aria-label="On this page" className="mt-8 flex flex-wrap gap-2 text-sm">
           {[["#start", "Quick start"], ["#plans", "Plans"], ["#endpoints", "Endpoints"], ["#errors", "Errors"], ["#chat", "Slack, Teams and chat"], ["#webhooks", "Webhook payload"]].map(([href, label]) => (
@@ -101,10 +102,9 @@ for e in r.json()["events"]:
           </div>
           <p>Every request made with a key counts, whatever its result, except <span className={`kbd ${ink}`}>/v1/usage</span>. Usage is per account and shared by all its keys. The allowance resets on the 1st of each month (UTC). Each response carries <span className={`kbd ${ink}`}>X-RateLimit-Limit</span>, <span className={`kbd ${ink}`}>X-RateLimit-Remaining</span> and <span className={`kbd ${ink}`}>X-RateLimit-Reset</span> (Unix time). Bursts above 120 requests a minute from one address are slowed down.</p>
           <p>
-            Every plan is free during early access, with founding-member pricing for everyone who joins before paid plans
-            launch. Need more than 30 requests a month for a team, an integration or research? Request Pro access from the{" "}
-            <Link href="/app/api" className="underline">API keys page</Link> or write to{" "}
-            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Pro API access request")}`} className="underline">{CONTACT_EMAIL}</a>.
+            Need more than 30 requests a month? Upgrade to Pro or Team on the{" "}
+            <Link href="/pricing" className="underline">pricing page</Link>. For Institutional volumes, write to{" "}
+            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Institutional API access")}`} className="underline">{CONTACT_EMAIL}</a>.
           </p>
         </Section>
 

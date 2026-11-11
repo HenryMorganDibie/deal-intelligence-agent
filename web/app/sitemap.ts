@@ -5,7 +5,7 @@ import { SITE } from "../lib/site";
 // The public pages plus the public page of each recent deal, rebuilt at most daily.
 export const revalidate = 86400;
 
-const PAGES = ["", "/platform", "/how-it-works", "/attribution", "/coverage", "/example", "/limits", "/methodology",
+const PAGES = ["", "/platform", "/pricing", "/how-it-works", "/attribution", "/coverage", "/example", "/limits", "/methodology",
   "/contact", "/developers"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

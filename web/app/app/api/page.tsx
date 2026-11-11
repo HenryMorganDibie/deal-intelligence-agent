@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, Field, Loading, PageHeader } from "../../../components/app/ui";
-import { PUBLIC_API_BASE, mailto } from "../../../lib/site";
+import { PUBLIC_API_BASE } from "../../../lib/site";
 
 type Key = { id: string; name: string; prefix: string; created_at: string; last_used_at: string | null };
 type Access = {
@@ -27,23 +27,6 @@ async function call<T>(method: "GET" | "POST" | "DELETE", body?: unknown): Promi
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error((data as { error?: string }).error || "Something went wrong. Try again.");
   return data as T;
-}
-
-/** An email to the owner with what is needed to decide on an upgrade; approved from the admin page. */
-function proRequestHref(): string {
-  const body = [
-    "Hello,",
-    "",
-    "I would like Pro API access for Deal Intelligence during early access.",
-    "",
-    "Account email: ",
-    "Name and organisation: ",
-    "What I will use it for (team, Slack/Teams integration, research, product): ",
-    "Expected requests a month: ",
-    "",
-    "Thank you.",
-  ].join("\n");
-  return mailto("Pro API access request", body);
 }
 
 export default function ApiAccessPage() {
@@ -110,11 +93,6 @@ export default function ApiAccessPage() {
         <Link href="/developers" className="underline">developer docs</Link>.
       </PageHeader>
 
-      <p className="mb-6 rounded-xl border border-verified/30 bg-verified/[0.06] px-4 py-3 text-[0.875rem] leading-relaxed" role="note">
-        <span className="font-medium text-[color:var(--text)]">Free during early access.</span>{" "}
-        <span className="text-[color:var(--muted)]">Paid plans are coming soon, and everyone who joins before then gets founding-member pricing, kept for as long as they stay subscribed.</span>
-      </p>
-
       {!access && !error && <Loading />}
       {error && <ErrorNote message={error} />}
 
@@ -139,9 +117,9 @@ export default function ApiAccessPage() {
             {access.plan.id === "free" && (
               <div className="mt-4 flex flex-col gap-3 border-t hairline pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-[0.875rem] text-[color:var(--muted)]">
-                  Need more than 30 requests a month for a team, an integration or research? Pro is free during early access.
+                  Need more than 30 requests a month? Pro includes 3,000 and Team 15,000, priced in naira.
                 </p>
-                <a className="btn btn-primary h-10 shrink-0 px-4 text-sm" href={proRequestHref()}>Request Pro access</a>
+                <Link className="btn btn-primary h-10 shrink-0 px-4 text-sm" href="/account/billing">Upgrade</Link>
               </div>
             )}
           </section>
