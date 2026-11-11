@@ -194,7 +194,8 @@ def news_section(events: list[dict], today: date) -> list[str]:
 
 # ── Post drafts from the markets ─────────────────────────────────────────────
 
-def currency_post(overview: dict) -> Optional[dict]:
+def currency_post(overview: dict, day: Optional[date] = None) -> Optional[dict]:
+    page = f"{APP}/markets/currencies/{day.isoformat()}" if day else f"{APP}/markets"
     rows = [c for c in overview.get("currencies") or [] if c.get("ytd_vs_usd") is not None]
     if len(rows) < 4:
         return None
@@ -203,36 +204,38 @@ def currency_post(overview: dict) -> Optional[dict]:
     text = (f"African currencies against the US dollar this year:\n\n"
             f"Strongest: {', '.join(c['currency'] + ' ' + pct(c['ytd_vs_usd']) for c in ranked[:3])}\n"
             f"Weakest: {', '.join(c['currency'] + ' ' + pct(c['ytd_vs_usd']) for c in ranked[::-1][:3])}\n\n"
-            f"{APP}/markets")
+            f"{page}")
     if _x_len(text) > X_LIMIT:
         text = f"Strongest African currency against the dollar this year: {best['currency']} {pct(best['ytd_vs_usd'])}. " \
-               f"Weakest: {worst['currency']} {pct(worst['ytd_vs_usd'])}. {APP}/markets"
+               f"Weakest: {worst['currency']} {pct(worst['ytd_vs_usd'])}. {page}"
     return {"kind": "Currencies", "deal_ids": [], "x": text, "linkedin": text}
 
 
-def tbill_post(recent: list[tuple[str, str, float, str]]) -> Optional[dict]:
+def tbill_post(recent: list[tuple[str, str, float, str]], day: Optional[date] = None) -> Optional[dict]:
+    page = f"{APP}/markets/treasury-bills/{day.isoformat()}" if day else f"{APP}/markets"
     if len(recent) < 2:
         return None
     lines = [f"{name}: {y:.2f}% ({tenor})" for name, tenor, y, _ in recent[:5]]
-    text = "This week's Treasury bill auctions in Africa:\n\n" + "\n".join(lines) + f"\n\n{APP}/markets"
+    text = "This week's Treasury bill auctions in Africa:\n\n" + "\n".join(lines) + f"\n\n{page}"
     while _x_len(text) > X_LIMIT and len(lines) > 2:
         lines.pop()
-        text = "This week's Treasury bill auctions in Africa:\n\n" + "\n".join(lines) + f"\n\n{APP}/markets"
+        text = "This week's Treasury bill auctions in Africa:\n\n" + "\n".join(lines) + f"\n\n{page}"
     return {"kind": "Treasury bills", "deal_ids": [], "x": text, "linkedin": text}
 
 
-def movers_post(gainers: list[dict], losers: list[dict], names: dict) -> Optional[dict]:
+def movers_post(gainers: list[dict], losers: list[dict], names: dict, day: Optional[date] = None) -> Optional[dict]:
+    page = f"{APP}/markets/movers/{day.isoformat()}" if day else f"{APP}/markets"
     gainers = [r for r in gainers if abs(r["chg_1d"]) <= POSTABLE_DAY_MOVE]
     losers = [r for r in losers if abs(r["chg_1d"]) <= POSTABLE_DAY_MOVE]
     if not gainers or not losers:
         return None
-    text = (f"Biggest movers on African exchanges on the last trading day:\n\n"
+    text = ("Biggest movers on African exchanges on the last trading day:\n\n"
             + "\n".join(f"Up: {_share(r, names)} {pct(r['chg_1d'])}" for r in gainers[:2]) + "\n"
             + "\n".join(f"Down: {_share(r, names)} {pct(r['chg_1d'])}" for r in losers[:2])
-            + f"\n\n{APP}/markets")
+            + f"\n\n{page}")
     if _x_len(text) > X_LIMIT:
         text = (f"Biggest movers on African exchanges: {_share(gainers[0], names)} {pct(gainers[0]['chg_1d'])}, "
-                f"{_share(losers[0], names)} {pct(losers[0]['chg_1d'])}. {APP}/markets")
+                f"{_share(losers[0], names)} {pct(losers[0]['chg_1d'])}. {page}")
     return {"kind": "Stock movers", "deal_ids": [], "x": text if _x_len(text) <= X_LIMIT else None, "linkedin": text}
 
 
@@ -259,16 +262,16 @@ def build(overview: Optional[dict], instruments: Optional[dict], events: list[di
         add("Most traded", most_traded_section(overview, names))
         add("Sectors", sectors_section(overview))
         add("Currencies", currencies_section(overview))
-        if (p := movers_post(gainers, losers, names)):
+        if (p := movers_post(gainers, losers, names, today)):
             drafts.append(p)
-        if (p := currency_post(overview)):
+        if (p := currency_post(overview, today)):
             drafts.append(p)
     if instruments:
         bills, recent = tbills_section(instruments, today)
         add("Treasury bills", bills, "Latest auction in each country, newest first.")
         add("Policy rates", policy_section(instruments, today), "Most recent first.")
         add("ETFs", etf_section(instruments))
-        if (p := tbill_post(recent)):
+        if (p := tbill_post(recent, today)):
             drafts.append(p)
     add("Company news (last 24 hours)", news_section(events, today))
     return {"sections": sections, "drafts": drafts}

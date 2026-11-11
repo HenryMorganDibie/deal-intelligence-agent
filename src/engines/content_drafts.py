@@ -163,7 +163,8 @@ def _same_company(a: Optional[str], b: Optional[str]) -> bool:
     return bool(wa and wb) and (wa <= wb or wb <= wa)
 
 
-def roundup(deals: list[dict], label: str) -> Optional[dict]:
+def roundup(deals: list[dict], label: str, day: Optional[date] = None) -> Optional[dict]:
+    page = f"{APP}/deals/roundup/{day.isoformat()}" if day else f"{APP}/deals"
     top: list[dict] = []
     for d in ranked(deals):                  # one line per company: its largest deal in the window
         if not any(_same_company(d.get("target"), t.get("target")) for t in top):
@@ -175,10 +176,10 @@ def roundup(deals: list[dict], label: str) -> Optional[dict]:
     lines = [f"{i}. {summary(d)}" + (f" ({country_name(d.get('country'))})" if country_name(d.get("country")) else "")
              for i, d in enumerate(top, 1)]
     linkedin = "\n\n".join([f"African deals, {label}:", "\n".join(lines),
-                            f"Sources for every deal, plus investors and country data: {APP}/deals", HASHTAGS])
+                            f"Sources for every deal, plus investors and country data: {page}", HASHTAGS])
     x_lines, x = [], None
     for d in top:
-        candidate = "\n".join([f"African deals, {label}:", *x_lines, f"- {summary(d)}", f"{APP}/deals"])
+        candidate = "\n".join([f"African deals, {label}:", *x_lines, f"- {summary(d)}", page])
         if x_length(candidate) > X_LIMIT:
             break
         x_lines.append(f"- {summary(d)}")
@@ -187,6 +188,7 @@ def roundup(deals: list[dict], label: str) -> Optional[dict]:
 
 
 def week_in_review(deals: list[dict], start: date, end: date) -> Optional[dict]:
+    page = f"{APP}/deals/week/{(end + timedelta(days=1)).isoformat()}"
     if len(deals) < 3:
         return None
     total = sum(d.get("amount_usd") or 0 for d in deals)
@@ -203,9 +205,9 @@ def week_in_review(deals: list[dict], start: date, end: date) -> Optional[dict]:
     repeat = [(n, c) for n, c in backers.most_common(3) if c >= 2]
     if repeat:
         parts.append("Most active investors: " + _join([f"{n} ({c} deals)" for n, c in repeat]) + ".")
-    parts += [f"Every figure links to its sources: {APP}/deals", HASHTAGS]
+    parts += [f"Every figure links to its sources: {page}", HASHTAGS]
     x = f"The week in African deals: {len(deals)} tracked" + (f", {money(total)} disclosed" if total else "") \
-        + (f". Busiest market: {countries.most_common(1)[0][0]}" if countries else "") + f". {APP}/deals"
+        + (f". Busiest market: {countries.most_common(1)[0][0]}" if countries else "") + f". {page}"
     return {"kind": "Week in review", "deal_ids": [d["id"] for d in top], "linkedin": "\n\n".join(parts),
             "x": x if x_length(x) <= X_LIMIT else None}
 
@@ -250,7 +252,7 @@ def _pct(v: float) -> str:
     return f"{abs(v) * 100:.0f}%"
 
 
-def market_post(overview: Optional[dict]) -> Optional[dict]:
+def market_post(overview: Optional[dict], day: Optional[date] = None) -> Optional[dict]:
     """The strongest sector this year in US dollars, the largest sector, and the day's biggest mover, from the
     platform's market snapshot. A move above 50% in a day is left out as more likely a data error than news."""
     if not overview:
@@ -277,12 +279,13 @@ def market_post(overview: Optional[dict]) -> Optional[dict]:
                      + f", up {_pct(g['chg_1d'])}.")
     if not lines:
         return None
+    page = f"{APP}/markets/sectors/{day.isoformat()}" if day else f"{APP}/markets"
     x_lines = list(lines)                         # X drops lines to fit; LinkedIn keeps them all
-    x = "\n\n".join(x_lines + [f"{APP}/markets"])
+    x = "\n\n".join(x_lines + [page])
     while x_length(x) > X_LIMIT and len(x_lines) > 1:
         x_lines.pop()
-        x = "\n\n".join(x_lines + [f"{APP}/markets"])
-    linkedin = "\n\n".join(lines + [f"Prices, sectors and currencies across African exchanges: {APP}/markets",
+        x = "\n\n".join(x_lines + [page])
+    linkedin = "\n\n".join(lines + [f"Prices, sectors and currencies across African exchanges: {page}",
                                      HASHTAGS])
     return {"kind": "Markets", "deal_ids": [], "linkedin": linkedin, "x": x if x_length(x) <= X_LIMIT else None}
 
@@ -324,9 +327,9 @@ def build(deals: list[dict], today: date, market: Optional[dict] = None, briefin
             if not any(_same_company(d.get("target"), c.get("target")) for c in chosen):
                 chosen.append(d)
                 drafts.append(deal_post(d, deals, today, f"More deals for X ({len(chosen) - 1} of 2)"))
-        if (r := roundup(window, label)):
+        if (r := roundup(window, label, today)):
             drafts.append(r)
-    if (m := market_post(market)):
+    if (m := market_post(market, today)):
         drafts.append(m)
     drafts += (briefing or {}).get("drafts") or []
     if today.weekday() == 4:

@@ -57,3 +57,15 @@ def test_email_carries_the_briefing():
     res = cd.build([], TODAY, OV, mb.build(OV, INST, EVENTS, TODAY))
     subject, body, text = cd.render_email(res)
     assert "market briefing" in subject.lower() and "Market briefing" in body and "Treasury bills" in text
+
+
+def test_every_post_links_to_its_own_dated_page():
+    b = mb.build(OV, INST, EVENTS, TODAY)
+    links = {d["kind"]: d["x"].rsplit(" ", 1)[-1].split("\n")[-1] for d in b["drafts"]}
+    assert links["Stock movers"].endswith("/markets/movers/2026-11-11")
+    assert links["Currencies"].endswith("/markets/currencies/2026-11-11")
+    assert links["Treasury bills"].endswith("/markets/treasury-bills/2026-11-11")
+    res = cd.build([], TODAY, OV, None)
+    market = next(d for d in res["drafts"] if d["kind"] == "Markets")
+    assert market["x"].endswith("/markets/sectors/2026-11-11")
+    assert len(set(links.values()) | {market["x"].split()[-1]}) == 4
