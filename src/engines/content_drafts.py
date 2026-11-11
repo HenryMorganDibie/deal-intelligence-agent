@@ -302,7 +302,7 @@ def question_post(today: date) -> dict:
     return {"kind": "Question for replies", "deal_ids": [], "x": q, "linkedin": q}
 
 
-def build(deals: list[dict], today: date, market: Optional[dict] = None) -> dict:
+def build(deals: list[dict], today: date, market: Optional[dict] = None, briefing: Optional[dict] = None) -> dict:
     """All of today's drafts. The daily window is yesterday and today (UTC), widened to three days when quiet.
     Deals the sanity checks flag are held out of every draft and listed for review instead."""
     window = in_window(deals, today - timedelta(days=1), today)
@@ -328,6 +328,7 @@ def build(deals: list[dict], today: date, market: Optional[dict] = None) -> dict
             drafts.append(r)
     if (m := market_post(market)):
         drafts.append(m)
+    drafts += (briefing or {}).get("drafts") or []
     if today.weekday() == 4:
         drafts.append(question_post(today))
     if today.weekday() == 0:
@@ -337,7 +338,7 @@ def build(deals: list[dict], today: date, market: Optional[dict] = None) -> dict
         if (w := week_in_review([d for d in week if d["id"] not in week_flags], start, end)):
             drafts.append(w)
     return {"date": today.isoformat(), "window": label, "deals_in_window": len(window), "drafts": drafts,
-            "held_back": held_back}
+            "held_back": held_back, "briefing": (briefing or {}).get("sections") or []}
 
 
 # ── Email ────────────────────────────────────────────────────────────────────
@@ -346,7 +347,8 @@ def render_email(result: dict) -> tuple[str, str, str]:
     """(subject, html, text)."""
     drafts = result["drafts"]
     day = date.fromisoformat(result["date"]).strftime("%-d %b %Y")
-    subject = f"Post drafts for {day}: {len(drafts)} ready" if drafts else f"Post drafts for {day}: no new deals"
+    subject = f"Post drafts and market briefing for {day}: {len(drafts)} posts ready" if drafts \
+        else f"Post drafts and market briefing for {day}: no new deals"
     intro = ("Drafts from the deals tracked in " + result["window"] + ". Check each figure against its source, edit "
              "freely and post by hand. Nothing is published automatically.") if drafts else \
         "No deal in the last three days had enough detail for a post. Nothing to publish today."
@@ -362,6 +364,19 @@ def render_email(result: dict) -> tuple[str, str, str]:
                 blocks.append(f'<p style="margin:10px 0 0;color:#5b6470;font-size:12px">{platform}{count}</p>'
                               f'<div style="{box}">{html.escape(d[key])}</div>')
                 text += [f"-- {platform}{count} --", d[key], ""]
+    sections = result.get("briefing") or []
+    if sections:
+        blocks.append('<h2 style="font-size:18px;margin:32px 0 4px;border-top:1px solid #e3e6ea;padding-top:20px">'
+                      'Market briefing</h2><p style="color:#5b6470;font-size:13px;margin:0 0 8px">From the platform\'s '
+                      'latest market snapshot. For reading and for picking posts; check a figure before posting it.</p>')
+        text += ["== Market briefing ==", ""]
+        for sec in sections:
+            blocks.append(f'<h3 style="font-size:14px;margin:18px 0 4px">{html.escape(sec["title"])}</h3>')
+            if sec.get("note"):
+                blocks.append(f'<p style="color:#5b6470;font-size:12px;margin:0 0 4px">{html.escape(sec["note"])}</p>')
+            blocks.append('<ul style="font-size:13px;line-height:1.5;margin:0;padding-left:18px">'
+                          + "".join(f"<li>{html.escape(line)}</li>" for line in sec["lines"]) + "</ul>")
+            text += [f"-- {sec['title']} --", *[f"- {line}" for line in sec["lines"]], ""]
     held = result.get("held_back") or []
     if held:
         blocks.append(f'<h2 style="font-size:16px;margin:28px 0 4px">Held back for review ({len(held)})</h2>'

@@ -1831,7 +1831,15 @@ async def cron_content_drafts(request: Request, dry_run: bool = False) -> dict:
     except Exception as e:                       # a market outage never stops the deal drafts
         log.warning("content drafts: market overview unavailable: %s", e)
         market = None
-    result = content_drafts.build(deals(), datetime.now(timezone.utc).date(), market)
+    from src.engines import market_briefing
+    today = datetime.now(timezone.utc).date()
+    try:
+        instruments_now = await markets_instruments()
+    except Exception as e:                       # instruments are optional in the email
+        log.warning("content drafts: instruments unavailable: %s", e)
+        instruments_now = None
+    briefing = market_briefing.build(market, instruments_now, events(), today)
+    result = content_drafts.build(deals(), today, market, briefing)
     to = os.environ.get("CONTENT_DRAFTS_TO", "").strip()
     if dry_run or not to:
         return {**result, "sent": False, "reason": "dry run" if dry_run else "CONTENT_DRAFTS_TO is not set"}

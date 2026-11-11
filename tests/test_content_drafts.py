@@ -69,7 +69,7 @@ def test_quiet_days_widen_the_window_then_send_nothing():
 
 def test_email_escapes_and_labels_each_platform():
     subject, body, text = cd.render_email(cd.build([deal(1, target="A&B <Co>"), deal(2)], TODAY))
-    assert "3 ready" in subject and "A&amp;B &lt;Co&gt;" in body and "LinkedIn" in text and "-- X (" in text
+    assert "3 posts ready" in subject and "A&amp;B &lt;Co&gt;" in body and "LinkedIn" in text and "-- X (" in text
 
 
 @pytest.fixture
