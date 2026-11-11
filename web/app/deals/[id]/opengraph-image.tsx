@@ -6,7 +6,7 @@ import { API_CONFIGURED, apiHeaders, apiUrl } from "../../../lib/api-base";
  * short timeout and a missing deal falls back to the brand card. */
 
 export const runtime = "edge";
-export const revalidate = 3600;
+export const revalidate = 86400;                // a published deal rarely changes; one refresh a day
 export const alt = "A deal on Deal Intelligence, with its parties, amount and sources";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -69,7 +69,7 @@ function parties(d: Deal): string | null {
 async function load(id: string): Promise<{ deal: Deal; verification?: Verification } | null> {
   if (!API_CONFIGURED) return null;
   try {
-    const r = await fetch(apiUrl(`/api/deals/${encodeURIComponent(id)}`), { headers: apiHeaders(), next: { revalidate }, signal: AbortSignal.timeout(2500) });
+    const r = await fetch(apiUrl(`/api/deals/${encodeURIComponent(id)}?comparables=false`), { headers: apiHeaders(), next: { revalidate }, signal: AbortSignal.timeout(2500) });
     return r.ok ? await r.json() : null;
   } catch {
     return null;

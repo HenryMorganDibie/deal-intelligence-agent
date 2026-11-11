@@ -12,13 +12,14 @@ import type { Deal, Verification } from "../../../lib/market";
  * on LinkedIn or X open to the deal instead of a sign-in form, and search engines can index it. Comparables,
  * investor histories and alerts stay in the app behind sign-in.
  */
-export const revalidate = 3600;
+// A published deal rarely changes: one refresh a day keeps crawlers from costing database egress.
+export const revalidate = 86400;
 
 type DealResponse = { deal: Deal; parties: { name: string; role: string }[]; verification?: Verification };
 
 async function load(id: string): Promise<DealResponse | null> {
   try {
-    const r = await fetch(apiUrl(`/api/deals/${encodeURIComponent(id)}`), { headers: apiHeaders(), next: { revalidate: 3600 } });
+    const r = await fetch(apiUrl(`/api/deals/${encodeURIComponent(id)}?comparables=false`), { headers: apiHeaders(), next: { revalidate: 86400 } });
     return r.ok ? ((await r.json()) as DealResponse) : null;
   } catch {
     return null;

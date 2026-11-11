@@ -587,18 +587,48 @@ def _field_accuracy() -> Optional[dict]:
             "detection": (r.get("detection") or {}).get("all")}
 
 
+def _one_deal(deal_id: str) -> Optional[dict]:
+    """One stored deal, following merge links, read on its own: a few KB of database egress where a cold instance
+    would otherwise download every deal and event. None when the store cannot answer."""
+    seen: set[str] = set()
+    current = deal_id
+    for _ in range(5):
+        if current in seen:
+            return None
+        seen.add(current)
+        r = _rpc_sync("get_deal_row", {"p_id": current}, 10)
+        if r.status_code != 200:
+            return None
+        row = r.json()
+        if not isinstance(row, dict):
+            return {}
+        if not row.get("merged_into"):
+            return row
+        current = row["merged_into"]
+    return None
+
+
 @router.get("/api/deals/{deal_id}")
-async def deal(deal_id: str) -> dict:
+async def deal(deal_id: str, comparables: bool = True) -> dict:
+    from src.engines import provenance
+    if not comparables and "deals" not in _cache and _configured():
+        # A public deal page or its preview card (crawlers open these by the thousand): read this one deal rather
+        # than load the whole store into a fresh instance.
+        d = await run_in_threadpool(_one_deal, deal_id)
+        if d is not None:
+            if not d or not deals_mod.is_visible(d):
+                raise HTTPException(404, "Deal not found.")
+            return {"deal": d, "verification": provenance.verify(d), "field_accuracy": _field_accuracy(),
+                    "parties": [{"name": n, "role": r} for n, r in investors.parties(d)], "comparables": []}
     stored = {d.get("id"): d for d in _load("deals")}
     d = stored.get(deals_mod.canonical_id(deal_id, stored))
     if d is None or not deals_mod.is_visible(d):
         raise HTTPException(404, "Deal not found.")
-    from src.engines import provenance
     return {"deal": d, "verification": provenance.verify(d), "field_accuracy": _field_accuracy(),
             "parties": [{"name": n, "role": r} for n, r in investors.parties(d)],
             "comparables": deals_mod.comparables(deals(), sector=d.get("sector"), country=d.get("country"),
                                                  deal_type=d.get("deal_type"), amount_usd=d.get("amount_usd"),
-                                                 exclude_id=d["id"], limit=10)}
+                                                 exclude_id=d["id"], limit=10) if comparables else []}
 
 
 @router.get("/api/comparables")

@@ -168,3 +168,31 @@ def test_limits_and_plan_views_are_recorded_for_the_funnel(env, monkeypatch):
     assert client.post("/api/plan-event", json={"event": "see_plans", "source": "screener"}, headers=app_headers()).json() == {"ok": True}
     assert client.post("/api/plan-event", json={"event": "paid"}, headers=app_headers()).status_code == 422
     assert [e for e, _ in recorded] == ["limit_ai_month", "limit_alert", "limit_export", "see_plans"]
+
+
+def test_public_deal_pages_read_one_deal_not_the_whole_store(env, monkeypatch):
+    calls = []
+    rows = {"old": {"id": "old", "merged_into": "new"},
+            "new": {"id": "new", "target": "Shelter Afrique Development Bank", "deal_type": "debt_financing",
+                    "sources": [{"url": "https://a"}], "headline": "x"}}
+
+    class R:
+        status_code = 200
+
+        def __init__(self, payload):
+            self._p = payload
+
+        def json(self):
+            return self._p
+
+    def fake_sync(fn, args, timeout=30):
+        calls.append(fn)
+        return R(rows.get(args.get("p_id")))
+    monkeypatch.setattr(hm, "_rpc_sync", fake_sync)
+    monkeypatch.setattr(hm, "_load", lambda kind: (_ for _ in ()).throw(AssertionError("full store loaded")))
+    hm._cache.pop("deals", None)
+    client = TestClient(api.app)
+    r = client.get("/api/deals/old?comparables=false", headers=app_headers(user=None) | {CLIENT_HEADER: "api-secret"})
+    assert r.status_code == 200 and r.json()["deal"]["id"] == "new" and r.json()["comparables"] == []
+    assert calls == ["get_deal_row", "get_deal_row"]
+    assert client.get("/api/deals/missing?comparables=false", headers={CLIENT_HEADER: "api-secret"}).status_code == 404
