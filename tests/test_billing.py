@@ -175,3 +175,30 @@ def test_dollars_only_when_the_account_accepts_them(env):
     plan = next(b for m, p, b in env["paystack"] if p == "/plan")
     init = next(b for m, p, b in env["paystack"] if p == "/transaction/initialize")
     assert plan["currency"] == "USD" and plan["amount"] == 700 and init["currency"] == "USD"
+
+
+def test_works_against_the_database_before_the_currency_migration(env, monkeypatch):
+    """The old functions (no currency parameters) still serve naira checkout and webhook events."""
+    calls = []
+    original = hm._rpc
+
+    async def old_schema(client, fn, args):
+        calls.append((fn, sorted(args)))
+        if "p_currency" in args or "p_amount_minor" in args:
+            return FakeResponse({"code": "PGRST202"}, 404)               # the newer signature does not exist yet
+        if fn == "billing_price":
+            return FakeResponse({"plan": "pro", "label": "Pro", "interval": args["p_interval"], "amount_kobo": 750000,
+                                 "plan_code": None})
+        if fn == "billing_save_plan_code":
+            assert "p_amount_kobo" in args
+            return FakeResponse(None)
+        return await original(client, fn, args)
+    monkeypatch.setattr(hm, "_rpc", old_schema)
+    r = TestClient(api.app).post("/api/billing/checkout", json={"user_id": USER, "plan": "pro"}, headers=web())
+    assert r.status_code == 200
+    init = next(b for m, p, b in env["paystack"] if p == "/transaction/initialize")
+    assert init["amount"] == 750000 and init["currency"] == "NGN"
+    _send({"event": "charge.success", "data": {"id": 7, "metadata": {"user_id": USER, "plan": "pro", "interval": "monthly"},
+                                               "customer": {"email": "a@example.com"}}})
+    applies = [a for fn, a in calls if fn == "billing_apply"]
+    assert applies[0] != applies[-1] and "p_currency" not in applies[-1]        # retried without the new parameter

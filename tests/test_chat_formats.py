@@ -89,3 +89,11 @@ def test_test_endpoint_formats_for_the_destination(monkeypatch):
     assert client.post("/api/webhooks/test", json={"url": "http://hooks.slack.com/x"}).status_code == 422
     codes = [client.post("/api/webhooks/test", json={"url": "https://example.org/h"}).status_code for _ in range(5)]
     assert codes[-1] == 429
+
+
+def test_alert_emails_carry_the_logo():
+    from src.engines import email_alerts
+    subject, body, text = email_alerts.render({"name": "Kenya banks"}, [{"headline": "Equity Group raises $100m"}],
+                                              "https://deal-intelligence.app/app/watchlists/1", "https://u.example")
+    assert '<img src="https://deal-intelligence.app/email/logo.png"' in body and 'alt="Deal Intelligence"' in body
+    assert body.index("logo.png") < body.index("Kenya banks")               # the logo heads the email

@@ -46,6 +46,21 @@ def _alert_line(alert: dict) -> tuple[str, str, Optional[str]]:
     return title, " · ".join(bits), source if isinstance(source, str) and source.startswith("https://") else None
 
 
+def logo_url() -> str:
+    """The logo as a PNG on the site (email apps do not show SVG), 96px shown at 40px for sharp screens."""
+    app = os.environ.get("DEAL_INTEL_APP_URL", "https://deal-intelligence.app").rstrip("/")
+    return f"{app}/email/logo.png"
+
+
+def brand_header() -> str:
+    """The logo and name at the top of an email, as a table (the layout every email app renders)."""
+    return ('<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px"><tr>'
+            f'<td style="padding-right:10px;vertical-align:middle"><img src="{html.escape(logo_url())}" width="40" '
+            'height="40" alt="Deal Intelligence" style="display:block;border:0;border-radius:9px"></td>'
+            '<td style="vertical-align:middle;font-size:17px;font-weight:600;color:#0f172a">Deal Intelligence</td>'
+            '</tr></table>')
+
+
 def render(wl: dict, alerts: list[dict], watch_link: str, unsubscribe: str,
            display_name: Optional[str] = None) -> tuple[str, str, str]:
     """(subject, html, text) for one subscriber."""
@@ -79,6 +94,7 @@ def render(wl: dict, alerts: list[dict], watch_link: str, unsubscribe: str,
     body = (
         '<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:600px;'
         'margin:0 auto;color:#0f172a;line-height:1.5">'
+        f'{brand_header()}'
         f'<p>{html.escape(greeting)}</p>'
         f'<p>Your watchlist <strong>{html.escape(name)}</strong> has {count} new match{"es" if count != 1 else ""}.</p>'
         f'<table role="presentation" style="width:100%;border-collapse:collapse">{"".join(rows)}</table>'

@@ -54,8 +54,14 @@ def valid_signature(body: bytes, signature: Optional[str], key: Optional[str] = 
     return hmac.compare_digest(expected, signature.strip())
 
 
-async def _db(client: httpx.AsyncClient, fn: str, args: dict) -> object:
+async def _db(client: httpx.AsyncClient, fn: str, args: dict, *older: dict) -> object:
+    """Call a billing function. `older` are argument sets for an earlier version of the function, tried in turn
+    when the database does not have this one yet (PostgREST answers 404), so a deploy never waits on a migration."""
     r = await hm._rpc(client, fn, args)
+    for alt in older:
+        if r.status_code != 404:
+            break
+        r = await hm._rpc(client, fn, alt)
     if r.status_code != 200 and "currency_unavailable" in r.text:
         raise HTTPException(409, "Payment in this currency is not available yet. Choose naira.")
     if r.status_code != 200:
@@ -76,7 +82,9 @@ async def _paystack(client: httpx.AsyncClient, method: str, path: str, body: Opt
 async def plan_code(client: httpx.AsyncClient, plan: str, interval: str, currency: str = "NGN") -> tuple[str, int, str]:
     """(Paystack plan code, amount in the currency's minor unit, label) for a plan, interval and currency at today's
     price, creating the Paystack plan the first time that price is sold."""
-    price = await _db(client, "billing_price", {"p_plan": plan, "p_interval": interval, "p_currency": currency})
+    older = ({"p_plan": plan, "p_interval": interval},) if currency == "NGN" else ()
+    price = await _db(client, "billing_price", {"p_plan": plan, "p_interval": interval, "p_currency": currency}, *older)
+    price["amount_minor"] = price.get("amount_minor") or price.get("amount_kobo")
     if price.get("plan_code"):
         return price["plan_code"], price["amount_minor"], price["label"]
     created = await _paystack(client, "POST", "/plan", {
@@ -84,7 +92,9 @@ async def plan_code(client: httpx.AsyncClient, plan: str, interval: str, currenc
         "amount": price["amount_minor"], "currency": currency,
         "description": f"{price['label']} plan, billed {interval} in {currency}.", "send_invoices": True, "send_sms": False})
     await _db(client, "billing_save_plan_code", {"p_plan": plan, "p_interval": interval, "p_currency": currency,
-                                                 "p_amount_minor": price["amount_minor"], "p_code": created["plan_code"]})
+                                                 "p_amount_minor": price["amount_minor"], "p_code": created["plan_code"]},
+              *(({"p_plan": plan, "p_interval": interval, "p_amount_kobo": price["amount_minor"],
+                  "p_code": created["plan_code"]},) if currency == "NGN" else ()))
     return created["plan_code"], price["amount_minor"], price["label"]
 
 
@@ -179,13 +189,14 @@ async def apply_event(payload: dict, client: httpx.AsyncClient) -> dict:
         plan = account.get("plan") if account.get("plan") != "free" else None
     if not plan:
         return {"ignored": "no plan"}
-    result = await _db(client, "billing_apply", {
+    apply_args = {
         "p_event_key": event_key(event, data), "p_user": account["user_id"], "p_plan": plan, "p_status": status,
         "p_interval": interval, "p_customer": customer.get("customer_code"),
         "p_subscription": sub_code,
         "p_email_token": data.get("email_token") or subscription.get("email_token"),
-        "p_next": data.get("next_payment_date") or subscription.get("next_payment_date"),
-        "p_currency": currency if currency in ("NGN", "USD") else None})
+        "p_next": data.get("next_payment_date") or subscription.get("next_payment_date")}
+    with_currency = {**apply_args, "p_currency": currency if currency in ("NGN", "USD") else None}
+    result = await _db(client, "billing_apply", with_currency, apply_args)
     return {"event": event, **(result or {})}
 
 
