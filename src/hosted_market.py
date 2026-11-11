@@ -857,18 +857,25 @@ class ResultFeedbackBody(BaseModel):
         return value.strip()
 
 
+def per_client_daily(request: Request) -> int:
+    """A signed-in account's monthly plan allowance is its limit, with no daily cap on top; other callers keep the
+    per-visitor daily cap. The service-wide daily ceiling (GLOBAL_DAILY) applies to everyone and guards model cost."""
+    from src import request_identity
+    return 1_000_000 if request_identity.account(request) else PER_VISITOR_DAILY
+
+
 async def _reserve(request: Request, label: str) -> int:
     if not _configured():
         raise HTTPException(503, "The API is not configured.")
     async with httpx.AsyncClient(timeout=15) as client:
         r = await client.post(f"{SUPABASE_URL}/rest/v1/rpc/start_run", headers=_headers(), json={
             "secret": API_SECRET, "p_client_hash": _client_hash(request), "p_company": label[:120], "p_ticker": None,
-            "per_client_daily": PER_VISITOR_DAILY, "global_daily": GLOBAL_DAILY})
+            "per_client_daily": per_client_daily(request), "global_daily": GLOBAL_DAILY})
     if r.status_code != 200:
         if "client_limit" in r.text:
             raise HTTPException(429, f"You have used today's {PER_VISITOR_DAILY} free requests. The limit resets at 00:00 UTC.")
         if "global_limit" in r.text:
-            raise HTTPException(429, "The free service has reached today's capacity. Try again tomorrow.")
+            raise HTTPException(429, "The service has reached today's capacity. Try again tomorrow.")
         raise HTTPException(503, "The service is busy. Try again shortly.")
     return int(r.json())
 

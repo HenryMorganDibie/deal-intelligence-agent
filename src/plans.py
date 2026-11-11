@@ -72,6 +72,9 @@ async def use_ai(request: Request) -> None:
     out = r.json() or {}
     _cache.pop(user, None)
     if not out.get("ok"):
+        if not out.get("limit"):
+            raise _upgrade("Briefs and research runs are part of Pro. Browsing deals, companies, markets and "
+                           "countries stays free.")
         raise _upgrade(f"You have used this month's {out.get('limit', 0)} briefs and research runs on your plan. "
                        "Upgrade for more, or wait until the 1st.")
 
@@ -82,6 +85,8 @@ async def check_alert_slot(request: Request) -> Optional[str]:
     if not user or not hm._configured():
         return user
     lim = await limits(user, fresh=True)
+    if not lim.get("alerts_max"):
+        raise _upgrade("Alerts are part of Pro: email, Slack or Teams when a deal or event matches. Browsing stays free.")
     if lim.get("alerts_used", 0) >= lim.get("alerts_max", 0):
         raise _upgrade(f"Your plan includes {lim.get('alerts_max', 0)} alerts and you have used them all. "
                        "Upgrade for more, or delete one you no longer need.")

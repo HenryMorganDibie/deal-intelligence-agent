@@ -116,3 +116,23 @@ def test_csv_export_is_for_paid_plans_and_never_cached(env, monkeypatch):
     plans._cache.clear()
     r = client.get("/api/markets/screener?limit=500", headers=app_headers())
     assert r.status_code == 200 and "no-store" in r.headers["cache-control"]
+
+
+def test_free_accounts_browse_but_briefs_and_alerts_are_pro(env, monkeypatch):
+    env["limits"].update({"ai_monthly": 0, "alerts_max": 0})
+    monkeypatch.setattr(hm.research_mod, "research", lambda *a, **k: {"answer": "ok"})
+    monkeypatch.setattr(hm, "deals", lambda: [])
+    monkeypatch.setattr(hm, "events", lambda: [])
+    client = TestClient(api.app)
+    r = client.post("/api/research", json={"question": "Nigerian fintech rounds"}, headers=app_headers())
+    assert r.status_code == 402 and "part of Pro" in r.json()["detail"] and "stays free" in r.json()["detail"]
+    r = client.post("/api/watchlists", json={"name": "Kenya banks", "countries": ["KE"]}, headers=app_headers())
+    assert r.status_code == 402 and "Alerts are part of Pro" in r.json()["detail"]
+
+
+def test_accounts_have_no_daily_cap_but_anonymous_callers_do(env):
+    from starlette.requests import Request
+    with_account = Request({"type": "http", "headers": [(ACCOUNT_HEADER.encode(), USER.encode()), (CLIENT_HEADER.encode(), b"web-secret")]})
+    anonymous = Request({"type": "http", "headers": []})
+    assert hm.per_client_daily(with_account) >= 1_000_000
+    assert hm.per_client_daily(anonymous) == hm.PER_VISITOR_DAILY

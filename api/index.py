@@ -306,20 +306,21 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
     if not _configured():
         raise HTTPException(503, "The API is not configured.")
     from src import plans
+    from src.hosted_market import per_client_daily
     await plans.use_ai(request)                      # one of the plan's monthly AI runs
 
     async with httpx.AsyncClient(timeout=15) as client:
         resp = await _rpc(client, "start_run", {
             "secret": API_SECRET, "p_client_hash": _client_hash(request),
             "p_company": body.company, "p_ticker": body.ticker,
-            "per_client_daily": PER_VISITOR_DAILY, "global_daily": GLOBAL_DAILY,
+            "per_client_daily": per_client_daily(request), "global_daily": GLOBAL_DAILY,
         })
     if resp.status_code != 200:
         message = resp.text
         if "client_limit" in message:
             raise HTTPException(429, f"You have run {PER_VISITOR_DAILY} analyses today. The limit resets at 00:00 UTC.")
         if "global_limit" in message:
-            raise HTTPException(429, "The free service has reached today's capacity. Try again tomorrow.")
+            raise HTTPException(429, "The service has reached today's capacity. Try again tomorrow.")
         log.error("start_run failed: %s %s", resp.status_code, message[:300])
         raise HTTPException(503, "The service is busy. Try again shortly.")
     run_id = int(resp.json())
