@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { NairaRate } from "../../lib/catalog";
-import { PLAN_FEATURES, approxDollars, defaultCurrency, money, outsideNigeria, priceOf, type CatalogPlan, type Currency } from "../../lib/pricing";
+import { PLAN_FEATURES, approxDollars, defaultCurrency, money, priceOf, type CatalogPlan, type Currency } from "../../lib/pricing";
 import { CONTACT_EMAIL } from "../../lib/site";
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
   /** On the billing page: start checkout. On the public page: undefined, and buttons link to sign-up. */
   onChoose?: (plan: "pro" | "team", interval: "monthly" | "annually", currency: Currency) => void;
   busy?: string | null;
-  /** Current naira rate, for the approximate dollar figure shown to visitors outside Nigeria. */
+  /** Current naira rate, for the approximate dollar figure shown under naira prices. */
   rate?: NairaRate | null;
 };
 
@@ -23,8 +23,6 @@ export function PricingTable({ catalog, current = null, onChoose, busy = null, r
   const [currency, setCurrency] = useState<Currency>("NGN");
   useEffect(() => setCurrency(defaultCurrency(offeredKey.split(",") as Currency[])), [offeredKey]);
   const interval = yearly ? "annually" : "monthly";
-  const [abroad, setAbroad] = useState(false);
-  useEffect(() => setAbroad(outsideNigeria()), []);
   return (
     <div>
       <div className="mb-6 flex items-center justify-center gap-3 text-sm">
@@ -68,7 +66,7 @@ export function PricingTable({ catalog, current = null, onChoose, busy = null, r
                   </>
                 )}
               </p>
-              {abroad && currency === "NGN" && price && rate ? (
+              {currency === "NGN" && price && rate ? (
                 <p className="mt-1 text-xs text-[color:var(--muted)]">
                   {approxDollars(price, rate.perUsd)} {yearly ? "a year" : "a month"} at ₦{rate.perUsd.toLocaleString("en-US", { maximumFractionDigits: 2 })} per $1
                   {rate.asOf ? ` (${new Date(rate.asOf).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })})` : ""}.

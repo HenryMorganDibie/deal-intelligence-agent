@@ -72,17 +72,6 @@ export function defaultCurrency(offered: Currency[]): Currency {
   }
 }
 
-/** Visitors outside Nigeria see an approximate dollar figure beside naira prices. */
-export function outsideNigeria(): boolean {
-  try {
-    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-    const lang = typeof navigator !== "undefined" ? navigator.language || "" : "";
-    return !(zone === "Africa/Lagos" || /-NG$/i.test(lang));
-  } catch {
-    return false;
-  }
-}
-
 /** "about $5.56": a naira amount in dollars at the current market rate. */
 export function approxDollars(naira: number, ngnPerUsd: number): string {
   return `about $${(naira / ngnPerUsd).toFixed(2)}`;
