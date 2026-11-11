@@ -531,7 +531,12 @@ _ROUNDUP = re.compile(r"(?i)\b(?:overtak\w+|lead(?:s|ing)? africa with|continent
                       r"across (?:\w+ )?sectors)\b")
 _GENERIC_TARGET = re.compile(
     r"(?i)^(?!undisclosed\b)(?:(?:african|nigerian|kenyan|ghanaian|egyptian|south african|moroccan|local)\s+)?"
-    r"(?:[\w-]+\s+)?(?:industry|sector|ecosystem|value chain|continent|startups)$")
+    r"(?:[\w-]+\s+)?(?:industry|sector|ecosystem|value chain|continent|startups)$"
+    # "Takes Over Nigerian Showbiz": a nationality and a scene. Company names ending in these words ("Boomplay
+    # Music", "Kwesé Sports") have no nationality in front, so they are not caught.
+    r"|^(?:african|nigerian|kenyan|ghanaian|egyptian|south african|moroccan|ugandan|tanzanian|rwandan|ethiopian|"
+    r"senegalese|ivorian|cameroonian|zambian|zimbabwean)\s+(?:showbiz|entertainment|music|film|fashion|sports?|"
+    r"football|boxing|scene|airwaves|streets|social media|internet)$")
 # An amount captured as the target of a "round" is spending or a pledge ("Vodacom Lesotho invests USD 40M",
 # "Lesieur Cristal investit 65MDH dans une nouvelle savonnerie"); names that start with a digit (54Gene, 9mobile,
 # 10X Investments) are not amounts.
@@ -539,10 +544,19 @@ _AMOUNT_TARGET = re.compile(r"(?i)^(?:(?:usd|us\$|\$|€|£|egp|ngn|kes|ksh|zar|
                             r"\d[\d.,]*\s?(?:m|mn|bn|b|k|million|billion|me|mdh|m\$))$")
 
 
+_EQUIPMENT_MAKERS = {"cessna", "boeing", "airbus", "embraer", "atr", "bombardier", "dash", "beechcraft", "pilatus",
+                     "gulfstream", "learjet", "antonov", "sikorsky", "bell", "agustawestland", "caterpillar", "komatsu"}
+_EQUIPMENT_MODEL = re.compile(r"\b(?:" + "|".join(sorted(_EQUIPMENT_MAKERS)) + r")\s+[A-Z]?\d{2,4}", re.IGNORECASE)
+_FLEET_WORDS = re.compile(r"(?i)\b(?:fleet|aircraft|plane|jet|helicopter|vessel|ship|trucks?|locomotives?|buses)\b")
+
+
 def not_a_deal(headline: str, target: Optional[str], deal_type: Optional[str] = None) -> Optional[str]:
     """Why a headline the deal patterns matched is not a company transaction, or None."""
     if _ROUNDUP.search(headline or ""):
         return "market roundup, not a transaction"
+    if deal_type in ("acquisition", "merger") and _EQUIPMENT_MODEL.search(headline or "") \
+            and (not target or target.split()[0].lower() in _EQUIPMENT_MAKERS or _FLEET_WORDS.search(headline or "")):
+        return "an equipment or aircraft purchase, not a company acquisition"
     if target and _GENERIC_TARGET.search(target.strip()):
         return "the target is an industry or a market, not a company"
     if target and deal_type == "equity_funding" and _AMOUNT_TARGET.search(target.strip()):
@@ -864,6 +878,7 @@ _VALUATION = re.compile(r"(?i)(?:at\s+(?:an?\s+)?(?P<a>[^,;]{2,25}?)\s+(?:(?:pos
                         # "market cap soars above $7.6 billion" is the company's value, not the raise
                         r"|market\s+(?:cap(?:itali[sz]ation)?|value)\s+(?:\S+\s+){0,3}?(?P<e>(?:US\$|\$|€|£)?\d[\d.,]*\s?(?:billion|million|bn|m|b)?))")
 _CAPEX_AFTER = re.compile(r"^\s*(?:'s\s+)?(?:\S+\s+)?(plant|factory|facility|facilities|project|expansion|hub|office|housing|"
+                          r"(?:feed\s+|flour\s+|rice\s+|sugar\s+|steel\s+|paper\s+)?mills?|"
                           r"warehouse|site|refinery|mine|campus|infrastructure|network|schools?|programme|scheme)\b",
                           re.IGNORECASE)
 _EQUITY_EVIDENCE = re.compile(r"\b(invest\w*|funding|capital|stake|equity|round|seed|series|raise[sd]?|"

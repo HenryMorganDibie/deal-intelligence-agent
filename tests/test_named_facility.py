@@ -43,3 +43,20 @@ def test_one_bond_reported_under_a_name_and_its_abbreviation_is_one_deal():
     kept = next(v for v in out.values() if not v.get("merged_into"))
     assert kept["target"] == "Shelter Afrique Development Bank" and kept["deal_type"] == "debt_financing"
     assert len(kept["sources"]) == 2 and sum(1 for v in out.values() if v.get("merged_into")) == 1
+
+
+def test_an_aircraft_purchase_is_not_a_company_acquisition():
+    rec = {"target": "Cessna", "deal_type": "acquisition", "buyer": "Uganda Aviation Academy",
+           "headline": "Uganda Aviation Academy Acquires Cessna 421 In Fleet Expansion Drive"}
+    assert "aircraft" in d.reclassify(rec)["excluded"]
+    assert d.extract_deal("Airtel Africa acquires Telkom Kenya", published="2026-11-10")["target"] == "Telkom Kenya"
+
+
+def test_a_nationality_and_a_scene_is_not_a_company_but_brand_names_are():
+    assert d.not_a_deal("Celebrity Boxing Takes Over Nigerian Showbiz", "Nigerian Showbiz", "acquisition")
+    assert not d.not_a_deal("Tencent buys Boomplay Music", "Boomplay Music", "acquisition")
+    assert not d.not_a_deal("MultiChoice acquires Kwese Sports", "Kwese Sports", "acquisition")
+
+
+def test_building_a_mill_is_capital_spending_not_an_investment_in_a_company():
+    assert d.extract_deal("Olam Agri invests $70m in Delta feed mill", published="2026-11-10") is None
