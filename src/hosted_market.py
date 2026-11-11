@@ -857,11 +857,19 @@ class ResultFeedbackBody(BaseModel):
         return value.strip()
 
 
-def per_client_daily(request: Request) -> int:
-    """A signed-in account's monthly plan allowance is its limit, with no daily cap on top; other callers keep the
-    per-visitor daily cap. The service-wide daily ceiling (GLOBAL_DAILY) applies to everyone and guards model cost."""
-    from src import request_identity
-    return 1_000_000 if request_identity.account(request) else PER_VISITOR_DAILY
+async def per_client_daily(request: Request) -> int:
+    """Paid accounts' monthly allowance is their only limit, with no daily cap on top. Free accounts and other callers
+    keep the per-visitor daily cap, so a few free users cannot use up the service-wide daily ceiling (GLOBAL_DAILY,
+    which guards model cost) that paying customers rely on."""
+    from src import plans, request_identity
+    user = request_identity.account(request)
+    if not user:
+        return PER_VISITOR_DAILY
+    try:
+        plan = (await plans.limits(user)).get("plan")
+    except HTTPException:
+        return PER_VISITOR_DAILY
+    return PER_VISITOR_DAILY if plan in (None, "free") else 1_000_000
 
 
 async def _reserve(request: Request, label: str) -> int:
@@ -870,10 +878,11 @@ async def _reserve(request: Request, label: str) -> int:
     async with httpx.AsyncClient(timeout=15) as client:
         r = await client.post(f"{SUPABASE_URL}/rest/v1/rpc/start_run", headers=_headers(), json={
             "secret": API_SECRET, "p_client_hash": _client_hash(request), "p_company": label[:120], "p_ticker": None,
-            "per_client_daily": per_client_daily(request), "global_daily": GLOBAL_DAILY})
+            "per_client_daily": await per_client_daily(request), "global_daily": GLOBAL_DAILY})
     if r.status_code != 200:
         if "client_limit" in r.text:
-            raise HTTPException(429, f"You have used today's {PER_VISITOR_DAILY} free requests. The limit resets at 00:00 UTC.")
+            raise HTTPException(429, f"You have used today's {PER_VISITOR_DAILY} free briefs and research runs. The limit "
+                                     "resets at 00:00 UTC; Pro has no daily limit.")
         if "global_limit" in r.text:
             raise HTTPException(429, "The service has reached today's capacity. Try again tomorrow.")
         raise HTTPException(503, "The service is busy. Try again shortly.")

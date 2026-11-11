@@ -130,9 +130,16 @@ def test_free_accounts_browse_but_briefs_and_alerts_are_pro(env, monkeypatch):
     assert r.status_code == 402 and "Alerts are part of Pro" in r.json()["detail"]
 
 
-def test_accounts_have_no_daily_cap_but_anonymous_callers_do(env):
+def test_paid_accounts_have_no_daily_cap_and_free_accounts_keep_it(env):
+    import asyncio
     from starlette.requests import Request
-    with_account = Request({"type": "http", "headers": [(ACCOUNT_HEADER.encode(), USER.encode()), (CLIENT_HEADER.encode(), b"web-secret")]})
-    anonymous = Request({"type": "http", "headers": []})
-    assert hm.per_client_daily(with_account) >= 1_000_000
-    assert hm.per_client_daily(anonymous) == hm.PER_VISITOR_DAILY
+    def req(headers):
+        return Request({"type": "http", "headers": headers})
+    account = [(ACCOUNT_HEADER.encode(), USER.encode()), (CLIENT_HEADER.encode(), b"web-secret")]
+    env["limits"]["plan"] = "free"
+    plans._cache.clear()
+    assert asyncio.run(hm.per_client_daily(req(account))) == hm.PER_VISITOR_DAILY
+    env["limits"]["plan"] = "pro"
+    plans._cache.clear()
+    assert asyncio.run(hm.per_client_daily(req(account))) >= 1_000_000
+    assert asyncio.run(hm.per_client_daily(req([]))) == hm.PER_VISITOR_DAILY

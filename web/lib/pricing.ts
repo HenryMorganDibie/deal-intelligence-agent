@@ -29,7 +29,8 @@ export const PLAN_FEATURES: Record<CatalogPlan["id"], { blurb: string; features:
   free: {
     blurb: "Explore African private markets, no time limit.",
     features: ["Browse every deal, company, investor and fund", "Markets: 1,600+ listed shares, sectors, currencies, Treasury bills",
-      "Comparables, country risk and financial statements", "Public deal pages to share", "30 API requests a month"],
+      "Comparables, country risk and financial statements", "30 company briefs and research runs a month to try",
+      "Public deal pages to share", "30 API requests a month"],
   },
   pro: {
     blurb: "For analysts, founders and investors.",

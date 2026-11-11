@@ -76,7 +76,7 @@ async def use_ai(request: Request) -> None:
             raise _upgrade("Briefs and research runs are part of Pro. Browsing deals, companies, markets and "
                            "countries stays free.")
         raise _upgrade(f"You have used this month's {out.get('limit', 0)} briefs and research runs on your plan. "
-                       "Upgrade for more, or wait until the 1st.")
+                       "Upgrade to Pro for 100 a month with no daily limit, or wait until the 1st.")
 
 
 async def check_alert_slot(request: Request) -> Optional[str]:

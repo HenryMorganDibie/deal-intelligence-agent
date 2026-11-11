@@ -313,12 +313,13 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
         resp = await _rpc(client, "start_run", {
             "secret": API_SECRET, "p_client_hash": _client_hash(request),
             "p_company": body.company, "p_ticker": body.ticker,
-            "per_client_daily": per_client_daily(request), "global_daily": GLOBAL_DAILY,
+            "per_client_daily": await per_client_daily(request), "global_daily": GLOBAL_DAILY,
         })
     if resp.status_code != 200:
         message = resp.text
         if "client_limit" in message:
-            raise HTTPException(429, f"You have run {PER_VISITOR_DAILY} analyses today. The limit resets at 00:00 UTC.")
+            raise HTTPException(429, f"You have run {PER_VISITOR_DAILY} analyses today. The limit resets at 00:00 UTC; "
+                                     "Pro has no daily limit.")
         if "global_limit" in message:
             raise HTTPException(429, "The service has reached today's capacity. Try again tomorrow.")
         log.error("start_run failed: %s %s", resp.status_code, message[:300])
