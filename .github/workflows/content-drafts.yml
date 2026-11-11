@@ -7,6 +7,7 @@ name: Post drafts
 on:
   schedule:
     - cron: "41 5 * * *"      # 06:41 in Lagos, 08:41 in Nairobi
+    - cron: "47 6 * * *"      # backup if GitHub delays the first; the day's email is never sent twice
   workflow_dispatch:
 
 permissions:

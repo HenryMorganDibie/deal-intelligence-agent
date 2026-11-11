@@ -44,13 +44,14 @@ def test_a_company_appears_once_in_the_roundup():
 def test_daily_drafts_lead_with_the_largest_deal_and_fit_on_x():
     out = cd.build([deal(1), deal(9, target="Moniepoint"), deal(3), deal(5, announced="2026-10-01")], TODAY)
     kinds = [d["kind"] for d in out["drafts"]]
-    assert kinds == ["Deal of the day", "Roundup"] and out["deals_in_window"] == 3
+    assert kinds == ["Deal of the day", "More deals for X (1 of 2)", "More deals for X (2 of 2)", "Roundup"] \
+        and out["deals_in_window"] == 3
     top = out["drafts"][0]
     assert top["deal_ids"] == ["d9"] and "Moniepoint raised $9M" in top["linkedin"]
     assert "https://news.example/9" in top["linkedin"]
     for d in out["drafts"]:
         assert d["x"] is None or cd.x_length(d["x"]) <= cd.X_LIMIT
-        assert "—" not in d["linkedin"] and "—" not in (d["x"] or "")
+        assert "—" not in (d.get("linkedin") or "") and "—" not in (d["x"] or "")
 
 
 def test_monday_adds_the_week_in_review():
@@ -68,7 +69,7 @@ def test_quiet_days_widen_the_window_then_send_nothing():
 
 def test_email_escapes_and_labels_each_platform():
     subject, body, text = cd.render_email(cd.build([deal(1, target="A&B <Co>"), deal(2)], TODAY))
-    assert "2 ready" in subject and "A&amp;B &lt;Co&gt;" in body and "LinkedIn" in text and "-- X (" in text
+    assert "3 ready" in subject and "A&amp;B &lt;Co&gt;" in body and "LinkedIn" in text and "-- X (" in text
 
 
 @pytest.fixture
@@ -138,3 +139,40 @@ def test_a_repeat_run_on_the_same_day_is_not_a_failure(cron, monkeypatch):
     monkeypatch.setattr(hm.email_alerts, "send", duplicate)
     body = client().get("/api/cron/content-drafts").json()
     assert body["sent"] is True and body["already_sent"] is True
+
+
+def test_more_deals_for_x_and_a_fact_from_the_database():
+    from datetime import date as _date
+    from src.engines import content_drafts as cd
+    base = {"deal_type": "equity_funding", "sources": [{"url": "https://a", "date": "2026-11-10"}]}
+    history = [{**base, "id": f"h{i}", "target": f"Co{i}", "investors": ["Proparco"], "country": "KE",
+                "announced": "2026-03-01", "amount_usd": 1e6} for i in range(8)]
+    today = [{**base, "id": "a", "target": "Alpha", "investors": ["X"], "country": "NG", "announced": "2026-11-10", "amount_usd": 9e6},
+             {**base, "id": "b", "target": "Beta", "investors": ["Y"], "country": "GH", "announced": "2026-11-10", "amount_usd": 5e6},
+             {**base, "id": "c", "target": "Cashi", "investors": ["Proparco"], "country": "SD", "announced": "2026-11-10",
+              "amount_usd": 652174}]
+    res = cd.build(history + today, _date(2026, 11, 11))
+    kinds = [d["kind"] for d in res["drafts"]]
+    assert kinds[:3] == ["Deal of the day", "More deals for X (1 of 2)", "More deals for X (2 of 2)"]
+    cashi = next(d for d in res["drafts"] if d.get("deal_ids") == ["c"])
+    assert "Proparco's first deal in Sudan that we track, out of 9" in cashi["x"]
+    assert all(cd.x_length(d["x"]) <= cd.X_LIMIT for d in res["drafts"] if d.get("x"))
+
+
+def test_market_post_names_the_strongest_sector_and_skips_implausible_moves():
+    from src.engines import content_drafts as cd
+    ov = {"coverage": {"exchanges": 24}, "exchange_country": {"egx": "EG"},
+          "sectors": [{"sector": "Telecom", "shares": 17, "mcap_usd": 69e9, "ytd_usd": 0.55},
+                      {"sector": "Oil & Gas", "shares": 26, "mcap_usd": 18e9, "ytd_usd": 0.71},
+                      {"sector": "Financials", "shares": 252, "mcap_usd": 129e9, "ytd_usd": 0.03},
+                      {"sector": "Banque", "shares": 2, "mcap_usd": 4e9, "ytd_usd": 3.0}],
+          "gainers": [{"name": "Glitch Co", "exchange": "egx", "chg_1d": 4.0}, {"name": "Delta", "exchange": "egx", "chg_1d": 0.2}]}
+    post = cd.market_post(ov)
+    assert "oil & gas stocks are up 71%" in post["linkedin"] and "24 exchanges" in post["linkedin"]
+    assert "Glitch" not in post["linkedin"] and "Delta (Egypt), up 20%" in post["linkedin"]
+
+
+def test_ipo_bids_are_demand_not_the_offer_size():
+    from src.engines import deals as dm
+    r = dm.extract_deal("Dangote Refinery Gets $4.1 Billion Share Bids in Top Africa IPO", published="2026-11-10")
+    assert r is None or not r.get("amount_usd")

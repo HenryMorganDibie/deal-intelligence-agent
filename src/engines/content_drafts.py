@@ -8,7 +8,11 @@ the owner reads the drafts, edits them and publishes by hand.
 Each morning's email carries:
   - Deal of the day: the largest disclosed deal announced in the window, as a LinkedIn post and an X post.
   - Roundup: up to five deals from the window in one post.
+  - More deals for X: up to two further deals, one post each, with a fact from the database where one holds
+    ("Proparco's first deal in Sudan that we track", "IFC's 6th disclosed deal in Africa this year").
+  - Markets: the strongest sector this year in US dollars, the largest sector, and the day's biggest mover.
   - On Mondays, the week in African deals: count, disclosed total, top countries, top deals, most active investors.
+  - On Fridays, a question for replies.
 """
 from __future__ import annotations
 
@@ -206,7 +210,99 @@ def week_in_review(deals: list[dict], start: date, end: date) -> Optional[dict]:
             "x": x if x_length(x) <= X_LIMIT else None}
 
 
-def build(deals: list[dict], today: date) -> dict:
+def _ordinal(n: int) -> str:
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+
+
+def deal_fact(d: dict, deals: list[dict], today: date) -> Optional[str]:
+    """One sentence the database supports about a deal's lead backer: its first deal in this country among many
+    we track, or its count of disclosed deals this year. None when nothing notable holds."""
+    backers = [n for n in (d.get("lead_investors") or d.get("investors") or [d.get("buyer")]) if n][:1]
+    if not backers or d.get("deal_type") not in ("equity_funding", "debt_financing"):
+        return None
+    who = backers[0]
+    key = who.lower()
+    theirs = [x for x in deals if any(isinstance(n, str) and n.lower() == key
+                                      for n in (x.get("investors") or []) + [x.get("buyer")])]
+    where = country_name(d.get("country"))
+    if where and len(theirs) >= 8 and sum(1 for x in theirs if x.get("country") == d.get("country")) == 1:
+        return f"It is {who}'s first deal in {where} that we track, out of {len(theirs)} across Africa."
+    this_year = [x for x in theirs if str(x.get("announced") or "")[:4] == str(today.year)
+                 and str(x.get("announced") or "")[:10] <= today.isoformat()]
+    if len(this_year) >= 3:
+        return f"It is {who}'s {_ordinal(len(this_year))} disclosed deal in Africa this year."
+    return None
+
+
+def deal_post(d: dict, deals: list[dict], today: date, kind: str) -> dict:
+    """One deal as an X post: what happened, where, a fact where one holds, and the deal's page."""
+    line, where, link = summary(d), country_name(d.get("country")), deal_link(d)
+    fact = deal_fact(d, deals, today)
+    for parts in ((f"{line}" + (f" ({where})" if where else "") + ".", fact, link),
+                  (f"{line}" + (f" ({where})" if where else "") + ".", link), (f"{line}.", link)):
+        x = "\n\n".join(p for p in parts if p)
+        if x_length(x) <= X_LIMIT:
+            return {"kind": kind, "deal_ids": [d["id"]], "x": x}
+    return {"kind": kind, "deal_ids": [d["id"]], "x": None}
+
+
+def _pct(v: float) -> str:
+    return f"{abs(v) * 100:.0f}%"
+
+
+def market_post(overview: Optional[dict]) -> Optional[dict]:
+    """The strongest sector this year in US dollars, the largest sector, and the day's biggest mover, from the
+    platform's market snapshot. A move above 50% in a day is left out as more likely a data error than news."""
+    if not overview:
+        return None
+    sectors = [x for x in overview.get("sectors") or [] if x.get("shares", 0) >= 10 and x.get("ytd_usd") is not None]
+    exchanges = (overview.get("coverage") or {}).get("exchanges")
+    lines = []
+    if sectors:
+        best = max(sectors, key=lambda x: x["ytd_usd"])
+        biggest = max(sectors, key=lambda x: x.get("mcap_usd") or 0)
+        direction = "up" if best["ytd_usd"] >= 0 else "down"
+        scope = f"the {exchanges} exchanges we track" if exchanges else "the exchanges we track"
+        lines.append(f"African {best['sector'].lower()} stocks are {direction} {_pct(best['ytd_usd'])} this year in "
+                     f"US dollar terms, the strongest sector across {scope}.")
+        if biggest is not best and biggest.get("mcap_usd"):
+            move = "up" if biggest["ytd_usd"] >= 0 else "down"
+            lines.append(f"{biggest['sector']}, the largest at {money(biggest['mcap_usd'])} in market value, are "
+                         f"{move} {_pct(biggest['ytd_usd'])}.")
+    movers = [g for g in overview.get("gainers") or [] if g.get("chg_1d") and 0 < g["chg_1d"] <= 0.5]
+    if movers:
+        g = movers[0]
+        where = country_name((overview.get("exchange_country") or {}).get(g.get("exchange"))) or None
+        lines.append(f"Biggest gainer on the last trading day: {g['name']}" + (f" ({where})" if where else "")
+                     + f", up {_pct(g['chg_1d'])}.")
+    if not lines:
+        return None
+    x_lines = list(lines)                         # X drops lines to fit; LinkedIn keeps them all
+    x = "\n\n".join(x_lines + [f"{APP}/app/markets"])
+    while x_length(x) > X_LIMIT and len(x_lines) > 1:
+        x_lines.pop()
+        x = "\n\n".join(x_lines + [f"{APP}/app/markets"])
+    linkedin = "\n\n".join(lines + [f"Prices, sectors and currencies across African exchanges: {APP}/app/markets",
+                                     HASHTAGS])
+    return {"kind": "Markets", "deal_ids": [], "linkedin": linkedin, "x": x if x_length(x) <= X_LIMIT else None}
+
+
+QUESTIONS = [
+    "Which African market will see the most venture deals next year?\n\nNigeria · Kenya · Egypt · South Africa",
+    "What is the biggest obstacle to more African exits?\n\nFew buyers · Currency · Small IPO markets · Valuations",
+    "Where will African fintech consolidation come from?\n\nBanks · Telcos · Other fintechs · Global players",
+    "Which sector will attract the most private capital in Africa next year?\n\nFintech · Energy · Agriculture · Health",
+    "Debt or equity: which will fund more African startups next year?",
+    "Which African stock exchange deserves more global investor attention, and why?",
+]
+
+
+def question_post(today: date) -> dict:
+    q = QUESTIONS[today.isocalendar()[1] % len(QUESTIONS)]
+    return {"kind": "Question for replies", "deal_ids": [], "x": q, "linkedin": q}
+
+
+def build(deals: list[dict], today: date, market: Optional[dict] = None) -> dict:
     """All of today's drafts. The daily window is yesterday and today (UTC), widened to three days when quiet.
     Deals the sanity checks flag are held out of every draft and listed for review instead."""
     window = in_window(deals, today - timedelta(days=1), today)
@@ -219,9 +315,21 @@ def build(deals: list[dict], today: date) -> dict:
     window = [d for d in window if d["id"] not in flagged]
     drafts = []
     if window:
-        drafts.append(deal_of_the_day(ranked(window)[0]))
+        top = ranked(window)
+        drafts.append(deal_of_the_day(top[0]))
+        chosen = [top[0]]
+        for d in top[1:]:                         # two more companies, one post each
+            if len(chosen) == 3:
+                break
+            if not any(_same_company(d.get("target"), c.get("target")) for c in chosen):
+                chosen.append(d)
+                drafts.append(deal_post(d, deals, today, f"More deals for X ({len(chosen) - 1} of 2)"))
         if (r := roundup(window, label)):
             drafts.append(r)
+    if (m := market_post(market)):
+        drafts.append(m)
+    if today.weekday() == 4:
+        drafts.append(question_post(today))
     if today.weekday() == 0:
         start, end = today - timedelta(days=7), today - timedelta(days=1)
         week = in_window(deals, start, end)

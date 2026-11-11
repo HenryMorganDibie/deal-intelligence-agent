@@ -1264,6 +1264,10 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
             r"(?i)\b(?:with|via|through|in)\s+(?:an?\s+|its\s+)?(?:\S+\s+){0,2}?(?:ipo|initial\s+public\s+offering|listing|flotation)\b"
             r"|\bahead\s+of\s+(?:an?\s+|its\s+)?(?:\S+\s+)?listing\b(?=.*\braise)", title) and not _ROUND.search(title):
         deal_type = "ipo"                          # "aims to raise $5bn with October listing"
+    if deal_type == "ipo" and amount and re.search(
+            r"(?i)\b(?:bids?|orders?|demand|subscriptions?|oversubscri\w*|applications?)\b", deal_title) \
+            and not re.search(r"(?i)\brais\w*\b", deal_title):
+        amount = currency = None                 # "Gets $4.1 Billion Share Bids": investor demand, not the offer size
     if deal_type in ("equity_funding", "debt_financing") and _FUND_WORDS.search(title):
         deal_type = "fund_raise"
     # "X raises $5m" with no amount and no round is too vague to be a deal.

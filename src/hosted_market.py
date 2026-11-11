@@ -1823,8 +1823,15 @@ async def cron_content_drafts(request: Request, dry_run: bool = False) -> dict:
     sent. One email per day: a repeated run reuses the day's idempotency key, so it is never delivered twice."""
     if not _authorized_cron(request):
         raise HTTPException(status_code=401, detail="Scheduled workflow authorization required.")
-    from src.engines import content_drafts
-    result = content_drafts.build(deals(), datetime.now(timezone.utc).date())
+    from src.engines import content_drafts, markets
+    try:
+        market = markets.overview(await run_in_threadpool(_market_snapshot))
+        market["exchange_country"] = {e.get("code") or e.get("exchange"): e.get("country")
+                                      for e in market.get("exchanges") or []}
+    except Exception as e:                       # a market outage never stops the deal drafts
+        log.warning("content drafts: market overview unavailable: %s", e)
+        market = None
+    result = content_drafts.build(deals(), datetime.now(timezone.utc).date(), market)
     to = os.environ.get("CONTENT_DRAFTS_TO", "").strip()
     if dry_run or not to:
         return {**result, "sent": False, "reason": "dry run" if dry_run else "CONTENT_DRAFTS_TO is not set"}
