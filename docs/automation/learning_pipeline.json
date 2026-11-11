@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-10T20:59:50.350268+00:00",
+  "updated_at": "2026-11-11T12:17:23.414472+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 56,
+      "new_review_items_today": 66,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 3,
+      "new_review_items_today": 0,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 185,
-      "new_observations_today": 1,
+      "observations_collected": 189,
+      "new_observations_today": 4,
       "unreviewed_flagged_observations": 29,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,36 +57,36 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 196,
-      "entities": 322,
+      "relationships": 198,
+      "entities": 323,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
       "id": "learned_ranking",
       "name": "Learned ranking",
       "status": "promoted",
-      "eligible_backtest_rows": 5970,
+      "eligible_backtest_rows": 5978,
       "holdout_metrics": {
         "learned_ranker": {
-          "n": 1477,
+          "n": 1478,
           "positives": 282,
-          "base_rate": 0.190928,
+          "base_rate": 0.190798,
           "precision_at_20pct": 0.462838,
-          "brier": 0.125081
+          "brier": 0.124992
         },
         "alpha_baseline": {
-          "n": 1477,
+          "n": 1478,
           "positives": 282,
-          "base_rate": 0.190928,
+          "base_rate": 0.190798,
           "precision_at_20pct": 0.337838,
-          "brier": 0.269642
+          "brier": 0.269698
         },
         "prevalence_baseline": {
-          "n": 1477,
+          "n": 1478,
           "positives": 282,
-          "base_rate": 0.190928,
-          "precision_at_20pct": 0.190928,
-          "brier": 0.1564
+          "base_rate": 0.190798,
+          "precision_at_20pct": 0.190798,
+          "brier": 0.156299
         }
       },
       "promoted": true,

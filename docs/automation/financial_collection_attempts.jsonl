@@ -560,3 +560,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "IHL.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-10", "market": "africa", "status": "no_annual_data_returned", "ticker": "IIL.GH"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-10", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46508_IKEJA_HOTEL_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "IKEJAHOTEL.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "ILE.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "ILU.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-11", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46517_INDUSTRIAL_AND_MEDICAL_GASES_NIGERIA_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "IMG.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "IMH.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "IMO.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "IMP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "INEE.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "INEG.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "INFI.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-11", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46448_INFINITY_TRUST_MORTGAGE_BANK_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "INFINITY.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "ING.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "INL.JO"}
