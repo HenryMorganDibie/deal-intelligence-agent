@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "Latest African deals | Deal Intelligence",
   description: "The newest private-market deals across Africa: funding rounds, debt, acquisitions, exits and fund closes, each with its sources.",
   alternates: { canonical: "/deals" },
+  openGraph: { title: "Latest African deals", url: "/deals", type: "website", siteName: "Deal Intelligence",
+    description: "The newest private-market deals across Africa: funding rounds, debt, acquisitions, exits and fund closes, each with its sources." },
+  twitter: { card: "summary_large_image", title: "Latest African deals",
+    description: "The newest private-market deals across Africa: funding rounds, debt, acquisitions, exits and fund closes, each with its sources." },
 };
 
 async function latest(): Promise<Deal[]> {

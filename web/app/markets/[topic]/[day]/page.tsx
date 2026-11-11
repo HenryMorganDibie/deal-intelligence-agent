@@ -17,10 +17,14 @@ function valid(p: Params["params"]): p is { topic: MarketTopic; day: string } {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!valid(params)) return { title: "Not found | Deal Intelligence", robots: { index: false } };
   const t = marketTopic(params.topic, null, null);
+  const title = `${t.title}, ${dayLabel(params.day)}`;
+  const url = `/markets/${params.topic}/${params.day}`;
   return {
-    title: `${t.title}, ${dayLabel(params.day)} | Deal Intelligence`,
+    title: `${title} | Deal Intelligence`,
     description: t.intro,
-    alternates: { canonical: `/markets/${params.topic}/${params.day}` },
+    alternates: { canonical: url },
+    openGraph: { title, description: t.intro, url, type: "article", siteName: "Deal Intelligence" },
+    twitter: { card: "summary_large_image", title, description: t.intro },
     robots: { index: false, follow: true },
   };
 }

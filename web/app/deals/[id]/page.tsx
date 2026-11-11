@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     title,
     description,
     alternates: { canonical: `/deals/${d.id}` },
-    openGraph: { title, description, type: "article", url: `/deals/${d.id}` },
+    openGraph: { title, description, type: "article", url: `/deals/${d.id}`, siteName: "Deal Intelligence" },
     twitter: { card: "summary_large_image", title, description },
   };
 }

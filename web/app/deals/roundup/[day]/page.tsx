@@ -10,9 +10,12 @@ export const revalidate = 3600;
 
 export async function generateMetadata({ params }: { params: { day: string } }): Promise<Metadata> {
   if (!dayLabel(params.day)) return { title: "Not found | Deal Intelligence", robots: { index: false } };
-  return { title: `African deals, ${dayLabel(params.day)} | Deal Intelligence`,
-    description: "The largest African deals tracked in the last day, one per company, each with its sources.",
-    alternates: { canonical: `/deals/roundup/${params.day}` }, robots: { index: false, follow: true } };
+  const title = `African deals, ${dayLabel(params.day)}`;
+  const description = "The largest African deals tracked in the last day, one per company, each with its sources.";
+  const url = `/deals/roundup/${params.day}`;
+  return { title: `${title} | Deal Intelligence`, description, alternates: { canonical: url }, robots: { index: false, follow: true },
+    openGraph: { title, description, url, type: "article", siteName: "Deal Intelligence" },
+    twitter: { card: "summary_large_image", title, description } };
 }
 
 export default async function RoundupPage({ params }: { params: { day: string } }) {

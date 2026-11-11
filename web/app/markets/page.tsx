@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "African markets today | Deal Intelligence",
   description: "Every African stock exchange, sector returns in dollars, currencies, Treasury bill auctions and policy rates, updated daily.",
   alternates: { canonical: "/markets" },
+  openGraph: { title: "African markets today", url: "/markets", type: "website", siteName: "Deal Intelligence",
+    description: "Every African stock exchange, sector returns in dollars, currencies, Treasury bill auctions and policy rates, updated daily." },
+  twitter: { card: "summary_large_image", title: "African markets today",
+    description: "Every African stock exchange, sector returns in dollars, currencies, Treasury bill auctions and policy rates, updated daily." },
 };
 
 function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {

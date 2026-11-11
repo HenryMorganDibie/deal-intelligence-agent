@@ -10,9 +10,12 @@ export const revalidate = 3600;
 
 export async function generateMetadata({ params }: { params: { day: string } }): Promise<Metadata> {
   if (!dayLabel(params.day)) return { title: "Not found | Deal Intelligence", robots: { index: false } };
-  return { title: `The week in African deals, to ${dayLabel(params.day)} | Deal Intelligence`,
-    description: "How many African deals were tracked this week, how much was disclosed, the busiest market and the largest deals.",
-    alternates: { canonical: `/deals/week/${params.day}` }, robots: { index: false, follow: true } };
+  const title = `The week in African deals, to ${dayLabel(params.day)}`;
+  const description = "How many African deals were tracked this week, how much was disclosed, the busiest market and the largest deals.";
+  const url = `/deals/week/${params.day}`;
+  return { title: `${title} | Deal Intelligence`, description, alternates: { canonical: url }, robots: { index: false, follow: true },
+    openGraph: { title, description, url, type: "article", siteName: "Deal Intelligence" },
+    twitter: { card: "summary_large_image", title, description } };
 }
 
 export default async function WeekPage({ params }: { params: { day: string } }) {
