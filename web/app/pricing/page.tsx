@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PricingTable } from "../../components/billing/PricingTable";
 import { PublicPage } from "../../components/PublicPage";
 import { Container } from "../../components/primitives";
-import { loadCatalog } from "../../lib/catalog";
+import { loadCatalog, loadNairaPerDollar } from "../../lib/catalog";
 
 export const revalidate = 300;
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PricingPage() {
-  const catalog = await loadCatalog();
+  const [catalog, ngnPerUsd] = await Promise.all([loadCatalog(), loadNairaPerDollar()]);
   return (
     <PublicPage>
       <Container className="pb-20 pt-28 sm:pt-32">
@@ -20,12 +20,12 @@ export default async function PricingPage() {
           <p className="eyebrow">Pricing</p>
           <h1 className="h2 mt-3">Start free. Upgrade when you need more.</h1>
           <p className="lede mt-4">
-            Paid securely through Paystack. Cancel any time; you keep access until the end of the period
+            Paid securely through Paystack, with cards from anywhere. Cancel any time; you keep access until the end of the period
             you paid for.
           </p>
         </div>
         <div className="mt-12">
-          <PricingTable catalog={catalog} />
+          <PricingTable catalog={catalog} ngnPerUsd={ngnPerUsd} />
         </div>
         <div className="mx-auto mt-10 max-w-2xl text-center text-sm text-[color:var(--muted)]">
           <p>

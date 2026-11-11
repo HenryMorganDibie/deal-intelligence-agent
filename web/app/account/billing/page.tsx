@@ -34,6 +34,7 @@ export default function BillingPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [returning, setReturning] = useState(false);
+  const [ngnPerUsd, setNgnPerUsd] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/account/billing", { cache: "no-store" });
@@ -43,6 +44,13 @@ export default function BillingPage() {
     setBilling(data);
     return data;
   }, [router]);
+
+  useEffect(() => {
+    fetch("/api/data/markets/overview").then((r) => (r.ok ? r.json() : null))
+      .then((d: { currencies?: { currency: string; per_usd: number | null }[] } | null) =>
+        setNgnPerUsd(d?.currencies?.find((c) => c.currency === "NGN")?.per_usd ?? null))
+      .catch(() => null);
+  }, []);
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
@@ -109,7 +117,7 @@ export default function BillingPage() {
       {error && <p className="mt-4 rounded-[10px] border border-risk/25 bg-risk/[0.05] p-3 text-sm text-risk">{error}</p>}
       {billing && !paying && billing.source !== "manual" && (
         <div className="mt-10">
-          <PricingTable catalog={catalog} current={billing.plan} onChoose={choose} busy={busy} />
+          <PricingTable catalog={catalog} current={billing.plan} onChoose={choose} busy={busy} ngnPerUsd={ngnPerUsd} />
           <p className="mt-6 text-center text-xs text-[color:var(--dim)]">
             Paid securely through Paystack. Subscribe now and keep this founding price while your subscription stays active.
           </p>

@@ -1,3 +1,4 @@
+import { apiHeaders, apiUrl } from "./api-base";
 import { FALLBACK_CATALOG, type CatalogPlan } from "./pricing";
 
 /** The plans and prices from the database (billing_catalog, public), refreshed at most every five minutes. */
@@ -13,5 +14,18 @@ export async function loadCatalog(): Promise<CatalogPlan[]> {
     return data && data.length ? data : FALLBACK_CATALOG;
   } catch {
     return FALLBACK_CATALOG;
+  }
+}
+
+/** Naira per US dollar from the daily market snapshot, refreshed hourly; null when unavailable. */
+export async function loadNairaPerDollar(): Promise<number | null> {
+  try {
+    const r = await fetch(apiUrl("/api/markets/overview"), { headers: apiHeaders(), next: { revalidate: 3600 } });
+    if (!r.ok) return null;
+    const data = (await r.json()) as { currencies?: { currency: string; per_usd: number | null }[] };
+    const rate = data.currencies?.find((c) => c.currency === "NGN")?.per_usd;
+    return rate && rate > 0 ? rate : null;
+  } catch {
+    return null;
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PLAN_FEATURES, defaultCurrency, money, priceOf, type CatalogPlan, type Currency } from "../../lib/pricing";
+import { PLAN_FEATURES, approxDollars, defaultCurrency, money, outsideNigeria, priceOf, type CatalogPlan, type Currency } from "../../lib/pricing";
 import { CONTACT_EMAIL } from "../../lib/site";
 
 type Props = {
@@ -11,15 +11,19 @@ type Props = {
   /** On the billing page: start checkout. On the public page: undefined, and buttons link to sign-up. */
   onChoose?: (plan: "pro" | "team", interval: "monthly" | "annually", currency: Currency) => void;
   busy?: string | null;
+  /** Today's naira rate, for the approximate dollar figure shown to visitors outside Nigeria. */
+  ngnPerUsd?: number | null;
 };
 
-export function PricingTable({ catalog, current = null, onChoose, busy = null }: Props) {
+export function PricingTable({ catalog, current = null, onChoose, busy = null, ngnPerUsd = null }: Props) {
   const [yearly, setYearly] = useState(false);
   const offered: Currency[] = catalog[0]?.currencies?.length ? catalog[0].currencies : ["NGN"];
   const offeredKey = offered.join(",");
   const [currency, setCurrency] = useState<Currency>("NGN");
   useEffect(() => setCurrency(defaultCurrency(offeredKey.split(",") as Currency[])), [offeredKey]);
   const interval = yearly ? "annually" : "monthly";
+  const [abroad, setAbroad] = useState(false);
+  useEffect(() => setAbroad(outsideNigeria()), []);
   return (
     <div>
       <div className="mb-6 flex items-center justify-center gap-3 text-sm">
@@ -63,6 +67,11 @@ export function PricingTable({ catalog, current = null, onChoose, busy = null }:
                   </>
                 )}
               </p>
+              {abroad && currency === "NGN" && price && ngnPerUsd ? (
+                <p className="mt-1 text-xs text-[color:var(--muted)]">
+                  {approxDollars(price, ngnPerUsd)} {yearly ? "a year" : "a month"}, billed in naira; your bank converts it
+                </p>
+              ) : null}
               {yearly && price ? (
                 <p className="mt-1 text-xs text-[color:var(--dim)]">{money(Math.round((price / 12) * 100) / 100, currency)} a month, billed yearly</p>
               ) : null}
