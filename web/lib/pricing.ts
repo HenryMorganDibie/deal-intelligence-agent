@@ -83,8 +83,7 @@ export function outsideNigeria(): boolean {
   }
 }
 
-/** "about $5.50": a naira amount in dollars at today's rate, to the nearest 50 cents. */
+/** "about $5.56": a naira amount in dollars at the current market rate. */
 export function approxDollars(naira: number, ngnPerUsd: number): string {
-  const usd = Math.max(0.5, Math.round((naira / ngnPerUsd) * 2) / 2);
-  return `about $${usd.toFixed(2)}`;
+  return `about $${(naira / ngnPerUsd).toFixed(2)}`;
 }

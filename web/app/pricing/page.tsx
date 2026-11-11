@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PricingTable } from "../../components/billing/PricingTable";
 import { PublicPage } from "../../components/PublicPage";
 import { Container } from "../../components/primitives";
-import { loadCatalog, loadNairaPerDollar } from "../../lib/catalog";
+import { loadCatalog, loadNairaRate } from "../../lib/catalog";
 
 export const revalidate = 300;
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PricingPage() {
-  const [catalog, ngnPerUsd] = await Promise.all([loadCatalog(), loadNairaPerDollar()]);
+  const [catalog, rate] = await Promise.all([loadCatalog(), loadNairaRate()]);
   return (
     <PublicPage>
       <Container className="pb-20 pt-28 sm:pt-32">
@@ -25,7 +25,7 @@ export default async function PricingPage() {
           </p>
         </div>
         <div className="mt-12">
-          <PricingTable catalog={catalog} ngnPerUsd={ngnPerUsd} />
+          <PricingTable catalog={catalog} rate={rate} />
         </div>
         <div className="mx-auto mt-10 max-w-2xl text-center text-sm text-[color:var(--muted)]">
           <p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { NairaRate } from "../../lib/catalog";
 import { PLAN_FEATURES, approxDollars, defaultCurrency, money, outsideNigeria, priceOf, type CatalogPlan, type Currency } from "../../lib/pricing";
 import { CONTACT_EMAIL } from "../../lib/site";
 
@@ -11,11 +12,11 @@ type Props = {
   /** On the billing page: start checkout. On the public page: undefined, and buttons link to sign-up. */
   onChoose?: (plan: "pro" | "team", interval: "monthly" | "annually", currency: Currency) => void;
   busy?: string | null;
-  /** Today's naira rate, for the approximate dollar figure shown to visitors outside Nigeria. */
-  ngnPerUsd?: number | null;
+  /** Current naira rate, for the approximate dollar figure shown to visitors outside Nigeria. */
+  rate?: NairaRate | null;
 };
 
-export function PricingTable({ catalog, current = null, onChoose, busy = null, ngnPerUsd = null }: Props) {
+export function PricingTable({ catalog, current = null, onChoose, busy = null, rate = null }: Props) {
   const [yearly, setYearly] = useState(false);
   const offered: Currency[] = catalog[0]?.currencies?.length ? catalog[0].currencies : ["NGN"];
   const offeredKey = offered.join(",");
@@ -67,9 +68,11 @@ export function PricingTable({ catalog, current = null, onChoose, busy = null, n
                   </>
                 )}
               </p>
-              {abroad && currency === "NGN" && price && ngnPerUsd ? (
+              {abroad && currency === "NGN" && price && rate ? (
                 <p className="mt-1 text-xs text-[color:var(--muted)]">
-                  {approxDollars(price, ngnPerUsd)} {yearly ? "a year" : "a month"}, billed in naira; your bank converts it
+                  {approxDollars(price, rate.perUsd)} {yearly ? "a year" : "a month"} at ₦{rate.perUsd.toLocaleString("en-US", { maximumFractionDigits: 2 })} per $1
+                  {rate.asOf ? ` (${new Date(rate.asOf).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })})` : ""}.
+                  {" "}Billed in naira; your bank converts it.
                 </p>
               ) : null}
               {yearly && price ? (

@@ -17,15 +17,47 @@ export async function loadCatalog(): Promise<CatalogPlan[]> {
   }
 }
 
-/** Naira per US dollar from the daily market snapshot, refreshed hourly; null when unavailable. */
-export async function loadNairaPerDollar(): Promise<number | null> {
-  try {
-    const r = await fetch(apiUrl("/api/markets/overview"), { headers: apiHeaders(), next: { revalidate: 3600 } });
-    if (!r.ok) return null;
-    const data = (await r.json()) as { currencies?: { currency: string; per_usd: number | null }[] };
-    const rate = data.currencies?.find((c) => c.currency === "NGN")?.per_usd;
-    return rate && rate > 0 ? rate : null;
-  } catch {
-    return null;
+export type NairaRate = { perUsd: number; asOf: string | null };
+
+const FIVE_MINUTES = 300;
+
+/** Live USD/NGN market quote, updated through the trading day. */
+async function liveQuote(): Promise<NairaRate | null> {
+  const r = await fetch("https://query1.finance.yahoo.com/v8/finance/chart/NGN=X?interval=1m&range=1d", {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; DealIntelligence/1.0)" }, next: { revalidate: FIVE_MINUTES } });
+  if (!r.ok) return null;
+  const meta = (await r.json())?.chart?.result?.[0]?.meta;
+  const rate = Number(meta?.regularMarketPrice);
+  return rate > 0 ? { perUsd: rate, asOf: meta?.regularMarketTime ? new Date(meta.regularMarketTime * 1000).toISOString() : null } : null;
+}
+
+/** Fallback: the published daily reference rate. */
+async function referenceRate(): Promise<NairaRate | null> {
+  const r = await fetch("https://open.er-api.com/v6/latest/USD", { next: { revalidate: FIVE_MINUTES } });
+  if (!r.ok) return null;
+  const d = await r.json();
+  const rate = Number(d?.rates?.NGN);
+  return rate > 0 ? { perUsd: rate, asOf: d?.time_last_update_unix ? new Date(d.time_last_update_unix * 1000).toISOString() : null } : null;
+}
+
+/** Last resort: the platform's own daily market snapshot. */
+async function snapshotRate(): Promise<NairaRate | null> {
+  const r = await fetch(apiUrl("/api/markets/overview"), { headers: apiHeaders(), next: { revalidate: FIVE_MINUTES } });
+  if (!r.ok) return null;
+  const d = (await r.json()) as { currencies?: { currency: string; per_usd: number | null }[]; fx_as_of?: string };
+  const rate = d.currencies?.find((c) => c.currency === "NGN")?.per_usd;
+  return rate && rate > 0 ? { perUsd: rate, asOf: d.fx_as_of ? new Date(d.fx_as_of).toISOString() : null } : null;
+}
+
+/** Naira per US dollar, following the market: refreshed every five minutes; null when no source answers. */
+export async function loadNairaRate(): Promise<NairaRate | null> {
+  for (const source of [liveQuote, referenceRate, snapshotRate]) {
+    try {
+      const rate = await source();
+      if (rate) return rate;
+    } catch {
+      /* try the next source */
+    }
   }
+  return null;
 }

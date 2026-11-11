@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Container } from "../../../components/primitives";
 import { PricingTable } from "../../../components/billing/PricingTable";
+import type { NairaRate } from "../../../lib/catalog";
 import { FALLBACK_CATALOG, money, priceOf, type CatalogPlan, type Currency } from "../../../lib/pricing";
 
 type Billing = {
@@ -34,7 +35,7 @@ export default function BillingPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [returning, setReturning] = useState(false);
-  const [ngnPerUsd, setNgnPerUsd] = useState<number | null>(null);
+  const [rate, setRate] = useState<NairaRate | null>(null);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/account/billing", { cache: "no-store" });
@@ -46,10 +47,7 @@ export default function BillingPage() {
   }, [router]);
 
   useEffect(() => {
-    fetch("/api/data/markets/overview").then((r) => (r.ok ? r.json() : null))
-      .then((d: { currencies?: { currency: string; per_usd: number | null }[] } | null) =>
-        setNgnPerUsd(d?.currencies?.find((c) => c.currency === "NGN")?.per_usd ?? null))
-      .catch(() => null);
+    fetch("/api/fx").then((r) => (r.ok ? r.json() : null)).then((d: NairaRate | null) => setRate(d)).catch(() => null);
   }, []);
 
   useEffect(() => {
@@ -117,7 +115,7 @@ export default function BillingPage() {
       {error && <p className="mt-4 rounded-[10px] border border-risk/25 bg-risk/[0.05] p-3 text-sm text-risk">{error}</p>}
       {billing && !paying && billing.source !== "manual" && (
         <div className="mt-10">
-          <PricingTable catalog={catalog} current={billing.plan} onChoose={choose} busy={busy} ngnPerUsd={ngnPerUsd} />
+          <PricingTable catalog={catalog} current={billing.plan} onChoose={choose} busy={busy} rate={rate} />
           <p className="mt-6 text-center text-xs text-[color:var(--dim)]">
             Paid securely through Paystack. Subscribe now and keep this founding price while your subscription stays active.
           </p>
