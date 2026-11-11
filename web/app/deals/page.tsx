@@ -33,6 +33,8 @@ async function latest(): Promise<Deal[]> {
 
 function country(code: string | null): string | null {
   if (!code) return null;
+  if (code === "CD") return "DR Congo";
+  if (code === "CG") return "Republic of the Congo";
   try {
     return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
   } catch {

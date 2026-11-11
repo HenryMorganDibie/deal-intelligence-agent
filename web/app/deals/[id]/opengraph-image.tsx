@@ -31,6 +31,8 @@ const usd = (v: number) => (v >= 1e9 ? `$${trim(v / 1e9, 1)}bn` : v >= 1e6 ? `$$
 
 function countryName(code: string | null): string | null {
   if (!code) return null;
+  if (code === "CD") return "DR Congo";
+  if (code === "CG") return "Republic of the Congo";
   try {
     return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
   } catch {

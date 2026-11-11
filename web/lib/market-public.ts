@@ -49,6 +49,8 @@ export const pct = (v: number | null | undefined, signed = true): string =>
 
 export function countryName(code: string | null | undefined): string | null {
   if (!code) return null;
+  if (code === "CD") return "DR Congo";
+  if (code === "CG") return "Republic of the Congo";
   try {
     return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
   } catch {
