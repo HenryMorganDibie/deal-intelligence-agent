@@ -1996,6 +1996,10 @@ def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
             keys |= {f"fr:{k}" for k in (deals_mod._acronym(target), re.sub(r"[^A-Za-z]", "", target).upper()) if len(k) >= 2}
             keys |= {f"frh:{t}" for t in deals_mod.normalise_name(current.get("headline")).split()
                      if len(t) >= 4 and t not in deals_mod._GENERIC_TARGET_WORDS}
+        if current.get("amount_usd"):
+            # Reports of one deal under different names ("ShafDB", "Shelter Afrique Development Bank") share
+            # the figure; strong_same_report still decides.
+            keys.add(f"usd:{round(current['amount_usd'])}")
         for token in keys:
             buckets[token].append(current)
 
@@ -2024,6 +2028,8 @@ def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
                 kt, dt = deals_mod._name_tokens(merged.get("target")), deals_mod._name_tokens(drop.get("target"))
                 if dt > kt and not (kt - _DESCRIPTIVE_TARGET_WORDS - investors._DEMONYMS):
                     merged["target"] = drop.get("target")
+                elif deals_mod.abbreviates(merged.get("target"), drop.get("target")):
+                    merged["target"] = drop.get("target")        # the full name over its abbreviation
                 if keep.get("deal_type") == drop.get("deal_type") == "fund_raise":
                     merged.update(_fund_house_name(merged.get("target"), drop.get("target")))
                 out[keep["id"]] = merged

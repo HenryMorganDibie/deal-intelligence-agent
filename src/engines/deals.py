@@ -698,6 +698,9 @@ def reclassify(deal: dict) -> Optional[dict]:
         if "excluded" in fix:
             return fix
         parties_fix.update(fix)
+    if deal.get("sector") == "oil_gas" and re.search(r"(?i)\bnon[- ]oil\b", headline) \
+            and classify_sector(headline) != "oil_gas":
+        parties_fix["sector"] = classify_sector(headline)
     change = _reclassify_type(deal, headline)
     return {**parties_fix, **(change or {})} if (parties_fix or change) else None
 
@@ -900,7 +903,7 @@ SECTORS: tuple[tuple[str, str], ...] = (
     ("banking", r"\bbank(ing)?\b|microfinance|lender|tier\s+1|deposit"),
     ("insurance", r"insur(ance|er)|reinsur|takaful|assurance"),
     ("energy", r"energy|power|solar|electricity|renewable|wind\s+farm|hydro|utility|grid|mini-grid|off-grid"),
-    ("oil_gas", r"\boil\b|\bgas\b|petroleum|refinery|upstream|downstream|lng|crude|oilfield"),
+    ("oil_gas", r"(?<!non-)(?<!non )\boil\b|\bgas\b|petroleum|refinery|upstream|downstream|lng|crude|oilfield"),
     ("mining", r"mining|\bmine\b|gold|copper|lithium|cobalt|platinum|iron\s+ore|bauxite|manganese"),
     ("telecom", r"telecom|telco|mobile\s+operator|\bmtn\b|airtel|safaricom|vodacom|orange|fibre|fiber|data\s+cent(er|re)|tower"),
     ("agriculture", r"agri|agritech|farm|food\s+security|cocoa|coffee|tea\b|fertili[sz]er|poultry|crop|dairy"),
@@ -969,13 +972,23 @@ def strip_approval_tail(name):
 
 # A group of beneficiaries is not a company: "to extend loans to MSMEs", "to Support Local Businesses and SMEs".
 _SME_WORDS = re.compile(r"(?i)\b(?:m?smes?|msmes?|small\s+businesses)\b")
-_BENEFICIARY_TARGET = re.compile(r"(?i)\b(?:m?smes?|msmes?|small\s+businesses)\b|^(?:support|boost)\b")
+_BENEFICIARY_TARGET = re.compile(r"(?i)\b(?:m?smes?|msmes?|small\s+businesses)\b|^(?:support|boost)\b|"
+                                 r"^(?:non-oil\s+|agricultural\s+|manufactured\s+)?exports?$|^exporters?$")
 _GRANTED_TO = re.compile(r"\b(?i:grants?|extends?|lends?|gives?|awards?)\s+(?P<name>[A-Z][\w&'’.-]*(?:\s+[A-Z][\w&'’.-]*){0,3})"
                          r"\s+(?:a\s+)?(?:[$€£₦]|US\$|USD|EUR)")
 _SUPPORTED_COMPANY = re.compile(r"(?i)^(?:support|boost)\s+(?P<name>.+\b(?:company|bank|corporation|plc|limited|ltd))\b")
 _RAISER = re.compile(r"^(?P<subj>.+?)\s+(?:raises|secures|closes|lands|bags|obtains|gets)\b", re.IGNORECASE)
 _NAMED_LOAN = re.compile(r"\bwith\s+\S+\s+(?P<name>[A-Z][\w&'’.-]*(?:\s+[A-Z][\w&'’.-]*){0,3})\s+(?:loan|facility|credit\s+line)\b")
 _LEAD_ENTITY = re.compile(r"^(?P<name>[A-Z][A-Z&.-]{2,})\s*:")
+# "Afreximbank Grants $30M NEXIM Facility": the name on the facility is the borrower. Instrument words
+# ("Trade Facility", "Green Loan") are not names.
+_NAMED_FACILITY = re.compile(r"\b(?i:grants?|granted|extends?|extended|provides?|provided|approves?|approved|signs?|"
+                             r"signed|disburses?|disbursed)\s+(?:an?\s+)?(?:\S*\d\S*\s+(?:(?i:million|billion|bn|mn)\s+)?)?"
+                             r"(?P<name>[A-Z][\w&'’.-]*(?:\s+[A-Z][\w&'’.-]*){0,3})\s+(?i:loan|facility|credit\s+line)\b")
+_FACILITY_WORDS = {"trade", "credit", "term", "revolving", "syndicated", "green", "working", "capital", "finance",
+                   "financing", "export", "import", "bridge", "liquidity", "guarantee", "debt", "senior", "sustainability",
+                   "linked", "sme", "msme", "line", "new", "first", "second", "landmark", "record", "dollar", "naira",
+                   "million", "billion", "bn", "mn"}
 
 
 def beneficiary_target_fix(deal: dict) -> Optional[dict]:
@@ -995,6 +1008,10 @@ def beneficiary_target_fix(deal: dict) -> Optional[dict]:
     if not name and (m := _NAMED_LOAN.search(headline)):
         name = m.group("name")
     if not name and (m := _LEAD_ENTITY.match(headline)) and not countries_in_text(m.group("name")):
+        name = m.group("name")
+    if not name and (m := _NAMED_FACILITY.search(headline)) \
+            and not set(normalise_name(m.group("name")).split()) <= _FACILITY_WORDS \
+            and normalise_name(m.group("name")) != normalise_name(deal.get("buyer")):
         name = m.group("name")
     if name and not _BENEFICIARY_TARGET.search(name):
         return {"target": name}
@@ -1569,6 +1586,9 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
             deal["investors"] = [deal["buyer"]] if deal["buyer"] else []
     if deal["deal_type"] in ("acquisition", "merger") and deal.get("buyer"):
         deal["buyer"] = strip_approval_tail(deal["buyer"]) or None
+    if deal["deal_type"] in ("equity_funding", "debt_financing") and (fix := beneficiary_target_fix(deal)) \
+            and "target" in fix:
+        deal["target"] = fix["target"]
     deal["id"] = deal_id(deal)
     # Last-mile invariant: a series numeral alone is never a valid fund target.
     if deal["deal_type"] == "fund_raise" and re.fullmatch(r"(?i)(?:ii|iii|iv|v|vi|vii|viii|ix|x)", str(deal.get("target") or "").strip()):
@@ -2343,6 +2363,25 @@ def _names_close_size(a: dict, b: dict) -> bool:
                                 for v, c in parse_amounts(small.get("headline") or ""))
 
 
+_ABBR_SKIP = {"of", "and", "the", "&", "for", "de", "la", "du", "des", "et"}
+
+
+def abbreviates(short: Optional[str], full: Optional[str]) -> bool:
+    """`short` is an abbreviation of `full` made from the start of each word, in order: "ShafDB" for
+    "Shelter Afrique Development Bank", "CFM" for "Climate Fund Managers", "Afrexim" for "African Export-Import"."""
+    s = re.sub(r"[^a-z0-9]", "", (short or "").lower())
+    words = [w for w in re.split(r"[\s-]+", re.sub(r"[^\w\s-]", "", (full or "").lower())) if w and w not in _ABBR_SKIP]
+    if len(s) < 3 or len(words) < 2 or " " in (short or "").strip() or len(s) >= len("".join(words)):
+        return False
+
+    def fits(i: int, j: int) -> bool:          # s[i:] from words[j:], each word giving a non-empty prefix
+        if j == len(words):
+            return i == len(s)
+        w = words[j]
+        return any(s[i:i + k] == w[:k] and fits(i + k, j + 1) for k in range(1, min(len(w), len(s) - i) + 1))
+    return fits(0, 0)
+
+
 def strong_same_report(a: dict, b: dict) -> bool:
     try:
         gap = abs((date.fromisoformat(a["announced"][:10]) - date.fromisoformat(b["announced"][:10])).days)
@@ -2366,9 +2405,10 @@ def strong_same_report(a: dict, b: dict) -> bool:
     else:
         return False
     ca, cb = _report_core(a.get("target")), _report_core(b.get("target"))
-    if not ca or not cb or not (ca <= cb or cb <= ca) or not _distinctive(ca & cb):
+    alias = abbreviates(a.get("target"), b.get("target")) or abbreviates(b.get("target"), a.get("target"))
+    if not alias and (not ca or not cb or not (ca <= cb or cb <= ca) or not _distinctive(ca & cb)):
         return False
-    if "ipo" in (ta, tb) and ca != cb:
+    if "ipo" in (ta, tb) and ca != cb and not alias:
         return False
     for f in ("buyer", "seller"):
         x, y = a.get(f), b.get(f)
