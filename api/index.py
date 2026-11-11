@@ -228,6 +228,8 @@ app.include_router(market_router)
 from src import public_api  # noqa: E402
 
 public_api.install(app)    # /v1: key-authenticated, metered, never edge-cached
+from src import billing  # noqa: E402
+billing.install(app)       # /api/billing: Paystack checkout, subscription management and webhook
 
 
 # ── Internal routes serve the web app only ──

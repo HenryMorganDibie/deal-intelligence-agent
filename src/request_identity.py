@@ -26,6 +26,7 @@ CLIENT_IP_HEADER = "x-deal-intel-client-ip"
 _OPEN = (
     re.compile(r"^/v1(/|$)"),                                  # customers' API: its own keys
     re.compile(r"^/api/auth/send-email$"),                     # Supabase hook: signed
+    re.compile(r"^/api/billing/paystack$"),                    # Paystack webhook: signed
     re.compile(r"^/api/cron/"),                                # scheduled jobs: their own secrets
     re.compile(r"^/api/health$"),
     re.compile(r"^/api/watchlists/email/unsubscribe$"),        # links in emails
