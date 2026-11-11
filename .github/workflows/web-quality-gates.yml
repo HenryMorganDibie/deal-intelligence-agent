@@ -1,6 +1,8 @@
 name: Web quality gates
 
 on:
+  # Lets a run be started by hand when GitHub loses a queued run.
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
