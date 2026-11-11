@@ -315,7 +315,9 @@ def build(deals: list[dict], today: date, market: Optional[dict] = None, briefin
     flagged = deal_sanity.review(window)
     held_back = [{"id": d["id"], "summary": summary(d) or d.get("headline"), "reasons": flagged[d["id"]],
                   "link": deal_link(d)} for d in ranked(window) if d["id"] in flagged]
-    window = [d for d in window if d["id"] not in flagged]
+    # Held-back deals, and deals with no named company ("Undisclosed energy business"), are not posted.
+    window = [d for d in window if d["id"] not in flagged
+              and not str(d.get("target") or "").lower().startswith("undisclosed")]
     drafts = []
     if window:
         top = ranked(window)

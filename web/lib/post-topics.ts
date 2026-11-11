@@ -64,7 +64,9 @@ export function shiftDay(day: string, days: number): string {
 /** Largest disclosed first, one line per company. */
 export function topDeals(deals: Deal[], n: number): Deal[] {
   const out: Deal[] = [];
-  for (const d of [...deals].filter((x) => x.target).sort((a, z) => (z.amount_usd ?? 0) - (a.amount_usd ?? 0))) {
+  // Deals the checks hold back, or with no named company, are not shown on a post's card or page.
+  const usable = deals.filter((x) => x.target && !x.target.toLowerCase().startsWith("undisclosed") && !(x.review_flags ?? []).length);
+  for (const d of [...usable].sort((a, z) => (z.amount_usd ?? 0) - (a.amount_usd ?? 0))) {
     const words = new Set(d.target!.toLowerCase().split(/\s+/));
     if (out.some((o) => { const w = new Set(o.target!.toLowerCase().split(/\s+/)); return [...words].every((x) => w.has(x)) || [...w].every((x) => words.has(x)); })) continue;
     out.push(d);
@@ -83,7 +85,11 @@ export function roundupTopic(deals: Deal[], label: string): Topic {
     rows: topDeals(deals, 5).map(dealRow), more: { href: "/deals", label: "Latest African deals" } };
 }
 
-export function weekTopic(deals: Deal[], total: number, start: string, end: string): Topic & { stats: [string, string][] } {
+export function weekTopic(all: Deal[], total: number, start: string, end: string): Topic & { stats: [string, string][] } {
+  // Counted as the email counts them: deals the checks hold back are left out. A window larger than one page keeps
+  // the API's total.
+  const deals = all.filter((d) => !(d.review_flags ?? []).length);
+  total = total > all.length ? total : deals.length;
   const disclosed = deals.reduce((s, d) => s + (d.amount_usd ?? 0), 0);
   const countries = new Map<string, number>();
   for (const d of deals) if (d.country) countries.set(d.country, (countries.get(d.country) ?? 0) + 1);

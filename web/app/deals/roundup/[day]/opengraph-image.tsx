@@ -16,7 +16,7 @@ export default async function Image({ params }: { params: { day: string } }) {
   return new ImageResponse(
     (
       <Frame pill={`Deal roundup${day ? ` · ${day}` : ""}`} title={t.title} foot={`${SITE}/deals`}
-        body={<div style={{ display: "flex", flexDirection: "column" }}>{t.rows.slice(0, 5).map((r) => <Row key={r.name} {...r} max={40} />)}</div>} />
+        body={<div style={{ display: "flex", flexDirection: "column" }}>{t.rows.slice(0, 4).map((r) => <Row key={r.name} {...r} max={40} />)}</div>} />
     ),
     { ...size, ...(fonts.length ? { fonts } : {}) },
   );

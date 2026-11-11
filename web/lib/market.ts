@@ -130,6 +130,8 @@ export type Deal = {
   why?: string[];
   independent_stories?: number;
   verification?: "corroborated" | "single source";
+  /** Reasons the automatic checks hold this deal back from posts (dated window searches only). */
+  review_flags?: string[];
 };
 
 export type Stats = { n: number; min: number; p25: number; median: number; p75: number; max: number } | null;

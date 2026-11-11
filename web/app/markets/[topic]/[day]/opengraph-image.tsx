@@ -14,7 +14,7 @@ export default async function Image({ params }: { params: { topic: string; day: 
   const [{ overview, instruments }, fonts] = await Promise.all([loadMarkets(2500), ogFonts()]);
   const t = marketTopic(topic, overview, instruments);
   const day = dayLabel(params.day);
-  const rows = t.rows.slice(0, topic === "movers" || topic === "currencies" ? 6 : 5);
+  const rows = t.rows.slice(0, topic === "movers" || topic === "currencies" ? 6 : 4);
   return new ImageResponse(
     (
       <Frame pill={`${t.pill}${day ? ` · ${day}` : ""}`} title={t.title} foot={`${SITE}/markets`}

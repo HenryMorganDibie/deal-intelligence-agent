@@ -58,8 +58,8 @@ export function Frame({ pill, title, body, foot }: { pill: string; title: string
         <div style={{ display: "flex", marginLeft: "auto", fontSize: 20, padding: "8px 18px", borderRadius: 999,
           border: "1px solid rgba(110,231,200,0.45)", color: C.accent, letterSpacing: 1 }}>{pill.toUpperCase()}</div>
       </div>
-      <div style={{ display: "flex", marginTop: 34, fontFamily: "Display", fontSize: 56, fontWeight: 600, letterSpacing: -2, lineHeight: 1.05 }}>{title}</div>
-      <div style={{ display: "flex", flexDirection: "column", marginTop: 26, flexGrow: 1 }}>{body}</div>
+      <div style={{ display: "flex", marginTop: 30, fontFamily: "Display", fontSize: 50, fontWeight: 600, letterSpacing: -1.5, lineHeight: 1.05 }}>{title}</div>
+      <div style={{ display: "flex", flexDirection: "column", marginTop: 22, flexGrow: 1 }}>{body}</div>
       <div style={{ display: "flex", fontSize: 20, color: C.faint }}>{foot}</div>
     </div>
   );

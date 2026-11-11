@@ -69,3 +69,19 @@ def test_every_post_links_to_its_own_dated_page():
     market = next(d for d in res["drafts"] if d["kind"] == "Markets")
     assert market["x"].endswith("/markets/sectors/2026-11-11")
     assert len(set(links.values()) | {market["x"].split()[-1]}) == 4
+
+
+def test_dated_deal_windows_carry_the_email_checks(monkeypatch):
+    from fastapi.testclient import TestClient
+    import api.index as api
+    from src import hosted_market as hm
+    rows = [{"id": "a", "target": "Alpha", "deal_type": "equity_funding", "announced": "2026-11-10", "amount_usd": 5e6,
+             "country": "NG", "sources": [{"url": "https://a"}], "headline": "Alpha raises $5m"}]
+    monkeypatch.setattr(hm, "deals", lambda: rows)
+    monkeypatch.setattr(hm, "_behavioral_interest_scores", lambda: {})
+    monkeypatch.setenv("DEAL_INTEL_API_SECRET", "s")
+    client = TestClient(api.app)
+    h = {"x-deal-intel-client": "s"}
+    windowed = client.get("/api/deals?since=2026-11-09&until=2026-11-11", headers=h).json()["deals"][0]
+    plain = client.get("/api/deals", headers=h).json()["deals"][0]
+    assert "review_flags" in windowed and "review_flags" not in plain

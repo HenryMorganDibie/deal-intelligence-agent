@@ -559,12 +559,16 @@ async def deal_search(q: str = "", country: Optional[str] = None, type: Optional
     matching = _rerank_with_behavioral_interest(matching, interest)
     total_matching = len(matching)
     rows = matching[offset:offset + limit]
-    from src.engines import provenance
+    from src.engines import deal_sanity, provenance
     out = []
     for d in rows:
         n = len(provenance.stories(d.get("sources") or []))
-        out.append({**d, "independent_stories": n,
-                    "verification": "corroborated" if n >= 2 else "single source"})
+        row = {**d, "independent_stories": n, "verification": "corroborated" if n >= 2 else "single source"}
+        if since:
+            # A dated window (the daily roundup, the week in review): the checks the morning email applies, so a
+            # shared card never shows a figure the email held back.
+            row["review_flags"] = deal_sanity.flags(d, matching)
+        out.append(row)
     return {"total_in_database": len(ds), "total_matching": total_matching, "offset": offset,
             "limit": limit, "count": len(out), "deals": out}
 
