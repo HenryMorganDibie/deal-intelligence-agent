@@ -39,6 +39,17 @@ export default function ContactPage() {
               </a>
             ))}
           </div>
+          <section aria-labelledby="senders-title" className="mt-12 border-t hairline pt-8">
+            <h2 id="senders-title" className="h3">Emails we send</h2>
+            <p className="mt-3 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
+              Add these addresses to your contacts so our emails reach your inbox rather than spam. They only send;
+              replying to either reaches {CONTACT_EMAIL}.
+            </p>
+            <ul className="mt-4 space-y-2 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
+              <li><span className="text-[color:var(--text)]">alerts@deal-intelligence.app</span>: watchlist alerts and digests.</li>
+              <li><span className="text-[color:var(--text)]">account@deal-intelligence.app</span>: sign-up confirmation, password reset and security notices.</li>
+            </ul>
+          </section>
           <section aria-labelledby="pilot-title" className="mt-12 border-t hairline pt-8">
             <h2 id="pilot-title" className="h3">What a pilot looks like</h2>
             <ol className="mt-4 list-decimal space-y-2 pl-5 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
