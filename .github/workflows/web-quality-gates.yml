@@ -65,6 +65,19 @@ jobs:
       - name: Install temporary browser-test dependency outside the app workspace
         run: npm install --prefix /tmp/markets-playwright @playwright/test@1.56.1
       - name: Install Chromium for interactive acceptance tests
-        run: NODE_PATH=/tmp/markets-playwright/node_modules /tmp/markets-playwright/node_modules/.bin/playwright install --with-deps chromium
+        timeout-minutes: 20
+        # Ubuntu's package mirrors are sometimes unreachable from the runner. Try the full install (browser and system
+        # packages) three times; if the mirrors stay down, fetch the browser alone: the runner image already carries
+        # Chromium's libraries, and the acceptance tests below still run in full.
+        run: |
+          export NODE_PATH=/tmp/markets-playwright/node_modules
+          PW=/tmp/markets-playwright/node_modules/.bin/playwright
+          for attempt in 1 2 3; do
+            if timeout 300 "$PW" install --with-deps chromium; then exit 0; fi
+            echo "Chromium install attempt $attempt failed; retrying"
+            sleep 15
+          done
+          echo "Package mirrors unreachable; installing the browser without system packages"
+          "$PW" install chromium
       - name: Browser acceptance tests
         run: NODE_PATH=/tmp/markets-playwright/node_modules /tmp/markets-playwright/node_modules/.bin/playwright test --config=playwright.config.cjs
