@@ -77,7 +77,7 @@ function FunnelPanel({ funnel }: { funnel?: PlanFunnel }) {
   ];
   const limits: [string, string][] = [
     ["limit_ai_month", "used the 30 monthly briefs"], ["limit_ai_day", "used the 15 daily briefs"],
-    ["limit_alert", "tried to create an alert"], ["limit_export", "tried to download a CSV"],
+    ["limit_alert", "used all their alerts"], ["limit_export", "tried to download a CSV"],
   ];
   return (
     <>

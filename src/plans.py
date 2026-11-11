@@ -2,7 +2,7 @@
 What a signed-in account's plan allows, checked on the server for every limited feature.
 
   AI runs   briefs, research and market briefs together, counted per month (Free 30, Pro 100, Team 500)
-  Alerts    watchlists the account has (Pro and above)
+  Alerts    watchlists the account has (Free 3, Pro 100, Team 500)
   Exports   bulk CSV export of the screener (paid plans)
 
 Limits live in the api_plans table. The account comes from the web app's proxy (request_identity.account). A

@@ -31,7 +31,8 @@ function writeSaved(rows: Saved[]) {
 
 export default function WatchlistsPage() {
   const plan = usePlan();
-  const alertsLocked = plan !== null && !plan.alerts_max;
+  // Free accounts keep a few alerts; the label appears once they are all in use.
+  const alertsLocked = plan !== null && plan.alerts_used >= plan.alerts_max;
   const [saved, setSaved] = useState<Saved[]>([]);
   const [name, setName] = useState("");
   const [companies, setCompanies] = useState("");
@@ -202,7 +203,9 @@ export default function WatchlistsPage() {
           </button>
           {alertsLocked && (
             <span className="inline-flex items-center text-sm text-[color:var(--muted)]">
-              Watchlist alerts are part of Pro<ProBadge source="watchlist_create" />
+              {plan?.alerts_max
+                ? `All ${plan.alerts_max} alerts on your plan are in use. Pro has 100`
+                : "Watchlist alerts are part of Pro"}<ProBadge source="watchlist_create" />
             </span>
           )}
         </div>

@@ -30,7 +30,7 @@ export const PLAN_FEATURES: Record<CatalogPlan["id"], { blurb: string; features:
     blurb: "Explore African private markets, no time limit.",
     features: ["Browse every deal, company, investor and fund", "Markets: 1,600+ listed shares, sectors, currencies, Treasury bills",
       "Comparables, country risk and financial statements", "30 company briefs and research runs a month to try",
-      "Public deal pages to share", "30 API requests a month"],
+      "3 alerts by email, Slack or Teams", "Public deal pages to share", "30 API requests a month"],
   },
   pro: {
     blurb: "For analysts, founders and investors.",
@@ -44,7 +44,8 @@ export const PLAN_FEATURES: Record<CatalogPlan["id"], { blurb: string; features:
   },
   institutional: {
     blurb: "For institutions that need more.",
-    features: ["Everything in Team", "Custom data and coverage", "100,000 API requests a month", "Invoicing and onboarding"],
+    features: ["Everything in Team", "Custom data and coverage", "100,000 API requests a month",
+      "Invoices in USD, GBP, EUR or naira", "Purchase orders, vendor onboarding and W-8BEN-E", "Annual terms"],
   },
 };
 
