@@ -5,13 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Container } from "../../../components/primitives";
 import { PricingTable } from "../../../components/billing/PricingTable";
-import { FALLBACK_CATALOG, naira, type CatalogPlan } from "../../../lib/pricing";
+import { FALLBACK_CATALOG, money, priceOf, type CatalogPlan, type Currency } from "../../../lib/pricing";
 
 type Billing = {
   plan: string;
   source: string | null;
   email: string | null;
-  subscription: { plan: string; interval: string | null; status: string; next_payment_at: string | null; manageable: boolean } | null;
+  subscription: { plan: string; interval: string | null; status: string; currency?: Currency | null; next_payment_at: string | null; manageable: boolean } | null;
   catalog: CatalogPlan[] | null;
 };
 
@@ -60,9 +60,9 @@ export default function BillingPage() {
     });
   }, [load]);
 
-  async function choose(plan: "pro" | "team", interval: "monthly" | "annually") {
+  async function choose(plan: "pro" | "team", interval: "monthly" | "annually", currency: Currency) {
     setError(""); setBusy(plan);
-    const { ok, data } = await post({ action: "checkout", plan, interval });
+    const { ok, data } = await post({ action: "checkout", plan, interval, currency });
     if (ok && data.authorization_url) { window.location.href = data.authorization_url; return; }
     setBusy(null);
     setError(data.error || "Payment could not be started. Try again shortly.");
@@ -93,7 +93,8 @@ export default function BillingPage() {
               {STATUS[sub.status] ?? sub.status}
               {sub.interval ? ` · billed ${sub.interval === "annually" ? "yearly" : "monthly"}` : ""}
               {sub.next_payment_at && sub.status === "active" ? ` · renews ${new Date(sub.next_payment_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : ""}
-              {current && sub.interval && current.price_month_ngn ? ` · ${naira((sub.interval === "annually" ? current.price_year_ngn : current.price_month_ngn) ?? 0)}` : ""}
+              {current && sub.interval && priceOf(current, sub.currency ?? "NGN", sub.interval === "annually")
+                ? ` · ${money(priceOf(current, sub.currency ?? "NGN", sub.interval === "annually") ?? 0, sub.currency ?? "NGN")}` : ""}
             </p>
           )}
           {billing.source === "manual" && <p className="mt-2 text-sm text-[color:var(--muted)]">Set up for you by our team.</p>}
@@ -110,7 +111,7 @@ export default function BillingPage() {
         <div className="mt-10">
           <PricingTable catalog={catalog} current={billing.plan} onChoose={choose} busy={busy} />
           <p className="mt-6 text-center text-xs text-[color:var(--dim)]">
-            Paid securely through Paystack in naira. Subscribe now and keep this founding price while your subscription stays active.
+            Paid securely through Paystack. Subscribe now and keep this founding price while your subscription stays active.
           </p>
         </div>
       )}

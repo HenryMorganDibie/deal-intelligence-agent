@@ -56,6 +56,8 @@ def valid_signature(body: bytes, signature: Optional[str], key: Optional[str] = 
 
 async def _db(client: httpx.AsyncClient, fn: str, args: dict) -> object:
     r = await hm._rpc(client, fn, args)
+    if r.status_code != 200 and "currency_unavailable" in r.text:
+        raise HTTPException(409, "Payment in this currency is not available yet. Choose naira.")
     if r.status_code != 200:
         log.error("billing rpc %s failed: %s %s", fn, r.status_code, r.text[:300])
         raise HTTPException(502, "Billing is temporarily unavailable.")
@@ -71,25 +73,26 @@ async def _paystack(client: httpx.AsyncClient, method: str, path: str, body: Opt
     return data.get("data") or {}
 
 
-async def plan_code(client: httpx.AsyncClient, plan: str, interval: str) -> tuple[str, int, str]:
-    """(Paystack plan code, amount in kobo, label) for a plan and interval at today's price, creating the Paystack
-    plan the first time that price is sold."""
-    price = await _db(client, "billing_price", {"p_plan": plan, "p_interval": interval})
+async def plan_code(client: httpx.AsyncClient, plan: str, interval: str, currency: str = "NGN") -> tuple[str, int, str]:
+    """(Paystack plan code, amount in the currency's minor unit, label) for a plan, interval and currency at today's
+    price, creating the Paystack plan the first time that price is sold."""
+    price = await _db(client, "billing_price", {"p_plan": plan, "p_interval": interval, "p_currency": currency})
     if price.get("plan_code"):
-        return price["plan_code"], price["amount_kobo"], price["label"]
+        return price["plan_code"], price["amount_minor"], price["label"]
     created = await _paystack(client, "POST", "/plan", {
-        "name": f"Deal Intelligence {price['label']} ({interval})", "interval": interval,
-        "amount": price["amount_kobo"], "currency": "NGN",
-        "description": f"{price['label']} plan, billed {interval}.", "send_invoices": True, "send_sms": False})
-    await _db(client, "billing_save_plan_code", {"p_plan": plan, "p_interval": interval,
-                                                 "p_amount_kobo": price["amount_kobo"], "p_code": created["plan_code"]})
-    return created["plan_code"], price["amount_kobo"], price["label"]
+        "name": f"Deal Intelligence {price['label']} ({interval}, {currency})", "interval": interval,
+        "amount": price["amount_minor"], "currency": currency,
+        "description": f"{price['label']} plan, billed {interval} in {currency}.", "send_invoices": True, "send_sms": False})
+    await _db(client, "billing_save_plan_code", {"p_plan": plan, "p_interval": interval, "p_currency": currency,
+                                                 "p_amount_minor": price["amount_minor"], "p_code": created["plan_code"]})
+    return created["plan_code"], price["amount_minor"], price["label"]
 
 
 class CheckoutBody(BaseModel):
     user_id: str = Field(..., min_length=36, max_length=36)
     plan: Literal["pro", "team"]
     interval: Literal["monthly", "annually"] = "monthly"
+    currency: Literal["NGN", "USD"] = "NGN"
 
 
 @router.post("/api/billing/checkout")
@@ -104,11 +107,11 @@ async def checkout(body: CheckoutBody) -> dict:
             raise HTTPException(404, "Account not found.")
         if account.get("status") in ("active", "attention") and account.get("subscription_code"):
             raise HTTPException(409, "You already have a subscription. Manage it from your account to change plans.")
-        code, amount, label = await plan_code(client, body.plan, body.interval)
+        code, amount, label = await plan_code(client, body.plan, body.interval, body.currency)
         tx = await _paystack(client, "POST", "/transaction/initialize", {
-            "email": account["email"], "amount": amount, "currency": "NGN", "plan": code,
+            "email": account["email"], "amount": amount, "currency": body.currency, "plan": code,
             "callback_url": f"{APP_URL}/account/billing?checkout=done",
-            "metadata": {"user_id": body.user_id, "plan": body.plan, "interval": body.interval,
+            "metadata": {"user_id": body.user_id, "plan": body.plan, "interval": body.interval, "currency": body.currency,
                          "custom_fields": [{"display_name": "Plan", "variable_name": "plan",
                                             "value": f"{label} ({body.interval})"}]},
         })
@@ -157,10 +160,10 @@ async def apply_event(payload: dict, client: httpx.AsyncClient) -> dict:
     subscription = data.get("subscription") if isinstance(data.get("subscription"), dict) else {}
     code = plan_obj.get("plan_code") or (subscription.get("plan") or {}).get("plan_code")
 
-    plan, interval = meta.get("plan"), meta.get("interval")
+    plan, interval, currency = meta.get("plan"), meta.get("interval"), meta.get("currency") or data.get("currency")
     if code and not plan:
         found = await _db(client, "billing_plan_for_code", {"p_code": code}) or {}
-        plan, interval = found.get("plan"), found.get("interval")
+        plan, interval, currency = found.get("plan"), found.get("interval"), found.get("currency") or currency
     if event == "charge.success" and not plan:
         return {"ignored": "a payment that is not for a plan"}        # a one-off charge, not a subscription
     account = await _db(client, "billing_account", {"p_user": meta.get("user_id")} if meta.get("user_id")
@@ -181,7 +184,8 @@ async def apply_event(payload: dict, client: httpx.AsyncClient) -> dict:
         "p_interval": interval, "p_customer": customer.get("customer_code"),
         "p_subscription": sub_code,
         "p_email_token": data.get("email_token") or subscription.get("email_token"),
-        "p_next": data.get("next_payment_date") or subscription.get("next_payment_date")})
+        "p_next": data.get("next_payment_date") or subscription.get("next_payment_date"),
+        "p_currency": currency if currency in ("NGN", "USD") else None})
     return {"event": event, **(result or {})}
 
 
@@ -202,3 +206,21 @@ async def paystack_webhook(request: Request) -> JSONResponse:
 
 def install(app: FastAPI) -> None:
     app.include_router(router)
+
+
+@router.get("/api/cron/billing-status")
+async def billing_status(request: Request) -> dict:
+    """For the owner's checks: whether the Paystack key works and which currencies the account holds (from its
+    balances). Returns no secret and no amounts."""
+    if not hm._authorized_cron(request):
+        raise HTTPException(401, "Scheduled workflow authorization required.")
+    if not secret_key():
+        return {"key_configured": False}
+    async with httpx.AsyncClient(timeout=20) as client:
+        try:
+            balances = await _paystack(client, "GET", "/balance")
+        except HTTPException:
+            return {"key_configured": True, "key_works": False}
+    rows = balances if isinstance(balances, list) else []
+    return {"key_configured": True, "key_works": True, "live": secret_key().startswith("sk_live_"),
+            "currencies": sorted({b.get("currency") for b in rows if b.get("currency")})}

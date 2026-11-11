@@ -37,13 +37,16 @@ def env(monkeypatch):
         if fn == "billing_account":
             return FakeResponse(state["account"])
         if fn == "billing_price":
+            if args.get("p_currency") == "USD" and not state.get("usd"):
+                return FakeResponse({"message": "currency_unavailable"}, 400)
             return FakeResponse({"plan": args["p_plan"], "label": "Pro", "interval": args["p_interval"],
-                                 "amount_kobo": 750000, "plan_code": state["plan_code"]})
+                                 "currency": args.get("p_currency"), "amount_minor": 750000 if args.get("p_currency") != "USD" else 700,
+                                 "plan_code": state["plan_code"]})
         if fn == "billing_save_plan_code":
             state["plan_code"] = args["p_code"]
             return FakeResponse(None)
         if fn == "billing_plan_for_code":
-            return FakeResponse({"plan": "pro", "interval": "monthly"} if args["p_code"] == "PLN_pro" else None)
+            return FakeResponse({"plan": "pro", "interval": "monthly", "currency": "NGN"} if args["p_code"] == "PLN_pro" else None)
         if fn == "billing_apply":
             fresh = args["p_event_key"] not in state["applied"]
             state["applied"].add(args["p_event_key"])
@@ -160,3 +163,15 @@ def test_signature_check():
     assert billing.valid_signature(b"x", hmac.new(b"k", b"x", hashlib.sha512).hexdigest(), key="k")
     assert not billing.valid_signature(b"x", "bad", key="k") and not billing.valid_signature(b"x", None, key="k")
     assert not billing.valid_signature(b"x", "anything", key="")
+
+
+def test_dollars_only_when_the_account_accepts_them(env):
+    client = TestClient(api.app)
+    r = client.post("/api/billing/checkout", json={"user_id": USER, "plan": "pro", "currency": "USD"}, headers=web())
+    assert r.status_code == 409 and "currency" in r.json()["detail"]
+    env["usd"] = True
+    r = client.post("/api/billing/checkout", json={"user_id": USER, "plan": "pro", "currency": "USD"}, headers=web())
+    assert r.status_code == 200
+    plan = next(b for m, p, b in env["paystack"] if p == "/plan")
+    init = next(b for m, p, b in env["paystack"] if p == "/transaction/initialize")
+    assert plan["currency"] == "USD" and plan["amount"] == 700 and init["currency"] == "USD"

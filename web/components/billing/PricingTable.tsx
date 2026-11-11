@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { PLAN_FEATURES, naira, type CatalogPlan } from "../../lib/pricing";
+import { useEffect, useState } from "react";
+import { PLAN_FEATURES, defaultCurrency, money, priceOf, type CatalogPlan, type Currency } from "../../lib/pricing";
 import { CONTACT_EMAIL } from "../../lib/site";
 
 type Props = {
@@ -9,12 +9,16 @@ type Props = {
   /** The account's current plan, on the billing page. */
   current?: string | null;
   /** On the billing page: start checkout. On the public page: undefined, and buttons link to sign-up. */
-  onChoose?: (plan: "pro" | "team", interval: "monthly" | "annually") => void;
+  onChoose?: (plan: "pro" | "team", interval: "monthly" | "annually", currency: Currency) => void;
   busy?: string | null;
 };
 
 export function PricingTable({ catalog, current = null, onChoose, busy = null }: Props) {
   const [yearly, setYearly] = useState(false);
+  const offered: Currency[] = catalog[0]?.currencies?.length ? catalog[0].currencies : ["NGN"];
+  const offeredKey = offered.join(",");
+  const [currency, setCurrency] = useState<Currency>("NGN");
+  useEffect(() => setCurrency(defaultCurrency(offeredKey.split(",") as Currency[])), [offeredKey]);
   const interval = yearly ? "annually" : "monthly";
   return (
     <div>
@@ -23,10 +27,20 @@ export function PricingTable({ catalog, current = null, onChoose, busy = null }:
         <button type="button" onClick={() => setYearly(true)} className={`rounded-full px-3 py-1.5 ${yearly ? "bg-white/[0.08] text-[color:var(--text)]" : "text-[color:var(--muted)]"}`}>
           Yearly <span className="text-verified">2 months free</span>
         </button>
+        {offered.length > 1 && (
+          <span className="ml-2 inline-flex rounded-full border hairline p-0.5" role="group" aria-label="Currency">
+            {offered.map((c) => (
+              <button key={c} type="button" onClick={() => setCurrency(c)} aria-pressed={currency === c}
+                className={`rounded-full px-3 py-1 ${currency === c ? "bg-white/[0.08] text-[color:var(--text)]" : "text-[color:var(--muted)]"}`}>
+                {c === "NGN" ? "₦ Naira" : "$ Dollars"}
+              </button>
+            ))}
+          </span>
+        )}
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {catalog.map((p) => {
-          const price = yearly ? p.price_year_ngn : p.price_month_ngn;
+          const price = priceOf(p, currency, yearly);
           const info = PLAN_FEATURES[p.id];
           const isCurrent = current === p.id;
           const highlight = p.id === "pro";
@@ -41,16 +55,16 @@ export function PricingTable({ catalog, current = null, onChoose, busy = null }:
                 {price === null ? (
                   <span className="font-display text-2xl font-semibold">Contact us</span>
                 ) : price === 0 ? (
-                  <span className="font-display text-3xl font-semibold">₦0</span>
+                  <span className="font-display text-3xl font-semibold">{money(0, currency)}</span>
                 ) : (
                   <>
-                    <span className="font-display text-3xl font-semibold">{naira(price)}</span>
+                    <span className="font-display text-3xl font-semibold">{money(price, currency)}</span>
                     <span className="text-sm text-[color:var(--muted)]"> / {yearly ? "year" : "month"}</span>
                   </>
                 )}
               </p>
-              {yearly && p.price_month_ngn ? (
-                <p className="mt-1 text-xs text-[color:var(--dim)]">{naira(Math.round((p.price_year_ngn ?? 0) / 12))} a month, billed yearly</p>
+              {yearly && price ? (
+                <p className="mt-1 text-xs text-[color:var(--dim)]">{money(Math.round((price / 12) * 100) / 100, currency)} a month, billed yearly</p>
               ) : null}
               <ul className="mt-5 flex-1 space-y-2 text-sm">
                 {info?.features.map((f) => <li key={f} className="flex gap-2"><span aria-hidden className="text-verified">✓</span>{f}</li>)}
@@ -60,12 +74,12 @@ export function PricingTable({ catalog, current = null, onChoose, busy = null }:
                   <span className="btn btn-ghost w-full cursor-default">Your plan</span>
                 ) : p.self_serve && (p.id === "pro" || p.id === "team") ? (
                   onChoose ? (
-                    <button type="button" disabled={!!busy} onClick={() => onChoose(p.id as "pro" | "team", interval)}
+                    <button type="button" disabled={!!busy} onClick={() => onChoose(p.id as "pro" | "team", interval, currency)}
                       className={`btn w-full ${highlight ? "btn-primary" : "btn-ghost"} disabled:opacity-60`}>
                       {busy === p.id ? "Opening Paystack…" : `Choose ${p.label}`}
                     </button>
                   ) : (
-                    <a href={`/account?mode=sign-up&next=${encodeURIComponent(`/account/billing?plan=${p.id}&interval=${interval}`)}`}
+                    <a href={`/account?mode=sign-up&next=${encodeURIComponent(`/account/billing?plan=${p.id}&interval=${interval}&currency=${currency}`)}`}
                       className={`btn w-full ${highlight ? "btn-primary" : "btn-ghost"}`}>Get {p.label}</a>
                   )
                 ) : p.id === "free" ? (

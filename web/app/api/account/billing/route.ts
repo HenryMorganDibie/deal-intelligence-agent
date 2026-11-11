@@ -41,14 +41,15 @@ export async function POST(request: NextRequest) {
   if (!isSameSiteJsonRequest(request)) return fail("Invalid request.", 400);
   const s = await session();
   if (s instanceof NextResponse) return s;
-  const body = (await request.json().catch(() => ({}))) as { action?: string; plan?: string; interval?: string };
+  const body = (await request.json().catch(() => ({}))) as { action?: string; plan?: string; interval?: string; currency?: string };
   let path: string;
   let payload: Record<string, unknown>;
   if (body.action === "checkout") {
     if (body.plan !== "pro" && body.plan !== "team") return fail("Choose Pro or Team.", 400);
     const interval = body.interval === "annually" ? "annually" : "monthly";
     path = "/api/billing/checkout";
-    payload = { user_id: s.user.id, plan: body.plan, interval };
+    const currency = body.currency === "USD" ? "USD" : "NGN";
+    payload = { user_id: s.user.id, plan: body.plan, interval, currency };
   } else if (body.action === "manage") {
     path = "/api/billing/manage";
     payload = { user_id: s.user.id };

@@ -8,7 +8,7 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Pricing | Deal Intelligence",
-  description: "Plans for African private-market deals, investors, companies and country data, priced in naira. Start free.",
+  description: "Plans for African private-market deals, investors, companies and country data, in naira or dollars. Start free.",
 };
 
 export default async function PricingPage() {
@@ -20,7 +20,7 @@ export default async function PricingPage() {
           <p className="eyebrow">Pricing</p>
           <h1 className="h2 mt-3">Start free. Upgrade when you need more.</h1>
           <p className="lede mt-4">
-            Priced in naira and paid securely through Paystack. Cancel any time; you keep access until the end of the period
+            Paid securely through Paystack. Cancel any time; you keep access until the end of the period
             you paid for.
           </p>
         </div>

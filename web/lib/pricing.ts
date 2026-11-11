@@ -9,14 +9,20 @@ export type CatalogPlan = {
   self_serve: boolean;
   price_month_ngn: number | null;
   price_year_ngn: number | null;
+  price_month_usd?: number | null;
+  price_year_usd?: number | null;
+  /** Currencies offered at checkout (dollars only once the Paystack account accepts them). */
+  currencies?: Currency[];
 };
+
+export type Currency = "NGN" | "USD";
 
 /** Used only if the database cannot be reached, so the page still renders; the database is the source of truth. */
 export const FALLBACK_CATALOG: CatalogPlan[] = [
-  { id: "free", label: "Free", monthly_requests: 30, seats: 1, self_serve: false, price_month_ngn: 0, price_year_ngn: 0 },
-  { id: "pro", label: "Pro", monthly_requests: 3000, seats: 1, self_serve: true, price_month_ngn: 7500, price_year_ngn: 75000 },
-  { id: "team", label: "Team", monthly_requests: 15000, seats: 5, self_serve: true, price_month_ngn: 25000, price_year_ngn: 250000 },
-  { id: "institutional", label: "Institutional", monthly_requests: 100000, seats: 25, self_serve: false, price_month_ngn: null, price_year_ngn: null },
+  { id: "free", label: "Free", monthly_requests: 30, seats: 1, self_serve: false, price_month_ngn: 0, price_year_ngn: 0, price_month_usd: 0, price_year_usd: 0, currencies: ["NGN"] },
+  { id: "pro", label: "Pro", monthly_requests: 3000, seats: 1, self_serve: true, price_month_ngn: 7500, price_year_ngn: 75000, price_month_usd: 7, price_year_usd: 70, currencies: ["NGN"] },
+  { id: "team", label: "Team", monthly_requests: 15000, seats: 5, self_serve: true, price_month_ngn: 25000, price_year_ngn: 250000, price_month_usd: 24, price_year_usd: 240, currencies: ["NGN"] },
+  { id: "institutional", label: "Institutional", monthly_requests: 100000, seats: 25, self_serve: false, price_month_ngn: null, price_year_ngn: null, price_month_usd: null, price_year_usd: null, currencies: ["NGN"] },
 ];
 
 export const PLAN_FEATURES: Record<CatalogPlan["id"], { blurb: string; features: string[] }> = {
@@ -43,4 +49,25 @@ export const PLAN_FEATURES: Record<CatalogPlan["id"], { blurb: string; features:
 
 export function naira(amount: number): string {
   return `₦${amount.toLocaleString("en-NG")}`;
+}
+
+export function money(amount: number, currency: Currency): string {
+  return currency === "USD" ? `$${amount.toLocaleString("en-US")}` : naira(amount);
+}
+
+export function priceOf(p: CatalogPlan, currency: Currency, yearly: boolean): number | null {
+  const v = currency === "USD" ? (yearly ? p.price_year_usd : p.price_month_usd) : (yearly ? p.price_year_ngn : p.price_month_ngn);
+  return v ?? null;
+}
+
+/** Naira for visitors in Nigeria, dollars elsewhere, when dollars are offered. */
+export function defaultCurrency(offered: Currency[]): Currency {
+  if (!offered.includes("USD")) return "NGN";
+  try {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    const lang = typeof navigator !== "undefined" ? navigator.language || "" : "";
+    return zone === "Africa/Lagos" || /-NG$/i.test(lang) ? "NGN" : "USD";
+  } catch {
+    return "NGN";
+  }
 }

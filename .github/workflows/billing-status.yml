@@ -1,0 +1,25 @@
+name: Billing status
+
+# Run by hand: asks the API whether the Paystack key works and which currencies the Paystack account holds, so
+# dollar billing is switched on only once the account accepts USD. Prints no secret and no amounts.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ask the API
+        run: |
+          set -euo pipefail
+          oidc="$(curl --fail-with-body --silent --show-error --max-time 15 \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=deal-intelligence-api" | jq -er '.value')"
+          echo "::add-mask::${oidc}"
+          curl --fail-with-body --silent --show-error --max-time 60 -H "Authorization: Bearer ${oidc}" \
+            "https://api.deal-intelligence.app/api/cron/billing-status" | jq .
