@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-11T12:17:23.414472+00:00",
+  "updated_at": "2026-11-11T21:32:11.510906+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 66,
+      "new_review_items_today": 64,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 0,
+      "new_review_items_today": 1,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 189,
-      "new_observations_today": 4,
+      "observations_collected": 194,
+      "new_observations_today": 5,
       "unreviewed_flagged_observations": 29,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 198,
-      "entities": 323,
+      "relationships": 202,
+      "entities": 328,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,32 +177,31 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 189,
-    "new_rows": 4,
+    "collected_tickers": 194,
+    "new_rows": 5,
     "failures": [
-      "ILE.JO",
-      "ILU.JO",
-      "IMH.NR",
-      "IMO.CS",
-      "INEE.CA",
-      "INEG.CA",
-      "INFI.CA",
-      "ING.JO"
+      "INLP.JO",
+      "INV.CS",
+      "IPF.JO",
+      "IPL.JO",
+      "IPPM.CA",
+      "IPS.JO",
+      "IPWA.LG"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 323,
-    "relationships": 198,
-    "source_links": 252,
+    "nodes": 328,
+    "relationships": 202,
+    "source_links": 260,
     "most_connected": [
       {
         "name": "Afreximbank",
-        "degree": 10
+        "degree": 12
       },
       {
         "name": "QatarEnergy",
-        "degree": 10
+        "degree": 11
       },
       {
         "name": "EBRD",

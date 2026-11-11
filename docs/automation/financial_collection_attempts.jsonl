@@ -572,3 +572,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-11", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46448_INFINITY_TRUST_MORTGAGE_BANK_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "INFINITY.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "ING.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "INL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "INLP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "INPP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "INPPR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "INPR.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-11", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46632_INTERNATIONAL_BREWERIES_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_APRIL_2026.pdf", "status": "collected", "ticker": "INTBREW.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-11", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46509_INTERNATIONAL_ENERGY_INSURANCE_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "INTENEGINS.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "INV.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "IPF.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "IPL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "IPPM.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "IPS.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "IPWA.LG"}

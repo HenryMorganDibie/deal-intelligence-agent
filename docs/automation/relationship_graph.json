@@ -1291,6 +1291,26 @@
     "non oil exports": {
       "name": "Non-oil Exports",
       "kind": "organization"
+    },
+    "nigerian exporters": {
+      "name": "Nigerian Exporters",
+      "kind": "organization"
+    },
+    "development bank of nigeria": {
+      "name": "Development Bank of Nigeria",
+      "kind": "organization"
+    },
+    "botswana": {
+      "name": "Botswana",
+      "kind": "organization"
+    },
+    "de beers takeover bid as it doubles stake": {
+      "name": "De Beers takeover bid as it doubles stake",
+      "kind": "organization"
+    },
+    "walvis basin block": {
+      "name": "Walvis Basin Block",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -3727,6 +3747,11 @@
           "title": "Afreximbank Approves $30m Facility For NEXIM To Finance Export-Oriented SMEs",
           "publisher": "New Telegraph",
           "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQbm5uNjJOWUpYNjZrTWJiaXh6d0tFN0stY3ctM050Si1XYXUxUEtKdjluczFiN0xjamF6OXZxZmFwRklzVUI0TlNUSkdCaWNGOUJDc2dDUk9lMUxVMlAwUllrTUtsUVpXSHZ0UFQzNnIzbzRqZmpTOTFuVG12ai16ZmJJemNscGpuZkhCT2NvRlp0N3ZrSUpBX3NqUWtwVlJEUTFFTTlB?oc=5"
+        },
+        {
+          "title": "Afreximbank Grants $30M NEXIM Facility To Boost Nigeria’s Non-oil Exports",
+          "publisher": "Arise News",
+          "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPNU9nOEtvdjNhM2YyT1NfTmFFUnBhTTZDM1F3cjZRMHA0S3BzZXRVVlJrazEwSFQwUFpZT2RJZWRxZWpXZGdvV3o4OGRWMWpGUEFJbjlZTmd6TmJjVTVSN0ttbDZxQ2pXRkM0M0tDZGdKTGRCVXI1ME02YkhkcTcxVjY1NGx5ZHByZnF2WHdjNU8zQ1JUekI4Uw?oc=5"
         }
       ]
     },
@@ -4047,6 +4072,11 @@
           "title": "QatarEnergy buys 25% of Chevron oil exploration license",
           "publisher": "The Namibian",
           "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNSElfVmQ0S2dyLXNsSXNMYUFMaUQ4c3FBQkNCeEdfeWlGUE9Lb1kwQWtFSzJqd2xmdk9Wb1pOVG9rbVpHd3ZRSUFYc3BKUTNZbjZNeVMwSFpKaDZLRzM1ZElmZEVFNXJpZldtaHBkY3MzQVowblJycEthMmxEZjl3SUliTU1Sd3Fybm8w?oc=5"
+        },
+        {
+          "title": "QatarEnergy buys 25% of Chevron oil exploration licence",
+          "publisher": "The Namibian",
+          "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQME1ZMDgtQ3lpR3dqYVVFRi10QzQtXzdDSXRITUVmbWFoR1gyMmhPVUdLUW9wWTJJNWs2NDhER283VW1MSUI1blJoc21MNl9GRGFmMWc3NVFUZVhVVUYyVzlQZldtT0JxU2xNd1QzTDc2YVFHcW4tRmxTekoxcjFrNmxLQ1ctemtzeEtB?oc=5"
         }
       ]
     },
@@ -4099,6 +4129,11 @@
           "title": "Proparco invests €600,000 in Cashi to expand digital financial services in Sudan",
           "publisher": "Innovation Village",
           "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPV1JKMlNBWVlyMlN1MGRCUTdGTUN0Z0F4RGtyWFN0VWZGRnl0RVRYYXNoS21tcHBsQVlOTFp0cXA0cklvNjZ1RTRDbkhjS0xHQ3JJaWtpTkU2T0lWY3IwcGtqUHEyc2EtelJ6UUthNEV5Q2hiMEZNZTRfbldaOVhhNGdzLXVOZ3lrcGFYalZpWV82Z3UyTkhqbUx6NmQ1TlNSVHh0LTZtMjg2VGZzZDAtRQ?oc=5"
+        },
+        {
+          "title": "Proparco Invests €600,000 in Sudanese Fintech Cashi to Expand Digital Payments",
+          "publisher": "TechAfrica News",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPdjJUR09IVmRxTnpJdHU3WEwyb013Uy1uZUtlY0hzUHVUT1ktdFpTOS13am51MHhnVmtmM0I1N2dLUWkyOVNvbTc2eVhQNURiNzVFbW43VmdzYlF5V0VvQWRyZFpvVWNWT3hfMzExOEc0YW8wRjU1U1B6NENyT0xTR3hSRTE1eHVpQkFJbTl5eTBZZE01MVEycXFNX1dKVE9CMDN3OVM1bWVIVlNs?oc=5"
         }
       ]
     },
@@ -4305,6 +4340,11 @@
           "title": "Nigerian Fintech Raenest Acquires UK Payments Company Remitise To Expand Globally",
           "publisher": "WeeTracker",
           "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPMzIxaFpXdXBCWEZDQ3VSYy16NEsyV0VEek5PZm5XU0FiLTI2WnVoYWg1Ymc3UF91UFJBeGJPWGVwVXBWSUNJUlFGbDVaQVM5Tkk3THhRU3ZNVGl5cXlTRzZiSEpaemNiMmoyZmdEdTh6ZDRxTXpPVXRjSUR2R01NaEFJdjRDcFU?oc=5"
+        },
+        {
+          "title": "Raenest Acquires UK Payments Company Remitise to Strengthen Global Expansion",
+          "publisher": "Techpoint Africa",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNMy02Mi1fRENBLVN1YkJtLVl6dFhBRmZzZlNfRkxaTG9CWkc1YVMxVHIzb2tnMXdVX1FKVDJDWVBiMmJHbkdTdEpleTNJWlhza2JmSmZMMHhEWEJtVkMyMWZ4TU01OFVpNEV6UTdGR1hKWllMcE1kUUhyekFndFRuNzVURC1GOFlJbUE?oc=5"
         }
       ]
     },
@@ -4335,7 +4375,63 @@
           "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPNU9nOEtvdjNhM2YyT1NfTmFFUnBhTTZDM1F3cjZRMHA0S3BzZXRVVlJrazEwSFQwUFpZT2RJZWRxZWpXZGdvV3o4OGRWMWpGUEFJbjlZTmd6TmJjVTVSN0ttbDZxQ2pXRkM0M0tDZGdKTGRCVXI1ME02YkhkcTcxVjY1NGx5ZHByZnF2WHdjNU8zQ1JUekI4Uw?oc=5"
         }
       ]
+    },
+    "14e890e126dedccf4554": {
+      "id": "14e890e126dedccf4554",
+      "from": "afreximbank",
+      "to": "nigerian exporters",
+      "type": "debt_financing",
+      "first_seen": "2026-11-11",
+      "sources": [
+        {
+          "title": "Afreximbank Backs Nigerian Exporters with $30m Facility to Deepen AfCFTA Trade",
+          "publisher": "naijapreneur",
+          "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOZVFMdWpDWW1WUDdweEI1WE5JYkhGVlBlSnBJc3U5RnJJelBsY2EtaENaUlVwb0k1QXNfUXFxR19xa21GZm9vaDVick9oakl4RTBwN3Noa3hHTk15QlFHTExLWHFMZnp5NHhCcWd3TzBEMk8yUEFaZl9BM1RGQ3lHMXp2OU00UGI1N3JTTXRXTHFzb2RRRHBjUWJaMDNTNV9MMVR2Q0JmbzZZWTQ?oc=5"
+        }
+      ]
+    },
+    "ea2b247449300fef6bb0": {
+      "id": "ea2b247449300fef6bb0",
+      "from": "afreximbank",
+      "to": "development bank of nigeria",
+      "type": "equity_funding",
+      "first_seen": "2026-11-11",
+      "sources": [
+        {
+          "title": "Afreximbank invests $75m in Development Bank of Nigeria to boost SMEs",
+          "publisher": "The Nation Newspaper",
+          "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNeGhzY2RnTHpRaUtuOE9DZWFOTjRfRnFySHlwWkwwNmdraERrOEtJaU0zaXJMenhHazFtREl2ejlUM3g4Y3BMWWR0bzRLUEFEMTJscUVaUVJUSWhyYm9TVWNPSndNbkJZUnVqZGszNUlwb1QtbHFKVkU2aGp0NVktajZPVzJsc1lBbjRfVTBqUVhaWmExcU80ZFNKai1FaTYx0gGmAUFVX3lxTFAyTU1fS1JHUUlhZzhkZmFzdUc4MXgyT2N1SF9meElhZ2VzdTRRM1BCbDE1eFl6ajE5T2Nuekc4aWdTTnc2bGwxNWRQYjBoVWlsQlg1dl94RVVYWjl2Mk9qcWlqN2FrTHd5R3VubW5LdWxqa0hmQWNVNkpVSl9SNVVQVDRLaXZhaXRqcEJVckxHaUlQSXBxMHlESnRzWjh6ZWd6ZFhOLUE?oc=5"
+        }
+      ]
+    },
+    "4c831486d1a7dc51c17e": {
+      "id": "4c831486d1a7dc51c17e",
+      "from": "botswana",
+      "to": "de beers takeover bid as it doubles stake",
+      "type": "equity_funding",
+      "first_seen": "2026-11-11",
+      "sources": [
+        {
+          "title": "Botswana backs De Beers takeover bid as it doubles stake",
+          "publisher": "Fashion United",
+          "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxQMVhqZ05lUllYQ3ZlTUJhdnhRa0tNZDlWSFlYcjZwVFJvbExiVWliVk5FVG1ua01WeUJLNFphZ3luNUJhNGd2TkxYOVIxWmk0TzQyRUZxTGhWUWU1dnp0aWNIdnppdlhGbjZONmo0VGdlSmphQXhpak1nYjJRUjJtbWVnV1U3V3ZUblBUb1hYYThPNDV0NUc3amRwRy1UWEFtUzEwUFl3bFU0alkwRjJB?oc=5"
+        }
+      ]
+    },
+    "58cb4f761da752b066d7": {
+      "id": "58cb4f761da752b066d7",
+      "from": "qatarenergy",
+      "to": "walvis basin block",
+      "type": "acquisition",
+      "first_seen": "2026-11-11",
+      "sources": [
+        {
+          "title": "QatarEnergy Acquires 25% Stake in Namibia's Walvis Basin Block from Chevron",
+          "publisher": "Head Topics",
+          "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNdHgwWVM2UFZybjNVOVRzbWVMVTUxeGNkSXQtZzQ3eUxSR0VWalBLc2QtX2FsOHlneHVPaEx5dkxuVkpfVVhFcjdyd1BXYmY1Yng3eVpfcWtPTTVBZnRiU1QzVGFMWE44UkxMVU5xUDVJVC1Ea2NtQ1VnOFhDSVg4UG4yN05Yc2FhSmJpQmJtRmpFdzZnWmtCRzhtYw?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-11T12:17:19.770456+00:00"
+  "updated_at": "2026-11-11T21:32:08.366933+00:00"
 }
