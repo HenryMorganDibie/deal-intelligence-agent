@@ -196,3 +196,42 @@ def test_public_deal_pages_read_one_deal_not_the_whole_store(env, monkeypatch):
     assert r.status_code == 200 and r.json()["deal"]["id"] == "new" and r.json()["comparables"] == []
     assert calls == ["get_deal_row", "get_deal_row"]
     assert client.get("/api/deals/missing?comparables=false", headers={CLIENT_HEADER: "api-secret"}).status_code == 404
+
+
+def test_serving_instances_download_visible_rows_only_and_drop_rows_that_become_hidden(env, monkeypatch):
+    calls = []
+    store = {"changed": "2026-11-11T10:00:00Z", "count": 3}
+
+    class R:
+        status_code = 200
+
+        def __init__(self, payload):
+            self._p = payload
+
+        def json(self):
+            return self._p
+
+        def raise_for_status(self):
+            return None
+
+    def fake_sync(fn, args, timeout=30):
+        calls.append((fn, args.get("p_kind")))
+        if fn == "store_version":
+            return R({"deals": dict(store)})
+        if fn == "list_visible_page":
+            return R({"max_id": "b", "rows": [{"id": "a", "announced": "2026-11-10"}, {"id": "b", "announced": "2026-11-09"}]})
+        if fn == "list_changed_rows":
+            return R({"rows": [{"id": "b", "merged_into": "a"}], "limit": 2000})
+        return R(None)
+    monkeypatch.setattr(hm, "_rpc_sync", fake_sync)
+    for k in ("deals", "deals:visible"):
+        hm._cache.pop(k, None)
+    rows = hm._load_visible("deals")
+    assert [r["id"] for r in rows] == ["a", "b"]
+    assert ("list_visible_page", "deals") in calls and not any(fn == "list_deals_page" for fn, _ in calls)
+    # Later, "b" is merged into "a": the next refresh downloads only the change and drops it.
+    store.update({"changed": "2026-11-11T11:00:00Z"})
+    ts, cached = hm._cache["deals:visible"]
+    hm._cache["deals:visible"] = (ts - hm._TTL - 1, cached)
+    assert [r["id"] for r in hm._load_visible("deals")] == ["a"]
+    assert calls[-1][0] == "list_changed_rows"

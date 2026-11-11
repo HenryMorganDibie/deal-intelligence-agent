@@ -215,14 +215,16 @@ _RPC_PAGE_SIZE = 500
 _RPC_MAX_PAGES = 100  # Safety stop: at most 50,000 records per full refresh.
 
 
-def _load_rpc_pages(kind: str, since: str) -> list[dict]:
-    """Load complete history with bounded keyset pages and a fixed ID upper bound."""
-    function = "list_deals_page" if kind == "deals" else "list_events_page"
+def _load_rpc_pages(kind: str, since: str, visible: bool = False) -> list[dict]:
+    """Load complete history with bounded keyset pages and a fixed ID upper bound. `visible` leaves out merged
+    duplicates and excluded records in the database, so they are never downloaded."""
+    function = "list_visible_page" if visible else ("list_deals_page" if kind == "deals" else "list_events_page")
     rows: list[dict] = []
     after_id: str | None = None
     max_id: str | None = None
     for page in range(_RPC_MAX_PAGES):
         response = _rpc_sync(function, {
+            **({"p_kind": kind} if visible else {}),
             "p_since": since,
             "p_limit": _RPC_PAGE_SIZE,
             "p_after_id": after_id,
@@ -280,10 +282,12 @@ def _sort_rows(kind: str, rows: list[dict]) -> list[dict]:
     return rows
 
 
-def _refresh_changed(kind: str, rows: list[dict]) -> Optional[list[dict]]:
-    """The cached rows brought up to date with only the rows changed since, or None when a full reload is due."""
-    before = _versions.get(kind)
-    if not before or time.monotonic() - _full_loaded_at.get(kind, 0) > _FULL_RELOAD_AFTER:
+def _refresh_changed(kind: str, rows: list[dict], key: Optional[str] = None, visible: bool = False) -> Optional[list[dict]]:
+    """The cached rows brought up to date with only the rows changed since, or None when a full reload is due.
+    For a visible-only copy, a row that became hidden (merged or excluded) is dropped."""
+    key = key or kind
+    before = _versions.get(key)
+    if not before or time.monotonic() - _full_loaded_at.get(key, 0) > _FULL_RELOAD_AFTER:
         return None
     now = (_store_version().get(kind) or {})
     if now.get("count") == before.get("count") and now.get("changed") == before.get("changed"):
@@ -300,11 +304,14 @@ def _refresh_changed(kind: str, rows: list[dict]) -> Optional[list[dict]]:
     by_id = {row.get("id"): row for row in rows}
     for row in changed:
         if isinstance(row, dict) and row.get("id"):
-            by_id[row["id"]] = row
+            if visible and not deals_mod.is_visible(row):
+                by_id.pop(row["id"], None)
+            else:
+                by_id[row["id"]] = row
     merged = list(by_id.values())
-    if len(merged) != now.get("count"):
+    if not visible and len(merged) != now.get("count"):
         return None                                     # rows were removed: reload everything
-    _versions[kind] = now
+    _versions[key] = now
     log.info("%s refreshed with %d changed rows instead of a full reload", kind, len(changed))
     return _sort_rows(kind, merged)
 
@@ -351,9 +358,50 @@ def _load(kind: str) -> list[dict]:
     return rows
 
 
+def _load_visible(kind: str) -> list[dict]:
+    """The rows the product can show (not merged, not excluded), for serving pages. The database filters them, so a
+    cold instance downloads about a third less; ingestion keeps using _load, which reads every row. An instance that
+    already holds the full copy (a scheduled job) filters it instead of downloading again."""
+    if not _configured():
+        return [r for r in _load(kind) if deals_mod.is_visible(r)]
+    full = _cache.get(kind)
+    if full and time.monotonic() - full[0] < _TTL:
+        return [r for r in full[1] if deals_mod.is_visible(r)]
+    key = f"{kind}:visible"
+    hit = _cache.get(key)
+    if hit and time.monotonic() - hit[0] < _TTL:
+        return hit[1]
+    if hit:
+        try:
+            refreshed = _refresh_changed(kind, hit[1], key=key, visible=True)
+        except (httpx.HTTPError, ValueError, RuntimeError, TypeError) as e:
+            log.warning("incremental refresh of visible %s failed, reloading: %s", kind, e)
+            refreshed = None
+        if refreshed is not None:
+            _cache[key] = (time.monotonic(), refreshed)
+            return refreshed
+    try:
+        try:
+            version = _store_version().get(kind)
+        except (httpx.HTTPError, ValueError) as e:
+            log.warning("store_version unavailable: %s", e)
+            version = None
+        rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True)
+        if version:
+            _versions[key] = version
+            _full_loaded_at[key] = time.monotonic()
+    except (httpx.HTTPError, ValueError, RuntimeError) as e:
+        log.error("loading visible %s failed: %s", kind, e)
+        if hit:
+            return hit[1]
+        raise HTTPException(503, f"Market data store is unavailable for {kind}.")
+    _cache[key] = (time.monotonic(), rows)
+    return rows
+
+
 def deals() -> list[dict]:
     """Deals the product shows; merged duplicates and excluded non-transactions stay stored for audit."""
-    visible = [d for d in _load("deals") if deals_mod.is_visible(d)]
+    visible = [d for d in _load_visible("deals") if deals_mod.is_visible(d)]
     investors.learn_variants(visible)                   # one name per investor firm across every page (cached)
     return visible
 
@@ -373,7 +421,7 @@ def _visible_events(rows: list[dict]) -> list[dict]:
 
 
 def events() -> list[dict]:
-    return _visible_events(_load("events"))
+    return _visible_events(_load_visible("events"))
 
 
 def _country_or_404(code: str) -> ac.Country:
@@ -620,8 +668,16 @@ async def deal(deal_id: str, comparables: bool = True) -> dict:
                 raise HTTPException(404, "Deal not found.")
             return {"deal": d, "verification": provenance.verify(d), "field_accuracy": _field_accuracy(),
                     "parties": [{"name": n, "role": r} for n, r in investors.parties(d)], "comparables": []}
-    stored = {d.get("id"): d for d in _load("deals")}
-    d = stored.get(deals_mod.canonical_id(deal_id, stored))
+    stored = {d.get("id"): d for d in deals()}
+    d = stored.get(deal_id)
+    if d is None and _configured():
+        # Not visible under this id: an older link to a report merged into another record. Follow it with one-row
+        # reads instead of loading every hidden record.
+        found = await run_in_threadpool(_one_deal, deal_id)
+        d = stored.get(found["id"]) if found and found.get("id") in stored else (found or None)
+    elif d is None:
+        full = {x.get("id"): x for x in _load("deals")}
+        d = full.get(deals_mod.canonical_id(deal_id, full))
     if d is None or not deals_mod.is_visible(d):
         raise HTTPException(404, "Deal not found.")
     return {"deal": d, "verification": provenance.verify(d), "field_accuracy": _field_accuracy(),
