@@ -22,16 +22,18 @@ export const FALLBACK_CATALOG: CatalogPlan[] = [
 export const PLAN_FEATURES: Record<CatalogPlan["id"], { blurb: string; features: string[] }> = {
   free: {
     blurb: "Explore African private markets.",
-    features: ["Deals, companies, investors and countries", "3 alerts", "Public deal pages to share", "30 API requests a month"],
+    features: ["Deals, companies, investors and countries", "3 briefs or research runs a month", "3 alerts",
+      "Public deal pages to share", "30 API requests a month"],
   },
   pro: {
     blurb: "For analysts, founders and investors.",
-    features: ["Everything in Free", "Unlimited alerts by email, Slack or Teams", "CSV exports", "Company briefs and research",
-      "Full investor histories", "3,000 API requests a month"],
+    features: ["Everything in Free", "100 briefs and research runs a month", "100 alerts by email, Slack or Teams",
+      "CSV export of the screener", "3,000 API requests a month"],
   },
   team: {
     blurb: "For funds, advisers and corporate teams.",
-    features: ["Everything in Pro", "Up to 5 people", "15,000 API requests a month", "Priority support"],
+    features: ["Everything in Pro", "Up to 5 people", "500 briefs and research runs a month", "500 alerts",
+      "15,000 API requests a month", "Priority support"],
   },
   institutional: {
     blurb: "For institutions that need more.",

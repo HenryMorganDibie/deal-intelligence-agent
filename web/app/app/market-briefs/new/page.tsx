@@ -1,5 +1,6 @@
 "use client";
 
+import { ErrorNote } from "../../../../components/app/ui";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -122,7 +123,7 @@ export default function NewMarketBriefPage() {
               <li>Methodology, period and data-coverage caveats</li>
             </ul>
           </div>
-          {error && <p className="text-sm text-risk" role="alert">{error}</p>}
+          {error && <ErrorNote message={error} />}
           <button type="submit" className="btn btn-primary w-full sm:w-auto">Generate market brief</button>
         </form>
       )}

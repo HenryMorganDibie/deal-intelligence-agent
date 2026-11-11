@@ -16,6 +16,7 @@ import hmac
 import ipaddress
 import os
 import re
+from typing import Optional
 
 from starlette.requests import Request
 
@@ -67,3 +68,23 @@ def caller_ip(request: Request) -> str:
             pass
     forwarded = request.headers.get("x-forwarded-for", "")
     return forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
+
+
+ACCOUNT_HEADER = "x-deal-intel-user"
+_UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+
+
+def account(request: Request) -> Optional[str]:
+    """The signed-in account a request is made for: set by the web app's proxy after it verifies the session, and
+    believed only alongside the app's secret (or in tests, where the lock is off)."""
+    claimed = request.headers.get(ACCOUNT_HEADER, "").strip().lower()
+    if not _UUID.match(claimed):
+        return None
+    return claimed if (trusted(request) or not enforced()) else None
+
+
+def internal(request: Request) -> bool:
+    """A server-side caller with the API's own secret (scheduled jobs, scripts): never limited by a plan."""
+    presented = request.headers.get(CLIENT_HEADER, "").strip()
+    secret = os.environ.get("DEAL_INTEL_API_SECRET", "").strip()
+    return bool(presented and secret and hmac.compare_digest(presented.encode(), secret.encode()))

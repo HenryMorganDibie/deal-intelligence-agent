@@ -875,6 +875,8 @@ async def _finish(run_id: int) -> None:
 
 @router.post("/api/research")
 async def research(body: ResearchBody, request: Request) -> dict:
+    from src import plans
+    await plans.use_ai(request)                      # one of the plan's monthly AI runs
     run_id = await _reserve(request, f"[research] {body.question}")
     try:
         result = await run_in_threadpool(research_mod.research, body.question, deals(), events())
@@ -1020,6 +1022,8 @@ async def create_watchlist(body: WatchlistBody, request: Request) -> dict:
         raise HTTPException(422, "Add at least one company or country.")
     if not watch.valid_webhook(body.webhook_url) or (body.webhook_url and not _public_host(body.webhook_url)):
         raise HTTPException(422, "Webhooks must be https URLs on a public host.")
+    from src import plans
+    owner = await plans.check_alert_slot(request)    # the plan's alert allowance
     async with httpx.AsyncClient(timeout=15) as client:
         r = await _rpc(client, "create_watchlist", {
             "p_client_hash": _client_hash(request), "p_name": body.name, "p_companies": body.companies,
@@ -1030,6 +1034,9 @@ async def create_watchlist(body: WatchlistBody, request: Request) -> dict:
             raise HTTPException(429, "You have created the maximum of 20 watchlists.")
         raise HTTPException(503, "The watchlist could not be saved.")
     wl_id = r.json()
+    if owner:
+        async with httpx.AsyncClient(timeout=10) as client:
+            await _rpc(client, "set_watchlist_owner", {"p_id": wl_id, "p_user": owner})
     return {"id": wl_id, "url": _watch_link(wl_id), "feed": f"/api/watchlists/{wl_id}/feed.xml"}
 
 
@@ -2438,12 +2445,22 @@ async def markets_screener(
     sort: Literal["mcap", "chg_1d", "ytd", "value", "name", "pe", "dividend"] = "mcap",
     include_stale: bool = False, limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0, le=100_000),
     securities: Literal["shares", "preference", "notes", "dollar_lines", "all"] = "shares",
-) -> dict:
-    """Listings across every exchange, filtered and sorted, one page at a time (ordinary shares by default)."""
+    request: Request = None,
+):
+    """Listings across every exchange, filtered and sorted, one page at a time (ordinary shares by default). Pages
+    larger than 100 rows are the CSV export: a paid feature, and never cached at the edge."""
     from src.engines import markets
+    bulk = request is not None and limit > 100
+    if bulk:
+        from src import plans
+        await plans.check_export(request)
     snap = await run_in_threadpool(_market_snapshot)
-    return markets.screener(snap, exchange=exchange, sector=sector, min_mcap_usd=min_mcap_usd, q=q, sort=sort,
-                            include_stale=include_stale, limit=limit, offset=offset, securities=securities)
+    out = markets.screener(snap, exchange=exchange, sector=sector, min_mcap_usd=min_mcap_usd, q=q, sort=sort,
+                           include_stale=include_stale, limit=limit, offset=offset, securities=securities)
+    if bulk:
+        from fastapi.responses import JSONResponse
+        return JSONResponse(out, headers={"Cache-Control": "private, no-store"})
+    return out
 
 
 @router.get("/api/markets/search")

@@ -63,11 +63,15 @@ async function accountFacts(accessToken: string, sub: string): Promise<{ mfa: bo
 const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || "").trim().replace(/\/$/, "");
 const WEB_SECRET = process.env.DEAL_INTEL_WEB_SECRET || "";
 
-function proxyToApi(request: NextRequest): NextResponse {
+async function proxyToApi(request: NextRequest): Promise<NextResponse> {
   if (!API_ORIGIN) return NextResponse.json({ detail: "The API is not configured." }, { status: 503 });
   const rest = request.nextUrl.pathname.slice("/api/data/".length);
   const target = new URL(`${API_ORIGIN}/api/${rest}${request.nextUrl.search}`);
   const headers = new Headers(request.headers);
+  // The signed-in account, from a verified session token only; whatever a browser sends in this header is dropped.
+  headers.delete("x-deal-intel-user");
+  const claims = await verify(request.cookies.get(ACCESS)?.value);
+  if (claims?.sub) headers.set("x-deal-intel-user", claims.sub);
   headers.delete("cookie");
   headers.delete("authorization");
   if (WEB_SECRET) headers.set("x-deal-intel-client", WEB_SECRET);
@@ -78,7 +82,7 @@ function proxyToApi(request: NextRequest): NextResponse {
 }
 
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
-  if (request.nextUrl.pathname.startsWith("/api/data/")) return proxyToApi(request);
+  if (request.nextUrl.pathname.startsWith("/api/data/")) return await proxyToApi(request);
   // Browser tests run against a local production build without an account; never in a Vercel production deploy.
   if (process.env.DI_E2E_AUTH_BYPASS === "1" && process.env.VERCEL_ENV !== "production") return NextResponse.next();
   if (!SUPABASE_URL || !SUPABASE_KEY) return redirectTo(request, "/account");

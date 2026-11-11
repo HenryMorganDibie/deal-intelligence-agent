@@ -135,7 +135,7 @@ async def cache_public_market_gets(request: Request, call_next):
     if request.method != "GET" or response.status_code >= 400 or "set-cookie" in response.headers:
         return response
     ttl = _public_market_cache_ttl(request.url.path)
-    if ttl is not None:
+    if ttl is not None and "no-store" not in response.headers.get("cache-control", ""):
         response.headers["Cache-Control"] = (
             f"public, max-age=0, s-maxage={ttl}, stale-while-revalidate={ttl * 5}"
         )
@@ -305,6 +305,8 @@ async def _refresh_outcome_stats(client: httpx.AsyncClient) -> None:
 async def analyse(body: AnalyseBody, request: Request) -> dict:
     if not _configured():
         raise HTTPException(503, "The API is not configured.")
+    from src import plans
+    await plans.use_ai(request)                      # one of the plan's monthly AI runs
 
     async with httpx.AsyncClient(timeout=15) as client:
         resp = await _rpc(client, "start_run", {
@@ -569,6 +571,8 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
     """Build and persist a public, source-linked market brief from the existing deal store."""
     if not _configured():
         raise HTTPException(503, "The API is not configured for saving market briefs.")
+    from src import plans
+    await plans.use_ai(request)
     from src.hosted_market import deals as market_deals, events as market_events, _country_or_404, _reserve, _finish
     from src.engines import deals as deals_engine, provenance
     from src.data import africa_countries as ac

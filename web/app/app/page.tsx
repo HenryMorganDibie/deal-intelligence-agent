@@ -1,5 +1,6 @@
 "use client";
 
+import { ErrorNote } from "../../components/app/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
@@ -181,11 +182,7 @@ export default function Dashboard() {
             <button type="submit" className="btn btn-primary w-full sm:w-auto">
               Run analysis
             </button>
-            {error && (
-              <p className="text-sm text-risk" role="alert">
-                {error}
-              </p>
-            )}
+            {error && <ErrorNote message={error} />}
           </form>
         )}
 

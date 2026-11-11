@@ -40,9 +40,17 @@ export function Loading({ label = "Loading..." }: { label?: string }) {
 }
 
 export function ErrorNote({ message }: { message: string }) {
+  // A plan limit (the API answers 402 with a message that offers an upgrade) gets a link to the plans.
+  const upgrade = /\bupgrade\b/i.test(message);
   return (
-    <p className="py-4 text-sm text-risk" role="alert">
+    <p className={`py-4 text-sm ${upgrade ? "text-[color:var(--text)]" : "text-risk"}`} role="alert">
       {message}
+      {upgrade && (
+        <>
+          {" "}
+          <Link href="/account/billing" className="font-medium text-verified underline-offset-4 hover:underline">See plans →</Link>
+        </>
+      )}
     </p>
   );
 }
