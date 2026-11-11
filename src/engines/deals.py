@@ -2378,6 +2378,51 @@ def _names_close_size(a: dict, b: dict) -> bool:
                                 for v, c in parse_amounts(small.get("headline") or ""))
 
 
+# ── African scope ─────────────────────────────────────────────────────────────
+# Africa-focused publishers also carry world business news ("DoorDash to acquire Instacart", "Proparco backs green
+# finance in Türkiye"), and a few syndicate a global wire under an African edition ("... By Investing.com").
+_AFRICAN_TEXT = re.compile(
+    r"(?i)\b(?:afri\w*|afr[eé]xim\w*|sub-saharan|uemoa|umoa|cemac|ecowas|cedeao|sadc|comesa|eac|sahel|maghreb|"
+    r"fcfa|cfa|naira|cedis?|kwacha|birr|ksh|kes|zar|ghs|ugx|tzs|nollywood|afdb|boad|bdeac|badea|ecobank|brvm|"
+    r"bvmac|ngx|jse|nse|victoria\s+falls|[áa]frica\w*|"
+    r"lagos|abuja|nairobi|mombasa|cairo|alexandria|accra|kumasi|johannesburg|cape\s+town|durban|casablanca|rabat|"
+    r"tangier|abidjan|dakar|kigali|kampala|lusaka|harare|bulawayo|addis|windhoek|gaborone|maputo|luanda|kinshasa|"
+    r"douala|yaound[eé]|tunis|algiers|tripoli|khartoum|mogadishu|djibouti|antananarivo|port\s+louis|lom[eé]|"
+    r"cotonou|ouagadougou|bamako|niamey|conakry|freetown|monrovia|banjul|libreville|brazzaville|n'djamena|"
+    r"sud-africain\w*|nig[eé]rian\w*|k[eé]nyan\w*|marocain\w*|s[eé]n[eé]galais\w*|ivoirien\w*|camerounais\w*|"
+    r"[eé]gyptien\w*|tunisien\w*|alg[eé]rien\w*|congolais\w*|ghan[eé]en\w*|b[eé]ninois\w*|togolais\w*)\b")
+_FOREIGN_NAMES = (r"(?:the\s+)?(?:US|U\.S\.|United\s+States|Canada|Japan|India|Brazil|T[üu]rkiye|Turkey|Saudi(?:\s+Arabia)?|UAE|"
+                  r"Dubai|China|UK|United\s+Kingdom|Britain|Germany|Spain|Italy|Portugal|Sweden|Norway|Denmark|Finland|"
+                  r"Australia|Singapore|Indonesia|Pakistan|Vietnam|Philippines|Mexico|Colombia|Argentina|Chile|Peru|"
+                  r"Ukraine|Russia|Korea|Europe|Latin\s+America|LatAm|Asia)")
+# Where the deal happens, not who takes part: "green finance in Türkiye", "footprint into Canada", "Japan's Umios".
+# "US$", "British DFI" and "Canadian entrepreneur" describe money or an investor and do not count.
+_FOREIGN_PLACE = re.compile(rf"\b(?:in|into|across)\s+{_FOREIGN_NAMES}\b(?!\$)|\b{_FOREIGN_NAMES}[’']s\s+[A-Z]")
+_GLOBAL_WIRES = re.compile(r"(?i)investing\.com")
+
+
+def _deal_titles(deal: dict) -> list[str]:
+    return [deal.get("headline") or ""] + [s.get("title") or "" for s in deal.get("sources") or []]
+
+
+def african_text_link(deal: dict) -> bool:
+    """Any of the deal's headlines names an African country, city, currency, region or institution."""
+    return any(_AFRICAN_TEXT.search(t) or re.search(r"\bN\$|\bR\s?\d", t) or countries_in_text(t.replace("-", " "))
+               for t in _deal_titles(deal))
+
+
+def foreign_only(deal: dict) -> bool:
+    """Nothing in the reports places the deal in Africa, and they place it elsewhere: a foreign country named, or
+    only a global wire carried it. Callers still keep it when a party is a known African company."""
+    if african_text_link(deal):
+        return False
+    titles = _deal_titles(deal)
+    publishers = [f"{s.get('publisher') or ''} {s.get('url') or ''}" for s in deal.get("sources") or []]
+    wire_only = bool(publishers) and all(_GLOBAL_WIRES.search(p) or _GLOBAL_WIRES.search(t)
+                                         for p, t in zip(publishers, titles[1:] or titles))
+    return wire_only or any(_FOREIGN_PLACE.search(t) for t in titles)
+
+
 _ABBR_SKIP = {"of", "and", "the", "&", "for", "de", "la", "du", "des", "et"}
 
 

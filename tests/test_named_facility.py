@@ -60,3 +60,32 @@ def test_a_nationality_and_a_scene_is_not_a_company_but_brand_names_are():
 
 def test_building_a_mill_is_capital_spending_not_an_investment_in_a_company():
     assert d.extract_deal("Olam Agri invests $70m in Delta feed mill", published="2026-11-10") is None
+
+
+def _deal(headline, publisher="Some Africa Desk", **kw):
+    return {"headline": headline, "sources": [{"title": headline, "publisher": publisher, "url": "https://x"}], **kw}
+
+
+def test_foreign_deals_are_recognised_and_african_ones_kept():
+    assert d.foreign_only(_deal("Proparco backs green finance in Türkiye with €75m loan"))
+    assert d.foreign_only(_deal("Japan’s Umios acquires High Liner Foods, expanding its footprint into Canada"))
+    assert d.foreign_only(_deal("Agilent completes acquisition of Proscia By Investing.com", "Investing.com South Africa"))
+    for keep in ("SOGUIPAL secures US$5.6M loan to expand yogurt facility",
+                 "Family Bank Secures KSh 2.6B from British DFI to Boost MSME Trade Finance",
+                 "Amalgamated Brands launches US$20M IPO on Victoria Falls Stock Exchange",
+                 "China’s CCECC to invest $1.4 billion in Tanzania-Zambia railway",
+                 "Emerald Group adquire Forbes Portugal e lança Forbes África Lusófona",
+                 "US private equity firm Advent to acquire Vermeg in strategic deal"):
+        assert not d.foreign_only(_deal(keep)), keep
+
+
+def test_a_foreign_deal_by_a_known_african_company_stays():
+    yellow_card_round = _deal("Nigeria's Yellow Card raises $33m", id="a", target="Yellow Card", deal_type="equity_funding",
+                              announced="2026-01-01")
+    gomoney = _deal("Yellow Card Acquires Brazil’s GoMoney to Secure Direct LatAm Foothold", id="b", target="GoMoney",
+                    buyer="Yellow Card", deal_type="acquisition", announced="2026-10-01")
+    turkiye = _deal("Proparco backs green finance in Türkiye with €75m loan", id="c", target="Türkiye green finance",
+                    buyer="Proparco", deal_type="debt_financing", announced="2026-10-01")
+    out = hm._reclassify_stored({x["id"]: x for x in (yellow_card_round, gomoney, turkiye)}, {})
+    assert "b" not in out or not out["b"].get("excluded")
+    assert out["c"]["excluded"].startswith("reclassified: no African")

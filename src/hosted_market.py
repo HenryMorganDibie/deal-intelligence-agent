@@ -1933,10 +1933,18 @@ def _reclassify_stored(existing: dict[str, dict], merged: dict[str, dict]) -> di
     stored record of the same transaction is merged into it."""
     visible = [d for d in existing.values() if deals_mod.is_visible(d)]
     out: dict[str, dict] = {}
+    # Companies the data already places in Africa: the subject of a deal whose reports name an African place.
+    african_companies = {deals_mod.normalise_name(d.get("target")) for d in visible
+                         if d.get("target") and deals_mod.african_text_link(d)}
     for d in visible:
         current = merged.get(d["id"], d)
         if current.get("reviewed_on"):
             continue                                    # a reviewer's decision stands
+        if deals_mod.foreign_only(current):
+            names = [current.get("target"), current.get("buyer"), current.get("seller"), *(current.get("investors") or [])]
+            if not any(isinstance(n, str) and deals_mod.normalise_name(n) in african_companies for n in names):
+                out[d["id"]] = {**current, "excluded": "reclassified: no African company, investor or market in the reports"}
+                continue
         change = deals_mod.reclassify(current)
         if not change:
             continue
