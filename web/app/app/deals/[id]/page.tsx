@@ -6,7 +6,8 @@ import { Container } from "../../../../components/primitives";
 import { DealRows, ErrorNote, Loading, PageHeader, Stat, usd, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { VerificationPanel } from "../../../../components/app/Verification";
-import { get, type Comparables, type Deal, type FieldAccuracy, type Verification } from "../../../../lib/market";
+import { ShareDeal } from "../../../../components/app/ShareDeal";
+import { distinctSources, get, type Comparables, type Deal, type FieldAccuracy, type Verification } from "../../../../lib/market";
 
 type DealResponse = {
   deal: Deal;
@@ -35,9 +36,7 @@ export default function DealPage({ params }: { params: { id: string } }) {
       <Link href="/app/deals" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">
         ← All deals
       </Link>
-      <Link href={`/deals/${d.id}`} className="ml-4 text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">
-        Public page to share ↗
-      </Link>
+      <ShareDeal id={d.id} title={d.target ?? d.headline} />
       <div className="mt-4">
         <PageHeader eyebrow={`${words(d.deal_type)} · ${words(d.stage)}`} title={d.target ?? d.headline}>
           {d.headline}
@@ -78,9 +77,9 @@ export default function DealPage({ params }: { params: { id: string } }) {
         <VerificationPanel v={verification} accuracy={field_accuracy ?? null} />
       ) : (
         <>
-          <h2 className="eyebrow mt-10">Sources ({d.sources.length})</h2>
+          <h2 className="eyebrow mt-10">Sources ({distinctSources(d.sources).length})</h2>
           <ul className="mt-3 space-y-1.5 text-[0.8125rem]">
-            {d.sources.map((s, i) => (
+            {distinctSources(d.sources).map((s, i) => (
               <li key={i}>
                 <a href={s.url} target="_blank" rel="noreferrer" className="hover:underline">
                   {s.publisher || "Source"}

@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicPage } from "../../../components/PublicPage";
+import { PublicDealCta } from "../../../components/PublicDealCta";
 import { Container } from "../../../components/primitives";
 import { Stat, usd, words } from "../../../components/app/ui";
 import { apiHeaders, apiUrl } from "../../../lib/api-base";
-import type { Deal, Verification } from "../../../lib/market";
+import { distinctSources, type Deal, type Verification } from "../../../lib/market";
 
 /**
  * Public, read-only view of one deal: the facts and their sources, readable without an account, so links shared
@@ -78,8 +79,7 @@ export default async function PublicDealPage({ params }: { params: { id: string 
   const where = country(d.country);
   const tier = v?.tier ?? d.verification ?? ((d.independent_stories ?? 0) >= 2 ? "corroborated" : "single source");
   const stories = v?.independent_stories ?? d.independent_stories;
-  const next = encodeURIComponent(`/app/deals/${d.id}`);
-  const sources = [...d.sources].sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
+  const sources = distinctSources(d.sources).sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
   return (
     <PublicPage>
       <Container className="max-w-4xl pb-20 pt-28 sm:pt-32">
@@ -139,14 +139,7 @@ export default async function PublicDealPage({ params }: { params: { id: string 
             Comparable deals and valuations, every investor&apos;s track record, the company&apos;s history and alerts when
             something changes, across all 54 African countries. Free to start.
           </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link href={`/account?mode=sign-up&next=${next}`} className="btn btn-primary">
-              Create a free account
-            </Link>
-            <Link href={`/account?next=${next}`} className="btn btn-ghost">
-              Sign in
-            </Link>
-          </div>
+          <PublicDealCta id={d.id} />
         </div>
         <p className="mt-6 text-[0.75rem] text-[color:var(--dim)]">
           Built from public reports. Figures are as reported and may be revised; report a correction to info@deal-intelligence.app.

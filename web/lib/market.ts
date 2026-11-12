@@ -285,3 +285,17 @@ export const SIGNAL_TYPES = [
   "m_and_a_activity", "credit_risk", "distressed_asset", "earnings_surprise", "leadership_change",
   "regulatory_action", "debt_restructuring", "insider_activity",
 ];
+
+/** One entry per story: the same headline from the same publisher on the same day, often a news-aggregator link
+ * beside the publisher's own, is shown once, keeping the publisher's own link. */
+export function distinctSources(sources: Source[]): Source[] {
+  const key = (s: Source) => `${(s.title ?? "").trim().toLowerCase()}|${(s.publisher ?? "").trim().toLowerCase()}|${s.date ?? ""}`;
+  const aggregator = (s: Source) => /news\.google\.com/i.test(s.url ?? "");
+  const out = new Map<string, Source>();
+  for (const s of sources) {
+    const k = key(s);
+    const have = out.get(k);
+    if (!have || (aggregator(have) && !aggregator(s))) out.set(k, s);
+  }
+  return [...out.values()];
+}
