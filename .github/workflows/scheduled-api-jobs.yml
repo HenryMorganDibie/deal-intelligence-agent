@@ -6,6 +6,7 @@ name: Scheduled API jobs
 #                        (before the African working day opens, and after the exchanges close)
 #   06:17 UTC            label brief outcomes for calibration
 #   06:53 UTC            refresh the showcase
+#   hourly at :37        election news from Nigerian publishers' feeds (src/election_feed.py)
 # GitHub can start scheduled runs late at busy times; each job is safe to run late or twice.
 on:
   schedule:
@@ -13,6 +14,7 @@ on:
     - cron: "11 15 * * *"
     - cron: "17 6 * * *"
     - cron: "53 6 * * *"
+    - cron: "37 * * * *"
   workflow_dispatch:
     inputs:
       job:
@@ -20,7 +22,7 @@ on:
         required: true
         default: ingest
         type: choice
-        options: [ingest, label, showcase]
+        options: [ingest, label, showcase, election-news]
 
 permissions:
   contents: read
@@ -62,5 +64,6 @@ jobs:
             "11 4 * * *"|"11 15 * * *") JOB=ingest ;;
             "17 6 * * *") JOB=label ;;
             "53 6 * * *") JOB=showcase ;;
+            "37 * * * *") JOB=election-news ;;
           esac
           python scripts/run_cron.py "/api/cron/${JOB}"

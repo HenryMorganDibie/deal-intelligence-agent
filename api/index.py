@@ -225,6 +225,10 @@ from src.hosted_market import router as market_router  # noqa: E402
 
 app.include_router(market_router)
 
+from src.election_feed import router as election_router  # noqa: E402
+
+app.include_router(election_router)
+
 from src import public_api  # noqa: E402
 
 public_api.install(app)    # /v1: key-authenticated, metered, never edge-cached

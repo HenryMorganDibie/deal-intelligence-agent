@@ -21,6 +21,7 @@ from typing import Awaitable, Callable, Literal, Optional
 
 import httpx
 from fastapi import APIRouter, FastAPI, HTTPException, Query, Request, Response
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
 from src import hosted_market as hm
@@ -147,7 +148,7 @@ async def index() -> JSONResponse:
                              f"GET /v1/{p}" for p in (
                                  "usage", "deals", "deals/{id}", "events", "investors", "investors/{name}",
                                  "countries", "countries/{code}", "markets/overview", "markets/screener",
-                                 "markets/search", "markets/quote")]},
+                                 "markets/search", "markets/quote", "elections/news", "elections/summary")]},
                         headers={"Cache-Control": "public, max-age=3600"})
 
 
@@ -218,6 +219,34 @@ async def countries(request: Request, response: Response) -> dict:
 async def country(code: str, request: Request, response: Response) -> dict:
     await authorize(request, response)
     return await _call(lambda: hm.country(_country(code)))
+
+
+@router.get("/elections/news")
+async def election_news(request: Request, response: Response, candidate: Optional[str] = Query(None, max_length=80),
+                        party: Optional[str] = Query(None, max_length=10), state: Optional[str] = Query(None, max_length=30),
+                        topic: Optional[str] = Query(None, max_length=30), race: Optional[str] = Query(None, max_length=30),
+                        q: str = Query("", max_length=120), since: Optional[str] = Query(None, max_length=10),
+                        limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=100_000)) -> dict:
+    """Nigeria 2027 election coverage: one record per story, every outlet's report attached, tagged by candidate,
+    party, state, topic and race."""
+    from src import election_feed
+    await authorize(request, response)
+
+    async def run():
+        return await run_in_threadpool(election_feed.search, candidate=candidate, party=party, state=state,
+                                       topic=topic, race=race, q=q, since=since, limit=limit, offset=offset)
+    return await _call(run)
+
+
+@router.get("/elections/summary")
+async def election_summary(request: Request, response: Response, days: int = Query(7, ge=1, le=90)) -> dict:
+    """Coverage counts per candidate, party, state, topic and race over the last `days` days."""
+    from src import election_feed
+    await authorize(request, response)
+
+    async def run():
+        return await run_in_threadpool(election_feed.summary, days)
+    return await _call(run)
 
 
 @router.get("/markets/overview")
