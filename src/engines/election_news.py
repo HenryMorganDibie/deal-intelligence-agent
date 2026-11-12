@@ -102,9 +102,6 @@ def crawl_targets(stories: list[dict], limit: int = 150, per_outlet: int = 25) -
             for outlet, links in urls.items()]
 
 
-_LEDE_CHARS = 600
-
-
 def body_tags(title: str, body: str) -> dict:
     """Tags from a full article that say what it is about, not everything it mentions: what the opening
     paragraphs name, plus what the article names at least twice."""
@@ -122,6 +119,7 @@ def body_tags(title: str, body: str) -> dict:
             out["candidates"].append(person)
     tickets = {c: acr for acr, _, c, m in ng.TICKETS for c in (c, m)}
     out["parties"] = sorted(set(out["parties"]) | {tickets[c] for c in out["candidates"]})
+    out["lgas"] = lgas_in(f"{title}. {body}", out["states"])
     return out
 
 
@@ -141,8 +139,9 @@ def apply_articles(stories: list[dict], pages: Iterable[dict]) -> set[str]:
         if not body:
             continue
         extra = body_tags(report["title"], body)
-        for key in ("candidates", "parties", "states", "topics", "races"):
+        for key in _TAG_KEYS:
             story[key] = list(dict.fromkeys([*story.get(key, []), *extra[key]]))
+        _merge_incident(story, incidents(report["title"], body))
         story["full_text_reports"] = sum(1 for r in story["reports"] if r.get("words"))
     return changed
 
@@ -226,6 +225,107 @@ _RACES: tuple[tuple[str, re.Pattern], ...] = (
 )
 
 
+# ── Places below state level ─────────────────────────────────────────────────
+
+def _lga_patterns() -> dict[str, list[tuple[str, re.Pattern]]]:
+    import json
+    from pathlib import Path
+    data = json.loads((Path(__file__).resolve().parents[1] / "data" / "ng_lgas.json").read_text())
+    out: dict[str, list[tuple[str, re.Pattern]]] = {}
+    for state, lgas in data.items():
+        pats = []
+        for raw in lgas:
+            name = re.sub(r"\s*-\s*", "-", raw).strip()
+            if name.upper() in _AMBIGUOUS_LGAS or name.upper() == state.upper():
+                continue
+            label = name.title().replace("'S", "'s")
+            words = [re.escape(w) for w in re.split(r"[\s-]+", name.title())]
+            pats.append((label, re.compile(r"\b" + r"[\s-]?".join(words) + r"\b", re.I if len(name) > 4 else 0)))
+        out[state] = pats
+    return out
+
+
+# LGA names that are also everyday words, surnames or other places; never tagged from text.
+_AMBIGUOUS_LGAS = frozenset({"OBI", "ISA", "ABI", "ASA", "AWE", "INI", "LAU", "IKA", "TAI", "MANI", "GAYA", "SONG",
+                              "LOGO", "TORO", "BALI", "ADO", "EDU", "ITU", "OSE", "OJO", "IDO", "IBI", "ILA", "IVO",
+                              "GURI", "MORO", "MARU", "KURA", "ZAKI", "BAYO", "TOTO", "GADA", "OFU", "OYI", "OYE",
+                              "MUNICIPAL AREA COUNCIL", "BASSA", "IFELODUN", "IREPODUN"})
+_LGAS: Optional[dict] = None
+
+
+def lgas_in(text: str, states: Iterable[str]) -> list[str]:
+    """LGAs named in the text, looked for only within states the story already names: an LGA name alone is often
+    a common word, a surname or shared by two states."""
+    global _LGAS
+    if _LGAS is None:
+        _LGAS = _lga_patterns()
+    out = []
+    for st in states:
+        for label, p in _LGAS.get(st, []):
+            if p.search(text):
+                out.append(f"{label}, {st}")
+    return out
+
+
+# ── Incidents ────────────────────────────────────────────────────────────────
+
+_INCIDENTS: tuple[tuple[str, re.Pattern], ...] = (
+    ("violence", re.compile(r"(?i)\b(?:attack(?:s|ed|ers)?|clash(?:es|ed)?|gunmen|gunshots?|shot|shooting|kill(?:s|ed|ing)?(?! it\b)|"
+                            r"injur(?:ed|ies)|machetes?|stabbed|violence|fracas|mayhem)\b")),
+    ("thuggery", re.compile(r"(?i)\b(?:thugs?|thuggery|hoodlums|miscreants)\b")),
+    ("abduction", re.compile(r"(?i)\b(?:kidnap\w*|abduct\w*)\b")),
+    ("arson", re.compile(r"(?i)\b(?:set\s+(?:\w+\s+){0,3}(?:ablaze|on fire)|razed|razes|arson|burnt|burned|torch(?:es|ed)?|"
+                         r"fire (?:guts|razes))\b")),
+    ("ballot_snatching", re.compile(r"(?i)\b(?:snatch\w*\s+(?:of\s+)?(?:ballot|election|electoral)|ballot[- ]box\w* snatch\w*|"
+                                    r"hijack\w* (?:of )?(?:election )?materials)\b")),
+    ("vote_buying", re.compile(r"(?i)\b(?:vote[- ]buying|buying (?:of )?votes|cash for votes|inducement of voters|"
+                               r"vote[- ]trading)\b")),
+    ("intimidation", re.compile(r"(?i)\b(?:intimidat\w*|harass\w*|threat(?:s|en\w*)? (?:to )?voters|voter suppression|"
+                                r"disenfranchis\w*)\b")),
+    ("technology_failure", re.compile(r"(?i)\b(?:BVAS|IReV)\b.{0,40}\b(?:fail\w*|malfunction\w*|glitch\w*|"
+                                      r"breakdown|not working|upload (?:failure|problems?))|\b(?:glitch\w*|malfunction\w*)\b.{0,40}\b(?:BVAS|IReV)\b")),
+    ("logistics", re.compile(r"(?i)\b(?:late arrival|arrived late|delay(?:s|ed)? in (?:the )?(?:arrival|distribution|deployment)|"
+                             r"shortage of (?:election )?materials|materials (?:did not|failed to) arrive)\b")),
+    ("arrest", re.compile(r"(?i)\b(?:arrest(?:s|ed)?|detain(?:s|ed)?|in custody)\b")),
+    ("hate_speech", re.compile(r"(?i)\b(?:hate speech|incitement|inciting|disinformation|misinformation|fake news)\b")),
+)
+_HIGH = re.compile(r"(?i)\b(?:kill(?:s|ed|ing)?|dead|death|deaths|gunmen|shot dead|murder\w*|gunfire|gunshots?|fired? (?:gun)?shots|"
+                   r"shots fired|guns?|set\s+(?:\w+\s+){0,3}ablaze|torch(?:es|ed)?|razed|"
+                   r"arson|burnt|abduct\w*|kidnap\w*|bomb\w*|explosion)\b")
+_MEDIUM = re.compile(r"(?i)\b(?:attack\w*|injur\w*|clash\w*|snatch\w*|stabbed|machetes?|vandali[sz]\w*|hijack\w*)\b")
+_SEVERITY_RANK = {"low": 1, "medium": 2, "high": 3}
+
+
+# "ADC, APM attack APC over manifesto": a war of words, not violence.
+_VERBAL_ATTACK = re.compile(r"(?i)\battack(?:s|ed)?\s+(?:the\s+)?(?:" + "|".join(a for a, _, _, _ in ng.TICKETS) +
+                            r"|INEC|government|FG|presidency|president|governor|tinubu|obi|atiku|makinde|shettima|"
+                            r"amaechi|kwankwaso|party|opposition|critics)\b")
+_PHYSICAL = re.compile(r"(?i)\b(?:thugs?|hoodlums|gunmen|guns?|shots?|machetes?|cutlass\w*|injur\w*|killed|"
+                       r"venue|rally|rallies|supporters|members|journalist|office|vehicles?|convoy|secretariat|"
+                       r"town hall|meeting|gathering)\b")
+
+
+def incidents(title: str, text: str = "") -> dict:
+    """Election incidents a story reports. Types come from the headline, which states what happened; the opening
+    of the story only sets the severity (a summary mentions background, such as past killings, too freely)."""
+    head = f"{title}. {(text or '')[:_LEDE_CHARS]}"
+    types = [t for t, p in _INCIDENTS if p.search(title)]
+    if "violence" in types and _VERBAL_ATTACK.search(title) and not _PHYSICAL.search(title):
+        types.remove("violence")
+    if not types or types == ["arrest"] and not _ELECTION_WORDS.search(head):
+        return {}
+    severity = "high" if _HIGH.search(head) else "medium" if _MEDIUM.search(head) else "low"
+    return {"incident_types": types, "severity": severity}
+
+
+def _merge_incident(story: dict, found: dict) -> None:
+    if not found:
+        return
+    story["incident_types"] = list(dict.fromkeys([*story.get("incident_types", []), *found["incident_types"]]))
+    if _SEVERITY_RANK[found["severity"]] > _SEVERITY_RANK.get(story.get("severity") or "", 0):
+        story["severity"] = found["severity"]
+
+
 def _candidates_in(text: str) -> list[str]:
     found = []
     for person, pattern in _CANDIDATES:
@@ -243,6 +343,7 @@ def _candidates_in(text: str) -> list[str]:
 
 
 _INCUMBENTS = frozenset({"Bola Tinubu", "Kashim Shettima"})
+_LEDE_CHARS = 600
 _DATELINE = re.compile(r"^\s*[A-Z][A-Za-z.\s]{1,30}?\s*(?:[—–-]|:)\s*")
 
 
@@ -261,10 +362,12 @@ def tag(title: str, snippet: str = "") -> dict:
     parties = _named_parties(text)
     tickets = {c: acr for acr, _, c, m in ng.TICKETS for c in (c, m)}
     parties |= {tickets[c] for c in candidates}             # naming a candidate names their party
+    states = [s for s, p in _STATE_PATTERNS if p.search(text)]
     return {
         "candidates": candidates,
         "parties": sorted(parties),
-        "states": [s for s, p in _STATE_PATTERNS if p.search(text)],
+        "states": states,
+        "lgas": lgas_in(text, states),
         "topics": [t for t, p in _TOPICS if p.search(title)] or [t for t, p in _TOPICS if p.search(text)],
         "races": [r for r, p in _RACES if p.search(text)],
     }
@@ -313,6 +416,9 @@ def same_story(a: dict, b: dict, days: int = 2) -> bool:
     return shared / len(wa | wb) >= 0.6 or (shared >= 4 and shared / min(len(wa), len(wb)) >= 0.8)
 
 
+_TAG_KEYS = ("candidates", "parties", "states", "lgas", "topics", "races")
+
+
 def story_id(url: str) -> str:
     return hashlib.sha256(url.encode()).hexdigest()[:16]
 
@@ -322,7 +428,7 @@ def record(item: dict) -> dict:
     report = {"outlet": item["outlet"], "url": item["url"], "title": item["title"], "date": item["date"]}
     return {"id": story_id(item["url"]), "day": item["date"], "title": item["title"], "url": item["url"],
             "outlet": item["outlet"], "snippet": item.get("snippet", "")[:400], **tag(item["title"], item.get("snippet", "")),
-            "reports": [report], "outlets": [item["outlet"]]}
+            **incidents(item["title"], item.get("snippet", "")), "reports": [report], "outlets": [item["outlet"]]}
 
 
 def merge(stories: list[dict], items: Iterable[dict]) -> tuple[list[dict], set[str]]:
@@ -341,8 +447,9 @@ def merge(stories: list[dict], items: Iterable[dict]) -> tuple[list[dict], set[s
                                      "date": item["date"]})
             match["outlets"] = sorted({r["outlet"] for r in match["reports"]})
             extra = tag(item["title"], item.get("snippet", ""))
-            for key in ("candidates", "parties", "states", "topics", "races"):
+            for key in _TAG_KEYS:
                 match[key] = list(dict.fromkeys([*match.get(key, []), *extra[key]]))
+            _merge_incident(match, incidents(item["title"], item.get("snippet", "")))
             changed.add(match["id"])
             by_url[item["url"]] = match
         else:
@@ -351,6 +458,20 @@ def merge(stories: list[dict], items: Iterable[dict]) -> tuple[list[dict], set[s
             changed.add(s["id"])
             by_url[item["url"]] = s
     return stories, changed
+
+
+def retag_missing(stories: list[dict]) -> set[str]:
+    """Give stories stored before LGA and incident tagging existed those tags, from their headline and summary."""
+    changed = set()
+    for s in stories:
+        if "lgas" in s:
+            continue
+        t = tag(s.get("title", ""), s.get("snippet", ""))
+        for key in _TAG_KEYS:
+            s[key] = list(dict.fromkeys([*s.get(key, []), *t[key]]))
+        _merge_incident(s, incidents(s.get("title", ""), s.get("snippet", "")))
+        changed.add(s["id"])
+    return changed
 
 
 def collect(texts: Iterable[tuple[str, str]], today: date, days: int = 3) -> list[dict]:
@@ -368,7 +489,7 @@ def summary(stories: list[dict], since: Optional[str] = None) -> dict:
     """How much coverage each candidate, party, state and topic got: stories and reports."""
     rows = [s for s in stories if not since or (s.get("day") or "") >= since]
     out: dict = {"stories": len(rows), "reports": sum(len(s.get("reports") or [1]) for s in rows)}
-    for key in ("candidates", "parties", "states", "topics", "races"):
+    for key in (*_TAG_KEYS, "incident_types"):
         counts: dict[str, list[int]] = {}
         for s in rows:
             for v in s.get(key) or []:

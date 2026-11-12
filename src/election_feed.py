@@ -62,6 +62,7 @@ def collect_once(today: Optional[date] = None) -> dict:
     _cache.pop(since, None)
     stored = _load(since) if hm._configured() else []
     stories, changed = en.merge([dict(s) for s in stored], items)
+    changed |= en.retag_missing(stories)          # stories stored before a newer tag existed get it now
     rows = [s for s in stories if s["id"] in changed]
     return {"sources": status, "items": len(items), "stories_changed": len(rows), "written": _write(rows)}
 
@@ -122,7 +123,7 @@ def _matches(s: dict, field: str, value: Optional[str]) -> bool:
 
 def search(candidate: Optional[str] = None, party: Optional[str] = None, state: Optional[str] = None,
            topic: Optional[str] = None, race: Optional[str] = None, q: str = "", since: Optional[str] = None,
-           limit: int = 50, offset: int = 0) -> dict:
+           limit: int = 50, offset: int = 0, lga: Optional[str] = None) -> dict:
     since = since or (datetime.now(timezone.utc).date() - timedelta(days=30)).isoformat()
     try:
         date.fromisoformat(since)
@@ -131,9 +132,37 @@ def search(candidate: Optional[str] = None, party: Optional[str] = None, state: 
     rows = [s for s in _load(since)
             if _matches(s, "candidates", candidate) and _matches(s, "parties", party) and _matches(s, "states", state)
             and _matches(s, "topics", topic) and _matches(s, "races", race)
+            and (not lga or any(lga.strip().lower() == x.split(",")[0].lower() for x in s.get("lgas") or []))
             and (not q or q.lower() in (s.get("title", "") + " " + s.get("snippet", "")).lower())]
     return {"since": since, "total": len(rows), "offset": offset, "stories": rows[offset:offset + limit],
             "sources": sorted({o for o, _ in en.all_sources()})}
+
+
+_SEVERITY = {"low": 1, "medium": 2, "high": 3}
+
+
+def incident_feed(state: Optional[str] = None, lga: Optional[str] = None, type: Optional[str] = None,
+                  severity: Optional[str] = None, since: Optional[str] = None, limit: int = 50, offset: int = 0) -> dict:
+    """Stories reporting election incidents, newest first, optionally by state, LGA, type and minimum severity."""
+    if severity and severity not in _SEVERITY:
+        raise HTTPException(400, "severity must be low, medium or high.")
+    since = since or (datetime.now(timezone.utc).date() - timedelta(days=30)).isoformat()
+    try:
+        date.fromisoformat(since)
+    except ValueError:
+        raise HTTPException(400, "since must be a date, YYYY-MM-DD.")
+    floor = _SEVERITY.get(severity or "low", 1)
+    rows = [s for s in _load(since) if s.get("incident_types")
+            and _SEVERITY.get(s.get("severity") or "low", 1) >= floor
+            and _matches(s, "states", state) and _matches(s, "incident_types", type)
+            and (not lga or any(lga.strip().lower() == x.split(",")[0].lower() for x in s.get("lgas") or []))]
+    by_type: dict[str, int] = {}
+    for s in rows:
+        for t in s["incident_types"]:
+            by_type[t] = by_type.get(t, 0) + 1
+    return {"since": since, "total": len(rows), "by_type": dict(sorted(by_type.items(), key=lambda kv: -kv[1])),
+            "by_severity": {k: sum(1 for s in rows if s.get("severity") == k) for k in ("high", "medium", "low")},
+            "offset": offset, "incidents": rows[offset:offset + limit]}
 
 
 def summary(days: int = 7) -> dict:

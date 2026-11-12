@@ -175,3 +175,48 @@ def test_unreadable_page_is_marked_so_it_is_not_retried_and_tags_stay():
     tags = {k: list(s[k]) for k in ("candidates", "parties", "states", "topics", "races")}
     en.apply_articles([s], [{"url": s["url"], "status_code": 403, "fields": {}}])
     assert s["reports"][0]["words"] == 0 and {k: s[k] for k in tags} == tags
+
+
+@pytest.mark.parametrize("title,types,severity", [
+    ("Gunmen kill INEC official in Imo, set office ablaze", ["violence", "arson"], "high"),
+    ("Hoodlums torch INEC office in Enugu", ["thuggery", "arson"], "high"),
+    ("Police fire shots as thugs disrupt NDC Hall meeting in Lagos", ["thuggery"], "high"),
+    ("Thugs snatch ballot boxes in Rivers polling unit", ["thuggery", "ballot_snatching"], "medium"),
+    ("BVAS malfunction delays accreditation in Kano polling units", ["technology_failure"], "low"),
+    ("Vote buying: EFCC arrests three agents in Ekiti", ["vote_buying", "arrest"], "low"),
+    ("Late arrival of materials stalls voting in Anambra", ["logistics"], "low"),
+])
+def test_incidents_are_typed_and_rated_from_the_headline(title, types, severity):
+    assert en.incidents(title) == {"incident_types": types, "severity": severity}
+
+
+def test_words_of_war_and_background_are_not_incidents():
+    assert en.incidents("ADC, APM attack APC over alleged 'repackaged old promises in new manifesto'") == {}
+    assert en.incidents("Finally, Obi visits Yelwata, honours 271 victims", "Over 200 people were killed in June") == {}
+    assert en.incidents("Tinubu kills it with speech") == {}
+    assert en.incidents("TheCable journalist attacked at NDC town hall")["incident_types"] == ["violence"]
+
+
+def test_lgas_are_tagged_only_within_a_named_state():
+    assert en.tag("Katsina APC condemns Funtua violence")["lgas"] == ["Funtua, Katsina"]
+    assert en.tag("Thugs attack NDC members in Ikeja, Lagos")["lgas"] == ["Ikeja, Lagos"]
+    assert en.tag("Funtua youths protest")["lgas"] == []                  # no state named: not placed
+    assert en.tag("Peter Obi visits Nasarawa")["lgas"] == []              # Obi is also an LGA in Nasarawa
+
+
+def test_old_stories_get_new_tags_once_and_the_incident_feed_filters(monkeypatch):
+    from src import election_feed
+    old = {"id": "a", "day": "2026-11-12", "title": "Police fire shots as thugs disrupt NDC meeting in Ikeja, Lagos",
+           "snippet": "", "candidates": [], "parties": ["NDC"], "states": ["Lagos"], "topics": [], "races": [],
+           "reports": [{"outlet": "Punch", "url": "https://p.example/a", "title": "x", "date": "2026-11-12"}]}
+    calm = dict(old, id="b", title="APC unveils campaign council in Kano", states=["Kano"], parties=["APC"])
+    stories = [dict(old), dict(calm)]
+    assert en.retag_missing(stories) == {"a", "b"} and en.retag_missing(stories) == set()
+    assert stories[0]["severity"] == "high" and stories[0]["lgas"] == ["Ikeja, Lagos"]
+    monkeypatch.setattr(election_feed, "_load", lambda since: stories)
+    feed = election_feed.incident_feed(state="Lagos", severity="medium", since="2026-11-01")
+    assert feed["total"] == 1 and feed["by_severity"]["high"] == 1 and feed["by_type"] == {"thuggery": 1}
+    assert election_feed.incident_feed(lga="Ikeja", since="2026-11-01")["total"] == 1
+    assert election_feed.search(lga="ikeja", since="2026-11-01")["total"] == 1
+    with pytest.raises(Exception):
+        election_feed.incident_feed(severity="extreme")

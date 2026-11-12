@@ -149,7 +149,8 @@ async def index() -> JSONResponse:
                                  "usage", "deals", "deals/{id}", "events", "investors", "investors/{name}",
                                  "countries", "countries/{code}", "markets/overview", "markets/screener",
                                  "markets/search", "markets/quote", "elections/news", "elections/summary",
-                                 "elections/areas", "elections/polling-units", "elections/polling-units/{code}")]},
+                                 "elections/incidents", "elections/areas", "elections/polling-units",
+                                 "elections/polling-units/{code}")]},
                         headers={"Cache-Control": "public, max-age=3600"})
 
 
@@ -227,15 +228,31 @@ async def election_news(request: Request, response: Response, candidate: Optiona
                         party: Optional[str] = Query(None, max_length=10), state: Optional[str] = Query(None, max_length=30),
                         topic: Optional[str] = Query(None, max_length=30), race: Optional[str] = Query(None, max_length=30),
                         q: str = Query("", max_length=120), since: Optional[str] = Query(None, max_length=10),
-                        limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=100_000)) -> dict:
+                        limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=100_000),
+                        lga: Optional[str] = Query(None, max_length=60)) -> dict:
     """Nigeria 2027 election coverage: one record per story, every outlet's report attached, tagged by candidate,
-    party, state, topic and race."""
+    party, state, LGA, topic, race and any incident reported."""
     from src import election_feed
     await authorize(request, response)
 
     async def run():
         return await run_in_threadpool(election_feed.search, candidate=candidate, party=party, state=state,
-                                       topic=topic, race=race, q=q, since=since, limit=limit, offset=offset)
+                                       topic=topic, race=race, q=q, since=since, limit=limit, offset=offset, lga=lga)
+    return await _call(run)
+
+
+@router.get("/elections/incidents")
+async def election_incidents(request: Request, response: Response, state: Optional[str] = Query(None, max_length=30),
+                             lga: Optional[str] = Query(None, max_length=60), type: Optional[str] = Query(None, max_length=30),
+                             severity: Optional[str] = Query(None, max_length=10), since: Optional[str] = Query(None, max_length=10),
+                             limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=100_000)) -> dict:
+    """Election incidents reported in the news (violence, thuggery, abduction, arson, ballot snatching, vote buying,
+    intimidation, BVAS or IReV failures, logistics, arrests, hate speech), with severity and location."""
+    from src import election_feed
+    await authorize(request, response)
+
+    async def run():
+        return await run_in_threadpool(election_feed.incident_feed, state, lga, type, severity, since, limit, offset)
     return await _call(run)
 
 
