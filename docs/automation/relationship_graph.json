@@ -1351,6 +1351,10 @@
     "dairibord": {
       "name": "Dairibord",
       "kind": "organization"
+    },
+    "la marocaine vie": {
+      "name": "La Marocaine Vie",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -4184,6 +4188,11 @@
           "title": "Proparco Backs Sudan Fintech Cashi With €600,000 Deal",
           "publisher": "Serrari Group",
           "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOdFczdEo3XzNkUkNoZnpNSFBub24yTlRmQS11amYtYmZ2SmkxdTdSWDBhQ3pMUXZ3Zl9VcjFtSEhOUW13LVpsb25hSjRWRkw5a3ZJbmhkN2t4NWxMcmQwbWljUlJVbGNlc0lyaGVxYXRmcDcwVkdyaWl2cHYyT3RLcmVUOA?oc=5"
+        },
+        {
+          "title": "Proparco Invests $690,000 into Sudan’s Fintech Cashi",
+          "publisher": "TechMoran",
+          "url": "https://techmoran.com/2026/11/12/proparco-invests-690000-into-sudans-fintech-cashi/"
         }
       ]
     },
@@ -4575,7 +4584,40 @@
           "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOZU9ZSmxJMVNoVzdnNXRKUWZxUXMyZ3BMU2ViNk5yc0ZmcEwyRklnbVBPS1BDVmhNN1k3eXpza0NLUWxBNW92c0xWYnRvVW96TFN6VVQ2V0RxX29LM0Q5dkNGOHlCTGtRX0k4N0VvWG5RS2ZUVm5zLVJjQW1hamd4R3Rqd09lQQ?oc=5"
         }
       ]
+    },
+    "871f797074dd3e919ae4": {
+      "id": "871f797074dd3e919ae4",
+      "from": "wafa assurance",
+      "to": "marocaine vie",
+      "type": "acquisition",
+      "first_seen": "2026-11-12",
+      "sources": [
+        {
+          "title": "Wafa Assurance Acquires 99.98% of La Marocaine Vie",
+          "publisher": "Morocco World News",
+          "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxNZkV5SUx3OFBhTHJCSWpkUnRvVkZjX1BmOUVRT29SV0hteTVrRFpjYW1IV1hvdHlyTFhjemxLQnRFRFFWNy1VZ0xpTDVGVDRkbGJibGRYN2ppYVhBbGtHdkhhU3VaVW1BLXFzT1Z0TDlTZnRkcEh0dVo0Y2M1emRTemYwREhEU2NzbXhRM1c0ZlZ1MUp1NWVDVHdMbUVfS00?oc=5"
+        },
+        {
+          "title": "Wafa Assurance rachète La Marocaine Vie auprès du groupe Saham",
+          "publisher": "Le Matin.ma",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxONkwyd2I2TmZhM0VtMDJ0WEtDMWxWb3MwclBwQlhvS0hfU1BjU1huemlIZW54RVR2Q1JYOC1pR1B2Qlg0bWVQalNyRmNGVmxJOHhEZllwUmY5bm5GYndsbm55NlEzdUFTVkJ1bXZGVW9HSHNZSGl1M1Q5TnZIZWtWSTR3MU45TkpTd2h0cnNCSjMza3lLWWtWY3RvdVXSAaIBQVVfeXFMT0ZnZzdYTW9LdEctV3dqZlF2RDFOOWJod3RwRnZ3dFlaV2pFZWVhT2xhUXFxM0Vhdi1vYnZpR2paVDMyYUNjbVQxeHl2VXdfRzcxLUNBaEh6eTFzN0VWalk3TURjT3hveXZSdUcxWUFNNzdUX3dLdUpLa2UzZWk2WkJfMVNNSXZYZUVOaUtEanJXd0lYNnV3XzZUaU5LUGRZVmhR?oc=5"
+        }
+      ]
+    },
+    "57a73c0d9eab68d78020": {
+      "id": "57a73c0d9eab68d78020",
+      "from": "wafa assurance",
+      "to": "la marocaine vie",
+      "type": "acquisition",
+      "first_seen": "2026-11-12",
+      "sources": [
+        {
+          "title": "Wafa Assurance to buy near-total stake in Morocco's La Marocaine Vie",
+          "publisher": "Dealroom",
+          "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNdHMwTXhOUmRzT1FuTkNOQzZFaXFQNmVKZzgtZ3c0b1o2dHYyeHRONkNCaFcxVDJuZHNnWGFXdFdmRnBBbWdGOHZEUURjdG5fRWxNdEJ2aEhjNmkwVEFQRWp1VUVURkk1X3FGUDhNdVJVYjU3Y0hUVGpsSnhGSWtlZG80QlBDMDZBRGIwX3ljZjh2Z0hyRnd3eElSamJMcFVzcDJrZw?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-12T13:20:18.703436+00:00"
+  "updated_at": "2026-11-12T21:35:29.676224+00:00"
 }
