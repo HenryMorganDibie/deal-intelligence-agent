@@ -6,7 +6,8 @@ name: Scheduled API jobs
 #                        (before the African working day opens, and after the exchanges close)
 #   06:17 UTC            label brief outcomes for calibration
 #   06:53 UTC            refresh the showcase
-#   hourly at :37        election news from Nigerian publishers' feeds (src/election_feed.py)
+#   hourly at :37        election news from Nigerian publishers' feeds (src/election_feed.py), then the new
+#                        stories' full articles read with web-harvester and the stories re-tagged
 # GitHub can start scheduled runs late at busy times; each job is safe to run late or twice.
 on:
   schedule:
@@ -54,7 +55,8 @@ jobs:
           cache-dependency-path: requirements.txt
       - name: Install the API's dependencies
         run: pip install --disable-pip-version-check -r requirements.txt
-      - name: Run the job
+      - name: Pick the job
+        id: pick
         env:
           SCHEDULE: ${{ github.event.schedule }}
           JOB: ${{ inputs.job }}
@@ -66,4 +68,31 @@ jobs:
             "53 6 * * *") JOB=showcase ;;
             "37 * * * *") JOB=election-news ;;
           esac
-          python scripts/run_cron.py "/api/cron/${JOB}"
+          echo "job=${JOB}" >> "$GITHUB_OUTPUT"
+      - name: Run the job
+        run: python scripts/run_cron.py "/api/cron/${{ steps.pick.outputs.job }}"
+
+      # Election news, full articles: web-harvester's crawler (github.com/HenryMorganDibie/web-harvester) reads the
+      # article pages of new stories, robots.txt permitting and one page every two seconds per site; the stories are
+      # then re-tagged from the full text. A crawl problem never fails the job: the headline tags stand.
+      - name: Check out web-harvester
+        if: steps.pick.outputs.job == 'election-news'
+        uses: actions/checkout@v4
+        with:
+          repository: HenryMorganDibie/web-harvester
+          path: web-harvester
+      - uses: actions/setup-go@v5
+        if: steps.pick.outputs.job == 'election-news'
+        with:
+          go-version-file: web-harvester/go.mod
+          cache-dependency-path: web-harvester/go.sum
+      - name: Read full articles with web-harvester
+        if: steps.pick.outputs.job == 'election-news'
+        continue-on-error: true
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          (cd web-harvester && go build -o "$RUNNER_TEMP/crawl" ./cmd/crawl)
+          python scripts/election_articles.py prepare "$RUNNER_TEMP/crawl.json" "$RUNNER_TEMP/pages.jsonl"
+          "$RUNNER_TEMP/crawl" -config "$RUNNER_TEMP/crawl.json" -i-have-reviewed-tos
+          python scripts/election_articles.py apply "$RUNNER_TEMP/pages.jsonl"

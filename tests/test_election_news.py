@@ -138,3 +138,40 @@ def test_outlets_that_refuse_crawlers_are_read_from_google_news_and_counted_once
               "title": "Shettima asks Ondo voters to deliver 1.2m votes for Tinubu"}]
     stories, _ = en.merge([], items)
     assert len(stories) == 1 and [r["outlet"] for r in stories[0]["reports"]] == ["TheCable", "Vanguard"]
+
+
+def _story():
+    return en.record({"outlet": "Punch", "date": "2026-11-12", "snippet": "",
+                      "url": "https://punchng.com/matawalle-tinubu/?utm_source=rss.punchng.com&utm_medium=web",
+                      "title": "My Ambition Is To Ensure Tinubu's 2027 Victory, Says Matawalle"})
+
+
+def test_crawl_targets_cover_unread_articles_of_crawlable_outlets_only():
+    a = _story()
+    g = en.record({"outlet": "TheCable", "url": "https://news.google.com/rss/articles/x", "date": "2026-11-12",
+                   "title": "Atiku visits Kano ahead of 2027", "snippet": ""})
+    targets = en.crawl_targets([a, g])
+    assert [t["name"] for t in targets] == ["Punch"] and targets[0]["max_depth"] == 0
+    assert targets[0]["extract"]["fields"]["body"] == {"selector": ".post-content p", "all": True}
+    a["reports"][0]["words"] = 0                          # read (or unreadable) once: not crawled again
+    assert en.crawl_targets([a, g]) == []
+
+
+def test_full_article_adds_what_the_story_is_about_not_every_passing_mention():
+    s = _story()
+    lede = "Former Zamfara governor Bello Matawalle said at a campaign rally in Gusau that the APC will deliver Zamfara for Tinubu. "
+    rest = ("x " * 400) + "He also mentioned Kano once. The campaign in Zamfara continues."
+    page = {"url": "https://punchng.com/matawalle-tinubu", "status_code": 200,
+            "fields": {"body": [lede, rest, "Subscribe to our digital E-Editions here."]}}
+    changed = en.apply_articles([s], [page])                # matched despite the tracking parameters
+    assert changed == {s["id"]} and s["reports"][0]["words"] > 400
+    assert "Zamfara" in s["states"] and "Kano" not in s["states"]           # once, outside the lede: left out
+    assert "campaign" in s["topics"] and s["full_text_reports"] == 1
+    assert en.article_text(["November 12, 2026", "Real text.", "Subscribe to our digital E-Editions"]) == "Real text."
+
+
+def test_unreadable_page_is_marked_so_it_is_not_retried_and_tags_stay():
+    s = _story()
+    tags = {k: list(s[k]) for k in ("candidates", "parties", "states", "topics", "races")}
+    en.apply_articles([s], [{"url": s["url"], "status_code": 403, "fields": {}}])
+    assert s["reports"][0]["words"] == 0 and {k: s[k] for k in tags} == tags

@@ -63,6 +63,10 @@ def collect_once(today: Optional[date] = None) -> dict:
     stored = _load(since) if hm._configured() else []
     stories, changed = en.merge([dict(s) for s in stored], items)
     rows = [s for s in stories if s["id"] in changed]
+    return {"sources": status, "items": len(items), "stories_changed": len(rows), "written": _write(rows)}
+
+
+def _write(rows: list[dict]) -> int:
     written = 0
     for i in range(0, len(rows), 200):
         r = hm._rpc_sync("upsert_election_news", {"p_rows": rows[i:i + 200]})
@@ -70,7 +74,33 @@ def collect_once(today: Optional[date] = None) -> dict:
             raise HTTPException(503, f"Election news write failed: {r.status_code}")
         written += int(r.json() or 0)
     _cache.clear()
-    return {"sources": status, "items": len(items), "stories_changed": len(rows), "written": written}
+    return written
+
+
+def crawl_config(output_path: str, limit: int = 150, today: Optional[date] = None) -> dict:
+    """A web-harvester crawl config (cmd/crawl) for the articles of recent stories not read yet."""
+    today = today or datetime.now(timezone.utc).date()
+    since = (today - timedelta(days=5)).isoformat()
+    _cache.pop(since, None)
+    return {
+        "user_agent": en.USER_AGENT, "robots_agent": "web-harvester",
+        "concurrency": 2, "max_retries": 1, "request_timeout": "25s",
+        "rate_per_host_rps": 0.5, "rate_burst": 1, "adaptive_rate": True,   # one page every two seconds per site
+        "sink_backend": "jsonl", "output_path": output_path, "report_interval": "30s",
+        "targets": en.crawl_targets(_load(since), limit),
+    }
+
+
+def apply_crawl(pages: list[dict], today: Optional[date] = None) -> dict:
+    """Re-tag recent stories from the article pages web-harvester fetched, and store what changed."""
+    today = today or datetime.now(timezone.utc).date()
+    since = (today - timedelta(days=5)).isoformat()
+    _cache.pop(since, None)
+    stories = [dict(s, reports=[dict(r) for r in s.get("reports") or []]) for s in _load(since)]
+    changed = en.apply_articles(stories, pages)
+    rows = [s for s in stories if s["id"] in changed]
+    read = sum(1 for p in pages if p.get("status_code") == 200 and (p.get("fields") or {}).get("body"))
+    return {"pages": len(pages), "articles_read": read, "stories_changed": len(rows), "written": _write(rows)}
 
 
 @router.get("/api/cron/election-news")

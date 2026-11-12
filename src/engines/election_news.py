@@ -50,6 +50,99 @@ def google_news_feed(site: str, days: int = 2) -> str:
 def all_sources() -> list[tuple[str, str]]:
     return [*SOURCES, *((outlet, google_news_feed(site)) for outlet, site in GOOGLE_NEWS_SITES)]
 
+# Where each outlet's article body is, for web-harvester's crawler (cmd/crawl) to read the full story. Outlets read
+# through Google News have no entry: their sites refuse crawlers, so only their headlines are used.
+ARTICLE_SELECTORS: dict[str, str] = {
+    "Premium Times": ".entry-content p",
+    "Leadership": ".entry-content p",
+    "Punch": ".post-content p",
+    "Channels": ".post-content p",
+    "BusinessDay": ".post-content p",
+    "Daily Trust": "article p",
+    "ThisDay": ".article-content p",
+    "Vanguard": ".section-content-single p",
+    "INEC News": ".entry-content p",
+}
+_BOILERPLATE = re.compile(r"(?i)subscribe to our|e-editions?|read also|click here|follow us on|"
+                          r"^\s*\w+ \d{1,2}, 20\d\d\s*$|^\s*\d{1,2} \w+ 20\d\d\s*$")
+
+
+def article_text(paragraphs: Iterable[str], limit: int = 20000) -> str:
+    """An article's paragraphs as one text, without dates, subscription notices and similar furniture."""
+    keep = [p.strip() for p in paragraphs if p and p.strip() and not _BOILERPLATE.search(p)]
+    return " ".join(keep)[:limit]
+
+
+def canonical_url(url: str) -> str:
+    """A link without tracking parameters, so a crawled page can be matched to the feed item it came from."""
+    base, _, query = (url or "").partition("?")
+    kept = "&".join(q for q in query.split("&") if q and not q.startswith(("utm_", "fbclid", "amp")))
+    return (base.rstrip("/") + ("?" + kept if kept else "")).lower()
+
+
+def crawl_targets(stories: list[dict], limit: int = 150) -> list[dict]:
+    """web-harvester crawl targets for reports whose full article has not been read yet: one target per outlet,
+    only the article pages themselves (depth 0), newest stories first."""
+    urls: dict[str, list[str]] = {}
+    n = 0
+    for story in sorted(stories, key=lambda s: s.get("day") or "", reverse=True):
+        for r in story.get("reports") or []:
+            if n >= limit:
+                break
+            if r.get("words") is None and r.get("outlet") in ARTICLE_SELECTORS and "news.google.com" not in r["url"]:
+                urls.setdefault(r["outlet"], []).append(r["url"])
+                n += 1
+    return [{"name": outlet, "start_urls": links, "max_depth": 0, "max_pages": len(links),
+             "extract": {"skip_links": True, "text_limit": -1,
+                         "fields": {"body": {"selector": ARTICLE_SELECTORS[outlet], "all": True}}}}
+            for outlet, links in urls.items()]
+
+
+_LEDE_CHARS = 600
+
+
+def body_tags(title: str, body: str) -> dict:
+    """Tags from a full article that say what it is about, not everything it mentions: what the opening
+    paragraphs name, plus what the article names at least twice."""
+    lede = tag(title, body[:_LEDE_CHARS])
+    rest = body[_LEDE_CHARS:]
+    out = {k: list(v) for k, v in lede.items()}
+    patterns = {"states": _STATE_PATTERNS, "topics": _TOPICS, "races": _RACES,
+                "parties": [*_PARTY_NAMES, *_PARTY_ACRONYMS]}
+    for key, pats in patterns.items():
+        for name, p in pats:
+            if name not in out[key] and len(p.findall(body)) >= 2 and p.search(rest):
+                out[key].append(name)
+    for person, p in _CANDIDATES:
+        if person not in out["candidates"] and len(p.findall(body)) >= 2 and _candidates_in(rest).count(person):
+            out["candidates"].append(person)
+    tickets = {c: acr for acr, _, c, m in ng.TICKETS for c in (c, m)}
+    out["parties"] = sorted(set(out["parties"]) | {tickets[c] for c in out["candidates"]})
+    return out
+
+
+def apply_articles(stories: list[dict], pages: Iterable[dict]) -> set[str]:
+    """Fold crawled article text into the stories' tags. A report is marked with its word count (0 when the page
+    could not be read), so it is not crawled again; the article text itself is not stored."""
+    index = {canonical_url(r["url"]): (s, r) for s in stories for r in s.get("reports") or []}
+    changed: set[str] = set()
+    for page in pages:
+        hit = index.get(canonical_url(page.get("url", ""))) or index.get(canonical_url(page.get("final_url", "")))
+        if not hit:
+            continue
+        story, report = hit
+        body = article_text((page.get("fields") or {}).get("body") or []) if page.get("status_code") == 200 else ""
+        report["words"] = len(body.split())
+        changed.add(story["id"])
+        if not body:
+            continue
+        extra = body_tags(report["title"], body)
+        for key in ("candidates", "parties", "states", "topics", "races"):
+            story[key] = list(dict.fromkeys([*story.get(key, []), *extra[key]]))
+        story["full_text_reports"] = sum(1 for r in story["reports"] if r.get("words"))
+    return changed
+
+
 # ── Relevance ────────────────────────────────────────────────────────────────
 
 _ELECTION_WORDS = re.compile(
