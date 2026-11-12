@@ -4,15 +4,15 @@
     "since": "2026-11-04",
     "reason": "preferred feed: HTTPStatusError 403"
   },
+  "The East African": {
+    "url": "https://news.google.com/rss/search?q=site%3Atheeastafrican.co.ke%20when%3A2d&hl=en-KE&gl=KE&ceid=KE:en",
+    "since": "2026-11-12",
+    "reason": "preferred feed: HTTPStatusError 404"
+  },
   "The Reporter Ethiopia": {
     "url": "https://news.google.com/rss/search?q=site%3Athereporterethiopia.com%20when%3A2d&hl=en-ET&gl=ET&ceid=ET:en",
     "since": "2026-11-09",
     "reason": "preferred feed: HTTPStatusError 403"
-  },
-  "WeeTracker": {
-    "url": "https://news.google.com/rss/search?q=site%3Aweetracker.com%20when%3A2d&hl=en-GB&gl=GB&ceid=GB:en",
-    "since": "2026-11-11",
-    "reason": "preferred feed: HTTPStatusError 500"
   },
   "Zambia Daily Mail": {
     "url": "https://news.google.com/rss/search?q=site%3Adaily-mail.co.zm%20when%3A2d&hl=en-ZM&gl=ZM&ceid=ZM:en",
