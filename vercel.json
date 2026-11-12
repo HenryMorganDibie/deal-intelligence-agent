@@ -14,6 +14,11 @@
       ],
       "includeFiles": "{src/**,docs/*.json,docs/backtest_predictions.csv,docs/automation/learned_ranker.json,evaluation/**/*.jsonl,evaluation/**/results*.json,evaluation/review/**}",
       "excludeFiles": "{web/**,evaluation/review/*/pool.jsonl}"
+    },
+    "api/visible_page.py": {
+      "maxDuration": 60,
+      "includeFiles": "src/visible_cdn.py",
+      "excludeFiles": "{web/**,evaluation/**,docs/**}"
     }
   },
   "rewrites": [
@@ -28,6 +33,10 @@
     {
       "source": "/api/cron/market-instruments",
       "destination": "/api/market_snapshot"
+    },
+    {
+      "source": "/api/internal/visible-page",
+      "destination": "/api/visible_page"
     },
     {
       "source": "/(.*)",

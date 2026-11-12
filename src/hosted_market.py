@@ -215,21 +215,25 @@ _RPC_PAGE_SIZE = 500
 _RPC_MAX_PAGES = 100  # Safety stop: at most 50,000 records per full refresh.
 
 
-def _load_rpc_pages(kind: str, since: str, visible: bool = False) -> list[dict]:
+def _load_rpc_pages(kind: str, since: str, visible: bool = False, version: Optional[str] = None) -> list[dict]:
     """Load complete history with bounded keyset pages and a fixed ID upper bound. `visible` leaves out merged
-    duplicates and excluded records in the database, so they are never downloaded."""
+    duplicates and excluded records in the database, so they are never downloaded. With a store `version`, visible
+    pages come through the CDN (src/visible_cdn.py)."""
+    from src import visible_cdn
     function = "list_visible_page" if visible else ("list_deals_page" if kind == "deals" else "list_events_page")
+    via_cdn = bool(visible and version and visible_cdn.base() and API_SECRET)
     rows: list[dict] = []
     after_id: str | None = None
     max_id: str | None = None
     for page in range(_RPC_MAX_PAGES):
-        response = _rpc_sync(function, {
+        args = {
             **({"p_kind": kind} if visible else {}),
             "p_since": since,
             "p_limit": _RPC_PAGE_SIZE,
             "p_after_id": after_id,
             "p_max_id": max_id,
-        })
+        }
+        response = visible_cdn.fetch(API_SECRET, kind, version, args) if via_cdn else _rpc_sync(function, args)
         if response.status_code != 200:
             log.error("loading %s page %s failed: status=%s body=%s",
                       kind, page, response.status_code, response.text[:300])
@@ -386,7 +390,16 @@ def _load_visible(kind: str) -> list[dict]:
         except (httpx.HTTPError, ValueError) as e:
             log.warning("store_version unavailable: %s", e)
             version = None
-        rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True)
+        from src import visible_cdn
+        rows = None
+        if (vkey := visible_cdn.version_key(version)) and visible_cdn.available() and API_SECRET:
+            try:
+                rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True, version=vkey)
+            except (httpx.HTTPError, ValueError, RuntimeError) as e:
+                visible_cdn.failed()
+                log.warning("visible %s through the CDN failed, reading the database for an hour: %s", kind, e)
+        if rows is None:
+            rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True)
         if version:
             _versions[key] = version
             _full_loaded_at[key] = time.monotonic()

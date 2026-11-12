@@ -235,3 +235,71 @@ def test_serving_instances_download_visible_rows_only_and_drop_rows_that_become_
     hm._cache["deals:visible"] = (ts - hm._TTL - 1, cached)
     assert [r["id"] for r in hm._load_visible("deals")] == ["a"]
     assert calls[-1][0] == "list_changed_rows"
+
+
+def test_cold_instances_read_visible_pages_through_the_cdn_and_fall_back_to_the_database(env, monkeypatch):
+    """With a store version, visible pages come from a signed, edge-cached URL served by its own function
+    (api/visible_page.py), which answers only its own signature; a CDN failure falls back to the database."""
+    import api.visible_page as vp
+    from src import visible_cdn
+
+    db_calls, cdn_params = [], []
+
+    class R:
+        status_code = 200
+
+        def __init__(self, payload):
+            self._p = payload
+            self.content = json.dumps(payload).encode()
+
+        def json(self):
+            return self._p
+
+        def raise_for_status(self):
+            return None
+
+    page = {"max_id": "b", "rows": [{"id": "a", "announced": "2026-11-10"}, {"id": "b", "announced": "2026-11-09"}]}
+
+    def fake_sync(fn, args, timeout=30):
+        db_calls.append(fn)
+        if fn == "store_version":
+            return R({"deals": {"changed": "2026-11-11T10:00:00Z", "count": 2}})
+        return R(page)
+
+    page_fn = TestClient(vp.app)
+
+    def fake_get(url, params=None, timeout=None, headers=None):
+        cdn_params.append(params)
+        r = page_fn.get(visible_cdn.PATH, params=params)          # a CDN miss: the page function answers
+        out = R(r.json() if r.status_code == 200 else None)
+        out.status_code = r.status_code
+        return out
+
+    def fake_post(url, headers=None, json=None, timeout=None):
+        assert url.endswith("/rpc/list_visible_page") and json["secret"] == "api-secret"
+        return R(page)
+
+    monkeypatch.setattr(hm, "_rpc_sync", fake_sync)
+    monkeypatch.setattr(visible_cdn.httpx, "get", fake_get)
+    monkeypatch.setattr(vp.httpx, "post", fake_post)
+    monkeypatch.setenv("DATA_CDN_URL", "https://api.example")
+    monkeypatch.setattr(hm, "API_SECRET", "api-secret")
+    hm._cache.pop("deals", None)
+    hm._cache.pop("deals:visible", None)
+    assert [r["id"] for r in hm._load_visible("deals")] == ["a", "b"]
+    assert "list_visible_page" not in db_calls                     # the database was not read by the instance
+    assert cdn_params[0]["v"] == "2-2026-11-11T10:00:00Z" and len(cdn_params[0]["k"]) == 40
+    r = page_fn.get(visible_cdn.PATH, params=cdn_params[0])
+    assert r.status_code == 200 and "s-maxage=86400" in r.headers["cache-control"]
+    assert page_fn.get(visible_cdn.PATH, params={**cdn_params[0], "v": "9-2030-01-01"}).status_code == 404
+
+    # The CDN is down: the rows still load, straight from the database.
+    def broken_get(*a, **k):
+        raise visible_cdn.httpx.ConnectError("down")
+    monkeypatch.setattr(visible_cdn.httpx, "get", broken_get)
+    hm._cache.pop("deals:visible", None)
+    db_calls.clear()
+    assert [r["id"] for r in hm._load_visible("deals")] == ["a", "b"]
+    assert "list_visible_page" in db_calls
+    assert not visible_cdn.available()                           # and the instance stops trying for an hour
+    monkeypatch.setattr(visible_cdn, "_failed_at", 0.0)
