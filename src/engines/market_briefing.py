@@ -19,6 +19,74 @@ IMPLAUSIBLE_DAY_MOVE = 0.5
 POSTABLE_DAY_MOVE = 0.3        # thinly traded secondary listings swing hard; posts use only moves within 30%
 TOP = 5
 
+# Elections investors watch for a change in policy, the currency and deal timing: (country, name, kind, day, currency,
+# exchange). INEC's revised timetable: presidential and National Assembly on 16 January 2027, governorship on 6 February.
+ELECTIONS = (("NG", "Nigeria", "general election", date(2027, 1, 16), "NGN", "ngx"),)
+ELECTION_LEAD_DAYS = 120       # the angle appears in the posts from four months before polling day
+ELECTION_AFTER_DAYS = 30       # and stays for a month after, while markets price the result
+
+
+def election(today: date) -> Optional[dict]:
+    """The election in its window around `today`, with a hook for the posts, or None."""
+    for code, name, kind, day, currency, exchange in ELECTIONS:
+        days = (day - today).days
+        if -ELECTION_AFTER_DAYS <= days <= ELECTION_LEAD_DAYS:
+            when = f"{day.day} {day.strftime('%B %Y')}"
+            hook = (f"{days} days to {name}'s {kind}" if days > 1 else
+                    f"{name}'s {kind} is tomorrow" if days == 1 else
+                    f"{name} votes today" if days == 0 else
+                    f"{-days} day{'s' if days < -1 else ''} after {name}'s {kind}")
+            countdown = (f"{days} days to go" if days > 1 else "polling day tomorrow" if days == 1 else
+                         "polling day" if days == 0 else f"{-days} day{'s' if days < -1 else ''} after the vote")
+            return {"country": code, "name": name, "kind": kind, "day": day, "days": days, "when": when,
+                    "currency": currency, "exchange": exchange, "hook": hook, "countdown": countdown}
+    return None
+
+
+def _against_usd(v: float) -> str:
+    """A currency's move against the dollar in words, so a rise is never read as the dollar rising."""
+    return "flat against the dollar" if abs(v) < 0.0005 else \
+        f"{'up' if v > 0 else 'down'} {pct(v, signed=False)} against the dollar"
+
+
+def _tenor(r: dict) -> str:
+    label = r.get("tenor_label") or f"{r.get('tenor_days')} days"
+    return label[:-5] + "-day" if label.endswith(" days") else label
+
+
+def _short_day(day: str) -> str:
+    try:
+        d = date.fromisoformat(str(day)[:10])
+        return f"{d.day} {d.strftime('%b')}"
+    except ValueError:
+        return str(day)
+
+
+def _election_figures(el: dict, overview: dict, instruments: dict, today: date) -> list[tuple[str, str]]:
+    """(label, value) pairs for the election country: its currency, exchange, latest bill yield and policy rate."""
+    out: list[tuple[str, str]] = []
+    fx = next((c for c in overview.get("currencies") or [] if c.get("currency") == el["currency"]), None)
+    if fx and fx.get("per_usd"):
+        ytd = f" ({_against_usd(fx['ytd_vs_usd'])} this year)" if fx.get("ytd_vs_usd") is not None else ""
+        out.append(("Naira" if el["currency"] == "NGN" else el["currency"], f"{fx['per_usd']:,.2f} per US${ytd}"))
+    ex = next((e for e in overview.get("exchanges") or [] if e.get("exchange") == el["exchange"]), None)
+    if ex and not ex.get("stale") and _fresh(ex.get("as_of"), today) and ex.get("ytd_local") is not None:
+        usd_part = f", {pct(ex['ytd_usd'])} in US$" if ex.get("ytd_usd") is not None else ""
+        out.append((el["exchange"].upper(), f"{pct(ex['ytd_local'])} this year{usd_part}"))
+    for b in instruments.get("tbills") or []:
+        if b.get("country") != el["country"] and b.get("country_name") != el["name"]:
+            continue
+        rows = [r for r in b.get("rows") or [] if _bill(r) is not None and r.get("auction_date")]
+        if rows:
+            latest = max(r["auction_date"] for r in rows)
+            r = min((r for r in rows if r["auction_date"] == latest), key=lambda r: r.get("tenor_days") or 0)
+            out.append((f"{_tenor(r)} T-bill", f"{_bill(r):.2f}% (auction {_short_day(latest)})"))
+    rate = next((r for r in instruments.get("policy_rates") or []
+                 if r.get("rate") is not None and (r.get("country") == el["country"] or r.get("country_name") == el["name"])), None)
+    if rate:
+        out.append(("Policy rate", f"{rate['rate']:g}%"))
+    return out
+
 
 def _country(code: Optional[str]) -> Optional[str]:
     c = ac.get(code) if code else None
@@ -201,6 +269,16 @@ def currency_post(overview: dict, day: Optional[date] = None) -> Optional[dict]:
         return None
     ranked = sorted(rows, key=lambda c: -c["ytd_vs_usd"])
     best, worst = ranked[0], ranked[-1]
+    el = election(day) if day else None
+    fx = el and next((c for c in rows if c["currency"] == el["currency"] and c.get("per_usd")), None)
+    if el and fx:
+        lead = (f"{el['hook']}: the {'naira' if el['currency'] == 'NGN' else fx['currency']} is at "
+                f"{fx['per_usd']:,.0f} per US$, {_against_usd(fx['ytd_vs_usd'])} this year.\n\n")
+        text = (lead + f"Strongest in Africa: {', '.join(c['currency'] + ' ' + pct(c['ytd_vs_usd']) for c in ranked[:3])}\n"
+                f"Weakest: {', '.join(c['currency'] + ' ' + pct(c['ytd_vs_usd']) for c in ranked[::-1][:3])}\n\n{page}")
+        if _x_len(text) > X_LIMIT:
+            text = lead + page
+        return {"kind": "Currencies", "deal_ids": [], "x": text, "linkedin": text}
     text = (f"African currencies against the US dollar this year:\n\n"
             f"Strongest: {', '.join(c['currency'] + ' ' + pct(c['ytd_vs_usd']) for c in ranked[:3])}\n"
             f"Weakest: {', '.join(c['currency'] + ' ' + pct(c['ytd_vs_usd']) for c in ranked[::-1][:3])}\n\n"
@@ -215,28 +293,62 @@ def tbill_post(recent: list[tuple[str, str, float, str]], day: Optional[date] = 
     page = f"{APP}/markets/treasury-bills/{day.isoformat()}" if day else f"{APP}/markets"
     if len(recent) < 2:
         return None
+    el = election(day) if day else None
+    if el:                                       # the election country's auction leads
+        recent = sorted(recent, key=lambda r: r[0] != el["name"])
+    head = (f"{el['hook']}. This week's Treasury bill auctions in Africa:" if el
+            else "This week's Treasury bill auctions in Africa:")
     lines = [f"{name}: {y:.2f}% ({tenor})" for name, tenor, y, _ in recent[:5]]
-    text = "This week's Treasury bill auctions in Africa:\n\n" + "\n".join(lines) + f"\n\n{page}"
+    text = head + "\n\n" + "\n".join(lines) + f"\n\n{page}"
     while _x_len(text) > X_LIMIT and len(lines) > 2:
         lines.pop()
-        text = "This week's Treasury bill auctions in Africa:\n\n" + "\n".join(lines) + f"\n\n{page}"
+        text = head + "\n\n" + "\n".join(lines) + f"\n\n{page}"
     return {"kind": "Treasury bills", "deal_ids": [], "x": text, "linkedin": text}
 
 
-def movers_post(gainers: list[dict], losers: list[dict], names: dict, day: Optional[date] = None) -> Optional[dict]:
+def movers_post(gainers: list[dict], losers: list[dict], names: dict, day: Optional[date] = None,
+                overview: Optional[dict] = None) -> Optional[dict]:
     page = f"{APP}/markets/movers/{day.isoformat()}" if day else f"{APP}/markets"
     gainers = [r for r in gainers if abs(r["chg_1d"]) <= POSTABLE_DAY_MOVE]
     losers = [r for r in losers if abs(r["chg_1d"]) <= POSTABLE_DAY_MOVE]
     if not gainers or not losers:
         return None
-    text = ("Biggest movers on African exchanges on the last trading day:\n\n"
+    el = election(day) if day else None
+    ex = el and next((e for e in (overview or {}).get("exchanges") or [] if e.get("exchange") == el["exchange"]
+                      and not e.get("stale") and _fresh(e.get("as_of"), day) and e.get("ytd_local") is not None), None)
+    lead = (f"{el['hook']}: the {el['exchange'].upper()} is {pct(ex['ytd_local'])} this year"
+            + (f" ({pct(ex['ytd_usd'])} in US$)" if ex.get("ytd_usd") is not None else "") + ".\n\n") if ex else ""
+    text = (lead + "Biggest movers on African exchanges on the last trading day:\n\n"
             + "\n".join(f"Up: {_share(r, names)} {pct(r['chg_1d'])}" for r in gainers[:2]) + "\n"
             + "\n".join(f"Down: {_share(r, names)} {pct(r['chg_1d'])}" for r in losers[:2])
             + f"\n\n{page}")
+    if _x_len(text) > X_LIMIT and lead:
+        text = (lead + f"Biggest movers in Africa: {_share(gainers[0], names)} {pct(gainers[0]['chg_1d'])}, "
+                f"{_share(losers[0], names)} {pct(losers[0]['chg_1d'])}. {page}")
     if _x_len(text) > X_LIMIT:
         text = (f"Biggest movers on African exchanges: {_share(gainers[0], names)} {pct(gainers[0]['chg_1d'])}, "
                 f"{_share(losers[0], names)} {pct(losers[0]['chg_1d'])}. {page}")
     return {"kind": "Stock movers", "deal_ids": [], "x": text if _x_len(text) <= X_LIMIT else None, "linkedin": text}
+
+
+def election_post(overview: dict, instruments: dict, day: date) -> Optional[dict]:
+    """The election country's money in one post: currency, exchange, bill yield and policy rate, counting down."""
+    el = election(day)
+    if not el:
+        return None
+    figures = _election_figures(el, overview, instruments, day)
+    if len(figures) < 2:
+        return None
+    page = f"{APP}/markets/election/{day.isoformat()}"
+    head = f"{el['name']} election watch, {el['countdown']} (polling day {el['when']}):"
+    lines = [f"{k}: {v}" for k, v in figures]
+    text = head + "\n\n" + "\n".join(lines) + f"\n\n{page}"
+    while _x_len(text) > X_LIMIT and len(lines) > 2:
+        lines.pop()
+        text = head + "\n\n" + "\n".join(lines) + f"\n\n{page}"
+    linkedin = (head + "\n\nWhat investors are watching:\n\n" + "\n".join(f"{k}: {v}" for k, v in figures)
+                + f"\n\nTracked daily on Deal Intelligence: {page}")
+    return {"kind": "Election watch", "deal_ids": [], "x": text if _x_len(text) <= X_LIMIT else None, "linkedin": linkedin}
 
 
 # ── The whole briefing ───────────────────────────────────────────────────────
@@ -262,7 +374,7 @@ def build(overview: Optional[dict], instruments: Optional[dict], events: list[di
         add("Most traded", most_traded_section(overview, names))
         add("Sectors", sectors_section(overview))
         add("Currencies", currencies_section(overview))
-        if (p := movers_post(gainers, losers, names, today)):
+        if (p := movers_post(gainers, losers, names, today, overview)):
             drafts.append(p)
         if (p := currency_post(overview, today)):
             drafts.append(p)
@@ -273,5 +385,10 @@ def build(overview: Optional[dict], instruments: Optional[dict], events: list[di
         add("ETFs", etf_section(instruments))
         if (p := tbill_post(recent, today)):
             drafts.append(p)
+    if (el := election(today)) and (figures := _election_figures(el, overview, instruments, today)):
+        sections.insert(0, {"title": f"Election watch: {el['hook']} ({el['when']})",
+                            "lines": [f"{k}: {v}" for k, v in figures], "note": None})
+        if (p := election_post(overview, instruments, today)):
+            drafts.insert(0, p)
     add("Company news (last 24 hours)", news_section(events, today))
     return {"sections": sections, "drafts": drafts}

@@ -44,7 +44,7 @@ export function dayLabel(day: string | undefined): string | null {
 }
 
 /** The card: brand and a topic pill on top, a title, the post's own body, and the page address at the foot. */
-export function Frame({ pill, title, body, foot }: { pill: string; title: string; body: ReactNode; foot: string }) {
+export function Frame({ pill, title, body, foot, kicker }: { pill: string; title: string; body: ReactNode; foot: string; kicker?: string }) {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: C.bg, color: C.text,
       fontFamily: "Body", padding: "50px 64px", backgroundImage: "radial-gradient(circle at 85% -10%, rgba(110,231,200,0.18), transparent 55%)" }}>
@@ -60,7 +60,10 @@ export function Frame({ pill, title, body, foot }: { pill: string; title: string
       </div>
       <div style={{ display: "flex", marginTop: 30, fontFamily: "Display", fontSize: 50, fontWeight: 600, letterSpacing: -1.5, lineHeight: 1.05 }}>{title}</div>
       <div style={{ display: "flex", flexDirection: "column", marginTop: 22, flexGrow: 1 }}>{body}</div>
-      <div style={{ display: "flex", fontSize: 20, color: C.faint }}>{foot}</div>
+      <div style={{ display: "flex", fontSize: 20, color: C.faint }}>
+        {kicker ? <div style={{ display: "flex", color: C.accent, marginRight: 14 }}>{kicker}</div> : null}
+        <div style={{ display: "flex" }}>{foot}</div>
+      </div>
     </div>
   );
 }

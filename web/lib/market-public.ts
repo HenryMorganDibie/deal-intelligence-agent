@@ -3,7 +3,7 @@ import { API_CONFIGURED, apiHeaders, apiUrl } from "./api-base";
 /** The public markets snapshot: the shapes /api/markets/overview and /api/markets/instruments return. */
 export type ExchangeTile = {
   exchange: string; name: string; country: string; mcap_usd: number | null; ytd_usd: number | null;
-  advancers: number | null; decliners: number | null; as_of: string | null; stale?: boolean;
+  advancers: number | null; decliners: number | null; as_of: string | null; stale?: boolean; ytd_local?: number | null;
 };
 export type SectorRow = { sector: string; shares: number; mcap_usd: number | null; ytd_usd: number | null; chg_1d: number | null };
 export type CurrencyRow = { currency: string; per_usd: number | null; ytd_vs_usd: number | null };

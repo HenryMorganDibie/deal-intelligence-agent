@@ -11,6 +11,7 @@ export function TopicPage({ topic, day, stats }: { topic: Topic; day: string | n
         <p className="eyebrow">{topic.pill}{day ? ` · ${day}` : ""}</p>
         <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">{topic.title}</h1>
         <p className="mt-4 text-[1rem] leading-relaxed text-[color:var(--muted)]">{topic.intro}</p>
+        {topic.kicker ? <p className="mt-4 text-sm font-medium text-verified">{topic.kicker}</p> : null}
         {stats?.length ? (
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {stats.map(([v, k]) => (

@@ -12,12 +12,12 @@ export const contentType = "image/png";
 export default async function Image({ params }: { params: { topic: string; day: string } }) {
   const topic = ((MARKET_TOPICS as readonly string[]).includes(params.topic) ? params.topic : "sectors") as MarketTopic;
   const [{ overview, instruments }, fonts] = await Promise.all([loadMarkets(2500), ogFonts()]);
-  const t = marketTopic(topic, overview, instruments);
+  const t = marketTopic(topic, overview, instruments, params.day);
   const day = dayLabel(params.day);
   const rows = t.rows.slice(0, topic === "movers" || topic === "currencies" ? 6 : 4);
   return new ImageResponse(
     (
-      <Frame pill={`${t.pill}${day ? ` · ${day}` : ""}`} title={t.title} foot={`${SITE}/markets`}
+      <Frame pill={`${t.pill}${day ? ` · ${day}` : ""}`} title={t.title} foot={`${SITE}/markets`} kicker={t.kicker}
         body={rows.length ? (
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between" }}>
             {rows.map((r) => (

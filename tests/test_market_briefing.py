@@ -68,7 +68,8 @@ def test_every_post_links_to_its_own_dated_page():
     res = cd.build([], TODAY, OV, None)
     market = next(d for d in res["drafts"] if d["kind"] == "Markets")
     assert market["x"].endswith("/markets/sectors/2026-11-11")
-    assert len(set(links.values()) | {market["x"].split()[-1]}) == 4
+    assert links["Election watch"].endswith("/markets/election/2026-11-11")
+    assert len(set(links.values()) | {market["x"].split()[-1]}) == 5
 
 
 def test_dated_deal_windows_carry_the_email_checks(monkeypatch):
@@ -85,3 +86,43 @@ def test_dated_deal_windows_carry_the_email_checks(monkeypatch):
     windowed = client.get("/api/deals?since=2026-11-09&until=2026-11-11", headers=h).json()["deals"][0]
     plain = client.get("/api/deals", headers=h).json()["deals"][0]
     assert "review_flags" in windowed and "review_flags" not in plain
+
+
+def _with_ngx():
+    ov = {**OV, "exchanges": OV["exchanges"] + [{"exchange": "ngx", "name": "Nigerian Exchange", "country": "NG",
+                                                "as_of": "2026-11-10", "ytd_local": 0.412, "ytd_usd": 0.51}]}
+    inst = {**INST, "tbills": [{**b, "country": "NG"} if b["country_name"] == "Nigeria" else b for b in INST["tbills"]]}
+    return ov, inst
+
+
+def test_election_countdown_window_and_wording():
+    assert mb.election(date(2026, 9, 1)) is None                     # more than four months out
+    assert mb.election(date(2026, 11, 12))["hook"] == "65 days to Nigeria's general election"
+    assert mb.election(date(2027, 1, 15))["hook"] == "Nigeria's general election is tomorrow"
+    assert mb.election(date(2027, 1, 16))["countdown"] == "polling day"
+    assert mb.election(date(2027, 1, 20))["hook"] == "4 days after Nigeria's general election"
+    assert mb.election(date(2027, 2, 20)) is None                    # a month after, the angle is gone
+
+
+def test_election_angle_in_posts_and_briefing():
+    ov, inst = _with_ngx()
+    b = mb.build(ov, inst, EVENTS, date(2026, 11, 10))
+    assert b["sections"][0]["title"].startswith("Election watch: 67 days to Nigeria's general election")
+    lines = " | ".join(b["sections"][0]["lines"])
+    assert "up 7.2% against the dollar" in lines and "NGX: +41.2% this year" in lines and "91-day T-bill: 16.01%" in lines
+    drafts = {d["kind"]: d for d in b["drafts"]}
+    assert b["drafts"][0]["kind"] == "Election watch"
+    assert "/markets/election/2026-11-10" in drafts["Election watch"]["x"]
+    assert "Policy rate: 23%" in drafts["Election watch"]["linkedin"]
+    assert drafts["Currencies"]["x"].startswith("67 days to Nigeria's general election: the naira is at 1,349 per US$")
+    assert drafts["Stock movers"]["x"].startswith("67 days to Nigeria's general election: the NGX is +41.2%")
+    assert drafts["Treasury bills"]["x"].splitlines()[2].startswith("Nigeria:")   # the election country leads
+    for d in b["drafts"]:
+        assert d["x"] is None or mb._x_len(d["x"]) <= mb.X_LIMIT
+
+
+def test_no_election_angle_outside_the_window():
+    ov, inst = _with_ngx()
+    b = mb.build(ov, inst, EVENTS, date(2026, 8, 1))
+    assert not any(s["title"].startswith("Election watch") for s in b["sections"])
+    assert all(d["kind"] != "Election watch" and "election" not in (d["x"] or "") for d in b["drafts"])
