@@ -584,3 +584,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "IPPM.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "IPS.JO"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-11", "market": "africa", "status": "no_annual_data_returned", "ticker": "IPWA.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "status": "no_annual_data_returned", "ticker": "IRAX.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "status": "no_annual_data_returned", "ticker": "IRON.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ISA.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ISB.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "status": "no_annual_data_returned", "ticker": "ISMA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "status": "no_annual_data_returned", "ticker": "ISMQ.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ISPH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ITE.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "status": "no_annual_data_returned", "ticker": "ITSY.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "status": "no_annual_data_returned", "ticker": "ITU.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "IVT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "status": "no_annual_data_returned", "ticker": "IVTP.JO"}

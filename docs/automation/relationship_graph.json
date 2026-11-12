@@ -1311,6 +1311,46 @@
     "walvis basin block": {
       "name": "Walvis Basin Block",
       "kind": "organization"
+    },
+    "asas energies": {
+      "name": "Asas Energies",
+      "kind": "organization"
+    },
+    "oryx gas tanzania": {
+      "name": "Oryx Gas Tanzania",
+      "kind": "organization"
+    },
+    "dbn": {
+      "name": "DBN",
+      "kind": "organization"
+    },
+    "expand non oil export capacity": {
+      "name": "Expand Non-oil Export Capacity",
+      "kind": "organization"
+    },
+    "private investment gets a boost afdb": {
+      "name": "Private Investment Gets a Boost: AfDB",
+      "kind": "organization"
+    },
+    "reforms": {
+      "name": "Reforms",
+      "kind": "organization"
+    },
+    "wafa assurance": {
+      "name": "Wafa Assurance",
+      "kind": "organization"
+    },
+    "marocaine vie": {
+      "name": "Marocaine Vie",
+      "kind": "organization"
+    },
+    "nssa": {
+      "name": "NSSA",
+      "kind": "organization"
+    },
+    "dairibord": {
+      "name": "Dairibord",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -2190,6 +2230,11 @@
           "title": "BII provides $7m debt facility to Okra Solar for Nigerian mesh-grid expansion",
           "publisher": "Head Topics",
           "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPTk1ZckFrcHN6TDhudnpZZEppLVduOVRxYXpGWlc0TUFObnpMeUFDV1gtWGZROXF0SHlaUWlLLUNQZ1hwNGNuVlNjT1FsZ1ZXcUZiZGJvb1hRaWpoSWplZ3RwdS1rLUpIVUw4LTRjWnUwWUNUNXpOUHR2OUpQRU9kb3N3bHVqcnFtV1JzVEV2MTJOQ1FkNXlBNUFR?oc=5"
+        },
+        {
+          "title": "Okra Solar Secures USD 7 M Debt Facility From BII For Nigeria Expansion",
+          "publisher": "WeeTracker",
+          "url": "https://weetracker.com/2026/11/10/okra-solar-secures-7-million-debt-facility-bii/"
         }
       ]
     },
@@ -4134,6 +4179,11 @@
           "title": "Proparco Invests €600,000 in Sudanese Fintech Cashi to Expand Digital Payments",
           "publisher": "TechAfrica News",
           "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPdjJUR09IVmRxTnpJdHU3WEwyb013Uy1uZUtlY0hzUHVUT1ktdFpTOS13am51MHhnVmtmM0I1N2dLUWkyOVNvbTc2eVhQNURiNzVFbW43VmdzYlF5V0VvQWRyZFpvVWNWT3hfMzExOEc0YW8wRjU1U1B6NENyT0xTR3hSRTE1eHVpQkFJbTl5eTBZZE01MVEycXFNX1dKVE9CMDN3OVM1bWVIVlNs?oc=5"
+        },
+        {
+          "title": "Proparco Backs Sudan Fintech Cashi With €600,000 Deal",
+          "publisher": "Serrari Group",
+          "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOdFczdEo3XzNkUkNoZnpNSFBub24yTlRmQS11amYtYmZ2SmkxdTdSWDBhQ3pMUXZ3Zl9VcjFtSEhOUW13LVpsb25hSjRWRkw5a3ZJbmhkN2t4NWxMcmQwbWljUlJVbGNlc0lyaGVxYXRmcDcwVkdyaWl2cHYyT3RLcmVUOA?oc=5"
         }
       ]
     },
@@ -4345,6 +4395,16 @@
           "title": "Raenest Acquires UK Payments Company Remitise to Strengthen Global Expansion",
           "publisher": "Techpoint Africa",
           "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNMy02Mi1fRENBLVN1YkJtLVl6dFhBRmZzZlNfRkxaTG9CWkc1YVMxVHIzb2tnMXdVX1FKVDJDWVBiMmJHbkdTdEpleTNJWlhza2JmSmZMMHhEWEJtVkMyMWZ4TU01OFVpNEV6UTdGR1hKWllMcE1kUUhyekFndFRuNzVURC1GOFlJbUE?oc=5"
+        },
+        {
+          "title": "Nigerian Fintech Raenest Acquires UK Payments Company Remitise To Expand Globally",
+          "publisher": "WeeTracker",
+          "url": "https://weetracker.com/2026/11/10/raenest-acquires-uk-payments-company-remitise/"
+        },
+        {
+          "title": "Nigerian fintech Raenest acquires Remitise",
+          "publisher": "Connecting Africa",
+          "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxOU3IwbVdYaDZaS2hMTmVlcWNrNzdabzNvYzZtQTNEOU1fV2VNSGVwR2lGNVRKLUJRNm1aQm00cjhTbUhaVnBEcDZOam1NOWpZU3Ayd1BDb3ZLQ01vUjlGVXdHYk9WQi1tbVROUmZVdktqUVkxLW0zblJ0M29HUmtnWjU1aDVpVGJSTHpB?oc=5"
         }
       ]
     },
@@ -4431,7 +4491,91 @@
           "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNdHgwWVM2UFZybjNVOVRzbWVMVTUxeGNkSXQtZzQ3eUxSR0VWalBLc2QtX2FsOHlneHVPaEx5dkxuVkpfVVhFcjdyd1BXYmY1Yng3eVpfcWtPTTVBZnRiU1QzVGFMWE44UkxMVU5xUDVJVC1Ea2NtQ1VnOFhDSVg4UG4yN05Yc2FhSmJpQmJtRmpFdzZnWmtCRzhtYw?oc=5"
         }
       ]
+    },
+    "0bf42def9b2960bcedf6": {
+      "id": "0bf42def9b2960bcedf6",
+      "from": "asas energies",
+      "to": "oryx gas tanzania",
+      "type": "acquisition",
+      "first_seen": "2026-11-12",
+      "sources": [
+        {
+          "title": "Asas Energies moves to acquire 100pc stake in Oryx Gas Tanzania",
+          "publisher": "thecitizen.co.tz",
+          "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNTW4xbm9KS3FXemtHS2Nod0U1WmFaS1c4dDYtalVQT3Vod29POWQzNS04LUxNeWlzUVc5ZDVHMmFyQVFCRzZUektRc0gtbDduWmtiUkt2bWZHdVhZMmJiQmNkb3M4QUV0cGwzLWxCamNBZ0ZtRHQzWXN6U0JIS29ZaVAxWHVYNmRRbUNXSkoxdW9JOE1zaDdDcHRzXzRMUjBQUmhqWGNYMVVZeHZYc1hGU01LVVFHR2tiSFZ0emVMUkc?oc=5"
+        }
+      ]
+    },
+    "f6b450cb983f73633db6": {
+      "id": "f6b450cb983f73633db6",
+      "from": "afreximbank",
+      "to": "dbn",
+      "type": "debt_financing",
+      "first_seen": "2026-11-11",
+      "sources": [
+        {
+          "title": "Afreximbank commits $75 million finance facility to DBN SMEs funding",
+          "publisher": "Peoples Gazette Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPeTVZR0s4Z21kQzNVZ2xfOUpzRHdVSEVDY0lxTTZFMGlVOENyQnhXRk9STDZsNmlGMWc4dXUwZmh3RDJ0SXdWeTQxeDJoYm1BWUZ2YWYtRjNaRzVrQlVHM0J3RDZuNnlwbFRxTHBGVDdMdUFVeDZBSUdTZl8wMTByZUNCbUI5c25TdlV6OS1oNk9RNjFnZWc?oc=5"
+        }
+      ]
+    },
+    "bd593642bf739df75158": {
+      "id": "bd593642bf739df75158",
+      "from": "afreximbank",
+      "to": "expand non oil export capacity",
+      "type": "debt_financing",
+      "first_seen": "2026-11-11",
+      "sources": [
+        {
+          "title": "Afreximbank Approves $30m NEXIM Facility to Expand Non-oil Export Capacity for MSMEs",
+          "publisher": "THISDAYLIVE",
+          "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOV1hGS2otQThWak5ZbXhPWF9sTUM4VG8zSjRIQi1lT28wd21pUDEwQmJTV0RDazdrenFrU3RHUjctT2t5MGhEb1Z4dEJnR0dSUTdzb3lpZ1pUVFB4Q1ZyTmV1bkZWdmNVY0dLN1NsRG4ybW02bHBfMWtRZHhiSFNTd0tNamF5dGtpb2xvZFVfeloyZ09Pb2dDSHR5b0FzSGxjcWtlNEhCSEhSUDNid3VnNGpjNUR0X25zNGlWVVU0b0w?oc=5"
+        }
+      ]
+    },
+    "4f0f7f14c41cb56651d8": {
+      "id": "4f0f7f14c41cb56651d8",
+      "from": "private investment gets a boost afdb",
+      "to": "reforms",
+      "type": "equity_funding",
+      "first_seen": "2026-11-12",
+      "sources": [
+        {
+          "title": "Private Investment Gets a Boost: AfDB Backs South Africa's Infrastructure Reforms",
+          "publisher": "Devdiscourse",
+          "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxOYzR6ejRfd3Y4QXp4WmpzNFJYaDJqZ2VIZU93WEdwLXpJLU5tcl80ODExOVplNno5bUxQQkxHT09XNnljREpLVm8tdHhDQlRDVUROWHZjM0hSNEdOUTREZHNKUmFwYmdCaW1TMy1EajRyLVBsb01mYy1PTTY0Slp1Vk9PbTlYb0RVbURxeHpBN2lzWDdZUzB5bmhnSTl6ZTZyWk8xY0htUXZ2XzBYV0xoY2hLMnJsM1dRTmpJUXdkWDV4LTJUMUVoMHY0UzROd9IB0wFBVV95cUxPVy0wSjZ5Ml9xcnA0MmJNT1llNDQzUGR2cGI5bXpxdkxwdnpVN2stNUlHMVlEZ1dXd0R2Z0V1UXdJWFJicTFPc0NEZmNKc3p0c1NyTW9aUlpCeUVqa1JYTjJCMFJJVTlJbjE2enR3SkQ2LVZ6a1hRVjdEOEZCT2FOVGlSU3dXNFFDTnJRc3o2Ukh6cUxmblpSRnkzb2JLSGVyYjdZblJPenRPcVJ0QkNtUTNid2ZFdlZRb1FVOVdMOTQxc2lQZVVvWkNtbUY2MGlidVdr?oc=5"
+        }
+      ]
+    },
+    "fab0c82bc58fe9e50cbf": {
+      "id": "fab0c82bc58fe9e50cbf",
+      "from": "wafa assurance",
+      "to": "marocaine vie",
+      "type": "exit",
+      "first_seen": "2026-11-12",
+      "sources": [
+        {
+          "title": "Moulay Hafid Elalamy cède La Marocaine Vie à Wafa Assurance",
+          "publisher": "Medias24",
+          "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQX3hNeFlLZGtyeW9fRUdTMnNNeE5WVHBmdnFXTnZYQTJfUkdnSnU0S2FXQ1RCMlJxYjhDREVEQXZrZGpwZE5CTTRUOFFXRmVNbkRZS204Y1FYcXZfdWExeWVvS1pGQjY0N2xaLUlmMTh4TUl0alpoRnpuV1Brakh1a3hCSlg0akRIOTFyc1JVZ1R0enhBa2lnbWhOZkFwZ19tTVE?oc=5"
+        }
+      ]
+    },
+    "e0d8020f5d5f642b45fd": {
+      "id": "e0d8020f5d5f642b45fd",
+      "from": "nssa",
+      "to": "dairibord",
+      "type": "acquisition",
+      "first_seen": "2026-11-12",
+      "sources": [
+        {
+          "title": "Zimbabwe’s NSSA acquires 8.5% stake in Dairibord",
+          "publisher": "Food Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOZU9ZSmxJMVNoVzdnNXRKUWZxUXMyZ3BMU2ViNk5yc0ZmcEwyRklnbVBPS1BDVmhNN1k3eXpza0NLUWxBNW92c0xWYnRvVW96TFN6VVQ2V0RxX29LM0Q5dkNGOHlCTGtRX0k4N0VvWG5RS2ZUVm5zLVJjQW1hamd4R3Rqd09lQQ?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-11T21:32:08.366933+00:00"
+  "updated_at": "2026-11-12T13:20:18.703436+00:00"
 }
