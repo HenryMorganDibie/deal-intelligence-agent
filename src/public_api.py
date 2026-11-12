@@ -24,6 +24,8 @@ from fastapi import APIRouter, FastAPI, HTTPException, Query, Request, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
+from pydantic import BaseModel, Field
+
 from src import hosted_market as hm
 
 log = logging.getLogger("deal_intel.public_api")
@@ -150,7 +152,8 @@ async def index() -> JSONResponse:
                                  "countries", "countries/{code}", "markets/overview", "markets/screener",
                                  "markets/search", "markets/quote", "elections/news", "elections/summary",
                                  "elections/incidents", "elections/areas", "elections/polling-units",
-                                 "elections/polling-units/{code}")]},
+                                 "elections/polling-units/{code}", "elections/results", "elections/results/sheets",
+                                 "elections/accreditation")]},
                         headers={"Cache-Control": "public, max-age=3600"})
 
 
@@ -303,6 +306,112 @@ async def election_polling_unit(code: str, request: Request, response: Response)
 
     async def run():
         return await run_in_threadpool(polling_units.unit, code)
+    return await _call(run)
+
+
+# ── Results and accreditation (Institutional plan) ───────────────────────────
+
+class SheetSubmission(BaseModel):
+    election: str = Field("presidential-2027", max_length=40)
+    pu_code: str = Field(..., max_length=20)
+    image_base64: Optional[str] = Field(None, max_length=4_300_000)
+    content_type: Optional[str] = Field(None, max_length=30)
+    image_url: Optional[str] = Field(None, max_length=1000)
+
+
+class SheetReview(BaseModel):
+    status: Literal["verified", "rejected", "needs_review"]
+    corrections: Optional[dict] = None
+
+
+async def _institutional(request: Request, response: Response) -> dict:
+    status = await authorize(request, response)
+    if status.get("plan") != "institutional":
+        raise PublicApiError(403, "plan_required", "Results and accreditation are part of the Institutional plan.")
+    return status
+
+
+@router.post("/elections/results/sheets")
+async def submit_result_sheet(body: SheetSubmission, request: Request, response: Response) -> dict:
+    """Submit a polling-unit result sheet (Form EC8A) as a base64 image or an https link. It is read, checked
+    against arithmetic, the words beside the figures and INEC's polling-unit list, and stored as provisional (every
+    check passed) or needs_review."""
+    import base64
+    import binascii
+    from src import election_results
+    await _institutional(request, response)
+    upload = None
+    if body.image_base64:
+        try:
+            upload = base64.b64decode(body.image_base64.split(",")[-1], validate=True)
+        except (binascii.Error, ValueError):
+            raise PublicApiError(400, "bad_request", "image_base64 is not valid base64.")
+    who = (presented_key(request) or "")[:16]
+
+    async def run():
+        return await run_in_threadpool(election_results.submit, body.election, body.pu_code, upload,
+                                       body.content_type, body.image_url, None) | {"submitted_with": who}
+    return await _call(run)
+
+
+@router.get("/elections/results/sheets")
+async def list_result_sheets(request: Request, response: Response, election: str = Query("presidential-2027", max_length=40),
+                             state: Optional[str] = Query(None, max_length=40), lga: Optional[str] = Query(None, max_length=3),
+                             ward: Optional[str] = Query(None, max_length=3),
+                             status: Optional[Literal["needs_review", "provisional", "verified", "rejected"]] = None,
+                             limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=200_000)) -> dict:
+    """Submitted sheets, newest first; status=needs_review is the review queue."""
+    from src import election_results
+    await _institutional(request, response)
+
+    async def run():
+        return await run_in_threadpool(election_results.sheets, election, state, lga, ward, status, limit, offset)
+    return await _call(run)
+
+
+@router.post("/elections/results/sheets/{sheet_id}/review")
+async def review_result_sheet(sheet_id: str, body: SheetReview, request: Request, response: Response) -> dict:
+    """A person's decision on a sheet: verified, rejected or back to needs_review, with any corrections
+    ({"figures": {"valid": 412}, "votes": {"APC": 210}}). A corrected sheet must pass the checks to be verified."""
+    from src import election_results
+    await _institutional(request, response)
+    if not re.fullmatch(r"[0-9a-f-]{36}", sheet_id):
+        raise PublicApiError(400, "bad_request", "That is not a sheet id.")
+
+    async def run():
+        return await run_in_threadpool(election_results.review, sheet_id, body.status, body.corrections, None)
+    return await _call(run)
+
+
+@router.get("/elections/results")
+async def election_results_totals(request: Request, response: Response, election: str = Query("presidential-2027", max_length=40),
+                                  state: Optional[str] = Query(None, max_length=40), lga: Optional[str] = Query(None, max_length=3),
+                                  ward: Optional[str] = Query(None, max_length=3), verified_only: bool = False) -> dict:
+    """Votes by party for the country, a state, an LGA or a ward, broken down one level below, one sheet per polling
+    unit (verified first, else the latest provisional), with coverage and turnout."""
+    from src import election_results
+    await _institutional(request, response)
+
+    async def run():
+        return await run_in_threadpool(election_results.totals, election, state, lga, ward, verified_only)
+    return await _call(run)
+
+
+@router.get("/elections/accreditation")
+async def election_accreditation(request: Request, response: Response, election: str = Query("presidential-2027", max_length=40),
+                                 state: Optional[str] = Query(None, max_length=40), lga: Optional[str] = Query(None, max_length=3),
+                                 ward: Optional[str] = Query(None, max_length=3), verified_only: bool = False) -> dict:
+    """Registered and accredited voters, turnout and sheet coverage, from the result sheets received."""
+    from src import election_results
+    await _institutional(request, response)
+
+    async def run():
+        t = await run_in_threadpool(election_results.totals, election, state, lga, ward, verified_only)
+        keep = ("code", "name", "polling_units", "sheets", "verified", "registered", "accredited", "votes_cast",
+                "turnout", "coverage")
+        return {k: t[k] for k in ("election", "scope", "counted", "breakdown", "polling_units", "sheets", "verified",
+                                  "registered", "accredited", "votes_cast", "turnout", "coverage")} | {
+            "groups": [{k: g.get(k) for k in keep} for g in t.get("groups", [])]}
     return await _call(run)
 
 
