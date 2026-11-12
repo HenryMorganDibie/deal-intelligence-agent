@@ -1,0 +1,37 @@
+name: Polling units
+
+# Loads INEC's polling-unit delimitation (scripts/data/polling_units_*.csv.gz) into the database. Run by hand
+# after the data file changes; a repeat run writes nothing.
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: "Data file"
+        required: true
+        default: scripts/data/polling_units_2025-09-27.csv.gz
+
+permissions:
+  contents: read
+
+concurrency:
+  group: polling-units
+  cancel-in-progress: false
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: https://ygvpormskihofvgntldo.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_oEqYxYLm60MdGk5JA-QfgQ_6z7uSozn
+      DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install --disable-pip-version-check httpx
+      - name: Load polling units
+        env:
+          DATA_FILE: ${{ inputs.file }}
+        run: python scripts/load_polling_units.py "$DATA_FILE"

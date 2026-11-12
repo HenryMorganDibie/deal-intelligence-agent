@@ -148,7 +148,8 @@ async def index() -> JSONResponse:
                              f"GET /v1/{p}" for p in (
                                  "usage", "deals", "deals/{id}", "events", "investors", "investors/{name}",
                                  "countries", "countries/{code}", "markets/overview", "markets/screener",
-                                 "markets/search", "markets/quote", "elections/news", "elections/summary")]},
+                                 "markets/search", "markets/quote", "elections/news", "elections/summary",
+                                 "elections/areas", "elections/polling-units", "elections/polling-units/{code}")]},
                         headers={"Cache-Control": "public, max-age=3600"})
 
 
@@ -246,6 +247,45 @@ async def election_summary(request: Request, response: Response, days: int = Que
 
     async def run():
         return await run_in_threadpool(election_feed.summary, days)
+    return await _call(run)
+
+
+@router.get("/elections/areas")
+async def election_areas(request: Request, response: Response, state: Optional[str] = Query(None, max_length=40),
+                         lga: Optional[str] = Query(None, max_length=3)) -> dict:
+    """INEC's delimitation one level at a time: the states; a state's LGAs; an LGA's wards, with polling-unit counts."""
+    from src import polling_units
+    await authorize(request, response)
+
+    async def run():
+        rows = await run_in_threadpool(polling_units.areas, state, lga)
+        level = "wards" if lga else "lgas" if state else "states"
+        return {"level": level, "count": len(rows), level: rows}
+    return await _call(run)
+
+
+@router.get("/elections/polling-units")
+async def election_polling_units(request: Request, response: Response, state: Optional[str] = Query(None, max_length=40),
+                                 lga: Optional[str] = Query(None, max_length=3), ward: Optional[str] = Query(None, max_length=3),
+                                 q: str = Query("", max_length=80), limit: int = Query(100, ge=1, le=500),
+                                 offset: int = Query(0, ge=0, le=200_000)) -> dict:
+    """Polling units in a ward (state, lga and ward codes), or matching a name (q), optionally within a state."""
+    from src import polling_units
+    await authorize(request, response)
+
+    async def run():
+        return await run_in_threadpool(polling_units.units, state, lga, ward, q, limit, offset)
+    return await _call(run)
+
+
+@router.get("/elections/polling-units/{code:path}")
+async def election_polling_unit(code: str, request: Request, response: Response) -> dict:
+    """One polling unit by INEC code, SS/LL/WW/UUU (slashes or hyphens)."""
+    from src import polling_units
+    await authorize(request, response)
+
+    async def run():
+        return await run_in_threadpool(polling_units.unit, code)
     return await _call(run)
 
 
