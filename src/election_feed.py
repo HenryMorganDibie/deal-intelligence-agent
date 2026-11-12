@@ -84,7 +84,9 @@ def crawl_config(output_path: str, limit: int = 150, today: Optional[date] = Non
     _cache.pop(since, None)
     return {
         "user_agent": en.USER_AGENT, "robots_agent": "web-harvester",
-        "concurrency": 2, "max_retries": 1, "request_timeout": "25s",
+        # A slow site must not hold up the hourly run: a page that does not answer in 15 seconds is marked
+        # unreadable (its headline tags stand) rather than retried.
+        "concurrency": 2, "max_retries": 0, "request_timeout": "15s",
         "rate_per_host_rps": 0.5, "rate_burst": 1, "adaptive_rate": True,   # one page every two seconds per site
         "sink_backend": "jsonl", "output_path": output_path, "report_interval": "30s",
         "targets": en.crawl_targets(_load(since), limit),

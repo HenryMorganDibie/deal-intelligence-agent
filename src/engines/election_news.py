@@ -63,6 +63,9 @@ ARTICLE_SELECTORS: dict[str, str] = {
     "Vanguard": ".section-content-single p",
     "INEC News": ".entry-content p",
 }
+# Sites whose robots.txt asks for a long pause between pages (Vanguard: 30 seconds) get fewer pages per hourly run,
+# so they cannot crowd out the rest; the backlog is read over the following hours.
+SLOW_OUTLETS: dict[str, int] = {"Vanguard": 10}
 _BOILERPLATE = re.compile(r"(?i)subscribe to our|e-editions?|read also|click here|follow us on|"
                           r"^\s*\w+ \d{1,2}, 20\d\d\s*$|^\s*\d{1,2} \w+ 20\d\d\s*$")
 
@@ -80,16 +83,17 @@ def canonical_url(url: str) -> str:
     return (base.rstrip("/") + ("?" + kept if kept else "")).lower()
 
 
-def crawl_targets(stories: list[dict], limit: int = 150) -> list[dict]:
+def crawl_targets(stories: list[dict], limit: int = 150, per_outlet: int = 25) -> list[dict]:
     """web-harvester crawl targets for reports whose full article has not been read yet: one target per outlet,
-    only the article pages themselves (depth 0), newest stories first."""
+    only the article pages themselves (depth 0), newest stories first, at most `per_outlet` pages per site."""
     urls: dict[str, list[str]] = {}
     n = 0
     for story in sorted(stories, key=lambda s: s.get("day") or "", reverse=True):
         for r in story.get("reports") or []:
             if n >= limit:
                 break
-            if r.get("words") is None and r.get("outlet") in ARTICLE_SELECTORS and "news.google.com" not in r["url"]:
+            if r.get("words") is None and r.get("outlet") in ARTICLE_SELECTORS and "news.google.com" not in r["url"] \
+                    and len(urls.get(r["outlet"], [])) < SLOW_OUTLETS.get(r["outlet"], per_outlet):
                 urls.setdefault(r["outlet"], []).append(r["url"])
                 n += 1
     return [{"name": outlet, "start_urls": links, "max_depth": 0, "max_pages": len(links),
