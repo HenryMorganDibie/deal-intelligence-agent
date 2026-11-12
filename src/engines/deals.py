@@ -715,6 +715,9 @@ def reclassify(deal: dict) -> Optional[dict]:
     if deal.get("sector") == "oil_gas" and re.search(r"(?i)\bnon[- ]oil\b", headline) \
             and classify_sector(headline) != "oil_gas":
         parties_fix["sector"] = classify_sector(headline)
+    if (fix := facility_not_fund(deal)):
+        parties_fix.update(fix)
+        deal = {**deal, **fix}
     change = _reclassify_type(deal, headline)
     return {**parties_fix, **(change or {})} if (parties_fix or change) else None
 
@@ -988,7 +991,34 @@ def strip_approval_tail(name):
 # A group of beneficiaries is not a company: "to extend loans to MSMEs", "to Support Local Businesses and SMEs".
 _SME_WORDS = re.compile(r"(?i)\b(?:m?smes?|msmes?|small\s+businesses)\b")
 _BENEFICIARY_TARGET = re.compile(r"(?i)\b(?:m?smes?|msmes?|small\s+businesses)\b|^(?:support|boost)\b|"
-                                 r"^(?:non-oil\s+|agricultural\s+|manufactured\s+)?exports?$|^exporters?$")
+                                 r"^(?:non-oil\s+|agricultural\s+|manufactured\s+)?exports?$|"
+                                 r"^(?:[a-z]+\s+){0,2}(?:exporters?|importers?|traders|farmers|women\s+entrepreneurs)$")
+
+
+def is_beneficiary(target: Optional[str]) -> bool:
+    """A target that names who a facility is for ("Nigerian Exporters", "SMEs"), not the company that borrows."""
+    return bool(target) and bool(_BENEFICIARY_TARGET.search(str(target).strip()))
+
+
+# "commits $75 million finance facility to DBN SMEs funding": a facility, not a commitment to a fund, when nothing in
+# the headline speaks of a fund closing. The borrower is the named entity before the purpose words.
+_FACILITY_WORDS_IN_TITLE = re.compile(r"(?i)\b(?:facility|facilities|loan|credit\s+line|line\s+of\s+credit)\b")
+_PURPOSE_TAIL = re.compile(r"(?i)(?:\s+(?:m?smes?|msmes?|fund|funds|funding|financing|programme|program|scheme|"
+                           r"lending|on-?lending))+$")
+
+
+def facility_not_fund(deal: dict) -> Optional[dict]:
+    """The correction for a lending facility stored as a fund close, or None."""
+    headline = deal.get("headline") or ""
+    if deal.get("deal_type") != "fund_raise" or not _FACILITY_WORDS_IN_TITLE.search(headline) \
+            or _FUND_WORDS.search(headline):
+        return None
+    target = _PURPOSE_TAIL.sub("", str(deal.get("target") or "")).strip() or None
+    lender = deal.get("buyer") or next(iter(deal.get("investors") or []), None)
+    if not target or not lender:
+        return None
+    return {"deal_type": "debt_financing", "target": target, "buyer": lender,
+            "investors": list(dict.fromkeys([lender, *(deal.get("investors") or [])]))}
 _GRANTED_TO = re.compile(r"\b(?i:grants?|extends?|lends?|gives?|awards?)\s+(?P<name>[A-Z][\w&'’.-]*(?:\s+[A-Z][\w&'’.-]*){0,3})"
                          r"\s+(?:a\s+)?(?:[$€£₦]|US\$|USD|EUR)")
 _SUPPORTED_COMPANY = re.compile(r"(?i)^(?:support|boost)\s+(?P<name>.+\b(?:company|bank|corporation|plc|limited|ltd))\b")
@@ -1605,6 +1635,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
             deal["investors"] = [deal["buyer"]] if deal["buyer"] else []
     if deal["deal_type"] in ("acquisition", "merger") and deal.get("buyer"):
         deal["buyer"] = strip_approval_tail(deal["buyer"]) or None
+    if (fix := facility_not_fund(deal)):
+        deal.update(fix)
     if deal["deal_type"] in ("equity_funding", "debt_financing") and (fix := beneficiary_target_fix(deal)) \
             and "target" in fix:
         deal["target"] = fix["target"]
@@ -2468,6 +2500,11 @@ def strong_same_report(a: dict, b: dict) -> bool:
             return False
     else:
         return False
+    if ta == tb == "debt_financing" and gap <= 7 and (is_beneficiary(a.get("target")) or is_beneficiary(b.get("target"))):
+        ua1, ub1 = a.get("amount_usd"), b.get("amount_usd")
+        if ua1 and ub1 and max(ua1, ub1) / min(ua1, ub1) <= 1.02 and not _junk_party(a.get("buyer")) \
+                and not _junk_party(b.get("buyer")) and _party_match(a.get("buyer"), b.get("buyer")):
+            return True                  # "Afreximbank backs Nigerian Exporters with $30m" = its $30m NEXIM facility
     ca, cb = _report_core(a.get("target")), _report_core(b.get("target"))
     alias = abbreviates(a.get("target"), b.get("target")) or abbreviates(b.get("target"), a.get("target"))
     if not alias and (not ca or not cb or not (ca <= cb or cb <= ca) or not _distinctive(ca & cb)):

@@ -89,3 +89,27 @@ def test_a_foreign_deal_by_a_known_african_company_stays():
     out = hm._reclassify_stored({x["id"]: x for x in (yellow_card_round, gomoney, turkiye)}, {})
     assert "b" not in out or not out["b"].get("excluded")
     assert out["c"]["excluded"].startswith("reclassified: no African")
+
+
+def test_a_facility_is_not_a_fund_close_and_the_borrower_is_named():
+    r = d.extract_deal("Afreximbank commits $75 million finance facility to DBN SMEs funding", published="2026-11-11")
+    assert (r["deal_type"], r["target"], r["buyer"]) == ("debt_financing", "DBN", "Afreximbank")
+    fund = {"id": "z", "target": "Helios Fund V", "deal_type": "fund_raise", "investors": ["IFC"],
+            "headline": "Helios closes Fund V at $750m with IFC facility", "announced": "2026-11-11"}
+    assert d.reclassify(fund) is None
+
+
+def test_who_a_facility_is_for_does_not_make_a_second_deal():
+    a = {"id": "2c5b", "target": "Nigerian Exporters", "deal_type": "debt_financing", "buyer": "Afreximbank",
+         "investors": ["Afreximbank"], "amount_usd": 30e6, "announced": "2026-11-11", "country": "NG", "countries": ["NG"],
+         "headline": "Afreximbank Backs Nigerian Exporters with $30m Facility to Deepen AfCFTA Trade", "sources": [{"url": "a"}]}
+    b = {"id": "8b7b", "target": "NEXIM", "deal_type": "debt_financing", "buyer": "Afreximbank", "investors": ["Afreximbank"],
+         "amount_usd": 30e6, "announced": "2026-11-07", "country": "NG", "countries": ["NG"],
+         "headline": "NEXIM secures $30m Afreximbank facility to boost SME exports", "sources": [{"url": "b"}, {"url": "c"}]}
+    assert d.is_beneficiary("Nigerian Exporters") and not d.is_beneficiary("NEXIM")
+    out: dict = {}
+    hm._merge_stored_duplicates([a, b], out)
+    assert out["2c5b"]["merged_into"] == "8b7b" and out["8b7b"]["target"] == "NEXIM"
+    # A different lender or a different figure stays a separate deal.
+    assert not d.strong_same_report({**a, "buyer": "AfDB", "investors": ["AfDB"]}, b)
+    assert not d.strong_same_report({**a, "amount_usd": 45e6}, b)

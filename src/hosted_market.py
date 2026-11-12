@@ -2177,6 +2177,8 @@ def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
                     merged["target"] = drop.get("target")
                 elif deals_mod.abbreviates(merged.get("target"), drop.get("target")):
                     merged["target"] = drop.get("target")        # the full name over its abbreviation
+                elif deals_mod.is_beneficiary(merged.get("target")) and not deals_mod.is_beneficiary(drop.get("target")):
+                    merged["target"] = drop.get("target")        # the borrower over who the facility is for
                 if keep.get("deal_type") == drop.get("deal_type") == "fund_raise":
                     merged.update(_fund_house_name(merged.get("target"), drop.get("target")))
                 out[keep["id"]] = merged
