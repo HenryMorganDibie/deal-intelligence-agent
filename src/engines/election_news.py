@@ -21,7 +21,8 @@ USER_AGENT = "Mozilla/5.0 (compatible; web-harvester/0.1; +https://github.com/He
 
 # (outlet, feed). Checked against each site's robots.txt; outlets answering 403 to an honest crawler are omitted.
 SOURCES: tuple[tuple[str, str], ...] = (
-    ("Premium Times", "https://www.premiumtimesng.com/category/news/politics/feed"),
+    ("Premium Times", "https://www.premiumtimesng.com/category/news/headlines/feed"),   # its politics feed is stale
+    ("Premium Times", "https://www.premiumtimesng.com/category/news/top-news/feed"),
     ("Punch", "https://rss.punchng.com/v1/category/latest_news"),
     ("Vanguard", "https://www.vanguardngr.com/category/politics/feed/"),
     ("Daily Trust", "https://dailytrust.com/topics/politics/feed/"),
