@@ -37,8 +37,6 @@ Hosted API routes for market data (mounted by api/index.py):
 """
 from __future__ import annotations
 
-import hashlib
-import hmac
 import ipaddress
 import json
 import logging
@@ -217,80 +215,21 @@ _RPC_PAGE_SIZE = 500
 _RPC_MAX_PAGES = 100  # Safety stop: at most 50,000 records per full refresh.
 
 
-# ── Visible pages through Vercel's CDN ──
-# A cold API instance used to download every visible row from the database: about 90 full loads a day, most of
-# Supabase egress. The same pages are now fetched through this API's own CDN, under a URL that names the store
-# version and carries a signature only the API can make. The CDN keeps each version's pages, so the database is
-# read once per change of data (a handful a day), not once per cold instance. Any failure falls back to the
-# database directly.
-_CDN_PAGE_PATH = "/api/internal/visible-page"
-
-
-def _cdn_base() -> str:
-    explicit = os.environ.get("DATA_CDN_URL", "").strip().rstrip("/")
-    if explicit:
-        return explicit
-    host = os.environ.get("VERCEL_PROJECT_PRODUCTION_URL", "").strip()
-    return f"https://{host}" if host and os.environ.get("VERCEL_ENV") == "production" else ""
-
-
-def _version_key(version: Optional[dict]) -> Optional[str]:
-    if not isinstance(version, dict) or version.get("changed") is None:
-        return None
-    return f"{version.get('count')}-{version.get('changed')}"
-
-
-def _page_signature(kind: str, v: str, since: str, limit: int, after: Optional[str], max_id: Optional[str]) -> str:
-    msg = "|".join([kind, v, since, str(limit), after or "", max_id or ""]).encode()
-    return hmac.new(API_SECRET.encode(), msg, hashlib.sha256).hexdigest()[:40]
-
-
-def _cdn_page(kind: str, v: str, args: dict) -> httpx.Response:
-    params = {"kind": kind, "v": v, "since": args["p_since"], "limit": args["p_limit"]}
-    if args.get("p_after_id"):
-        params["after"] = args["p_after_id"]
-    if args.get("p_max_id"):
-        params["max_id"] = args["p_max_id"]
-    params["k"] = _page_signature(kind, v, params["since"], params["limit"], params.get("after"), params.get("max_id"))
-    return httpx.get(f"{_cdn_base()}{_CDN_PAGE_PATH}", params=params, timeout=30,
-                     headers={"x-deal-intel-client": API_SECRET})
-
-
-@router.get(_CDN_PAGE_PATH, include_in_schema=False)
-def internal_visible_page(kind: str, v: str, since: str, limit: int, k: str,
-                          after: Optional[str] = None, max_id: Optional[str] = None) -> Response:
-    """One page of visible rows for a given store version, cacheable at the edge for a day (the version in the URL
-    changes whenever the data does). Only a URL signed by the API itself is answered."""
-    if not API_SECRET or not hmac.compare_digest(k, _page_signature(kind, v, since, limit, after, max_id)):
-        raise HTTPException(404, "Not found.")
-    if kind not in ("deals", "events") or not 1 <= limit <= 1000:
-        raise HTTPException(400, "Bad page request.")
-    r = _rpc_sync("list_visible_page", {"p_kind": kind, "p_since": since, "p_limit": limit,
-                                        "p_after_id": after, "p_max_id": max_id})
-    if r.status_code != 200:
-        raise HTTPException(502, "Data store unavailable.")
-    return Response(r.content, media_type="application/json",
-                    headers={"Cache-Control": "public, max-age=0, s-maxage=86400"})
-
-
-def _load_rpc_pages(kind: str, since: str, visible: bool = False, version: Optional[str] = None) -> list[dict]:
+def _load_rpc_pages(kind: str, since: str, visible: bool = False) -> list[dict]:
     """Load complete history with bounded keyset pages and a fixed ID upper bound. `visible` leaves out merged
-    duplicates and excluded records in the database, so they are never downloaded. With a store `version`, visible
-    pages come through the CDN (see _cdn_page)."""
+    duplicates and excluded records in the database, so they are never downloaded."""
     function = "list_visible_page" if visible else ("list_deals_page" if kind == "deals" else "list_events_page")
-    via_cdn = bool(visible and version and _cdn_base() and API_SECRET)
     rows: list[dict] = []
     after_id: str | None = None
     max_id: str | None = None
     for page in range(_RPC_MAX_PAGES):
-        args = {
+        response = _rpc_sync(function, {
             **({"p_kind": kind} if visible else {}),
             "p_since": since,
             "p_limit": _RPC_PAGE_SIZE,
             "p_after_id": after_id,
             "p_max_id": max_id,
-        }
-        response = _cdn_page(kind, version, args) if via_cdn else _rpc_sync(function, args)
+        })
         if response.status_code != 200:
             log.error("loading %s page %s failed: status=%s body=%s",
                       kind, page, response.status_code, response.text[:300])
@@ -447,14 +386,7 @@ def _load_visible(kind: str) -> list[dict]:
         except (httpx.HTTPError, ValueError) as e:
             log.warning("store_version unavailable: %s", e)
             version = None
-        rows = None
-        if (vkey := _version_key(version)) and _cdn_base():
-            try:
-                rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True, version=vkey)
-            except (httpx.HTTPError, ValueError, RuntimeError) as e:
-                log.warning("visible %s through the CDN failed, reading the database: %s", kind, e)
-        if rows is None:
-            rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True)
+        rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True)
         if version:
             _versions[key] = version
             _full_loaded_at[key] = time.monotonic()
