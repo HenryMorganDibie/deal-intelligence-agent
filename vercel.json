@@ -18,7 +18,7 @@
     "api/visible_page.py": {
       "maxDuration": 60,
       "includeFiles": "src/visible_cdn.py",
-      "excludeFiles": "{web/**,evaluation/**,docs/**}"
+      "excludeFiles": "{web/**,evaluation/review/*/pool.jsonl}"
     }
   },
   "rewrites": [
