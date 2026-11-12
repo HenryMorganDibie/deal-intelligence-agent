@@ -117,3 +117,24 @@ def test_collection_job_writes_only_changed_stories_and_the_api_serves_them(monk
 @pytest.mark.parametrize("acr", ["APC", "ADC", "NDC", "PDP", "SDP", "PRP", "YPP", "ZLP", "AAC", "APM", "ADP", "NDP"])
 def test_every_distinct_party_acronym_is_recognised(acr):
     assert acr in en.tag(f"{acr} unveils campaign council")["parties"]
+
+
+def test_sitting_president_alone_needs_election_wording():
+    assert not en.relevant("Tinubu skips COP31 summit for third consecutive year")
+    assert not en.relevant("Senate Committee Warns NMDPRA Nominees Against Frustrating Tinubu's Reforms")
+    assert en.relevant("2027: Tinubu has no competitor in South-South — Akpabio")
+    assert en.relevant("Tinubu building political power, not national unity – Makinde")   # a challenger named
+
+
+def test_outlets_that_refuse_crawlers_are_read_from_google_news_and_counted_once():
+    sources = dict((o, u) for o, u in en.all_sources() if "news.google.com" in u)
+    assert set(sources) == {"TheCable", "Guardian", "Channels"}
+    assert "site:thecable.ng" in sources["TheCable"]
+    items = [{"outlet": "TheCable", "url": "https://news.google.com/a", "date": "2026-11-12",
+              "title": "Shettima asks Ondo voters to deliver 1.2m votes for Tinubu in 2027"},
+             {"outlet": "TheCable", "url": "https://news.google.com/b", "date": "2026-11-12",
+              "title": "Shettima asks Ondo residents to deliver 1.2m votes for Tinubu in 2027"},
+             {"outlet": "Vanguard", "url": "https://vanguard.example/c", "date": "2026-11-12",
+              "title": "Shettima asks Ondo voters to deliver 1.2m votes for Tinubu"}]
+    stories, _ = en.merge([], items)
+    assert len(stories) == 1 and [r["outlet"] for r in stories[0]["reports"]] == ["TheCable", "Vanguard"]

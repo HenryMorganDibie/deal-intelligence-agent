@@ -42,14 +42,15 @@ def _load(since: str) -> list[dict]:
 def _fetch_sources() -> tuple[list[tuple[str, str]], dict[str, str]]:
     texts, status = [], {}
     with httpx.Client(headers={"User-Agent": en.USER_AGENT}, timeout=25, follow_redirects=True) as client:
-        for outlet, url in en.SOURCES:
+        for outlet, url in en.all_sources():
+            label = f"{outlet} (Google News)" if "news.google.com" in url else outlet
             try:
                 resp = client.get(url)
-                status[outlet] = str(resp.status_code)
+                status[label] = str(resp.status_code)
                 if resp.status_code == 200:
                     texts.append((outlet, resp.text))
             except httpx.HTTPError as e:
-                status[outlet] = type(e).__name__
+                status[label] = type(e).__name__
     return texts, status
 
 
@@ -100,7 +101,7 @@ def search(candidate: Optional[str] = None, party: Optional[str] = None, state: 
             and _matches(s, "topics", topic) and _matches(s, "races", race)
             and (not q or q.lower() in (s.get("title", "") + " " + s.get("snippet", "")).lower())]
     return {"since": since, "total": len(rows), "offset": offset, "stories": rows[offset:offset + limit],
-            "sources": [o for o, _ in en.SOURCES]}
+            "sources": sorted({o for o, _ in en.all_sources()})}
 
 
 def summary(days: int = 7) -> dict:

@@ -19,7 +19,7 @@ from src.engines.market_feed import parse_feed
 
 USER_AGENT = "Mozilla/5.0 (compatible; web-harvester/0.1; +https://github.com/HenryMorganDibie/web-harvester)"
 
-# (outlet, feed). Checked against each site's robots.txt; outlets answering 403 to an honest crawler are omitted.
+# (outlet, feed). Publishers' own feeds, checked against each site's robots.txt.
 SOURCES: tuple[tuple[str, str], ...] = (
     ("Premium Times", "https://www.premiumtimesng.com/category/news/headlines/feed"),   # its politics feed is stale
     ("Premium Times", "https://www.premiumtimesng.com/category/news/top-news/feed"),
@@ -30,7 +30,25 @@ SOURCES: tuple[tuple[str, str], ...] = (
     ("ThisDay", "https://www.thisdaylive.com/category/politics/feed/"),
     ("Leadership", "https://leadership.ng/category/politics/feed/"),
     ("INEC News", "https://inecnews.com/feed/"),
+    ("Channels", "https://www.channelstv.com/feed/"),
 )
+
+# Outlets whose sites refuse automated readers (TheCable, Guardian) are read from Google News's public feed of
+# their headlines instead: nothing is fetched from their servers, and their protection is never worked around.
+# Channels' own feed carries ten items; Google News carries the rest of its coverage.
+GOOGLE_NEWS_SITES: tuple[tuple[str, str], ...] = (
+    ("TheCable", "thecable.ng"),
+    ("Guardian", "guardian.ng"),
+    ("Channels", "channelstv.com"),
+)
+
+
+def google_news_feed(site: str, days: int = 2) -> str:
+    return f"https://news.google.com/rss/search?q=site:{site}+when:{days}d&hl=en-NG&gl=NG&ceid=NG:en"
+
+
+def all_sources() -> list[tuple[str, str]]:
+    return [*SOURCES, *((outlet, google_news_feed(site)) for outlet, site in GOOGLE_NEWS_SITES)]
 
 # ── Relevance ────────────────────────────────────────────────────────────────
 
@@ -127,7 +145,14 @@ def _candidates_in(text: str) -> list[str]:
     return found
 
 
+_INCUMBENTS = frozenset({"Bola Tinubu", "Kashim Shettima"})
 _DATELINE = re.compile(r"^\s*[A-Z][A-Za-z.\s]{1,30}?\s*(?:[—–-]|:)\s*")
+
+
+def _named_parties(text: str) -> set[str]:
+    """Parties the text names itself, not those implied by a candidate."""
+    named = {acr for acr, p in _PARTY_NAMES if p.search(text)} | {acr for acr, p in _PARTY_ACRONYMS if p.search(text)}
+    return named | ({"LP"} if _LABOUR.search(text) else set())
 
 
 def tag(title: str, snippet: str = "") -> dict:
@@ -136,9 +161,7 @@ def tag(title: str, snippet: str = "") -> dict:
     snippet = _DATELINE.sub("", snippet or "", count=1)
     text = f"{title}. {snippet}"
     candidates = _candidates_in(text)
-    parties = {acr for acr, p in _PARTY_NAMES if p.search(text)} | {acr for acr, p in _PARTY_ACRONYMS if p.search(text)}
-    if _LABOUR.search(text):
-        parties.add("LP")
+    parties = _named_parties(text)
     tickets = {c: acr for acr, _, c, m in ng.TICKETS for c in (c, m)}
     parties |= {tickets[c] for c in candidates}             # naming a candidate names their party
     return {
@@ -156,7 +179,9 @@ def relevant(title: str, snippet: str = "") -> bool:
     if _ELECTION_WORDS.search(title):
         return True
     head = tag(title)
-    if head["candidates"] or head["parties"]:
+    # The sitting president and vice president are in the news daily for governing; on their own they need
+    # election wording, like anyone else's government business.
+    if _named_parties(title) or set(head["candidates"]) - _INCUMBENTS:
         return True
     t = tag(title, snippet)
     return bool(t["candidates"] or t["parties"]) and bool(_ELECTION_WORDS.search(snippet or ""))
@@ -211,6 +236,9 @@ def merge(stories: list[dict], items: Iterable[dict]) -> tuple[list[dict], set[s
         if not item.get("url") or not item.get("date") or item["url"] in by_url:
             continue
         match = next((s for s in stories if same_story(s, item)), None)
+        if match and any(r["outlet"] == item["outlet"] and same_story(r, item) for r in match["reports"]):
+            by_url[item["url"]] = match          # the same outlet's story again: another feed, or an edited headline
+            continue
         if match:
             match["reports"].append({"outlet": item["outlet"], "url": item["url"], "title": item["title"],
                                      "date": item["date"]})
