@@ -202,3 +202,50 @@ def test_ingest_reclassification_merges_a_retyped_record_into_its_twin_and_spare
     out = hm._reclassify_stored(stored, {})
     assert set(out) == {"b"}
     assert out["b"]["deal_type"] == "debt_financing" and out["b"]["merged_into"] == "a"
+
+
+# Stories that read like deals but are not company transactions (seen on the Deals page, November 2026), and real
+# deals that resemble them and must stay.
+import pytest as _pytest  # noqa: E402
+
+from src.engines import deals as _deals  # noqa: E402
+
+_NOT_DEALS = [
+    ("ipo", "Petrol", "Petrol price relief on the cards for December, but diesel motorists face a different story"),
+    ("acquisition", "Properties", "Emefiele Used Associates To Acquire Properties In Lagos, Delta, Ogun, Abuja – EFCC Investigator"),
+    ("debt_financing", "Tinubu Govt", "Tinubu Govt Secures Fresh $500m Loan From World Bank"),
+    ("equity_funding", "Baba Danpullo", "Cameroon's richest man Baba Danpullo gets $239 million MTN freeze restored by top court"),
+    ("acquisition", "Chagos Islands", "Trump's Chagos Islands Acquisition Plan Could Bypass Britain Through Separate Mauritius Deal"),
+    ("acquisition", "Land Corridor", "Uganda SGR Electrification Project: UETCL Acquires Land Corridor for Dedicated Power Line"),
+    ("debt_financing", "Italy", "Ethiopia, Italy Sign €70 Million Loan Agreement to Advance Economic Reforms"),
+    ("debt_financing", "Abia State", "Nigeria: African Development Bank approves $115m loan to Abia State for road rehabilitation"),
+    ("equity_funding", "Taraba State", "EBID backs Taraba State with $268m investment to drive industrial growth"),
+    ("equity_funding", "Ogun State", "Hayat Kimya invests $100 million diaper and tissue factory in Ogun State"),
+    ("acquisition", "Property", "2025 Guide: How Diasporas and Foreigners Can Legally Buy Property in Ethiopia"),
+]
+_REAL_DEALS = [
+    ("acquisition", "ARM Cement", "ARM Cement's Tanzania Unit Acquired by Chinese Firm as Court Approves Devki's Acquisition of Kenya Business"),
+    ("equity_funding", "Orca Fraud", "Orca Fraud raises $2.35m seed round led by Norrsken22"),
+    ("debt_financing", "ADD Properties", "EBRD arranges US$ 265 million loan for ADD Properties in Egypt"),
+    ("equity_funding", "Balwin Properties", "IFC Invests ZAR 1 Billion in Balwin Properties to Support Quality Housing in South Africa"),
+    ("equity_funding", "Land’Or Maroc", "MPEF IV investit 30 millions de dirhams dans Land’Or Maroc pour soutenir son site de Kénitra"),
+    ("ipo", "ZEN Petroleum", "ZEN Petroleum lists on the Ghana Stock Exchange following its oversubscribed IPO"),
+    ("debt_financing", "Lobito Corridor", "U.S. Backs Lobito Corridor With USD 553 Mn Loan To Revive Angola’s Benguela Railway"),
+    ("exit", "EPL", "Asian sells EPL for N$220m … he is being probed for fraud in Singapore"),
+]
+
+
+@_pytest.mark.parametrize("deal_type,target,headline", _NOT_DEALS)
+def test_price_court_public_finance_and_asset_stories_are_not_deals(deal_type, target, headline):
+    assert _deals.not_a_deal(headline, target, deal_type)
+
+
+@_pytest.mark.parametrize("deal_type,target,headline", _REAL_DEALS)
+def test_real_deals_that_resemble_them_stay(deal_type, target, headline):
+    assert _deals.not_a_deal(headline, target, deal_type) is None
+
+
+def test_praise_and_capacity_are_cleaned_from_a_project_target():
+    fix = _deals.reclassify({"id": "x", "deal_type": "debt_financing", "target": "Landmark 300MW Aysha Wind Farm",
+                             "headline": "AfDB Backs Ethiopia’s Landmark 300MW Aysha Wind Farm with $110M"})
+    assert fix == {"target": "Aysha Wind Farm"}

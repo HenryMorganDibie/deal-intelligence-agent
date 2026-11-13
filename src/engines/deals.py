@@ -22,6 +22,7 @@ from datetime import date
 from pathlib import Path
 from typing import Callable, Iterable, Optional
 
+from src.data import elections_ng_2027 as ng_elections
 from src.data.africa_countries import COUNTRIES, countries_in_text, get as get_country
 from src.utils.paths import DATA_DIR
 from src.utils.storage import load_json, save_json
@@ -550,10 +551,54 @@ _EQUIPMENT_MODEL = re.compile(r"\b(?:" + "|".join(sorted(_EQUIPMENT_MAKERS)) + r
 _FLEET_WORDS = re.compile(r"(?i)\b(?:fleet|aircraft|plane|jet|helicopter|vessel|ship|trucks?|locomotives?|buses)\b")
 
 
+# A government, a state or a country as the "target": public finance ("Tinubu Govt secures $500m loan from World
+# Bank", "AfDB approves $115m loan to Abia State", "Ethiopia, Italy sign €70 million loan"), or a company's spending
+# placed where it happens ("Hayat Kimya invests $100 million in factory in Ogun State"). Funds named after a
+# government ("Government Employees Pension Fund") are investors, not targets, and are left alone.
+_GOVERNMENT_TARGET = re.compile(
+    r"(?i)\b(?:govt|government|federal\s+government|fg|presidency|ministry|state\s+government)\b"
+    r"(?!\s+(?:employees|pension|securities|bonds?))")
+_STATE_TARGET = re.compile(r"^(?:" + "|".join(re.escape(s) for s in ng_elections.STATES if s != "FCT") + r")\s+State$")
+_WORLD_COUNTRIES = {"italy", "france", "germany", "spain", "portugal", "united kingdom", "uk", "britain", "united states",
+                    "usa", "us", "china", "japan", "india", "turkey", "saudi arabia", "uae", "united arab emirates",
+                    "qatar", "russia", "brazil", "canada", "netherlands", "belgium", "korea", "south korea", "israel"}
+
+# Headlines that read like a transaction but report something else.
+_NOT_TRANSACTION_HEADLINE = (
+    # law enforcement and asset freezes ("Emefiele used associates to acquire properties – EFCC investigator",
+    # "Danpullo gets $239 million MTN freeze restored by top court"); a court approving a deal is still a deal
+    ("a court case or an investigation, not a transaction",
+     re.compile(r"(?i)\b(?:EFCC|ICPC|investigators?|prosecut\w*|arraign\w*|charged\s+with|allegedly|"
+                r"(?:asset|account|share)?\s*freeze\s+(?:restored|lifted|order)|freeze\s+restored|forfeit\w*)\b")),
+    # prices ("Petrol price relief on the cards for December")
+    ("a price story, not a transaction",
+     re.compile(r"(?i)\b(?:petrol|diesel|fuel|pump|gas|bread|food|electricity|tariff)\s+prices?\b|"
+                r"\bprices?\s+(?:relief|hikes?|increases?|cuts?|rise|rises|fall|falls|drop|drops)\b")),
+    # guides and explainers ("2025 Guide: How Diasporas and Foreigners Can Legally Buy Property in Ethiopia")
+    ("a guide or explainer, not a transaction",
+     re.compile(r"(?i)^(?:\d{4}\s+)?guide\s*:|\bhow\s+(?:to|you\s+can|\w+\s+can)\s+(?:legally\s+)?(?:buy|invest|apply)\b|"
+                r"\bexplainer\b|\bstep[- ]by[- ]step\b")),
+)
+# Assets and places taken for the company ("Properties", "Land Corridor", "Chagos Islands", "Petrol").
+_ASSET_OR_PLACE_TARGET = re.compile(
+    r"(?i)^(?:petrol|diesel|fuel|crude|oil|gold|electricity|power|property|properties|real\s+estate|houses?|homes?|"
+    r"plots?|buildings?|cars?|vehicles?|shares?|stakes?|assets?|(?:compulsory\s+)?land(?:s|\s+\w+)?)$"
+    r"|\b(?:islands?|territory|archipelago)$")
+
+
 def not_a_deal(headline: str, target: Optional[str], deal_type: Optional[str] = None) -> Optional[str]:
     """Why a headline the deal patterns matched is not a company transaction, or None."""
     if _ROUNDUP.search(headline or ""):
         return "market roundup, not a transaction"
+    for reason, pattern in _NOT_TRANSACTION_HEADLINE:
+        if pattern.search(headline or ""):
+            return reason
+    t = (target or "").strip()
+    if t and (_GOVERNMENT_TARGET.search(t) or _STATE_TARGET.match(t) or t.lower() in _WORLD_COUNTRIES
+              or t.lower() in {c.name.lower() for c in COUNTRIES}):
+        return "the target is a government, a state or a country: public finance or spending, not a company deal"
+    if t and _ASSET_OR_PLACE_TARGET.search(t):
+        return "the target is an asset or a place, not a company"
     if deal_type in ("acquisition", "merger") and _EQUIPMENT_MODEL.search(headline or "") \
             and (not target or target.split()[0].lower() in _EQUIPMENT_MAKERS or _FLEET_WORDS.search(headline or "")):
         return "an equipment or aircraft purchase, not a company acquisition"
@@ -661,6 +706,10 @@ def reclassify(deal: dict) -> Optional[dict]:
         if cleaned != deal["target"]:
             parties_fix["target"] = cleaned
             deal = {**deal, "target": cleaned}
+    if isinstance(deal.get("target"), str) and _PRAISE_PREFIX.match(deal["target"]) \
+            and _PROJECT_NAME.search(_PRAISE_PREFIX.sub("", deal["target"])):
+        parties_fix["target"] = _PRAISE_PREFIX.sub("", deal["target"])     # "Landmark 300MW Aysha Wind Farm"
+        deal = {**deal, "target": parties_fix["target"]}
     if isinstance(deal.get("target"), str) and _CONTROL_OF.match(deal["target"]):
         parties_fix["target"] = _CONTROL_OF.sub("", deal["target"])          # "Full Control of De Beers"
         deal = {**deal, "target": parties_fix["target"]}
@@ -1129,6 +1178,11 @@ def _not_a_party(name: Optional[str]) -> bool:
     return bool(_PROSE_PARTY.search(n) or _AMOUNT_AS_NAME.match(n) or re.fullmatch(r"[\d.,]+\s*%", n))   # "85%"
 
 
+# Headline praise and capacity in front of a project's name: "Landmark 300MW Aysha Wind Farm" -> "Aysha Wind Farm".
+_PRAISE_PREFIX = re.compile(r"^(?:(?:Landmark|Flagship|Historic|Record|Mega|Major|Massive)\s+)+(?:\d[\d.,]*\s?(?:MWp?|GW|MW)\s+)?")
+_PROJECT_NAME = re.compile(r"^[A-Z][\w'’-]*(?:\s+[\w'’-]+)*\s+(?:Wind\s+Farm|Solar\s+(?:Farm|Plant|Park|Project)|"
+                           r"(?:Power|Hydro(?:power)?|Gas)\s+(?:Plant|Project|Station)|Plant|Project|Port|Dam|Refinery|"
+                           r"Terminal|Corridor\s+Project)$")
 _CONTROL_OF = re.compile(r"(?i)^(?:full\s+|majority\s+|minority\s+|controlling\s+)?(?:control|stake|ownership)\s+(?:of|in)\s+(?=[A-Z])")
 
 
