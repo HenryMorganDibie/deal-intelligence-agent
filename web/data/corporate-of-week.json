@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-12T23:39:57.664151+00:00",
+  "updated_at": "2026-11-13T08:48:04.774562+00:00",
   "current": {
     "company": "Alternative Bank",
     "company_url": "/app/companies?name=Alternative%20Bank",
@@ -10,7 +10,7 @@
     "country": "NG",
     "sector": "banking",
     "announced": "2026-11-11",
-    "score": 53.45,
+    "score": 52.02,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
@@ -30,9 +30,9 @@
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-11-05",
-    "period_end": "2026-11-11",
-    "selected_at": "2026-11-12T23:39:57.662463+00:00",
+    "period_start": "2026-11-06",
+    "period_end": "2026-11-12",
+    "selected_at": "2026-11-13T08:48:04.773301+00:00",
     "selection_version": 5,
     "companies": [
       {
@@ -44,7 +44,7 @@
         "country": "NG",
         "sector": "banking",
         "announced": "2026-11-11",
-        "score": 53.45,
+        "score": 52.02,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +64,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-11",
-        "selected_at": "2026-11-12T23:39:57.662463+00:00",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-12",
+        "selected_at": "2026-11-13T08:48:04.773301+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +78,7 @@
         "country": "BW",
         "sector": null,
         "announced": "2026-11-09",
-        "score": 56.89,
+        "score": 55.46,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +98,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-11",
-        "selected_at": "2026-11-12T23:39:57.662463+00:00",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-12",
+        "selected_at": "2026-11-13T08:48:04.773301+00:00",
         "selection_version": 5
       },
       {
@@ -112,7 +112,7 @@
         "country": "NG",
         "sector": "energy",
         "announced": "2026-11-09",
-        "score": 54.34,
+        "score": 52.91,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-11",
-        "selected_at": "2026-11-12T23:39:57.662463+00:00",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-12",
+        "selected_at": "2026-11-13T08:48:04.773301+00:00",
         "selection_version": 5
       }
     ],
@@ -3987,6 +3987,145 @@
           "period_start": "2026-11-05",
           "period_end": "2026-11-11",
           "selected_at": "2026-11-12T23:39:57.662463+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": []
+    },
+    {
+      "company": "Alternative Bank",
+      "company_url": "/app/companies?name=Alternative%20Bank",
+      "headline": "Sterling HoldCo Subsidiary, Alternative Bank appoints Gul Khan as MD/CEO",
+      "deal_type": "leadership_change",
+      "amount_usd": null,
+      "country": "NG",
+      "sector": "banking",
+      "announced": "2026-11-11",
+      "score": 52.02,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: leadership change",
+        "Event rule confidence: 0.75",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Nairametrics",
+          "title": "Sterling HoldCo Subsidiary, Alternative Bank appoints Gul Khan as MD/CEO",
+          "url": "https://nairametrics.com/2026/11/11/sterling-holdco-subsidiary-alt-bank-appoints-gul-khan-as-md-ceo/",
+          "date": "2026-11-11",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-06",
+      "period_end": "2026-11-12",
+      "selected_at": "2026-11-13T08:48:04.773301+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "Alternative Bank",
+          "company_url": "/app/companies?name=Alternative%20Bank",
+          "headline": "Sterling HoldCo Subsidiary, Alternative Bank appoints Gul Khan as MD/CEO",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "banking",
+          "announced": "2026-11-11",
+          "score": 52.02,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "Sterling HoldCo Subsidiary, Alternative Bank appoints Gul Khan as MD/CEO",
+              "url": "https://nairametrics.com/2026/11/11/sterling-holdco-subsidiary-alt-bank-appoints-gul-khan-as-md-ceo/",
+              "date": "2026-11-11",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-06",
+          "period_end": "2026-11-12",
+          "selected_at": "2026-11-13T08:48:04.773301+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "De Beers",
+          "company_url": "/app/companies?name=De%20Beers",
+          "headline": "Botswana to double De Beers holding under Anglo stake sale, president says",
+          "deal_type": "insider_activity",
+          "amount_usd": null,
+          "country": "BW",
+          "sector": null,
+          "announced": "2026-11-09",
+          "score": 55.46,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.85",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Reuters",
+              "title": "Botswana to double De Beers holding under Anglo stake sale, president says",
+              "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNLTZmUHRjbG0yQ3FkNGc2aTNDUG8wSXhIVkQtWDVNNlZtTEoxMmNfc2RUQjVJbGZSd2lrclMxaTBtc2ZJeXJwQ1cwa0tkOTlmZGtteFplbjZDbGdsY1F6SXBFc3luNWlJSUhpR1NnYmVualItRU5HQ3ZKWENNYzRqZnVESnVXc2ZXX3YtV3V4aHlqZmQ5S2ltWkIwbjFQbHowSlkxZWYyZ2tLZFRacXc?oc=5",
+              "date": "2026-11-09",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-06",
+          "period_end": "2026-11-12",
+          "selected_at": "2026-11-13T08:48:04.773301+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Solad Power Group",
+          "company_url": "/app/companies?name=Solad%20Power%20Group",
+          "headline": "Yewande Olagbende Joins Solad Power Group Board of Directors",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "energy",
+          "announced": "2026-11-09",
+          "score": 52.91,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "ThisDay Nigeria",
+              "title": "Yewande Olagbende Joins Solad Power Group Board of Directors",
+              "url": "https://www.thisdaylive.com/2026/11/10/yewande-olagbende-joins-solad-power-group-board-of-directors/",
+              "date": "2026-11-09",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-06",
+          "period_end": "2026-11-12",
+          "selected_at": "2026-11-13T08:48:04.773301+00:00",
           "selection_version": 5
         }
       ],
