@@ -30,6 +30,15 @@ function writeSaved(rows: Saved[]) {
   }
 }
 
+// How many election alerts each plan can have running at once (messages are not capped). Mirrors ALLOWANCE in
+// src/election_alerts.py.
+const ELECTION_ALERT_PLANS: [string, string, number, string][] = [
+  ["free", "Free", 0, "See the feature; alerts start with Pro"],
+  ["pro", "Pro", 2, "Incident alerts, hourly, filtered by place, severity and type"],
+  ["team", "Team", 5, "Pro, plus alerts on all election coverage and a start with the last 7 days"],
+  ["institutional", "Institutional", 25, "Team, plus results and accreditation"],
+];
+
 export default function WatchlistsPage() {
   const plan = usePlan();
   // Free accounts keep a few alerts; the label appears once they are all in use.
@@ -216,7 +225,7 @@ export default function WatchlistsPage() {
       <section className="panel mt-12 p-5 sm:p-6" aria-labelledby="election-alerts-title">
         <div className="flex flex-wrap items-center gap-2">
           <h2 id="election-alerts-title" className="h3">Nigeria 2027 election alerts</h2>
-          <span className="rounded-full border hairline px-2.5 py-0.5 text-[0.75rem] text-[color:var(--muted)]">Institutional</span>
+          <span className="rounded-full border hairline px-2.5 py-0.5 text-[0.75rem] text-[color:var(--muted)]">Pro and above</span>
         </div>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
           Election incidents pushed to your Slack, Teams, Discord or Google Chat channel, or any webhook, about an hour
@@ -224,13 +233,29 @@ export default function WatchlistsPage() {
           IReV failures and logistics problems, each rated high, medium or low and placed to state and LGA.
         </p>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
-          <li>Filter by severity, state, LGA, incident type, candidate or party, or follow all election coverage.</li>
+          <li>Filter by severity, state, LGA, incident type, candidate or party.</li>
           <li>One message per incident: when many outlets report the same incident, you get it once, with the number of reports.</li>
-          <li>Start with the last few days of matching incidents, then receive new ones as they arrive.</li>
-          <li>Up to 10 election alerts per account, set up through the API.</li>
+          <li>Messages are not capped; the allowance is how many alerts you can have running at once. Set up through the API.</li>
         </ul>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[30rem] text-left text-[0.8125rem]">
+            <thead className="text-[color:var(--dim)]">
+              <tr><th className="py-1.5 pr-3 font-normal">Plan</th><th className="py-1.5 pr-3 font-normal">Alerts at once</th><th className="py-1.5 font-normal">Includes</th></tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.07] border-t hairline">
+              {ELECTION_ALERT_PLANS.map(([key, label, count, includes]) => (
+                <tr key={key} className={plan?.plan === key ? "text-[color:var(--text)]" : "text-[color:var(--muted)]"}>
+                  <td className="py-1.5 pr-3">{label}{plan?.plan === key ? " (your plan)" : ""}</td>
+                  <td className="kbd py-1.5 pr-3">{count}</td>
+                  <td className="py-1.5">{includes}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <p className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[0.875rem]">
           <Link href="/developers#elections" className="underline">How to set them up</Link>
+          <Link href="/pricing" className="underline">See plans</Link>
           <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Election alerts")}`} className="underline">Ask about Institutional access</a>
         </p>
       </section>

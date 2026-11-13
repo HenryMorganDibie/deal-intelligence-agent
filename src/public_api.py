@@ -327,9 +327,15 @@ class SheetReview(BaseModel):
 
 async def _institutional(request: Request, response: Response) -> str:
     """The account behind an Institutional key: results data is kept per account."""
-    status = await authorize(request, response)
-    if status.get("plan") != "institutional":
+    owner, plan = await _account(request, response)
+    if plan != "institutional":
         raise PublicApiError(403, "plan_required", "Results and accreditation are part of the Institutional plan.")
+    return owner
+
+
+async def _account(request: Request, response: Response) -> tuple[str, str]:
+    """(account, plan) behind the key; per-account data needs both."""
+    status = await authorize(request, response)
     account = status.get("account")
     if not account and status.get("key_id"):
         try:
@@ -340,7 +346,7 @@ async def _institutional(request: Request, response: Response) -> str:
             account = None
     if not account:
         raise PublicApiError(503, "unavailable", "The account behind this key could not be identified.")
-    return str(account)
+    return str(account), str(status.get("plan") or "free")
 
 
 @router.post("/elections/results/sheets")
@@ -435,32 +441,33 @@ class ElectionAlertBody(BaseModel):
 
 @router.post("/elections/alerts")
 async def create_election_alert(body: ElectionAlertBody, request: Request, response: Response) -> dict:
-    """Push election incidents (or coverage) matching filters to a Slack, Teams, Discord, Google Chat or JSON webhook
-    as they are collected. filters: kind (incidents | news), min_severity, states, lgas, incident_types, candidates,
+    """Push election incidents (or, on Team and above, all coverage) matching filters to a Slack, Teams, Discord,
+    Google Chat or JSON webhook as they are collected. Pro 2 alerts, Team 5, Institutional 25; messages uncapped. filters: kind (incidents | news), min_severity, states, lgas, incident_types, candidates,
     parties, topics."""
     from src import election_alerts
-    owner = await _institutional(request, response)
+    owner, plan = await _account(request, response)
 
     async def run():
-        return await run_in_threadpool(election_alerts.create, owner, body.name, body.webhook_url, body.filters)
+        return await run_in_threadpool(election_alerts.create, owner, body.name, body.webhook_url, body.filters, plan)
     return await _call(run)
 
 
 @router.get("/elections/alerts")
 async def list_election_alerts(request: Request, response: Response) -> dict:
-    """This account's election alerts, with how many stories each has sent."""
+    """This account's election alerts, with how many stories each has sent, and the plan's allowance."""
     from src import election_alerts
-    owner = await _institutional(request, response)
+    owner, plan = await _account(request, response)
 
     async def run():
-        return {"alerts": await run_in_threadpool(election_alerts.list_for, owner)}
+        rows = await run_in_threadpool(election_alerts.list_for, owner)
+        return {"alerts": rows, "allowance": election_alerts.allowance(plan), "plan": plan}
     return await _call(run)
 
 
 @router.delete("/elections/alerts/{alert_id}")
 async def delete_election_alert(alert_id: str, request: Request, response: Response) -> dict:
     from src import election_alerts
-    owner = await _institutional(request, response)
+    owner, plan = await _account(request, response)
     if not re.fullmatch(r"[0-9a-f-]{36}", alert_id):
         raise PublicApiError(400, "bad_request", "That is not an alert id.")
 
@@ -474,12 +481,12 @@ async def backfill_election_alert(alert_id: str, request: Request, response: Res
                                   days: int = Query(3, ge=1, le=7)) -> dict:
     """Send the alert's matching stories from the last `days` days now (stories already sent are skipped)."""
     from src import election_alerts
-    owner = await _institutional(request, response)
+    owner, plan = await _account(request, response)
     if not re.fullmatch(r"[0-9a-f-]{36}", alert_id):
         raise PublicApiError(400, "bad_request", "That is not an alert id.")
 
     async def run():
-        return await run_in_threadpool(election_alerts.backfill, owner, alert_id, days)
+        return await run_in_threadpool(election_alerts.backfill, owner, alert_id, days, plan)
     return await _call(run)
 
 
@@ -487,7 +494,7 @@ async def backfill_election_alert(alert_id: str, request: Request, response: Res
 async def test_election_alert(alert_id: str, request: Request, response: Response) -> dict:
     """Send a clearly marked sample to the alert's webhook."""
     from src import election_alerts
-    owner = await _institutional(request, response)
+    owner, plan = await _account(request, response)
     if not re.fullmatch(r"[0-9a-f-]{36}", alert_id):
         raise PublicApiError(400, "bad_request", "That is not an alert id.")
 

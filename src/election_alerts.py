@@ -24,6 +24,14 @@ SEVERITY = {"low": 1, "medium": 2, "high": 3}
 KINDS = ("incidents", "news")
 LIST_FILTERS = ("states", "lgas", "incident_types", "candidates", "parties", "topics")
 DOCS = "https://deal-intelligence.app/developers#elections"
+# How many election alerts an account can have at once; messages are not capped. Following all coverage (kind=news)
+# and the recent-stories starter come with Team and above.
+ALLOWANCE = {"free": 0, "pro": 2, "team": 5, "institutional": 25}
+FULL_FEATURES = ("team", "institutional")
+
+
+def allowance(plan: Optional[str]) -> int:
+    return ALLOWANCE.get(plan or "free", 0)
 
 
 def clean_filters(raw: Optional[dict]) -> dict:
@@ -135,16 +143,22 @@ def deliver(stories: Iterable[dict]) -> dict:
 
 # ── Managing subscriptions (Institutional plan) ──
 
-def create(owner: str, name: str, webhook_url: str, filters: Optional[dict]) -> dict:
+def create(owner: str, name: str, webhook_url: str, filters: Optional[dict], plan: str = "institutional") -> dict:
+    limit = allowance(plan)
+    if limit == 0:
+        raise HTTPException(403, "Election alerts start with the Pro plan.")
     url = (webhook_url or "").strip()
     if not watch.valid_webhook(url) or not url or not hm._public_host(url):
         raise HTTPException(400, "webhook_url must be an https URL on a public host.")
     f = clean_filters(filters)
-    r = hm._rpc_sync("election_alert_create", {"p_owner": owner, "p_name": name.strip()[:80] or "Election alert",
-                                                 "p_url": url, "p_filters": f})
+    if f["kind"] == "news" and plan not in FULL_FEATURES:
+        raise HTTPException(403, "Alerts on all election coverage come with the Team plan; Pro alerts cover incidents.")
+    r = hm._rpc_sync("election_alert_create_limited", {"p_owner": owner, "p_name": name.strip()[:80] or "Election alert",
+                                                         "p_url": url, "p_filters": f, "p_max": limit})
     if r.status_code != 200:
         if "alert_limit" in r.text:
-            raise HTTPException(400, "An account can have up to 10 election alerts.")
+            raise HTTPException(400, f"Your {plan} plan allows {limit} election alert{'s' if limit != 1 else ''} at a time. "
+                                     "Delete one, or upgrade for more.")
         raise HTTPException(503, "The alert could not be saved.")
     return _public(r.json())
 
@@ -171,11 +185,13 @@ def delete(owner: str, sub_id: str) -> dict:
     return {"deleted": True}
 
 
-def backfill(owner: str, sub_id: str, days: int = 3) -> dict:
+def backfill(owner: str, sub_id: str, days: int = 3, plan: str = "institutional") -> dict:
     """Send the alert's matching stories from the last few days now (at most 7), so a new alert starts with recent
     context. Stories already sent to it are skipped, as always."""
     from datetime import timedelta
     from src import election_feed
+    if plan not in FULL_FEATURES:
+        raise HTTPException(403, "Starting an alert with recent incidents comes with the Team plan.")
     days = max(1, min(int(days), 7))
     r = hm._rpc_sync("election_alert_active", {})
     subs = [s for s in (r.json() or []) if str(s["id"]) == sub_id and str(s["owner"]) == owner] if r.status_code == 200 else []

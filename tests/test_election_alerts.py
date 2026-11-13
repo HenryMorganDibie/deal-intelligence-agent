@@ -84,11 +84,11 @@ def test_alerts_never_break_collection(monkeypatch):
     assert ea.deliver([LAGOS]) == {"error": "RuntimeError"}
 
 
-def test_alert_endpoints_are_institutional_and_hide_the_webhook(monkeypatch):
+def test_alert_allowance_follows_the_plan_and_the_webhook_stays_hidden(monkeypatch):
     from fastapi.testclient import TestClient
     import api.index as api
     from src import public_api
-    plan = {"plan": "team", "account": "acct"}
+    plan = {"plan": "free", "account": "acct"}
 
     async def auth(request, response, count=True):
         return dict(plan)
@@ -97,15 +97,18 @@ def test_alert_endpoints_are_institutional_and_hide_the_webhook(monkeypatch):
     store = {}
 
     class R:
-        def __init__(self, d, status=200):
-            self._d, self.status_code, self.text = d, status, ""
+        def __init__(self, d, status=200, text=""):
+            self._d, self.status_code, self.text = d, status, text
 
         def json(self):
             return self._d
 
     def fake(fn, args, timeout=30):
-        if fn == "election_alert_create":
-            row = {"id": "00000000-0000-0000-0000-000000000009", "owner": args["p_owner"], "name": args["p_name"],
+        if fn == "election_alert_create_limited":
+            mine = [r for r in store.values() if r["owner"] == args["p_owner"]]
+            if len(mine) >= args["p_max"]:
+                return R(None, 400, "alert_limit")
+            row = {"id": f"00000000-0000-0000-0000-{len(store) + 1:012d}", "owner": args["p_owner"], "name": args["p_name"],
                    "webhook_url": args["p_url"], "filters": args["p_filters"], "active": True, "created_at": "2026-11-13"}
             store[row["id"]] = row
             return R(row)
@@ -115,12 +118,20 @@ def test_alert_endpoints_are_institutional_and_hide_the_webhook(monkeypatch):
     monkeypatch.setattr(hm, "_rpc_sync", fake)
     c = TestClient(api.app)
     body = {"name": "Lagos", "webhook_url": "https://hooks.slack.com/services/T0/B0/secretpart", "filters": {"states": ["Lagos"]}}
-    assert c.post("/v1/elections/alerts", json=body).status_code == 403
-    plan["plan"] = "institutional"
+    assert c.post("/v1/elections/alerts", json=body).status_code == 403                 # Free: none
+    plan["plan"] = "pro"
     r = c.post("/v1/elections/alerts", json=body).json()
     assert r["destination"] == "Slack" and "secretpart" not in r["webhook"] and r["filters"]["kind"] == "incidents"
-    assert c.get("/v1/elections/alerts").json()["alerts"][0]["name"] == "Lagos"
+    assert c.post("/v1/elections/alerts", json=dict(body, filters={"kind": "news"})).status_code == 403   # Team feature
+    assert c.post("/v1/elections/alerts", json=body).status_code == 200
+    third = c.post("/v1/elections/alerts", json=body)
+    assert third.status_code == 400 and "allows 2" in third.json()["error"]["message"]   # Pro: 2 at a time
+    listed = c.get("/v1/elections/alerts").json()
+    assert listed["allowance"] == 2 and len(listed["alerts"]) == 2
+    plan["plan"] = "team"
+    assert c.post("/v1/elections/alerts", json=dict(body, filters={"kind": "news"})).status_code == 200
     assert c.post("/v1/elections/alerts", json=dict(body, webhook_url="http://insecure.example")).status_code == 400
+    assert ea.allowance("institutional") == 25 and ea.allowance(None) == 0
 
 
 def test_backfill_sends_recent_matches_once(monkeypatch):
@@ -159,6 +170,9 @@ def test_backfill_sends_recent_matches_once(monkeypatch):
     assert ea.backfill("acct", "a1", 3)["sent"] == 0                 # not twice
     with pytest.raises(HTTPException):
         ea.backfill("someone-else", "a1", 3)
+    with pytest.raises(HTTPException) as e:                          # the starter comes with Team
+        ea.backfill("acct", "a1", 3, plan="pro")
+    assert e.value.status_code == 403
 
 
 def test_alerts_send_one_message_per_event(monkeypatch):
