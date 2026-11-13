@@ -460,6 +460,36 @@ async def review_result_sheet(sheet_id: str, body: SheetReview, request: Request
     return await _call(run)
 
 
+class SheetImport(BaseModel):
+    election: str = Field("presidential-2027", max_length=40)
+    sheets: list[dict] = Field(..., min_length=1, max_length=2000)
+
+
+@router.post("/elections/results/sheets/import")
+async def import_result_sheets(body: SheetImport, request: Request, response: Response) -> dict:
+    """Queue up to 2,000 polling-unit sheet links at a time ([{pu_code, image_url, priority}]), from IReV downloads or
+    your own collection. They are read by the scheduled job, highest priority first, within the daily reading budget,
+    through the same reading and checks as a single submission. Institutional plan."""
+    from src import election_results
+    owner = await _institutional(request, response)
+
+    async def run():
+        return await run_in_threadpool(election_results.queue, owner, body.election, body.sheets)
+    return await _call(run)
+
+
+@router.get("/elections/results/queue")
+async def result_sheet_queue(request: Request, response: Response,
+                             election: str = Query("presidential-2027", max_length=40)) -> dict:
+    """Your imported sheets by status (queued, reading, read, failed), the latest failures and the daily budget."""
+    from src import election_results
+    owner = await _institutional(request, response)
+
+    async def run():
+        return await run_in_threadpool(election_results.queue_status, owner, election)
+    return await _call(run)
+
+
 @router.get("/elections/results")
 async def election_results_totals(request: Request, response: Response, election: str = Query("presidential-2027", max_length=40),
                                   state: Optional[str] = Query(None, max_length=40), lga: Optional[str] = Query(None, max_length=3),

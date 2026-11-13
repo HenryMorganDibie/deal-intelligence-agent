@@ -156,3 +156,13 @@ async def app_submit(body: ResultIn, request: Request, election: str = gm.ELECTI
 async def app_remove(unit: str, request: Request, election: str = gm.ELECTION) -> dict:
     user, _ = await _me(request)
     return await run_in_threadpool(remove, user, unit, election)
+
+
+
+@router.get("/api/cron/sheet-queue")
+async def cron_sheet_queue(request: Request) -> dict:
+    """Read queued result sheets within the day's budget (scheduled job; a no-op when the queue is empty)."""
+    from src import election_results
+    if not hm._authorized_cron(request):
+        raise HTTPException(status_code=401, detail="Scheduled workflow authorization required.")
+    return await run_in_threadpool(election_results.read_queue)

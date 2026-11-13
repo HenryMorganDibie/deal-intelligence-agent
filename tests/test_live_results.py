@@ -161,3 +161,44 @@ def test_historical_results_reconcile_with_inecs_national_totals():
     for party, off in d["state_sums_differ"].items():
         assert sum(r[party] for r in h.RESULTS[2023].values()) - d["declared"][party] == off
     assert len(h.RESULTS[2023]) == 37 and h.state_result(2023, "Kano")["results"][0]["party"] == "NNPP"
+
+
+def test_imported_sheets_are_checked_queued_and_read_within_the_budget(monkeypatch):
+    from src import election_results as er
+    from src import hosted_market as hm
+    calls = {"added": [], "done": []}
+
+    def fake_rpc(name, payload):
+        class R:
+            status_code = 200
+        r = R()
+        if name == "sheet_queue_add":
+            calls["added"] = payload["p_rows"]
+            r.json = lambda: len(payload["p_rows"]) - 1          # one already queued
+        elif name == "sheet_queue_take":
+            r.json = lambda: {"rows": [{"id": "q1", "owner": "u1", "election": "presidential-2027", "pu_code": "24/11/01/001",
+                                        "image_url": "https://example.org/a.jpg"},
+                                       {"id": "q2", "owner": "u1", "election": "presidential-2027", "pu_code": "24/11/01/002",
+                                        "image_url": "https://example.org/b.jpg"}], "used_today": 10}
+        elif name == "sheet_queue_done":
+            calls["done"].append((payload["p_id"], payload["p_status"]))
+            r.json = lambda: True
+        return r
+    monkeypatch.setattr(hm, "_rpc_sync", fake_rpc)
+    monkeypatch.setattr(hm, "_public_host", lambda url: True)
+    out = er.queue("00000000-0000-0000-0000-000000000001", "presidential-2027", [
+        {"pu_code": "24-11-01-001", "image_url": "https://example.org/a.jpg", "priority": 5},
+        {"pu_code": "24/11/01/002", "image_url": "https://example.org/b.jpg"},
+        {"pu_code": "nonsense", "image_url": "https://example.org/c.jpg"},
+        {"pu_code": "24/11/01/003", "image_url": "http://example.org/d.jpg"}])
+    assert out["queued"] == 1 and out["duplicates"] == 1 and out["refused_total"] == 2
+    assert calls["added"][0] == {"election": "presidential-2027", "pu_code": "24/11/01/001",
+                                 "image_url": "https://example.org/a.jpg", "priority": 5}
+
+    def fake_submit(owner, election, code, url=None, **kw):
+        if code.endswith("002"):
+            raise HTTPException(404, f"{code} is not in INEC's polling-unit list.")
+        return {"id": "s1"}
+    monkeypatch.setattr(er, "submit", fake_submit)
+    res = er.read_queue()
+    assert res["read"] == 1 and res["failed"] == 1 and calls["done"] == [("q1", "read"), ("q2", "failed")]

@@ -7,7 +7,8 @@ name: Scheduled API jobs
 #   06:17 UTC            label brief outcomes for calibration
 #   06:53 UTC            refresh the showcase
 #   hourly at :37        election news from Nigerian publishers' feeds (src/election_feed.py), then the new
-#                        stories' full articles read with web-harvester and the stories re-tagged
+#                        stories' full articles read with web-harvester and the stories re-tagged, then any
+#                        imported result sheets read within the day's budget (a no-op when none are queued)
 # GitHub can start scheduled runs late at busy times; each job is safe to run late or twice.
 on:
   schedule:
@@ -96,3 +97,9 @@ jobs:
           python scripts/election_articles.py prepare "$RUNNER_TEMP/crawl.json" "$RUNNER_TEMP/pages.jsonl"
           "$RUNNER_TEMP/crawl" -config "$RUNNER_TEMP/crawl.json" -i-have-reviewed-tos
           python scripts/election_articles.py apply "$RUNNER_TEMP/pages.jsonl"
+
+      - name: Read imported result sheets
+        if: steps.pick.outputs.job == 'election-news'
+        continue-on-error: true
+        timeout-minutes: 28
+        run: python scripts/run_cron.py /api/cron/sheet-queue

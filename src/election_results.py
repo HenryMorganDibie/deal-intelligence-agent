@@ -230,3 +230,75 @@ def totals(owner: str, election: str, state: Optional[str] = None, lga: Optional
     level = "polling_units" if wd else "wards" if lg else "lgas" if st else "states"
     return {"election": election, "scope": {"state": st, "lga": lg, "ward": wd}, "counted": "verified" if verified_only
             else "verified and provisional", "breakdown": level, **t}
+
+
+
+# ── Bulk import: sheets queued for reading ───────────────────────────────────
+# Sheet links an account holds (IReV downloads, its own field collection) are queued and read by the scheduled job,
+# highest priority first, within a daily budget that keeps the vision model on its free tier. Automated collection
+# from IReV itself waits on INEC's permission; INEC publishes no terms or robots rules for it.
+
+DAILY_READS = int(os.environ.get("SHEET_READS_PER_DAY", "400"))
+MAX_IMPORT = 2000
+
+
+def queue(owner: str, election: str, rows: list[dict]) -> dict:
+    """Queue sheet links: [{pu_code, image_url, priority?}]. Unknown codes and non-https links are refused up front,
+    duplicates skipped."""
+    owner = _owner(owner)
+    if election not in rs.ELECTIONS:
+        raise HTTPException(400, "election must be one of " + ", ".join(rs.ELECTIONS) + ".")
+    if not rows or len(rows) > MAX_IMPORT:
+        raise HTTPException(400, f"Send between 1 and {MAX_IMPORT} sheets at a time.")
+    clean, refused = [], []
+    for i, r in enumerate(rows):
+        code = rs.normalise_code(str(r.get("pu_code") or ""))
+        url = str(r.get("image_url") or "").strip()
+        if not code:
+            refused.append({"row": i, "reason": "pu_code is not a polling-unit code"})
+        elif not url.startswith("https://") or len(url) > 600 or not hm._public_host(url):
+            refused.append({"row": i, "reason": "image_url must be an https link on a public host"})
+        else:
+            prio = r.get("priority", 0)
+            clean.append({"election": election, "pu_code": code, "image_url": url,
+                          "priority": prio if isinstance(prio, int) and -100 <= prio <= 100 else 0})
+    added = 0
+    if clean:
+        r = hm._rpc_sync("sheet_queue_add", {"p_owner": owner, "p_rows": clean})
+        if r.status_code != 200:
+            raise HTTPException(503, "The sheets could not be queued.")
+        added = int(r.json() or 0)
+    return {"queued": added, "duplicates": len(clean) - added, "refused": refused[:50],
+            "refused_total": len(refused), "daily_reads": DAILY_READS}
+
+
+def queue_status(owner: str, election: str) -> dict:
+    owner = _owner(owner)
+    r = hm._rpc_sync("sheet_queue_status", {"p_owner": owner, "p_election": election})
+    if r.status_code != 200:
+        raise HTTPException(503, "The queue is unavailable.")
+    return {**(r.json() or {}), "daily_reads": DAILY_READS}
+
+
+def read_queue(limit: int = 20, deadline_seconds: float = 25 * 60) -> dict:
+    """Read queued sheets (the scheduled job): each through the same reading and checks as a direct submission."""
+    started = time.monotonic()
+    r = hm._rpc_sync("sheet_queue_take", {"p_limit": limit, "p_budget": DAILY_READS})
+    if r.status_code != 200:
+        return {"error": f"queue unavailable: {r.status_code}"}
+    taken = r.json() or {}
+    done = failed = 0
+    for row in taken.get("rows", []):
+        if time.monotonic() - started > deadline_seconds:
+            break                                       # left as 'reading'; taken again after 30 minutes
+        try:
+            sheet = submit(str(row["owner"]), row["election"], row["pu_code"], url=row["image_url"])
+            hm._rpc_sync("sheet_queue_done", {"p_id": row["id"], "p_status": "read", "p_error": None,
+                                              "p_sheet": sheet.get("id")})
+            done += 1
+        except HTTPException as e:
+            hm._rpc_sync("sheet_queue_done", {"p_id": row["id"], "p_status": "failed", "p_error": str(e.detail),
+                                              "p_sheet": None})
+            failed += 1
+    return {"taken": len(taken.get("rows", [])), "read": done, "failed": failed,
+            "used_today": taken.get("used_today"), "budget": DAILY_READS}
