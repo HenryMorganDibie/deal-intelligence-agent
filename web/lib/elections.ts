@@ -26,3 +26,18 @@ export function electionOn(day: string | null | undefined): ElectionNow | null {
   }
   return null;
 }
+
+/** Nigeria's 36 states and the FCT, as the election news is tagged. */
+export const NG_STATES = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", "Delta", "Ebonyi",
+  "Edo", "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos",
+  "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara", "FCT",
+];
+
+/** Incident types the alerts can filter on, with plain labels. */
+export const INCIDENT_TYPES: [string, string][] = [
+  ["violence", "Violence"], ["thuggery", "Thuggery"], ["abduction", "Abduction"], ["arson", "Arson"],
+  ["ballot_snatching", "Ballot snatching"], ["vote_buying", "Vote buying"], ["intimidation", "Intimidation"],
+  ["technology_failure", "BVAS or IReV failure"], ["logistics", "Logistics"], ["arrest", "Arrest"],
+  ["hate_speech", "Hate speech"],
+];

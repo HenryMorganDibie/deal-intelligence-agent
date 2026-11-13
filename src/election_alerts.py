@@ -22,6 +22,9 @@ from src.engines import chat_formats, watch
 log = logging.getLogger("deal_intel.election_alerts")
 SEVERITY = {"low": 1, "medium": 2, "high": 3}
 KINDS = ("incidents", "news")
+# Elections an alert can follow. One today; another country's election is added here (and its sources and tagging)
+# without changing alerts, the API or the page.
+ELECTIONS = {"ng-2027": "Nigeria: 2027 general elections"}
 LIST_FILTERS = ("states", "lgas", "incident_types", "candidates", "parties", "topics")
 DOCS = "https://deal-intelligence.app/developers#elections"
 # How many election alerts an account can have at once; messages are not capped. Following all coverage (kind=news)
@@ -39,7 +42,10 @@ def clean_filters(raw: Optional[dict]) -> dict:
     kind = raw.get("kind", "incidents")
     if kind not in KINDS:
         raise HTTPException(400, "kind must be incidents or news.")
-    out: dict = {"kind": kind}
+    election = raw.get("election", "ng-2027")
+    if election not in ELECTIONS:
+        raise HTTPException(400, "election must be one of " + ", ".join(ELECTIONS) + ".")
+    out: dict = {"kind": kind, "election": election}
     sev = raw.get("min_severity")
     if sev is not None:
         if sev not in SEVERITY:
@@ -63,6 +69,8 @@ def _has(story: dict, field: str, wanted: list[str]) -> bool:
 
 
 def matches(story: dict, filters: dict) -> bool:
+    if filters.get("election", "ng-2027") != story.get("election", "ng-2027"):
+        return False
     if filters.get("kind", "incidents") == "incidents":
         if not story.get("incident_types"):
             return False
@@ -185,6 +193,24 @@ def delete(owner: str, sub_id: str) -> dict:
     return {"deleted": True}
 
 
+def _sample_story() -> dict:
+    return {"id": "test", "title": "Test alert: this is how an election incident will look", "url": DOCS,
+            "day": datetime.now(timezone.utc).date().isoformat(), "severity": "high", "incident_types": ["violence"],
+            "states": ["Lagos"], "lgas": ["Ikeja, Lagos"], "outlets": ["Deal Intelligence"]}
+
+
+def test_url(webhook_url: str, name: str = "Election alert") -> dict:
+    """Send a clearly marked sample to a webhook before it is saved."""
+    url = (webhook_url or "").strip()
+    if not url or not watch.valid_webhook(url) or not hm._public_host(url):
+        raise HTTPException(400, "webhook_url must be an https URL on a public host.")
+    sub = {"id": "test", "name": name.strip()[:80] or "Election alert", "webhook_url": url}
+    result = asyncio.run(watch.deliver_webhook(url, _payload(sub, [_sample_story()]), "di-election-test-" + uuid.uuid4().hex[:16]))
+    kind = chat_formats.destination(url)
+    return {"delivered": bool(result["delivered"]), "destination": chat_formats.LABELS[kind],
+            "status_code": result.get("status_code"), "error": result.get("error")}
+
+
 def backfill(owner: str, sub_id: str, days: int = 3, plan: str = "institutional") -> dict:
     """Send the alert's matching stories from the last few days now (at most 7), so a new alert starts with recent
     context. Stories already sent to it are skipped, as always."""
@@ -209,9 +235,88 @@ def test(owner: str, sub_id: str) -> dict:
     subs = [s for s in (r.json() or []) if str(s["id"]) == sub_id and str(s["owner"]) == owner] if r.status_code == 200 else []
     if not subs:
         raise HTTPException(404, "No such alert.")
-    sample = {"id": "test", "title": "Test alert: this is how an election incident will look",
-              "url": DOCS, "day": datetime.now(timezone.utc).date().isoformat(), "severity": "high",
-              "incident_types": ["violence"], "states": ["Lagos"], "lgas": ["Ikeja, Lagos"], "outlets": ["Deal Intelligence"]}
+    sample = _sample_story()
     result = asyncio.run(watch.deliver_webhook(subs[0]["webhook_url"], _payload(subs[0], [sample]),
                                                "di-election-test-" + uuid.uuid4().hex[:16]))
     return {"delivered": bool(result["delivered"]), "status_code": result.get("status_code"), "error": result.get("error")}
+
+
+# ── For the web app: the signed-in account, passed by the site's proxy ──
+
+from fastapi import APIRouter, Request                      # noqa: E402
+from fastapi.concurrency import run_in_threadpool          # noqa: E402
+from pydantic import BaseModel, Field                      # noqa: E402
+
+router = APIRouter()
+_tests: dict[str, list[float]] = {}
+
+
+class AlertIn(BaseModel):
+    name: str = Field("Election alert", max_length=80)
+    webhook_url: str = Field(..., max_length=500)
+    filters: Optional[dict] = None
+    backfill_days: int = Field(0, ge=0, le=7)
+
+
+class TestIn(BaseModel):
+    webhook_url: str = Field(..., max_length=500)
+    name: str = Field("Election alert", max_length=80)
+
+
+def _id(alert_id: str) -> str:
+    import re
+    if not re.fullmatch(r"[0-9a-f-]{36}", alert_id or ""):
+        raise HTTPException(400, "That is not an alert id.")
+    return alert_id
+
+
+async def _me(request: Request) -> tuple[str, str]:
+    from src import plans
+    from src import request_identity as rid
+    user = rid.account(request)
+    if not user:
+        raise HTTPException(401, "Sign in to manage election alerts.")
+    return user, str((await plans.limits(user)).get("plan") or "free")
+
+
+@router.get("/api/elections/alerts")
+async def app_list(request: Request) -> dict:
+    owner, plan = await _me(request)
+    rows = await run_in_threadpool(list_for, owner)
+    return {"alerts": rows, "allowance": allowance(plan), "plan": plan, "full_features": plan in FULL_FEATURES,
+            "elections": ELECTIONS}
+
+
+@router.post("/api/elections/alerts")
+async def app_create(body: AlertIn, request: Request) -> dict:
+    owner, plan = await _me(request)
+    row = await run_in_threadpool(create, owner, body.name, body.webhook_url, body.filters, plan)
+    if body.backfill_days:
+        row["backfill"] = await run_in_threadpool(backfill, owner, str(row["id"]), body.backfill_days, plan)
+    return row
+
+
+@router.post("/api/elections/alerts/test")
+async def app_test_url(body: TestIn, request: Request) -> dict:
+    owner, plan = await _me(request)
+    if allowance(plan) == 0:
+        raise HTTPException(403, "Election alerts start with the Pro plan.")
+    import time
+    now = time.monotonic()
+    recent = [t for t in _tests.get(owner, []) if now - t < 60]
+    if len(recent) >= 5:
+        raise HTTPException(429, "Too many test messages. Wait a minute and try again.")
+    _tests[owner] = recent + [now]
+    return await run_in_threadpool(test_url, body.webhook_url, body.name)
+
+
+@router.post("/api/elections/alerts/{alert_id}/test")
+async def app_test_saved(alert_id: str, request: Request) -> dict:
+    owner, _ = await _me(request)
+    return await run_in_threadpool(test, owner, _id(alert_id))
+
+
+@router.delete("/api/elections/alerts/{alert_id}")
+async def app_delete(alert_id: str, request: Request) -> dict:
+    owner, _ = await _me(request)
+    return await run_in_threadpool(delete, owner, _id(alert_id))

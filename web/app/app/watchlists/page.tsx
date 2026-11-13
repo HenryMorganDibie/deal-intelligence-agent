@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { ProBadge } from "../../../components/app/PlanLinks";
+import { ElectionAlerts } from "../../../components/app/ElectionAlerts";
 import { usePlan } from "../../../lib/plan";
 import { CONTACT_EMAIL } from "../../../lib/site";
 import { Container } from "../../../components/primitives";
@@ -235,7 +236,7 @@ export default function WatchlistsPage() {
         <ul className="mt-3 list-disc space-y-1 pl-5 text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
           <li>Filter by severity, state, LGA, incident type, candidate or party.</li>
           <li>One message per incident: when many outlets report the same incident, you get it once, with the number of reports.</li>
-          <li>Messages are not capped; the allowance is how many alerts you can have running at once. Set up through the API.</li>
+          <li>Messages are not capped; the allowance is how many alerts you can have running at once. Create them here or through the API.</li>
         </ul>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[30rem] text-left text-[0.8125rem]">
@@ -254,10 +255,11 @@ export default function WatchlistsPage() {
           </table>
         </div>
         <p className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[0.875rem]">
-          <Link href="/developers#elections" className="underline">How to set them up</Link>
+          <Link href="/developers#elections" className="underline">API documentation</Link>
           <Link href="/pricing" className="underline">See plans</Link>
           <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Election alerts")}`} className="underline">Ask about Institutional access</a>
         </p>
+        <ElectionAlerts />
       </section>
 
       <h2 className="eyebrow mt-12">Your watchlists</h2>

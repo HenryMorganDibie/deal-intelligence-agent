@@ -207,3 +207,60 @@ def test_alerts_send_one_message_per_event(monkeypatch):
     b = dict(LAGOS, id="b", event_id="a", event_size=2, title="APC condemns Lagos attack")
     assert ea.deliver([a, b])["sent"] == 1 and "2 reports of this incident" in str(posts[0])
     assert ea.deliver([dict(LAGOS, id="c", event_id="a", event_size=3)])["sent"] == 0    # same incident, later report
+
+
+def test_web_app_routes_use_the_signed_in_account_and_plan(monkeypatch):
+    from fastapi.testclient import TestClient
+    import api.index as api
+    from src import plans
+    from src.request_identity import ACCOUNT_HEADER, CLIENT_HEADER
+    monkeypatch.setenv("DEAL_INTEL_WEB_SECRET", "web-secret")
+    monkeypatch.setattr(hm, "_public_host", lambda url: True)
+    plan = {"plan": "pro"}
+
+    async def limits(user, fresh=False):
+        return dict(plan)
+    monkeypatch.setattr(plans, "limits", limits)
+    store, sends = {}, []
+
+    class R:
+        def __init__(self, d, status=200, text=""):
+            self._d, self.status_code, self.text = d, status, text
+
+        def json(self):
+            return self._d
+
+    def fake(fn, args, timeout=30):
+        if fn == "election_alert_create_limited":
+            row = {"id": "00000000-0000-0000-0000-000000000001", "owner": args["p_owner"], "name": args["p_name"],
+                   "webhook_url": args["p_url"], "filters": args["p_filters"], "active": True, "created_at": "2026-11-13"}
+            store[row["id"]] = row
+            return R(row)
+        if fn == "election_alert_list":
+            return R([dict(r, sent=0) for r in store.values() if r["owner"] == args["p_owner"]])
+        raise AssertionError(fn)
+
+    async def deliver(url, payload, key):
+        sends.append(payload)
+        return {"delivered": True, "status_code": 204}
+    monkeypatch.setattr(hm, "_rpc_sync", fake)
+    monkeypatch.setattr(ea.watch, "deliver_webhook", deliver)
+    c = TestClient(api.app)
+    me = {CLIENT_HEADER: "web-secret", ACCOUNT_HEADER: "11111111-1111-1111-1111-111111111111"}
+    assert c.get("/api/elections/alerts", headers={CLIENT_HEADER: "web-secret"}).status_code == 401   # not signed in
+    listed = c.get("/api/elections/alerts", headers=me).json()
+    assert listed["allowance"] == 2 and listed["full_features"] is False and "ng-2027" in listed["elections"]
+    t = c.post("/api/elections/alerts/test", headers=me, json={"webhook_url": "https://discord.com/api/webhooks/1/x"}).json()
+    assert t["delivered"] and t["destination"] == "Discord" and "Test alert" in str(sends[-1])
+    r = c.post("/api/elections/alerts", headers=me, json={"name": "Lagos", "webhook_url": "https://discord.com/api/webhooks/1/x",
+                                                          "filters": {"states": ["Lagos"], "min_severity": "high"}})
+    assert r.status_code == 200 and r.json()["filters"]["election"] == "ng-2027"
+    bad = c.post("/api/elections/alerts", headers=me, json={"webhook_url": "https://discord.com/api/webhooks/1/x",
+                                                            "filters": {"election": "zz-2030"}})
+    assert bad.status_code == 400
+    starter = c.post("/api/elections/alerts", headers=me, json={"webhook_url": "https://discord.com/api/webhooks/1/x",
+                                                                "backfill_days": 7})
+    assert starter.status_code == 403                                     # the starter is a Team feature
+    assert c.delete("/api/elections/alerts/not-an-id", headers=me).status_code == 400
+    plan["plan"] = "free"
+    assert c.post("/api/elections/alerts/test", headers=me, json={"webhook_url": "https://discord.com/api/webhooks/1/x"}).status_code == 403
