@@ -7,7 +7,9 @@ import { ErrorNote, Field, PageHeader } from "./ui";
 import { Container } from "../primitives";
 import { ApiError } from "../../lib/api";
 import { del, get, post } from "../../lib/market";
+import { PastResults } from "./PastResults";
 import { PollsPanel } from "./PollsPanel";
+import { SheetImport } from "./SheetImport";
 import { StateTileMap } from "./StateTileMap";
 
 type Ranked = { candidate: string; party: string | null; votes: number; share: number; [k: string]: string | number | null };
@@ -167,6 +169,7 @@ export function LiveResults({ election, title, intro }: { election: string; titl
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState<{ status?: number; text: string } | null>(null);
   const [area, setArea] = useState("all");
+  const [pickedState, setPickedState] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try { setData(await get<Data>("/api/elections/live", { election })); setError(null); }
@@ -245,7 +248,8 @@ export function LiveResults({ election, title, intro }: { election: string; titl
               <h2 className="h3">Map</h2>
               <StateTileMap winners={Object.fromEntries(data.units.map((u) => [u.unit, u.winner]))} baseline={data.baseline_winners ?? {}}
                             baselineYear={data.baseline_year} colour={colour}
-                            onPick={(st) => { const u = data.units.find((x) => x.unit === st); if (u) setArea(u.area); }} />
+                            onPick={(st) => { const u = data.units.find((x) => x.unit === st); if (u) setArea(u.area); setPickedState(st); }} />
+              <p className="mt-1 text-[0.75rem] text-[color:var(--dim)]">Click a state for its 2015, 2019 and 2023 results below.</p>
             </section>
           )}
 
@@ -331,6 +335,8 @@ export function LiveResults({ election, title, intro }: { election: string; titl
           </section>
 
           {election === "ng-2027" && <PollsPanel election={election} ballot={data.ballot} colour={colour} />}
+          {election === "ng-2027" && <PastResults selected={pickedState} />}
+          {election === "ng-2027" && data.plan === "institutional" && <SheetImport />}
           <p className="mt-6 text-[0.75rem] text-[color:var(--dim)]">{data.notes}</p>
           {data.operator && <EntryForm data={data} election={election} onSaved={load} />}
         </>

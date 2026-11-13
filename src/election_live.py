@@ -166,3 +166,45 @@ async def cron_sheet_queue(request: Request) -> dict:
     if not hm._authorized_cron(request):
         raise HTTPException(status_code=401, detail="Scheduled workflow authorization required.")
     return await run_in_threadpool(election_results.read_queue)
+
+
+
+# ── Past results and sheet import, for the app's Nigeria page ──
+
+@router.get("/api/elections/history")
+async def app_history(request: Request, state: Optional[str] = None) -> dict:
+    """Nigeria's presidential results by state, 2015 to 2023 (Pro and above)."""
+    from src.data import ng_results_history as hist
+    user, plan = await _me(request)
+    if plan not in PLANS and user not in operators():
+        raise HTTPException(403, "Past results come with the Pro plan and above.")
+    if state:
+        unit = le.spec("ng-2027")["unit"](state)
+        if not unit:
+            raise HTTPException(400, "state must be a Nigerian state or FCT.")
+        return hist.history(unit)
+    return {**hist.history(), "candidates": {str(k): v for k, v in hist.CANDIDATES.items()}}
+
+
+class ImportIn(BaseModel):
+    election: str = Field("presidential-2027", max_length=40)
+    sheets: list[dict] = Field(..., min_length=1, max_length=2000)
+
+
+@router.post("/api/elections/results/import")
+async def app_import(body: ImportIn, request: Request) -> dict:
+    """Queue polling-unit sheet links for reading (Institutional plan)."""
+    from src import election_results
+    user, plan = await _me(request)
+    if plan != "institutional":
+        raise HTTPException(403, "Importing result sheets is part of the Institutional plan.")
+    return await run_in_threadpool(election_results.queue, user, body.election, body.sheets)
+
+
+@router.get("/api/elections/results/queue")
+async def app_queue(request: Request, election: str = "presidential-2027") -> dict:
+    from src import election_results
+    user, plan = await _me(request)
+    if plan != "institutional":
+        raise HTTPException(403, "Importing result sheets is part of the Institutional plan.")
+    return {**await run_in_threadpool(election_results.queue_status, user, election), "plan": plan}
