@@ -153,7 +153,7 @@ async def index() -> JSONResponse:
                                  "markets/search", "markets/quote", "elections/news", "elections/summary",
                                  "elections/incidents", "elections/areas", "elections/polling-units",
                                  "elections/polling-units/{code}", "elections/results", "elections/results/sheets",
-                                 "elections/accreditation")]},
+                                 "elections/accreditation", "elections/alerts")]},
                         headers={"Cache-Control": "public, max-age=3600"})
 
 
@@ -423,6 +423,61 @@ async def election_accreditation(request: Request, response: Response, election:
         return {k: t[k] for k in ("election", "scope", "counted", "breakdown", "polling_units", "sheets", "verified",
                                   "registered", "accredited", "votes_cast", "turnout", "coverage")} | {
             "groups": [{k: g.get(k) for k in keep} for g in t.get("groups", [])]}
+    return await _call(run)
+
+
+class ElectionAlertBody(BaseModel):
+    name: str = Field("Election alert", max_length=80)
+    webhook_url: str = Field(..., max_length=500)
+    filters: Optional[dict] = None
+
+
+@router.post("/elections/alerts")
+async def create_election_alert(body: ElectionAlertBody, request: Request, response: Response) -> dict:
+    """Push election incidents (or coverage) matching filters to a Slack, Teams, Discord, Google Chat or JSON webhook
+    as they are collected. filters: kind (incidents | news), min_severity, states, lgas, incident_types, candidates,
+    parties, topics."""
+    from src import election_alerts
+    owner = await _institutional(request, response)
+
+    async def run():
+        return await run_in_threadpool(election_alerts.create, owner, body.name, body.webhook_url, body.filters)
+    return await _call(run)
+
+
+@router.get("/elections/alerts")
+async def list_election_alerts(request: Request, response: Response) -> dict:
+    """This account's election alerts, with how many stories each has sent."""
+    from src import election_alerts
+    owner = await _institutional(request, response)
+
+    async def run():
+        return {"alerts": await run_in_threadpool(election_alerts.list_for, owner)}
+    return await _call(run)
+
+
+@router.delete("/elections/alerts/{alert_id}")
+async def delete_election_alert(alert_id: str, request: Request, response: Response) -> dict:
+    from src import election_alerts
+    owner = await _institutional(request, response)
+    if not re.fullmatch(r"[0-9a-f-]{36}", alert_id):
+        raise PublicApiError(400, "bad_request", "That is not an alert id.")
+
+    async def run():
+        return await run_in_threadpool(election_alerts.delete, owner, alert_id)
+    return await _call(run)
+
+
+@router.post("/elections/alerts/{alert_id}/test")
+async def test_election_alert(alert_id: str, request: Request, response: Response) -> dict:
+    """Send a clearly marked sample to the alert's webhook."""
+    from src import election_alerts
+    owner = await _institutional(request, response)
+    if not re.fullmatch(r"[0-9a-f-]{36}", alert_id):
+        raise PublicApiError(400, "bad_request", "That is not an alert id.")
+
+    async def run():
+        return await run_in_threadpool(election_alerts.test, owner, alert_id)
     return await _call(run)
 
 

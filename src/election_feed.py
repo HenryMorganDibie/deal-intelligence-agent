@@ -64,7 +64,10 @@ def collect_once(today: Optional[date] = None) -> dict:
     stories, changed = en.merge([dict(s) for s in stored], items)
     changed |= en.retag_missing(stories)          # stories stored before a newer tag existed get it now
     rows = [s for s in stories if s["id"] in changed]
-    return {"sources": status, "items": len(items), "stories_changed": len(rows), "written": _write(rows)}
+    written = _write(rows)
+    from src import election_alerts
+    return {"sources": status, "items": len(items), "stories_changed": len(rows), "written": written,
+            "alerts": election_alerts.deliver(rows)}
 
 
 def _write(rows: list[dict]) -> int:
@@ -103,7 +106,10 @@ def apply_crawl(pages: list[dict], today: Optional[date] = None) -> dict:
     changed = en.apply_articles(stories, pages)
     rows = [s for s in stories if s["id"] in changed]
     read = sum(1 for p in pages if p.get("status_code") == 200 and (p.get("fields") or {}).get("body"))
-    return {"pages": len(pages), "articles_read": read, "stories_changed": len(rows), "written": _write(rows)}
+    written = _write(rows)
+    from src import election_alerts                  # an article can reveal an incident the headline did not
+    return {"pages": len(pages), "articles_read": read, "stories_changed": len(rows), "written": written,
+            "alerts": election_alerts.deliver(rows)}
 
 
 @router.get("/api/cron/election-news")

@@ -75,6 +75,8 @@ def _day(v: Optional[str]) -> Optional[str]:
 
 def facts(alert: dict) -> str:
     """One plain line under the headline: kind, type, amount, date, source."""
+    if alert.get("facts_line"):
+        return str(alert["facts_line"])
     kind = "Deal" if alert.get("kind") == "deal" else "Event"
     bits = [kind, _words(alert.get("deal_type") or alert.get("signal_type")) or None, _money(alert.get("amount_usd")),
             _day(alert.get("day")), alert.get("publisher")]
@@ -106,8 +108,8 @@ def slack(wl: dict, alerts: list[dict], link: str) -> dict:
     more = len(alerts) - MAX_SHOWN
     blocks.append({"type": "actions", "elements": [{"type": "button", "url": link, "style": "primary",
                                                      "text": {"type": "plain_text", "text":
-                                                              f"Open watchlist{f' ({more} more)' if more > 0 else ''}"}}]})
-    blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": f"{BRAND} watchlist alert"}]})
+                                                              f"{wl.get('button') or 'Open watchlist'}{f' ({more} more)' if more > 0 else ''}"}}]})
+    blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": f"{BRAND} {wl.get('kind_label') or 'watchlist alert'}"}]})
     return {"text": summary_line(wl, alerts), "blocks": blocks, "unfurl_links": False}
 
 
@@ -124,7 +126,7 @@ def teams(wl: dict, alerts: list[dict], link: str) -> dict:
     more = len(alerts) - MAX_SHOWN
     card = {"$schema": "http://adaptivecards.io/schemas/adaptive-card.json", "type": "AdaptiveCard", "version": "1.4",
             "body": body, "actions": [{"type": "Action.OpenUrl", "url": link,
-                                       "title": f"Open watchlist{f' ({more} more)' if more > 0 else ''}"}]}
+                                       "title": f"{wl.get('button') or 'Open watchlist'}{f' ({more} more)' if more > 0 else ''}"}]}
     return {"type": "message", "attachments": [{"contentType": "application/vnd.microsoft.card.adaptive",
                                                  "contentUrl": None, "content": card}]}
 
@@ -150,7 +152,7 @@ def google_chat(wl: dict, alerts: list[dict], link: str) -> dict:
         lines.append(f"• <{a['url']}|{title}>" if a.get("url") else f"• {title}")
         lines.append(f"   {facts(a)}")
     more = len(alerts) - MAX_SHOWN
-    lines.append(f"<{link}|Open watchlist{f' ({more} more)' if more > 0 else ''}>")
+    lines.append(f"<{link}|{wl.get('button') or 'Open watchlist'}{f' ({more} more)' if more > 0 else ''}>")
     return {"text": "\n".join(lines)}
 
 

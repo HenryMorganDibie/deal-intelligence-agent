@@ -48,6 +48,10 @@ const RESULTS_ENDPOINTS: [string, string, string, string][] = [
   ["POST", "/elections/results/sheets/{id}/review", "Verify, reject or return a sheet to review, with corrections. A sheet that fails its checks cannot be verified.", "JSON: status, corrections {figures, votes}"],
   ["GET", "/elections/results", "Votes by party for the country, a state, an LGA or a ward, broken down one level below, with coverage and turnout.", "election, state, lga, ward, verified_only"],
   ["GET", "/elections/accreditation", "Registered and accredited voters, turnout and sheet coverage at the same levels.", "election, state, lga, ward, verified_only"],
+  ["POST", "/elections/alerts", "Push incidents (or coverage) to Slack, Teams, Discord, Google Chat or a JSON webhook as they are collected. Each story is sent once; up to 10 alerts per account.", "JSON: name, webhook_url, filters {kind: incidents | news, min_severity, states, lgas, incident_types, candidates, parties, topics}"],
+  ["GET", "/elections/alerts", "Your election alerts and how many stories each has sent.", ""],
+  ["POST", "/elections/alerts/{id}/test", "Send a clearly marked sample to the alert's webhook.", ""],
+  ["DELETE", "/elections/alerts/{id}", "Remove an alert.", ""],
 ];
 
 function EndpointList({ rows, ink }: { rows: [string, string, string, string][]; ink: string }) {
@@ -145,7 +149,7 @@ for e in r.json()["events"]:
         </Section>
 
         <Section id="endpoints" title="Endpoints">
-          <p>All endpoints are <span className={`kbd ${ink}`}>GET</span> (except result sheet submission and review, marked POST) under <span className={`kbd ${ink}`}>{PUBLIC_API_BASE}</span>. Dates are <span className="kbd">YYYY-MM-DD</span>; countries take ISO codes or names; list endpoints page with <span className="kbd">limit</span> and <span className="kbd">offset</span>.</p>
+          <p>All endpoints are <span className={`kbd ${ink}`}>GET</span> (except the election endpoints marked POST or DELETE) under <span className={`kbd ${ink}`}>{PUBLIC_API_BASE}</span>. Dates are <span className="kbd">YYYY-MM-DD</span>; countries take ISO codes or names; list endpoints page with <span className="kbd">limit</span> and <span className="kbd">offset</span>.</p>
           <p>Deal <span className="kbd">type</span>: acquisition, merger, equity_funding, debt_financing, fund_raise, exit, ipo, joint_venture. Event <span className="kbd">type</span>: m_and_a_activity, credit_risk, distressed_asset, earnings_surprise, leadership_change, regulatory_action, debt_restructuring, insider_activity.</p>
           <div className="divide-y divide-white/[0.07] border-y hairline">
             {ENDPOINTS.map(([path, what, params]) => (
@@ -164,7 +168,7 @@ for e in r.json()["events"]:
           <p>Election intelligence for the presidential and National Assembly elections on 16 January 2027 and the governorship and state assembly elections on 6 February 2027. Coverage is collected hourly from Nigerian publishers&apos; own feeds and tagged by rules, so every tag traces to the words that produced it. Candidates are the 18 presidential tickets on INEC&apos;s final list; polling units follow INEC&apos;s delimitation (37 states, 774 LGAs, 8,809 wards, 176,623 polling units).</p>
           <p className={ink}>Every plan</p>
           <EndpointList rows={ELECTION_ENDPOINTS} ink={ink} />
-          <p className={ink}>Results and accreditation (Institutional)</p>
+          <p className={ink}>Results, accreditation and alerts (Institutional)</p>
           <p>Elections: <span className="kbd">presidential-2027</span>, <span className="kbd">senate-2027</span>, <span className="kbd">reps-2027</span>, <span className="kbd">governorship-2027</span>, <span className="kbd">state-assembly-2027</span>. Each sheet is checked: party votes against valid votes, valid plus rejected against votes cast, votes cast against accredited and registered voters, ballots reconciled, figures against words, and the code against INEC&apos;s list. Totals count one sheet per polling unit, verified first, else the latest provisional one. Sheets, reviews and totals belong to your account alone: no other account can see them, and they never count in anyone else&apos;s figures. Images are not stored.</p>
           <EndpointList rows={RESULTS_ENDPOINTS} ink={ink} />
         </Section>
