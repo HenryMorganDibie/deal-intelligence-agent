@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { MarketsTitle } from "../../../../components/app/MarketsNav";
 import { Container } from "../../../../components/primitives";
-import { ErrorNote, Field, Loading, PageHeader, Pagination, Table, Td, usd, words } from "../../../../components/app/ui";
+import { ErrorNote, Field, Loading, Pagination, Table, Td, usd, words } from "../../../../components/app/ui";
 import { ProBadge } from "../../../../components/app/PlanLinks";
 import { ApiError } from "../../../../lib/api";
 import { usePlan } from "../../../../lib/plan";
@@ -174,11 +175,8 @@ export default function ScreenerPage() {
   }
 
   return (
-    <Container className="py-8 lg:py-12">
-      <PageHeader eyebrow="Markets · Screener" title="Every company in Africa we can see.">
-        Listed shares on 18 exchanges, priced daily, and private companies from the deals database. Filter by
-        exchange, country, sector and size. <Link href="/app/markets" className="underline-offset-4 hover:underline">Back to markets</Link>
-      </PageHeader>
+    <Container className="pb-10 pt-6 lg:pb-14">
+      <MarketsTitle title="Screener">Every listed share and private company we track, filtered by exchange, sector and size.</MarketsTitle>
 
       <div className="mb-5 flex gap-2" role="tablist" aria-label="Company type">
         {(["listed", "private"] as const).map((v) => (

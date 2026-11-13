@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { MarketsTitle } from "../../../../components/app/MarketsNav";
 import { Container } from "../../../../components/primitives";
-import { ErrorNote, Loading, PageHeader, Pill } from "../../../../components/app/ui";
+import { ErrorNote, Loading, Pill } from "../../../../components/app/ui";
 import { get } from "../../../../lib/market";
 import { validHttpUrl } from "../../../../lib/markets-valuation";
 import { calculateValuationChangeAlerts, fetchMonitoringEventHistory, matchPortfolioEvents, rankByGrade, type MonitoringEvent, type MonitoringHolding } from "../../../../lib/markets-monitoring";
@@ -110,13 +111,10 @@ export default function MarketsMonitoringPage() {
   ), [valuations, holdings]);
 
   return (
-    <Container className="py-8 lg:py-12">
-      <PageHeader eyebrow="Markets · Investment monitoring" title="Developments that may affect your holdings">
-        Review recent African corporate events that match company names or ticker symbols in your locally saved portfolio. Matches are candidate links to investigate, not verified materiality assessments or personalised recommendations.
-      </PageHeader>
+    <Container className="pb-10 pt-6 lg:pb-14">
+      <MarketsTitle title="Monitoring">Corporate events that match the companies in your portfolio: leads to check, not verdicts.</MarketsTitle>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Link href="/app/markets" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">← Back to Markets</Link>
         <div className="flex flex-wrap gap-2">
           <Link href="/app/markets/portfolio" className="btn btn-secondary">My Portfolio</Link>
           <Link href="/app/watchlists" className="btn btn-ghost">Existing Watchlists</Link>

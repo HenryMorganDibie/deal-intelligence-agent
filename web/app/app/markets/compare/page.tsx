@@ -2,9 +2,10 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { MarketsTitle } from "../../../../components/app/MarketsNav";
 import { Container } from "../../../../components/primitives";
 import { ApiError } from "../../../../lib/api";
-import { ErrorNote, PageHeader } from "../../../../components/app/ui";
+import { ErrorNote } from "../../../../components/app/ui";
 import { get } from "../../../../lib/market";
 
 type FinancialItem = { current: number; prior?: number };
@@ -194,13 +195,10 @@ export default function MarketsComparePage() {
   ].filter((caveat): caveat is string => Boolean(caveat));
 
   return (
-    <Container className="py-8 lg:py-12">
-      <PageHeader eyebrow="Markets · Compare opportunities" title="Compare the evidence, not just the price.">
-        Compare up to four African companies using the company profiles and financial data already available in Deal Intelligence. Missing figures stay missing, and each profile shows its own reporting currency, statement period, source and quote freshness. A lower multiple alone does not prove a company is cheaper or a better investment.
-      </PageHeader>
+    <Container className="pb-10 pt-6 lg:pb-14">
+      <MarketsTitle title="Compare companies">Up to four side by side. Missing figures stay missing, and a lower multiple alone doesn&apos;t make a company cheaper.</MarketsTitle>
 
       <div className="mb-6 flex flex-wrap gap-3">
-        <Link href="/app/markets" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">← Markets overview</Link>
         <Link href="/app/companies" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Explore company profiles →</Link>
       </div>
 

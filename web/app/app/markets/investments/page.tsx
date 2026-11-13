@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { MarketsTitle } from "../../../../components/app/MarketsNav";
 import { Container } from "../../../../components/primitives";
-import { ErrorNote, Loading, PageHeader, Pagination, Table, Td, usd } from "../../../../components/app/ui";
+import { ErrorNote, Loading, Pagination, Table, Td, usd } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get } from "../../../../lib/market";
 import { asOf, companyHref, compact, pct, price, quoteWhen, tone } from "../../../../lib/markets-data";
@@ -84,7 +85,7 @@ function Etfs({ data }: { data: Instruments["etfs"] }) {
   const { page, pager } = usePaged(rows, `${exposure}|${exchange}`);
   const count = (ex: string) => data.rows.filter((r) => r.exchange === ex).length;
   return (
-    <section id="etfs" className="mt-10 scroll-mt-24" aria-labelledby="etfs-h">
+    <section id="etfs" className="mt-6 scroll-mt-24" aria-labelledby="etfs-h">
       <h2 id="etfs-h" className="h3 text-xl">Exchange-traded funds</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
         {data.rows.length} funds: {exchanges.map((ex) => `${count(ex)} in ${EXCHANGE_NAME[ex] ?? ex}`).join(", ")}. Each
@@ -134,7 +135,7 @@ function Tbills({ blocks, onUse }: { blocks: TbillBlock[]; onUse: (p: BillPrefil
   const [country, setCountry] = useState("");
   const shown = blocks.filter((b) => !country || b.country === country);
   return (
-    <section id="tbills" className="mt-12 scroll-mt-24" aria-labelledby="tbills-h">
+    <section id="tbills" className="mt-6 scroll-mt-24" aria-labelledby="tbills-h">
       <h2 id="tbills-h" className="h3 text-xl">Treasury bills</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
         Short-dated government debt in {blocks.length} countries, from the latest auction each central bank or
@@ -194,7 +195,7 @@ function Bonds({ blocks }: { blocks: TbillBlock[] }) {
   const KIND: Record<string, string> = { auction: "auction result", closing: "closing yield", curve: "yield curve" };
   if (rows.length === 0) return null;
   return (
-    <section id="bonds" className="mt-12 scroll-mt-24" aria-labelledby="bonds-h">
+    <section id="bonds" className="mt-6 scroll-mt-24" aria-labelledby="bonds-h">
       <h2 id="bonds-h" className="h3 text-xl">Government bonds</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
         Individual issues from the latest auction (with coupon and maturity), benchmark closing yields, and points on a
@@ -229,7 +230,7 @@ function Bonds({ blocks }: { blocks: TbillBlock[] }) {
 function Property({ rows }: { rows: Instruments["property"] }) {
   const { page, pager } = usePaged(rows);
   return (
-    <section id="property" className="mt-12 scroll-mt-24" aria-labelledby="property-h">
+    <section id="property" className="mt-6 scroll-mt-24" aria-labelledby="property-h">
       <h2 id="property-h" className="h3 text-xl">Listed property</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
         Real estate investment trusts and property companies: a share of rental income without owning a building.
@@ -271,7 +272,7 @@ function policyDate(r: PolicyRate): string {
 function PolicyRates({ rows }: { rows: Instruments["policy_rates"] }) {
   const confirmed = rows.filter((r) => r.confirmed_by).length;
   return (
-    <section id="rates" className="mt-12 scroll-mt-24" aria-labelledby="rates-h">
+    <section id="rates" className="mt-6 scroll-mt-24" aria-labelledby="rates-h">
       <h2 id="rates-h" className="h3 text-xl">Policy rates</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
         The central bank rate anchors what deposits, money-market funds and Treasury bills pay. {confirmed} of {rows.length} are
@@ -300,7 +301,7 @@ function PolicyRates({ rows }: { rows: Instruments["policy_rates"] }) {
 function Deposits({ rows }: { rows: NonNullable<Instruments["deposits"]> }) {
   if (rows.length === 0) return null;
   return (
-    <section id="deposits" className="mt-12 scroll-mt-24" aria-labelledby="deposits-h">
+    <section id="deposits" className="mt-6 scroll-mt-24" aria-labelledby="deposits-h">
       <h2 id="deposits-h" className="h3 text-xl">Bank deposit rates</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
         Average rates banks pay (and charge), as published monthly by the central bank. A single bank&apos;s offer can
@@ -345,7 +346,7 @@ function FundTable({ block: b }: { block: NonNullable<Instruments["funds"]>[numb
 function Funds({ blocks }: { blocks: NonNullable<Instruments["funds"]> }) {
   if (blocks.length === 0) return null;
   return (
-    <section id="funds" className="mt-12 scroll-mt-24" aria-labelledby="funds-h">
+    <section id="funds" className="mt-6 scroll-mt-24" aria-labelledby="funds-h">
       <h2 id="funds-h" className="h3 text-xl">Unlisted funds</h2>
       {blocks.map((b) => (
         <div key={`${b.country}-${b.kind}`} className="mt-1">
@@ -398,7 +399,7 @@ function Calculators({ prefill }: { prefill: BillPrefill | null }) {
     ["EGP", "Egyptian pound"], ["USD", "US dollar"]];
 
   return (
-    <section id="calculators" className="mt-12 grid scroll-mt-24 gap-4 xl:grid-cols-2" aria-label="Fixed income calculators">
+    <section id="calculators" className="mt-6 grid scroll-mt-24 gap-4 xl:grid-cols-2" aria-label="Fixed income calculators">
       <article id="calc-bill" className="panel min-w-0 scroll-mt-24 p-5">
         <p className="eyebrow">Calculator</p>
         <h2 className="mt-1 text-xl font-semibold">Treasury bill return</h2>
@@ -493,6 +494,17 @@ export default function InvestmentExplorerPage() {
   const [data, setData] = useState<Instruments | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [prefill, setPrefill] = useState<BillPrefill | null>(null);
+  const [section, setSection] = useState<string>("etfs");
+  // The open dataset follows the address (#tbills), so a link can open it directly.
+  const pick = (id: string) => {
+    setSection(id);
+    try { window.history.replaceState(null, "", `#${id}`); } catch { /* ignore */ }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  useEffect(() => {
+    const h = window.location.hash.replace("#", "").replace(/^calc-.*/, "calculators");
+    if (SECTIONS.some(([id]) => id === h)) setSection(h);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -503,42 +515,38 @@ export default function InvestmentExplorerPage() {
   }, []);
 
   return (
-    <Container className="py-8 lg:py-12">
-      <PageHeader eyebrow="Markets · Beyond shares" title="ETFs, Treasury bills, property and rates.">
-        Exchange-traded funds, Treasury bills and government bonds, listed property and central bank rates across
-        African markets, each with its source and date, plus calculators for bills and bonds.
-      </PageHeader>
+    <Container className="pb-10 pt-6 lg:pb-14">
+      <MarketsTitle title="Funds and fixed income">ETFs, Treasury bills, bonds, listed property and rates, each with its source and date.</MarketsTitle>
 
-      <nav className="flex flex-wrap gap-2 text-sm" aria-label="Sections">
-        <Link href="/app/markets" className="rounded-full border hairline px-3 py-1.5 hover:bg-white/[0.03]">← Markets</Link>
+      <div role="tablist" aria-label="Instrument" className="-mx-1 mb-2 flex flex-wrap gap-1.5 px-1">
         {SECTIONS.map(([id, label]) => (
-          <a key={id} href={`#${id}`} className="rounded-full border hairline px-3 py-1.5 hover:bg-white/[0.03]">{label}</a>
+          <button key={id} type="button" role="tab" aria-selected={section === id} onClick={() => pick(id)}
+                  className={`rounded-full px-3 py-1 text-[0.8125rem] transition-colors ${
+                    section === id ? "bg-white/[0.09] text-[color:var(--text)]" : "text-[color:var(--muted)] hover:text-[color:var(--text)]"}`}>
+            {label}
+          </button>
         ))}
-      </nav>
+      </div>
 
       {error && <ErrorNote message={error} />}
       {!data && !error && <Loading label="Loading ETFs, bills and rates..." />}
       {data && (
         <>
-          <Etfs data={data.etfs} />
-          <Tbills blocks={data.tbills} onUse={setPrefill} />
-          <Bonds blocks={data.tbills} />
-          <Property rows={data.property} />
-          <PolicyRates rows={data.policy_rates} />
-          <Deposits rows={data.deposits ?? []} />
-          <Funds blocks={data.funds ?? []} />
+          {section === "etfs" && <Etfs data={data.etfs} />}
+          {section === "tbills" && <Tbills blocks={data.tbills} onUse={(b) => { setPrefill(b); pick("calculators"); }} />}
+          {section === "bonds" && <Bonds blocks={data.tbills} />}
+          {section === "property" && <Property rows={data.property} />}
+          {section === "rates" && <PolicyRates rows={data.policy_rates} />}
+          {section === "deposits" && <Deposits rows={data.deposits ?? []} />}
+          {section === "funds" && <Funds blocks={data.funds ?? []} />}
         </>
       )}
 
-      <Calculators prefill={prefill} />
+      {section === "calculators" && <Calculators prefill={prefill} />}
 
-      <section className="mt-10 rounded-xl border hairline p-4">
-        <h2 className="text-base font-semibold">What is covered</h2>
-        <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">
-          {data?.method ?? "Each figure carries its source and date."} ETFs listed in Lagos and Nairobi are not yet in a
-          free price feed. Nothing here is an offer to buy or a guarantee of return.
-        </p>
-      </section>
+      <p className="mt-10 text-[0.75rem] leading-relaxed text-[color:var(--dim)]">
+        {data?.method ?? "Each figure carries its source and date."} Nothing here is an offer to buy or a guarantee of return.
+      </p>
     </Container>
   );
 }

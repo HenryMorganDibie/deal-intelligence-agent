@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
+import { MarketsTitle } from "../../../../components/app/MarketsNav";
 import { Container } from "../../../../components/primitives";
-import { ErrorNote, PageHeader, Stat } from "../../../../components/app/ui";
+import { ErrorNote, Stat } from "../../../../components/app/ui";
 import { calculateExposureRows, calculatePortfolioTotals, calculatePortfolioValuationReviews, calculatePortfolioValuationSummary, convertToBase, isSavedValuation, type SavedValuationSnapshot, ASSET_TYPES, CURRENCIES, normalizeAssetType } from "../../../../lib/markets-portfolio";
 import { parseCsv, stringifyCsv } from "../../../../lib/markets-csv";
 import { createPortfolioWorkbook, parsePortfolioWorkbook } from "../../../../lib/markets-excel";
@@ -487,13 +488,10 @@ export default function MarketsPortfolioPage() {
   }
 
   return (
-    <Container className="py-8 lg:py-12">
-      <PageHeader eyebrow="Markets · Portfolio Intelligence" title="Your portfolio, in context.">
-        Add holdings or import a CSV, then price listed holdings from the daily close on 16 African exchanges with the day&apos;s exchange rates. Holdings, quantities, cost basis, prices and FX inputs stay in this browser. If you choose Prepare event watchlist, only company names or tickers are passed to the existing Watchlists page so you can decide whether to save a watchlist.
-      </PageHeader>
+    <Container className="pb-10 pt-6 lg:pb-14">
+      <MarketsTitle title="Portfolio">Holdings priced from the daily close, in local currency and dollars. Everything you enter stays in this browser.</MarketsTitle>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Link href="/app/markets" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">← Back to Markets</Link>
         <Link href="/app/markets/portfolio/cloud" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Cloud portfolios and team workspaces</Link>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-primary" onClick={refreshPrices} disabled={holdings.length === 0 || pricing}>{pricing ? "Pricing…" : "Refresh prices and FX"}</button>

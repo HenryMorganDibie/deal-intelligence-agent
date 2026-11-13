@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
+import { MarketsTitle } from "../../../../components/app/MarketsNav";
 import { Container } from "../../../../components/primitives";
-import { ErrorNote, PageHeader } from "../../../../components/app/ui";
+import { ErrorNote } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
 import { get, post } from "../../../../lib/market";
 import { calculateDcfPerShare, calculateDdmPerShare, validHttpUrl, validPastDate } from "../../../../lib/markets-valuation";
@@ -524,13 +525,10 @@ export default function MarketsValuationPage() {
   ].join(" ").slice(0, 500);
 
   return (
-    <Container className="py-8 lg:py-12">
-      <PageHeader eyebrow="Markets · Valuation" title="A valuation with a countercase.">
-        Choose a model that fits the business, then compare bear, base and bull estimates against a dated, sourced market price. You can load existing company financials, but missing figures are not invented and sources are not independently verified.
-      </PageHeader>
+    <Container className="pb-10 pt-6 lg:pb-14">
+      <MarketsTitle title="Valuation">Bear, base and bull estimates against a dated market price. Missing figures are never invented.</MarketsTitle>
 
       <div className="mb-6 flex flex-wrap gap-3">
-        <Link href="/app/markets" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">← Markets overview</Link>
         <Link href="/app/companies" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Open company financials →</Link>
         <Link href="/app/markets/portfolio" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Portfolio Intelligence →</Link>
       </div>

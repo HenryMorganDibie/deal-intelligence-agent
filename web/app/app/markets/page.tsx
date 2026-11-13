@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { MarketsTitle } from "../../../components/app/MarketsNav";
 import { Container } from "../../../components/primitives";
 import { MarketSearch } from "../../../components/app/MarketSearch";
-import { ErrorNote, Loading, PageHeader, Pill, Stat, usd, words } from "../../../components/app/ui";
+import { ErrorNote, Loading, Pill, Stat, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { get } from "../../../lib/market";
 import { asOf, companyHref, quoteWhen, heat, pct, price, tone, type Mover, type Overview } from "../../../lib/markets-data";
@@ -75,6 +76,74 @@ function MoverTable({ title, rows, metric }: { title: string; rows: Mover[]; met
   );
 }
 
+type Exchange = Overview["exchanges"][number];
+type SortKey = "name" | "chg" | "ytd_local" | "ytd_usd" | "fx" | "mcap";
+
+/** Every exchange in one table, sortable by any column; those with no recent prices fold into one line. */
+function ExchangeTable({ exchanges }: { exchanges: Exchange[] }) {
+  const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: "mcap", desc: true });
+  const live = exchanges.filter((t) => t.index && !t.stale);
+  const quiet = exchanges.filter((t) => !t.index || t.stale);
+  const value = (t: Exchange, k: SortKey): number | string | null => ({
+    name: t.name, chg: t.index?.chg_1d ?? null, ytd_local: t.ytd_local ?? t.ytd_median_local ?? null,
+    ytd_usd: t.ytd_usd ?? t.ytd_median_usd ?? null, fx: t.currency_ytd_vs_usd ?? null, mcap: t.mcap_usd ?? null,
+  })[k];
+  const rows = [...live].sort((a, b) => {
+    const x = value(a, sort.key), y = value(b, sort.key);
+    if (x == null) return 1;
+    if (y == null) return -1;
+    const c = typeof x === "string" ? x.localeCompare(y as string) : (x as number) - (y as number);
+    return sort.desc ? -c : c;
+  });
+  const head = (k: SortKey, label: string, right = true) => (
+    <th className={`py-2 pr-4 font-normal ${right ? "text-right" : ""}`}>
+      <button type="button" onClick={() => setSort({ key: k, desc: sort.key === k ? !sort.desc : k !== "name" })}
+              className={`hover:text-[color:var(--text)] ${sort.key === k ? "text-[color:var(--text)]" : ""}`}>
+        {label}{sort.key === k ? (sort.desc ? " ↓" : " ↑") : ""}
+      </button>
+    </th>
+  );
+  return (
+    <>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[46rem] text-left text-[0.8125rem]">
+          <thead className="text-[color:var(--dim)]">
+            <tr>{head("name", "Exchange", false)}<th className="py-2 pr-4 text-right font-normal">Index</th>{head("chg", "Today")}{head("ytd_local", "YTD local")}{head("ytd_usd", "YTD in USD")}{head("fx", "Currency vs USD")}{head("mcap", "Market cap")}<th className="py-2 text-right font-normal">Up / down</th></tr>
+          </thead>
+          <tbody className="divide-y divide-white/[0.07] border-t hairline">
+            {rows.map((t) => {
+              const ytdUsd = t.ytd_usd ?? t.ytd_median_usd;
+              const ytdLocal = t.ytd_local ?? t.ytd_median_local;
+              const basis = t.ytd_usd != null ? "cap-weighted" : "median share";
+              return (
+                <tr key={t.exchange} className="hover:bg-white/[0.02]">
+                  <td className="py-2 pr-4">
+                    <Link href={`/app/markets/screener?exchange=${t.exchange}`} className="hover:underline">{t.name.replace(/ \(.*\)$/, "")}</Link>
+                    <span className="ml-2 text-[0.75rem] text-[color:var(--dim)]">{t.currency}</span>
+                  </td>
+                  <td className="kbd py-2 pr-4 text-right" title={t.index?.name}>{t.index ? t.index.level.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "–"}</td>
+                  <td className={`kbd py-2 pr-4 text-right ${tone(t.index?.chg_1d)}`}>{pct(t.index?.chg_1d, 2)}</td>
+                  <td className={`kbd py-2 pr-4 text-right ${tone(ytdLocal)}`} title={basis}>{pct(ytdLocal)}</td>
+                  <td className={`kbd py-2 pr-4 text-right ${tone(ytdUsd)}`} title={basis}>{pct(ytdUsd)}</td>
+                  <td className={`kbd py-2 pr-4 text-right ${tone(t.currency_ytd_vs_usd)}`}>{pct(t.currency_ytd_vs_usd)}</td>
+                  <td className="kbd py-2 pr-4 text-right">{t.mcap_usd ? usd(t.mcap_usd) : <span className="text-[color:var(--dim)]">–</span>}</td>
+                  <td className="kbd py-2 text-right"><span className="text-verified">{t.advancers}</span><span className="text-[color:var(--dim)]"> / </span><span className="text-risk">{t.decliners}</span></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">
+        Year-to-date returns are cap-weighted where market caps are published, otherwise the median share (hover a figure to see which).
+        {quiet.length > 0 && <> No recent index for: {quiet.map((t, k) => (
+          <span key={t.exchange}>{k ? ", " : ""}<Link href={`/app/markets/screener?exchange=${t.exchange}`} className="hover:underline">{t.name.replace(/ \(.*\)$/, "")}</Link></span>
+        ))}.</>}
+      </p>
+    </>
+  );
+}
+
 export default function MarketsPage() {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [pulse, setPulse] = useState<Pulse | null>(null);
@@ -98,11 +167,8 @@ export default function MarketsPage() {
   const kindTotal = kinds.reduce((s, [, v]) => s + v, 0) || 1;
 
   return (
-    <Container className="py-8 lg:py-12">
-      <PageHeader eyebrow="Markets" title="African equity markets, today.">
-        Every share on {overview?.coverage.exchanges ?? 18} African exchanges, priced daily, and every private company in
-        the deal record, with returns in local currency and in dollars, deal flow and corporate events.
-      </PageHeader>
+    <Container className="pb-10 pt-6 lg:pb-14">
+      <MarketsTitle title="African equity markets today">Every share on {overview?.coverage.exchanges ?? 18} exchanges, priced daily, with returns in local currency and in dollars.</MarketsTitle>
 
       <MarketSearch />
 
@@ -124,44 +190,9 @@ export default function MarketsPage() {
           <section className="mt-8" aria-labelledby="exchanges-title">
             <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
               <h2 id="exchanges-title" className="h3 text-xl">Exchanges</h2>
-              <Link href="/app/markets/screener" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Open the screener →</Link>
+              <p className="text-xs text-[color:var(--dim)]">Click a column to sort, an exchange to see its shares.</p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {overview.exchanges.map((t) => {
-                const ytdUsd = t.ytd_usd ?? t.ytd_median_usd;
-                const ytdLocal = t.ytd_local ?? t.ytd_median_local;
-                const basis = t.ytd_usd != null ? "cap-weighted" : "median share";
-                return (
-                  <Link key={t.exchange} href={`/app/markets/screener?exchange=${t.exchange}`}
-                    className={`rounded-xl border hairline p-4 transition hover:bg-white/[0.03] ${t.stale ? "opacity-60" : ""}`}>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{t.name}</p>
-                        <p className="text-xs text-[color:var(--dim)]">{t.index?.name ?? t.exchange.toUpperCase()} · {t.currency}</p>
-                      </div>
-                      {t.stale ? <Pill value="stale" title="No share priced in the last 7 days" /> : null}
-                    </div>
-                    <div className="mt-3 flex items-baseline justify-between gap-2">
-                      <span className="kbd text-lg">{t.index ? t.index.level.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "n/a"}</span>
-                      <span className={`kbd text-sm ${tone(t.index?.chg_1d)}`}>{pct(t.index?.chg_1d, 2)}</span>
-                    </div>
-                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-                      <dt className="text-[color:var(--dim)]">YTD in USD</dt>
-                      <dd className={`text-right kbd ${tone(ytdUsd)}`} title={basis}>{pct(ytdUsd)}</dd>
-                      <dt className="text-[color:var(--dim)]">YTD local</dt>
-                      <dd className={`text-right kbd ${tone(ytdLocal)}`} title={basis}>{pct(ytdLocal)}</dd>
-                      <dt className="text-[color:var(--dim)]">Currency vs USD</dt>
-                      <dd className={`text-right kbd ${tone(t.currency_ytd_vs_usd)}`}>{pct(t.currency_ytd_vs_usd)}</dd>
-                      <dt className="text-[color:var(--dim)]">Market cap</dt>
-                      <dd className="text-right kbd">{t.mcap_usd ? usd(t.mcap_usd) : "not published"}</dd>
-                      <dt className="text-[color:var(--dim)]">Up / down today</dt>
-                      <dd className="text-right kbd"><span className="text-verified">{t.advancers}</span> / <span className="text-risk">{t.decliners}</span></dd>
-                    </dl>
-                    <p className="mt-2 text-[0.6875rem] text-[color:var(--dim)]">{t.listed} shares · as of {asOf(t.as_of)} · YTD {basis}</p>
-                  </Link>
-                );
-              })}
-            </div>
+            <ExchangeTable exchanges={overview.exchanges} />
           </section>
 
           <section className="mt-8 grid gap-4 lg:grid-cols-3">
@@ -268,20 +299,6 @@ export default function MarketsPage() {
         </section>
       )}
 
-      <section className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          ["/app/markets/screener", "Screener", "Filter every listed share by exchange, sector, size and return."],
-          ["/app/markets/investments", "Beyond shares", "JSE ETFs, Treasury bill auctions, listed property and policy rates, with bill and bond calculators."],
-          ["/app/markets/valuation", "Valuation", "DCF and dividend models prefilled from filings and today's price."],
-          ["/app/markets/portfolio", "Portfolio", "Holdings priced from the daily snapshot, in local currency and dollars."],
-          ["/app/markets/compare", "Compare", "Two companies side by side: market data, multiples and deals."],
-        ].map(([href, title, body]) => (
-          <Link key={href} href={href} className="rounded-xl border hairline p-4 hover:bg-white/[0.03]">
-            <p className="text-sm font-medium">{title} →</p>
-            <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">{body}</p>
-          </Link>
-        ))}
-      </section>
       <p className="mt-6 text-xs leading-relaxed text-[color:var(--dim)]">
         Prices are end-of-day closes from public exchange price lists; Johannesburg and Lagos are refreshed during
         trading hours with delayed quotes (Johannesburg about 15 minutes behind), marked &ldquo;delayed&rdquo; with
