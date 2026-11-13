@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { ProBadge } from "../../../components/app/PlanLinks";
 import { usePlan } from "../../../lib/plan";
+import { CONTACT_EMAIL } from "../../../lib/site";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, Field, PageHeader, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
@@ -134,7 +135,7 @@ export default function WatchlistsPage() {
       <PageHeader eyebrow="Monitoring and alerts" title="Watch companies and countries.">
         A watchlist matches every corporate event (M&A, credit, distress, leadership, regulatory, earnings, restructuring,
         insider) and every deal in the daily feed. Follow it on its page, subscribe to its RSS feed in any reader, Slack or
-        email-by-RSS service, or send new matches straight to a Slack, Teams, Discord or Google Chat channel, daily or as a weekly Friday digest. No account: the
+        email-by-RSS service, or send new matches straight to a Slack, Teams, Discord or Google Chat channel, daily or as a weekly Friday digest. The
         watchlist&apos;s link is its key, so keep it private.
       </PageHeader>
 
@@ -211,6 +212,28 @@ export default function WatchlistsPage() {
         </div>
         {error && <ErrorNote message={error} />}
       </form>
+
+      <section className="panel mt-12 p-5 sm:p-6" aria-labelledby="election-alerts-title">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 id="election-alerts-title" className="h3">Nigeria 2027 election alerts</h2>
+          <span className="rounded-full border hairline px-2.5 py-0.5 text-[0.75rem] text-[color:var(--muted)]">Institutional</span>
+        </div>
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
+          Election incidents pushed to your Slack, Teams, Discord or Google Chat channel, or any webhook, about an hour
+          after they are reported: violence, thuggery, abductions, arson, ballot snatching, vote buying, intimidation, BVAS or
+          IReV failures and logistics problems, each rated high, medium or low and placed to state and LGA.
+        </p>
+        <ul className="mt-3 list-disc space-y-1 pl-5 text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
+          <li>Filter by severity, state, LGA, incident type, candidate or party, or follow all election coverage.</li>
+          <li>One message per incident: when many outlets report the same incident, you get it once, with the number of reports.</li>
+          <li>Start with the last few days of matching incidents, then receive new ones as they arrive.</li>
+          <li>Up to 10 election alerts per account, set up through the API.</li>
+        </ul>
+        <p className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[0.875rem]">
+          <Link href="/developers#elections" className="underline">How to set them up</Link>
+          <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Election alerts")}`} className="underline">Ask about Institutional access</a>
+        </p>
+      </section>
 
       <h2 className="eyebrow mt-12">Your watchlists</h2>
       <p className="mt-2 text-[0.8125rem] text-[color:var(--dim)]">Kept in this browser. Bookmark a watchlist&apos;s page to open it elsewhere.</p>
