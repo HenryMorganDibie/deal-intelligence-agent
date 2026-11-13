@@ -56,6 +56,7 @@ test("local portfolio supports add, persistence, CSV backup, clear and import", 
     return saved.holdings?.length || 0;
   })).toBe(1);
 
+  await page.getByRole("tab", { name: "Import & backup" }).click();
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export CSV backup" }).click();
   const download = await downloadPromise;
@@ -74,13 +75,18 @@ test("local portfolio supports add, persistence, CSV backup, clear and import", 
   expect(excelPath).toBeTruthy();
   expect((await fs.readFile(excelPath)).byteLength).toBeGreaterThan(1000);
 
-  await page.reload();
+  await page.reload();                                       // reopens on the tab in the address (#import)
+  await expect(page.getByRole("tab", { name: "Import & backup" })).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("tab", { name: "Holdings" }).click();
   await expect(page.getByRole("row").filter({ hasText: "Browser Test Equity" })).toBeVisible();
 
+  await page.getByRole("tab", { name: "Import & backup" }).click();
   page.once("dialog", dialog => dialog.accept());
   await page.getByRole("button", { name: "Clear portfolio" }).click();
+  await page.getByRole("tab", { name: "Holdings" }).click();
   await expect(page.getByText("Your portfolio starts here.")).toBeVisible();
 
+  await page.getByRole("tab", { name: "Import & backup" }).click();
   await page.getByLabel("Choose CSV file").setInputFiles({
     name: "valid-portfolio.csv",
     mimeType: "text/csv",
@@ -89,13 +95,17 @@ test("local portfolio supports add, persistence, CSV backup, clear and import", 
   await expect(page.getByRole("status").filter({ hasText: "Imported 1 holding" })).toBeVisible();
   await expect(page.getByRole("row").filter({ hasText: "Imported Test" })).toBeVisible();
 
+  await page.getByRole("tab", { name: "Import & backup" }).click();
   await page.getByLabel("Choose CSV file").setInputFiles({
     name: "malformed.csv",
     mimeType: "text/csv",
     buffer: Buffer.from('name,currency,quantity,cost_per_unit\n"broken,USD,1,2\n'),
   });
   await expect(page.getByText(/unclosed quoted field/i)).toBeVisible();
+  await page.getByRole("tab", { name: "Holdings" }).click();
   await expect(page.getByRole("row").filter({ hasText: "Imported Test" })).toBeVisible();
+
+  await page.getByRole("tab", { name: "Import & backup" }).click();
 
   await page.getByLabel(/Choose Excel workbook/).setInputFiles(excelPath);
   await expect(page.getByRole("status").filter({ hasText: "Imported 1 holding" })).toBeVisible();
@@ -130,6 +140,8 @@ test("valuation history JSON backup exports, restores and rejects malformed data
     initial: [snapshot],
   });
   await page.goto("/app/markets/valuation");
+  await page.getByRole("tab", { name: /Saved valuations/ }).click();
+  await expect(page.getByRole("row").filter({ hasText: "Example Bank" })).toBeVisible();
 
   const exportPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export saved valuation history" }).click();

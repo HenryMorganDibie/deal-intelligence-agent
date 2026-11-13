@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { MarketsTitle } from "../../../../components/app/MarketsNav";
 import { Container } from "../../../../components/primitives";
@@ -137,28 +137,34 @@ type CostOfEquity = {
   us_inflation: number;
 };
 
-function ScenarioCard({ scenario, currency, price }: { scenario: Scenario; currency: string; price: number | null }) {
-  const upside = price != null && price > 0 && scenario.perShare != null ? (scenario.perShare / price - 1) * 100 : null;
-  return (
-    <article className="rounded-xl border hairline p-4">
-      <p className="eyebrow">{scenario.name} case</p>
-      <p className="mt-2 text-xl font-semibold">{money(scenario.perShare, currency)}</p>
-      <p className="mt-1 text-xs text-[color:var(--muted)]">Implied value per share</p>
-      <p className="mt-2 text-xs text-[color:var(--muted)]">Five-year {scenario.growthLabel} assumption: {scenario.growth.toFixed(1)}% annually</p>
-      <div className="mt-4 flex items-center justify-between gap-3 border-t hairline pt-3 text-xs">
-        <span className="text-[color:var(--muted)]">{scenario.enterpriseValue == null ? "Enterprise value" : "Implied enterprise value"}</span>
-        <span className="kbd">{scenario.enterpriseValue == null ? "Not applicable to DDM" : money(scenario.enterpriseValue, currency)}</span>
-      </div>
-      <div className="mt-2 flex items-center justify-between gap-3 text-xs">
-        <span className="text-[color:var(--muted)]">vs entered market price</span>
-        <span className={upside == null ? "kbd" : upside < 0 ? "text-risk kbd" : "text-verified kbd"}>{upside == null ? "No price entered" : `${upside > 0 ? "+" : ""}${upside.toFixed(1)}%`}</span>
-      </div>
-    </article>
-  );
-}
+type ValuationTab = "model" | "saved" | "method";
+const VALUATION_TABS: [ValuationTab, string][] = [["model", "Model"], ["saved", "Saved valuations"], ["method", "Method"]];
 
 export default function MarketsValuationPage() {
   const [form, setForm] = useState<Inputs>(initial);
+  const [tab, setTab] = useState<ValuationTab>("model");
+  const [saved, setSaved] = useState<SavedValuationSnapshot[]>([]);
+  const readSaved = useCallback(() => {
+    try {
+      const parsed: unknown = JSON.parse(window.localStorage.getItem(VALUATION_STORAGE_KEY) || "[]");
+      setSaved(Array.isArray(parsed) ? parsed.filter(isSavedValuation).sort((a, b) => b.calculatedAt.localeCompare(a.calculatedAt)) : []);
+    } catch { setSaved([]); }
+  }, []);
+  const pick = (id: ValuationTab) => {
+    setTab(id);
+    if (id === "saved") readSaved();
+    try { window.history.replaceState(null, "", `${window.location.search}#${id}`); } catch { /* ignore */ }
+  };
+  useEffect(() => {
+    readSaved();
+    const follow = () => {
+      const h = window.location.hash.replace("#", "");
+      if (VALUATION_TABS.some(([id]) => id === h)) setTab(h as ValuationTab);
+    };
+    follow();
+    window.addEventListener("hashchange", follow);
+    return () => window.removeEventListener("hashchange", follow);
+  }, [readSaved]);
   const [error, setError] = useState<string | null>(null);
   const [hasCalculated, setHasCalculated] = useState(false);
   const [listing, setListing] = useState<{ exchange: string; symbol: string; exchange_name: string } | null>(null);
@@ -424,6 +430,7 @@ export default function MarketsValuationPage() {
         .slice(0, 10);
       const otherIssuers = existing.filter((item) => !sameIssuer(item));
       window.localStorage.setItem(VALUATION_STORAGE_KEY, JSON.stringify([...otherIssuers, ...history]));
+      readSaved();
       setSavedMessage("Saved locally in this browser. Up to 10 dated snapshots per company are kept so Markets can flag material changes in your model estimate. Portfolio reviews still require matching currency, quote date and price, and a suitable model.");
     } catch (saveError) {
       setSavedMessage(saveError instanceof Error ? saveError.message : "Could not save this valuation in browser storage.");
@@ -471,6 +478,7 @@ export default function MarketsValuationPage() {
         return;
       }
       window.localStorage.setItem(VALUATION_STORAGE_KEY, JSON.stringify(snapshots));
+      readSaved();
       setBackupMessage(`Restored ${snapshots.length} saved valuation snapshot(s) to this browser. Portfolio holdings were not changed.`);
     } catch (backupError) {
       setBackupMessage(backupError instanceof Error ? backupError.message : "Could not restore valuation history.");
@@ -524,269 +532,307 @@ export default function MarketsValuationPage() {
     "Use current primary evidence to test cash-flow or dividend sustainability, debt and dilution, source freshness, currency, country, sector and regulatory risks. Separate confirmed facts, inference and unknowns; state what would invalidate the model conclusion.",
   ].join(" ").slice(0, 500);
 
+  const methodWord = form.method === "dcf" ? "free cash flow" : "dividend";
+  const conclusion = verdict ?? rangeConclusion ?? (price != null && evidence && !evidence.verdict_allowed ? "No verdict: the inputs are not sufficiently evidenced" : null);
+
   return (
     <Container className="pb-10 pt-6 lg:pb-14">
       <MarketsTitle title="Valuation">Bear, base and bull estimates against a dated market price. Missing figures are never invented.</MarketsTitle>
 
-      <div className="mb-6 flex flex-wrap gap-3">
-        <Link href="/app/companies" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Open company financials →</Link>
-        <Link href="/app/markets/portfolio" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Portfolio Intelligence →</Link>
+      <div role="tablist" aria-label="Valuation" className="-mx-1 mb-6 flex flex-wrap gap-1.5 px-1">
+        {VALUATION_TABS.map(([id, label]) => (
+          <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => pick(id)}
+                  className={`rounded-full px-3 py-1 text-[0.8125rem] transition-colors ${
+                    tab === id ? "bg-white/[0.09] text-[color:var(--text)]" : "text-[color:var(--muted)] hover:text-[color:var(--text)]"}`}>
+            {label}{id === "saved" && saved.length ? <span className="ml-1 text-[color:var(--dim)]">{saved.length}</span> : null}
+          </button>
+        ))}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <section className="panel p-5 sm:p-6" aria-labelledby="inputs-title">
-          <p className="eyebrow">Transparent inputs</p>
-          <h2 id="inputs-title" className="h3 mt-2 text-xl">Set the evidence and assumptions</h2>
-          {error && <div className="mt-4"><ErrorNote message={error} /></div>}
-          {profileError && <div className="mt-4"><ErrorNote message={profileError} /></div>}
-          {profileMessage && <p className="mt-4 text-xs leading-relaxed text-[color:var(--muted)]" role="status">{profileMessage}</p>}
-          <form className="mt-5 space-y-5" onSubmit={calculate}>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-company">Company / instrument *</label>
-                <input id="valuation-company" className="field" required value={form.company} onChange={set("company")} placeholder="e.g. Dangote Cement" />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-ticker">Ticker (optional)</label>
-                <input id="valuation-ticker" className="field" value={form.ticker} onChange={set("ticker")} placeholder="DANGCEM.LG" />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-country">Country / market *</label>
-                <input id="valuation-country" className="field" required value={form.country} onChange={set("country")} placeholder="e.g. Nigeria" />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-method">Valuation method *</label>
-                <select id="valuation-method" className="field" value={form.method} onChange={set("method")}>
-                  <option value="dcf">Discounted cash flow (non-financial operating companies)</option>
-                  <option value="ddm">Dividend discount (mature dividend payers)</option>
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-currency">Statement / dividend currency</label>
-                <select id="valuation-currency" className="field" value={form.currency} onChange={set("currency")}>
-                  {VALUATION_CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-period">Financial / dividend period end *</label>
-                <input id="valuation-period" className="field" type="date" required value={form.period} onChange={set("period")} />
-              </div>
-              <div className="sm:col-span-2">
-                <button type="button" className="btn btn-secondary w-full" onClick={loadCompanyProfile} disabled={profileBusy}>{profileBusy ? "Loading existing company profile…" : "Load financials from Companies"}</button>
-                <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">This reuses existing company data where available. It will not guess missing figures, and you must review the loaded values and source before calculating.</p>
-              </div>
-              <div className="sm:col-span-2">
-                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-source">Source URL for the financial / dividend inputs (HTTP or HTTPS) *</label>
-                <input id="valuation-source" className="field" required type="url" value={form.source} onChange={set("source")} placeholder="https://... official filing or statement" />
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium">{form.method === "dcf" ? "Cash-flow inputs" : "Dividend inputs"}</h3>
-              {form.method === "dcf" ? (
-                <>
-                  <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Use annual unlevered free cash flow from a source you can inspect. Keep cash flow, cash and debt in the same absolute currency units, not mixed thousands, millions or billions. Shares must be individual shares, not millions.</p>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <NumericField id="valuation-fcf" label="Latest annual unlevered free cash flow *" value={form.fcf} onChange={set("fcf")} placeholder="Positive value required" />
-                    <NumericField id="valuation-shares" label="Shares outstanding *" value={form.shares} onChange={set("shares")} placeholder="Individual shares" />
-                    <NumericField id="valuation-cash" label="Cash and cash equivalents *" value={form.cash} onChange={set("cash")} />
-                    <NumericField id="valuation-debt" label="Interest-bearing debt *" value={form.debt} onChange={set("debt")} />
+      {tab === "model" && (
+        <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <section aria-label="Inputs" className="min-w-0">
+            {error && <div className="mb-4"><ErrorNote message={error} /></div>}
+            {profileError && <div className="mb-4"><ErrorNote message={profileError} /></div>}
+            {profileMessage && <p className="mb-4 text-[0.8125rem] text-[color:var(--muted)]" role="status">{profileMessage}</p>}
+            <form className="space-y-8" onSubmit={calculate}>
+              <Step n={1} title="Company">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-company">Company / instrument *</label>
+                    <input id="valuation-company" className="field" required value={form.company} onChange={set("company")} placeholder="e.g. Dangote Cement" />
                   </div>
-                </>
-              ) : (
-                <>
-                  <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Use the latest annual dividend per share in the same currency as the quoted share price. The model assumes five years of dividend growth followed by a stable terminal growth rate; do not use it where dividends are absent or unsustainable.</p>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <NumericField id="valuation-dividend" label={`Latest annual dividend per share (${form.currency}) *`} value={form.dividendPerShare} onChange={set("dividendPerShare")} placeholder="Positive annual dividend" />
+                  <div>
+                    <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-ticker">Ticker (optional)</label>
+                    <input id="valuation-ticker" className="field" value={form.ticker} onChange={set("ticker")} placeholder="DANGCEM.LG" />
                   </div>
-                </>
-              )}
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <NumericField id="valuation-price" label={`Current price per share in ${form.currency} (optional)`} value={form.price} onChange={set("price")} placeholder="Use a dated, sourced quote" />
-                <div>
-                  <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-date">Quote date (required if price entered)</label>
-                  <input id="valuation-price-date" className="field" type="date" value={form.priceDate} onChange={set("priceDate")} />
+                  <div>
+                    <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-country">Country / market *</label>
+                    <input id="valuation-country" className="field" required value={form.country} onChange={set("country")} placeholder="e.g. Nigeria" />
+                  </div>
+                  <div className="flex items-end">
+                    <button type="button" className="btn btn-secondary w-full" onClick={loadCompanyProfile} disabled={profileBusy}>{profileBusy ? "Loading…" : "Load financials from Companies"}</button>
+                  </div>
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-source">Quote source URL (optional: listed prices are checked against the exchange&apos;s own close)</label>
-                  <input id="valuation-price-source" className="field" type="url" value={form.priceSource} onChange={set("priceSource")} placeholder="https://... exchange or market-data source" />
+                <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">Loads what the company profile has; nothing missing is guessed. Check the figures and source before calculating.</p>
+              </Step>
+
+              <Step n={2} title="Method and source">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-method">Valuation method *</label>
+                    <select id="valuation-method" className="field" value={form.method} onChange={set("method")}>
+                      <option value="dcf">Discounted cash flow (non-financial operating companies)</option>
+                      <option value="ddm">Dividend discount (banks, insurers, mature dividend payers)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-currency">Statement / dividend currency</label>
+                    <select id="valuation-currency" className="field" value={form.currency} onChange={set("currency")}>
+                      {VALUATION_CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-period">Financial / dividend period end *</label>
+                    <input id="valuation-period" className="field" type="date" required value={form.period} onChange={set("period")} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-source">Source link for the figures *</label>
+                    <input id="valuation-source" className="field" required type="url" value={form.source} onChange={set("source")} placeholder="https://… annual report or statement" />
+                  </div>
                 </div>
-              </div>
-            </div>
+              </Step>
 
-            <div>
-              <h3 className="text-sm font-medium">Model suitability check</h3>
-              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">This is a suitability gate, not a formality. Ordinary-company DCF is limited to established non-financial businesses with positive, representative free cash flow. DDM is limited to mature dividend payers with sustainable payouts. Other business types need different models, which this workspace does not yet provide.</p>
-              <label className="mb-1.5 mt-3 block text-xs text-[color:var(--muted)]" htmlFor="valuation-model-fit">Company / instrument profile *</label>
-              <select id="valuation-model-fit" className="field" value={form.modelFit} onChange={set("modelFit")}>
-                <option value="uncertain">Unsure / not yet assessed</option>
-                <option value="standard-operating-company">Established non-financial operating company with positive, representative FCF</option>
-                <option value="financial-institution">Bank, insurer, lender or other financial institution</option>
-                <option value="mature-dividend-payer">Mature dividend payer in another sector</option>
-                <option value="negative-or-volatile-fcf">Negative or highly volatile free cash flow</option>
-                <option value="early-stage">Early-stage / pre-profit business</option>
-                <option value="reit-property">REIT / property investment company</option>
-              </select>
-              <label className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-[color:var(--muted)]">
-                <input type="checkbox" className="mt-0.5" checked={modelFitConfirmed} onChange={(event) => setModelFitConfirmed(event.target.checked)} />
-                <span>{form.method === "dcf" ? "I have checked that this is a non-financial operating company, the entered free cash flow is positive and representative, and the currency and units match the cited source." : "I have checked that this is a mature dividend payer, the entered annual dividend is sustainable, and the currency matches the cited source."}</span>
-              </label>
-              {sectorRequiresDdm && form.method === "dcf" ? <p className="mt-2 text-xs text-[color:var(--risk)]">The existing company profile identifies a financial-sector business. This workspace blocks ordinary-company DCF for that profile; switch to DDM and enter a sourced annual dividend per share.</p> : null}
-            </div>
+              <Step n={3} title={form.method === "dcf" ? "Cash flow and balance sheet" : "Dividend"}
+                    hint={form.method === "dcf" ? "All in the same units (not thousands or millions); shares as a count." : "The latest annual dividend per share, in the quote's currency."}>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {form.method === "dcf" ? (
+                    <>
+                      <NumericField id="valuation-fcf" label="Latest annual unlevered free cash flow *" value={form.fcf} onChange={set("fcf")} placeholder="Positive" />
+                      <NumericField id="valuation-shares" label="Shares outstanding *" value={form.shares} onChange={set("shares")} placeholder="Number of shares" />
+                      <NumericField id="valuation-cash" label="Cash and cash equivalents *" value={form.cash} onChange={set("cash")} />
+                      <NumericField id="valuation-debt" label="Interest-bearing debt *" value={form.debt} onChange={set("debt")} />
+                    </>
+                  ) : (
+                    <NumericField id="valuation-dividend" label={`Latest annual dividend per share (${form.currency}) *`} value={form.dividendPerShare} onChange={set("dividendPerShare")} placeholder="Positive" />
+                  )}
+                </div>
+              </Step>
 
-            <div>
-              <h3 className="text-sm font-medium">Scenario assumptions</h3>
-              <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">{form.method === "dcf" ? "Growth rates are annual free-cash-flow growth for five years. Use a discount rate that reflects business and country risk." : "Growth rates are annual dividend growth for five years. Use the cost of equity, not WACC, for discounting dividends."} Terminal growth must be below the discount rate.</p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <NumericField id="valuation-bear" label={form.method === "dcf" ? "Bear-case annual FCF growth (%)" : "Bear-case annual dividend growth (%)"} value={form.bearGrowth} onChange={set("bearGrowth")} />
-                <NumericField id="valuation-base" label={form.method === "dcf" ? "Base-case annual FCF growth (%)" : "Base-case annual dividend growth (%)"} value={form.baseGrowth} onChange={set("baseGrowth")} />
-                <NumericField id="valuation-bull" label={form.method === "dcf" ? "Bull-case annual FCF growth (%)" : "Bull-case annual dividend growth (%)"} value={form.bullGrowth} onChange={set("bullGrowth")} />
-                <NumericField id="valuation-discount" label={form.method === "dcf" ? "Discount rate / WACC (%)" : "Cost of equity (%)"} value={form.discountRate} onChange={set("discountRate")} />
-                <NumericField id="valuation-terminal" label="Terminal growth (%)" value={form.terminalGrowth} onChange={set("terminalGrowth")} />
-              </div>
-            </div>
-            <button className="btn btn-primary w-full" type="submit">Calculate scenarios</button>
-          </form>
-        </section>
+              <Step n={4} title="Market price" hint="Optional. Without a dated quote the model will not call the share cheap or expensive. Listed prices are checked against the exchange's close.">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <NumericField id="valuation-price" label={`Price per share (${form.currency})`} value={form.price} onChange={set("price")} />
+                  <div>
+                    <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-date">Quote date</label>
+                    <input id="valuation-price-date" className="field" type="date" value={form.priceDate} onChange={set("priceDate")} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-price-source">Quote source link</label>
+                    <input id="valuation-price-source" className="field" type="url" value={form.priceSource} onChange={set("priceSource")} placeholder="https://… exchange or data source" />
+                  </div>
+                </div>
+              </Step>
 
-        <div className="space-y-6">
-          <section className="panel p-5 sm:p-6" aria-labelledby="results-title">
-            <p className="eyebrow">Deterministic model</p>
-            <h2 id="results-title" className="h3 mt-2 text-xl">Bear, base and bull valuation</h2>
+              <Step n={5} title="Is the model suitable?">
+                <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="valuation-model-fit">Company / instrument profile *</label>
+                <select id="valuation-model-fit" className="field" value={form.modelFit} onChange={set("modelFit")}>
+                  <option value="uncertain">Unsure / not yet assessed</option>
+                  <option value="standard-operating-company">Established non-financial operating company with positive, representative FCF</option>
+                  <option value="financial-institution">Bank, insurer, lender or other financial institution</option>
+                  <option value="mature-dividend-payer">Mature dividend payer in another sector</option>
+                  <option value="negative-or-volatile-fcf">Negative or highly volatile free cash flow</option>
+                  <option value="early-stage">Early-stage / pre-profit business</option>
+                  <option value="reit-property">REIT / property investment company</option>
+                </select>
+                <label className="mt-3 flex items-start gap-2 text-[0.8125rem] text-[color:var(--muted)]">
+                  <input type="checkbox" className="mt-1" checked={modelFitConfirmed} onChange={(event) => setModelFitConfirmed(event.target.checked)} />
+                  <span>{form.method === "dcf" ? "Non-financial operating company; free cash flow is positive and representative; currency and units match the source." : "Mature dividend payer; the dividend is sustainable; the currency matches the source."}</span>
+                </label>
+                {sectorRequiresDdm && form.method === "dcf" ? <p className="mt-2 text-[0.8125rem] text-risk">The company profile shows a financial-sector business, so DCF is blocked. Switch to dividend discount and enter the annual dividend.</p> : null}
+              </Step>
+
+              <Step n={6} title="Scenarios" hint={`Five years of annual ${methodWord} growth, then terminal growth, which must be below the ${form.method === "dcf" ? "discount rate" : "cost of equity"}.`}>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <NumericField id="valuation-bear" label={form.method === "dcf" ? "Bear-case annual FCF growth (%)" : "Bear-case annual dividend growth (%)"} value={form.bearGrowth} onChange={set("bearGrowth")} />
+                  <NumericField id="valuation-base" label={form.method === "dcf" ? "Base-case annual FCF growth (%)" : "Base-case annual dividend growth (%)"} value={form.baseGrowth} onChange={set("baseGrowth")} />
+                  <NumericField id="valuation-bull" label={form.method === "dcf" ? "Bull-case annual FCF growth (%)" : "Bull-case annual dividend growth (%)"} value={form.bullGrowth} onChange={set("bullGrowth")} />
+                  <NumericField id="valuation-discount" label={form.method === "dcf" ? "Discount rate / WACC (%)" : "Cost of equity (%)"} value={form.discountRate} onChange={set("discountRate")} />
+                  <NumericField id="valuation-terminal" label="Terminal growth (%)" value={form.terminalGrowth} onChange={set("terminalGrowth")} />
+                </div>
+              </Step>
+              <button className="btn btn-primary w-full sm:w-auto" type="submit">Calculate scenarios</button>
+            </form>
+          </section>
+
+          <section aria-label="Result" className="min-w-0 xl:sticky xl:top-20 xl:self-start">
             {!hasCalculated ? (
-              <div className="mt-5 rounded-xl border border-dashed hairline p-6">
-                <h3 className="text-sm font-medium">No valuation calculated yet</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">Enter sourced inputs and assumptions, then calculate. The page intentionally starts empty instead of showing illustrative values as if they were real market data.</p>
+              <div className="rounded-xl border border-dashed hairline p-6">
+                <h2 className="text-[0.9375rem] text-[color:var(--text)]">No valuation yet</h2>
+                <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">Fill in the steps and calculate. The result appears here: bear, base and bull value per share, the range against the quote, a sensitivity table and a check of each input against its source.</p>
               </div>
             ) : (
               <>
-                <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]">{form.company}{form.ticker ? ` (${form.ticker})` : ""} · period ended {form.period} · source <a href={form.source} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">open filing ↗</a></p>
-                {statementAgeDays != null && statementAgeDays > 548 ? <p className="mt-2 rounded-lg border hairline p-3 text-xs leading-relaxed text-[color:var(--muted)]">Freshness warning: this financial period is more than 18 months old. Refresh the statements before relying on the valuation.</p> : null}
-                {price != null && quoteAgeDays != null && quoteAgeDays > 7 ? <p className="mt-2 rounded-lg border hairline p-3 text-xs leading-relaxed text-[color:var(--muted)]">Freshness warning: the entered quote is {quoteAgeDays} days old. The comparison may not reflect the current market price.</p> : null}
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  {scenarios.map((scenario) => <ScenarioCard key={scenario.name} scenario={scenario} currency={form.currency} price={price} />)}
-                </div>
+                <p className="text-[0.8125rem] text-[color:var(--dim)]">{form.company}{form.ticker ? ` · ${form.ticker}` : ""} · period ended {form.period} · <a href={form.source} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">source ↗</a></p>
+                <h2 className="mt-1 text-[1.25rem] text-[color:var(--text)]">{conclusion ?? "No market-price comparison"}</h2>
                 {scenarioLow != null && scenarioHigh != null && (
-                  <div className="mt-4 rounded-xl border hairline p-4">
-                    <p className="eyebrow">Scenario range, not a confidence interval</p>
-                    <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2">
-                      <p className="text-lg font-semibold">{money(scenarioLow, form.currency)} – {money(scenarioHigh, form.currency)}</p>
-                      <p className="text-xs text-[color:var(--muted)]">Across bear/base/bull assumptions</p>
-                    </div>
-                    {price != null && form.priceDate && form.priceSource && (
-                      <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">Compared with quote dated {form.priceDate} from <a href={form.priceSource} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">the entered market-price source ↗</a>. Quote currency is assumed to match {form.currency}; the tool does not independently verify that alignment.</p>
-                    )}
-                  </div>
+                  <p className="mt-1 text-[0.875rem] text-[color:var(--muted)]">Range <span className="kbd text-[color:var(--text)]">{money(scenarioLow, form.currency)} – {money(scenarioHigh, form.currency)}</span>{price != null ? <> against <span className="kbd text-[color:var(--text)]">{money(price, form.currency)}</span>{form.priceDate ? ` on ${form.priceDate}` : ""}</> : null}</p>
                 )}
+                {statementAgeDays != null && statementAgeDays > 548 ? <p className="mt-2 text-[0.8125rem] text-risk">The financial period is over 18 months old.</p> : null}
+                {price != null && quoteAgeDays != null && quoteAgeDays > 7 ? <p className="mt-2 text-[0.8125rem] text-risk">The quote is {quoteAgeDays} days old.</p> : null}
+
+                <div className="mt-5 grid grid-cols-3 gap-4 border-y hairline py-4">
+                  {scenarios.map((sc) => {
+                    const upside = price != null && price > 0 && sc.perShare != null ? (sc.perShare / price - 1) * 100 : null;
+                    return (
+                      <div key={sc.name} className="min-w-0">
+                        <p className="text-[0.75rem] text-[color:var(--dim)]">{sc.name} · {sc.growth.toFixed(1)}%</p>
+                        <p className="kbd mt-0.5 truncate text-[1.125rem] text-[color:var(--text)]">{money(sc.perShare, form.currency)}</p>
+                        <p className={`kbd text-[0.75rem] ${upside == null ? "text-[color:var(--dim)]" : upside < 0 ? "text-risk" : "text-verified"}`}>{upside == null ? "no quote" : `${upside > 0 ? "+" : ""}${upside.toFixed(1)}% vs price`}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium">Base-case sensitivity</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-[color:var(--muted)]">Implied value per share when the {form.method === "dcf" ? "discount rate" : "cost of equity"} moves by ±2 percentage points and terminal growth by ±1 point. Cells where terminal growth meets or exceeds the discount rate are not calculated.</p>
-                  <div className="mt-3 overflow-x-auto rounded-lg border hairline">
-                    <table className="w-full min-w-[28rem] border-collapse text-left text-xs">
+                  <h3 className="text-[0.875rem] text-[color:var(--text)]">Sensitivity, base case</h3>
+                  <p className="mt-0.5 text-[0.75rem] text-[color:var(--dim)]">Value per share as the {form.method === "dcf" ? "discount rate" : "cost of equity"} (rows) and terminal growth (columns) move.</p>
+                  <div className="mt-2 overflow-x-auto">
+                    <table className="w-full min-w-[26rem] border-collapse text-left text-[0.8125rem]">
                       <thead>
                         <tr className="border-b hairline text-[color:var(--dim)]">
-                          <th className="px-3 py-2 font-normal">{form.method === "dcf" ? "Discount rate" : "Cost of equity"} / Terminal growth</th>
-                          {sensitivity[0]?.cells.map((cell) => <th key={cell.terminalGrowth} className="px-3 py-2 font-normal">{cell.terminalGrowth.toFixed(1)}%</th>)}
+                          <th className="py-2 pr-3 font-normal" />
+                          {sensitivity[0]?.cells.map((cell) => <th key={cell.terminalGrowth} className="py-2 pr-3 font-normal">{cell.terminalGrowth.toFixed(1)}%</th>)}
                         </tr>
                       </thead>
                       <tbody>
                         {sensitivity.map((row) => (
                           <tr key={row.discountRate} className="border-b hairline last:border-0">
-                            <th className="px-3 py-2 font-normal text-[color:var(--muted)]">{row.discountRate.toFixed(1)}%</th>
-                            {row.cells.map((cell) => <td key={cell.terminalGrowth} className="px-3 py-2 kbd">{cell.value == null ? "N/A" : money(cell.value, form.currency)}</td>)}
+                            <th className="py-2 pr-3 font-normal text-[color:var(--muted)]">{row.discountRate.toFixed(1)}%</th>
+                            {row.cells.map((cell) => <td key={cell.terminalGrowth} className="kbd py-2 pr-3">{cell.value == null ? "–" : money(cell.value, form.currency)}</td>)}
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                 </div>
-                <div className="mt-4 rounded-xl border hairline p-4" aria-live="polite">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="eyebrow">Evidence for the inputs</p>
-                    {evidence ? <span className={`rounded-full border px-2.5 py-0.5 text-xs ${evidence.grade === "A" || evidence.grade === "B" ? "text-verified border-verified/35" : "text-risk border-risk/40"}`}>Grade {evidence.grade}</span> : null}
+
+                <div className="mt-6" aria-live="polite">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[0.875rem] text-[color:var(--text)]">Evidence for the inputs</h3>
+                    {evidence ? <span className={`rounded-full border px-2 py-0.5 text-[0.6875rem] ${evidence.grade === "A" || evidence.grade === "B" ? "text-verified border-verified/35" : "text-risk border-risk/40"}`}>Grade {evidence.grade}</span> : null}
                   </div>
-                  {evidenceBusy && <p className="mt-2 text-xs text-[color:var(--muted)]" role="status">Checking each input against exchange data, the filing and the cited document…</p>}
-                  {!evidenceBusy && !evidence && <p className="mt-2 text-xs text-[color:var(--muted)]">The evidence check could not run. <button type="button" className="underline" onClick={() => void checkEvidence()}>Try again</button></p>}
+                  {evidenceBusy && <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]" role="status">Checking each input against exchange data, the filing and the cited document…</p>}
+                  {!evidenceBusy && !evidence && <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">The check could not run. <button type="button" className="underline" onClick={() => void checkEvidence()}>Try again</button></p>}
                   {evidence && (
                     <>
-                      <table className="mt-3 w-full text-left text-xs">
-                        <tbody>
+                      <table className="mt-2 w-full text-left text-[0.8125rem]">
+                        <tbody className="divide-y divide-white/[0.07] border-y hairline">
                           {Object.entries(evidence.fields).map(([k, f]) => (
-                            <tr key={k} className="border-b hairline last:border-0">
+                            <tr key={k}>
                               <td className="py-1.5 pr-3 text-[color:var(--muted)]">{FIELD_LABEL[k] ?? k}</td>
                               <td className={`py-1.5 pr-3 ${STATUS_LABEL[f.status]?.[1] ?? ""}`}>{STATUS_LABEL[f.status]?.[0] ?? f.status}</td>
-                              <td className="py-1.5 text-[color:var(--dim)]">{f.note}</td>
+                              <td className="py-1.5 text-[0.75rem] text-[color:var(--dim)]">{f.note}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
-                      <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
+                      <p className="mt-2 text-[0.75rem] text-[color:var(--muted)]">
                         Source document: {evidence.document.standing ? STANDING_LABEL[evidence.document.standing] : "none"}
                         {evidence.document.status === "ok"
-                          ? `; ${evidence.document.names_company ? "names the company" : "does not name the company"}, ${evidence.document.states_period ? "states the period" : "does not state the period"}${evidence.document.read_as_statement ? ", and was read as a financial statement (current-period column, accounting checks)" : ""}.`
+                          ? `; ${evidence.document.names_company ? "names the company" : "does not name the company"}, ${evidence.document.states_period ? "states the period" : "does not state the period"}${evidence.document.read_as_statement ? ", read as a financial statement" : ""}.`
                           : evidence.document.url ? `; could not be read (${evidence.document.status}).` : "."}
                       </p>
-                      {evidence.reasons.length > 0 && <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-[color:var(--muted)]">{evidence.reasons.map((r) => <li key={r}>{r}</li>)}</ul>}
-                      <p className="mt-2 text-[0.6875rem] text-[color:var(--dim)]">{evidence.method}</p>
+                      {evidence.reasons.length > 0 && <ul className="mt-1 list-disc space-y-0.5 pl-4 text-[0.75rem] text-[color:var(--muted)]">{evidence.reasons.map((r) => <li key={r}>{r}</li>)}</ul>}
                     </>
                   )}
                 </div>
-                <div className="mt-4 rounded-xl border hairline p-4">
-                  <p className="eyebrow">Conclusion across scenarios</p>
-                  <h3 className="mt-2 text-lg font-semibold">{verdict ?? rangeConclusion ?? (price != null && evidence && !evidence.verdict_allowed ? "No verdict: the inputs are not sufficiently evidenced" : "No market-price comparison")}</h3>
-                  <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
-                    {verdict || rangeConclusion
-                      ? "This is a mechanical comparison of the entered quote with the three model scenarios, not a recommendation or proof of mispricing; the 15% base-case band is a display convention, not a statistical confidence interval. The output can be wrong if the inputs, accounting basis or assumptions are wrong. Review the source and countercase before acting."
-                      : "Enter a positive current share price from a dated source to compare it with the scenario range. Without a quote, the model will not call the stock cheap or expensive."}
-                  </p>
+
+                <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <button type="button" className="btn btn-secondary" onClick={saveValuationLocally}>Save to portfolio</button>
+                  <Link href={`/app/companies?name=${encodeURIComponent(form.company)}`} className="text-[0.8125rem] text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Company profile</Link>
+                  <Link href={`/app/research?question=${encodeURIComponent(countercaseQuestion)}`} className="text-[0.8125rem] text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Research the countercase</Link>
                 </div>
-                <div className="mt-4 rounded-xl border hairline p-4">
-                  <button type="button" className="btn btn-secondary w-full" onClick={saveValuationLocally}>Save valuation to Portfolio Intelligence</button>
-                  {savedMessage ? <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status" aria-live="polite">{savedMessage}</p> : <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">Saved valuation scenarios stay in this browser. They are not uploaded to the server. Export a backup before clearing browser data or moving to another device.</p>}
-                </div>
+                {savedMessage && <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]" role="status" aria-live="polite">{savedMessage}</p>}
+                <p className="mt-4 text-[0.75rem] text-[color:var(--dim)]">A mechanical comparison of the quote with three scenarios, not a target price or a recommendation. The 15% band around the base case is a display convention.</p>
               </>
             )}
           </section>
+        </div>
+      )}
 
-          <section className="mt-6 panel p-5 sm:p-6" aria-labelledby="valuation-backup-title">
-            <p className="eyebrow">Local data backup</p>
-            <h2 id="valuation-backup-title" className="h3 mt-2 text-lg">Keep your valuation history portable.</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">Export or restore saved valuation snapshots at any time, even before calculating a new model in this session. These JSON backups include valuation assumptions and source links, not portfolio holdings. Portfolio holdings use the separate CSV/XLSX backup controls in My Portfolio.</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <button type="button" className="btn btn-secondary justify-center" onClick={exportValuationHistory}>Export saved valuation history</button>
-              <label className="block text-xs leading-relaxed text-[color:var(--muted)]">
+      {tab === "saved" && (
+        <section aria-label="Saved valuations">
+          {saved.length === 0 ? (
+            <p className="text-[0.8125rem] text-[color:var(--muted)]">Nothing saved yet. Calculate a valuation and choose Save to portfolio; it is then set against the holding on the Portfolio page.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[46rem] text-left text-[0.8125rem]">
+                <thead className="text-[color:var(--dim)]"><tr><th className="py-2.5 pr-3 font-normal">Company</th><th className="py-2.5 pr-3 font-normal">Method</th><th className="py-2.5 pr-3 font-normal">Bear · base · bull</th><th className="py-2.5 pr-3 font-normal">Quote</th><th className="py-2.5 pr-3 font-normal">Saved</th><th className="py-2.5 font-normal" /></tr></thead>
+                <tbody className="divide-y divide-white/[0.07] border-t hairline">
+                  {saved.map((v) => (
+                    <tr key={v.id}>
+                      <td className="py-2.5 pr-3 text-[color:var(--text)]">{v.company}{v.ticker ? <span className="text-[color:var(--dim)]"> · {v.ticker}</span> : null}</td>
+                      <td className="py-2.5 pr-3 text-[color:var(--muted)]">{v.method === "dcf" ? "DCF" : "Dividend discount"}</td>
+                      <td className="kbd py-2.5 pr-3">{[v.bearPerShare, v.basePerShare, v.bullPerShare].map((x) => money(x, v.currency)).join(" · ")}</td>
+                      <td className="kbd py-2.5 pr-3">{v.quotePrice != null ? `${money(v.quotePrice, v.currency)}${v.quoteDate ? `, ${v.quoteDate}` : ""}` : "–"}</td>
+                      <td className="kbd py-2.5 pr-3 text-[color:var(--muted)]">{v.calculatedAt.slice(0, 10)}</td>
+                      <td className="whitespace-nowrap py-2.5 text-[0.75rem]">
+                        <button type="button" className="text-[color:var(--muted)] underline-offset-4 hover:underline" onClick={() => { setForm((c) => ({ ...c, company: v.company, ticker: v.ticker ?? "", country: v.country ?? c.country })); pick("model"); }}>Revalue</button>
+                        {v.statementSourceUrl ? <a href={v.statementSourceUrl} target="_blank" rel="noreferrer" className="ml-3 text-[color:var(--muted)] underline-offset-4 hover:underline">Source ↗</a> : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <div className="mt-8 border-t hairline pt-6">
+            <h2 className="text-[0.9375rem] text-[color:var(--text)]">Back up</h2>
+            <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">Saved valuations live in this browser. The backup holds assumptions and source links, not portfolio holdings.</p>
+            <div className="mt-3 flex flex-wrap items-end gap-4">
+              <button type="button" className="btn btn-secondary" onClick={exportValuationHistory}>Export saved valuation history</button>
+              <label className="block text-xs text-[color:var(--muted)]">
                 Restore valuation history from JSON backup
-                <input className="field mt-2" type="file" accept=".json,application/json" onChange={importValuationHistory} aria-describedby="valuation-backup-help" />
+                <input className="field mt-1.5" type="file" accept=".json,application/json" onChange={importValuationHistory} aria-describedby="valuation-backup-help" />
               </label>
             </div>
-            <p id="valuation-backup-help" className="mt-2 text-xs leading-relaxed text-[color:var(--dim)]">Import validates the file, is limited to 2 MB, and asks before replacing saved history.</p>
-            {backupMessage ? <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status" aria-live="polite">{backupMessage}</p> : null}
-          </section>
+            <p id="valuation-backup-help" className="mt-2 text-[0.75rem] text-[color:var(--dim)]">Up to 2 MB; checked before anything is replaced, and you are asked first.</p>
+            {backupMessage ? <p className="mt-3 text-[0.8125rem] text-[color:var(--muted)]" role="status" aria-live="polite">{backupMessage}</p> : null}
+          </div>
+        </section>
+      )}
 
-          <section className="panel p-5" aria-labelledby="method-title">
-            <p className="eyebrow">Method and limitations</p>
-            <h2 id="method-title" className="h3 mt-2 text-lg">What this model can and cannot say</h2>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[color:var(--muted)]">
-              <li>{form.method === "dcf" ? "Projects five years of unlevered free cash flow, discounts cash flows and terminal value, adds cash, subtracts debt and divides by shares outstanding." : "Projects five years of annual dividends per share and discounts dividends plus terminal value using the cost of equity."}</li>
-              <li>{form.method === "dcf" ? "It is unsuitable for banks, insurers, early-stage businesses, REITs and firms with negative or structurally volatile free cash flow." : "It is unsuitable when dividends are absent, irregular or unsustainable, or when payout policy is likely to change materially."}</li>
-              <li>It does not independently verify the source, accounting basis, share count, currency, dilution, minority interests or latest price.</li>
-              <li>It does not yet adjust for non-operating assets, leases, pension deficits, preferred shares, minority interests, cyclicality or country-specific discount-rate calibration.</li>
-              <li>A model output is not a target price or a buy/sell instruction. Review assumptions and contrary evidence before drawing a conclusion.</li>
-            </ul>
-          </section>
-
-          <section className="rounded-xl border hairline p-5">
-            <p className="eyebrow">Next step</p>
-            <h2 className="h3 mt-2 text-lg">Put the result in context.</h2>
-            <div className="mt-4 grid gap-2">
-              <Link href={`/app/companies?name=${encodeURIComponent(form.company)}`} className="btn btn-secondary justify-center">Review company profile</Link>
-              <Link href="/app/markets/portfolio" className="btn btn-ghost justify-center">Open Portfolio Intelligence</Link>
-              <Link href={`/app/research?question=${encodeURIComponent(countercaseQuestion)}`} className="btn btn-ghost justify-center">Research the countercase</Link>
-            </div>
-          </section>
-        </div>
-      </div>
+      {tab === "method" && (
+        <section aria-label="Method" className="max-w-3xl space-y-6 text-[0.875rem] text-[color:var(--muted)]">
+          <div>
+            <h2 className="text-[0.9375rem] text-[color:var(--text)]">Discounted cash flow</h2>
+            <p className="mt-1">Five years of unlevered free cash flow at each scenario&apos;s growth rate, plus a terminal value, discounted at the WACC; add cash, subtract debt, divide by shares. Not for banks, insurers, early-stage businesses, REITs or companies with negative or volatile free cash flow.</p>
+          </div>
+          <div>
+            <h2 className="text-[0.9375rem] text-[color:var(--text)]">Dividend discount</h2>
+            <p className="mt-1">Five years of dividends per share at each scenario&apos;s growth rate, plus a terminal value, discounted at the cost of equity. Not for companies whose dividends are absent, irregular or likely to change.</p>
+          </div>
+          <div>
+            <h2 className="text-[0.9375rem] text-[color:var(--text)]">Evidence check</h2>
+            <p className="mt-1">Each input is checked against the exchange&apos;s data, the company&apos;s filed statements and the cited document, and graded A to D. A verdict on the quote is given only when the inputs are well enough evidenced.</p>
+          </div>
+          <div>
+            <h2 className="text-[0.9375rem] text-[color:var(--text)]">What it does not do</h2>
+            <p className="mt-1">No adjustment yet for non-operating assets, leases, pension deficits, preferred shares, minority interests, dilution, cyclicality or country-specific discount rates. A result is not a target price or an instruction to buy or sell.</p>
+          </div>
+        </section>
+      )}
     </Container>
+  );
+}
+
+function Step({ n, title, hint, children }: { n: number; title: string; hint?: string; children: ReactNode }) {
+  return (
+    <fieldset>
+      <legend className="flex items-baseline gap-2 text-[0.9375rem] text-[color:var(--text)]"><span className="kbd text-[0.75rem] text-[color:var(--dim)]">{n}</span>{title}</legend>
+      {hint && <p className="mt-0.5 text-[0.75rem] text-[color:var(--dim)]">{hint}</p>}
+      <div className="mt-3">{children}</div>
+    </fieldset>
   );
 }
 
