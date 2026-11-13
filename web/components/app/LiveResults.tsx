@@ -249,10 +249,13 @@ export function LiveResults({ election, title, intro }: { election: string; titl
             </section>
           )}
 
-          {nat.spread && Object.keys(nat.spread).length > 0 && (
+          {nat.spread && (
             <section className="mt-8">
               <h2 className="h3">25% in two-thirds of the states</h2>
               <p className="mt-1 text-[0.8125rem] text-[color:var(--dim)]">The winner needs the most votes and at least 25% in 24 of the 36 states. Whether the FCT is also required was disputed in 2023, so it is shown on its own.</p>
+              {Object.keys(nat.spread).length === 0 ? (
+                <p className="mt-3 text-[0.875rem] text-[color:var(--muted)]">Each candidate&apos;s count of states at 25% appears here as states declare.</p>
+              ) : (
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full min-w-[28rem] text-left text-[0.8125rem]">
                   <thead className="text-[color:var(--dim)]"><tr><th className="py-2 pr-3 font-normal">Candidate</th><th className="py-2 pr-3 font-normal">States at 25%</th><th className="py-2 pr-3 font-normal">Test</th><th className="py-2 font-normal">FCT at 25%</th></tr></thead>
@@ -268,6 +271,7 @@ export function LiveResults({ election, title, intro }: { election: string; titl
                   </tbody>
                 </table>
               </div>
+              )}
             </section>
           )}
 
