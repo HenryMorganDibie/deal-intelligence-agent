@@ -296,6 +296,7 @@ export default function WatchlistsPage() {
             <p className="flex gap-4 text-[0.8125rem]">
               <Link href="/app/elections/gambia" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">Gambia results</Link>
               <Link href="/app/elections/nigeria" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">Nigeria results</Link>
+              <Link href="/app/elections/nigeria/governorship" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">Governorship</Link>
               <Link href="/developers#elections" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">API</Link>
             </p>
           </div>

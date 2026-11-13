@@ -153,7 +153,8 @@ async def index() -> JSONResponse:
                                  "markets/search", "markets/quote", "elections/news", "elections/summary",
                                  "elections/incidents", "elections/areas", "elections/polling-units",
                                  "elections/polling-units/{code}", "elections/results", "elections/results/sheets",
-                                 "elections/accreditation", "elections/alerts")]},
+                                 "elections/accreditation", "elections/alerts", "elections/live",
+                                 "elections/governorship")]},
                         headers={"Cache-Control": "public, max-age=3600"})
 
 
@@ -267,7 +268,7 @@ async def election_polls(request: Request, response: Response, election: str = Q
 
 @router.get("/elections/export")
 async def election_export(request: Request, response: Response, dataset: str = Query(..., max_length=20),
-                          election: Optional[str] = Query(None, max_length=20), since: Optional[str] = Query(None, max_length=10),
+                          election: Optional[str] = Query(None, max_length=40), since: Optional[str] = Query(None, max_length=10),
                           state: Optional[str] = Query(None, max_length=40), office: Optional[str] = Query(None, max_length=30)):
     """CSV download of an election dataset: news, incidents, live (results), history or candidates. Team plan and
     above."""
@@ -302,11 +303,11 @@ async def election_history(request: Request, response: Response, state: Optional
 
 
 @router.get("/elections/live")
-async def election_live(request: Request, response: Response, election: str = Query("gm-2026", max_length=20)) -> dict:
+async def election_live(request: Request, response: Response, election: str = Query("gm-2026", max_length=40)) -> dict:
     """Live results as the electoral commission declares them, unit by unit (The Gambia's constituencies, gm-2026;
-    Nigeria's states, ng-2027): national and area tallies, units won, margins, turnout once an area is complete,
-    Nigeria's 25%-in-two-thirds-of-states test, and each unit's result with its source and 2023 shares. Pro and
-    above."""
+    Nigeria's states, ng-2027; a governorship race's LGAs, ng-2027-gov-<state>, e.g. ng-2027-gov-lagos): tallies,
+    units won, margins, turnout once an area is complete, the 25% spread test (two-thirds of the states, or of the
+    state's LGAs for governor), and each unit's result with its source. Pro and above."""
     from src import election_live
     status = await authorize(request, response)
     if status.get("plan") not in election_live.PLANS:
@@ -314,6 +315,20 @@ async def election_live(request: Request, response: Response, election: str = Qu
 
     async def run():
         return await run_in_threadpool(election_live.results, election)
+    return await _call(run)
+
+
+@router.get("/elections/governorship")
+async def election_governorship(request: Request, response: Response) -> dict:
+    """The 28 governorship races of 6 February 2027 at a glance: each state's LGAs in, leader, margin, 25% spread
+    and 2023 winner. A race's full results: /elections/live?election=ng-2027-gov-<state>. Pro and above."""
+    from src import election_live
+    status = await authorize(request, response)
+    if status.get("plan") not in election_live.PLANS:
+        raise PublicApiError(403, "plan_required", "Live results come with the Pro plan and above.")
+
+    async def run():
+        return await run_in_threadpool(election_live.governorship)
     return await _call(run)
 
 

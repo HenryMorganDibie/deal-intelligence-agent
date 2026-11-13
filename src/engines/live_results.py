@@ -124,6 +124,22 @@ def _spread(by_unit: dict[str, dict], election: str) -> dict:
     return {k: v for k, v in sorted(out.items(), key=lambda kv: -kv[1]["states_at_25"]) if v["states_at_25"] or v["fct_at_25"]}
 
 
+def _gov_spread(by_unit: dict[str, dict], election: str) -> dict:
+    """A governorship winner needs at least 25% of the votes in two-thirds of the state's LGAs."""
+    import math
+    lgas = list(le.units(election))
+    needed = math.ceil(len(lgas) * 2 / 3)
+    out = {}
+    for c in candidates(election):
+        n = c["name"]
+        reached = sum(1 for u in lgas if u in by_unit and by_unit[u]["valid"]
+                      and by_unit[u]["votes"].get(n, 0) / by_unit[u]["valid"] >= 0.25)
+        if reached:
+            out[n] = {"states_at_25": reached, "needed": needed, "met": reached >= needed, "fct_at_25": None,
+                      "of": len(lgas)}
+    return dict(sorted(out.items(), key=lambda kv: -kv[1]["states_at_25"]))
+
+
 def tally(rows: list[dict], election: str = "gm-2026") -> dict:
     """National, area and unit results from the units in so far."""
     s = le.spec(election)
@@ -173,6 +189,8 @@ def tally(rows: list[dict], election: str = "gm-2026") -> dict:
             r[f"votes_{base['year']}"] = base["national"][r["candidate"]]
     if s["rule"] == "ng_spread":
         national["spread"] = _spread(by_unit, election)
+    elif s["rule"] == "ng_gov_spread":
+        national["spread"] = _gov_spread(by_unit, election)
     out_units = []
     for u, area in unit_area.items():
         r = by_unit.get(u)
@@ -195,4 +213,5 @@ def tally(rows: list[dict], election: str = "gm-2026") -> dict:
             "baseline_winners": baseline_winners,
             "unit_word": s["unit_word"], "units_word": s["units_word"], "area_word": s["area_word"],
             "candidates": names, "national": national, "areas": areas, "units": out_units,
-            "baseline_year": base.get("year"), "notes": s["notes"] + " Turnout is shown for an area once all of it is in."}
+            "baseline_year": base.get("year"), "state": s.get("state"), "previous": s.get("previous"), "rule": s["rule"],
+            "notes": s["notes"] + " Turnout is shown for an area once all of it is in."}

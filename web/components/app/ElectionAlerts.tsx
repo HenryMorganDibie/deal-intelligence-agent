@@ -16,7 +16,9 @@ type State = { alerts: Alert[]; allowance: number; plan: string; full_features: 
 type TestResult = { delivered: boolean; destination?: string; error?: string | null };
 
 // Elections with live results (src/data/live_elections.py SPECS).
-const LIVE_RESULTS = ["gm-2026", "ng-2027"];
+const LIVE_RESULTS = ["gm-2026", "ng-2027", "ng-2027-gov"];
+// Governorship races send results only; their incidents and coverage come with Nigeria (ng-2027).
+const RESULTS_ONLY = ["ng-2027-gov"];
 
 const NIGERIA: ElectionInfo = {
   key: "ng-2027", country: "Nigeria", label: "Nigeria: 2027 general elections", dates: [], body: "INEC",
@@ -213,7 +215,9 @@ export function ElectionAlerts() {
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Election">
-                  <select value={election} onChange={(e) => { setElection(e.target.value); setStates([]); if (!LIVE_RESULTS.includes(e.target.value) && kind === "results") setKind("incidents"); }} className="field">
+                  <select value={election} onChange={(e) => { setElection(e.target.value); setStates([]);
+                    if (RESULTS_ONLY.includes(e.target.value)) setKind("results");
+                    else if ((!LIVE_RESULTS.includes(e.target.value) && kind === "results")) setKind("incidents"); }} className="field">
                     {(details.length ? details : Object.keys(data.elections).map(info)).map((e) => {
                       const next = nextDate(e);
                       return <option key={e.key} value={e.key}>{e.country}{next ? ` · ${next}` : ""}</option>;
@@ -227,9 +231,10 @@ export function ElectionAlerts() {
               <div>
                 <p className="mb-2 text-[0.8125rem] text-[color:var(--muted)]">Send</p>
                 <Segmented label="Send" value={kind} onChange={(v) => setKind(v)}
-                           options={[["incidents", "Incidents"], ...(full ? [["news", "All coverage"] as ["news", string]] : []),
-                                     ...(LIVE_RESULTS.includes(election) ? [["results", "Results"] as ["results", string]] : [])]} />
-                {!full && <p className="mt-1.5 text-[0.75rem] text-[color:var(--dim)]">All coverage comes with Team and above.</p>}
+                           options={RESULTS_ONLY.includes(election) ? [["results", "Results"]]
+                                    : [["incidents", "Incidents"], ...(full ? [["news", "All coverage"] as ["news", string]] : []),
+                                       ...(LIVE_RESULTS.includes(election) ? [["results", "Results"] as ["results", string]] : [])]} />
+                {!full && !RESULTS_ONLY.includes(election) && <p className="mt-1.5 text-[0.75rem] text-[color:var(--dim)]">All coverage comes with Team and above.</p>}
               </div>
               {kind === "incidents" && (
                 <div>

@@ -187,7 +187,7 @@ def test_untracked_names_surface_who_the_lists_miss():
 def test_elections_list_and_alert_choices_cover_every_profile():
     keys = [e["key"] for e in election_feed.elections()]
     assert set(keys) == {"ng-2027", *PROFILES} and keys[0] == "gm-2026"      # soonest first
-    assert set(election_alerts.ELECTIONS) == set(keys)
+    assert set(election_alerts.ELECTIONS) == {*keys, "ng-2027-gov"}     # governorship: results alerts only
     f = election_alerts.clean_filters({"election": "ke-2027", "kind": "news", "states": ["Nakuru"], "people": ["William Ruto"]})
     story = {"id": "s", "election": "ke-2027", "states": ["Nakuru"], "people": ["William Ruto"], "title": "x"}
     assert election_alerts.matches(story, f)

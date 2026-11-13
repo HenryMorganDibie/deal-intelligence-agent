@@ -202,3 +202,87 @@ def test_imported_sheets_are_checked_queued_and_read_within_the_budget(monkeypat
     monkeypatch.setattr(er, "submit", fake_submit)
     res = er.read_queue()
     assert res["read"] == 1 and res["failed"] == 1 and calls["done"] == [("q1", "read"), ("q2", "failed")]
+
+
+def test_governorship_races_share_one_store_and_alert_once_a_state_is_complete(monkeypatch):
+    from src.data import live_elections as le
+    from src.data import ng_governorship as gov
+    store, delivered, seen = {}, [], set()
+
+    def fake_rpc(name, payload):
+        class R:
+            status_code = 200
+        r = R()
+        seen.add(payload.get("p_election"))
+        if name == "live_result_upsert":
+            store[payload["p_area"]] = payload["p_data"]
+            r.json = lambda: store[payload["p_area"]]
+        else:
+            r.json = lambda: list(store.values())
+        return r
+    from src import hosted_market as hm
+    monkeypatch.setattr(hm, "_rpc_sync", fake_rpc)
+    monkeypatch.setattr(election_alerts, "deliver", lambda stories: delivered.extend(stories) or {"sent": len(stories)})
+    monkeypatch.setenv("DEAL_INTEL_OPERATORS", "op-1")
+    election_live._cache.clear()
+    races = le.gov_elections()
+    assert len(races) == 28 and "Anambra" not in races and "Lagos" in races
+    gombe, lagos = races["Gombe"], races["Lagos"]
+    assert "Yamaltu/Deba" in le.units(gombe)
+    lgas = list(le.units(gombe))
+    for i, lga in enumerate(lgas):
+        votes = {"APC": 3000 if i else 900, "PDP": 1000, "NNPP": 200}
+        out = election_live.submit("op-1", {"unit": lga, "votes": votes, "others_zero": True}, gombe)
+        assert out["saved"]["state"] == "Gombe"
+        assert (out["alerts"] is None) == (i < len(lgas) - 1)     # one alert, when the last LGA is in
+    assert seen == {gov.ELECTION} and set(store) == {f"Gombe|{u}" for u in lgas}
+    story = delivered[0]
+    assert story["election"] == "ng-2027-gov" and story["states"] == ["Gombe"]
+    assert story["title"].startswith("Gombe governorship:") and f"all {len(lgas)} LGAs in" in story["title"]
+    t = election_live.results(gombe)
+    spread = t["national"]["spread"][t["national"]["leader"]]
+    assert spread == {"states_at_25": len(lgas), "needed": 8, "met": True, "fct_at_25": None, "of": len(lgas)}
+    assert t["previous"]["year"] == 2023 and t["state"] == "Gombe"
+    assert election_live.results(lagos)["national"]["reported"] == 0       # races do not leak into each other
+    summary = election_live.governorship()
+    row = next(r for r in summary["races"] if r["state"] == "Gombe")
+    assert row["complete"] and row["leader"]["party"] == "APC" and summary["complete_states"] == 1
+    assert next(r for r in summary["races"] if r["state"] == "Lagos")["won_2023"]["party"] == "APC"
+
+
+def test_governorship_ballot_matches_names_as_announced():
+    from src.data import live_elections as le
+    lagos = le.gov_elections()["Lagos"]
+    assert lr._candidate("Rhodes-Vivour", lagos) == lr._candidate("ADC", lagos) == "Gbadebo Rhodes Vivour"
+    assert lr._candidate("Obafemi Hamzat", lagos) == lr._candidate("APC", lagos)
+    with pytest.raises(lr.ResultError, match="Unknown LGA"):
+        lr.check({"unit": "Ikeja North", "votes": {"APC": 1}, "others_zero": True}, lagos)
+    assert lr.check({"unit": "IKEJA", "votes": {"APC": 1}, "others_zero": True}, lagos)["unit"] == "Ikeja"
+
+
+def test_public_api_serves_the_governorship_summary(monkeypatch):
+    from fastapi.testclient import TestClient
+    from api.index import app
+    from src import public_api
+    monkeypatch.setattr(public_api, "authorize", lambda *a, **k: _plan("pro"))
+    monkeypatch.setattr(election_live, "governorship", lambda: {"races": [], "election": "ng-2027-gov"})
+    r = TestClient(app).get("/v1/elections/governorship")
+    assert r.status_code == 200 and r.json()["election"] == "ng-2027-gov"
+    assert "GET /v1/elections/governorship" in TestClient(app).get("/v1").json()["endpoints"]
+
+
+async def _plan_coro(plan):
+    return {"plan": plan}
+
+
+def _plan(plan):
+    return _plan_coro(plan)
+
+
+def test_every_2023_governorship_result_names_a_winner_with_a_party():
+    from src.data import ng_governorship as gov
+    assert len(gov.STATES) == 28
+    for st in gov.STATES:
+        w = gov.winner_2023(st)
+        assert w and w["party"], st
+    assert gov.winner_2023("Taraba")["name"] == "Agbu Kefas"

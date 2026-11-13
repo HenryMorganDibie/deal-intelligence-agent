@@ -12,9 +12,11 @@ import { PastResults } from "./PastResults";
 import { PollsPanel } from "./PollsPanel";
 import { SheetImport } from "./SheetImport";
 import { StateTileMap } from "./StateTileMap";
+import { partyColour } from "../../lib/parties";
 
 type Ranked = { candidate: string; party: string | null; votes: number; share: number; [k: string]: string | number | null };
-type Spread = Record<string, { states_at_25: number; needed: number; met: boolean; fct_at_25: boolean | null }>;
+type Spread = Record<string, { states_at_25: number; needed: number; met: boolean; fct_at_25: boolean | null; of?: number }>;
+type Previous = { year: number; results: { name: string; party: string; share: number | null; won: boolean }[] };
 type Summary = {
   reported: number; units: number; complete: boolean; declared: number; valid: number; rejected: number; votes_cast: number;
   registered: number | null; turnout: number | null; results: Ranked[]; units_won: Record<string, number>;
@@ -29,8 +31,8 @@ type Unit = {
 type Data = {
   label: string; polling_day: string; body: string; unit_word: string; units_word: string; area_word: string;
   candidates: string[]; national: Summary; areas: Area[]; units: Unit[]; notes: string; baseline_year: number | null;
-  operator: boolean; plan: string; rejected_ballots: boolean; ballot: { name: string; party: string | null }[];
-  baseline_winners: Record<string, string>;
+  operator: boolean; plan: string; rejected_ballots: boolean; ballot: { name: string; party: string | null; running_mate?: string | null }[];
+  baseline_winners: Record<string, string>; state?: string | null; previous?: Previous | null; rule?: string | null;
 };
 // Names off the ballot (a 2023 winner not standing in 2027) get these, in order of first appearance.
 const EXTRA = ["#b0a089", "#7f9cb5", "#c99f6e"];
@@ -211,6 +213,10 @@ export function LiveResults({ election, title, intro }: { election: string; titl
   }, [election]);
 
   const colour = useMemo(() => {
+    if (data?.rule === "ng_gov_spread") {
+      const party = Object.fromEntries(data.ballot.map((c) => [c.name, c.party]));
+      return (n: string) => partyColour(party[n]);
+    }
     const order = data?.candidates ?? [];
     const extra = Array.from(new Set(Object.values(data?.baseline_winners ?? {}).filter((n) => !order.includes(n))));
     return (n: string) => order.includes(n) ? COLOURS[order.indexOf(n) % COLOURS.length] : EXTRA[Math.max(0, extra.indexOf(n)) % EXTRA.length];
@@ -219,6 +225,9 @@ export function LiveResults({ election, title, intro }: { election: string; titl
   const nat = data?.national;
   const by = data?.baseline_year;
   const nigeria = election === "ng-2027";
+  const gov = data?.rule === "ng_gov_spread";
+  // INEC lists governorship candidates surname first, so a one-word short name would mislead there.
+  const nm = (n: string) => (gov ? n : short(n));
   const shown = (data?.units ?? []).filter((c) => area === "all" || c.area === area);
   const days = data ? daysTo(data.polling_day) : 0;
   const counting = !!nat && nat.reported > 0;
@@ -232,7 +241,11 @@ export function LiveResults({ election, title, intro }: { election: string; titl
   return (
     <Container className="max-w-6xl py-10">
       <header>
-        <p className="text-[0.8125rem] text-[color:var(--dim)]">Live results</p>
+        <p className="text-[0.8125rem] text-[color:var(--dim)]">
+          {election.startsWith("ng-2027-gov-")
+            ? <Link href="/app/elections/nigeria/governorship" className="underline-offset-2 hover:text-[color:var(--text)] hover:underline">Governorship elections</Link>
+            : "Live results"}
+        </p>
         <h1 className="h2 mt-1 text-[1.75rem] sm:text-[2rem]">{title.split(":")[0]}<span className="text-[color:var(--muted)]"> · {cap(title.split(":")[1]?.split(",")[0]?.trim() ?? "")}</span></h1>
         {data && (
           <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.875rem] text-[color:var(--muted)]">
@@ -242,6 +255,7 @@ export function LiveResults({ election, title, intro }: { election: string; titl
               <span className={`h-1.5 w-1.5 rounded-full ${counting && !nat?.complete ? "animate-pulse bg-[color:var(--verified,#6ee7c8)]" : "bg-[color:var(--dim)]"}`} />{status}
             </span>
             <Link href="/app/watchlists#elections" className="text-[color:var(--muted)] underline-offset-2 hover:text-[color:var(--text)] hover:underline">Alerts</Link>
+            {nigeria && <Link href="/app/elections/nigeria/governorship" className="text-[color:var(--muted)] underline-offset-2 hover:text-[color:var(--text)] hover:underline">Governorship races</Link>}
           </p>
         )}
         <p className="mt-2 max-w-3xl text-[0.8125rem] text-[color:var(--dim)]">{intro}</p>
@@ -267,7 +281,7 @@ export function LiveResults({ election, title, intro }: { election: string; titl
             <>
               {counting && (
                 <div className="mb-6 grid grid-cols-2 gap-4 border-y hairline py-4 sm:grid-cols-5">
-                  <Stat label="Leader" value={nat.leader ? short(nat.leader) : "–"} sub={nat.results[0]?.party ?? undefined} />
+                  <Stat label="Leader" value={nat.leader ? nm(nat.leader) : "–"} sub={nat.results[0]?.party ?? undefined} />
                   <Stat label="Margin" value={num(nat.margin)} />
                   <Stat label={`${cap(data.units_word)} in`} value={`${nat.reported}/${nat.units}`} sub={`${nat.declared} declared`} />
                   <Stat label="Valid votes" value={num(nat.valid)} sub={data.rejected_ballots ? `${num(nat.rejected)} rejected` : undefined} />
@@ -288,11 +302,11 @@ export function LiveResults({ election, title, intro }: { election: string; titl
                 <div className="min-w-0 space-y-8">
                   {counting ? (
                     <section>
-                      <h2 className="text-[0.9375rem] text-[color:var(--text)]">National</h2>
+                      <h2 className="text-[0.9375rem] text-[color:var(--text)]">{gov ? `${data.state}, all LGAs in so far` : "National"}</h2>
                       <div className="mt-3"><Bars results={nat.results.slice(0, 6)} colour={colour} /></div>
                       {Object.keys(nat.units_won).length > 0 && (
                         <p className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">
-                          {cap(data.units_word)} won: {Object.entries(nat.units_won).map(([n, w]) => `${short(n)} ${w}`).join(" · ")}
+                          {cap(data.units_word)} won: {Object.entries(nat.units_won).map(([n, w]) => `${nm(n)} ${w}`).join(" · ")}
                         </p>
                       )}
                     </section>
@@ -316,6 +330,36 @@ export function LiveResults({ election, title, intro }: { election: string; titl
                           <button type="button" onClick={() => setTab("polls")} className="mt-2 text-[0.75rem] text-[color:var(--muted)] underline-offset-2 hover:underline">All polls</button>
                         </div>
                       )}
+                      {gov && data.previous && data.previous.results.length > 0 && (
+                        <div className="mt-5">
+                          <p className="text-[0.8125rem] text-[color:var(--muted)]">{data.previous.year} governorship result</p>
+                          <ul className="mt-2 space-y-1 text-[0.875rem]">
+                            {data.previous.results.map((r) => (
+                              <li key={r.name} className="flex justify-between gap-2">
+                                <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: partyColour(r.party) }} />
+                                  {r.name}<span className="text-[color:var(--dim)]"> · {r.party}{r.won ? " · won" : ""}</span></span>
+                                <span className="kbd text-[color:var(--muted)]">{r.share == null ? "–" : `${r.share.toFixed(1)}%`}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {gov && (
+                        <div className="mt-5">
+                          <p className="text-[0.8125rem] text-[color:var(--muted)]">On the ballot <span className="text-[color:var(--dim)]">· {data.ballot.length} tickets, INEC&apos;s final list</span></p>
+                          <table className="mt-2 w-full text-left text-[0.8125rem]">
+                            <tbody className="divide-y divide-white/[0.07] border-y hairline">
+                              {data.ballot.map((c) => (
+                                <tr key={c.name}>
+                                  <td className="py-1.5 pr-3"><span className="mr-2 inline-block h-2 w-2 rounded-full" style={{ background: colour(c.name) }} />{c.party}</td>
+                                  <td className="py-1.5 pr-3 text-[color:var(--text)]">{c.name}</td>
+                                  <td className="py-1.5 text-[color:var(--dim)]">{c.running_mate ? `with ${c.running_mate}` : ""}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                       {top2023.length > 0 && (
                         <div className="mt-5">
                           <p className="text-[0.8125rem] text-[color:var(--muted)]">{by} result</p>
@@ -336,7 +380,9 @@ export function LiveResults({ election, title, intro }: { election: string; titl
                     <section>
                       <h2 className="text-[0.9375rem] text-[color:var(--text)]">The 25% rule</h2>
                       <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
-                        To win, a candidate needs the most votes and at least 25% in 24 of the 36 states. The FCT&apos;s place in the rule was disputed in 2023, so it&apos;s shown separately.
+                        {gov
+                          ? `To win, a candidate needs the most votes and at least 25% in two-thirds of ${data.state}'s ${nat.units} LGAs (${Math.ceil((nat.units * 2) / 3)}).`
+                          : "To win, a candidate needs the most votes and at least 25% in 24 of the 36 states. The FCT's place in the rule was disputed in 2023, so it's shown separately."}
                       </p>
                       {Object.keys(nat.spread).length > 0 && (
                         <table className="mt-3 w-full text-left text-[0.8125rem]">
@@ -344,9 +390,9 @@ export function LiveResults({ election, title, intro }: { election: string; titl
                             {Object.entries(nat.spread).slice(0, 5).map(([n, v]) => (
                               <tr key={n}>
                                 <td className="py-2 pr-3">{n}</td>
-                                <td className="kbd py-2 pr-3 text-[color:var(--muted)]">{v.states_at_25}/36</td>
+                                <td className="kbd py-2 pr-3 text-[color:var(--muted)]">{v.states_at_25}/{v.of ?? 36}</td>
                                 <td className={`py-2 pr-3 ${v.met ? "text-verified" : "text-[color:var(--dim)]"}`}>{v.met ? "Met" : `${v.needed - v.states_at_25} to go`}</td>
-                                <td className="py-2 text-right text-[color:var(--dim)]">FCT {v.fct_at_25 == null ? "–" : v.fct_at_25 ? "yes" : "no"}</td>
+                                {!gov && <td className="py-2 text-right text-[color:var(--dim)]">FCT {v.fct_at_25 == null ? "–" : v.fct_at_25 ? "yes" : "no"}</td>}
                               </tr>
                             ))}
                           </tbody>
@@ -355,7 +401,7 @@ export function LiveResults({ election, title, intro }: { election: string; titl
                     </section>
                   )}
 
-                  {counting && (
+                  {counting && !gov && (
                     <section>
                       <h2 className="text-[0.9375rem] text-[color:var(--text)]">By {data.area_word}</h2>
                       <table className="mt-3 w-full text-left text-[0.8125rem]">

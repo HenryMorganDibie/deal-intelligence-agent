@@ -73,6 +73,85 @@ SPECS: dict[str, dict] = {
 }
 
 
+# ── Governorship: 28 races, each its own election, results declared by LGA ───
+
+def _lga_names() -> dict[str, list[str]]:
+    import json
+    from pathlib import Path
+    raw = json.loads((Path(__file__).resolve().parent / "ng_lgas.json").read_text())
+    return {st: [_title_lga(x) for x in lgas] for st, lgas in raw.items()}
+
+
+def _title_lga(name: str) -> str:
+    """'AJEROMI/IFELODUN' -> 'Ajeromi/Ifelodun', 'AMUWO-ODOFIN' -> 'Amuwo-Odofin'."""
+    name = re.sub(r"\s*/\s*", "/", " ".join(name.split()))
+    name = {"YALMALTU/DEBA": "YAMALTU/DEBA"}.get(name.upper(), name)
+    return re.sub(r"[A-Za-z']+", lambda m: m.group(0).capitalize(), name.lower())
+
+
+def _lga_key(name: str) -> str:
+    return re.sub(r"[^a-z]", "", (name or "").lower().replace("local government", "").replace("lga", ""))
+
+
+def gov_slug(state: str) -> str:
+    return re.sub(r"[^a-z]+", "-", state.lower()).strip("-")
+
+
+def _gov_ballot(state: str):
+    def ballot() -> list[dict]:
+        from src import ng_candidates
+        rows = [r for r in ng_candidates._all() if r["office"] == "governorship" and r["state"] == state and r["name"]]
+        out = []
+        for r in rows:
+            words = [w for w in re.findall(r"[A-Za-z'’-]+", r["name"]) if len(w) > 1]
+            pairs = [re.escape(a) + r"[\s-]+" + re.escape(b) for i in range(len(words) - 1)
+                     for a, b in ((words[i], words[i + 1]), (words[i + 1], words[i]))]
+            if len(words) >= 2:
+                pairs.append(re.escape(words[-1]) + r"[\s-]+" + re.escape(words[0]))
+            out.append({"name": r["name"], "party": r["party"], "running_mate": r.get("running_mate"),
+                        "pattern": r"(?i)(?:" + "|".join(pairs or [re.escape(r["name"])]) + r")"})
+        return out
+    return ballot
+
+
+def _gov_unit(lgas: list[str]):
+    index = {_lga_key(x): x for x in lgas}
+
+    def unit(name: str) -> Optional[str]:
+        return index.get(_lga_key(name))
+    return unit
+
+
+def _gov_specs() -> dict[str, dict]:
+    from src.data import ng_governorship as gov
+    lgas = _lga_names()
+    out = {}
+    for st in gov.STATES:
+        key = f"{gov.ELECTION}-{gov_slug(st)}"
+        out[key] = {
+            "label": f"{st}: governorship election, 6 February 2027", "country": "Nigeria", "state": st,
+            "polling_day": gov.POLLING_DAY, "body": "INEC", "unit_word": "LGA", "units_word": "LGAs",
+            "area_word": "state", "areas": {st: {"region": st, "registered": None, "units": lgas[st]}},
+            "national_registered": None, "rejected": True, "rule": "ng_gov_spread",
+            "ballot": _gov_ballot(st), "unit": _gov_unit(lgas[st]),
+            "baseline": {"year": None, "national": {}, "units": {}},
+            "store": gov.ELECTION, "alert_election": gov.ELECTION,
+            "previous": {"year": 2023, "results": gov.RESULTS_2023.get(st, [])},
+            "page": f"/app/elections/nigeria/governorship/{gov_slug(st)}",
+            "notes": f"Results as INEC's returning officer for {st} declares them at the state collation centre, LGA by LGA. "
+                     "A candidate wins with the most votes and at least 25% in two-thirds of the state's LGAs.",
+        }
+    return out
+
+
+SPECS.update(_gov_specs())
+
+
+def gov_elections() -> dict[str, str]:
+    """State -> election key, for the 28 governorship races."""
+    return {v["state"]: k for k, v in SPECS.items() if v.get("store") == "ng-2027-gov"}
+
+
 def spec(election: str) -> dict:
     s = SPECS[election]
     if election == "ng-2027" and s["baseline"] is None:

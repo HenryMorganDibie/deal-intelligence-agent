@@ -25,6 +25,7 @@ KINDS = ("incidents", "news", "results")   # results: each constituency as it is
 # Elections an alert can follow: Nigeria and every country profile (src/data/election_profiles.py). Adding a
 # profile adds it here, to the API and to the page, without changing alerts.
 ELECTIONS = {"ng-2027": "Nigeria: 2027 general elections",
+             "ng-2027-gov": "Nigeria: governorship elections, 6 February 2027 (results)",
              **{k: p["label"] for k, p in __import__("src.data.election_profiles", fromlist=["PROFILES"]).PROFILES.items()}}
 LIST_FILTERS = ("states", "lgas", "incident_types", "candidates", "gov_candidates", "senate_candidates", "people",
                 "parties", "topics")
@@ -48,9 +49,11 @@ def clean_filters(raw: Optional[dict]) -> dict:
     if election not in ELECTIONS:
         raise HTTPException(400, "election must be one of " + ", ".join(ELECTIONS) + ".")
     if kind == "results":
-        from src.election_live import ELECTIONS as LIVE
+        from src.election_live import ALERT_ELECTIONS as LIVE
         if election not in LIVE:
             raise HTTPException(400, "Results alerts are for elections with live results: " + ", ".join(LIVE) + ".")
+    elif election == "ng-2027-gov":
+        raise HTTPException(400, "Governorship alerts are results alerts; incidents and news for every race come with Nigeria (ng-2027).")
     out: dict = {"kind": kind, "election": election}
     sev = raw.get("min_severity")
     if sev is not None:
@@ -385,7 +388,15 @@ async def app_list(request: Request) -> dict:
     rows = await run_in_threadpool(list_for, owner)
     from src import election_feed
     return {"alerts": rows, "allowance": allowance(plan), "plan": plan, "full_features": plan in FULL_FEATURES,
-            "elections": ELECTIONS, "election_details": election_feed.elections()}
+            "elections": ELECTIONS, "election_details": [*election_feed.elections(), _gov_detail()]}
+
+
+def _gov_detail() -> dict:
+    from src.data import ng_governorship as gov
+    return {"key": gov.ELECTION, "country": "Nigeria governorship", "iso": "NG",
+            "label": "Nigeria: governorship elections, 6 February 2027 (results)",
+            "dates": [{"date": gov.POLLING_DAY, "name": "Governorship"}], "body": "INEC", "region_word": "State",
+            "regions": list(gov.STATES), "coverage": ["results"]}
 
 
 @router.post("/api/elections/alerts")
