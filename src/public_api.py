@@ -234,6 +234,21 @@ async def election_list(request: Request, response: Response) -> dict:
     return {"elections": election_feed.elections()}
 
 
+@router.get("/elections/live")
+async def election_live(request: Request, response: Response, election: str = Query("gm-2026", max_length=20)) -> dict:
+    """Live results as the electoral commission announces them, constituency by constituency: national and area
+    tallies, constituencies won, margins, turnout once an area is complete, and each constituency's result with its
+    source. Pro plan and above."""
+    from src import election_live
+    status = await authorize(request, response)
+    if status.get("plan") not in election_live.PLANS:
+        raise PublicApiError(403, "plan_required", "Live results come with the Pro plan and above.")
+
+    async def run():
+        return await run_in_threadpool(election_live.results, election)
+    return await _call(run)
+
+
 @router.get("/elections/news")
 async def election_news(request: Request, response: Response, candidate: Optional[str] = Query(None, max_length=80),
                         party: Optional[str] = Query(None, max_length=10), state: Optional[str] = Query(None, max_length=30),

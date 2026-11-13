@@ -21,7 +21,7 @@ from src.engines import chat_formats, watch
 
 log = logging.getLogger("deal_intel.election_alerts")
 SEVERITY = {"low": 1, "medium": 2, "high": 3}
-KINDS = ("incidents", "news")
+KINDS = ("incidents", "news", "results")   # results: each constituency as it is declared (live-results elections)
 # Elections an alert can follow: Nigeria and every country profile (src/data/election_profiles.py). Adding a
 # profile adds it here, to the API and to the page, without changing alerts.
 ELECTIONS = {"ng-2027": "Nigeria: 2027 general elections",
@@ -42,10 +42,14 @@ def clean_filters(raw: Optional[dict]) -> dict:
     raw = raw or {}
     kind = raw.get("kind", "incidents")
     if kind not in KINDS:
-        raise HTTPException(400, "kind must be incidents or news.")
+        raise HTTPException(400, "kind must be incidents, news or results.")
     election = raw.get("election", "ng-2027")
     if election not in ELECTIONS:
         raise HTTPException(400, "election must be one of " + ", ".join(ELECTIONS) + ".")
+    if kind == "results":
+        from src.election_live import ELECTIONS as LIVE
+        if election not in LIVE:
+            raise HTTPException(400, "Results alerts are for elections with live results: " + ", ".join(LIVE) + ".")
     out: dict = {"kind": kind, "election": election}
     sev = raw.get("min_severity")
     if sev is not None:
@@ -72,6 +76,10 @@ def _has(story: dict, field: str, wanted: list[str]) -> bool:
 def matches(story: dict, filters: dict) -> bool:
     if filters.get("election", "ng-2027") != story.get("election", "ng-2027"):
         return False
+    if (story.get("kind") == "result") != (filters.get("kind") == "results"):
+        return False                             # results go to results alerts only, and only results do
+    if filters.get("kind") == "results":
+        return all(_has(story, key, filters[key]) for key in ("states",) if filters.get(key))
     if filters.get("kind", "incidents") == "incidents":
         if not story.get("incident_types"):
             return False
@@ -81,6 +89,11 @@ def matches(story: dict, filters: dict) -> bool:
 
 
 def _alert_item(story: dict) -> dict:
+    if story.get("kind") == "result":            # a declared constituency: its own summary line
+        return {"kind": "event", "id": story["id"], "title": story.get("title"), "url": story.get("url"),
+                "day": story.get("day"), "facts_line": story.get("facts_line"), "severity": None,
+                "incident_types": [], "states": story.get("states") or [], "lgas": [], "candidates": [],
+                "parties": [], "outlets": ["IEC"]}
     where = ", ".join(story.get("lgas") or []) or ", ".join(story.get("states") or [])
     election = story.get("election", "ng-2027")
     if election != "ng-2027" and election in ELECTIONS:
@@ -122,7 +135,8 @@ def render_email(sub: dict, stories: list[dict]) -> tuple[str, str, str]:
     items = [_alert_item(s) for s in stories]
     n, name = len(items), sub.get("name") or "Election alert"
     high = sum(1 for i in items if i.get("severity") == "high")
-    subject = (f"{n} new election {'incident' if (sub.get('filters') or {}).get('kind', 'incidents') == 'incidents' else 'story'}"
+    noun = {"incidents": "incident", "results": "result"}.get((sub.get("filters") or {}).get("kind", "incidents"), "story")
+    subject = (f"{n} new election {noun}"
                f"{'s' if n != 1 else ''} · {name}" + (f" ({high} high severity)" if high else ""))
     unsub = unsubscribe_link(str(sub["id"]))
     app = __import__("os").environ.get("DEAL_INTEL_APP_URL", "https://deal-intelligence.app").rstrip("/")

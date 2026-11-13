@@ -14,6 +14,9 @@ type ElectionInfo = { key: string; country: string; label: string; dates: { date
 type State = { alerts: Alert[]; allowance: number; plan: string; full_features: boolean; elections: Record<string, string>; election_details?: ElectionInfo[] };
 type TestResult = { delivered: boolean; destination?: string; error?: string | null };
 
+// Elections with live results (src/election_live.py ELECTIONS).
+const LIVE_RESULTS = "gm-2026";
+
 const NIGERIA: ElectionInfo = {
   key: "ng-2027", country: "Nigeria", label: "Nigeria: 2027 general elections", dates: [], body: "INEC",
   region_word: "State", regions: NG_STATES, coverage: [],
@@ -33,7 +36,8 @@ function nextDate(e: ElectionInfo): string | null {
 function summary(f: Record<string, unknown>, info: (key: string) => ElectionInfo): string {
   const e = info(String(f.election ?? "ng-2027"));
   const bits: string[] = [e.country];
-  bits.push(f.kind === "news" ? "All election coverage" : `Incidents${f.min_severity ? `, ${f.min_severity} severity and above` : ""}`);
+  bits.push(f.kind === "news" ? "All election coverage" : f.kind === "results" ? "Each result as it is declared"
+    : `Incidents${f.min_severity ? `, ${f.min_severity} severity and above` : ""}`);
   const states = (f.states as string[] | undefined) ?? [];
   bits.push(states.length ? states.join(", ") : `all ${regionWord(e, true)}`);
   const types = (f.incident_types as string[] | undefined) ?? [];
@@ -47,7 +51,7 @@ export function ElectionAlerts() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [election, setElection] = useState("ng-2027");
-  const [kind, setKind] = useState<"incidents" | "news">("incidents");
+  const [kind, setKind] = useState<"incidents" | "news" | "results">("incidents");
   const [severity, setSeverity] = useState("medium");
   const [states, setStates] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
@@ -185,7 +189,7 @@ export function ElectionAlerts() {
               <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={`${current.country} incidents`} className="field" />
             </Field>
             <Field label="Country and election">
-              <select value={election} onChange={(e) => { setElection(e.target.value); setStates([]); }} className="field">
+              <select value={election} onChange={(e) => { setElection(e.target.value); setStates([]); if (e.target.value !== LIVE_RESULTS && kind === "results") setKind("incidents"); }} className="field">
                 {(details.length ? details : Object.keys(data.elections).map(info)).map((e) => {
                   const next = nextDate(e);
                   return <option key={e.key} value={e.key}>{e.label}{next ? ` · next vote ${next}` : ""}</option>;
@@ -195,9 +199,10 @@ export function ElectionAlerts() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Send">
-              <select value={kind} onChange={(e) => setKind(e.target.value as "incidents" | "news")} className="field">
+              <select value={kind} onChange={(e) => setKind(e.target.value as "incidents" | "news" | "results")} className="field">
                 <option value="incidents">Incidents</option>
                 <option value="news" disabled={!full}>All election coverage{full ? "" : " (Team and above)"}</option>
+                {election === LIVE_RESULTS && <option value="results">Results, each constituency as it is declared</option>}
               </select>
             </Field>
             {kind === "incidents" && (

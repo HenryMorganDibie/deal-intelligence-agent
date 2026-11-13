@@ -234,6 +234,9 @@ from src.election_alerts import router as election_alerts_router  # noqa: E402
 app.include_router(election_alerts_router)
 
 from src.contact import router as contact_router  # noqa: E402
+from src.election_live import router as election_live_router  # noqa: E402
+
+app.include_router(election_live_router)
 
 app.include_router(contact_router)
 

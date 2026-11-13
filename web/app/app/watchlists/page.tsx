@@ -284,7 +284,12 @@ export default function WatchlistsPage() {
                 <span className="text-[color:var(--muted)]"> · {e.kind} · {e.label}</span>
               </span>
               {e.key ? (
-                <span className="shrink-0 rounded-full border border-[color:var(--verified,#6ee7c8)] px-2.5 py-0.5 text-[0.75rem] text-verified">Monitored</span>
+                <span className="flex shrink-0 items-center gap-3">
+                  {e.key === "gm-2026" && e.kind === "Presidential" && (
+                    <Link href="/app/elections/gambia" className="text-[0.8125rem] underline">Live results</Link>
+                  )}
+                  <span className="rounded-full border border-[color:var(--verified,#6ee7c8)] px-2.5 py-0.5 text-[0.75rem] text-verified">Monitored</span>
+                </span>
               ) : (
                 <RequestForm topic="election_coverage" label="Request coverage" detail={`${e.country}, ${e.kind}, ${e.label}`}
                              className="shrink-0 text-[0.8125rem] underline text-[color:var(--muted)]"
