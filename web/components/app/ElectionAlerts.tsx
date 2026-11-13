@@ -9,7 +9,7 @@ import { DESTINATION_LABEL, webhookDestination } from "../../lib/webhooks";
 import { ProBadge } from "./PlanLinks";
 import { ErrorNote, Field } from "./ui";
 
-type Alert = { id: string; name: string; filters: Record<string, unknown>; destination: string; webhook: string; sent?: number; created_at?: string };
+type Alert = { id: string; name: string; filters: Record<string, unknown>; destination: string; webhook: string | null; email?: boolean; active?: boolean; sent?: number; created_at?: string };
 type State = { alerts: Alert[]; allowance: number; plan: string; full_features: boolean; elections: Record<string, string> };
 type TestResult = { delivered: boolean; destination?: string; error?: string | null };
 
@@ -35,6 +35,7 @@ export function ElectionAlerts() {
   const [types, setTypes] = useState<string[]>([]);
   const [webhook, setWebhook] = useState("");
   const [starter, setStarter] = useState(false);
+  const [emailMe, setEmailMe] = useState(true);
   const [busy, setBusy] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
@@ -76,6 +77,11 @@ export function ElectionAlerts() {
     finally { setTesting(null); }
   }
 
+  async function setActive(id: string, active: boolean) {
+    try { await post(`/api/elections/alerts/${id}/active`, { active }); await load(); }
+    catch (e) { setError(e instanceof ApiError ? e.message : "The alert could not be updated."); }
+  }
+
   async function remove(id: string) {
     if (!window.confirm("Delete this election alert? Messages to its channel will stop.")) return;
     try { await del(`/api/elections/alerts/${id}`); await load(); }
@@ -91,10 +97,11 @@ export function ElectionAlerts() {
     if (kind === "incidents" && types.length) filters.incident_types = types;
     try {
       const r = await post<Alert & { backfill?: { sent: number } }>("/api/elections/alerts", {
-        name: name.trim() || "Election alert", webhook_url: webhook.trim(), filters, backfill_days: starter && full ? 7 : 0,
+        name: name.trim() || "Election alert", webhook_url: webhook.trim() || null, email: emailMe, filters,
+        backfill_days: starter && full ? 7 : 0,
       });
       setNote({ ok: true, text: r.backfill ? `Alert created. ${r.backfill.sent} recent incident${r.backfill.sent === 1 ? "" : "s"} sent to start.` : "Alert created. New matching incidents will arrive within the hour." });
-      setName(""); setWebhook(""); setStates([]); setTypes([]); setStarter(false);
+      setName(""); setWebhook(""); setStates([]); setTypes([]); setStarter(false); setEmailMe(true);
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "The alert could not be created.");
@@ -127,12 +134,17 @@ export function ElectionAlerts() {
               <div className="min-w-0">
                 <p className="text-[0.875rem] text-[color:var(--text)]">{a.name}</p>
                 <p className="text-[0.75rem] text-[color:var(--muted)]">{summary(a.filters)}</p>
-                <p className="text-[0.75rem] text-[color:var(--dim)]">{a.destination} · {a.sent ?? 0} sent</p>
+                <p className="text-[0.75rem] text-[color:var(--dim)]">
+                  {a.destination} · {a.sent ?? 0} sent{a.active === false ? " · Paused" : ""}
+                </p>
               </div>
               <div className="flex shrink-0 gap-2">
                 <button type="button" onClick={() => testSaved(a.id)} disabled={testing === a.id} className="btn btn-ghost text-[0.8125rem]">
                   {testing === a.id ? "Sending…" : "Send test"}
                 </button>
+                {a.active === false && (
+                  <button type="button" onClick={() => setActive(a.id, true)} className="btn btn-ghost text-[0.8125rem]">Resume</button>
+                )}
                 <button type="button" onClick={() => remove(a.id)} className="btn btn-ghost text-[0.8125rem]">Delete</button>
               </div>
             </li>
@@ -195,9 +207,13 @@ export function ElectionAlerts() {
               </div>
             </fieldset>
           )}
-          <Field label="Send to Slack, Teams, Discord, Google Chat or any webhook">
+          <label className="flex items-center gap-3 text-[0.875rem] text-[color:var(--muted)]">
+            <input type="checkbox" checked={emailMe} onChange={(e) => setEmailMe(e.target.checked)} className="h-4 w-4 accent-verified" />
+            Email me (to your account&apos;s confirmed address, at most one email an hour, with an unsubscribe link)
+          </label>
+          <Field label="And/or send to Slack, Teams, Discord, Google Chat or any webhook (optional)">
             <div className="flex flex-col gap-2 sm:flex-row">
-              <input value={webhook} onChange={(e) => { setWebhook(e.target.value); setNote(null); }} placeholder="Paste the channel's webhook URL" className="field kbd" required />
+              <input value={webhook} onChange={(e) => { setWebhook(e.target.value); setNote(null); }} placeholder="Paste the channel's webhook URL" className="field kbd" />
               <button type="button" onClick={testNew} disabled={!destination || testing === "new"} className="btn btn-ghost shrink-0">
                 {testing === "new" ? "Sending…" : "Send test message"}
               </button>
@@ -212,7 +228,7 @@ export function ElectionAlerts() {
             <input type="checkbox" checked={starter} disabled={!full} onChange={(e) => setStarter(e.target.checked)} className="h-4 w-4 accent-verified" />
             Start with matching incidents from the last 7 days{full ? "" : " (Team and above)"}
           </label>
-          <button type="submit" disabled={busy || !destination} className="btn btn-primary">{busy ? "Creating…" : "Create election alert"}</button>
+          <button type="submit" disabled={busy || (!destination && !emailMe) || (!!webhook.trim() && !destination)} className="btn btn-primary">{busy ? "Creating…" : "Create election alert"}</button>
           {error && <ErrorNote message={error} />}
         </form>
       )}

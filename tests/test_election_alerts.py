@@ -104,7 +104,7 @@ def test_alert_allowance_follows_the_plan_and_the_webhook_stays_hidden(monkeypat
             return self._d
 
     def fake(fn, args, timeout=30):
-        if fn == "election_alert_create_limited":
+        if fn == "election_alert_create_v3":
             mine = [r for r in store.values() if r["owner"] == args["p_owner"]]
             if len(mine) >= args["p_max"]:
                 return R(None, 400, "alert_limit")
@@ -231,7 +231,7 @@ def test_web_app_routes_use_the_signed_in_account_and_plan(monkeypatch):
             return self._d
 
     def fake(fn, args, timeout=30):
-        if fn == "election_alert_create_limited":
+        if fn == "election_alert_create_v3":
             row = {"id": "00000000-0000-0000-0000-000000000001", "owner": args["p_owner"], "name": args["p_name"],
                    "webhook_url": args["p_url"], "filters": args["p_filters"], "active": True, "created_at": "2026-11-13"}
             store[row["id"]] = row
@@ -264,3 +264,77 @@ def test_web_app_routes_use_the_signed_in_account_and_plan(monkeypatch):
     assert c.delete("/api/elections/alerts/not-an-id", headers=me).status_code == 400
     plan["plan"] = "free"
     assert c.post("/api/elections/alerts/test", headers=me, json={"webhook_url": "https://discord.com/api/webhooks/1/x"}).status_code == 403
+
+
+def test_email_alerts_bundle_a_run_and_carry_a_signed_unsubscribe(monkeypatch):
+    from src.engines import email_alerts
+    monkeypatch.setattr(hm, "API_SECRET", "s3cret")
+    claimed, mails = set(), []
+    sub = {"id": "00000000-0000-0000-0000-0000000000aa", "owner": "acct", "name": "Lagos", "webhook_url": None, "email": True,
+           "created_at": "2026-11-01", "filters": {"kind": "incidents"}}
+
+    class R:
+        status_code = 200
+
+        def __init__(self, d):
+            self._d = d
+
+        def json(self):
+            return self._d
+
+    def fake(fn, args, timeout=30):
+        if fn == "election_alert_active":
+            return R([sub])
+        if fn == "election_alert_claim":
+            new = [i for i in args["p_story_ids"] if i not in claimed]
+            claimed.update(new)
+            return R(new)
+        if fn == "election_alert_recipient":
+            return R("editor@example.org")
+        if fn == "election_alert_release":
+            return R(0)
+        raise AssertionError(fn)
+
+    async def send(client, to, subject, body, text, unsubscribe, key, **kw):
+        mails.append((to, subject, body, unsubscribe))
+        return {"sent": True}
+    monkeypatch.setattr(hm, "_rpc_sync", fake)
+    monkeypatch.setattr(email_alerts, "send", send)
+    out = ea.deliver([LAGOS, dict(LAGOS, id="s9", title="Another incident", severity="medium")])
+    assert out["sent"] == 2 and len(mails) == 1                         # one email for the run
+    to, subject, body, unsub = mails[0]
+    assert to == "editor@example.org" and subject.startswith("2 new election incidents · Lagos (1 high severity)")
+    assert "Thugs attack NDC rally" in body and "token=" + ea.unsubscribe_token(sub["id"]) in unsub
+
+
+def test_unsubscribe_link_pauses_only_with_a_valid_token(monkeypatch):
+    from fastapi.testclient import TestClient
+    import api.index as api
+    monkeypatch.setattr(hm, "API_SECRET", "s3cret")
+    paused = []
+
+    class R:
+        status_code = 200
+
+        def json(self):
+            return {"id": "x", "name": "Lagos", "active": False}
+
+    def fake(fn, args, timeout=30):
+        assert fn == "election_alert_set_active"
+        paused.append(args)
+        return R()
+    monkeypatch.setattr(hm, "_rpc_sync", fake)
+    c = TestClient(api.app)
+    aid = "00000000-0000-0000-0000-0000000000aa"
+    tok = ea.unsubscribe_token(aid)
+    assert "Stop this election alert?" in c.get("/api/elections/alerts/unsubscribe", params={"id": aid, "token": tok}).text
+    assert paused == []                                                   # opening the link changes nothing
+    assert "not valid" in c.post("/api/elections/alerts/unsubscribe", params={"id": aid, "token": "forged"}).text
+    assert "Alert stopped" in c.post("/api/elections/alerts/unsubscribe", params={"id": aid, "token": tok}).text
+    assert paused == [{"p_id": aid, "p_active": False}]
+
+
+def test_alert_needs_a_destination():
+    with pytest.raises(HTTPException) as e:
+        ea.create("acct", "x", None, {}, "pro", email=False)
+    assert "email, a webhook, or both" in e.value.detail

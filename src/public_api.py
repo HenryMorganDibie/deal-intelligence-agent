@@ -435,7 +435,8 @@ async def election_accreditation(request: Request, response: Response, election:
 
 class ElectionAlertBody(BaseModel):
     name: str = Field("Election alert", max_length=80)
-    webhook_url: str = Field(..., max_length=500)
+    webhook_url: Optional[str] = Field(None, max_length=500)
+    email: bool = False
     filters: Optional[dict] = None
 
 
@@ -448,7 +449,7 @@ async def create_election_alert(body: ElectionAlertBody, request: Request, respo
     owner, plan = await _account(request, response)
 
     async def run():
-        return await run_in_threadpool(election_alerts.create, owner, body.name, body.webhook_url, body.filters, plan)
+        return await run_in_threadpool(election_alerts.create, owner, body.name, body.webhook_url, body.filters, plan, body.email)
     return await _call(run)
 
 

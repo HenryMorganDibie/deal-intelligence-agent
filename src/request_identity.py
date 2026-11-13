@@ -31,6 +31,7 @@ _OPEN = (
     re.compile(r"^/api/cron/"),                                # scheduled jobs: their own secrets
     re.compile(r"^/api/health$"),
     re.compile(r"^/api/watchlists/email/unsubscribe$"),        # links in emails
+    re.compile(r"^/api/elections/alerts/unsubscribe$"),         # links in election alert emails: signed
     re.compile(r"^/api/watchlists/[0-9a-fA-F-]{36}/feed\.xml$"),  # RSS readers
     re.compile(r"^/robots\.txt$"),
 )

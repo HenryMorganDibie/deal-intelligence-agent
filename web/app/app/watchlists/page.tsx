@@ -50,6 +50,7 @@ export default function WatchlistsPage() {
   const [countries, setCountries] = useState("");
   const [types, setTypes] = useState<string[]>([]);
   const [deals, setDeals] = useState(true);
+  const [emailMe, setEmailMe] = useState(true);
   const [webhook, setWebhook] = useState("");
   const [frequency, setFrequency] = useState<"daily" | "weekly">("daily");
   const [testing, setTesting] = useState(false);
@@ -133,6 +134,12 @@ export default function WatchlistsPage() {
       });
       const rows = [{ id: r.id, name: name.trim() || "Watchlist", created_at: new Date().toISOString() }, ...readSaved()];
       writeSaved(rows);
+      if (emailMe) {
+        // Email goes only to the account's confirmed address; if it is not confirmed, the watchlist page says so.
+        await fetch(`/api/watchlists/${encodeURIComponent(r.id)}/email`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: true }),
+        }).catch(() => undefined);
+      }
       window.location.href = `/app/watchlists/${r.id}`;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "The watchlist could not be created.");
@@ -145,7 +152,8 @@ export default function WatchlistsPage() {
       <PageHeader eyebrow="Monitoring and alerts" title="Watch companies and countries.">
         A watchlist matches every corporate event (M&A, credit, distress, leadership, regulatory, earnings, restructuring,
         insider) and every deal in the daily feed. Follow it on its page, subscribe to its RSS feed in any reader, Slack or
-        email-by-RSS service, or send new matches straight to a Slack, Teams, Discord or Google Chat channel, daily or as a weekly Friday digest. The
+        email-by-RSS service, receive new matches by email at your account&apos;s address, or send them straight to a Slack, Teams, Discord or
+        Google Chat channel, daily or as a weekly Friday digest. The
         watchlist&apos;s link is its key, so keep it private.
       </PageHeader>
 
@@ -182,6 +190,10 @@ export default function WatchlistsPage() {
           <input type="checkbox" checked={deals} onChange={(e) => setDeals(e.target.checked)} className="h-4 w-4 accent-verified" />
           Include deals involving these companies or countries
         </label>
+        <label className="flex items-center gap-3 text-[0.875rem] text-[color:var(--muted)]">
+          <input type="checkbox" checked={emailMe} onChange={(e) => setEmailMe(e.target.checked)} className="h-4 w-4 accent-verified" />
+          Email me new matches (to your account&apos;s confirmed address; every email has an unsubscribe link)
+        </label>
         <Field label="Send alerts to Slack, Teams, Discord, Google Chat or any webhook (optional)">
           <div className="flex flex-col gap-2 sm:flex-row">
             <input
@@ -202,7 +214,7 @@ export default function WatchlistsPage() {
           </p>
           {testNote && <p role="status" className={`mt-1 text-[0.8125rem] ${testNote.ok ? "text-verified" : "text-risk"}`}>{testNote.text}</p>}
         </Field>
-        <Field label="Webhook delivery cadence">
+        <Field label="Delivery cadence (email and webhook)">
           <select value={frequency} onChange={(e) => setFrequency(e.target.value as "daily" | "weekly")} className="field">
             <option value="daily">Daily, after ingestion</option>
             <option value="weekly">Weekly digest, Friday UTC</option>
