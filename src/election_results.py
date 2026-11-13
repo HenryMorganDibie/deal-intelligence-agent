@@ -168,14 +168,15 @@ def review(owner: str, sheet_id: str, status: str, corrections: Optional[dict]) 
     data = r.json()["data"]
     if corrections:
         data = rs.apply_corrections(data, corrections)
-        code = data.get("polling_unit_code") or data["pu_code"]
-        known = _known_unit(code)
-        data["pu_code"] = code
-        data["checks"] = rs.check(data, code, known)
-        if status == "verified" and any(c["ok"] is False for c in data["checks"]
-                                        if c["rule"] not in ("signed", "code_matches_submission")):
-            raise HTTPException(409, "The corrected sheet still fails a check: " +
-                                "; ".join(c["detail"] for c in data["checks"] if c["ok"] is False))
+        data["pu_code"] = data.get("polling_unit_code") or data["pu_code"]
+    if corrections or status == "verified":
+        # Checked again whenever it changes or is about to count as verified: a reviewer can correct a misread,
+        # but cannot verify figures that do not add up.
+        data["checks"] = rs.check(data, data["pu_code"], _known_unit(data["pu_code"]))
+        blocking = [c for c in data["checks"] if c["ok"] is False and c["rule"] not in ("signed", "code_matches_submission")]
+        if status == "verified" and blocking:
+            raise HTTPException(409, "The sheet fails a check, so it cannot be verified: " +
+                                "; ".join(c["detail"] for c in blocking) + " Correct it, or reject it.")
     data["review"] = {"status": status, "corrections": corrections or {}}
     r = hm._rpc_sync("result_sheet_review", {"p_owner": owner, "p_id": sheet_id, "p_status": status, "p_data": data})
     if r.status_code != 200:

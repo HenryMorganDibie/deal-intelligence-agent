@@ -128,7 +128,10 @@ def test_submit_reads_checks_stores_and_reviews(db, monkeypatch):
     assert again.get("duplicate") is True                          # same image: not read twice
     with pytest.raises(Exception) as e:                            # verifying without fixing the sum is refused
         er.review("acct-a", out["id"], "verified", {"votes": {"APC": 141}})
-    assert "still fails" in str(e.value.detail)
+    assert "cannot be verified" in str(e.value.detail)
+    with pytest.raises(Exception) as e:                            # and so is verifying with no corrections at all
+        er.review("acct-a", out["id"], "verified", None)
+    assert e.value.status_code == 409
     fixed = er.review("acct-a", out["id"], "verified", {"votes": {"NDC": 118}})
     assert fixed["status"] == "verified" and fixed["data"]["votes"]["NDC"] == 118
     for bad in (dict(pu_code="99/99/99/999"), dict(election="mayor-2027"), dict(pu_code="Ikeja")):
