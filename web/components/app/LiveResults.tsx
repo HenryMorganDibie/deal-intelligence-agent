@@ -194,7 +194,7 @@ export function LiveResults({ election, title, intro }: { election: string; titl
   return (
     <Container className="py-10">
       <PageHeader eyebrow="Live results" title={title}>
-        {intro} Refreshes every 30 seconds. <Link href="/app/watchlists#election-alerts-title" className="underline">Get each result by alert</Link>.
+        {intro} Refreshes every 30 seconds. <Link href="/app/watchlists#elections" className="underline">Get each result by alert</Link>.
       </PageHeader>
 
       {error?.status === 403 ? (

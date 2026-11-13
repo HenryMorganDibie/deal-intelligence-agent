@@ -6,6 +6,7 @@ import { ApiError } from "../../lib/api";
 import { INCIDENT_TYPES, NG_STATES } from "../../lib/elections";
 import { del, get, post } from "../../lib/market";
 import { DESTINATION_LABEL, webhookDestination } from "../../lib/webhooks";
+import { Chip, Segmented } from "./Chip";
 import { ProBadge } from "./PlanLinks";
 import { ErrorNote, Field } from "./ui";
 
@@ -59,6 +60,7 @@ export function ElectionAlerts() {
   const [starter, setStarter] = useState(false);
   const [emailMe, setEmailMe] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +129,7 @@ export function ElectionAlerts() {
         backfill_days: starter && full ? 7 : 0,
       });
       setNote({ ok: true, text: r.backfill ? `Alert created. ${r.backfill.sent} recent incident${r.backfill.sent === 1 ? "" : "s"} sent to start.` : "Alert created. New matching incidents will arrive within the hour." });
-      setName(""); setWebhook(""); setStates([]); setTypes([]); setStarter(false); setEmailMe(true);
+      setName(""); setWebhook(""); setStates([]); setTypes([]); setStarter(false); setEmailMe(true); setOpen(false);
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "The alert could not be created.");
@@ -138,130 +140,159 @@ export function ElectionAlerts() {
   if (!data) return <p className="mt-4 text-sm text-[color:var(--dim)]">Loading your election alerts…</p>;
   if (data.allowance === 0) {
     return (
-      <p className="mt-4 inline-flex flex-wrap items-center gap-1 text-sm text-[color:var(--muted)]">
-        Election alerts start with the Pro plan<ProBadge source="election_alerts" />
-      </p>
+      <div className="panel mt-6 flex flex-wrap items-center justify-between gap-3 p-5">
+        <p className="text-[0.875rem] text-[color:var(--muted)]">Election alerts start with the Pro plan.</p>
+        <ProBadge source="election_alerts" />
+      </div>
     );
   }
 
   const toggle = (list: string[], set: (v: string[]) => void, v: string) => set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
-  const chip = "flex items-center gap-1.5 rounded-full border hairline px-2.5 py-1 text-[0.75rem] cursor-pointer";
+  const regionsLabel = current.region_word === "County" ? "Counties" : `${current.region_word}s`;
+  const planName = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
 
   return (
-    <div className="mt-5">
-      <p className="text-[0.8125rem] text-[color:var(--dim)]">
-        {data.alerts.length} of {data.allowance} election alert{data.allowance === 1 ? "" : "s"} in use on your {data.plan.charAt(0).toUpperCase() + data.plan.slice(1)} plan.
-      </p>
+    <div className="mt-6">
+      {!open && (
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[0.875rem] text-[color:var(--muted)]">
+            {data.alerts.length} of {data.allowance} in use <span className="text-[color:var(--dim)]">· {planName}</span>
+          </p>
+          {atLimit ? (
+            <span className="inline-flex items-center gap-1 text-[0.8125rem] text-[color:var(--muted)]">All in use<ProBadge source="election_alerts_limit" /></span>
+          ) : (
+            <button type="button" onClick={() => { setOpen(true); setNote(null); }} className="btn btn-primary shrink-0">New election alert</button>
+          )}
+        </div>
+      )}
 
-      {data.alerts.length > 0 && (
-        <ul className="mt-3 divide-y divide-white/[0.07] border-y hairline">
+      {!open && data.alerts.length === 0 && (
+        <p className="mt-6 rounded-lg border border-dashed hairline p-6 text-center text-[0.875rem] text-[color:var(--muted)]">
+          No election alerts yet. Pick a country, the places and the kind of incident, and where to send it.
+        </p>
+      )}
+
+      {!open && data.alerts.length > 0 && (
+        <ul className="mt-4 divide-y divide-white/[0.07] border-y hairline">
           {data.alerts.map((a) => (
-            <li key={a.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <li key={a.id} className="flex flex-col gap-2 py-3.5 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <p className="text-[0.875rem] text-[color:var(--text)]">{a.name}</p>
-                <p className="text-[0.75rem] text-[color:var(--muted)]">{summary(a.filters, info)}</p>
-                <p className="text-[0.75rem] text-[color:var(--dim)]">
-                  {a.destination} · {a.sent ?? 0} sent{a.active === false ? " · Paused" : ""}
+                <p className="flex items-center gap-2 text-[0.9375rem] text-[color:var(--text)]">
+                  <span className={`h-1.5 w-1.5 rounded-full ${a.active === false ? "bg-[color:var(--dim)]" : "bg-[color:var(--verified,#6ee7c8)]"}`} />
+                  {a.name}{a.active === false && <span className="text-[0.75rem] text-[color:var(--dim)]">Paused</span>}
                 </p>
+                <p className="mt-0.5 text-[0.8125rem] text-[color:var(--muted)]">{summary(a.filters, info)}</p>
+                <p className="text-[0.75rem] text-[color:var(--dim)]">{a.destination} · {a.sent ?? 0} sent</p>
               </div>
-              <div className="flex shrink-0 gap-2">
-                <button type="button" onClick={() => testSaved(a.id)} disabled={testing === a.id} className="btn btn-ghost text-[0.8125rem]">
+              <div className="flex shrink-0 gap-4 text-[0.8125rem]">
+                <button type="button" onClick={() => testSaved(a.id)} disabled={testing === a.id} className="text-[color:var(--muted)] hover:text-[color:var(--text)]">
                   {testing === a.id ? "Sending…" : "Send test"}
                 </button>
                 {a.active === false && (
-                  <button type="button" onClick={() => setActive(a.id, true)} className="btn btn-ghost text-[0.8125rem]">Resume</button>
+                  <button type="button" onClick={() => setActive(a.id, true)} className="text-[color:var(--muted)] hover:text-[color:var(--text)]">Resume</button>
                 )}
-                <button type="button" onClick={() => remove(a.id)} className="btn btn-ghost text-[0.8125rem]">Delete</button>
+                <button type="button" onClick={() => remove(a.id)} className="text-[color:var(--muted)] hover:text-risk">Delete</button>
               </div>
             </li>
           ))}
         </ul>
       )}
 
-      {atLimit ? (
-        <p className="mt-4 inline-flex flex-wrap items-center gap-1 text-sm text-[color:var(--muted)]">
-          All {data.allowance} election alerts on your plan are in use. Delete one, or upgrade for more<ProBadge source="election_alerts_limit" />
-        </p>
-      ) : (
-        <form onSubmit={submit} className="mt-5 space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Name">
-              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={`${current.country} incidents`} className="field" />
-            </Field>
-            <Field label="Country and election">
-              <select value={election} onChange={(e) => { setElection(e.target.value); setStates([]); if (!LIVE_RESULTS.includes(e.target.value) && kind === "results") setKind("incidents"); }} className="field">
-                {(details.length ? details : Object.keys(data.elections).map(info)).map((e) => {
-                  const next = nextDate(e);
-                  return <option key={e.key} value={e.key}>{e.label}{next ? ` · next vote ${next}` : ""}</option>;
-                })}
-              </select>
-            </Field>
+      {open && (
+        <form onSubmit={submit} className="panel divide-y divide-white/[0.07]">
+          <div className="flex items-center justify-between gap-3 p-5">
+            <h3 className="h3">New election alert</h3>
+            <button type="button" onClick={() => setOpen(false)} className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">Cancel</button>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Send">
-              <select value={kind} onChange={(e) => setKind(e.target.value as "incidents" | "news" | "results")} className="field">
-                <option value="incidents">Incidents</option>
-                <option value="news" disabled={!full}>All election coverage{full ? "" : " (Team and above)"}</option>
-                {LIVE_RESULTS.includes(election) && <option value="results">Results, each constituency as it is declared</option>}
-              </select>
-            </Field>
-            {kind === "incidents" && (
-              <Field label="Minimum severity">
-                <select value={severity} onChange={(e) => setSeverity(e.target.value)} className="field">
-                  <option value="high">High only (deaths, gunfire, arson, abductions)</option>
-                  <option value="medium">Medium and high (attacks, injuries, ballot snatching)</option>
-                  <option value="low">All incidents</option>
-                </select>
-              </Field>
-            )}
-          </div>
-          <fieldset>
-            <legend className="mb-2 text-[0.8125rem] text-[color:var(--muted)]">
-              {current.region_word === "County" ? "Counties" : `${current.region_word}s`} (none selected = all of {current.country})
-            </legend>
-            <div className="flex flex-wrap gap-1.5">
-              {current.regions.map((s) => (
-                <label key={s} className={chip}>
-                  <input type="checkbox" checked={states.includes(s)} onChange={() => toggle(states, setStates, s)} className="accent-verified" />{s}
-                </label>
-              ))}
+
+          <div className="grid gap-5 p-5 md:grid-cols-[13rem_1fr]">
+            <div>
+              <h4 className="text-[0.9375rem] text-[color:var(--text)]">What to follow</h4>
+              <p className="mt-1 text-[0.8125rem] text-[color:var(--dim)]">An election, what to send, and where. Leave places and types empty for all of them.</p>
             </div>
-          </fieldset>
-          {kind === "incidents" && (
-            <fieldset>
-              <legend className="mb-2 text-[0.8125rem] text-[color:var(--muted)]">Incident types (none selected = all)</legend>
-              <div className="flex flex-wrap gap-1.5">
-                {INCIDENT_TYPES.map(([k, label]) => (
-                  <label key={k} className={chip}>
-                    <input type="checkbox" checked={types.includes(k)} onChange={() => toggle(types, setTypes, k)} className="accent-verified" />{k === "technology_failure" ? technologyLabel : label}
-                  </label>
-                ))}
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Election">
+                  <select value={election} onChange={(e) => { setElection(e.target.value); setStates([]); if (!LIVE_RESULTS.includes(e.target.value) && kind === "results") setKind("incidents"); }} className="field">
+                    {(details.length ? details : Object.keys(data.elections).map(info)).map((e) => {
+                      const next = nextDate(e);
+                      return <option key={e.key} value={e.key}>{e.country}{next ? ` · ${next}` : ""}</option>;
+                    })}
+                  </select>
+                </Field>
+                <Field label="Name">
+                  <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={`${current.country} incidents`} className="field" />
+                </Field>
               </div>
-            </fieldset>
-          )}
-          <label className="flex items-center gap-3 text-[0.875rem] text-[color:var(--muted)]">
-            <input type="checkbox" checked={emailMe} onChange={(e) => setEmailMe(e.target.checked)} className="h-4 w-4 accent-verified" />
-            Email me (to your account&apos;s confirmed address, at most one email an hour, with an unsubscribe link)
-          </label>
-          <Field label="And/or send to Slack, Teams, Discord, Google Chat or any webhook (optional)">
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <input value={webhook} onChange={(e) => { setWebhook(e.target.value); setNote(null); }} placeholder="Paste the channel's webhook URL" className="field kbd" />
-              <button type="button" onClick={testNew} disabled={!destination || testing === "new"} className="btn btn-ghost shrink-0">
-                {testing === "new" ? "Sending…" : "Send test message"}
-              </button>
+              <div>
+                <p className="mb-2 text-[0.8125rem] text-[color:var(--muted)]">Send</p>
+                <Segmented label="Send" value={kind} onChange={(v) => setKind(v)}
+                           options={[["incidents", "Incidents"], ...(full ? [["news", "All coverage"] as ["news", string]] : []),
+                                     ...(LIVE_RESULTS.includes(election) ? [["results", "Results"] as ["results", string]] : [])]} />
+                {!full && <p className="mt-1.5 text-[0.75rem] text-[color:var(--dim)]">All coverage comes with Team and above.</p>}
+              </div>
+              {kind === "incidents" && (
+                <div>
+                  <p className="mb-2 text-[0.8125rem] text-[color:var(--muted)]">Severity</p>
+                  <Segmented label="Minimum severity" value={severity as "high" | "medium" | "low"} onChange={setSeverity}
+                             options={[["high", "High only"], ["medium", "Medium and high"], ["low", "All"]]} />
+                </div>
+              )}
+              <div>
+                <p className="mb-2 text-[0.8125rem] text-[color:var(--muted)]">{regionsLabel}</p>
+                <div className="flex max-h-44 flex-wrap gap-1.5 overflow-y-auto">
+                  {current.regions.map((r) => <Chip key={r} on={states.includes(r)} onClick={() => toggle(states, setStates, r)}>{r}</Chip>)}
+                </div>
+              </div>
+              {kind === "incidents" && (
+                <div>
+                  <p className="mb-2 text-[0.8125rem] text-[color:var(--muted)]">Incident types</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {INCIDENT_TYPES.map(([k, label]) => (
+                      <Chip key={k} on={types.includes(k)} onClick={() => toggle(types, setTypes, k)}>{k === "technology_failure" ? technologyLabel : label}</Chip>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <p className="mt-2 text-[0.8125rem] text-[color:var(--dim)]">
-              {destination
-                ? <>Alerts will arrive formatted for <span className="text-[color:var(--text)]">{DESTINATION_LABEL[destination]}</span>.</>
-                : <>Formatted for the tool automatically. <Link href="/developers#chat" className="underline">How to get a webhook URL</Link>.</>}
-            </p>
-          </Field>
-          <label className={`flex items-center gap-3 text-[0.875rem] ${full ? "text-[color:var(--muted)]" : "text-[color:var(--dim)]"}`}>
-            <input type="checkbox" checked={starter} disabled={!full} onChange={(e) => setStarter(e.target.checked)} className="h-4 w-4 accent-verified" />
-            Start with matching incidents from the last 7 days{full ? "" : " (Team and above)"}
-          </label>
-          <button type="submit" disabled={busy || (!destination && !emailMe) || (!!webhook.trim() && !destination)} className="btn btn-primary">{busy ? "Creating…" : "Create election alert"}</button>
-          {error && <ErrorNote message={error} />}
+          </div>
+
+          <div className="grid gap-5 p-5 md:grid-cols-[13rem_1fr]">
+            <div>
+              <h4 className="text-[0.9375rem] text-[color:var(--text)]">Where to send it</h4>
+              <p className="mt-1 text-[0.8125rem] text-[color:var(--dim)]">At most one email an hour, with an unsubscribe link. Channels get one message per incident.</p>
+            </div>
+            <div className="space-y-4">
+              <label className="flex items-center gap-2.5 text-[0.875rem] text-[color:var(--muted)]">
+                <input type="checkbox" checked={emailMe} onChange={(e) => setEmailMe(e.target.checked)} className="h-4 w-4 accent-verified" />
+                Email me
+              </label>
+              <Field label="Channel webhook (optional)">
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input value={webhook} onChange={(e) => { setWebhook(e.target.value); setNote(null); }} placeholder="https://hooks.slack.com/…" className="field kbd" />
+                  <button type="button" onClick={testNew} disabled={!destination || testing === "new"} className="btn btn-ghost shrink-0">
+                    {testing === "new" ? "Sending…" : "Send test"}
+                  </button>
+                </div>
+                <p className="mt-1.5 text-[0.75rem] text-[color:var(--dim)]">
+                  {destination
+                    ? <>Formatted for <span className="text-[color:var(--text)]">{DESTINATION_LABEL[destination]}</span>.</>
+                    : <Link href="/developers#chat" className="underline">How to get a webhook URL</Link>}
+                </p>
+              </Field>
+              {full && (
+                <label className="flex items-center gap-2.5 text-[0.875rem] text-[color:var(--muted)]">
+                  <input type="checkbox" checked={starter} onChange={(e) => setStarter(e.target.checked)} className="h-4 w-4 accent-verified" />
+                  Start with the last 7 days
+                </label>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 p-5">
+            <button type="submit" disabled={busy || (!destination && !emailMe) || (!!webhook.trim() && !destination)} className="btn btn-primary">{busy ? "Creating…" : "Create alert"}</button>
+            {error && <ErrorNote message={error} />}
+          </div>
         </form>
       )}
       {note && <p role="status" className={`mt-3 text-[0.8125rem] ${note.ok ? "text-verified" : "text-risk"}`}>{note.text}</p>}
