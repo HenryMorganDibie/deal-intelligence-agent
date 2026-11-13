@@ -46,7 +46,7 @@ export function RequestForm({ topic, label, detail, placeholder, className }: {
       <input value={organisation} onChange={(e) => setOrganisation(e.target.value)} maxLength={120}
              placeholder="Organisation (optional)" className="field" aria-label="Organisation" />
       <textarea value={message} onChange={(e) => setMessage(e.target.value)} required minLength={10} maxLength={4000} rows={4}
-                placeholder={placeholder ?? "What you need, and roughly when"} className="field" aria-label="Message" />
+                placeholder={placeholder ?? "What you need, and roughly when"} className="field min-h-[7rem]" aria-label="Message" />
       <div className="flex flex-wrap items-center gap-2">
         <button type="submit" disabled={busy || message.trim().length < 10} className="btn btn-primary text-[0.8125rem]">
           {busy ? "Sending…" : "Send request"}

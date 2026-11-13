@@ -1,7 +1,8 @@
 /**
  * Public site configuration.
  *
- * The site links only to its own pages, plus a direct email route for demos and pilots.
+ * The site links only to its own pages. Requests go through the contact form (components/ContactForm.tsx), which
+ * works without a mail app; the address is shown for anyone who prefers to write.
  */
 
 function env(value: string | undefined): string | undefined {
@@ -25,10 +26,17 @@ export const LINKS = {
 
 export const CONTACT_EMAIL = env(process.env.NEXT_PUBLIC_CONTACT_EMAIL) ?? "info@deal-intelligence.app";
 
-/** A mailto link with a subject and a short template, so a request arrives with what is needed to answer it. */
-export function mailto(subject: string, body: string): string {
-  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
+
+/** Topics of the contact form, with a hint for the message. Shared by the contact page (server) and the form. */
+export type ContactTopic = "demo" | "pilot" | "data" | "institutional" | "election_alerts" | "election_coverage";
+
+export const CONTACT_TOPICS: [ContactTopic, string, string][] = [
+  ["demo", "Request a demonstration", "Markets or companies you would like to see, what you would use it for, and times that suit you (with time zone)."],
+  ["pilot", "Discuss a pilot", "Your coverage universe (countries, sectors, companies), the data you rely on today, and what a successful pilot would show."],
+  ["institutional", "Institutional plan or API volumes", "What you need (countries, elections, alerts, results, API volume) and when."],
+  ["election_coverage", "Election coverage", "The country and election, and what you would want covered (incidents, news, results)."],
+  ["data", "Methodology or data question", "Your question."],
+];
 
 export const REQUESTS = [
   {

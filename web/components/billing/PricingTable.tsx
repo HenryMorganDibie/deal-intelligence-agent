@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import type { NairaRate } from "../../lib/catalog";
 import { PLAN_FEATURES, approxDollars, defaultCurrency, money, priceOf, type CatalogPlan, type Currency } from "../../lib/pricing";
-import { CONTACT_EMAIL } from "../../lib/site";
 
 type Props = {
   catalog: CatalogPlan[];
@@ -95,7 +94,7 @@ export function PricingTable({ catalog, current = null, onChoose, busy = null, r
                 ) : p.id === "free" ? (
                   onChoose ? null : <a href="/account?mode=sign-up" className="btn btn-ghost w-full">Start free</a>
                 ) : (
-                  <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Deal Intelligence Institutional plan")}`} className="btn btn-ghost w-full">Talk to us</a>
+                  <a href="/contact?topic=institutional#form" className="btn btn-ghost w-full">Talk to us</a>
                 )}
               </div>
             </div>

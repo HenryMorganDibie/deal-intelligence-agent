@@ -1,4 +1,4 @@
-import { CONTACT_EMAIL, LINKS, REQUESTS, mailto } from "../lib/site";
+import { CONTACT_EMAIL, LINKS } from "../lib/site";
 import { ArrowRight, Container, LogoMark, Reveal } from "./primitives";
 
 export function FinalCta() {
@@ -67,10 +67,10 @@ export function SiteFooter() {
     {
       title: "Contact",
       links: [
-        { label: "Request a demo", href: mailto(REQUESTS[0].subject, REQUESTS[0].template) },
-        { label: "Discuss a pilot", href: mailto(REQUESTS[1].subject, REQUESTS[1].template) },
+        { label: "Request a demo", href: `${LINKS.contact}?topic=demo#form` },
+        { label: "Discuss a pilot", href: `${LINKS.contact}?topic=pilot#form` },
         { label: "All contact options", href: LINKS.contact },
-        { label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
+        { label: CONTACT_EMAIL, href: `${LINKS.contact}#form` },
       ],
     },
   ];

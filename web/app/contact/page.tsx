@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import { SiteFooter } from "../../components/Closing";
 import { SiteNav } from "../../components/SiteNav";
+import { ContactForm } from "../../components/ContactForm";
 import { ArrowRight, Container } from "../../components/primitives";
-import { CONTACT_EMAIL, REQUESTS, mailto } from "../../lib/site";
+import { CONTACT_EMAIL, CONTACT_TOPICS, REQUESTS, type ContactTopic } from "../../lib/site";
 
 export const metadata: Metadata = {
   title: "Contact | Deal Intelligence",
   description: "Request a demonstration, discuss a pilot, or ask about the methodology and evaluation data.",
 };
 
-export default function ContactPage() {
+export default function ContactPage({ searchParams }: { searchParams?: { topic?: string } }) {
+  const topic = CONTACT_TOPICS.some(([k]) => k === searchParams?.topic) ? (searchParams?.topic as ContactTopic) : "demo";
   return (
     <>
       <SiteNav />
@@ -18,17 +20,14 @@ export default function ContactPage() {
           <p className="eyebrow">Contact</p>
           <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">Talk to the person who built it.</h1>
           <p className="mt-4 text-[1rem] leading-relaxed text-[color:var(--muted)]">
-            Every request goes to Henry Dibie directly, at{" "}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-verified hover:underline">
-              {CONTACT_EMAIL}
-            </a>
-            . Each option below opens an email with a short template, so the first reply can be specific.
+            Every request goes to Henry Dibie directly. Choose a topic below or use the form; you can also write to{" "}
+            <span className="text-verified">{CONTACT_EMAIL}</span>.
           </p>
           <div className="mt-10 grid gap-4">
             {REQUESTS.map((r) => (
               <a
                 key={r.key}
-                href={mailto(r.subject, r.template)}
+                href={`?topic=${r.key}#form`}
                 className="panel group block p-6 transition-colors hover:bg-white/[0.02]"
               >
                 <h2 className="h3 flex items-center justify-between gap-3">
@@ -38,6 +37,9 @@ export default function ContactPage() {
                 <p className="mt-2 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">{r.body}</p>
               </a>
             ))}
+          </div>
+          <div className="mt-8">
+            <ContactForm initialTopic={topic} />
           </div>
           <section aria-labelledby="senders-title" className="mt-12 border-t hairline pt-8">
             <h2 id="senders-title" className="h3">Emails we send</h2>

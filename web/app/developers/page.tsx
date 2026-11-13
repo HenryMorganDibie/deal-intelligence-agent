@@ -145,8 +145,8 @@ for e in r.json()["events"]:
           <p>Every request made with a key counts, whatever its result, except <span className={`kbd ${ink}`}>/v1/usage</span>. Usage is per account and shared by all its keys. The allowance resets on the 1st of each month (UTC). Each response carries <span className={`kbd ${ink}`}>X-RateLimit-Limit</span>, <span className={`kbd ${ink}`}>X-RateLimit-Remaining</span> and <span className={`kbd ${ink}`}>X-RateLimit-Reset</span> (Unix time). Bursts above 120 requests a minute from one address are slowed down.</p>
           <p>
             Need more than 30 requests a month? Upgrade to Pro or Team on the{" "}
-            <Link href="/pricing" className="underline">pricing page</Link>. For Institutional volumes, write to{" "}
-            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Institutional API access")}`} className="underline">{CONTACT_EMAIL}</a>.
+            <Link href="/pricing" className="underline">pricing page</Link>. For Institutional volumes,{" "}
+            <Link href="/contact?topic=institutional#form" className="underline">send us a request</Link> or write to {CONTACT_EMAIL}.
           </p>
         </Section>
 
