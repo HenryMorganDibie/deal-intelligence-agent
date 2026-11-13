@@ -140,7 +140,8 @@ def apply_articles(stories: list[dict], pages: Iterable[dict]) -> set[str]:
             continue
         extra = body_tags(report["title"], body)
         for key in _TAG_KEYS:
-            story[key] = list(dict.fromkeys([*story.get(key, []), *extra[key]]))
+            if key in extra:
+                story[key] = list(dict.fromkeys([*story.get(key, []), *extra[key]]))
         _merge_incident(story, incidents(report["title"], body))
         story["full_text_reports"] = sum(1 for r in story["reports"] if r.get("words"))
     return changed
@@ -200,10 +201,12 @@ _TOPICS: tuple[tuple[str, re.Pattern], ...] = (
                                   r"registration|election materials)\b")),
     ("security", re.compile(r"(?i)\b(?:violence|violent|thugs?|thuggery|attack(?:s|ed)?|kill(?:s|ed|ing)?|"
                             r"kidnap\w*|clash(?:es)?|gunmen|security|insecurity|riot\w*)\b")),
-    ("courts", re.compile(r"(?i)\b(?:courts?|tribunal|suit|judg(?:e)?ment|appeal|Supreme Court|injunction|petition)\b")),
+    ("courts", re.compile(r"(?i)\b(?:courts?|tribunal|suit|judg(?:e)?ment|Court of Appeal|appellate|"
+                           r"appeal(?:s|ed)? (?:against )?(?:the )?(?:judg(?:e)?ment|ruling|verdict|decision)|Supreme Court|"
+                           r"injunction|petition)\b")),
     ("defection", re.compile(r"(?i)\b(?:defect(?:s|ed|ion|ors)?|dumps?|dumped|cross(?:es|ed)? (?:over|carpet)|"
                              r"joins?|switch(?:es|ed)?)\b")),
-    ("endorsement", re.compile(r"(?i)\b(?:endorse(?:s|d|ment)?|backs?|throws? weight|adopts?|declares? support)\b")),
+    ("endorsement", re.compile(r"(?i)\b(?:endorse(?:s|d|ment)?|backs|backed|backing|throws? weight|adopts?|declares? support)\b")),
     ("results", re.compile(r"(?i)\b(?:election results?|results? of|declared (?:the )?winner|collation|"
                            r"certificate of return|returning officer|wins? (?:\w+ ){0,3}(?:primary|election|poll|"
                            r"re-?run|seat)|won (?:\w+ ){0,3}(?:primary|election|poll|re-?run|seat))\b")),
@@ -213,6 +216,8 @@ _TOPICS: tuple[tuple[str, re.Pattern], ...] = (
                                 r"caretaker)\b")),
     ("economy", re.compile(r"(?i)\b(?:economy|inflation|naira|fuel|subsidy|tax(?:es)?|budget|unemployment)\b")),
 )
+
+_TOPICS_BY_NAME = dict(_TOPICS)
 
 _RACES: tuple[tuple[str, re.Pattern], ...] = (
     ("presidential", re.compile(r"(?i)\bpresiden(?:tial|cy|t)\b|\bAso Rock\b|\bVilla\b")),
@@ -416,23 +421,30 @@ def same_story(a: dict, b: dict, days: int = 2) -> bool:
     return shared / len(wa | wb) >= 0.6 or (shared >= 4 and shared / min(len(wa), len(wb)) >= 0.8)
 
 
-_TAG_KEYS = ("candidates", "parties", "states", "lgas", "topics", "races")
+_TAG_KEYS = ("candidates", "people", "parties", "states", "lgas", "topics", "races")
 
 
 def story_id(url: str) -> str:
     return hashlib.sha256(url.encode()).hexdigest()[:16]
 
 
-def record(item: dict) -> dict:
-    """A new story record from one feed item."""
+ELECTION = "ng-2027"
+
+
+def record(item: dict, tagger=None, election: str = ELECTION) -> dict:
+    """A new story record from one feed item. Other countries pass their own tagger and election key."""
+    tagger = tagger or tag
     report = {"outlet": item["outlet"], "url": item["url"], "title": item["title"], "date": item["date"]}
-    return {"id": story_id(item["url"]), "day": item["date"], "title": item["title"], "url": item["url"],
-            "outlet": item["outlet"], "snippet": item.get("snippet", "")[:400], **tag(item["title"], item.get("snippet", "")),
-            **incidents(item["title"], item.get("snippet", "")), "reports": [report], "outlets": [item["outlet"]]}
+    return {"id": story_id(item["url"]), "election": election, "day": item["date"], "title": item["title"],
+            "url": item["url"], "outlet": item["outlet"], "snippet": item.get("snippet", "")[:400],
+            **tagger(item["title"], item.get("snippet", "")), **incidents(item["title"], item.get("snippet", "")),
+            "reports": [report], "outlets": [item["outlet"]]}
 
 
-def merge(stories: list[dict], items: Iterable[dict]) -> tuple[list[dict], set[str]]:
-    """Fold new feed items into existing stories. Returns all stories and the ids that changed."""
+def merge(stories: list[dict], items: Iterable[dict], tagger=None,
+          election: str = ELECTION) -> tuple[list[dict], set[str]]:
+    """Fold new feed items into existing stories of one election. Returns all stories and the ids that changed."""
+    tagger = tagger or tag
     by_url = {r["url"]: s for s in stories for r in s.get("reports", [])}
     changed: set[str] = set()
     for item in items:
@@ -446,14 +458,15 @@ def merge(stories: list[dict], items: Iterable[dict]) -> tuple[list[dict], set[s
             match["reports"].append({"outlet": item["outlet"], "url": item["url"], "title": item["title"],
                                      "date": item["date"]})
             match["outlets"] = sorted({r["outlet"] for r in match["reports"]})
-            extra = tag(item["title"], item.get("snippet", ""))
+            extra = tagger(item["title"], item.get("snippet", ""))
             for key in _TAG_KEYS:
-                match[key] = list(dict.fromkeys([*match.get(key, []), *extra[key]]))
+                if key in extra:                      # Nigeria tags candidates; other countries tag people
+                    match[key] = list(dict.fromkeys([*match.get(key, []), *extra[key]]))
             _merge_incident(match, incidents(item["title"], item.get("snippet", "")))
             changed.add(match["id"])
             by_url[item["url"]] = match
         else:
-            s = record(item)
+            s = record(item, tagger, election)
             stories.append(s)
             changed.add(s["id"])
             by_url[item["url"]] = s
@@ -472,11 +485,11 @@ def _headline_keys(story: dict) -> tuple[set, set]:
     return places, set(t["parties"])
 
 
-def assign_events(stories: list[dict], days: int = 2) -> set[str]:
-    """Give every incident story an event_id (the id of the event's earliest story) and event_size; returns the ids
-    of stories whose event changed."""
+def assign_events(stories: list[dict], days: int = 2, keys_fn=None) -> set[str]:
+    """Give every incident story of one election an event_id (the id of the event's earliest story) and
+    event_size; returns the ids of stories whose event changed. Other countries pass their own headline keys."""
     inc = sorted((s for s in stories if s.get("incident_types")), key=lambda s: (s.get("day") or "", s["id"]))
-    keys = {s["id"]: _headline_keys(s) for s in inc}
+    keys = {s["id"]: (keys_fn or _headline_keys)(s) for s in inc}
     parent = {s["id"]: s["id"] for s in inc}
 
     def root(x: str) -> str:
@@ -516,11 +529,12 @@ def retag_missing(stories: list[dict]) -> set[str]:
     """Give stories stored before LGA and incident tagging existed those tags, from their headline and summary."""
     changed = set()
     for s in stories:
-        if "lgas" in s:
+        if "lgas" in s or s.get("election", ELECTION) != ELECTION:
             continue
         t = tag(s.get("title", ""), s.get("snippet", ""))
         for key in _TAG_KEYS:
-            s[key] = list(dict.fromkeys([*s.get(key, []), *t[key]]))
+            if key in t:
+                s[key] = list(dict.fromkeys([*s.get(key, []), *t[key]]))
         _merge_incident(s, incidents(s.get("title", ""), s.get("snippet", "")))
         changed.add(s["id"])
     return changed

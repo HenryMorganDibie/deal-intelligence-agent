@@ -226,21 +226,31 @@ async def country(code: str, request: Request, response: Response) -> dict:
     return await _call(lambda: hm.country(_country(code)))
 
 
+@router.get("/elections")
+async def election_list(request: Request, response: Response) -> dict:
+    """The elections monitored: key, country, dates, electoral body, regions and what is covered for each."""
+    from src import election_feed
+    await authorize(request, response)
+    return {"elections": election_feed.elections()}
+
+
 @router.get("/elections/news")
 async def election_news(request: Request, response: Response, candidate: Optional[str] = Query(None, max_length=80),
                         party: Optional[str] = Query(None, max_length=10), state: Optional[str] = Query(None, max_length=30),
                         topic: Optional[str] = Query(None, max_length=30), race: Optional[str] = Query(None, max_length=30),
                         q: str = Query("", max_length=120), since: Optional[str] = Query(None, max_length=10),
                         limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=100_000),
-                        lga: Optional[str] = Query(None, max_length=60)) -> dict:
-    """Nigeria 2027 election coverage: one record per story, every outlet's report attached, tagged by candidate,
-    party, state, LGA, topic, race and any incident reported."""
+                        lga: Optional[str] = Query(None, max_length=60), election: Optional[str] = Query(None, max_length=20)) -> dict:
+    """Election coverage: one record per story, every outlet's report attached, tagged by party, state or region,
+    topic, race and any incident reported (Nigeria also by candidate and LGA). `election` picks one election
+    (see /v1/elections); without it, every monitored election."""
     from src import election_feed
     await authorize(request, response)
 
     async def run():
         return await run_in_threadpool(election_feed.search, candidate=candidate, party=party, state=state,
-                                       topic=topic, race=race, q=q, since=since, limit=limit, offset=offset, lga=lga)
+                                       topic=topic, race=race, q=q, since=since, limit=limit, offset=offset, lga=lga,
+                                       election=election)
     return await _call(run)
 
 
@@ -249,25 +259,27 @@ async def election_incidents(request: Request, response: Response, state: Option
                              lga: Optional[str] = Query(None, max_length=60), type: Optional[str] = Query(None, max_length=30),
                              severity: Optional[str] = Query(None, max_length=10), since: Optional[str] = Query(None, max_length=10),
                              limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=100_000),
-                             group: bool = False) -> dict:
+                             group: bool = False, election: Optional[str] = Query(None, max_length=20)) -> dict:
     """Election incidents reported in the news (violence, thuggery, abduction, arson, ballot snatching, vote buying,
     intimidation, BVAS or IReV failures, logistics, arrests, hate speech), with severity and location."""
     from src import election_feed
     await authorize(request, response)
 
     async def run():
-        return await run_in_threadpool(election_feed.incident_feed, state, lga, type, severity, since, limit, offset, group)
+        return await run_in_threadpool(election_feed.incident_feed, state, lga, type, severity, since, limit, offset, group,
+                                       election)
     return await _call(run)
 
 
 @router.get("/elections/summary")
-async def election_summary(request: Request, response: Response, days: int = Query(7, ge=1, le=90)) -> dict:
+async def election_summary(request: Request, response: Response, days: int = Query(7, ge=1, le=90),
+                           election: Optional[str] = Query(None, max_length=20)) -> dict:
     """Coverage counts per candidate, party, state, topic and race over the last `days` days."""
     from src import election_feed
     await authorize(request, response)
 
     async def run():
-        return await run_in_threadpool(election_feed.summary, days)
+        return await run_in_threadpool(election_feed.summary, days, election)
     return await _call(run)
 
 

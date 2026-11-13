@@ -10,14 +10,32 @@ import { ProBadge } from "./PlanLinks";
 import { ErrorNote, Field } from "./ui";
 
 type Alert = { id: string; name: string; filters: Record<string, unknown>; destination: string; webhook: string | null; email?: boolean; active?: boolean; sent?: number; created_at?: string };
-type State = { alerts: Alert[]; allowance: number; plan: string; full_features: boolean; elections: Record<string, string> };
+type ElectionInfo = { key: string; country: string; label: string; dates: { date: string; name: string }[]; body: string; region_word: string; regions: string[]; coverage: string[] };
+type State = { alerts: Alert[]; allowance: number; plan: string; full_features: boolean; elections: Record<string, string>; election_details?: ElectionInfo[] };
 type TestResult = { delivered: boolean; destination?: string; error?: string | null };
 
-function summary(f: Record<string, unknown>): string {
-  const bits: string[] = [];
+const NIGERIA: ElectionInfo = {
+  key: "ng-2027", country: "Nigeria", label: "Nigeria: 2027 general elections", dates: [], body: "INEC",
+  region_word: "State", regions: NG_STATES, coverage: [],
+};
+
+function regionWord(e: ElectionInfo, plural = false): string {
+  const w = e.region_word.toLowerCase();
+  return plural ? (w.endsWith("y") ? `${w.slice(0, -1)}ies` : `${w}s`) : w;
+}
+
+function nextDate(e: ElectionInfo): string | null {
+  const today = new Date().toISOString().slice(0, 10);
+  const d = e.dates.find((x) => x.date >= today);
+  return d ? new Date(`${d.date}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : null;
+}
+
+function summary(f: Record<string, unknown>, info: (key: string) => ElectionInfo): string {
+  const e = info(String(f.election ?? "ng-2027"));
+  const bits: string[] = [e.country];
   bits.push(f.kind === "news" ? "All election coverage" : `Incidents${f.min_severity ? `, ${f.min_severity} severity and above` : ""}`);
   const states = (f.states as string[] | undefined) ?? [];
-  bits.push(states.length ? states.join(", ") : "all states");
+  bits.push(states.length ? states.join(", ") : `all ${regionWord(e, true)}`);
   const types = (f.incident_types as string[] | undefined) ?? [];
   if (types.length) bits.push(types.map((t) => INCIDENT_TYPES.find(([k]) => k === t)?.[1] ?? t).join(", "));
   return bits.join(" · ");
@@ -51,6 +69,10 @@ export function ElectionAlerts() {
   }, []);
   useEffect(() => { void load(); }, [load]);
 
+  const details = data?.election_details ?? [];
+  const info = (key: string): ElectionInfo => details.find((e) => e.key === key) ?? (key === "ng-2027" ? NIGERIA : { ...NIGERIA, key, country: data?.elections[key]?.split(":")[0] ?? key, label: data?.elections[key] ?? key, regions: [] });
+  const current = info(election);
+  const technologyLabel = election === "ng-2027" ? "BVAS or IReV failure" : "Election technology failure";
   const destination = webhookDestination(webhook);
   const full = !!data?.full_features;
   const atLimit = !!data && data.alerts.length >= data.allowance;
@@ -133,7 +155,7 @@ export function ElectionAlerts() {
             <li key={a.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="text-[0.875rem] text-[color:var(--text)]">{a.name}</p>
-                <p className="text-[0.75rem] text-[color:var(--muted)]">{summary(a.filters)}</p>
+                <p className="text-[0.75rem] text-[color:var(--muted)]">{summary(a.filters, info)}</p>
                 <p className="text-[0.75rem] text-[color:var(--dim)]">
                   {a.destination} · {a.sent ?? 0} sent{a.active === false ? " · Paused" : ""}
                 </p>
@@ -160,11 +182,14 @@ export function ElectionAlerts() {
         <form onSubmit={submit} className="mt-5 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Name">
-              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Lagos and Kano incidents" className="field" />
+              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={`${current.country} incidents`} className="field" />
             </Field>
-            <Field label="Election">
-              <select value={election} onChange={(e) => setElection(e.target.value)} className="field">
-                {Object.entries(data.elections).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+            <Field label="Country and election">
+              <select value={election} onChange={(e) => { setElection(e.target.value); setStates([]); }} className="field">
+                {(details.length ? details : Object.keys(data.elections).map(info)).map((e) => {
+                  const next = nextDate(e);
+                  return <option key={e.key} value={e.key}>{e.label}{next ? ` · next vote ${next}` : ""}</option>;
+                })}
               </select>
             </Field>
           </div>
@@ -186,9 +211,11 @@ export function ElectionAlerts() {
             )}
           </div>
           <fieldset>
-            <legend className="mb-2 text-[0.8125rem] text-[color:var(--muted)]">States (none selected = all of Nigeria)</legend>
+            <legend className="mb-2 text-[0.8125rem] text-[color:var(--muted)]">
+              {current.region_word === "County" ? "Counties" : `${current.region_word}s`} (none selected = all of {current.country})
+            </legend>
             <div className="flex flex-wrap gap-1.5">
-              {NG_STATES.map((s) => (
+              {current.regions.map((s) => (
                 <label key={s} className={chip}>
                   <input type="checkbox" checked={states.includes(s)} onChange={() => toggle(states, setStates, s)} className="accent-verified" />{s}
                 </label>
@@ -201,7 +228,7 @@ export function ElectionAlerts() {
               <div className="flex flex-wrap gap-1.5">
                 {INCIDENT_TYPES.map(([k, label]) => (
                   <label key={k} className={chip}>
-                    <input type="checkbox" checked={types.includes(k)} onChange={() => toggle(types, setTypes, k)} className="accent-verified" />{label}
+                    <input type="checkbox" checked={types.includes(k)} onChange={() => toggle(types, setTypes, k)} className="accent-verified" />{k === "technology_failure" ? technologyLabel : label}
                   </label>
                 ))}
               </div>

@@ -244,10 +244,10 @@ export default function WatchlistsPage() {
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
           Election incidents pushed to your Slack, Teams, Discord or Google Chat channel, or any webhook, about an hour
           after they are reported: violence, thuggery, abductions, arson, ballot snatching, vote buying, intimidation, BVAS or
-          IReV failures and logistics problems, each rated high, medium or low and placed to its state or region and local area. Nigeria is monitored now; more countries follow their election calendars.
+          IReV failures and logistics problems, each rated high, medium or low and placed to its state, county or region. Choose the country when you create an alert: Nigeria, Kenya, The Gambia and South Sudan are monitored now, and more follow their election calendars.
         </p>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
-          <li>Filter by severity, state, LGA, incident type, candidate or party.</li>
+          <li>Filter by country, severity, state or region, incident type, party or leading figure (for Nigeria, also LGA and candidate).</li>
           <li>One message per incident: when many outlets report the same incident, you get it once, with the number of reports.</li>
           <li>Messages are not capped; the allowance is how many alerts you can have running at once. Create them here or through the API.</li>
         </ul>

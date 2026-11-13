@@ -32,11 +32,12 @@ const ENDPOINTS: [string, string, string][] = [
   ["/markets/quote", "Latest price for one listing.", "exchange, symbol (both required)"],
 ];
 
-// Nigeria's 2027 general election. [method, path, what, params]
+// Elections: Nigeria in depth, other countries' news and incidents. [method, path, what, params]
 const ELECTION_ENDPOINTS: [string, string, string, string][] = [
-  ["GET", "/elections/news", "Election coverage from Nigerian outlets, one record per story with every outlet's report, tagged by candidate, party, state, LGA, topic, race and any incident.", "candidate, party, state, lga, topic, race, q, since, limit (≤200), offset"],
-  ["GET", "/elections/summary", "Coverage counts per candidate, party, state, LGA, topic, race and incident type.", "days (≤90)"],
-  ["GET", "/elections/incidents", "Incidents reported in the news (violence, thuggery, abduction, arson, ballot snatching, vote buying, intimidation, BVAS or IReV failures, logistics, arrests, hate speech) with severity and location.", "state, lga, type, severity (low, medium, high: the minimum), since, group (one entry per incident, other reports listed), limit (≤200), offset"],
+  ["GET", "/elections", "The elections monitored: key, country, dates, electoral body, regions and what is covered for each.", ""],
+  ["GET", "/elections/news", "Election coverage, one record per story with every outlet's report, tagged by party, state or region, topic, race and any incident; Nigeria also by candidate and LGA, other countries by leading figure (people).", "election, candidate, party, state, lga, topic, race, q, since, limit (≤200), offset"],
+  ["GET", "/elections/summary", "Coverage counts per candidate or person, party, state, LGA, topic, race and incident type, and stories per election.", "election, days (≤90)"],
+  ["GET", "/elections/incidents", "Incidents reported in the news (violence, thuggery, abduction, arson, ballot snatching, vote buying, intimidation, election technology failures, logistics, arrests, hate speech) with severity and location.", "election, state, lga, type, severity (low, medium, high: the minimum), since, group (one entry per incident, other reports listed), limit (≤200), offset"],
   ["GET", "/elections/areas", "INEC's delimitation one level at a time: the states; a state's LGAs; an LGA's wards, with polling-unit counts.", "state (code or name), lga (code)"],
   ["GET", "/elections/polling-units", "Polling units in a ward, or matching a name.", "state, lga, ward (codes), or q (3+ letters); limit (≤500), offset"],
   ["GET", "/elections/polling-units/{code}", "One polling unit by INEC code, e.g. 24/11/01/001.", ""],
@@ -48,7 +49,7 @@ const RESULTS_ENDPOINTS: [string, string, string, string][] = [
   ["POST", "/elections/results/sheets/{id}/review", "Verify, reject or return a sheet to review, with corrections. A sheet that fails its checks cannot be verified.", "JSON: status, corrections {figures, votes}"],
   ["GET", "/elections/results", "Votes by party for the country, a state, an LGA or a ward, broken down one level below, with coverage and turnout.", "election, state, lga, ward, verified_only"],
   ["GET", "/elections/accreditation", "Registered and accredited voters, turnout and sheet coverage at the same levels.", "election, state, lga, ward, verified_only"],
-  ["POST", "/elections/alerts", "Push incidents (or, on Team and above, all coverage) to Slack, Teams, Discord, Google Chat or a JSON webhook as they are collected, one message per incident. Alerts running at once: Pro 2, Team 5, Institutional 25; messages are not capped.", "JSON: name, webhook_url, filters {kind: incidents | news, min_severity, states, lgas, incident_types, candidates, parties, topics}"],
+  ["POST", "/elections/alerts", "Push incidents (or, on Team and above, all coverage) to Slack, Teams, Discord, Google Chat or a JSON webhook as they are collected, one message per incident. Alerts running at once: Pro 2, Team 5, Institutional 25; messages are not capped.", "JSON: name, webhook_url, filters {election, kind: incidents | news, min_severity, states, lgas, incident_types, candidates, people, parties, topics}"],
   ["GET", "/elections/alerts", "Your election alerts and how many stories each has sent.", ""],
   ["POST", "/elections/alerts/{id}/test", "Send a clearly marked sample to the alert's webhook.", ""],
   ["POST", "/elections/alerts/{id}/backfill", "Send the alert's matching stories from the last few days now, so a new alert starts with recent context (Team and above).", "days (≤7)"],
@@ -165,8 +166,9 @@ for e in r.json()["events"]:
           </div>
         </Section>
 
-        <Section id="elections" title="Nigeria 2027 elections">
-          <p>Election intelligence for the presidential and National Assembly elections on 16 January 2027 and the governorship and state assembly elections on 6 February 2027. Coverage is collected hourly from Nigerian publishers&apos; own feeds and tagged by rules, so every tag traces to the words that produced it. Candidates are the 18 presidential tickets on INEC&apos;s final list; polling units follow INEC&apos;s delimitation (37 states, 774 LGAs, 8,809 wards, 176,623 polling units).</p>
+        <Section id="elections" title="Elections">
+          <p>Monitored now: <span className="kbd">ng-2027</span> Nigeria, <span className="kbd">gm-2026</span> The Gambia (presidential 5 December 2026, parliamentary 10 April 2027), <span className="kbd">ss-2026</span> South Sudan (22 December 2026) and <span className="kbd">ke-2027</span> Kenya (10 August 2027). Pass <span className="kbd">election</span> to news, incidents, summary and alerts to pick one; without it, news and incidents cover all. Outside Nigeria, coverage is each country&apos;s election reporting from Google News&apos;s public feed, credited to the outlet that published it, and tagged by party, region (Kenya&apos;s counties, The Gambia&apos;s regions, South Sudan&apos;s states), leading figure, topic, race and incident. Polling units, results and accreditation are Nigeria only.</p>
+          <p>Nigeria: election intelligence for the presidential and National Assembly elections on 16 January 2027 and the governorship and state assembly elections on 6 February 2027. Coverage is collected hourly from Nigerian publishers&apos; own feeds and tagged by rules, so every tag traces to the words that produced it. Candidates are the 18 presidential tickets on INEC&apos;s final list; polling units follow INEC&apos;s delimitation (37 states, 774 LGAs, 8,809 wards, 176,623 polling units).</p>
           <p className={ink}>Every plan</p>
           <EndpointList rows={ELECTION_ENDPOINTS} ink={ink} />
           <p className={ink}>Results and accreditation (Institutional); election alerts (Pro and above)</p>

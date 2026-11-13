@@ -22,10 +22,11 @@ from src.engines import chat_formats, watch
 log = logging.getLogger("deal_intel.election_alerts")
 SEVERITY = {"low": 1, "medium": 2, "high": 3}
 KINDS = ("incidents", "news")
-# Elections an alert can follow. One today; another country's election is added here (and its sources and tagging)
-# without changing alerts, the API or the page.
-ELECTIONS = {"ng-2027": "Nigeria: 2027 general elections"}
-LIST_FILTERS = ("states", "lgas", "incident_types", "candidates", "parties", "topics")
+# Elections an alert can follow: Nigeria and every country profile (src/data/election_profiles.py). Adding a
+# profile adds it here, to the API and to the page, without changing alerts.
+ELECTIONS = {"ng-2027": "Nigeria: 2027 general elections",
+             **{k: p["label"] for k, p in __import__("src.data.election_profiles", fromlist=["PROFILES"]).PROFILES.items()}}
+LIST_FILTERS = ("states", "lgas", "incident_types", "candidates", "people", "parties", "topics")
 DOCS = "https://deal-intelligence.app/developers#elections"
 # How many election alerts an account can have at once; messages are not capped. Following all coverage (kind=news)
 # and the recent-stories starter come with Team and above.
@@ -81,6 +82,10 @@ def matches(story: dict, filters: dict) -> bool:
 
 def _alert_item(story: dict) -> dict:
     where = ", ".join(story.get("lgas") or []) or ", ".join(story.get("states") or [])
+    election = story.get("election", "ng-2027")
+    if election != "ng-2027" and election in ELECTIONS:
+        country = ELECTIONS[election].split(":")[0]
+        where = f"{where}, {country}" if where else country
     bits = []
     if story.get("severity"):
         bits.append(f"{story['severity'].capitalize()} severity: " + ", ".join(t.replace("_", " ") for t in story.get("incident_types") or []))
@@ -363,8 +368,9 @@ async def _me(request: Request) -> tuple[str, str]:
 async def app_list(request: Request) -> dict:
     owner, plan = await _me(request)
     rows = await run_in_threadpool(list_for, owner)
+    from src import election_feed
     return {"alerts": rows, "allowance": allowance(plan), "plan": plan, "full_features": plan in FULL_FEATURES,
-            "elections": ELECTIONS}
+            "elections": ELECTIONS, "election_details": election_feed.elections()}
 
 
 @router.post("/api/elections/alerts")

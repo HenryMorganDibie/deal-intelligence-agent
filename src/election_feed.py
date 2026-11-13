@@ -17,6 +17,8 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 
 from src import hosted_market as hm
+from src.data.election_profiles import PROFILES
+from src.engines import election_country as ec
 from src.engines import election_news as en
 
 log = logging.getLogger("deal_intel.election_feed")
@@ -39,36 +41,51 @@ def _load(since: str) -> list[dict]:
     return rows
 
 
-def _fetch_sources() -> tuple[list[tuple[str, str]], dict[str, str]]:
-    texts, status = [], {}
+def _fetch_sources() -> tuple[list[tuple[str, str]], dict[str, str], dict[str, str]]:
+    """Nigeria's outlet feeds as (outlet, text), each other election's feed as {election: text}, and the status of
+    every fetch."""
+    texts, country_texts, status = [], {}, {}
     with httpx.Client(headers={"User-Agent": en.USER_AGENT}, timeout=25, follow_redirects=True) as client:
-        for outlet, url in en.all_sources():
-            label = f"{outlet} (Google News)" if "news.google.com" in url else outlet
+        def get(label: str, url: str) -> Optional[str]:
             try:
                 resp = client.get(url)
                 status[label] = str(resp.status_code)
-                if resp.status_code == 200:
-                    texts.append((outlet, resp.text))
+                return resp.text if resp.status_code == 200 else None
             except httpx.HTTPError as e:
                 status[label] = type(e).__name__
-    return texts, status
+                return None
+        for outlet, url in en.all_sources():
+            text = get(f"{outlet} (Google News)" if "news.google.com" in url else outlet, url)
+            if text is not None:
+                texts.append((outlet, text))
+        for key, url in ec.sources():
+            text = get(f"{PROFILES[key]['country']} (Google News)", url)
+            if text is not None:
+                country_texts[key] = text
+    return texts, country_texts, status
 
 
 def collect_once(today: Optional[date] = None) -> dict:
     today = today or datetime.now(timezone.utc).date()
-    texts, status = _fetch_sources()
-    items = en.collect(texts, today)
+    texts, country_texts, status = _fetch_sources()
     since = (today - timedelta(days=5)).isoformat()
     _cache.pop(since, None)
-    stored = _load(since) if hm._configured() else []
-    stories, changed = en.merge([dict(s) for s in stored], items)
-    changed |= en.retag_missing(stories)          # stories stored before a newer tag existed get it now
-    changed |= en.assign_events(stories)          # one incident covered by many outlets is one event
-    rows = [s for s in stories if s["id"] in changed]
+    stored = ec.split(dict(s) for s in (_load(since) if hm._configured() else []))
+    items_by = {ec.NIGERIA: en.collect(texts, today)}
+    items_by.update({k: ec.collect(k, t, today) for k, t in country_texts.items()})
+    rows, counts = [], {}
+    for key, items in items_by.items():
+        nigeria = key == ec.NIGERIA
+        stories, changed = en.merge(stored.get(key, []), items, None if nigeria else ec.tagger(key), key)
+        if nigeria:
+            changed |= en.retag_missing(stories)      # stories stored before a newer tag existed get it now
+        changed |= en.assign_events(stories, keys_fn=None if nigeria else ec.headline_keys(key))
+        rows += [s for s in stories if s["id"] in changed]
+        counts[key] = len(items)
     written = _write(rows)
     from src import election_alerts
-    return {"sources": status, "items": len(items), "stories_changed": len(rows), "written": written,
-            "alerts": election_alerts.deliver(rows)}
+    return {"sources": status, "items": sum(counts.values()), "items_by_election": counts,
+            "stories_changed": len(rows), "written": written, "alerts": election_alerts.deliver(rows)}
 
 
 def _write(rows: list[dict]) -> int:
@@ -94,7 +111,7 @@ def crawl_config(output_path: str, limit: int = 150, today: Optional[date] = Non
         "concurrency": 2, "max_retries": 0, "request_timeout": "15s",
         "rate_per_host_rps": 0.5, "rate_burst": 1, "adaptive_rate": True,   # one page every two seconds per site
         "sink_backend": "jsonl", "output_path": output_path, "report_interval": "30s",
-        "targets": en.crawl_targets(_load(since), limit),
+        "targets": en.crawl_targets([s for s in _load(since) if ec.election_of(s) == ec.NIGERIA], limit),
     }
 
 
@@ -103,7 +120,8 @@ def apply_crawl(pages: list[dict], today: Optional[date] = None) -> dict:
     today = today or datetime.now(timezone.utc).date()
     since = (today - timedelta(days=5)).isoformat()
     _cache.pop(since, None)
-    stories = [dict(s, reports=[dict(r) for r in s.get("reports") or []]) for s in _load(since)]
+    stories = [dict(s, reports=[dict(r) for r in s.get("reports") or []]) for s in _load(since)
+               if ec.election_of(s) == ec.NIGERIA]          # full articles are read for Nigeria's outlets only
     changed = en.apply_articles(stories, pages)
     changed |= en.assign_events(stories)
     rows = [s for s in stories if s["id"] in changed]
@@ -131,28 +149,58 @@ def _matches(s: dict, field: str, value: Optional[str]) -> bool:
 
 def search(candidate: Optional[str] = None, party: Optional[str] = None, state: Optional[str] = None,
            topic: Optional[str] = None, race: Optional[str] = None, q: str = "", since: Optional[str] = None,
-           limit: int = 50, offset: int = 0, lga: Optional[str] = None) -> dict:
+           limit: int = 50, offset: int = 0, lga: Optional[str] = None, election: Optional[str] = None) -> dict:
+    _check_election(election)
     since = since or (datetime.now(timezone.utc).date() - timedelta(days=30)).isoformat()
     try:
         date.fromisoformat(since)
     except ValueError:
         raise HTTPException(400, "since must be a date, YYYY-MM-DD.")
-    rows = [s for s in _load(since)
-            if _matches(s, "candidates", candidate) and _matches(s, "parties", party) and _matches(s, "states", state)
+    rows = [s for s in _load(since) if _in_election(s, election)
+            and _matches(s, "candidates", candidate) and _matches(s, "parties", party) and _matches(s, "states", state)
             and _matches(s, "topics", topic) and _matches(s, "races", race)
             and (not lga or any(lga.strip().lower() == x.split(",")[0].lower() for x in s.get("lgas") or []))
             and (not q or q.lower() in (s.get("title", "") + " " + s.get("snippet", "")).lower())]
-    return {"since": since, "total": len(rows), "offset": offset, "stories": rows[offset:offset + limit],
-            "sources": sorted({o for o, _ in en.all_sources()})}
+    sources = sorted({o for o, _ in en.all_sources()}) if (election or ec.NIGERIA) == ec.NIGERIA \
+        else sorted({o for s in rows for o in s.get("outlets") or []})
+    return {"election": election, "since": since, "total": len(rows), "offset": offset,
+            "stories": rows[offset:offset + limit], "sources": sources}
 
 
 _SEVERITY = {"low": 1, "medium": 2, "high": 3}
 
 
+def elections() -> list[dict]:
+    """Every monitored election: key, country, label, dates, regions and what is covered."""
+    from src.data import elections_ng_2027 as ng
+    out = [{"key": ec.NIGERIA, "country": "Nigeria", "iso": "NG", "label": "Nigeria: 2027 general elections",
+            "dates": [{"date": str(ng.PRESIDENTIAL_DAY), "name": "Presidential and National Assembly"},
+                      {"date": str(ng.GOVERNORSHIP_DAY), "name": "Governorship and State Assembly"}],
+            "body": "INEC", "region_word": "State", "regions": list(ng.STATES),
+            "coverage": ["news", "incidents", "candidates", "lgas", "polling_units", "results"]}]
+    for key, p in PROFILES.items():
+        out.append({"key": key, "country": p["country"], "iso": p["iso"], "label": p["label"],
+                    "dates": [{"date": d, "name": n} for d, n in p["dates"]], "body": p["body"][0],
+                    "region_word": p["region_word"], "regions": list(p["regions"]),
+                    "coverage": ["news", "incidents"]})
+    return sorted(out, key=lambda e: e["dates"][0]["date"])
+
+
+def _check_election(election: Optional[str]) -> None:
+    if election and election != ec.NIGERIA and election not in PROFILES:
+        raise HTTPException(400, f"election must be one of: {', '.join(sorted([ec.NIGERIA, *PROFILES]))}.")
+
+
+def _in_election(s: dict, election: Optional[str]) -> bool:
+    return not election or ec.election_of(s) == election
+
+
 def incident_feed(state: Optional[str] = None, lga: Optional[str] = None, type: Optional[str] = None,
                   severity: Optional[str] = None, since: Optional[str] = None, limit: int = 50, offset: int = 0,
-                  group: bool = False) -> dict:
-    """Stories reporting election incidents, newest first, optionally by state, LGA, type and minimum severity."""
+                  group: bool = False, election: Optional[str] = None) -> dict:
+    """Stories reporting election incidents, newest first, optionally by election, region, LGA, type and minimum
+    severity."""
+    _check_election(election)
     if severity and severity not in _SEVERITY:
         raise HTTPException(400, "severity must be low, medium or high.")
     since = since or (datetime.now(timezone.utc).date() - timedelta(days=30)).isoformat()
@@ -161,7 +209,7 @@ def incident_feed(state: Optional[str] = None, lga: Optional[str] = None, type: 
     except ValueError:
         raise HTTPException(400, "since must be a date, YYYY-MM-DD.")
     floor = _SEVERITY.get(severity or "low", 1)
-    rows = [s for s in _load(since) if s.get("incident_types")
+    rows = [s for s in _load(since) if s.get("incident_types") and _in_election(s, election)
             and _SEVERITY.get(s.get("severity") or "low", 1) >= floor
             and _matches(s, "states", state) and _matches(s, "incident_types", type)
             and (not lga or any(lga.strip().lower() == x.split(",")[0].lower() for x in s.get("lgas") or []))]
@@ -180,12 +228,17 @@ def incident_feed(state: Optional[str] = None, lga: Optional[str] = None, type: 
                                 event_reports=[{"title": m["title"], "url": m.get("url"), "outlets": m.get("outlets"),
                                                 "day": m.get("day")} for m in members if m is not lead]))
         rows = sorted(grouped, key=lambda s: (s.get("day") or "", _SEVERITY.get(s.get("severity") or "low", 1)), reverse=True)
-    return {"since": since, "total": len(rows), "events": len(events),
+    return {"election": election, "since": since, "total": len(rows), "events": len(events),
             "by_type": dict(sorted(by_type.items(), key=lambda kv: -kv[1])),
             "by_severity": {k: sum(1 for s in rows if s.get("severity") == k) for k in ("high", "medium", "low")},
             "offset": offset, "incidents": rows[offset:offset + limit]}
 
 
-def summary(days: int = 7) -> dict:
+def summary(days: int = 7, election: Optional[str] = None) -> dict:
+    _check_election(election)
     since = (datetime.now(timezone.utc).date() - timedelta(days=days)).isoformat()
-    return {"since": since, "days": days, **en.summary(_load(since), since)}
+    rows = [s for s in _load(since) if _in_election(s, election)]
+    by_election: dict[str, int] = {}
+    for s in rows:
+        by_election[ec.election_of(s)] = by_election.get(ec.election_of(s), 0) + 1
+    return {"election": election, "since": since, "days": days, "by_election": by_election, **en.summary(rows, since)}

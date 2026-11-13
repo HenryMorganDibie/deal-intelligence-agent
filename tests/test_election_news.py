@@ -96,7 +96,7 @@ def test_collection_job_writes_only_changed_stories_and_the_api_serves_them(monk
 
     monkeypatch.setattr(hm, "_rpc_sync", fake_rpc)
     monkeypatch.setattr(hm, "_configured", lambda: True)
-    monkeypatch.setattr(election_feed, "_fetch_sources", lambda: ([("Punch", FEED), ("Vanguard", FEED2)], {"Punch": "200"}))
+    monkeypatch.setattr(election_feed, "_fetch_sources", lambda: ([("Punch", FEED), ("Vanguard", FEED2)], {}, {"Punch": "200"}))
     election_feed._cache.clear()
     out = election_feed.collect_once(TODAY)
     assert out["stories_changed"] == 2 and out["written"] == 2
