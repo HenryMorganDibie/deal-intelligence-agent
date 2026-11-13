@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { ProBadge } from "../../../components/app/PlanLinks";
 import { ElectionAlerts } from "../../../components/app/ElectionAlerts";
+import { UPCOMING_AFRICA } from "../../../lib/elections";
 import { usePlan } from "../../../lib/plan";
 import { CONTACT_EMAIL } from "../../../lib/site";
 import { Container } from "../../../components/primitives";
@@ -237,13 +238,13 @@ export default function WatchlistsPage() {
 
       <section className="panel mt-12 p-5 sm:p-6" aria-labelledby="election-alerts-title">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 id="election-alerts-title" className="h3">Nigeria 2027 election alerts</h2>
+          <h2 id="election-alerts-title" className="h3">Election alerts</h2>
           <span className="rounded-full border hairline px-2.5 py-0.5 text-[0.75rem] text-[color:var(--muted)]">Pro and above</span>
         </div>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
           Election incidents pushed to your Slack, Teams, Discord or Google Chat channel, or any webhook, about an hour
           after they are reported: violence, thuggery, abductions, arson, ballot snatching, vote buying, intimidation, BVAS or
-          IReV failures and logistics problems, each rated high, medium or low and placed to state and LGA.
+          IReV failures and logistics problems, each rated high, medium or low and placed to its state or region and local area. Nigeria is monitored now; more countries follow their election calendars.
         </p>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
           <li>Filter by severity, state, LGA, incident type, candidate or party.</li>
@@ -272,6 +273,25 @@ export default function WatchlistsPage() {
           <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Election alerts")}`} className="underline">Ask about Institutional access</a>
         </p>
         <ElectionAlerts />
+
+        <h3 className="eyebrow mt-8">Upcoming elections in Africa</h3>
+        <ul className="mt-2 divide-y divide-white/[0.07] border-y hairline">
+          {UPCOMING_AFRICA.filter((e) => e.date >= new Date().toISOString().slice(0, 10)).map((e) => (
+            <li key={e.country + e.date} className="flex flex-col gap-1 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-[0.875rem]">
+                <span className="text-[color:var(--text)]">{e.country}</span>
+                <span className="text-[color:var(--muted)]"> · {e.kind} · {e.label}</span>
+              </span>
+              {e.key ? (
+                <span className="shrink-0 rounded-full border border-[color:var(--verified,#6ee7c8)] px-2.5 py-0.5 text-[0.75rem] text-verified">Monitored</span>
+              ) : (
+                <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Election coverage: ${e.country} ${e.label}`)}`}
+                   className="shrink-0 text-[0.8125rem] underline text-[color:var(--muted)]">Request coverage</a>
+              )}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">Dates from national electoral commissions, checked November 2026. Monitored elections can be chosen for alerts above.</p>
       </section>
 
       <h2 className="eyebrow mt-12">Your watchlists</h2>

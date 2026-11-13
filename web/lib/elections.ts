@@ -41,3 +41,19 @@ export const INCIDENT_TYPES: [string, string][] = [
   ["technology_failure", "BVAS or IReV failure"], ["logistics", "Logistics"], ["arrest", "Arrest"],
   ["hate_speech", "Hate speech"],
 ];
+
+/** Upcoming national elections in Africa, for the Alerts page. Official dates only (Angola: month expected). Checked
+ * 13 November 2026 against electoral commissions' timetables as compiled by PollsAfrica and Wikipedia's list of
+ * 2027 elections. `key` matches an election we monitor (src/election_alerts.py ELECTIONS); others are on request.
+ * Past entries drop off by themselves. */
+export type UpcomingElection = { country: string; kind: string; date: string; label: string; key?: string };
+export const UPCOMING_AFRICA: UpcomingElection[] = [
+  { country: "Cabo Verde", kind: "Presidential", date: "2026-11-15", label: "15 November 2026" },
+  { country: "The Gambia", kind: "Presidential", date: "2026-12-05", label: "5 December 2026" },
+  { country: "South Sudan", kind: "General", date: "2026-12-22", label: "22 December 2026" },
+  { country: "Nigeria", kind: "General (presidential and National Assembly)", date: "2027-01-16", label: "16 January 2027", key: "ng-2027" },
+  { country: "Nigeria", kind: "Governorship and state assembly", date: "2027-02-06", label: "6 February 2027", key: "ng-2027" },
+  { country: "The Gambia", kind: "Parliamentary", date: "2027-04-10", label: "10 April 2027" },
+  { country: "Kenya", kind: "General", date: "2027-08-10", label: "10 August 2027" },
+  { country: "Angola", kind: "General", date: "2027-08-31", label: "August 2027 (expected)" },
+];
