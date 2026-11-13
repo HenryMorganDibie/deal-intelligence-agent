@@ -113,7 +113,7 @@ def idempotency_key(batch_key: str, token: str) -> str:
 
 async def send(client: httpx.AsyncClient, to: str, subject: str, html_body: str, text_body: str,
                unsubscribe: Optional[str], key: str, *, from_address: Optional[str] = None,
-               tags: Optional[list[str]] = None) -> dict:
+               tags: Optional[list[str]] = None, reply_to_address: Optional[str] = None) -> dict:
     """Send one message. Returns {"sent": bool, "status": int|None, "error": str|None}; never raises.
     Account emails (sign-up, password reset, security alerts) pass unsubscribe=None: they are transactional and
     carry no unsubscribe link."""
@@ -121,7 +121,7 @@ async def send(client: httpx.AsyncClient, to: str, subject: str, html_body: str,
         return {"sent": False, "status": None, "error": "email_not_configured"}
     payload = {
         "from": from_address or sender(), "to": [to], "subject": subject, "html": html_body, "text": text_body,
-        "reply_to": reply_to(), "tags": tags or ["watchlist-alert"], "idempotency_key": key,
+        "reply_to": reply_to_address or reply_to(), "tags": tags or ["watchlist-alert"], "idempotency_key": key,
         "tracking": {"opens": False, "clicks": False},
     }
     if unsubscribe:

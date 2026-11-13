@@ -233,6 +233,10 @@ from src.election_alerts import router as election_alerts_router  # noqa: E402
 
 app.include_router(election_alerts_router)
 
+from src.contact import router as contact_router  # noqa: E402
+
+app.include_router(contact_router)
+
 from src import public_api  # noqa: E402
 
 public_api.install(app)    # /v1: key-authenticated, metered, never edge-cached

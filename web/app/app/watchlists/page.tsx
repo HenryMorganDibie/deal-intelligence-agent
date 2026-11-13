@@ -6,7 +6,7 @@ import { ProBadge } from "../../../components/app/PlanLinks";
 import { ElectionAlerts } from "../../../components/app/ElectionAlerts";
 import { UPCOMING_AFRICA } from "../../../lib/elections";
 import { usePlan } from "../../../lib/plan";
-import { CONTACT_EMAIL } from "../../../lib/site";
+import { RequestForm } from "../../../components/app/RequestForm";
 import { Container } from "../../../components/primitives";
 import { ErrorNote, Field, PageHeader, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
@@ -270,14 +270,15 @@ export default function WatchlistsPage() {
         <p className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[0.875rem]">
           <Link href="/developers#elections" className="underline">API documentation</Link>
           <Link href="/pricing" className="underline">See plans</Link>
-          <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Election alerts")}`} className="underline">Ask about Institutional access</a>
+          <RequestForm topic="institutional" label="Ask about Institutional access"
+                       placeholder="Tell us what you need: countries, elections, alerts, results, API volume, and timing" />
         </p>
         <ElectionAlerts />
 
         <h3 className="eyebrow mt-8">Upcoming elections in Africa</h3>
         <ul className="mt-2 divide-y divide-white/[0.07] border-y hairline">
           {UPCOMING_AFRICA.filter((e) => e.date >= new Date().toISOString().slice(0, 10)).map((e) => (
-            <li key={e.country + e.date} className="flex flex-col gap-1 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+            <li key={e.country + e.date} className="flex flex-col gap-1 py-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <span className="text-[0.875rem]">
                 <span className="text-[color:var(--text)]">{e.country}</span>
                 <span className="text-[color:var(--muted)]"> · {e.kind} · {e.label}</span>
@@ -285,8 +286,9 @@ export default function WatchlistsPage() {
               {e.key ? (
                 <span className="shrink-0 rounded-full border border-[color:var(--verified,#6ee7c8)] px-2.5 py-0.5 text-[0.75rem] text-verified">Monitored</span>
               ) : (
-                <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Election coverage: ${e.country} ${e.label}`)}`}
-                   className="shrink-0 text-[0.8125rem] underline text-[color:var(--muted)]">Request coverage</a>
+                <RequestForm topic="election_coverage" label="Request coverage" detail={`${e.country}, ${e.kind}, ${e.label}`}
+                             className="shrink-0 text-[0.8125rem] underline text-[color:var(--muted)]"
+                             placeholder="What you would want covered (incidents, news, results) and when you need it" />
               )}
             </li>
           ))}
