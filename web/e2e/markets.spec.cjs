@@ -30,7 +30,7 @@ test("Markets and adjacent workspaces render without route failures", async ({ p
 
 test("Markets overview keeps Research and Coverage in their own workspaces", async ({ page }) => {
   await page.goto("/app/markets");
-  await expect(page.getByRole("heading", { name: "African equity markets, today." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "African equity markets today" })).toBeVisible();
   await expect(page.getByLabel("Search listed companies")).toBeVisible();
   await expect(page.getByText("Research a company", { exact: false })).toHaveCount(0);
   await expect(page.getByText("Search country, exchange or currency", { exact: false })).toHaveCount(0);
@@ -38,7 +38,7 @@ test("Markets overview keeps Research and Coverage in their own workspaces", asy
 
 test("local portfolio supports add, persistence, CSV backup, clear and import", async ({ page }) => {
   await page.goto("/app/markets/portfolio");
-  await expect(page.getByRole("heading", { name: "Your portfolio, in context." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Portfolio", exact: true })).toBeVisible();
 
   await page.getByLabel("Company or investment name *").fill("Browser Test Equity");
   await page.getByLabel("Ticker / identifier").fill("BTE");
@@ -222,7 +222,7 @@ test("portfolio inputs support keyboard focus navigation", async ({ page }) => {
 test("portfolio page remains usable at a narrow mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app/markets/portfolio");
-  await expect(page.getByRole("heading", { name: "Your portfolio, in context." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Portfolio", exact: true })).toBeVisible();
   await expect(page.getByLabel("Company or investment name *")).toBeVisible();
   await expect(page.getByRole("button", { name: "Add holding" })).toBeVisible();
 });
