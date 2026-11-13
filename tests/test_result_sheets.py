@@ -65,6 +65,8 @@ def test_wrong_or_unknown_polling_unit_and_unreadable_totals_need_review():
     assert rs.status_for(rs.check(reading(), "24/11/01/001", UNIT), "poor") == "needs_review"
     with pytest.raises(ValueError):
         rs.parse_model_output("I cannot read this image.")
+    thought = rs.parse_model_output("<think>The table {rows} shows...</think>\n" + json.dumps(GOOD))
+    assert thought["figures"]["valid"] == 322
 
 
 @pytest.fixture

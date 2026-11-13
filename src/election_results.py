@@ -29,8 +29,11 @@ from src.engines import result_sheets as rs
 
 log = logging.getLogger("deal_intel.election_results")
 GROQ = "https://api.groq.com/openai/v1"
-_PREFERRED = ("meta-llama/llama-4-maverick-17b-128e-instruct", "meta-llama/llama-4-scout-17b-16e-instruct")
-_VISION_HINTS = ("llama-4", "vision", "-vl", "scout", "maverick", "gemma-3", "gemma3", "gemma-4", "gemma4")
+# Groq's vision line-up changes often (Llama 4 Scout and Maverick were retired by November 2026).
+_PREFERRED = ("qwen/qwen3.8-27b", "qwen/qwen3.6-27b", "meta-llama/llama-4-maverick-17b-128e-instruct",
+              "meta-llama/llama-4-scout-17b-16e-instruct")
+_VISION_HINTS = ("llama-4", "vision", "-vl", "scout", "maverick", "gemma-3", "gemma3", "gemma-4", "gemma4",
+                 "qwen3.8-27b", "qwen3.6-27b")
 _working_model: Optional[str] = None
 MAX_IMAGE_BYTES = 3 * 1024 * 1024        # base64 in a JSON body must stay under Vercel's 4.5 MB request limit
 IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
@@ -66,7 +69,7 @@ def read_sheet(image: dict) -> tuple[dict, str]:
     with httpx.Client(timeout=90) as client:
         models = ([_working_model] if _working_model else []) + [m for m in _candidate_models(client) if m != _working_model]
         for model in models:
-            body = {"model": model, "temperature": 0, "max_completion_tokens": 1500,
+            body = {"model": model, "temperature": 0, "max_completion_tokens": 4000,
                     "messages": [{"role": "user", "content": content}], "response_format": {"type": "json_object"}}
             for attempt in range(2):
                 r = client.post(f"{GROQ}/chat/completions", json=body,

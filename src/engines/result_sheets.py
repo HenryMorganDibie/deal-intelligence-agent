@@ -58,7 +58,7 @@ def _int(v: Any) -> Optional[int]:
 
 def parse_model_output(text: str) -> dict:
     """The model's JSON, tolerating code fences or a sentence around it."""
-    text = (text or "").strip()
+    text = re.sub(r"(?is)<think>.*?</think>", "", text or "").strip()   # reasoning models think aloud first
     m = re.search(r"\{.*\}", text, re.S)
     if not m:
         raise ValueError("The reading did not contain a JSON object.")
