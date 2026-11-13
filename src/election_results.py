@@ -6,6 +6,9 @@ fetches arbitrary addresses). The model's reading is checked (src/engines/result
 the words written beside the figures and INEC's polling-unit list; a sheet that passes counts as provisional, one
 that does not waits for review. Images are not stored: only their SHA-256, so the same sheet sent twice is read once.
 
+Sheets belong to the account that submitted them: a client's sheets, reviews and totals are visible only to that
+account and never count in another's.
+
 Groq's vision models change; the first that accepts an image is used, from GROQ_VISION_MODELS if set, else
 Groq's own model list.
 """
@@ -106,8 +109,16 @@ def _image(upload: Optional[bytes], content_type: Optional[str], url: Optional[s
     raise HTTPException(400, "Send an image file or an image_url.")
 
 
-def submit(election: str, pu_code: str, upload: Optional[bytes] = None, content_type: Optional[str] = None,
-           url: Optional[str] = None, submitted_by: Optional[str] = None) -> dict:
+def _owner(owner: Optional[str]) -> str:
+    """Every sheet belongs to the account that submitted it; nothing is read or written without one."""
+    if not owner:
+        raise HTTPException(503, "The account behind this key could not be identified.")
+    return owner
+
+
+def submit(owner: str, election: str, pu_code: str, upload: Optional[bytes] = None, content_type: Optional[str] = None,
+           url: Optional[str] = None) -> dict:
+    owner = _owner(owner)
     if election not in rs.ELECTIONS:
         raise HTTPException(400, "election must be one of " + ", ".join(rs.ELECTIONS) + ".")
     code = rs.normalise_code(pu_code)
@@ -125,9 +136,9 @@ def submit(election: str, pu_code: str, upload: Optional[bytes] = None, content_
             "unit": {k: known[k] for k in ("name", "ward", "lga", "state")}, "checks": checks,
             "model": model, "read_seconds": round(time.monotonic() - started, 1),
             "source": {"sha256": digest, "url": url} if url else {"sha256": digest}}
-    r = hm._rpc_sync("insert_result_sheet", {"p_row": {"election": election, "pu_code": code, "status": status,
-                                                        "data": data, "image_sha256": digest,
-                                                        "submitted_by": submitted_by or ""}})
+    r = hm._rpc_sync("insert_result_sheet", {"p_owner": owner, "p_row": {"election": election, "pu_code": code,
+                                                                          "status": status, "data": data,
+                                                                          "image_sha256": digest}})
     if r.status_code != 200:
         raise HTTPException(503, "The reading could not be stored.")
     return _public(r.json())
@@ -143,10 +154,11 @@ def _public(row: dict) -> dict:
                                      "reviewed_at", "duplicate") if row.get(k) is not None}
 
 
-def review(sheet_id: str, status: str, corrections: Optional[dict], reviewer: Optional[str]) -> dict:
+def review(owner: str, sheet_id: str, status: str, corrections: Optional[dict]) -> dict:
+    owner = _owner(owner)
     if status not in ("verified", "rejected", "needs_review"):
         raise HTTPException(400, "status must be verified, rejected or needs_review.")
-    r = hm._rpc_sync("get_result_sheet", {"p_id": sheet_id})
+    r = hm._rpc_sync("get_result_sheet", {"p_owner": owner, "p_id": sheet_id})
     if r.status_code != 200 or not r.json():
         raise HTTPException(404, "No such sheet.")
     data = r.json()["data"]
@@ -161,8 +173,7 @@ def review(sheet_id: str, status: str, corrections: Optional[dict], reviewer: Op
             raise HTTPException(409, "The corrected sheet still fails a check: " +
                                 "; ".join(c["detail"] for c in data["checks"] if c["ok"] is False))
     data["review"] = {"status": status, "corrections": corrections or {}}
-    r = hm._rpc_sync("review_result_sheet", {"p_id": sheet_id, "p_status": status, "p_data": data,
-                                              "p_reviewer": reviewer})
+    r = hm._rpc_sync("review_result_sheet", {"p_owner": owner, "p_id": sheet_id, "p_status": status, "p_data": data})
     if r.status_code != 200:
         raise HTTPException(503, "The review could not be stored.")
     return _public(r.json())
@@ -180,10 +191,11 @@ def _scope(state: Optional[str], lga: Optional[str], ward: Optional[str]) -> tup
     return st, lg, wd
 
 
-def sheets(election: str, state: Optional[str] = None, lga: Optional[str] = None, ward: Optional[str] = None,
-           status: Optional[str] = None, limit: int = 50, offset: int = 0) -> dict:
+def sheets(owner: str, election: str, state: Optional[str] = None, lga: Optional[str] = None,
+           ward: Optional[str] = None, status: Optional[str] = None, limit: int = 50, offset: int = 0) -> dict:
+    owner = _owner(owner)
     st, lg, wd = _scope(state, lga, ward)
-    r = hm._rpc_sync("list_result_sheets", {"p_election": election, "p_state": st, "p_lga": lg, "p_ward": wd,
+    r = hm._rpc_sync("list_result_sheets", {"p_owner": owner, "p_election": election, "p_state": st, "p_lga": lg, "p_ward": wd,
                                              "p_status": status, "p_limit": limit, "p_offset": offset})
     if r.status_code != 200:
         raise HTTPException(503, "Result sheets are unavailable.")
@@ -192,13 +204,14 @@ def sheets(election: str, state: Optional[str] = None, lga: Optional[str] = None
     return out
 
 
-def totals(election: str, state: Optional[str] = None, lga: Optional[str] = None, ward: Optional[str] = None,
-           verified_only: bool = False) -> dict:
-    """Votes, accreditation and turnout for a scope, broken down one level below it."""
+def totals(owner: str, election: str, state: Optional[str] = None, lga: Optional[str] = None,
+           ward: Optional[str] = None, verified_only: bool = False) -> dict:
+    """Votes, accreditation and turnout for a scope from this account's sheets, broken down one level below it."""
+    owner = _owner(owner)
     if election not in rs.ELECTIONS:
         raise HTTPException(400, "election must be one of " + ", ".join(rs.ELECTIONS) + ".")
     st, lg, wd = _scope(state, lga, ward)
-    r = hm._rpc_sync("result_totals", {"p_election": election, "p_state": st, "p_lga": lg, "p_ward": wd,
+    r = hm._rpc_sync("result_totals", {"p_owner": owner, "p_election": election, "p_state": st, "p_lga": lg, "p_ward": wd,
                                         "p_verified_only": verified_only})
     if r.status_code != 200:
         raise HTTPException(503, "Result totals are unavailable.")

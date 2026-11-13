@@ -84,17 +84,27 @@ def db(monkeypatch):
         if fn == "polling_unit_areas":
             return R([{"code": "24", "name": "LAGOS"}])
         if fn == "insert_result_sheet":
-            row = dict(args["p_row"], id="00000000-0000-0000-0000-000000000001")
+            assert args["p_owner"]
+            row = dict(args["p_row"], owner=args["p_owner"], id=f"00000000-0000-0000-0000-{len(rows) + 1:012d}")
             for r in rows.values():
-                if r["image_sha256"] == row["image_sha256"]:
+                if r["owner"] == row["owner"] and r["image_sha256"] == row["image_sha256"]:
                     return R(dict(r, duplicate=True))
             rows[row["id"]] = row
             return R(row)
         if fn == "get_result_sheet":
-            return R(rows.get(args["p_id"]))
+            r = rows.get(args["p_id"])
+            return R(r if r and r["owner"] == args["p_owner"] else None)
         if fn == "review_result_sheet":
-            rows[args["p_id"]].update(status=args["p_status"], data=args["p_data"])
-            return R(rows[args["p_id"]])
+            r = rows.get(args["p_id"])
+            if not r or r["owner"] != args["p_owner"]:
+                return R(None)
+            r.update(status=args["p_status"], data=args["p_data"])
+            return R(r)
+        if fn == "list_result_sheets":
+            mine = [r for r in rows.values() if r["owner"] == args["p_owner"]]
+            return R({"total": len(mine), "sheets": mine})
+        if fn == "result_totals" and args["p_owner"] != "acct-a":
+            return R({"polling_units": 667, "sheets": 0, "verified": 0, "votes": {}, "groups": []})
         if fn == "result_totals":
             return R({"polling_units": 667, "sheets": 1, "verified": 1, "registered": 612, "accredited": 341,
                       "votes_cast": 330, "valid": 322, "rejected": 8, "votes": {"APC": 141},
@@ -109,26 +119,26 @@ def db(monkeypatch):
 
 def test_submit_reads_checks_stores_and_reviews(db, monkeypatch):
     monkeypatch.setattr(er, "read_sheet", lambda image: (reading(votes={"NDC": 128}, votes_in_words={"NDC": 128}), "test-model"))
-    out = er.submit("presidential-2027", "24-11-1-1", upload=b"\x89PNG fake", content_type="image/png")
+    out = er.submit("acct-a", "presidential-2027", "24-11-1-1", upload=b"\x89PNG fake", content_type="image/png")
     assert out["status"] == "needs_review" and out["data"]["unit"]["name"] == "ANIFOWOSHE PRY. SCH."
     assert "party_votes_sum_to_valid" in [c["rule"] for c in out["data"]["checks"] if c["ok"] is False]
-    again = er.submit("presidential-2027", "24/11/01/001", upload=b"\x89PNG fake", content_type="image/png")
+    again = er.submit("acct-a", "presidential-2027", "24/11/01/001", upload=b"\x89PNG fake", content_type="image/png")
     assert again.get("duplicate") is True                          # same image: not read twice
     with pytest.raises(Exception) as e:                            # verifying without fixing the sum is refused
-        er.review(out["id"], "verified", {"votes": {"APC": 141}}, None)
+        er.review("acct-a", out["id"], "verified", {"votes": {"APC": 141}})
     assert "still fails" in str(e.value.detail)
-    fixed = er.review(out["id"], "verified", {"votes": {"NDC": 118}}, None)
+    fixed = er.review("acct-a", out["id"], "verified", {"votes": {"NDC": 118}})
     assert fixed["status"] == "verified" and fixed["data"]["votes"]["NDC"] == 118
     for bad in (dict(pu_code="99/99/99/999"), dict(election="mayor-2027"), dict(pu_code="Ikeja")):
         with pytest.raises(Exception):
-            er.submit(**({"election": "presidential-2027", "pu_code": "24/11/01/001"} | bad), upload=b"x",
-                      content_type="image/png")
+            er.submit(**({"owner": "acct-a", "election": "presidential-2027", "pu_code": "24/11/01/001"} | bad),
+                      upload=b"x", content_type="image/png")
     with pytest.raises(Exception):
-        er.submit("presidential-2027", "24/11/01/001", upload=b"x", content_type="application/pdf")
+        er.submit("acct-a", "presidential-2027", "24/11/01/001", upload=b"x", content_type="application/pdf")
 
 
 def test_totals_add_turnout_and_coverage(db):
-    t = er.totals("presidential-2027", "Lagos", "11")
+    t = er.totals("acct-a", "presidential-2027", "Lagos", "11")
     assert t["breakdown"] == "wards" and t["turnout"] == round(341 / 612, 4) and t["coverage"] == round(1 / 667, 4)
     assert t["groups"][0]["turnout"] == round(341 / 612, 4)
 
@@ -136,7 +146,7 @@ def test_totals_add_turnout_and_coverage(db):
 def test_results_are_institutional_only(db, monkeypatch):
     import api.index as api
     from src import public_api
-    plan = {"plan": "pro"}
+    plan = {"plan": "pro", "account": "acct-a"}
 
     async def auth(request, response, count=True):
         return dict(plan)
@@ -153,3 +163,20 @@ def test_results_are_institutional_only(db, monkeypatch):
     assert r.status_code == 200 and r.json()["status"] == "provisional"
     assert client.post("/v1/elections/results/sheets", json={"pu_code": "24/11/01/001", "image_url": "http://x"}).status_code == 400
     assert client.post("/v1/elections/results/sheets", json={"pu_code": "24/11/01/001", "image_base64": "%%%"}).status_code == 400
+
+
+def test_each_account_sees_only_its_own_sheets_and_totals(db, monkeypatch):
+    monkeypatch.setattr(er, "read_sheet", lambda image: (reading(), "test-model"))
+    a = er.submit("acct-a", "presidential-2027", "24/11/01/001", upload=b"\x89PNG a", content_type="image/png")
+    assert er.sheets("acct-a", "presidential-2027")["total"] == 1
+    assert er.sheets("acct-b", "presidential-2027")["total"] == 0              # another customer: nothing
+    with pytest.raises(Exception) as e:
+        er.review("acct-b", a["id"], "rejected", None)                         # cannot review another's sheet
+    assert e.value.status_code == 404
+    assert er.totals("acct-b", "presidential-2027", "Lagos", "11")["sheets"] == 0
+    # The same image from a second account is that account's own sheet, not a duplicate of the first.
+    b = er.submit("acct-b", "presidential-2027", "24/11/01/001", upload=b"\x89PNG a", content_type="image/png")
+    assert not b.get("duplicate") and b["id"] != a["id"]
+    with pytest.raises(Exception) as e:
+        er.sheets(None, "presidential-2027")                                   # no account, no data
+    assert e.value.status_code == 503

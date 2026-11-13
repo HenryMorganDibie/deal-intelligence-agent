@@ -324,11 +324,14 @@ class SheetReview(BaseModel):
     corrections: Optional[dict] = None
 
 
-async def _institutional(request: Request, response: Response) -> dict:
+async def _institutional(request: Request, response: Response) -> str:
+    """The account behind an Institutional key: results data is kept per account."""
     status = await authorize(request, response)
     if status.get("plan") != "institutional":
         raise PublicApiError(403, "plan_required", "Results and accreditation are part of the Institutional plan.")
-    return status
+    if not status.get("account"):
+        raise PublicApiError(503, "unavailable", "The account behind this key could not be identified.")
+    return str(status["account"])
 
 
 @router.post("/elections/results/sheets")
@@ -339,7 +342,7 @@ async def submit_result_sheet(body: SheetSubmission, request: Request, response:
     import base64
     import binascii
     from src import election_results
-    await _institutional(request, response)
+    owner = await _institutional(request, response)
     upload = None
     if body.image_base64:
         try:
@@ -349,8 +352,8 @@ async def submit_result_sheet(body: SheetSubmission, request: Request, response:
     who = (presented_key(request) or "")[:16]
 
     async def run():
-        return await run_in_threadpool(election_results.submit, body.election, body.pu_code, upload,
-                                       body.content_type, body.image_url, None) | {"submitted_with": who}
+        return await run_in_threadpool(election_results.submit, owner, body.election, body.pu_code, upload,
+                                       body.content_type, body.image_url) | {"submitted_with": who}
     return await _call(run)
 
 
@@ -360,12 +363,12 @@ async def list_result_sheets(request: Request, response: Response, election: str
                              ward: Optional[str] = Query(None, max_length=3),
                              status: Optional[Literal["needs_review", "provisional", "verified", "rejected"]] = None,
                              limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=200_000)) -> dict:
-    """Submitted sheets, newest first; status=needs_review is the review queue."""
+    """This account's submitted sheets, newest first; status=needs_review is the review queue."""
     from src import election_results
-    await _institutional(request, response)
+    owner = await _institutional(request, response)
 
     async def run():
-        return await run_in_threadpool(election_results.sheets, election, state, lga, ward, status, limit, offset)
+        return await run_in_threadpool(election_results.sheets, owner, election, state, lga, ward, status, limit, offset)
     return await _call(run)
 
 
@@ -374,12 +377,12 @@ async def review_result_sheet(sheet_id: str, body: SheetReview, request: Request
     """A person's decision on a sheet: verified, rejected or back to needs_review, with any corrections
     ({"figures": {"valid": 412}, "votes": {"APC": 210}}). A corrected sheet must pass the checks to be verified."""
     from src import election_results
-    await _institutional(request, response)
+    owner = await _institutional(request, response)
     if not re.fullmatch(r"[0-9a-f-]{36}", sheet_id):
         raise PublicApiError(400, "bad_request", "That is not a sheet id.")
 
     async def run():
-        return await run_in_threadpool(election_results.review, sheet_id, body.status, body.corrections, None)
+        return await run_in_threadpool(election_results.review, owner, sheet_id, body.status, body.corrections)
     return await _call(run)
 
 
@@ -387,13 +390,13 @@ async def review_result_sheet(sheet_id: str, body: SheetReview, request: Request
 async def election_results_totals(request: Request, response: Response, election: str = Query("presidential-2027", max_length=40),
                                   state: Optional[str] = Query(None, max_length=40), lga: Optional[str] = Query(None, max_length=3),
                                   ward: Optional[str] = Query(None, max_length=3), verified_only: bool = False) -> dict:
-    """Votes by party for the country, a state, an LGA or a ward, broken down one level below, one sheet per polling
-    unit (verified first, else the latest provisional), with coverage and turnout."""
+    """Votes by party for the country, a state, an LGA or a ward, from this account's sheets only, broken down one
+    level below, one sheet per polling unit (verified first, else the latest provisional), with coverage and turnout."""
     from src import election_results
-    await _institutional(request, response)
+    owner = await _institutional(request, response)
 
     async def run():
-        return await run_in_threadpool(election_results.totals, election, state, lga, ward, verified_only)
+        return await run_in_threadpool(election_results.totals, owner, election, state, lga, ward, verified_only)
     return await _call(run)
 
 
@@ -403,10 +406,10 @@ async def election_accreditation(request: Request, response: Response, election:
                                  ward: Optional[str] = Query(None, max_length=3), verified_only: bool = False) -> dict:
     """Registered and accredited voters, turnout and sheet coverage, from the result sheets received."""
     from src import election_results
-    await _institutional(request, response)
+    owner = await _institutional(request, response)
 
     async def run():
-        t = await run_in_threadpool(election_results.totals, election, state, lga, ward, verified_only)
+        t = await run_in_threadpool(election_results.totals, owner, election, state, lga, ward, verified_only)
         keep = ("code", "name", "polling_units", "sheets", "verified", "registered", "accredited", "votes_cast",
                 "turnout", "coverage")
         return {k: t[k] for k in ("election", "scope", "counted", "breakdown", "polling_units", "sheets", "verified",
