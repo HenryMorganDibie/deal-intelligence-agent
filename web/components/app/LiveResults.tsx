@@ -7,6 +7,8 @@ import { ErrorNote, Field, PageHeader } from "./ui";
 import { Container } from "../primitives";
 import { ApiError } from "../../lib/api";
 import { del, get, post } from "../../lib/market";
+import { PollsPanel } from "./PollsPanel";
+import { StateTileMap } from "./StateTileMap";
 
 type Ranked = { candidate: string; party: string | null; votes: number; share: number; [k: string]: string | number | null };
 type Spread = Record<string, { states_at_25: number; needed: number; met: boolean; fct_at_25: boolean | null }>;
@@ -25,7 +27,10 @@ type Data = {
   label: string; polling_day: string; body: string; unit_word: string; units_word: string; area_word: string;
   candidates: string[]; national: Summary; areas: Area[]; units: Unit[]; notes: string; baseline_year: number | null;
   operator: boolean; plan: string; rejected_ballots: boolean; ballot: { name: string; party: string | null }[];
+  baseline_winners: Record<string, string>;
 };
+// Names off the ballot (a 2023 winner not standing in 2027) get these, in order of first appearance.
+const EXTRA = ["#b0a089", "#7f9cb5", "#c99f6e"];
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // One steady colour per candidate, in ballot order, so a candidate reads the same in every table.
@@ -175,7 +180,8 @@ export function LiveResults({ election, title, intro }: { election: string; titl
 
   const colour = useMemo(() => {
     const order = data?.candidates ?? [];
-    return (n: string) => COLOURS[Math.max(0, order.indexOf(n)) % COLOURS.length];
+    const extra = Array.from(new Set(Object.values(data?.baseline_winners ?? {}).filter((n) => !order.includes(n))));
+    return (n: string) => order.includes(n) ? COLOURS[order.indexOf(n) % COLOURS.length] : EXTRA[Math.max(0, extra.indexOf(n)) % EXTRA.length];
   }, [data]);
 
   const nat = data?.national;
@@ -233,6 +239,15 @@ export function LiveResults({ election, title, intro }: { election: string; titl
               )}
             </div>
           </section>
+
+          {data.unit_word === "state" && (
+            <section className="mt-8">
+              <h2 className="h3">Map</h2>
+              <StateTileMap winners={Object.fromEntries(data.units.map((u) => [u.unit, u.winner]))} baseline={data.baseline_winners ?? {}}
+                            baselineYear={data.baseline_year} colour={colour}
+                            onPick={(st) => { const u = data.units.find((x) => x.unit === st); if (u) setArea(u.area); }} />
+            </section>
+          )}
 
           {nat.spread && Object.keys(nat.spread).length > 0 && (
             <section className="mt-8">
@@ -311,6 +326,7 @@ export function LiveResults({ election, title, intro }: { election: string; titl
             </ul>
           </section>
 
+          {election === "ng-2027" && <PollsPanel election={election} ballot={data.ballot} colour={colour} />}
           <p className="mt-6 text-[0.75rem] text-[color:var(--dim)]">{data.notes}</p>
           {data.operator && <EntryForm data={data} election={election} onSaved={load} />}
         </>

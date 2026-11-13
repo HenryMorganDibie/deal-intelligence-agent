@@ -250,6 +250,42 @@ async def election_candidates(request: Request, response: Response,
         raise PublicApiError(400, "bad_request", str(e))
 
 
+@router.get("/elections/polls")
+async def election_polls(request: Request, response: Response, election: str = Query("ng-2027", max_length=20)) -> dict:
+    """Published opinion polls (pollster, fieldwork, sample, method, shares, source), an average of each pollster's
+    latest poll in the last 90 days weighted by the square root of its sample, and recent stories tagged as polls.
+    Pro plan and above."""
+    from src import election_live, election_polls
+    status = await authorize(request, response)
+    if status.get("plan") not in election_live.PLANS:
+        raise PublicApiError(403, "plan_required", "Polls come with the Pro plan and above.")
+
+    async def run():
+        return await run_in_threadpool(election_polls.polls, election)
+    return await _call(run)
+
+
+@router.get("/elections/export")
+async def election_export(request: Request, response: Response, dataset: str = Query(..., max_length=20),
+                          election: Optional[str] = Query(None, max_length=20), since: Optional[str] = Query(None, max_length=10),
+                          state: Optional[str] = Query(None, max_length=40), office: Optional[str] = Query(None, max_length=30)):
+    """CSV download of an election dataset: news, incidents, live (results), history or candidates. Team plan and
+    above."""
+    from fastapi.responses import Response as RawResponse
+
+    from src import election_export
+    status = await authorize(request, response)
+    if status.get("plan") not in ("team", "institutional"):
+        raise PublicApiError(403, "plan_required", "CSV exports come with the Team plan and above.")
+    try:
+        name, text = await run_in_threadpool(election_export.export, dataset, election, since, state, office)
+    except ValueError as e:
+        raise PublicApiError(400, "bad_request", str(e))
+    headers = {k: v for k, v in response.headers.items() if k.lower().startswith("x-ratelimit")}
+    headers["Content-Disposition"] = f'attachment; filename="{name}"'
+    return RawResponse(content=text, media_type="text/csv; charset=utf-8", headers=headers)
+
+
 @router.get("/elections/history")
 async def election_history(request: Request, response: Response, state: Optional[str] = Query(None, max_length=40)) -> dict:
     """Nigeria's presidential results by state in 2015, 2019 and 2023 as INEC declared them, with each candidate's

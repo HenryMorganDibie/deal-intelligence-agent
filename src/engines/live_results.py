@@ -190,7 +190,9 @@ def tally(rows: list[dict], election: str = "gm-2026") -> dict:
                           "winner": ranked[0]["candidate"] if ranked and ranked[0]["votes"] and
                           (len(ranked) < 2 or ranked[0]["votes"] > ranked[1]["votes"]) else None,
                           "source": r.get("source") if r else None, "updated_at": r.get("updated_at") if r else None})
+    baseline_winners = {u: max(v.items(), key=lambda kv: kv[1])[0] for u, v in base["units"].items() if v}
     return {"election": election, "label": s["label"], "polling_day": s["polling_day"], "body": s["body"],
+            "baseline_winners": baseline_winners,
             "unit_word": s["unit_word"], "units_word": s["units_word"], "area_word": s["area_word"],
             "candidates": names, "national": national, "areas": areas, "units": out_units,
             "baseline_year": base.get("year"), "notes": s["notes"] + " Turnout is shown for an area once all of it is in."}

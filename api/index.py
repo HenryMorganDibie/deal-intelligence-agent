@@ -238,6 +238,10 @@ from src.election_live import router as election_live_router  # noqa: E402
 
 app.include_router(election_live_router)
 
+from src.election_polls import router as election_polls_router  # noqa: E402
+
+app.include_router(election_polls_router)
+
 app.include_router(contact_router)
 
 from src import public_api  # noqa: E402
