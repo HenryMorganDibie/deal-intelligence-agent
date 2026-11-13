@@ -32,8 +32,44 @@ const ENDPOINTS: [string, string, string][] = [
   ["/markets/quote", "Latest price for one listing.", "exchange, symbol (both required)"],
 ];
 
+// Nigeria's 2027 general election. [method, path, what, params]
+const ELECTION_ENDPOINTS: [string, string, string, string][] = [
+  ["GET", "/elections/news", "Election coverage from Nigerian outlets, one record per story with every outlet's report, tagged by candidate, party, state, LGA, topic, race and any incident.", "candidate, party, state, lga, topic, race, q, since, limit (≤200), offset"],
+  ["GET", "/elections/summary", "Coverage counts per candidate, party, state, LGA, topic, race and incident type.", "days (≤90)"],
+  ["GET", "/elections/incidents", "Incidents reported in the news (violence, thuggery, abduction, arson, ballot snatching, vote buying, intimidation, BVAS or IReV failures, logistics, arrests, hate speech) with severity and location.", "state, lga, type, severity (low, medium, high: the minimum), since, limit (≤200), offset"],
+  ["GET", "/elections/areas", "INEC's delimitation one level at a time: the states; a state's LGAs; an LGA's wards, with polling-unit counts.", "state (code or name), lga (code)"],
+  ["GET", "/elections/polling-units", "Polling units in a ward, or matching a name.", "state, lga, ward (codes), or q (3+ letters); limit (≤500), offset"],
+  ["GET", "/elections/polling-units/{code}", "One polling unit by INEC code, e.g. 24/11/01/001.", ""],
+];
+
+const RESULTS_ENDPOINTS: [string, string, string, string][] = [
+  ["POST", "/elections/results/sheets", "Submit a polling-unit result sheet (Form EC8A) as a base64 image (JPEG, PNG or WebP, ≤3 MB) or an https link. It is read, checked and stored as provisional (every check passed) or needs_review.", "JSON: election, pu_code, image_base64 + content_type, or image_url"],
+  ["GET", "/elections/results/sheets", "Your submitted sheets, newest first; status=needs_review is the review queue.", "election, state, lga, ward, status, limit (≤200), offset"],
+  ["POST", "/elections/results/sheets/{id}/review", "Verify, reject or return a sheet to review, with corrections. A sheet that fails its checks cannot be verified.", "JSON: status, corrections {figures, votes}"],
+  ["GET", "/elections/results", "Votes by party for the country, a state, an LGA or a ward, broken down one level below, with coverage and turnout.", "election, state, lga, ward, verified_only"],
+  ["GET", "/elections/accreditation", "Registered and accredited voters, turnout and sheet coverage at the same levels.", "election, state, lga, ward, verified_only"],
+];
+
+function EndpointList({ rows, ink }: { rows: [string, string, string, string][]; ink: string }) {
+  return (
+    <div className="divide-y divide-white/[0.07] border-y hairline">
+      {rows.map(([method, path, what, params]) => (
+        <div key={method + path} className="grid gap-1 py-3 sm:grid-cols-[17rem_1fr] sm:gap-4">
+          <span className={`kbd break-all text-[0.8125rem] ${ink}`}>{method === "GET" ? "" : `${method} `}/v1{path}</span>
+          <div>
+            <p>{what}</p>
+            {params && <p className="kbd mt-1 text-[0.75rem] text-[color:var(--dim)]">{params}</p>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const ERRORS: [string, string, string][] = [
+  ["400", "bad_request", "A parameter is malformed, such as a polling-unit code or an image."],
   ["401", "missing_key / invalid_key", "No key, a mistyped key, or a revoked key."],
+  ["403", "plan_required", "The endpoint is part of a higher plan (election results and accreditation: Institutional)."],
   ["404", "not_found", "The deal, investor or listing does not exist."],
   ["422", "invalid_request", "A parameter is out of range or missing."],
   ["429", "quota_exceeded", "The month's allowance is used. Retry-After says when it resets."],
@@ -72,7 +108,7 @@ export default function DevelopersPage() {
             <Link href="/pricing" className="underline">pricing page</Link>; subscribe now and keep the founding price while you stay subscribed.</span>
         </p>
         <nav aria-label="On this page" className="mt-8 flex flex-wrap gap-2 text-sm">
-          {[["#start", "Quick start"], ["#plans", "Plans"], ["#endpoints", "Endpoints"], ["#errors", "Errors"], ["#chat", "Slack, Teams and chat"], ["#webhooks", "Webhook payload"]].map(([href, label]) => (
+          {[["#start", "Quick start"], ["#plans", "Plans"], ["#endpoints", "Endpoints"], ["#elections", "Elections"], ["#errors", "Errors"], ["#chat", "Slack, Teams and chat"], ["#webhooks", "Webhook payload"]].map(([href, label]) => (
             <a key={href} href={href} className="rounded-full border hairline px-3 py-1.5 text-[color:var(--muted)] hover:text-[color:var(--text)]">{label}</a>
           ))}
         </nav>
@@ -109,7 +145,7 @@ for e in r.json()["events"]:
         </Section>
 
         <Section id="endpoints" title="Endpoints">
-          <p>All endpoints are <span className={`kbd ${ink}`}>GET</span> under <span className={`kbd ${ink}`}>{PUBLIC_API_BASE}</span>. Dates are <span className="kbd">YYYY-MM-DD</span>; countries take ISO codes or names; list endpoints page with <span className="kbd">limit</span> and <span className="kbd">offset</span>.</p>
+          <p>All endpoints are <span className={`kbd ${ink}`}>GET</span> (except result sheet submission and review, marked POST) under <span className={`kbd ${ink}`}>{PUBLIC_API_BASE}</span>. Dates are <span className="kbd">YYYY-MM-DD</span>; countries take ISO codes or names; list endpoints page with <span className="kbd">limit</span> and <span className="kbd">offset</span>.</p>
           <p>Deal <span className="kbd">type</span>: acquisition, merger, equity_funding, debt_financing, fund_raise, exit, ipo, joint_venture. Event <span className="kbd">type</span>: m_and_a_activity, credit_risk, distressed_asset, earnings_surprise, leadership_change, regulatory_action, debt_restructuring, insider_activity.</p>
           <div className="divide-y divide-white/[0.07] border-y hairline">
             {ENDPOINTS.map(([path, what, params]) => (
@@ -122,6 +158,15 @@ for e in r.json()["events"]:
               </div>
             ))}
           </div>
+        </Section>
+
+        <Section id="elections" title="Nigeria 2027 elections">
+          <p>Election intelligence for the presidential and National Assembly elections on 16 January 2027 and the governorship and state assembly elections on 6 February 2027. Coverage is collected hourly from Nigerian publishers&apos; own feeds and tagged by rules, so every tag traces to the words that produced it. Candidates are the 18 presidential tickets on INEC&apos;s final list; polling units follow INEC&apos;s delimitation (37 states, 774 LGAs, 8,809 wards, 176,623 polling units).</p>
+          <p className={ink}>Every plan</p>
+          <EndpointList rows={ELECTION_ENDPOINTS} ink={ink} />
+          <p className={ink}>Results and accreditation (Institutional)</p>
+          <p>Elections: <span className="kbd">presidential-2027</span>, <span className="kbd">senate-2027</span>, <span className="kbd">reps-2027</span>, <span className="kbd">governorship-2027</span>, <span className="kbd">state-assembly-2027</span>. Each sheet is checked: party votes against valid votes, valid plus rejected against votes cast, votes cast against accredited and registered voters, ballots reconciled, figures against words, and the code against INEC&apos;s list. Totals count one sheet per polling unit, verified first, else the latest provisional one. Sheets, reviews and totals belong to your account alone: no other account can see them, and they never count in anyone else&apos;s figures. Images are not stored.</p>
+          <EndpointList rows={RESULTS_ENDPOINTS} ink={ink} />
         </Section>
 
         <Section id="errors" title="Errors">
