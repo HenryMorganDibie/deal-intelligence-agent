@@ -288,6 +288,9 @@ export default function WatchlistsPage() {
                   {e.key === "gm-2026" && e.kind === "Presidential" && (
                     <Link href="/app/elections/gambia" className="text-[0.8125rem] underline">Live results</Link>
                   )}
+                  {e.key === "ng-2027" && e.date === "2027-01-16" && (
+                    <Link href="/app/elections/nigeria" className="text-[0.8125rem] underline">Live results</Link>
+                  )}
                   <span className="rounded-full border border-[color:var(--verified,#6ee7c8)] px-2.5 py-0.5 text-[0.75rem] text-verified">Monitored</span>
                 </span>
               ) : (

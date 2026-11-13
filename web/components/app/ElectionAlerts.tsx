@@ -14,8 +14,8 @@ type ElectionInfo = { key: string; country: string; label: string; dates: { date
 type State = { alerts: Alert[]; allowance: number; plan: string; full_features: boolean; elections: Record<string, string>; election_details?: ElectionInfo[] };
 type TestResult = { delivered: boolean; destination?: string; error?: string | null };
 
-// Elections with live results (src/election_live.py ELECTIONS).
-const LIVE_RESULTS = "gm-2026";
+// Elections with live results (src/data/live_elections.py SPECS).
+const LIVE_RESULTS = ["gm-2026", "ng-2027"];
 
 const NIGERIA: ElectionInfo = {
   key: "ng-2027", country: "Nigeria", label: "Nigeria: 2027 general elections", dates: [], body: "INEC",
@@ -189,7 +189,7 @@ export function ElectionAlerts() {
               <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder={`${current.country} incidents`} className="field" />
             </Field>
             <Field label="Country and election">
-              <select value={election} onChange={(e) => { setElection(e.target.value); setStates([]); if (e.target.value !== LIVE_RESULTS && kind === "results") setKind("incidents"); }} className="field">
+              <select value={election} onChange={(e) => { setElection(e.target.value); setStates([]); if (!LIVE_RESULTS.includes(e.target.value) && kind === "results") setKind("incidents"); }} className="field">
                 {(details.length ? details : Object.keys(data.elections).map(info)).map((e) => {
                   const next = nextDate(e);
                   return <option key={e.key} value={e.key}>{e.label}{next ? ` · next vote ${next}` : ""}</option>;
@@ -202,7 +202,7 @@ export function ElectionAlerts() {
               <select value={kind} onChange={(e) => setKind(e.target.value as "incidents" | "news" | "results")} className="field">
                 <option value="incidents">Incidents</option>
                 <option value="news" disabled={!full}>All election coverage{full ? "" : " (Team and above)"}</option>
-                {election === LIVE_RESULTS && <option value="results">Results, each constituency as it is declared</option>}
+                {LIVE_RESULTS.includes(election) && <option value="results">Results, each constituency as it is declared</option>}
               </select>
             </Field>
             {kind === "incidents" && (

@@ -19,12 +19,13 @@ from pydantic import BaseModel, Field
 
 from src import hosted_market as hm
 from src.data import gm_2026 as gm
+from src.data import live_elections as le
 from src.engines import live_results as lr
 
 log = logging.getLogger("deal_intel.election_live")
 router = APIRouter()
 
-ELECTIONS = {gm.ELECTION: "The Gambia: presidential election, 5 December 2026"}
+ELECTIONS = {k: v["label"] for k, v in le.SPECS.items()}
 PLANS = ("pro", "team", "institutional")
 _TTL = 15
 _cache: dict[str, tuple[float, list[dict]]] = {}
@@ -59,20 +60,22 @@ def results(election: str = gm.ELECTION) -> dict:
 
 def _story(row: dict, election: str) -> dict:
     """A declared result as an alert item."""
-    ranked = sorted(row["votes"].items(), key=lambda kv: -kv[1])
-    total = row["votes_cast"] or 1
+    spec = le.spec(election)
+    ranked = sorted(((n, v) for n, v in row["votes"].items() if v), key=lambda kv: -kv[1]) or list(row["votes"].items())
+    total = row.get("valid") or sum(row["votes"].values()) or 1
     lead, second = ranked[0], ranked[1] if len(ranked) > 1 else (None, 0)
     parties = {c["name"]: c.get("party") for c in lr.candidates(election)}
     label = lambda n: f"{n} ({parties[n]})" if parties.get(n) else n          # noqa: E731
-    title = f"{row['constituency']}: {label(lead[0])} wins with {lead[1]:,} votes ({lead[1] / total:.1%})"
-    facts = [f"{label(n)} {v:,}" for n, v in ranked]
+    title = f"{row['unit']}: {label(lead[0])} wins with {lead[1]:,} votes ({lead[1] / total:.1%})"
+    facts = [f"{label(n)} {v:,}" for n, v in ranked[:5]]
     if row.get("registered"):
         facts.append(f"turnout {row['votes_cast'] / row['registered']:.1%}")
-    facts.append(f"{gm.AREAS[row['area']]['region']}, The Gambia")
+    region = spec["areas"][row["area"]]["region"]
+    facts.append(f"{region}, {spec['country']}")
     app = os.environ.get("DEAL_INTEL_APP_URL", "https://deal-intelligence.app").rstrip("/")
-    return {"id": f"result:{election}:{row['constituency']}:{row.get('versions', 1)}", "kind": "result",
-            "election": election, "title": title, "url": f"{app}/app/elections/gambia",
-            "day": datetime.now(timezone.utc).date().isoformat(), "states": [gm.AREAS[row["area"]]["region"]],
+    return {"id": f"result:{election}:{row['unit']}:{row.get('versions', 1)}", "kind": "result",
+            "election": election, "title": title, "url": f"{app}{spec['page']}",
+            "day": datetime.now(timezone.utc).date().isoformat(), "states": [row["unit"], region],
             "facts_line": " · ".join(facts) + (f" · margin {lead[1] - second[1]:,}" if second[0] else "")}
 
 
@@ -86,7 +89,7 @@ def submit(operator: str, entry: dict, election: str = gm.ELECTION) -> dict:
         raise HTTPException(400, str(e))
     warnings = clean.pop("warnings")
     data = {**clean, "entered_by": operator, "entered_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
-    r = hm._rpc_sync("live_result_upsert", {"p_election": election, "p_area": clean["constituency"], "p_data": data})
+    r = hm._rpc_sync("live_result_upsert", {"p_election": election, "p_area": clean["unit"], "p_data": data})
     if r.status_code != 200:
         raise HTTPException(503, f"The result could not be saved: {r.status_code}")
     saved = r.json() or data
@@ -98,23 +101,27 @@ def submit(operator: str, entry: dict, election: str = gm.ELECTION) -> dict:
     return {"saved": saved, "warnings": warnings, "alerts": alerts}
 
 
-def remove(operator: str, constituency: str, election: str = gm.ELECTION) -> dict:
+def remove(operator: str, unit: str, election: str = gm.ELECTION) -> dict:
     _check_election(election)
     if operator not in operators():
         raise HTTPException(403, "Only the service's operators enter results.")
-    con = gm.constituency(constituency)
+    con = le.spec(election)["unit"](unit)
     if not con:
-        raise HTTPException(404, "No such constituency.")
+        raise HTTPException(404, "No such " + le.spec(election)["unit_word"] + ".")
     r = hm._rpc_sync("live_result_delete", {"p_election": election, "p_area": con})
     _cache.pop(election, None)
     return {"deleted": bool(r.status_code == 200 and r.json())}
 
 
 class ResultIn(BaseModel):
-    constituency: str = Field(..., max_length=60)
+    unit: Optional[str] = Field(None, max_length=60)              # constituency or state
+    constituency: Optional[str] = Field(None, max_length=60)
     votes: dict[str, int]
     votes_cast: Optional[int] = None
+    rejected: Optional[int] = None
+    accredited: Optional[int] = None
     registered: Optional[int] = None
+    others_zero: bool = False
     status: str = "declared"
     source: Optional[str] = Field(None, max_length=300)
 
@@ -135,7 +142,7 @@ async def app_results(request: Request, election: str = gm.ELECTION) -> dict:
     if plan not in PLANS and not is_operator:
         raise HTTPException(403, "Live results come with the Pro plan and above.")
     out = await run_in_threadpool(results, election)
-    return {**out, "operator": is_operator, "plan": plan,
+    return {**out, "operator": is_operator, "plan": plan, "rejected_ballots": le.spec(election)["rejected"],
             "ballot": [{k: c.get(k) for k in ("name", "party")} for c in lr.candidates(election)]}
 
 
@@ -145,7 +152,7 @@ async def app_submit(body: ResultIn, request: Request, election: str = gm.ELECTI
     return await run_in_threadpool(submit, user, body.model_dump(), election)
 
 
-@router.delete("/api/elections/live/{constituency}")
-async def app_remove(constituency: str, request: Request, election: str = gm.ELECTION) -> dict:
+@router.delete("/api/elections/live/{unit}")
+async def app_remove(unit: str, request: Request, election: str = gm.ELECTION) -> dict:
     user, _ = await _me(request)
-    return await run_in_threadpool(remove, user, constituency, election)
+    return await run_in_threadpool(remove, user, unit, election)

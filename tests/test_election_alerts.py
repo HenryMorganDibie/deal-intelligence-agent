@@ -19,7 +19,7 @@ def test_filters_select_by_kind_severity_place_and_type():
     assert not ea.matches(LAGOS, ea.clean_filters({"incident_types": ["vote_buying"]}))
     news = ea.clean_filters({"kind": "news", "candidates": ["Tinubu"]})
     assert ea.matches(CALM, news) and not ea.matches(KANO, news)
-    for bad in ({"kind": "results"}, {"min_severity": "extreme"}, {"states": "Lagos"}):
+    for bad in ({"kind": "results", "election": "ke-2027"}, {"min_severity": "extreme"}, {"states": "Lagos"}):
         with pytest.raises(HTTPException):
             ea.clean_filters(bad)
 

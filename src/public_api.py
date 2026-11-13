@@ -234,11 +234,27 @@ async def election_list(request: Request, response: Response) -> dict:
     return {"elections": election_feed.elections()}
 
 
+@router.get("/elections/history")
+async def election_history(request: Request, response: Response, state: Optional[str] = Query(None, max_length=40)) -> dict:
+    """Nigeria's presidential results by state in 2015, 2019 and 2023 as INEC declared them, with each candidate's
+    share: the baseline for swings. Without `state`, every state and the national totals."""
+    from src.data import live_elections as le
+    from src.data import ng_results_history as hist
+    await authorize(request, response)
+    if state:
+        unit = le.spec("ng-2027")["unit"](state)
+        if not unit:
+            raise PublicApiError(400, "bad_request", "state must be a Nigerian state or FCT.")
+        return {**hist.history(unit), "sources": hist.__doc__.strip()}
+    return {**hist.history(), "sources": hist.__doc__.strip()}
+
+
 @router.get("/elections/live")
 async def election_live(request: Request, response: Response, election: str = Query("gm-2026", max_length=20)) -> dict:
-    """Live results as the electoral commission announces them, constituency by constituency: national and area
-    tallies, constituencies won, margins, turnout once an area is complete, and each constituency's result with its
-    source. Pro plan and above."""
+    """Live results as the electoral commission declares them, unit by unit (The Gambia's constituencies, gm-2026;
+    Nigeria's states, ng-2027): national and area tallies, units won, margins, turnout once an area is complete,
+    Nigeria's 25%-in-two-thirds-of-states test, and each unit's result with its source and 2023 shares. Pro and
+    above."""
     from src import election_live
     status = await authorize(request, response)
     if status.get("plan") not in election_live.PLANS:
