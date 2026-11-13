@@ -1,58 +1,24 @@
 -- Result sheets belong to the account that submitted them. A client's sheets, reviews and the totals built from
 -- them are visible only to that account and never feed another account's numbers. The shared election
--- intelligence (news, incidents, polling units) is unaffected. Sheets stored before this have no owner and are
--- visible to no one.
-
--- The key check also says whose key it is, so data can be kept per account.
-create or replace function public.api_key_consume(secret text, p_hash text, p_count boolean default true)
-returns jsonb language plpgsql security definer set search_path to '' as $function$
-declare
-  v_key public.api_keys;
-  v_plan public.api_plans;
-  v_period date := private.current_period();
-  v_used integer;
-begin
-  perform private.check_secret(secret);
-  select * into v_key from public.api_keys k where k.key_hash = p_hash and k.revoked_at is null;
-  if not found then return jsonb_build_object('ok', false, 'reason', 'invalid_key'); end if;
-  v_plan := private.plan_of(v_key.user_id);
-  if p_count and v_plan.monthly_requests = 0 then
-    return jsonb_build_object('ok', false, 'reason', 'quota_exceeded', 'plan', v_plan.plan, 'limit', 0, 'used', 0,
-                              'remaining', 0, 'resets_at', (v_period + interval '1 month'));
-  end if;
-  if p_count then
-    insert into public.api_usage as u (user_id, period, requests) values (v_key.user_id, v_period, 1)
-    on conflict (user_id, period) do update set requests = u.requests + 1
-     where u.requests < v_plan.monthly_requests
-    returning u.requests into v_used;
-    if v_used is null then
-      v_used := coalesce((select u.requests from public.api_usage u where u.user_id = v_key.user_id and u.period = v_period), 0);
-      return jsonb_build_object('ok', false, 'reason', 'quota_exceeded', 'plan', v_plan.plan,
-                                'limit', v_plan.monthly_requests, 'used', v_used, 'remaining', 0,
-                                'resets_at', (v_period + interval '1 month'));
-    end if;
-    update public.api_keys set last_used_at = now() where id = v_key.id;
-  else
-    v_used := coalesce((select u.requests from public.api_usage u where u.user_id = v_key.user_id and u.period = v_period), 0);
-  end if;
-  return jsonb_build_object('ok', true, 'plan', v_plan.plan, 'limit', v_plan.monthly_requests, 'used', v_used,
-                            'remaining', greatest(v_plan.monthly_requests - v_used, 0),
-                            'resets_at', (v_period + interval '1 month'), 'key_id', v_key.id, 'account', v_key.user_id);
-end; $function$;
+-- intelligence (news, incidents, polling units) is unaffected.
+--
+-- Additive only: a new column, new functions beside the earlier ones (which the API no longer calls), and a lookup
+-- of the account behind an API key. Sheets stored before this have no owner and are visible to no one. The image
+-- fingerprint stored for duplicate detection now includes the owner, so the same image from two accounts is two
+-- separate sheets under the existing (election, image_sha256) constraint.
 
 alter table public.result_sheets add column if not exists owner uuid references auth.users (id) on delete cascade;
-alter table public.result_sheets drop constraint if exists result_sheets_election_image_sha256_key;
-create unique index if not exists result_sheets_owner_image_idx on public.result_sheets (owner, election, image_sha256);
-drop index if exists public.result_sheets_scope_idx;
 create index if not exists result_sheets_owner_scope_idx on public.result_sheets (owner, election, pu_code, status);
 
-drop function if exists public.insert_result_sheet(text, jsonb);
-drop function if exists public.get_result_sheet(text, uuid);
-drop function if exists public.review_result_sheet(text, uuid, text, jsonb, uuid);
-drop function if exists public.list_result_sheets(text, text, text, text, text, text, integer, integer);
-drop function if exists public.result_totals(text, text, text, text, text, boolean);
+-- The account behind an API key, for data kept per account.
+create or replace function public.api_key_account(secret text, p_key_id uuid)
+returns uuid language plpgsql stable security definer set search_path = '' as $$
+begin
+  perform private.check_secret(secret);
+  return (select k.user_id from public.api_keys k where k.id = p_key_id and k.revoked_at is null);
+end; $$;
 
-create or replace function public.insert_result_sheet(secret text, p_owner uuid, p_row jsonb)
+create or replace function public.result_sheet_insert(secret text, p_owner uuid, p_row jsonb)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare r public.result_sheets;
 begin
@@ -60,7 +26,7 @@ begin
   if p_owner is null then raise exception 'owner_required' using errcode = '22023'; end if;
   insert into public.result_sheets (owner, election, pu_code, status, data, image_sha256, submitted_by)
   values (p_owner, p_row->>'election', p_row->>'pu_code', p_row->>'status', p_row->'data', p_row->>'image_sha256', p_owner)
-  on conflict (owner, election, image_sha256) do nothing
+  on conflict (election, image_sha256) do nothing
   returning * into r;
   if r.id is null then
     select * into r from public.result_sheets
@@ -70,14 +36,14 @@ begin
   return to_jsonb(r);
 end; $$;
 
-create or replace function public.get_result_sheet(secret text, p_owner uuid, p_id uuid)
+create or replace function public.result_sheet_get(secret text, p_owner uuid, p_id uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 begin
   perform private.check_secret(secret);
   return (select to_jsonb(s) from public.result_sheets s where s.id = p_id and s.owner = p_owner);
 end; $$;
 
-create or replace function public.review_result_sheet(secret text, p_owner uuid, p_id uuid, p_status text, p_data jsonb)
+create or replace function public.result_sheet_review(secret text, p_owner uuid, p_id uuid, p_status text, p_data jsonb)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare r public.result_sheets;
 begin
@@ -91,7 +57,7 @@ begin
   return to_jsonb(r);
 end; $$;
 
-create or replace function public.list_result_sheets(secret text, p_owner uuid, p_election text, p_state text default null,
+create or replace function public.result_sheet_list(secret text, p_owner uuid, p_election text, p_state text default null,
   p_lga text default null, p_ward text default null, p_status text default null, p_limit integer default 50,
   p_offset integer default 0)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
@@ -109,7 +75,7 @@ begin
           offset greatest(0, coalesce(p_offset, 0))) t);
 end; $$;
 
-create or replace function public.result_totals(secret text, p_owner uuid, p_election text, p_state text default null,
+create or replace function public.result_sheet_totals(secret text, p_owner uuid, p_election text, p_state text default null,
   p_lga text default null, p_ward text default null, p_verified_only boolean default false)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare prefix text := concat_ws('/', p_state, p_lga, p_ward);
@@ -161,13 +127,15 @@ begin
     from groups g);
 end; $$;
 
-revoke execute on function public.insert_result_sheet(text, uuid, jsonb) from public, authenticated;
-revoke execute on function public.get_result_sheet(text, uuid, uuid) from public, authenticated;
-revoke execute on function public.review_result_sheet(text, uuid, uuid, text, jsonb) from public, authenticated;
-revoke execute on function public.list_result_sheets(text, uuid, text, text, text, text, text, integer, integer) from public, authenticated;
-revoke execute on function public.result_totals(text, uuid, text, text, text, text, boolean) from public, authenticated;
-grant execute on function public.insert_result_sheet(text, uuid, jsonb) to anon;
-grant execute on function public.get_result_sheet(text, uuid, uuid) to anon;
-grant execute on function public.review_result_sheet(text, uuid, uuid, text, jsonb) to anon;
-grant execute on function public.list_result_sheets(text, uuid, text, text, text, text, text, integer, integer) to anon;
-grant execute on function public.result_totals(text, uuid, text, text, text, text, boolean) to anon;
+revoke execute on function public.api_key_account(text, uuid) from public, authenticated;
+revoke execute on function public.result_sheet_insert(text, uuid, jsonb) from public, authenticated;
+revoke execute on function public.result_sheet_get(text, uuid, uuid) from public, authenticated;
+revoke execute on function public.result_sheet_review(text, uuid, uuid, text, jsonb) from public, authenticated;
+revoke execute on function public.result_sheet_list(text, uuid, text, text, text, text, text, integer, integer) from public, authenticated;
+revoke execute on function public.result_sheet_totals(text, uuid, text, text, text, text, boolean) from public, authenticated;
+grant execute on function public.api_key_account(text, uuid) to anon;
+grant execute on function public.result_sheet_insert(text, uuid, jsonb) to anon;
+grant execute on function public.result_sheet_get(text, uuid, uuid) to anon;
+grant execute on function public.result_sheet_review(text, uuid, uuid, text, jsonb) to anon;
+grant execute on function public.result_sheet_list(text, uuid, text, text, text, text, text, integer, integer) to anon;
+grant execute on function public.result_sheet_totals(text, uuid, text, text, text, text, boolean) to anon;

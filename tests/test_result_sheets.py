@@ -83,7 +83,7 @@ def db(monkeypatch):
             return R(UNIT if args["p_code"] == "24/11/01/001" else None)
         if fn == "polling_unit_areas":
             return R([{"code": "24", "name": "LAGOS"}])
-        if fn == "insert_result_sheet":
+        if fn == "result_sheet_insert":
             assert args["p_owner"]
             row = dict(args["p_row"], owner=args["p_owner"], id=f"00000000-0000-0000-0000-{len(rows) + 1:012d}")
             for r in rows.values():
@@ -91,21 +91,21 @@ def db(monkeypatch):
                     return R(dict(r, duplicate=True))
             rows[row["id"]] = row
             return R(row)
-        if fn == "get_result_sheet":
+        if fn == "result_sheet_get":
             r = rows.get(args["p_id"])
             return R(r if r and r["owner"] == args["p_owner"] else None)
-        if fn == "review_result_sheet":
+        if fn == "result_sheet_review":
             r = rows.get(args["p_id"])
             if not r or r["owner"] != args["p_owner"]:
                 return R(None)
             r.update(status=args["p_status"], data=args["p_data"])
             return R(r)
-        if fn == "list_result_sheets":
+        if fn == "result_sheet_list":
             mine = [r for r in rows.values() if r["owner"] == args["p_owner"]]
             return R({"total": len(mine), "sheets": mine})
-        if fn == "result_totals" and args["p_owner"] != "acct-a":
+        if fn == "result_sheet_totals" and args["p_owner"] != "acct-a":
             return R({"polling_units": 667, "sheets": 0, "verified": 0, "votes": {}, "groups": []})
-        if fn == "result_totals":
+        if fn == "result_sheet_totals":
             return R({"polling_units": 667, "sheets": 1, "verified": 1, "registered": 612, "accredited": 341,
                       "votes_cast": 330, "valid": 322, "rejected": 8, "votes": {"APC": 141},
                       "groups": [{"code": "01", "name": "ANIFOWOSHE/IKEJA", "polling_units": 47, "sheets": 1,
@@ -180,3 +180,25 @@ def test_each_account_sees_only_its_own_sheets_and_totals(db, monkeypatch):
     with pytest.raises(Exception) as e:
         er.sheets(None, "presidential-2027")                                   # no account, no data
     assert e.value.status_code == 503
+
+
+def test_account_is_looked_up_from_the_key_when_not_returned(db, monkeypatch):
+    import api.index as api
+    from src import public_api
+
+    async def auth(request, response, count=True):
+        return {"plan": "institutional", "key_id": "k-1"}
+
+    class R:
+        status_code = 200
+
+        def json(self):
+            return "acct-a"
+
+    async def fake_rpc(client, fn, args):
+        assert fn == "api_key_account" and args == {"p_key_id": "k-1"}
+        return R()
+    monkeypatch.setattr(public_api, "authorize", auth)
+    monkeypatch.setattr(hm, "_rpc", fake_rpc)
+    r = TestClient(api.app).get("/v1/elections/results", params={"state": "Lagos", "lga": "11"})
+    assert r.status_code == 200 and r.json()["sheets"] == 1              # acct-a's totals

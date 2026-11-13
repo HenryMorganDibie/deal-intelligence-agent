@@ -329,9 +329,17 @@ async def _institutional(request: Request, response: Response) -> str:
     status = await authorize(request, response)
     if status.get("plan") != "institutional":
         raise PublicApiError(403, "plan_required", "Results and accreditation are part of the Institutional plan.")
-    if not status.get("account"):
+    account = status.get("account")
+    if not account and status.get("key_id"):
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                r = await hm._rpc(client, "api_key_account", {"p_key_id": status["key_id"]})
+            account = r.json() if r.status_code == 200 else None
+        except (httpx.HTTPError, ValueError):
+            account = None
+    if not account:
         raise PublicApiError(503, "unavailable", "The account behind this key could not be identified.")
-    return str(status["account"])
+    return str(account)
 
 
 @router.post("/elections/results/sheets")
