@@ -160,7 +160,10 @@ def _matches(s: dict, field: str, value: Optional[str]) -> bool:
     if not value:
         return True
     v = value.strip().lower()
-    return any(v == x.lower() or (field == "candidates" and v in x.lower()) for x in s.get(field) or [])
+    values = s.get(field) or []
+    if field == "candidates":                         # presidential, governorship and Senate candidates alike
+        values = [*values, *(s.get("gov_candidates") or []), *(s.get("senate_candidates") or [])]
+    return any(v == x.lower() or (field == "candidates" and v in x.lower()) for x in values)
 
 
 def search(candidate: Optional[str] = None, party: Optional[str] = None, state: Optional[str] = None,

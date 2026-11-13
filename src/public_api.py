@@ -234,6 +234,22 @@ async def election_list(request: Request, response: Response) -> dict:
     return {"elections": election_feed.elections()}
 
 
+@router.get("/elections/candidates")
+async def election_candidates(request: Request, response: Response,
+                              office: Optional[str] = Query(None, max_length=30), state: Optional[str] = Query(None, max_length=40),
+                              constituency: Optional[str] = Query(None, max_length=80), party: Optional[str] = Query(None, max_length=10),
+                              q: str = Query("", max_length=80), limit: int = Query(100, ge=1, le=500),
+                              offset: int = Query(0, ge=0, le=100_000)) -> dict:
+    """Nigeria's 2027 governorship (with running mates), Senate and House of Representatives candidates from INEC's
+    final lists: office, state, constituency, party, age, gender and INEC's remarks (e.g. court orders)."""
+    from src import ng_candidates
+    await authorize(request, response)
+    try:
+        return await run_in_threadpool(ng_candidates.search, office, state, constituency, party, q, limit, offset)
+    except ValueError as e:
+        raise PublicApiError(400, "bad_request", str(e))
+
+
 @router.get("/elections/history")
 async def election_history(request: Request, response: Response, state: Optional[str] = Query(None, max_length=40)) -> dict:
     """Nigeria's presidential results by state in 2015, 2019 and 2023 as INEC declared them, with each candidate's

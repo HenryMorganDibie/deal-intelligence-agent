@@ -31,7 +31,21 @@ SOURCES: tuple[tuple[str, str], ...] = (
     ("Leadership", "https://leadership.ng/category/politics/feed/"),
     ("INEC News", "https://inecnews.com/feed/"),
     ("Channels", "https://www.channelstv.com/feed/"),
+    # Hausa, Yoruba, Igbo and Pidgin coverage, and civil society: observers' statements and fact-checks.
+    ("BBC Hausa", "https://feeds.bbci.co.uk/hausa/rss.xml"),
+    ("BBC Yoruba", "https://feeds.bbci.co.uk/yoruba/rss.xml"),
+    ("BBC Igbo", "https://feeds.bbci.co.uk/igbo/rss.xml"),
+    ("BBC Pidgin", "https://feeds.bbci.co.uk/pidgin/rss.xml"),
+    ("Aminiya", "https://aminiya.ng/feed/"),
+    ("Premium Times Hausa", "https://hausa.premiumtimesng.com/feed/"),
+    ("Situation Room", "https://situationroomng.org/feed/"),
+    ("Dubawa", "https://dubawa.org/feed/"),
 )
+OUTLET_LANGUAGE = {"BBC Hausa": "ha", "Aminiya": "ha", "Premium Times Hausa": "ha", "BBC Yoruba": "yo",
+                   "BBC Igbo": "ig", "BBC Pidgin": "pcm"}
+# Outlets covering the world as well as Nigeria: their stories need a Nigerian anchor to count.
+BROAD_OUTLETS = frozenset({"BBC Hausa", "BBC Yoruba", "BBC Igbo", "BBC Pidgin", "Dubawa"})
+OUTLET_TOPICS = {"Dubawa": "fact_check", "Situation Room": "observers"}
 
 # Outlets whose sites refuse automated readers (TheCable, Guardian) are read from Google News's public feed of
 # their headlines instead: nothing is fetched from their servers, and their protection is never worked around.
@@ -166,6 +180,20 @@ _ELECTION_WORDS = re.compile(
     r"town hall|defect(?:s|ed|ion|ors)?|aspirants?|tickets?|re-?election|second term|"
     r"#\w+Decides20\d\d|certificate of return|tribunal|collation|accreditation|political part(?:y|ies)|"
     r"pre-?regist\w*|registration)\b|\b2027\b(?!.*\bbudget\b)")
+
+# Election words in Hausa, Yoruba and Igbo, matched without tone marks or diacritics ("zaɓe", "ìdìbò", "ntụli aka").
+_LOCAL_ELECTION_WORDS = re.compile(
+    r"(?i)\b(?:za[bɓ]e[n]?|za[bɓ]u[k]?a|[dɗ]an takara[r]?|'yan takara|jam'iyy?a[r]?|jam'iyyu|kuri'a|kuri'u|"
+    r"idibo|oludije|egbe oselu|ntuli ?aka|onye ndoro ndoro|otu ndoro ndoro|ndoro ndoro ochichi)\b")
+_NIGERIA_ANCHOR = re.compile(r"(?i)\b(?:nigeria\w*|najeriya|naijiria|naijiria|inec|abuja|aso rock)\b")
+
+
+def plain(text: str) -> str:
+    """Text without tone marks and diacritics, apostrophes unified, for matching Hausa, Yoruba and Igbo."""
+    import unicodedata
+    return "".join(ch for ch in unicodedata.normalize("NFKD", text or "") if not unicodedata.combining(ch)) \
+        .replace("’", "'").replace("ʼ", "'").replace("‘", "'")
+
 
 # ── Tagging ──────────────────────────────────────────────────────────────────
 
@@ -378,8 +406,10 @@ def tag(title: str, snippet: str = "") -> dict:
     tickets = {c: acr for acr, _, c, m in ng.TICKETS for c in (c, m)}
     parties |= {tickets[c] for c in candidates}             # naming a candidate names their party
     states = [s for s, p in _STATE_PATTERNS if p.search(text)]
+    from src import ng_candidates
     return {
         "candidates": candidates,
+        **ng_candidates.in_text(text, states),            # governorship and Senate candidates, within their states
         "parties": sorted(parties),
         "states": states,
         "lgas": lgas_in(text, states),
@@ -431,7 +461,7 @@ def same_story(a: dict, b: dict, days: int = 2) -> bool:
     return shared / len(wa | wb) >= 0.6 or (shared >= 4 and shared / min(len(wa), len(wb)) >= 0.8)
 
 
-_TAG_KEYS = ("candidates", "people", "parties", "states", "lgas", "topics", "races")
+_TAG_KEYS = ("candidates", "gov_candidates", "senate_candidates", "people", "parties", "states", "lgas", "topics", "races")
 
 
 def story_id(url: str) -> str:
@@ -445,10 +475,15 @@ def record(item: dict, tagger=None, election: str = ELECTION) -> dict:
     """A new story record from one feed item. Other countries pass their own tagger and election key."""
     tagger = tagger or tag
     report = {"outlet": item["outlet"], "url": item["url"], "title": item["title"], "date": item["date"]}
-    return {"id": story_id(item["url"]), "election": election, "day": item["date"], "title": item["title"],
-            "url": item["url"], "outlet": item["outlet"], "snippet": item.get("snippet", "")[:400],
-            **tagger(item["title"], item.get("snippet", "")), **incidents(item["title"], item.get("snippet", "")),
-            "reports": [report], "outlets": [item["outlet"]]}
+    out = {"id": story_id(item["url"]), "election": election, "day": item["date"], "title": item["title"],
+           "url": item["url"], "outlet": item["outlet"], "snippet": item.get("snippet", "")[:400],
+           **tagger(item["title"], item.get("snippet", "")), **incidents(item["title"], item.get("snippet", "")),
+           "reports": [report], "outlets": [item["outlet"]]}
+    if item["outlet"] in OUTLET_LANGUAGE:
+        out["language"] = OUTLET_LANGUAGE[item["outlet"]]      # incidents are classified from English and Pidgin only
+    if item["outlet"] in OUTLET_TOPICS and OUTLET_TOPICS[item["outlet"]] not in out.get("topics", []):
+        out["topics"] = [*out.get("topics", []), OUTLET_TOPICS[item["outlet"]]]
+    return out
 
 
 def merge(stories: list[dict], items: Iterable[dict], tagger=None,
@@ -543,10 +578,11 @@ def assign_events(stories: list[dict], days: int = 2, keys_fn=None) -> set[str]:
 
 
 def retag_missing(stories: list[dict]) -> set[str]:
-    """Give stories stored before LGA and incident tagging existed those tags, from their headline and summary."""
+    """Give stories stored before a tag existed (LGAs, incidents, governorship and Senate candidates) those tags,
+    from their headline and summary."""
     changed = set()
     for s in stories:
-        if "lgas" in s or s.get("election", ELECTION) != ELECTION:
+        if ("lgas" in s and "gov_candidates" in s) or s.get("election", ELECTION) != ELECTION:
             continue
         t = tag(s.get("title", ""), s.get("snippet", ""))
         for key in _TAG_KEYS:
@@ -557,13 +593,26 @@ def retag_missing(stories: list[dict]) -> set[str]:
     return changed
 
 
+def relevant_from(outlet: str, title: str, snippet: str = "") -> bool:
+    """Relevance for an outlet: English rules, plus Hausa, Yoruba and Igbo election words; outlets covering the world
+    need a Nigerian anchor (a candidate, party, state, INEC, or Nigeria named in the language)."""
+    local = bool(_LOCAL_ELECTION_WORDS.search(plain(title)))
+    if not (relevant(title, snippet) or local):
+        return False
+    if outlet in BROAD_OUTLETS:
+        t = tag(title, snippet)
+        return bool(t["candidates"] or t["parties"] or t["states"] or _NIGERIA_ANCHOR.search(plain(f"{title} {snippet}")))
+    return True
+
+
 def collect(texts: Iterable[tuple[str, str]], today: date, days: int = 3) -> list[dict]:
     """Relevant, recent items from (outlet, feed text) pairs."""
     oldest = (today - timedelta(days=days)).isoformat()
     out = []
     for outlet, text in texts:
         for item in parse_feed(text, outlet):
-            if item.get("date") and oldest <= item["date"] <= today.isoformat() and relevant(item["title"], item["snippet"]):
+            if item.get("date") and oldest <= item["date"] <= today.isoformat() \
+                    and relevant_from(outlet, item["title"], item["snippet"]):
                 out.append({**item, "outlet": outlet})
     return out
 

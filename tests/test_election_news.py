@@ -235,3 +235,35 @@ def test_one_incident_covered_from_many_angles_is_one_event():
     assert ev["a"] == ev["b"] == ev["c"] == "a" and s[0]["event_size"] == 3     # Obi's party links him to NDC
     assert ev["d"] == "d" and ev["e"] == "e" and ev["f"] == "f" and ev["g"] is None   # other place, no place, later
     assert "a" in changed and en.assign_events(s) == set()                        # stable on the next run
+
+
+def test_hausa_yoruba_igbo_coverage_and_civil_society_sources():
+    from src.engines import election_news as e
+    assert e.relevant_from("BBC Hausa", "Me ya sa INEC ta cire sunayen mutum sama da miliyan 1.6 daga kundinta?")
+    assert e.relevant_from("Aminiya", "2027: Dan takarar Sanatan Gombe ta Tsakiya ya kaddamar kwamitin yakin neman zabe")
+    assert e.relevant_from("BBC Yoruba", "Ètò ìdìbò 2027: Ìṣẹ̀lẹ̀ rògbòdìyàn 109 ló ti wáyé ní Nàìjíríà")
+    assert e.relevant_from("BBC Igbo", "NDC Townhall: Etu ndị agboro si wakpoo ọgbakọ pati a na Lagos")
+    # world news in the same services stays out without a Nigerian anchor
+    assert not e.relevant_from("BBC Hausa", "Yadda kafafen yaɗa labaran Iran ke yi wa Trump shaguɓe bayan faɗuwu zaɓe")
+    assert not e.relevant_from("Dubawa", "Did Trump say each Republican's vote counts as 3 votes?")
+    assert e.relevant_from("Dubawa", "Video of Tinubu warning corp members, thugs against rigging elections recirculated")
+    r = e.record({"outlet": "Dubawa", "url": "https://dubawa.org/x", "title": "Old videos recirculated as recent Kwankwaso rally",
+                  "date": "2026-11-12"})
+    assert "fact_check" in r["topics"]
+    assert e.record({"outlet": "BBC Hausa", "url": "https://bbc.com/hausa/x", "title": "Tinubu ya gaza - ADC",
+                     "date": "2026-11-12"})["language"] == "ha"
+    assert {o for o, _ in e.all_sources()} >= {"BBC Hausa", "BBC Yoruba", "BBC Igbo", "Situation Room", "Dubawa"}
+
+
+def test_governorship_and_senate_candidates_are_tagged_within_their_state():
+    from src import ng_candidates
+    from src.engines import election_news as e
+    gov = ng_candidates.search(office="governorship", state="Lagos", party="APC")["candidates"][0]
+    first, last = gov["name"].split()[1], gov["name"].split()[0]
+    t = e.tag(f"{first} {last} unveils manifesto in Lagos")
+    assert t["gov_candidates"] == [gov["name"]]
+    assert e.tag(f"{first} {last} unveils manifesto in Kano")["gov_candidates"] == []
+    counts = {o: len({(r["state"], r["constituency"]) for r in ng_candidates._all() if r["office"] == o})
+              for o in ng_candidates.OFFICES}
+    assert counts == {"governorship": 28, "senate": 109, "house_of_representatives": 350}
+    assert ng_candidates.search(office="governorship", state="Kano", party="NDC")["candidates"][0]["remarks"] == "Court Order"

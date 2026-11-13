@@ -26,7 +26,8 @@ KINDS = ("incidents", "news", "results")   # results: each constituency as it is
 # profile adds it here, to the API and to the page, without changing alerts.
 ELECTIONS = {"ng-2027": "Nigeria: 2027 general elections",
              **{k: p["label"] for k, p in __import__("src.data.election_profiles", fromlist=["PROFILES"]).PROFILES.items()}}
-LIST_FILTERS = ("states", "lgas", "incident_types", "candidates", "people", "parties", "topics")
+LIST_FILTERS = ("states", "lgas", "incident_types", "candidates", "gov_candidates", "senate_candidates", "people",
+                "parties", "topics")
 DOCS = "https://deal-intelligence.app/developers#elections"
 # How many election alerts an account can have at once; messages are not capped. Following all coverage (kind=news)
 # and the recent-stories starter come with Team and above.
