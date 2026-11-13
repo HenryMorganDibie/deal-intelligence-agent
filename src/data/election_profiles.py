@@ -6,6 +6,11 @@ units, results). Adding a country is adding a profile here.
 Dates are the electoral commissions' (checked 13 November 2026). Regions are the first-level divisions coverage
 names. Party acronyms that are also ordinary words or other organisations are listed as ambiguous and tagged only
 from the party's full name.
+
+Candidates are the electoral commission's list, each with its status and the date it was checked; "people" are
+other figures the coverage is about. Sources are publishers' own feeds whose robots.txt allows reading them (checked
+13 November 2026); article selectors say where the story text is for the outlets whose article pages may be read.
+Outlets are named as Google News names them, so a story reached both ways is one report.
 """
 from __future__ import annotations
 
@@ -35,6 +40,19 @@ PROFILES: dict[str, dict] = {
                    "Kithure Kindiki": r"\bKindiki\b", "Martha Karua": r"\bKarua\b",
                    "Eugene Wamalwa": r"\bWamalwa\b", "George Natembeya": r"\bNatembeya\b",
                    "Okiya Omtatah": r"\bOmtatah\b"},
+        # IEBC opens presidential nominations in 2027; until then the coverage is about these figures.
+        "candidates": [],
+        "sources": [("Capital FM Africa", "https://capitalfm.africa/news/feed/"),
+                    ("Kenyans.co.ke", "https://www.kenyans.co.ke/feeds/news"),
+                    ("Daily Nation", "https://nation.africa/kenya/rss.xml"),
+                    ("The Standard", "https://www.standardmedia.co.ke/rss/politics.php"),
+                    ("People Daily", "https://peopledaily.digital/feed"),
+                    ("The Kenya Times", "https://thekenyatimes.com/feed/"),
+                    ("Kenya News Agency", "https://www.kenyanews.go.ke/feed/")],
+        # Nation, People Daily and The Kenya Times refuse automated readers on article pages; The Standard's pages
+        # carry no article text without scripts. Their headlines are used.
+        "article_selectors": {"Capital FM Africa": ".post-content p", "Kenyans.co.ke": ".field--name-body p"},
+        "slow_outlets": {"Capital FM Africa": 10},          # robots.txt: Crawl-delay 10
         "query": '"Kenya" (election OR elections OR polls OR campaign OR IEBC OR voters)',
     },
     "gm-2026": {
@@ -47,10 +65,31 @@ PROFILES: dict[str, dict] = {
         "parties": {"UDP": "United Democratic Party", "NPP": "National People's Party",
                     "GDC": "Gambia Democratic Congress", "APRC": "Alliance for Patriotic Reorientation and Construction",
                     "PDOIS": "People's Democratic Organisation for Independence and Socialism",
-                    "CA": "Citizens' Alliance", "GAP": "Gambia Action Party"},
-        "ambiguous_parties": ["CA", "GAP", "NPP"],
-        "people": {"Adama Barrow": r"\bBarrow\b", "Talib Ahmed Bensouda": r"\bBensouda\b", "Essa Faal": r"\bFaal\b",
-                   "Mama Kandeh": r"\bKandeh\b"},
+                    "CA": "Citizens' Alliance", "GAP": "Gambia Action Party", "UNITE": "UNITE Movement",
+                    "APC": "Alliance of Progressive Citizens", "GLP": "Gambia Labour Party",
+                    "NDP": "National Democratic Party", "NBP": "National Builders Party"},
+        "ambiguous_parties": ["CA", "GAP", "NPP", "APC", "NDP", "NBP"],
+        # IEC chairman Joseph Colley's briefing on presidential nominations, 12 November 2026 (reported by Kerr Fatou).
+        "candidates": [
+            {"name": "Adama Barrow", "party": "NPP", "status": "confirmed", "pattern": r"\bBarrow\b"},
+            {"name": "Ousainou Darboe", "party": "UDP", "status": "confirmed", "pattern": r"\bOusain?ou\s+Darboe\b|\bANM\b"},
+            {"name": "Talib Ahmed Bensouda", "party": "UNITE", "status": "confirmed", "pattern": r"\bBensouda\b"},
+            {"name": "Isatou Touray", "party": None, "status": "confirmed", "pattern": r"\bIsatou\s+Touray\b|\bDr\.?\s+Touray\b"},
+            {"name": "Modou Lamin Sima", "party": "APC", "status": "confirmed", "pattern": r"\bModou\s+Lamin\s+Sima\b|\bML\s+Sima\b|\bSima\b(?=['’]s|\s+(?:says|said|vows|pledges|promises|campaign|launches|unveils|tells|urges))"},
+            {"name": "Ansu Sanneh", "party": "NBP", "status": "under review", "pattern": r"\bAnsu\s+Sanneh\b"},
+            {"name": "Bakary K. Badjie", "party": None, "status": "under review", "pattern": r"\bBakary\s+(?:K\.?\s+)?Badjie\b"},
+            {"name": "Lamin J. Darbo", "party": None, "status": "under review", "pattern": r"\bLamin\s+J\.?\s+Darbo\b"},
+            {"name": "Almameh Gibba", "party": None, "status": "under review", "pattern": r"\bAlmameh\s+Gibba\b"},
+            {"name": "Papa Secka", "party": None, "status": "under review", "pattern": r"\bPapa\s+Secka\b"},
+            {"name": "Ebrima Tabora Manneh", "party": None, "status": "under review", "pattern": r"\bTabora\s+Manneh\b"},
+            {"name": "Bakusa Dukureh", "party": "GLP", "status": "rejected", "pattern": r"\bDukureh\b"},
+            {"name": "Kebba Madi Bojang", "party": "NDP", "status": "rejected", "pattern": r"\bKebba\s+(?:Madi\s+)?Bojang\b"},
+        ],
+        "candidates_checked": "2026-11-12",
+        "people": {"Essa Faal": r"\bFaal\b", "Mama Kandeh": r"\bKandeh\b"},
+        "sources": [("Kerr Fatou", "https://www.kerrfatou.com/feed/"), ("The Alkamba Times", "https://alkambatimes.com/feed/")],
+        "article_selectors": {"Kerr Fatou": ".entry-content p", "The Alkamba Times": ".td-post-content p"},
+        "slow_outlets": {"Kerr Fatou": 10},                  # robots.txt: Crawl-delay 10
         "query": '"Gambia" (election OR elections OR polls OR campaign OR IEC OR voters)',
     },
     "ss-2026": {
@@ -66,7 +105,13 @@ PROFILES: dict[str, dict] = {
                     "SPLM-IO": "Sudan People's Liberation Movement-in-Opposition",
                     "SSOA": "South Sudan Opposition Alliance", "NDM": "National Democratic Movement"},
         "ambiguous_parties": ["NDM"],
-        "people": {"Salva Kiir": r"\bKiir\b", "Riek Machar": r"\bMachar\b"},
+        # The NEC has not published nominations; the SPLM has endorsed Kiir.
+        "candidates": [{"name": "Salva Kiir", "party": "SPLM", "status": "endorsed by party", "pattern": r"\bKiir\b"}],
+        "candidates_checked": "2026-11-13",
+        "people": {"Riek Machar": r"\bMachar\b"},
+        "sources": [("Radio Tamazuj", "https://www.radiotamazuj.org/en/feed"), ("Sudans Post", "https://www.sudanspost.com/feed/"),
+                    ("Eye Radio", "https://eyeradio.org/feed/")],
+        "article_selectors": {"Radio Tamazuj": ".entry-content p", "Sudans Post": ".entry-content p", "Eye Radio": "article p"},
         "query": '"South Sudan" (election OR elections OR polls OR campaign OR voters OR "National Elections Commission")',
     },
 }

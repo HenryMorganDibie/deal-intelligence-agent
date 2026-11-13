@@ -119,7 +119,7 @@ def test_collection_job_handles_every_election_and_filters_by_election(monkeypat
     gm = _feed([("IEC says Bensouda fully meets all nomination requirements", "The Point", "2026-11-12")])
     monkeypatch.setattr(hm, "_rpc_sync", fake_rpc)
     monkeypatch.setattr(hm, "_configured", lambda: True)
-    monkeypatch.setattr(election_feed, "_fetch_sources", lambda: ([], {"ke-2027": ke, "gm-2026": gm}, {}))
+    monkeypatch.setattr(election_feed, "_fetch_sources", lambda: ([], [("ke-2027", "", ke), ("gm-2026", "", gm)], {}))
     monkeypatch.setattr(election_alerts, "deliver", lambda rows: {"sent": 0})
     election_feed._cache.clear()
     out = election_feed.collect_once(TODAY)
@@ -127,12 +127,61 @@ def test_collection_job_handles_every_election_and_filters_by_election(monkeypat
     election_feed._cache.clear()
     news = election_feed.search(election="ke-2027", since="2026-11-01")
     assert news["total"] == 1 and news["stories"][0]["people"] == ["William Ruto", "Edwin Sifuna"]
+    gm_story = election_feed.search(election="gm-2026", since="2026-11-01")["stories"][0]
+    assert gm_story["candidates"] == ["Talib Ahmed Bensouda"] and gm_story["parties"] == ["UNITE"]
     assert news["sources"] == ["Daily Nation"]
     assert election_feed.summary(30)["by_election"] == {"ke-2027": 1, "gm-2026": 1}
     import pytest
     from fastapi import HTTPException
     with pytest.raises(HTTPException):
         election_feed.search(election="xx-2030")
+
+
+def test_gambia_candidates_carry_the_commissions_status_and_their_party():
+    t = ec.tag("gm-2026", "Barrow meets the Touray and Sima families in Brikama")
+    # Touray and Sima alone are common surnames; the candidates need their full names or a campaign verb
+    assert t["candidates"] == ["Adama Barrow"] and t["parties"] == ["NPP"]
+    assert ec.tag("gm-2026", "Ousainou Darboe and Dr Isatou Touray hold rallies")["candidates"] == ["Ousainou Darboe", "Isatou Touray"]
+    assert ec.tag("gm-2026", "Sima vows jobs for youth")["candidates"] == ["Modou Lamin Sima"]
+    assert ec.tag("gm-2026", "Kebba Madi Bojang threatens demonstrations")["candidates"] == []   # rejected
+    listed = {c["name"]: c["status"] for c in next(e for e in election_feed.elections() if e["key"] == "gm-2026")["candidates"]}
+    assert listed["Talib Ahmed Bensouda"] == "confirmed" and listed["Papa Secka"] == "under review"
+
+
+def test_publisher_feeds_drop_neighbours_politics_and_upgrade_google_links():
+    feed = _feed([("NRM primaries: Museveni loyalists win in Uganda", "x", "2026-11-12"),
+                  ("ODM sets date for Kisumu County primaries", "x", "2026-11-12")])
+    items = ec.collect("ke-2027", feed, TODAY, outlet="Capital FM Africa")
+    assert [i["title"] for i in items] == ["ODM sets date for Kisumu County primaries"]
+    assert items[0]["outlet"] == "Capital FM Africa"
+    # reached first through Google News, then through the publisher's feed: one report, now with the readable link
+    gn = dict(items[0], url="https://news.google.com/rss/articles/abc")
+    stories, _ = en.merge([], [gn], ec.tagger("ke-2027"), "ke-2027")
+    stories, changed = en.merge(stories, [dict(items[0], url="https://capitalfm.africa/odm-primaries")], ec.tagger("ke-2027"), "ke-2027")
+    assert len(stories[0]["reports"]) == 1 and stories[0]["url"] == "https://capitalfm.africa/odm-primaries" and changed
+
+
+def test_full_articles_are_crawled_and_tagged_per_country():
+    story = {"id": "s1", "election": "ss-2026", "day": "2026-11-12", "title": "NEC gives update on voter registration",
+             "reports": [{"outlet": "Radio Tamazuj", "url": "https://www.radiotamazuj.org/en/news/article/nec-update",
+                          "title": "NEC gives update on voter registration", "date": "2026-11-12"}],
+             "candidates": [], "people": [], "parties": [], "states": [], "lgas": [], "topics": [], "races": []}
+    targets = election_feed._crawl_targets([story], 150)
+    assert [(t["name"], t["start_urls"]) for t in targets] == [("Radio Tamazuj", [story["reports"][0]["url"]])]
+    assert targets[0]["extract"]["fields"]["body"]["selector"] == ".entry-content p"
+    body = ["The National Elections Commission said registration in Jonglei State and Unity State continues.",
+            "President Salva Kiir urged calm. " + "Officials spoke at length about logistics. " * 20,
+            "Kiir later met SPLM officials in Juba. SPLM leaders backed the timetable."]
+    page = {"url": story["reports"][0]["url"], "status_code": 200, "fields": {"body": body}}
+    changed = en.apply_articles([story], [page], ec.body_tags("ss-2026"))
+    assert changed == {"s1"} and story["candidates"] == ["Salva Kiir"] and "SPLM" in story["parties"]
+    assert set(story["states"]) >= {"Jonglei", "Unity"} and story["reports"][0]["words"] > 100
+
+
+def test_untracked_names_surface_who_the_lists_miss():
+    stories = [{"title": t} for t in ("Kalonzo and Peter Kenneth meet", "Peter Kenneth eyes running mate slot",
+                                      "Peter Kenneth joins Ruto camp", "Ruto in Nakuru County")]
+    assert ec.untracked_names("ke-2027", stories) == [{"name": "Peter Kenneth", "stories": 3}]
 
 
 def test_elections_list_and_alert_choices_cover_every_profile():
@@ -144,3 +193,11 @@ def test_elections_list_and_alert_choices_cover_every_profile():
     assert election_alerts.matches(story, f)
     assert not election_alerts.matches(dict(story, election="ng-2027"), f)
     assert election_alerts._alert_item(dict(story, outlets=["Daily Nation"]))["facts_line"].startswith("Nakuru, Kenya")
+
+
+def test_neighbours_politics_and_primary_schools_stay_out():
+    assert not ec.relevant("ke-2027", "Blow to Muhoozi as Museveni's Party Rejects Presidential Bid")
+    assert not ec.relevant("ke-2027", "Ruto Announces New Funding Model for Primary and Junior School")
+    assert ec.relevant("ke-2027", "ODM primaries set for March")
+    assert ec.relevant("gm-2026", "Barrow rival meets Tinubu in Abuja ahead of presidential poll")
+    assert not en.relevant("FG releases funds for primary schools") and en.relevant("APC primaries: aspirants protest")

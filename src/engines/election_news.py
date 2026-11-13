@@ -83,22 +83,26 @@ def canonical_url(url: str) -> str:
     return (base.rstrip("/") + ("?" + kept if kept else "")).lower()
 
 
-def crawl_targets(stories: list[dict], limit: int = 150, per_outlet: int = 25) -> list[dict]:
+def crawl_targets(stories: list[dict], limit: int = 150, per_outlet: int = 25, selectors: Optional[dict] = None,
+                  slow: Optional[dict] = None) -> list[dict]:
     """web-harvester crawl targets for reports whose full article has not been read yet: one target per outlet,
-    only the article pages themselves (depth 0), newest stories first, at most `per_outlet` pages per site."""
+    only the article pages themselves (depth 0), newest stories first, at most `per_outlet` pages per site.
+    Other countries pass their outlets' selectors and slow sites."""
+    selectors = ARTICLE_SELECTORS if selectors is None else selectors
+    slow = SLOW_OUTLETS if slow is None else slow
     urls: dict[str, list[str]] = {}
     n = 0
     for story in sorted(stories, key=lambda s: s.get("day") or "", reverse=True):
         for r in story.get("reports") or []:
             if n >= limit:
                 break
-            if r.get("words") is None and r.get("outlet") in ARTICLE_SELECTORS and "news.google.com" not in r["url"] \
-                    and len(urls.get(r["outlet"], [])) < SLOW_OUTLETS.get(r["outlet"], per_outlet):
+            if r.get("words") is None and r.get("outlet") in selectors and "news.google.com" not in r["url"] \
+                    and len(urls.get(r["outlet"], [])) < slow.get(r["outlet"], per_outlet):
                 urls.setdefault(r["outlet"], []).append(r["url"])
                 n += 1
     return [{"name": outlet, "start_urls": links, "max_depth": 0, "max_pages": len(links),
              "extract": {"skip_links": True, "text_limit": -1,
-                         "fields": {"body": {"selector": ARTICLE_SELECTORS[outlet], "all": True}}}}
+                         "fields": {"body": {"selector": selectors[outlet], "all": True}}}}
             for outlet, links in urls.items()]
 
 
@@ -123,9 +127,11 @@ def body_tags(title: str, body: str) -> dict:
     return out
 
 
-def apply_articles(stories: list[dict], pages: Iterable[dict]) -> set[str]:
+def apply_articles(stories: list[dict], pages: Iterable[dict], tagger=None) -> set[str]:
     """Fold crawled article text into the stories' tags. A report is marked with its word count (0 when the page
-    could not be read), so it is not crawled again; the article text itself is not stored."""
+    could not be read), so it is not crawled again; the article text itself is not stored. Other countries pass
+    their own full-text tagger."""
+    tagger = tagger or body_tags
     index = {canonical_url(r["url"]): (s, r) for s in stories for r in s.get("reports") or []}
     changed: set[str] = set()
     for page in pages:
@@ -138,7 +144,7 @@ def apply_articles(stories: list[dict], pages: Iterable[dict]) -> set[str]:
         changed.add(story["id"])
         if not body:
             continue
-        extra = body_tags(report["title"], body)
+        extra = tagger(report["title"], body)
         for key in _TAG_KEYS:
             if key in extra:
                 story[key] = list(dict.fromkeys([*story.get(key, []), *extra[key]]))
@@ -149,9 +155,13 @@ def apply_articles(stories: list[dict], pages: Iterable[dict]) -> set[str]:
 
 # ── Relevance ────────────────────────────────────────────────────────────────
 
+# "primaries", but not primary schools, pupils or health care
+PRIMARIES = (r"primar(?:y|ies)(?!\s+(?:and\s+\w+\s+)?(?:schools?|education|pupils|teachers|learners|health\w*|"
+             r"care|level|classes|production|market|dealers?|residence))")
+
 _ELECTION_WORDS = re.compile(
     r"(?i)\b(?:20(?:26|27)\b(?=\s*[:,]|\s+(?:election|poll|race|ticket|presidency|governorship|general))|"
-    r"elections?|electoral|INEC|IReV|BVAS|PVCs?|voters?|voting|vote[sd]?|ballot|polling|primar(?:y|ies)|"
+    r"elections?|electoral|INEC|IReV|BVAS|PVCs?|voters?|voting|vote[sd]?|ballot|polling|" + PRIMARIES + r"|"
     r"governorship|presidential|presidency|campaigns?|candidates?|running mate|manifesto|rally|rallies|"
     r"town hall|defect(?:s|ed|ion|ors)?|aspirants?|tickets?|re-?election|second term|"
     r"#\w+Decides20\d\d|certificate of return|tribunal|collation|accreditation|political part(?:y|ies)|"
@@ -451,8 +461,15 @@ def merge(stories: list[dict], items: Iterable[dict], tagger=None,
         if not item.get("url") or not item.get("date") or item["url"] in by_url:
             continue
         match = next((s for s in stories if same_story(s, item)), None)
-        if match and any(r["outlet"] == item["outlet"] and same_story(r, item) for r in match["reports"]):
-            by_url[item["url"]] = match          # the same outlet's story again: another feed, or an edited headline
+        same = next((r for r in match["reports"] if r["outlet"] == item["outlet"] and same_story(r, item)), None) \
+            if match else None
+        if same:                                 # the same outlet's story again: another feed, or an edited headline
+            if "news.google.com" in same["url"] and "news.google.com" not in item["url"]:
+                if match.get("url") == same["url"]:  # the publisher's own link, so the article can be read
+                    match["url"] = item["url"]
+                same["url"] = item["url"]
+                changed.add(match["id"])
+            by_url[item["url"]] = match
             continue
         if match:
             match["reports"].append({"outlet": item["outlet"], "url": item["url"], "title": item["title"],

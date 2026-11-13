@@ -41,10 +41,10 @@ def _load(since: str) -> list[dict]:
     return rows
 
 
-def _fetch_sources() -> tuple[list[tuple[str, str]], dict[str, str], dict[str, str]]:
-    """Nigeria's outlet feeds as (outlet, text), each other election's feed as {election: text}, and the status of
-    every fetch."""
-    texts, country_texts, status = [], {}, {}
+def _fetch_sources() -> tuple[list[tuple[str, str]], list[tuple[str, str, str]], dict[str, str]]:
+    """Nigeria's outlet feeds as (outlet, text), the other elections' feeds as (election, outlet, text) (outlet ""
+    for the Google News search), and the status of every fetch."""
+    texts, country_texts, status = [], [], {}
     with httpx.Client(headers={"User-Agent": en.USER_AGENT}, timeout=25, follow_redirects=True) as client:
         def get(label: str, url: str) -> Optional[str]:
             try:
@@ -58,10 +58,10 @@ def _fetch_sources() -> tuple[list[tuple[str, str]], dict[str, str], dict[str, s
             text = get(f"{outlet} (Google News)" if "news.google.com" in url else outlet, url)
             if text is not None:
                 texts.append((outlet, text))
-        for key, url in ec.sources():
-            text = get(f"{PROFILES[key]['country']} (Google News)", url)
+        for key, outlet, url in ec.sources():
+            text = get(f"{PROFILES[key]['country']}: {outlet or 'Google News'}", url)
             if text is not None:
-                country_texts[key] = text
+                country_texts.append((key, outlet, text))
     return texts, country_texts, status
 
 
@@ -72,7 +72,8 @@ def collect_once(today: Optional[date] = None) -> dict:
     _cache.pop(since, None)
     stored = ec.split(dict(s) for s in (_load(since) if hm._configured() else []))
     items_by = {ec.NIGERIA: en.collect(texts, today)}
-    items_by.update({k: ec.collect(k, t, today) for k, t in country_texts.items()})
+    for key, outlet, text in country_texts:
+        items_by.setdefault(key, []).extend(ec.collect(key, text, today, outlet=outlet))
     rows, counts = [], {}
     for key, items in items_by.items():
         nigeria = key == ec.NIGERIA
@@ -111,8 +112,19 @@ def crawl_config(output_path: str, limit: int = 150, today: Optional[date] = Non
         "concurrency": 2, "max_retries": 0, "request_timeout": "15s",
         "rate_per_host_rps": 0.5, "rate_burst": 1, "adaptive_rate": True,   # one page every two seconds per site
         "sink_backend": "jsonl", "output_path": output_path, "report_interval": "30s",
-        "targets": en.crawl_targets([s for s in _load(since) if ec.election_of(s) == ec.NIGERIA], limit),
+        "targets": _crawl_targets(_load(since), limit),
     }
+
+
+def _crawl_targets(stories: list[dict], limit: int) -> list[dict]:
+    """Nigeria's outlets first (up to `limit` pages), then each other election's readable outlets (up to 20 pages
+    each), so a country's backlog never crowds out another's."""
+    by = ec.split(stories)
+    targets = en.crawl_targets(by.get(ec.NIGERIA, []), limit)
+    for key, p in PROFILES.items():
+        if p.get("article_selectors"):
+            targets += en.crawl_targets(by.get(key, []), 20, 10, p["article_selectors"], p.get("slow_outlets", {}))
+    return targets
 
 
 def apply_crawl(pages: list[dict], today: Optional[date] = None) -> dict:
@@ -120,11 +132,15 @@ def apply_crawl(pages: list[dict], today: Optional[date] = None) -> dict:
     today = today or datetime.now(timezone.utc).date()
     since = (today - timedelta(days=5)).isoformat()
     _cache.pop(since, None)
-    stories = [dict(s, reports=[dict(r) for r in s.get("reports") or []]) for s in _load(since)
-               if ec.election_of(s) == ec.NIGERIA]          # full articles are read for Nigeria's outlets only
-    changed = en.apply_articles(stories, pages)
-    changed |= en.assign_events(stories)
-    rows = [s for s in stories if s["id"] in changed]
+    by = ec.split(dict(s, reports=[dict(r) for r in s.get("reports") or []]) for s in _load(since))
+    rows = []
+    for key, stories in by.items():
+        nigeria = key == ec.NIGERIA
+        if not nigeria and key not in PROFILES:
+            continue
+        changed = en.apply_articles(stories, pages, None if nigeria else ec.body_tags(key))
+        changed |= en.assign_events(stories, keys_fn=None if nigeria else ec.headline_keys(key))
+        rows += [s for s in stories if s["id"] in changed]
     read = sum(1 for p in pages if p.get("status_code") == 200 and (p.get("fields") or {}).get("body"))
     written = _write(rows)
     from src import election_alerts                  # an article can reveal an incident the headline did not
@@ -177,12 +193,19 @@ def elections() -> list[dict]:
             "dates": [{"date": str(ng.PRESIDENTIAL_DAY), "name": "Presidential and National Assembly"},
                       {"date": str(ng.GOVERNORSHIP_DAY), "name": "Governorship and State Assembly"}],
             "body": "INEC", "region_word": "State", "regions": list(ng.STATES),
-            "coverage": ["news", "incidents", "candidates", "lgas", "polling_units", "results"]}]
+            "coverage": ["news", "incidents", "full_articles", "candidates", "lgas", "polling_units", "results"],
+            "candidates": [{"name": c, "party": acr, "status": "on INEC's final list"} for acr, _, c, _ in ng.TICKETS],
+            "outlets": sorted({o for o, _ in en.all_sources()}), "full_text_outlets": sorted(en.ARTICLE_SELECTORS)}]
     for key, p in PROFILES.items():
         out.append({"key": key, "country": p["country"], "iso": p["iso"], "label": p["label"],
                     "dates": [{"date": d, "name": n} for d, n in p["dates"]], "body": p["body"][0],
                     "region_word": p["region_word"], "regions": list(p["regions"]),
-                    "coverage": ["news", "incidents"]})
+                    "coverage": ["news", "incidents", "candidates", "people"] +
+                                (["full_articles"] if p.get("article_selectors") else []),
+                    "candidates": [{k: c.get(k) for k in ("name", "party", "status")} for c in p.get("candidates", ())],
+                    "candidates_checked": p.get("candidates_checked"), "people": list(p.get("people", {})),
+                    "outlets": sorted(o for o, _ in p.get("sources", ())) + ["Google News search"],
+                    "full_text_outlets": sorted(p.get("article_selectors", {}))})
     return sorted(out, key=lambda e: e["dates"][0]["date"])
 
 
@@ -241,4 +264,7 @@ def summary(days: int = 7, election: Optional[str] = None) -> dict:
     by_election: dict[str, int] = {}
     for s in rows:
         by_election[ec.election_of(s)] = by_election.get(ec.election_of(s), 0) + 1
-    return {"election": election, "since": since, "days": days, "by_election": by_election, **en.summary(rows, since)}
+    out = {"election": election, "since": since, "days": days, "by_election": by_election, **en.summary(rows, since)}
+    if election and election in PROFILES:           # names the coverage is about that the profile does not track
+        out["untracked_names"] = ec.untracked_names(election, rows)
+    return out
