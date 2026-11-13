@@ -51,6 +51,7 @@ const RESULTS_ENDPOINTS: [string, string, string, string][] = [
   ["POST", "/elections/alerts", "Push incidents (or coverage) to Slack, Teams, Discord, Google Chat or a JSON webhook as they are collected. Each story is sent once; up to 10 alerts per account.", "JSON: name, webhook_url, filters {kind: incidents | news, min_severity, states, lgas, incident_types, candidates, parties, topics}"],
   ["GET", "/elections/alerts", "Your election alerts and how many stories each has sent.", ""],
   ["POST", "/elections/alerts/{id}/test", "Send a clearly marked sample to the alert's webhook.", ""],
+  ["POST", "/elections/alerts/{id}/backfill", "Send the alert's matching stories from the last few days now, so a new alert starts with recent context.", "days (≤7)"],
   ["DELETE", "/elections/alerts/{id}", "Remove an alert.", ""],
 ];
 

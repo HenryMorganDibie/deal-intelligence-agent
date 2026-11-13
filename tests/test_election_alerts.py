@@ -121,3 +121,41 @@ def test_alert_endpoints_are_institutional_and_hide_the_webhook(monkeypatch):
     assert r["destination"] == "Slack" and "secretpart" not in r["webhook"] and r["filters"]["kind"] == "incidents"
     assert c.get("/v1/elections/alerts").json()["alerts"][0]["name"] == "Lagos"
     assert c.post("/v1/elections/alerts", json=dict(body, webhook_url="http://insecure.example")).status_code == 400
+
+
+def test_backfill_sends_recent_matches_once(monkeypatch):
+    from src import election_feed
+    sent_db, posts = set(), []
+    sub = {"id": "a1", "owner": "acct", "name": "All", "webhook_url": "https://example.org/hook",
+           "created_at": "2099-01-01", "filters": {"kind": "incidents", "min_severity": "medium"}}
+
+    class R:
+        status_code = 200
+
+        def __init__(self, d):
+            self._d = d
+
+        def json(self):
+            return self._d
+
+    def fake(fn, args, timeout=30):
+        if fn == "election_alert_active":
+            return R([sub])
+        if fn == "election_alert_claim":
+            new = [i for i in args["p_story_ids"] if i not in sent_db]
+            sent_db.update(new)
+            return R(new)
+        raise AssertionError(fn)
+
+    async def deliver(url, payload, key):
+        posts.append(payload)
+        return {"delivered": True}
+    monkeypatch.setattr(hm, "_rpc_sync", fake)
+    monkeypatch.setattr(ea.watch, "deliver_webhook", deliver)
+    from datetime import date
+    today = date.today().isoformat()
+    monkeypatch.setattr(election_feed, "_load", lambda since: [dict(LAGOS, day=today), dict(KANO, day=today)])
+    assert ea.backfill("acct", "a1", 3)["sent"] == 1                 # the high-severity Lagos story only
+    assert ea.backfill("acct", "a1", 3)["sent"] == 0                 # not twice
+    with pytest.raises(HTTPException):
+        ea.backfill("someone-else", "a1", 3)

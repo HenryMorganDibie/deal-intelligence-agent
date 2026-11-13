@@ -468,6 +468,20 @@ async def delete_election_alert(alert_id: str, request: Request, response: Respo
     return await _call(run)
 
 
+@router.post("/elections/alerts/{alert_id}/backfill")
+async def backfill_election_alert(alert_id: str, request: Request, response: Response,
+                                  days: int = Query(3, ge=1, le=7)) -> dict:
+    """Send the alert's matching stories from the last `days` days now (stories already sent are skipped)."""
+    from src import election_alerts
+    owner = await _institutional(request, response)
+    if not re.fullmatch(r"[0-9a-f-]{36}", alert_id):
+        raise PublicApiError(400, "bad_request", "That is not an alert id.")
+
+    async def run():
+        return await run_in_threadpool(election_alerts.backfill, owner, alert_id, days)
+    return await _call(run)
+
+
 @router.post("/elections/alerts/{alert_id}/test")
 async def test_election_alert(alert_id: str, request: Request, response: Response) -> dict:
     """Send a clearly marked sample to the alert's webhook."""

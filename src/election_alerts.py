@@ -166,6 +166,22 @@ def delete(owner: str, sub_id: str) -> dict:
     return {"deleted": True}
 
 
+def backfill(owner: str, sub_id: str, days: int = 3) -> dict:
+    """Send the alert's matching stories from the last few days now (at most 7), so a new alert starts with recent
+    context. Stories already sent to it are skipped, as always."""
+    from datetime import timedelta
+    from src import election_feed
+    days = max(1, min(int(days), 7))
+    r = hm._rpc_sync("election_alert_active", {})
+    subs = [s for s in (r.json() or []) if str(s["id"]) == sub_id and str(s["owner"]) == owner] if r.status_code == 200 else []
+    if not subs:
+        raise HTTPException(404, "No such alert.")
+    since = (datetime.now(timezone.utc).date() - timedelta(days=days)).isoformat()
+    stories = sorted(election_feed._load(since), key=lambda s: s.get("day") or "")
+    sub = dict(subs[0], created_at=since)
+    return asyncio.run(_send_all([sub], stories)) | {"since": since}
+
+
 def test(owner: str, sub_id: str) -> dict:
     """Send a clearly marked sample to the subscription's webhook."""
     r = hm._rpc_sync("election_alert_active", {})
