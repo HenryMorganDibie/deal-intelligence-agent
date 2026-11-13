@@ -248,14 +248,15 @@ async def election_news(request: Request, response: Response, candidate: Optiona
 async def election_incidents(request: Request, response: Response, state: Optional[str] = Query(None, max_length=30),
                              lga: Optional[str] = Query(None, max_length=60), type: Optional[str] = Query(None, max_length=30),
                              severity: Optional[str] = Query(None, max_length=10), since: Optional[str] = Query(None, max_length=10),
-                             limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=100_000)) -> dict:
+                             limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=100_000),
+                             group: bool = False) -> dict:
     """Election incidents reported in the news (violence, thuggery, abduction, arson, ballot snatching, vote buying,
     intimidation, BVAS or IReV failures, logistics, arrests, hate speech), with severity and location."""
     from src import election_feed
     await authorize(request, response)
 
     async def run():
-        return await run_in_threadpool(election_feed.incident_feed, state, lga, type, severity, since, limit, offset)
+        return await run_in_threadpool(election_feed.incident_feed, state, lga, type, severity, since, limit, offset, group)
     return await _call(run)
 
 

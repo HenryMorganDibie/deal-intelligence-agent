@@ -460,6 +460,58 @@ def merge(stories: list[dict], items: Iterable[dict]) -> tuple[list[dict], set[s
     return stories, changed
 
 
+# ── Events: one incident, many stories ───────────────────────────────────────
+# Outlets cover one incident from many angles ("thugs attack NDC meeting in Lagos", "APC condemns Lagos attack",
+# "Obi condemns Lagos attack"), each a separate story because the headlines differ. Incident stories are one event
+# when, within two days, their headlines name a common place (state or LGA), a common party (directly or through
+# its candidate) and they share an incident type. A story whose headline names no place stays on its own.
+
+def _headline_keys(story: dict) -> tuple[set, set]:
+    t = tag(story.get("title", ""))
+    places = set(t["states"]) | {x.split(",")[0].strip() for x in t["lgas"]}
+    return places, set(t["parties"])
+
+
+def assign_events(stories: list[dict], days: int = 2) -> set[str]:
+    """Give every incident story an event_id (the id of the event's earliest story) and event_size; returns the ids
+    of stories whose event changed."""
+    inc = sorted((s for s in stories if s.get("incident_types")), key=lambda s: (s.get("day") or "", s["id"]))
+    keys = {s["id"]: _headline_keys(s) for s in inc}
+    parent = {s["id"]: s["id"] for s in inc}
+
+    def root(x: str) -> str:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+    for i, a in enumerate(inc):
+        pa, qa = keys[a["id"]]
+        if not pa:
+            continue
+        for b in inc[i + 1:]:
+            try:
+                if (date.fromisoformat(b["day"]) - date.fromisoformat(a["day"])).days > days:
+                    break
+            except (TypeError, ValueError, KeyError):
+                continue
+            pb, qb = keys[b["id"]]
+            if pa & pb and qa & qb and set(a["incident_types"]) & set(b["incident_types"]):
+                ra, rb = root(a["id"]), root(b["id"])
+                if ra != rb:
+                    parent[max(ra, rb, key=lambda r: (next(s["day"] for s in inc if s["id"] == r), r))] = \
+                        min(ra, rb, key=lambda r: (next(s["day"] for s in inc if s["id"] == r), r))
+    sizes: dict[str, int] = {}
+    for s in inc:
+        sizes[root(s["id"])] = sizes.get(root(s["id"]), 0) + 1
+    changed = set()
+    for s in inc:
+        ev, n = root(s["id"]), sizes[root(s["id"])]
+        if s.get("event_id") != ev or s.get("event_size") != n:
+            s["event_id"], s["event_size"] = ev, n
+            changed.add(s["id"])
+    return changed
+
+
 def retag_missing(stories: list[dict]) -> set[str]:
     """Give stories stored before LGA and incident tagging existed those tags, from their headline and summary."""
     changed = set()

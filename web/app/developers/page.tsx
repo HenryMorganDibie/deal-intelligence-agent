@@ -36,7 +36,7 @@ const ENDPOINTS: [string, string, string][] = [
 const ELECTION_ENDPOINTS: [string, string, string, string][] = [
   ["GET", "/elections/news", "Election coverage from Nigerian outlets, one record per story with every outlet's report, tagged by candidate, party, state, LGA, topic, race and any incident.", "candidate, party, state, lga, topic, race, q, since, limit (≤200), offset"],
   ["GET", "/elections/summary", "Coverage counts per candidate, party, state, LGA, topic, race and incident type.", "days (≤90)"],
-  ["GET", "/elections/incidents", "Incidents reported in the news (violence, thuggery, abduction, arson, ballot snatching, vote buying, intimidation, BVAS or IReV failures, logistics, arrests, hate speech) with severity and location.", "state, lga, type, severity (low, medium, high: the minimum), since, limit (≤200), offset"],
+  ["GET", "/elections/incidents", "Incidents reported in the news (violence, thuggery, abduction, arson, ballot snatching, vote buying, intimidation, BVAS or IReV failures, logistics, arrests, hate speech) with severity and location.", "state, lga, type, severity (low, medium, high: the minimum), since, group (one entry per incident, other reports listed), limit (≤200), offset"],
   ["GET", "/elections/areas", "INEC's delimitation one level at a time: the states; a state's LGAs; an LGA's wards, with polling-unit counts.", "state (code or name), lga (code)"],
   ["GET", "/elections/polling-units", "Polling units in a ward, or matching a name.", "state, lga, ward (codes), or q (3+ letters); limit (≤500), offset"],
   ["GET", "/elections/polling-units/{code}", "One polling unit by INEC code, e.g. 24/11/01/001.", ""],

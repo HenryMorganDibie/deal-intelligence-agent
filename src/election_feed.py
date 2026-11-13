@@ -63,6 +63,7 @@ def collect_once(today: Optional[date] = None) -> dict:
     stored = _load(since) if hm._configured() else []
     stories, changed = en.merge([dict(s) for s in stored], items)
     changed |= en.retag_missing(stories)          # stories stored before a newer tag existed get it now
+    changed |= en.assign_events(stories)          # one incident covered by many outlets is one event
     rows = [s for s in stories if s["id"] in changed]
     written = _write(rows)
     from src import election_alerts
@@ -104,6 +105,7 @@ def apply_crawl(pages: list[dict], today: Optional[date] = None) -> dict:
     _cache.pop(since, None)
     stories = [dict(s, reports=[dict(r) for r in s.get("reports") or []]) for s in _load(since)]
     changed = en.apply_articles(stories, pages)
+    changed |= en.assign_events(stories)
     rows = [s for s in stories if s["id"] in changed]
     read = sum(1 for p in pages if p.get("status_code") == 200 and (p.get("fields") or {}).get("body"))
     written = _write(rows)
@@ -148,7 +150,8 @@ _SEVERITY = {"low": 1, "medium": 2, "high": 3}
 
 
 def incident_feed(state: Optional[str] = None, lga: Optional[str] = None, type: Optional[str] = None,
-                  severity: Optional[str] = None, since: Optional[str] = None, limit: int = 50, offset: int = 0) -> dict:
+                  severity: Optional[str] = None, since: Optional[str] = None, limit: int = 50, offset: int = 0,
+                  group: bool = False) -> dict:
     """Stories reporting election incidents, newest first, optionally by state, LGA, type and minimum severity."""
     if severity and severity not in _SEVERITY:
         raise HTTPException(400, "severity must be low, medium or high.")
@@ -166,7 +169,19 @@ def incident_feed(state: Optional[str] = None, lga: Optional[str] = None, type: 
     for s in rows:
         for t in s["incident_types"]:
             by_type[t] = by_type.get(t, 0) + 1
-    return {"since": since, "total": len(rows), "by_type": dict(sorted(by_type.items(), key=lambda kv: -kv[1])),
+    events = {}
+    for s in rows:
+        events.setdefault(s.get("event_id") or s["id"], []).append(s)
+    if group:                                  # one entry per event: its most severe story, with the rest listed
+        grouped = []
+        for ev, members in events.items():
+            lead = max(members, key=lambda s: (_SEVERITY.get(s.get("severity") or "low", 1), -len(s.get("title", ""))))
+            grouped.append(dict(lead, event_id=ev, event_size=len(members),
+                                event_reports=[{"title": m["title"], "url": m.get("url"), "outlets": m.get("outlets"),
+                                                "day": m.get("day")} for m in members if m is not lead]))
+        rows = sorted(grouped, key=lambda s: (s.get("day") or "", _SEVERITY.get(s.get("severity") or "low", 1)), reverse=True)
+    return {"since": since, "total": len(rows), "events": len(events),
+            "by_type": dict(sorted(by_type.items(), key=lambda kv: -kv[1])),
             "by_severity": {k: sum(1 for s in rows if s.get("severity") == k) for k in ("high", "medium", "low")},
             "offset": offset, "incidents": rows[offset:offset + limit]}
 

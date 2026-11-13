@@ -159,3 +159,37 @@ def test_backfill_sends_recent_matches_once(monkeypatch):
     assert ea.backfill("acct", "a1", 3)["sent"] == 0                 # not twice
     with pytest.raises(HTTPException):
         ea.backfill("someone-else", "a1", 3)
+
+
+def test_alerts_send_one_message_per_event(monkeypatch):
+    sent_db, posts = set(), []
+    sub = {"id": "a1", "owner": "acct", "name": "All", "webhook_url": "https://example.org/hook",
+           "created_at": "2026-11-01", "filters": {"kind": "incidents"}}
+
+    class R:
+        status_code = 200
+
+        def __init__(self, d):
+            self._d = d
+
+        def json(self):
+            return self._d
+
+    def fake(fn, args, timeout=30):
+        if fn == "election_alert_active":
+            return R([sub])
+        if fn == "election_alert_claim":
+            new = [i for i in args["p_story_ids"] if i not in sent_db]
+            sent_db.update(new)
+            return R(new)
+        raise AssertionError(fn)
+
+    async def deliver(url, payload, key):
+        posts.append(payload)
+        return {"delivered": True}
+    monkeypatch.setattr(hm, "_rpc_sync", fake)
+    monkeypatch.setattr(ea.watch, "deliver_webhook", deliver)
+    a = dict(LAGOS, id="a", event_id="a", event_size=2)
+    b = dict(LAGOS, id="b", event_id="a", event_size=2, title="APC condemns Lagos attack")
+    assert ea.deliver([a, b])["sent"] == 1 and "2 reports of this incident" in str(posts[0])
+    assert ea.deliver([dict(LAGOS, id="c", event_id="a", event_size=3)])["sent"] == 0    # same incident, later report

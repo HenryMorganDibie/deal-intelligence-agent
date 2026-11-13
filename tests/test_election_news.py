@@ -220,3 +220,18 @@ def test_old_stories_get_new_tags_once_and_the_incident_feed_filters(monkeypatch
     assert election_feed.search(lga="ikeja", since="2026-11-01")["total"] == 1
     with pytest.raises(Exception):
         election_feed.incident_feed(severity="extreme")
+
+
+def test_one_incident_covered_from_many_angles_is_one_event():
+    s = [{"id": "a", "day": "2026-11-12", "title": "Thugs attack NDC supporters in Lagos", "incident_types": ["violence", "thuggery"]},
+         {"id": "b", "day": "2026-11-12", "title": "APC condemns attack on NDC Lagos town hall", "incident_types": ["violence"]},
+         {"id": "c", "day": "2026-11-13", "title": "Obi condemns Lagos attack", "incident_types": ["violence"]},
+         {"id": "d", "day": "2026-11-12", "title": "Thugs attack Pantami's campaign rally in Gombe", "incident_types": ["violence"]},
+         {"id": "e", "day": "2026-11-12", "title": "EU warns of surge in violence", "incident_types": ["violence"]},
+         {"id": "f", "day": "2026-11-20", "title": "Thugs attack NDC supporters in Lagos again", "incident_types": ["violence"]},
+         {"id": "g", "day": "2026-11-12", "title": "APC unveils campaign council in Lagos", "incident_types": []}]
+    changed = en.assign_events(s)
+    ev = {x["id"]: x.get("event_id") for x in s}
+    assert ev["a"] == ev["b"] == ev["c"] == "a" and s[0]["event_size"] == 3     # Obi's party links him to NDC
+    assert ev["d"] == "d" and ev["e"] == "e" and ev["f"] == "f" and ev["g"] is None   # other place, no place, later
+    assert "a" in changed and en.assign_events(s) == set()                        # stable on the next run

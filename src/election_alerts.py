@@ -74,6 +74,8 @@ def _alert_item(story: dict) -> dict:
     bits.append(", ".join(o for o in outlets if o))
     if story.get("day"):
         bits.append(story["day"])
+    if (story.get("event_size") or 1) > 1:
+        bits.append(f"{story['event_size']} reports of this incident")
     return {"kind": "event", "id": story["id"], "title": story.get("title"), "url": story.get("url"),
             "day": story.get("day"), "facts_line": " · ".join(b for b in bits if b),
             "severity": story.get("severity"), "incident_types": story.get("incident_types") or [],
@@ -96,9 +98,12 @@ async def _send_all(subs: list[dict], stories: list[dict]) -> dict:
         due = [s for s in stories if (s.get("day") or "") >= since and matches(s, sub.get("filters") or {})]
         if not due:
             continue
-        r = hm._rpc_sync("election_alert_claim", {"p_sub": sub["id"], "p_story_ids": [s["id"] for s in due]})
+        # One message per incident: stories of an event already alerted are not sent again.
+        key = {s["id"]: (f"event:{s['event_id']}" if s.get("event_id") else s["id"]) for s in due}
+        firsts = list({key[s["id"]]: s for s in reversed(due)}.values())[::-1]
+        r = hm._rpc_sync("election_alert_claim", {"p_sub": sub["id"], "p_story_ids": [key[s["id"]] for s in firsts]})
         claimed = set(r.json() or []) if r.status_code == 200 else set()
-        due = [s for s in due if s["id"] in claimed]
+        due = [s for s in firsts if key[s["id"]] in claimed]
         if not due:
             continue
         for i in range(0, len(due), chat_formats.MAX_SHOWN):
@@ -109,7 +114,7 @@ async def _send_all(subs: list[dict], stories: list[dict]) -> dict:
                 sent += len(batch)
             else:
                 failed += len(batch)
-                hm._rpc_sync("election_alert_release", {"p_sub": sub["id"], "p_story_ids": [s["id"] for s in batch]})
+                hm._rpc_sync("election_alert_release", {"p_sub": sub["id"], "p_story_ids": [key[s["id"]] for s in batch]})
                 log.warning("election alert %s not delivered: %s", sub["id"], result.get("error"))
     return {"subscriptions": len(subs), "sent": sent, "failed": failed}
 
