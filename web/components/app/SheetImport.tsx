@@ -45,7 +45,7 @@ export function SheetImport() {
 
   const s = queue?.by_status ?? {};
   return (
-    <section className="mt-10" id="sheet-import">
+    <section id="sheet-import">
       <h2 className="h3">Import result sheets</h2>
       <p className="mt-1 max-w-3xl text-[0.8125rem] text-[color:var(--dim)]">
         Paste polling-unit sheet links, from IReV downloads or your own collection, one per line: the polling-unit code,

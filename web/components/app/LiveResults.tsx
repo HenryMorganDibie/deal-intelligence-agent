@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { ProBadge } from "./PlanLinks";
-import { ErrorNote, Field, PageHeader } from "./ui";
+import { ErrorNote, Field } from "./ui";
 import { Container } from "../primitives";
 import { ApiError } from "../../lib/api";
 import { del, get, post } from "../../lib/market";
+import { Segmented } from "./Chip";
 import { PastResults } from "./PastResults";
 import { PollsPanel } from "./PollsPanel";
 import { SheetImport } from "./SheetImport";
@@ -34,6 +35,9 @@ type Data = {
 // Names off the ballot (a 2023 winner not standing in 2027) get these, in order of first appearance.
 const EXTRA = ["#b0a089", "#7f9cb5", "#c99f6e"];
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+// How the press names a candidate in short: usually the surname, but some go by their first name.
+const FIRST_NAME = new Set(["Atiku Abubakar"]);
+const short = (n: string) => (FIRST_NAME.has(n) ? n.split(" ")[0] : n.split(" ").slice(-1)[0]);
 
 // One steady colour per candidate, in ballot order, so a candidate reads the same in every table.
 const COLOURS = ["#6ee7c8", "#f5b955", "#8fb4ff", "#f28b82", "#c3a6ff", "#9ad18b", "#f0a6ca", "#a3a3a3"];
@@ -164,12 +168,33 @@ function EntryForm({ data, election, onSaved }: { data: Data; election: string; 
   );
 }
 
+type PollAvg = { polls_used: number; pollsters?: string[]; window_days: number; shares: { candidate: string; share: number }[] };
+type Tab = "overview" | "units" | "polls" | "past" | "import";
+
+function daysTo(day: string): number {
+  const today = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z").getTime();
+  return Math.round((Date.parse(`${day}T00:00:00Z`) - today) / 86_400_000);
+}
+
+function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[0.75rem] text-[color:var(--dim)]">{label}</p>
+      <p className="kbd mt-0.5 truncate text-[1.125rem] text-[color:var(--text)]">{value}</p>
+      {sub && <p className="truncate text-[0.75rem] text-[color:var(--muted)]">{sub}</p>}
+    </div>
+  );
+}
+
 /** The live results page for one election (The Gambia, Nigeria): tallies, areas, units and, for operators, entry. */
 export function LiveResults({ election, title, intro }: { election: string; title: string; intro: string }) {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState<{ status?: number; text: string } | null>(null);
   const [area, setArea] = useState("all");
   const [pickedState, setPickedState] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("overview");
+  const [polls, setPolls] = useState<PollAvg | null>(null);
 
   const load = useCallback(async () => {
     try { setData(await get<Data>("/api/elections/live", { election })); setError(null); }
@@ -180,6 +205,10 @@ export function LiveResults({ election, title, intro }: { election: string; titl
     const t = setInterval(() => { if (document.visibilityState === "visible") void load(); }, 30_000);
     return () => clearInterval(t);
   }, [load]);
+  useEffect(() => {
+    if (election !== "ng-2027") return;
+    get<{ average: PollAvg }>("/api/elections/polls", { election }).then((r) => setPolls(r.average)).catch(() => setPolls(null));
+  }, [election]);
 
   const colour = useMemo(() => {
     const order = data?.candidates ?? [];
@@ -188,157 +217,225 @@ export function LiveResults({ election, title, intro }: { election: string; titl
   }, [data]);
 
   const nat = data?.national;
-  const shown = (data?.units ?? []).filter((c) => area === "all" || c.area === area);
   const by = data?.baseline_year;
+  const nigeria = election === "ng-2027";
+  const shown = (data?.units ?? []).filter((c) => area === "all" || c.area === area);
+  const days = data ? daysTo(data.polling_day) : 0;
+  const counting = !!nat && nat.reported > 0;
+  const status = !nat ? "" : nat.complete ? "Complete" : counting ? `Counting · ${nat.reported} of ${nat.units} in` : days > 0 ? "Before the vote" : "Awaiting results";
+  const shortDate = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  const tabs: [Tab, string][] = [["overview", "Overview"], ["units", cap(data?.units_word ?? "results")],
+    ...(nigeria ? [["polls", "Polls"], ["past", "Past results"]] as [Tab, string][] : []),
+    ...(nigeria && data?.plan === "institutional" ? [["import", "Import sheets"]] as [Tab, string][] : [])];
+  const top2023 = (nat?.results ?? []).filter((r) => by && r[`votes_${by}`]).sort((a, b) => (b[`votes_${by}`] as number) - (a[`votes_${by}`] as number));
 
   return (
-    <Container className="py-10">
-      <PageHeader eyebrow="Live results" title={title}>
-        {intro} Refreshes every 30 seconds. <Link href="/app/watchlists#elections" className="underline">Get each result by alert</Link>.
-      </PageHeader>
+    <Container className="max-w-6xl py-10">
+      <header>
+        <p className="text-[0.8125rem] text-[color:var(--dim)]">Live results</p>
+        <h1 className="h2 mt-1 text-[1.75rem] sm:text-[2rem]">{title.split(":")[0]}<span className="text-[color:var(--muted)]"> · {cap(title.split(":")[1]?.split(",")[0]?.trim() ?? "")}</span></h1>
+        {data && (
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.875rem] text-[color:var(--muted)]">
+            <span>{shortDate(data.polling_day)}</span>
+            {days > 0 && !counting && <span className="text-[color:var(--dim)]">· {days} day{days === 1 ? "" : "s"} to go</span>}
+            <span className="inline-flex items-center gap-1.5 rounded-full border hairline px-2.5 py-0.5 text-[0.75rem]">
+              <span className={`h-1.5 w-1.5 rounded-full ${counting && !nat?.complete ? "animate-pulse bg-[color:var(--verified,#6ee7c8)]" : "bg-[color:var(--dim)]"}`} />{status}
+            </span>
+            <Link href="/app/watchlists#elections" className="text-[color:var(--muted)] underline-offset-2 hover:text-[color:var(--text)] hover:underline">Alerts</Link>
+          </p>
+        )}
+        <p className="mt-2 max-w-3xl text-[0.8125rem] text-[color:var(--dim)]">{intro}</p>
+      </header>
 
       {error?.status === 403 ? (
-        <p className="inline-flex flex-wrap items-center gap-1 text-sm text-[color:var(--muted)]">Live results come with the Pro plan and above<ProBadge source="live_results" /></p>
-      ) : error ? <ErrorNote message={error.text} /> : !data || !nat ? (
-        <p className="text-sm text-[color:var(--dim)]" role="status">Loading live results…</p>
+        <p className="mt-8 inline-flex flex-wrap items-center gap-1 text-sm text-[color:var(--muted)]">Live results come with the Pro plan and above<ProBadge source="live_results" /></p>
+      ) : error ? <div className="mt-8"><ErrorNote message={error.text} /></div> : !data || !nat ? (
+        <p className="mt-8 text-sm text-[color:var(--dim)]" role="status">Loading…</p>
       ) : (
         <>
-          <section className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-            <div className="panel p-5">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="h3">National</h2>
-                <span className="text-[0.8125rem] text-[color:var(--muted)]">{nat.reported} of {nat.units} {data.units_word} in · {nat.declared} declared</span>
-              </div>
-              <div className="mt-4">
-                {nat.reported ? <Bars results={nat.results} colour={colour} /> : (
-                  <p className="text-[0.875rem] text-[color:var(--muted)]">No results yet. {data.body} declares them {data.unit_word} by {data.unit_word} after polls close on {new Date(`${data.polling_day}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "UTC" })}.</p>
-                )}
-              </div>
-            </div>
-            <div className="panel space-y-3 p-5 text-[0.875rem]">
-              <p className="flex justify-between"><span className="text-[color:var(--muted)]">Leader</span><span>{nat.leader ?? "–"}</span></p>
-              <p className="flex justify-between"><span className="text-[color:var(--muted)]">Margin</span><span className="kbd">{num(nat.margin)}</span></p>
-              <p className="flex justify-between"><span className="text-[color:var(--muted)]">Valid votes</span><span className="kbd">{num(nat.valid)}</span></p>
-              {data.rejected_ballots && <p className="flex justify-between"><span className="text-[color:var(--muted)]">Rejected</span><span className="kbd">{num(nat.rejected)}</span></p>}
-              {nat.register_reported != null && <p className="flex justify-between"><span className="text-[color:var(--muted)]">Register fully reported</span><span className="kbd">{pct(nat.register_reported)}</span></p>}
-              <p className="flex justify-between"><span className="text-[color:var(--muted)]">Registered voters</span><span className="kbd">{num(nat.registered)}</span></p>
-              {Object.keys(nat.units_won).length > 0 && (
-                <div className="border-t hairline pt-3">
-                  <p className="text-[color:var(--muted)]">{cap(data.units_word)} won</p>
-                  <ul className="mt-1 space-y-1">
-                    {Object.entries(nat.units_won).map(([n, w]) => (
-                      <li key={n} className="flex items-center justify-between gap-2">
-                        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ background: colour(n) }} />{n}</span>
-                        <span className="kbd">{w}</span>
-                      </li>
-                    ))}
-                  </ul>
+          <div role="tablist" aria-label="Sections" className="mb-8 mt-6 flex gap-6 overflow-x-auto border-b hairline">
+            {tabs.map(([k, label]) => (
+              <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
+                      className={`-mb-px shrink-0 border-b-2 pb-2.5 text-[0.9375rem] transition-colors ${
+                        tab === k ? "border-[color:var(--text)] text-[color:var(--text)]" : "border-transparent text-[color:var(--muted)] hover:text-[color:var(--text)]"}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {tab === "overview" && (
+            <>
+              {counting && (
+                <div className="mb-6 grid grid-cols-2 gap-4 border-y hairline py-4 sm:grid-cols-5">
+                  <Stat label="Leader" value={nat.leader ? short(nat.leader) : "–"} sub={nat.results[0]?.party ?? undefined} />
+                  <Stat label="Margin" value={num(nat.margin)} />
+                  <Stat label={`${cap(data.units_word)} in`} value={`${nat.reported}/${nat.units}`} sub={`${nat.declared} declared`} />
+                  <Stat label="Valid votes" value={num(nat.valid)} sub={data.rejected_ballots ? `${num(nat.rejected)} rejected` : undefined} />
+                  <Stat label="Turnout" value={pct(nat.turnout)} sub={nat.turnout == null ? "when complete" : undefined} />
                 </div>
               )}
-              {by && nat.results.some((r) => r[`votes_${by}`]) && (
-                <p className="border-t hairline pt-3 text-[0.75rem] text-[color:var(--dim)]">
-                  {by}: {nat.results.filter((r) => r[`votes_${by}`]).map((r) => `${r.candidate.split(" ").slice(-1)[0]} ${num(r[`votes_${by}`] as number)}`).join(" · ")}
-                </p>
-              )}
-            </div>
-          </section>
 
-          {data.unit_word === "state" && (
-            <section className="mt-8">
-              <h2 className="h3">Map</h2>
-              <StateTileMap winners={Object.fromEntries(data.units.map((u) => [u.unit, u.winner]))} baseline={data.baseline_winners ?? {}}
-                            baselineYear={data.baseline_year} colour={colour}
-                            onPick={(st) => { const u = data.units.find((x) => x.unit === st); if (u) setArea(u.area); setPickedState(st); }} />
-              <p className="mt-1 text-[0.75rem] text-[color:var(--dim)]">Click a state for its 2015, 2019 and 2023 results below.</p>
-            </section>
+              <div className={`grid gap-8 ${data.unit_word === "state" ? "lg:grid-cols-[minmax(0,26rem)_1fr]" : ""}`}>
+                {data.unit_word === "state" && (
+                  <div>
+                    <StateTileMap winners={Object.fromEntries(data.units.map((u) => [u.unit, u.winner]))} baseline={data.baseline_winners ?? {}}
+                                  baselineYear={data.baseline_year} colour={colour}
+                                  onPick={(st) => { setPickedState(st); if (nigeria) setTab("past"); }} />
+                    {nigeria && <p className="mt-1 text-[0.75rem] text-[color:var(--dim)]">Click a state for its past results.</p>}
+                  </div>
+                )}
+
+                <div className="min-w-0 space-y-8">
+                  {counting ? (
+                    <section>
+                      <h2 className="text-[0.9375rem] text-[color:var(--text)]">National</h2>
+                      <div className="mt-3"><Bars results={nat.results.slice(0, 6)} colour={colour} /></div>
+                      {Object.keys(nat.units_won).length > 0 && (
+                        <p className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">
+                          {cap(data.units_word)} won: {Object.entries(nat.units_won).map(([n, w]) => `${short(n)} ${w}`).join(" · ")}
+                        </p>
+                      )}
+                    </section>
+                  ) : (
+                    <section>
+                      <h2 className="text-[0.9375rem] text-[color:var(--text)]">Before the vote</h2>
+                      <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+                        {data.body} declares results {data.unit_word} by {data.unit_word} after polls close. This page fills in as it does, with an alert for each.
+                      </p>
+                      {polls && polls.polls_used > 0 && (
+                        <div className="mt-5">
+                          <p className="text-[0.8125rem] text-[color:var(--muted)]">Polling average <span className="text-[color:var(--dim)]">· {polls.polls_used} pollster{polls.polls_used === 1 ? "" : "s"}, last {polls.window_days} days</span></p>
+                          <ul className="mt-2 space-y-2">
+                            {polls.shares.slice(0, 4).map((x) => (
+                              <li key={x.candidate}>
+                                <div className="flex justify-between text-[0.875rem]"><span>{x.candidate}</span><span className="kbd text-[color:var(--muted)]">{x.share.toFixed(1)}%</span></div>
+                                <div className="mt-1 h-1.5 rounded-full bg-white/[0.06]"><div className="h-1.5 rounded-full" style={{ width: `${x.share}%`, background: colour(x.candidate) }} /></div>
+                              </li>
+                            ))}
+                          </ul>
+                          <button type="button" onClick={() => setTab("polls")} className="mt-2 text-[0.75rem] text-[color:var(--muted)] underline-offset-2 hover:underline">All polls</button>
+                        </div>
+                      )}
+                      {top2023.length > 0 && (
+                        <div className="mt-5">
+                          <p className="text-[0.8125rem] text-[color:var(--muted)]">{by} result</p>
+                          <ul className="mt-2 space-y-1 text-[0.875rem]">
+                            {top2023.map((r) => (
+                              <li key={r.candidate} className="flex justify-between gap-2">
+                                <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: colour(r.candidate) }} />{r.candidate}</span>
+                                <span className="kbd text-[color:var(--muted)]">{num(r[`votes_${by}`] as number)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </section>
+                  )}
+
+                  {nat.spread && (
+                    <section>
+                      <h2 className="text-[0.9375rem] text-[color:var(--text)]">The 25% rule</h2>
+                      <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+                        To win, a candidate needs the most votes and at least 25% in 24 of the 36 states. The FCT&apos;s place in the rule was disputed in 2023, so it&apos;s shown separately.
+                      </p>
+                      {Object.keys(nat.spread).length > 0 && (
+                        <table className="mt-3 w-full text-left text-[0.8125rem]">
+                          <tbody className="divide-y divide-white/[0.07] border-y hairline">
+                            {Object.entries(nat.spread).slice(0, 5).map(([n, v]) => (
+                              <tr key={n}>
+                                <td className="py-2 pr-3">{n}</td>
+                                <td className="kbd py-2 pr-3 text-[color:var(--muted)]">{v.states_at_25}/36</td>
+                                <td className={`py-2 pr-3 ${v.met ? "text-verified" : "text-[color:var(--dim)]"}`}>{v.met ? "Met" : `${v.needed - v.states_at_25} to go`}</td>
+                                <td className="py-2 text-right text-[color:var(--dim)]">FCT {v.fct_at_25 == null ? "–" : v.fct_at_25 ? "yes" : "no"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </section>
+                  )}
+
+                  {counting && (
+                    <section>
+                      <h2 className="text-[0.9375rem] text-[color:var(--text)]">By {data.area_word}</h2>
+                      <table className="mt-3 w-full text-left text-[0.8125rem]">
+                        <tbody className="divide-y divide-white/[0.07] border-y hairline">
+                          {data.areas.map((a) => (
+                            <tr key={a.area}>
+                              <td className="py-2 pr-3">{a.area}</td>
+                              <td className="kbd py-2 pr-3 text-[color:var(--muted)]">{a.reported}/{a.units}</td>
+                              <td className="py-2 pr-3">{a.leader ? <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: colour(a.leader) }} />{a.leader}</span> : <span className="text-[color:var(--dim)]">–</span>}</td>
+                              <td className="kbd py-2 text-right text-[color:var(--muted)]">{a.margin ? `+${num(a.margin)}` : ""}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </section>
+                  )}
+                </div>
+              </div>
+            </>
           )}
 
-          {nat.spread && (
-            <section className="mt-8">
-              <h2 className="h3">25% in two-thirds of the states</h2>
-              <p className="mt-1 text-[0.8125rem] text-[color:var(--dim)]">The winner needs the most votes and at least 25% in 24 of the 36 states. Whether the FCT is also required was disputed in 2023, so it is shown on its own.</p>
-              {Object.keys(nat.spread).length === 0 ? (
-                <p className="mt-3 text-[0.875rem] text-[color:var(--muted)]">Each candidate&apos;s count of states at 25% appears here as states declare.</p>
-              ) : (
-              <div className="mt-3 overflow-x-auto">
-                <table className="w-full min-w-[28rem] text-left text-[0.8125rem]">
-                  <thead className="text-[color:var(--dim)]"><tr><th className="py-2 pr-3 font-normal">Candidate</th><th className="py-2 pr-3 font-normal">States at 25%</th><th className="py-2 pr-3 font-normal">Test</th><th className="py-2 font-normal">FCT at 25%</th></tr></thead>
+          {tab === "units" && (
+            <section>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[0.875rem] text-[color:var(--muted)]">{nat.reported} of {nat.units} {data.units_word} in</p>
+                <Segmented label={cap(data.area_word)} value={area} onChange={setArea}
+                           options={[["all", "All"], ...data.areas.map((a) => [a.area, a.area] as [string, string])]} />
+              </div>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full min-w-[40rem] text-left text-[0.8125rem]">
+                  <thead className="text-[color:var(--dim)]">
+                    <tr><th className="py-2 pr-3 font-normal">{cap(data.unit_word)}</th><th className="py-2 pr-3 font-normal">{cap(data.area_word)}</th><th className="py-2 pr-3 font-normal">Leader</th><th className="py-2 pr-3 font-normal">Share</th><th className="py-2 pr-3 font-normal">Margin</th><th className="py-2 pr-3 font-normal">Turnout</th>{by && <th className="py-2 font-normal">{by}</th>}</tr>
+                  </thead>
                   <tbody className="divide-y divide-white/[0.07] border-t hairline">
-                    {Object.entries(nat.spread).map(([n, v]) => (
-                      <tr key={n}>
-                        <td className="py-2 pr-3">{n}</td>
-                        <td className="kbd py-2 pr-3">{v.states_at_25} of 36</td>
-                        <td className={`py-2 pr-3 ${v.met ? "text-verified" : "text-[color:var(--muted)]"}`}>{v.met ? "Met" : `${v.needed - v.states_at_25} more needed`}</td>
-                        <td className="py-2">{v.fct_at_25 == null ? "–" : v.fct_at_25 ? "Yes" : "No"}</td>
-                      </tr>
-                    ))}
+                    {shown.map((u) => {
+                      const [a, b] = u.results;
+                      const prior = data.baseline_winners?.[u.unit];
+                      return (
+                        <Fragment key={u.unit}>
+                          <tr className={u.results.length ? "cursor-pointer hover:bg-white/[0.02]" : ""} onClick={() => u.results.length && setOpen(open === u.unit ? null : u.unit)}>
+                            <td className="py-2 pr-3 text-[color:var(--text)]">{u.unit}{u.status === "provisional" && <span className="ml-1.5 text-[0.6875rem] text-[color:var(--dim)]">provisional</span>}</td>
+                            <td className="py-2 pr-3 text-[color:var(--muted)]">{u.area}</td>
+                            <td className="py-2 pr-3">{a?.votes ? <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: colour(a.candidate) }} />{a.candidate}</span> : <span className="text-[color:var(--dim)]">Pending</span>}</td>
+                            <td className="kbd py-2 pr-3 text-[color:var(--muted)]">{a?.votes ? pct(a.share) : ""}</td>
+                            <td className="kbd py-2 pr-3 text-[color:var(--muted)]">{a?.votes && b ? num(a.votes - b.votes) : ""}</td>
+                            <td className="kbd py-2 pr-3 text-[color:var(--muted)]">{u.turnout != null ? pct(u.turnout) : ""}</td>
+                            {by && <td className="py-2 text-[color:var(--dim)]">{prior ? short(prior) : ""}</td>}
+                          </tr>
+                          {open === u.unit && (
+                            <tr>
+                              <td colSpan={by ? 7 : 6} className="bg-white/[0.02] px-3 py-3">
+                                <ul className="grid gap-x-8 gap-y-1 sm:grid-cols-2">
+                                  {u.results.slice(0, 8).map((r) => (
+                                    <li key={r.candidate} className="flex justify-between gap-2"><span>{r.candidate} <span className="text-[color:var(--dim)]">{r.party}</span></span>
+                                      <span className="kbd text-[color:var(--muted)]">{num(r.votes)} · {pct(r.share)}{by && r[`share_${by}`] != null ? <span className="text-[color:var(--dim)]"> ({by} {pct(r[`share_${by}`] as number)})</span> : null}</span></li>
+                                  ))}
+                                </ul>
+                                <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">
+                                  {num(u.votes_cast)} votes cast{u.rejected ? ` · ${num(u.rejected)} rejected` : ""}{u.registered ? ` · ${num(u.registered)} registered` : ""}
+                                  {u.source ? <> · <a href={u.source} target="_blank" rel="noopener noreferrer" className="underline">source</a></> : null}
+                                  {nigeria ? <> · <button type="button" className="underline" onClick={() => { setPickedState(u.unit); setTab("past"); }}>past results</button></> : null}
+                                </p>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
-              )}
             </section>
           )}
 
-          <section className="mt-8">
-            <h2 className="h3">By {data.area_word}</h2>
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-[36rem] text-left text-[0.8125rem]">
-                <thead className="text-[color:var(--dim)]">
-                  <tr><th className="py-2 pr-3 font-normal">{cap(data.area_word)}</th><th className="py-2 pr-3 font-normal">In</th><th className="py-2 pr-3 font-normal">Leader</th><th className="py-2 pr-3 font-normal">Margin</th><th className="py-2 pr-3 font-normal">Turnout</th><th className="py-2 font-normal">Registered</th></tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.07] border-t hairline">
-                  {data.areas.map((a) => (
-                    <tr key={a.area}>
-                      <td className="py-2 pr-3"><button type="button" onClick={() => setArea(a.area)} className="underline-offset-2 hover:underline">{a.area}</button>{a.region !== a.area && <span className="text-[color:var(--dim)]"> {a.region}</span>}</td>
-                      <td className="kbd py-2 pr-3">{a.reported}/{a.units}</td>
-                      <td className="py-2 pr-3">{a.leader ? <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ background: colour(a.leader) }} />{a.leader}</span> : "–"}</td>
-                      <td className="kbd py-2 pr-3">{num(a.margin)}</td>
-                      <td className="kbd py-2 pr-3">{pct(a.turnout)}</td>
-                      <td className="kbd py-2">{num(a.registered)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+          {tab === "polls" && nigeria && <PollsPanel election={election} ballot={data.ballot} colour={colour} />}
+          {tab === "past" && nigeria && <PastResults selected={pickedState} />}
+          {tab === "import" && nigeria && <SheetImport />}
 
-          <section className="mt-8">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="h3">{cap(data.units_word)}</h2>
-              <select value={area} onChange={(e) => setArea(e.target.value)} className="field w-auto" aria-label={cap(data.area_word)}>
-                <option value="all">All {data.units.length}</option>
-                {data.areas.map((a) => <option key={a.area} value={a.area}>{a.area}{a.region !== a.area ? ` (${a.region})` : ""}</option>)}
-              </select>
-            </div>
-            <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {shown.map((c) => (
-                <li key={c.unit} className="panel p-4" style={c.winner ? { borderLeft: `3px solid ${colour(c.winner)}` } : undefined}>
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className="text-[0.875rem] text-[color:var(--text)]">{c.unit}</p>
-                    <span className={`text-[0.75rem] ${c.status === "declared" ? "text-verified" : "text-[color:var(--dim)]"}`}>{c.status}</span>
-                  </div>
-                  <p className="text-[0.75rem] text-[color:var(--dim)]">{c.area}</p>
-                  {c.results.length > 0 && (
-                    <ul className="mt-2 space-y-0.5 text-[0.8125rem]">
-                      {c.results.slice(0, 3).map((r) => (
-                        <li key={r.candidate} className="flex justify-between gap-2"><span>{r.candidate}</span><span className="kbd text-[color:var(--muted)]">{num(r.votes)} · {pct(r.share)}{by && r[`share_${by}`] != null ? <span className="text-[color:var(--dim)]"> ({by}: {pct(r[`share_${by}`] as number)})</span> : null}</span></li>
-                      ))}
-                      <li className="text-[0.75rem] text-[color:var(--dim)]">
-                        {num(c.votes_cast)} votes{c.turnout != null ? ` · turnout ${pct(c.turnout)}` : ""}
-                        {c.source ? <> · <a href={c.source} target="_blank" rel="noopener noreferrer" className="underline">source</a></> : null}
-                      </li>
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {election === "ng-2027" && <PollsPanel election={election} ballot={data.ballot} colour={colour} />}
-          {election === "ng-2027" && <PastResults selected={pickedState} />}
-          {election === "ng-2027" && data.plan === "institutional" && <SheetImport />}
-          <p className="mt-6 text-[0.75rem] text-[color:var(--dim)]">{data.notes}</p>
-          {data.operator && <EntryForm data={data} election={election} onSaved={load} />}
+          {data.operator && tab !== "past" && tab !== "import" && <EntryForm data={data} election={election} onSaved={load} />}
+          <p className="mt-10 text-[0.75rem] text-[color:var(--dim)]">{data.notes} Refreshes every 30 seconds.</p>
         </>
       )}
     </Container>

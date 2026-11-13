@@ -29,7 +29,7 @@ export function PollsPanel({ election, ballot, colour }: {
   if (!data) return null;
   const avg = data.average;
   return (
-    <section className="mt-8">
+    <section>
       <h2 className="h3">Opinion polls</h2>
       <p className="mt-1 text-[0.8125rem] text-[color:var(--dim)]">{data.method}</p>
       {avg.polls_used ? (

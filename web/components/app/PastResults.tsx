@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "../../lib/api";
 import { get } from "../../lib/market";
+import { Segmented } from "./Chip";
 
 type Row = { party: string; candidate: string | null; votes: number; share: number | null };
 type YearResult = { year: number; state: string; total_valid: number | null; results: Row[]; others?: number };
@@ -39,20 +40,12 @@ export function PastResults({ selected }: { selected?: string | null }) {
   const picked = state ? data.states[state] : null;
 
   return (
-    <section className="mt-10" id="past-results">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="h3">Past results: 2015, 2019 and 2023</h2>
-        <div className="flex gap-1" role="tablist" aria-label="Year">
-          {YEARS.map((y) => (
-            <button key={y} type="button" role="tab" aria-selected={year === y} onClick={() => setYear(y)}
-                    className={`btn text-[0.8125rem] ${year === y ? "btn-primary" : "btn-ghost"}`}>{y}</button>
-          ))}
-        </div>
+    <section id="past-results">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[0.875rem] text-[color:var(--muted)]">Presidential results by state, as INEC declared them</p>
+        <Segmented label="Year" value={String(year)} onChange={(v) => setYear(Number(v))}
+                   options={YEARS.map((y) => [String(y), String(y)] as [string, string])} />
       </div>
-      <p className="mt-1 text-[0.8125rem] text-[color:var(--dim)]">
-        Presidential results by state as INEC declared them. 2015 and 2019 add up exactly to INEC&apos;s national totals;
-        2023&apos;s state figures (BBC&apos;s record of INEC&apos;s announcements) differ slightly from the national APC and LP totals, as noted below.
-      </p>
 
       <div className="panel mt-3 p-5">
         <p className="text-[0.8125rem] text-[color:var(--muted)]">National, {year}{nat.registered ? ` · ${num(nat.registered)} registered` : ""}</p>
@@ -113,7 +106,10 @@ export function PastResults({ selected }: { selected?: string | null }) {
           </tbody>
         </table>
       </div>
-      <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">Click a state for its three elections side by side. Download as CSV through the API (developers page).</p>
+      <p className="mt-3 text-[0.75rem] text-[color:var(--dim)]">
+        Click a state for its three elections side by side. 2015 and 2019 add up exactly to INEC&apos;s national totals; 2023&apos;s
+        state figures come from BBC&apos;s record of INEC&apos;s announcements. CSV download through the API.
+      </p>
     </section>
   );
 }
