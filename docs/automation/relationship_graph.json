@@ -1379,6 +1379,46 @@
     "alignd": {
       "name": "Alignd",
       "kind": "organization"
+    },
+    "cream": {
+      "name": "CREAM",
+      "kind": "organization"
+    },
+    "south african healthtech alignd": {
+      "name": "South African Healthtech Alignd",
+      "kind": "organization"
+    },
+    "deutsche bank": {
+      "name": "Deutsche Bank",
+      "kind": "organization"
+    },
+    "sokoto badagry superhighway": {
+      "name": "Sokoto-Badagry Superhighway",
+      "kind": "organization"
+    },
+    "absa": {
+      "name": "Absa",
+      "kind": "organization"
+    },
+    "standard chartered uganda": {
+      "name": "Standard Chartered Uganda",
+      "kind": "organization"
+    },
+    "c r e a m": {
+      "name": "C.R.E.A.M",
+      "kind": "organization"
+    },
+    "canex": {
+      "name": "CANEX",
+      "kind": "organization"
+    },
+    "absa bank": {
+      "name": "Absa Bank",
+      "kind": "organization"
+    },
+    "sintana exposed pel": {
+      "name": "Sintana-exposed PEL",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -3483,6 +3523,11 @@
           "title": "IFC Invests in Ethiopia’s Kifiya to Expand AI-Powered Agricultural Finance Across Africa",
           "publisher": "StockMarket.et",
           "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQQXJWbFJqemZubmlBWHNSWnhHU2k4WXlOODNSVG1tbFZTY1dHS21ZTjEwOUJSdmNCdEpoVE52cWlEYjlvOGowM2ZUZUF0UEpJTll4UU41WTZjbmY1UVpTNVdnc3lka0pMa0tCWGNpT0FBYnBHQk83NFN4TTl6VlZZdVduR3RHNEhWRF85TFJsSjhBc0VCbkJGSjdkR2U0VVloWkxNNHQ2MVZ0Y2p2dHlRSEpMNV93QQ?oc=5"
+        },
+        {
+          "title": "IFC Invests in Ethiopian Fintech Kifiya to Expand Agricultural Financing Across Africa",
+          "publisher": "Tech In Africa",
+          "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPaTZhS1VaTnlOZ1A5RWpLYThSdmhHZWQ0WDJNamhWNkVEcU9lVzhvZXF3dXNvdGlZVWRJYkJmNWJrRndqOGhkNlB0NGsybG4zXzBMLVN5dHh5R3Jqck9aNlR3VDRacWdCeUs0dXdfbHd4U2FHeDhheEZKVURsQnhoWDgxSlBWbDNiNzhwcWlFZjI5Q3FZMk1ITkNWcFA4TnBTdVZCd0QwME03Nnk0bW5HWjF1REtFRm8?oc=5"
         }
       ]
     },
@@ -4681,9 +4726,126 @@
           "title": "Knife Capital invests in South African healthtech startup Alignd",
           "publisher": "innovation-village.com",
           "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNWHJ6M1VGcTBLTzRFWEU0X0lSSjVaMkY3MnF2Y2w0aUFocmFTVnJuWUtDanpnX3UwcW96cW9LUHdXbmdBZ1dsTWYzUzlhVnlDeEhSUXNiV2tfdnk1NXZOSHZNeXJWZE1WdmRvaVVwVzRPUG9PZUhDdmxUSEY3c1dtX2hEVjZ6dmRZR1ByMHI5RnBtQ08taEo5Vm9kOEs?oc=5"
+        },
+        {
+          "title": "Knife Capital invests in South African healthtech startup Alignd",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNWHJ6M1VGcTBLTzRFWEU0X0lSSjVaMkY3MnF2Y2w0aUFocmFTVnJuWUtDanpnX3UwcW96cW9LUHdXbmdBZ1dsTWYzUzlhVnlDeEhSUXNiV2tfdnk1NXZOSHZNeXJWZE1WdmRvaVVwVzRPUG9PZUhDdmxUSEY3c1dtX2hEVjZ6dmRZR1ByMHI5RnBtQ08taEo5Vm9kOEs?oc=5"
+        }
+      ]
+    },
+    "fa04ae56f6967f17a7e1": {
+      "id": "fa04ae56f6967f17a7e1",
+      "from": "afreximbank",
+      "to": "cream",
+      "type": "acquisition",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "Afreximbank acquires stake in D’banj’s CREAM platform",
+          "publisher": "Premium Times Nigeria",
+          "url": "https://www.premiumtimesng.com/entertainment/naija-fashion/924992-afreximbank-acquires-stake-in-dbanjs-cream-platform.html"
+        }
+      ]
+    },
+    "4bdbd35679503fa05e06": {
+      "id": "4bdbd35679503fa05e06",
+      "from": "knife capital",
+      "to": "south african healthtech alignd",
+      "type": "equity_funding",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "Knife Capital Backs South African Healthtech Alignd After Its Healthcare Model Saves Insurers $36 Million",
+          "publisher": "TechMoran",
+          "url": "https://techmoran.com/2026/11/13/knife-capital-backs-south-african-healthtech-alignd-after-its-healthcare-model-saves-insurers-36-million/"
+        }
+      ]
+    },
+    "5f1cd0ea2e0d8a348773": {
+      "id": "5f1cd0ea2e0d8a348773",
+      "from": "deutsche bank",
+      "to": "sokoto badagry superhighway",
+      "type": "debt_financing",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "Deutsche Bank arranges $516m financing for Nigeria’s Sokoto-Badagry Superhighway",
+          "publisher": "Business News Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxOZXY4MkU3UTAyNWJaaEdibjB0TnpyWHR3ZVVzdW00c2ZOWFJpQjdoR0J2S3hyWjBPZ1dCTG5LSGFCWWpweTBCTVplTS1WMGFTSlRBZS1jNzdnYXlIUzVSYkVQYThFMUp4MWVrOU9tZGVHY3k2MzdwMjZzdXFYU016cTYtX1hadVpOdzJtTGF0UzlpZzRXdHh3d2hXTlJnOTZXclprMHdDVFlVN1NPS2J4akhBV3dtb0FCaXZ3ZFRrOVhRUWdNb19v?oc=5"
+        }
+      ]
+    },
+    "8f3dd613131c49b0a316": {
+      "id": "8f3dd613131c49b0a316",
+      "from": "absa",
+      "to": "standard chartered uganda",
+      "type": "acquisition",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "Absa completes acquisition of Standard Chartered Uganda",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOOGE4d2VSVS1PNUJpUmo1SGlRQllSTk5NQm1Gb3FVVGJXWFRTR09EQkRKN1Y2TUFFVl9FU0lBYXdVMXVZUXM1WGF5enU0aUdfV3B1aXhaMl9xWTB3REIzVXhURUlTVWpBNVpHOC0yaGF5VkNiRkF6VjlmWGYwS3JYVjBxMzZueWpIQ2U1SU43UTBfanN4RWEwbm5UeTZxM1Y4dm45Sw?oc=5"
+        }
+      ]
+    },
+    "e58a4eee902844d79097": {
+      "id": "e58a4eee902844d79097",
+      "from": "afreximbank",
+      "to": "c r e a m",
+      "type": "acquisition",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "Afreximbank acquires stake in D’banj’s C.R.E.A.M.",
+          "publisher": "Galaxy Television",
+          "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxOT0NmblNxZndQOG9QdThyU04yRkdYdFNqU0oxZGdaQnItSGZWcmZtTXVqcXZhUFR6dmhVMVFhc3VCeGJwNS1RSXFMcmpLaGxOeHJIcWZ3bUdjUFVYcm5rcXB0NG9Ma2pPSkZFekYtTDFxbm1UdV9qb2M3U3lDQThWZ2JFbG9kcWNRTG13NkpJVzBPTTdFMFc1Qk0wWmZlaUpSNkRqTDRCMFltQWVXR0VpWTdCbC10cWtjbjZTQVp3?oc=5"
+        }
+      ]
+    },
+    "ee32be1c4640aad341e1": {
+      "id": "ee32be1c4640aad341e1",
+      "from": "canex",
+      "to": "cream",
+      "type": "acquisition",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "Afreximbank’s CANEX takes equity stake in D’banj’s CREAM",
+          "publisher": "The Guardian Nigeria News",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPckdrTEZsSllvZGZTQlhNYS1HM3N1emNGeHdXb3NUamZyaFlOMUhIQ1E4R3ZHWU1VX0FLTExOUDFIY2dxUllJTzVGalZZU2d4aWJSTE1wQ3FKWi1FVHRocHRCQmpZNkVQMTZGY1RxdjV4cnlLYzRuRkhPQUd2Y213Tk5oaTNoZw?oc=5"
+        }
+      ]
+    },
+    "420f9f20870a7cd0516a": {
+      "id": "420f9f20870a7cd0516a",
+      "from": "absa bank",
+      "to": "standard chartered uganda",
+      "type": "acquisition",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "Absa Bank takes over Standard Chartered Uganda’s retail banking business",
+          "publisher": "The Star, Kenya",
+          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNN1UzODlyUEpPUXY1SVRxelZSZFF3dExBVnFZdEplTVNPNkx6MDdfT0tVTkdYeDZuRUU4dFFKMURKLWktMS1odWk2SThhWVZIWVh3ZktaTUJpZ0pBbUhlSDZYUUstM2EyeHBlZ216OGZGWWdoUF9JRUY1aEJ5eGFkQnFraUhWeEtjaHZldHdxT0NMbGVobWdkdG81eG9rQWZPSEZmYWhGUUFFeGxoMVp0SlFwXzk0cmhjMXc?oc=5"
+        }
+      ]
+    },
+    "3c6846e6e1f6d4fd9cda": {
+      "id": "3c6846e6e1f6d4fd9cda",
+      "from": "qatarenergy",
+      "to": "sintana exposed pel",
+      "type": "acquisition",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "QatarEnergy acquires 25% stake in Sintana-exposed PEL 82 offshore Namibia",
+          "publisher": "Proactive financial news",
+          "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPVm5zeVo3ZWJhNVktSHk2OTk2d2dPbnl4a21qUkYtOXVsbzRGMmVXZjNKaERieW1STjgtZGJkUWNxNjhDNDd3cmZKeWcxalpqN01qX0xON3J4eEQyYkh2UUpkR1J4eGI2ZVZ3WDFURl9nRjJBbDBhTW52SFQwOE1MTTFPT2FEdDZGMUZPSWpWZ0IxMkVXYzl5eC1IdlRrbks5cU85clVYbjAwTEtxOFdwa2dab3JycUVDUXlweHNhSzBSNEMzRjNFcXpEWjRLRnZo?oc=5"
         }
       ]
     }
   },
-  "updated_at": "2026-11-13T12:44:31.342899+00:00"
+  "updated_at": "2026-11-13T20:58:56.546881+00:00"
 }

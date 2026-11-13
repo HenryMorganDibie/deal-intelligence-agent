@@ -620,3 +620,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KDV.JO"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/KenGen-Plc-–-Audited-Financial-Results-for-the-Year-Ended-30-June-2026.pdf", "status": "collected", "ticker": "KEGN.NR"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KEH.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KENO.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "KIO.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KNRE.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "KP2.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KPC.NR"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Kenya-Power-Lighting-Co-Plc-Abridged-Annual-Report-for-the-year-ended-30.6.2025-AGM-Notice-for-2025.pdf", "status": "collected", "ticker": "KPLC.NR"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KQ.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KRDI.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "KRO.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "KST.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Kakuzi-Plc-Group-Results-for-the-Year-Ended-31-Dec-2025.pdf", "status": "collected", "ticker": "KUKZ.NR"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KURV.NR"}
