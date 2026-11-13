@@ -1355,6 +1355,30 @@
     "la marocaine vie": {
       "name": "La Marocaine Vie",
       "kind": "organization"
+    },
+    "absa bank uganda": {
+      "name": "Absa Bank Uganda",
+      "kind": "organization"
+    },
+    "wealth and retail banking": {
+      "name": "Wealth and Retail Banking",
+      "kind": "organization"
+    },
+    "indian banks": {
+      "name": "Indian Banks",
+      "kind": "organization"
+    },
+    "jindal power": {
+      "name": "Jindal Power",
+      "kind": "organization"
+    },
+    "knife capital": {
+      "name": "Knife Capital",
+      "kind": "organization"
+    },
+    "alignd": {
+      "name": "Alignd",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -4617,7 +4641,49 @@
           "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNdHMwTXhOUmRzT1FuTkNOQzZFaXFQNmVKZzgtZ3c0b1o2dHYyeHRONkNCaFcxVDJuZHNnWGFXdFdmRnBBbWdGOHZEUURjdG5fRWxNdEJ2aEhjNmkwVEFQRWp1VUVURkk1X3FGUDhNdVJVYjU3Y0hUVGpsSnhGSWtlZG80QlBDMDZBRGIwX3ljZjh2Z0hyRnd3eElSamJMcFVzcDJrZw?oc=5"
         }
       ]
+    },
+    "af605587ee20cad3b70e": {
+      "id": "af605587ee20cad3b70e",
+      "from": "absa bank uganda",
+      "to": "wealth and retail banking",
+      "type": "exit",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "Standard Chartered Uganda sells Wealth and Retail Banking business to Absa Bank Uganda",
+          "publisher": "Bizna Kenya",
+          "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNQm5SQ21PZTkxa1ppenJ3S01YNUs4Nk56WVlaMk1CU21OUC05TlFhQkg2ejdwZFNqSEdrX2d6QmR2S0JFdVVUd0lyYUgwLWZRcWpNYWhLZllGajZmSnJIaVBqQTlMdl9NME4ybDlhRDZaNHBGRXFHNk1DWmZoNE1KYXhIY2xERmxGUlNISE9fYllENW1QdTIzVFFYV09qdTF3X1AwUldjMEU4UkMwRWcw?oc=5"
+        }
+      ]
+    },
+    "9b41e7498d3f5bc45dd3": {
+      "id": "9b41e7498d3f5bc45dd3",
+      "from": "indian banks",
+      "to": "jindal power",
+      "type": "debt_financing",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "Jindal Power Secures $470 Million Offshore Loan From Indian Banks For 700 MW Botswana Power Project",
+          "publisher": "Free Press Journal",
+          "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxOMElPRC1yaWNVNU1VQ1JfS2ZXTGg3Y3EzRXRCdnBlLXNiZUxiUnozT29YbkdHb2l0YlBSQjlVbkJydnp5Q3F2OHkyZm01Vmp3SHhOSzEtbTYtdXExYzJOOWJHaHZsaUNhQ1ptbFJaV1p3NkRnMHJqcDhzbmZuQzZqRTFjckZjNW9Qa2pXcFRTeVd6aVNfcF9kTmhUekVZYnNOQk1pbmQ5VDJ2QmxFN2hIY3RXcW9jQnVpcExsc2c3dEgxbXJrdFJ6cWVqMzZBY2JEY1VxMmpR0gHbAUFVX3lxTE1XanJtWld5bkdJZHgwZVFINkwwVUw0a1hta25yLUJBRWVVQWt0Y2FnczZrYnZxWWdzdW5ZRHF4N1gtS2pFNGdqRHUxVE5zb05JNjl2YV9paDVMV19aQ0dHdmpRYW1rUXFPV1hSVEdnWEhLeExOa20wTGg3YW9mUEVwakp0SUpIZXpGVUczMXo5WXkweTFKaEpBa1J5eHc1alZlbjE1VDBGMzBIUFEyN2publFLbDE2VTBKZU9ES0xNQjl6TzBfQktmS2Z6T1BBTkdTY1cxaHRNZjlWTQ?oc=5"
+        }
+      ]
+    },
+    "852b16e43f375e52cd2a": {
+      "id": "852b16e43f375e52cd2a",
+      "from": "knife capital",
+      "to": "alignd",
+      "type": "equity_funding",
+      "first_seen": "2026-11-13",
+      "sources": [
+        {
+          "title": "Knife Capital invests in South African healthtech startup Alignd",
+          "publisher": "innovation-village.com",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNWHJ6M1VGcTBLTzRFWEU0X0lSSjVaMkY3MnF2Y2w0aUFocmFTVnJuWUtDanpnX3UwcW96cW9LUHdXbmdBZ1dsTWYzUzlhVnlDeEhSUXNiV2tfdnk1NXZOSHZNeXJWZE1WdmRvaVVwVzRPUG9PZUhDdmxUSEY3c1dtX2hEVjZ6dmRZR1ByMHI5RnBtQ08taEo5Vm9kOEs?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-12T21:35:29.676224+00:00"
+  "updated_at": "2026-11-13T12:44:31.342899+00:00"
 }

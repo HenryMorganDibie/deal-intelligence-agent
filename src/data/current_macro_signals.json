@@ -3,20 +3,20 @@
     "AO": {
       "country_code": "AO",
       "country_name": "Angola",
-      "generated_at": "2026-11-12T13:13:04.270251Z",
+      "generated_at": "2026-11-13T12:36:45.629732Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to AOA exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "AOA per USD",
-          "value": 930.0243
+          "value": 916.1729
         },
         {
           "as_of_period": "2026-09",
@@ -38,20 +38,20 @@
     "BF": {
       "country_code": "BF",
       "country_name": "Burkina Faso",
-      "generated_at": "2026-11-12T13:09:44.359675Z",
+      "generated_at": "2026-11-13T12:33:26.900861Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -85,20 +85,20 @@
     "BI": {
       "country_code": "BI",
       "country_name": "Burundi",
-      "generated_at": "2026-11-12T13:15:03.924123Z",
+      "generated_at": "2026-11-13T12:38:44.495406Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to BIF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "BIF per USD",
-          "value": 3005.1668
+          "value": 3004.903
         },
         {
           "as_of_period": "2026-10",
@@ -120,20 +120,20 @@
     "BJ": {
       "country_code": "BJ",
       "country_name": "Benin",
-      "generated_at": "2026-11-12T13:09:30.941919Z",
+      "generated_at": "2026-11-13T12:33:13.769793Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -167,20 +167,20 @@
     "BW": {
       "country_code": "BW",
       "country_name": "Botswana",
-      "generated_at": "2026-11-12T13:19:03.451406Z",
+      "generated_at": "2026-11-13T12:42:40.334124Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to BWP exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "BWP per USD",
-          "value": 14.1858
+          "value": 14.1803
         },
         {
           "as_of_period": "2026-08",
@@ -214,20 +214,20 @@
     "CD": {
       "country_code": "CD",
       "country_name": "Democratic Republic of the Congo",
-      "generated_at": "2026-11-12T13:14:11.375671Z",
+      "generated_at": "2026-11-13T12:37:52.473156Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to CDF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "CDF per USD",
-          "value": 2308.5436
+          "value": 2310.4027
         },
         {
           "as_of_period": "2026-09",
@@ -249,20 +249,20 @@
     "CF": {
       "country_code": "CF",
       "country_name": "Central African Republic",
-      "generated_at": "2026-11-12T13:13:31.177492Z",
+      "generated_at": "2026-11-13T12:37:12.725513Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-10",
@@ -296,20 +296,20 @@
     "CG": {
       "country_code": "CG",
       "country_name": "Republic of the Congo",
-      "generated_at": "2026-11-12T13:13:57.892731Z",
+      "generated_at": "2026-11-13T12:37:39.095100Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-01",
@@ -343,20 +343,20 @@
     "CI": {
       "country_code": "CI",
       "country_name": "C\u00f4te d'Ivoire",
-      "generated_at": "2026-11-12T13:10:11.418532Z",
+      "generated_at": "2026-11-13T12:33:53.129753Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-10",
@@ -390,20 +390,20 @@
     "CM": {
       "country_code": "CM",
       "country_name": "Cameroon",
-      "generated_at": "2026-11-12T13:13:17.837000Z",
+      "generated_at": "2026-11-13T12:36:59.927314Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -437,20 +437,20 @@
     "CV": {
       "country_code": "CV",
       "country_name": "Cabo Verde",
-      "generated_at": "2026-11-12T13:09:57.914099Z",
+      "generated_at": "2026-11-13T12:33:39.829651Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to CVE exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "CVE per USD",
-          "value": 98.4428
+          "value": 99.6169
         },
         {
           "as_of_period": "2026-07",
@@ -472,13 +472,13 @@
     "DJ": {
       "country_code": "DJ",
       "country_name": "Djibouti",
-      "generated_at": "2026-11-12T13:15:30.230428Z",
+      "generated_at": "2026-11-13T12:39:10.347196Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to DJF exchange rate",
@@ -507,20 +507,20 @@
     "DZ": {
       "country_code": "DZ",
       "country_name": "Algeria",
-      "generated_at": "2026-11-12T13:08:10.802839Z",
+      "generated_at": "2026-11-13T12:31:54.638250Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to DZD exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "DZD per USD",
-          "value": 134.6431
+          "value": 136.8584
         },
         {
           "as_of_period": "2026-07",
@@ -554,20 +554,20 @@
     "EG": {
       "country_code": "EG",
       "country_name": "Egypt",
-      "generated_at": "2026-11-12T13:08:24.573769Z",
+      "generated_at": "2026-11-13T12:32:08.132643Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to EGP exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "EGP per USD",
-          "value": 55.2887
+          "value": 53.4462
         },
         {
           "as_of_period": "2026-08",
@@ -601,13 +601,13 @@
     "ER": {
       "country_code": "ER",
       "country_name": "Eritrea",
-      "generated_at": "2026-11-12T13:15:43.262629Z",
+      "generated_at": "2026-11-13T12:39:23.227704Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to ERN exchange rate",
@@ -636,20 +636,20 @@
     "ET": {
       "country_code": "ET",
       "country_name": "Ethiopia",
-      "generated_at": "2026-11-12T13:15:56.555111Z",
+      "generated_at": "2026-11-13T12:39:36.389206Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to ETB exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "ETB per USD",
-          "value": 161.6744
+          "value": 161.4543
         },
         {
           "as_of_period": "2026-09",
@@ -671,20 +671,20 @@
     "GA": {
       "country_code": "GA",
       "country_name": "Gabon",
-      "generated_at": "2026-11-12T13:14:37.787148Z",
+      "generated_at": "2026-11-13T12:38:18.512777Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -718,20 +718,20 @@
     "GH": {
       "country_code": "GH",
       "country_name": "Ghana",
-      "generated_at": "2026-11-12T13:10:38.128885Z",
+      "generated_at": "2026-11-13T12:34:19.410380Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to GHS exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "GHS per USD",
-          "value": 11.6715
+          "value": 11.7163
         },
         {
           "as_of_period": "2026-08",
@@ -746,25 +746,25 @@
           "value": 4.997866
         },
         {
-          "as_of_period": "2026-10-22",
+          "as_of_period": "2026-11-12",
           "frequency": "monthly",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "official_exchange_rate_latest_lcu_per_usd",
           "name": "official_exchange_rate_latest_lcu_per_usd",
-          "retrieved_at": "2026-10-23T05:56:39.230112Z",
+          "retrieved_at": "2026-11-13T05:20:07.811727Z",
           "source": "bog_gh_signals",
           "unit": "lcu_per_usd",
-          "value": 11.605
+          "value": 11.71
         },
         {
-          "as_of_period": "2026-10-22",
+          "as_of_period": "2026-11-12",
           "frequency": "ad_hoc",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-10-23T05:56:39.230112Z",
+          "retrieved_at": "2026-11-13T05:20:07.811727Z",
           "source": "bog_gh_signals",
           "unit": "percent",
           "value": 14.0
@@ -777,20 +777,20 @@
     "GM": {
       "country_code": "GM",
       "country_name": "Gambia",
-      "generated_at": "2026-11-12T13:10:24.678907Z",
+      "generated_at": "2026-11-13T12:34:06.150648Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to GMD exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "GMD per USD",
-          "value": 74.6564
+          "value": 74.8204
         },
         {
           "as_of_period": "2026-10",
@@ -812,20 +812,20 @@
     "GN": {
       "country_code": "GN",
       "country_name": "Guinea",
-      "generated_at": "2026-11-12T13:10:51.390125Z",
+      "generated_at": "2026-11-13T12:34:32.450982Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to GNF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "GNF per USD",
-          "value": 8844.053
+          "value": 8849.4555
         },
         {
           "as_of_period": "2026-10",
@@ -847,20 +847,20 @@
     "GQ": {
       "country_code": "GQ",
       "country_name": "Equatorial Guinea",
-      "generated_at": "2026-11-12T13:14:24.660697Z",
+      "generated_at": "2026-11-13T12:38:05.379316Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -894,20 +894,20 @@
     "GW": {
       "country_code": "GW",
       "country_name": "Guinea-Bissau",
-      "generated_at": "2026-11-12T13:11:04.733542Z",
+      "generated_at": "2026-11-13T12:34:45.567656Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -941,32 +941,32 @@
     "KE": {
       "country_code": "KE",
       "country_name": "Kenya",
-      "generated_at": "2026-11-12T13:16:09.670856Z",
+      "generated_at": "2026-11-13T12:39:49.052254Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to KES exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "KES per USD",
-          "value": 129.8479
+          "value": 130.0351
         },
         {
-          "as_of_period": "2026-09",
+          "as_of_period": "2026-10",
           "frequency": "monthly",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "inflation_cpi_latest_yoy_pct",
           "name": "inflation_cpi_latest_yoy_pct",
-          "retrieved_at": "2026-10-22T16:21:45.022466Z",
+          "retrieved_at": "2026-11-13T04:26:57.212327Z",
           "source": "cbk_ke_signals",
           "unit": "percent",
-          "value": 6.76
+          "value": 7.32
         },
         {
           "as_of_period": "2026-10",
@@ -981,16 +981,16 @@
           "value": 129.74
         },
         {
-          "as_of_period": "2026-10-21",
+          "as_of_period": "2026-11-11",
           "frequency": "ad_hoc",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "overnight_interbank_rate_pct",
           "name": "overnight_interbank_rate_pct",
-          "retrieved_at": "2026-10-22T16:21:45.022466Z",
+          "retrieved_at": "2026-11-13T04:26:57.212327Z",
           "source": "cbk_ke_signals",
           "unit": "percent",
-          "value": 8.7499
+          "value": 8.7513
         },
         {
           "as_of_period": "2026-10-07",
@@ -999,7 +999,7 @@
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-10-22T16:21:45.022466Z",
+          "retrieved_at": "2026-11-13T04:26:57.212327Z",
           "source": "cbk_ke_signals",
           "unit": "percent",
           "value": 8.75
@@ -1012,20 +1012,20 @@
     "KM": {
       "country_code": "KM",
       "country_name": "Comoros",
-      "generated_at": "2026-11-12T13:15:17.021363Z",
+      "generated_at": "2026-11-13T12:38:57.156833Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to KMF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "KMF per USD",
-          "value": 439.2208
+          "value": 444.4592
         },
         {
           "as_of_period": "2026-10",
@@ -1047,20 +1047,20 @@
     "LR": {
       "country_code": "LR",
       "country_name": "Liberia",
-      "generated_at": "2026-11-12T13:11:17.929181Z",
+      "generated_at": "2026-11-13T12:34:58.559208Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to LRD exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "LRD per USD",
-          "value": 170.6128
+          "value": 171.2341
         },
         {
           "as_of_period": "2025-08",
@@ -1082,20 +1082,20 @@
     "LS": {
       "country_code": "LS",
       "country_name": "Lesotho",
-      "generated_at": "2026-11-12T13:19:29.901591Z",
+      "generated_at": "2026-11-13T12:43:06.369326Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to LSL exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "LSL per USD",
-          "value": 16.578
+          "value": 16.733
         },
         {
           "as_of_period": "2026-08",
@@ -1129,20 +1129,20 @@
     "LY": {
       "country_code": "LY",
       "country_name": "Libya",
-      "generated_at": "2026-11-12T13:08:37.882617Z",
+      "generated_at": "2026-11-13T12:32:21.260677Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to LYD exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "LYD per USD",
-          "value": 6.4175
+          "value": 6.4277
         },
         {
           "as_of_period": "2026-04",
@@ -1164,20 +1164,20 @@
     "MA": {
       "country_code": "MA",
       "country_name": "Morocco",
-      "generated_at": "2026-11-12T13:08:51.271798Z",
+      "generated_at": "2026-11-13T12:32:34.399327Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MAD exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MAD per USD",
-          "value": 9.8147
+          "value": 9.8527
         },
         {
           "as_of_period": "2026-08",
@@ -1206,11 +1206,11 @@
         {
           "as_of_period": "2026-03-19",
           "frequency": "ad_hoc",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-10-23T19:52:24.826829Z",
+          "retrieved_at": "2026-11-13T05:53:12.923831Z",
           "source": "bkam_ma_policy_signals",
           "unit": "percent",
           "value": 2.25
@@ -1223,20 +1223,20 @@
     "MG": {
       "country_code": "MG",
       "country_name": "Madagascar",
-      "generated_at": "2026-11-12T13:16:23.036372Z",
+      "generated_at": "2026-11-13T12:40:02.266862Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MGA exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MGA per USD",
-          "value": 4582.8692
+          "value": 4582.8951
         },
         {
           "as_of_period": "2026-10",
@@ -1258,20 +1258,20 @@
     "ML": {
       "country_code": "ML",
       "country_name": "Mali",
-      "generated_at": "2026-11-12T13:11:31.241200Z",
+      "generated_at": "2026-11-13T12:35:11.680201Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -1305,20 +1305,20 @@
     "MR": {
       "country_code": "MR",
       "country_name": "Mauritania",
-      "generated_at": "2026-11-12T13:11:44.472055Z",
+      "generated_at": "2026-11-13T12:35:24.734967Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MRU exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MRU per USD",
-          "value": 40.1267
+          "value": 40.5486
         },
         {
           "as_of_period": "2024-08",
@@ -1340,20 +1340,20 @@
     "MU": {
       "country_code": "MU",
       "country_name": "Mauritius",
-      "generated_at": "2026-11-12T13:16:49.753506Z",
+      "generated_at": "2026-11-13T12:40:28.537331Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MUR exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MUR per USD",
-          "value": 47.1575
+          "value": 47.5806
         },
         {
           "as_of_period": "2026-08",
@@ -1387,20 +1387,20 @@
     "MW": {
       "country_code": "MW",
       "country_name": "Malawi",
-      "generated_at": "2026-11-12T13:16:36.476923Z",
+      "generated_at": "2026-11-13T12:40:15.483205Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MWK exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MWK per USD",
-          "value": 1745.418
+          "value": 1743.8894
         },
         {
           "as_of_period": "2026-09",
@@ -1422,20 +1422,20 @@
     "MZ": {
       "country_code": "MZ",
       "country_name": "Mozambique",
-      "generated_at": "2026-11-12T13:17:03.042072Z",
+      "generated_at": "2026-11-13T12:40:41.566698Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to MZN exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MZN per USD",
-          "value": 63.7494
+          "value": 63.7389
         },
         {
           "as_of_period": "2026-08",
@@ -1469,20 +1469,20 @@
     "NA": {
       "country_code": "NA",
       "country_name": "Namibia",
-      "generated_at": "2026-11-12T13:19:43.638181Z",
+      "generated_at": "2026-11-13T12:43:19.624940Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to NAD exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "NAD per USD",
-          "value": 16.578
+          "value": 16.733
         },
         {
           "as_of_period": "2026-08",
@@ -1509,16 +1509,16 @@
           "value": 16.427
         },
         {
-          "as_of_period": "2026-08-12",
+          "as_of_period": "2026-10-28",
           "frequency": "ad_hoc",
-          "freshness": "historical",
+          "freshness": "recent",
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-08-12T15:43:00.815402Z",
+          "retrieved_at": "2026-11-13T04:21:14.616022Z",
           "source": "bon_na_policy_signals",
           "unit": "percent",
-          "value": 6.75
+          "value": 7.0
         }
       ],
       "source": "Africa API (source attribution retained per observation)",
@@ -1528,20 +1528,20 @@
     "NE": {
       "country_code": "NE",
       "country_name": "Niger",
-      "generated_at": "2026-11-12T13:11:57.738322Z",
+      "generated_at": "2026-11-13T12:35:37.810072Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -1575,20 +1575,20 @@
     "NG": {
       "country_code": "NG",
       "country_name": "Nigeria",
-      "generated_at": "2026-11-12T13:12:10.662748Z",
+      "generated_at": "2026-11-13T12:35:51.164064Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to NGN exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "NGN per USD",
-          "value": 1329.7997
+          "value": 1350.4591
         },
         {
           "as_of_period": "2026-09",
@@ -1597,22 +1597,22 @@
           "location_name": null,
           "metric_key": "inflation_cpi_latest_yoy_pct",
           "name": "inflation_cpi_latest_yoy_pct",
-          "retrieved_at": "2026-10-23T19:52:15.597223Z",
+          "retrieved_at": "2026-11-13T05:53:06.709743Z",
           "source": "cbn_ng_signals",
           "unit": "percent",
           "value": 14.63
         },
         {
-          "as_of_period": "2026-10-23",
+          "as_of_period": "2026-11-12",
           "frequency": "monthly",
           "freshness": "current",
           "location_name": null,
           "metric_key": "official_exchange_rate_latest_lcu_per_usd",
           "name": "official_exchange_rate_latest_lcu_per_usd",
-          "retrieved_at": "2026-10-23T19:52:15.597223Z",
+          "retrieved_at": "2026-11-13T05:53:06.709743Z",
           "source": "cbn_ng_signals",
           "unit": "lcu_per_usd",
-          "value": 1361.3394
+          "value": 1355.3815
         },
         {
           "as_of_period": "2026-09-01",
@@ -1621,7 +1621,7 @@
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-10-23T19:52:15.597223Z",
+          "retrieved_at": "2026-11-13T05:53:06.709743Z",
           "source": "cbn_ng_signals",
           "unit": "percent",
           "value": 23.0
@@ -1634,20 +1634,20 @@
     "RW": {
       "country_code": "RW",
       "country_name": "Rwanda",
-      "generated_at": "2026-11-12T13:17:16.575959Z",
+      "generated_at": "2026-11-13T12:40:54.823837Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to RWF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "RWF per USD",
-          "value": 1478.5942
+          "value": 1479.389
         },
         {
           "as_of_period": "2026-10",
@@ -1669,20 +1669,20 @@
     "SC": {
       "country_code": "SC",
       "country_name": "Seychelles",
-      "generated_at": "2026-11-12T13:17:29.608831Z",
+      "generated_at": "2026-11-13T12:41:07.632260Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SCR exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SCR per USD",
-          "value": 13.9104
+          "value": 14.0259
         },
         {
           "as_of_period": "2026-10",
@@ -1704,20 +1704,20 @@
     "SD": {
       "country_code": "SD",
       "country_name": "Sudan",
-      "generated_at": "2026-11-12T13:09:04.511827Z",
+      "generated_at": "2026-11-13T12:32:47.365042Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SDG exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SDG per USD",
-          "value": 510.8381
+          "value": 482.955
         },
         {
           "as_of_period": "2023-10",
@@ -1739,20 +1739,20 @@
     "SL": {
       "country_code": "SL",
       "country_name": "Sierra Leone",
-      "generated_at": "2026-11-12T13:12:37.364308Z",
+      "generated_at": "2026-11-13T12:36:17.670455Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SLE exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SLE per USD",
-          "value": 22.9714
+          "value": 23.0652
         },
         {
           "as_of_period": "2026-09",
@@ -1774,20 +1774,20 @@
     "SN": {
       "country_code": "SN",
       "country_name": "Senegal",
-      "generated_at": "2026-11-12T13:12:24.028029Z",
+      "generated_at": "2026-11-13T12:36:04.251334Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -1821,20 +1821,20 @@
     "SO": {
       "country_code": "SO",
       "country_name": "Somalia",
-      "generated_at": "2026-11-12T13:17:42.882004Z",
+      "generated_at": "2026-11-13T12:41:20.913640Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SOS exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SOS per USD",
-          "value": 571.7034
+          "value": 571.832
         },
         {
           "as_of_period": "2018-06",
@@ -1856,20 +1856,20 @@
     "SS": {
       "country_code": "SS",
       "country_name": "South Sudan",
-      "generated_at": "2026-11-12T13:17:56.249126Z",
+      "generated_at": "2026-11-13T12:41:34.029096Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SSP exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SSP per USD",
-          "value": 5750.8144
+          "value": 5752.8201
         }
       ],
       "source": "Africa API (source attribution retained per observation)",
@@ -1879,20 +1879,20 @@
     "ST": {
       "country_code": "ST",
       "country_name": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
-      "generated_at": "2026-11-12T13:14:50.829484Z",
+      "generated_at": "2026-11-13T12:38:31.409720Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to STN exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "STN per USD",
-          "value": 21.8732
+          "value": 22.1341
         },
         {
           "as_of_period": "2026-05",
@@ -1914,20 +1914,20 @@
     "SZ": {
       "country_code": "SZ",
       "country_name": "Eswatini",
-      "generated_at": "2026-11-12T13:19:16.601985Z",
+      "generated_at": "2026-11-13T12:42:53.305423Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to SZL exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SZL per USD",
-          "value": 16.578
+          "value": 16.733
         },
         {
           "as_of_period": "2026-10",
@@ -1949,20 +1949,20 @@
     "TD": {
       "country_code": "TD",
       "country_name": "Chad",
-      "generated_at": "2026-11-12T13:13:44.471001Z",
+      "generated_at": "2026-11-13T12:37:25.856077Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XAF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -1996,20 +1996,20 @@
     "TG": {
       "country_code": "TG",
       "country_name": "Togo",
-      "generated_at": "2026-11-12T13:12:50.862046Z",
+      "generated_at": "2026-11-13T12:36:30.750857Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to XOF exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 585.6278
+          "value": 592.6123
         },
         {
           "as_of_period": "2026-08",
@@ -2043,20 +2043,20 @@
     "TN": {
       "country_code": "TN",
       "country_name": "Tunisia",
-      "generated_at": "2026-11-12T13:09:17.787666Z",
+      "generated_at": "2026-11-13T12:33:00.702602Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to TND exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "TND per USD",
-          "value": 3.0016
+          "value": 3.0135
         },
         {
           "as_of_period": "2026-08",
@@ -2071,25 +2071,25 @@
           "value": 5.389541
         },
         {
-          "as_of_period": "2026-10-20",
+          "as_of_period": "2026-11-11",
           "frequency": "monthly",
           "freshness": "current",
           "location_name": null,
           "metric_key": "official_exchange_rate_latest_lcu_per_usd",
           "name": "official_exchange_rate_latest_lcu_per_usd",
-          "retrieved_at": "2026-10-22T00:15:51.095076Z",
+          "retrieved_at": "2026-11-13T04:15:30.291009Z",
           "source": "bct_tn_signals",
           "unit": "lcu_per_usd",
-          "value": 2.9969
+          "value": 3.0248
         },
         {
-          "as_of_period": "2026-10-21",
+          "as_of_period": "2026-11-12",
           "frequency": "ad_hoc",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-10-22T00:15:51.095076Z",
+          "retrieved_at": "2026-11-13T04:15:30.291009Z",
           "source": "bct_tn_signals",
           "unit": "percent",
           "value": 7.0
@@ -2102,32 +2102,32 @@
     "TZ": {
       "country_code": "TZ",
       "country_name": "Tanzania",
-      "generated_at": "2026-11-12T13:18:09.722666Z",
+      "generated_at": "2026-11-13T12:41:47.286569Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to TZS exchange rate",
           "retrieved_at": null,
           "source": "bot_tz_fx_rates",
           "unit": "TZS per USD",
-          "value": 2637.81655
+          "value": 2644.4933
         },
         {
-          "as_of_period": "2026-09",
+          "as_of_period": "2026-10",
           "frequency": "monthly",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "inflation_cpi_latest_yoy_pct",
           "name": "inflation_cpi_latest_yoy_pct",
-          "retrieved_at": "2026-10-23T12:30:03.543540Z",
+          "retrieved_at": "2026-11-13T05:20:50.383653Z",
           "source": "bot_tz_signals",
           "unit": "percent",
-          "value": 4.3
+          "value": 4.2
         },
         {
           "as_of_period": "2026-06-19",
@@ -2142,16 +2142,16 @@
           "value": 6.4
         },
         {
-          "as_of_period": "2026-10-23",
+          "as_of_period": "2026-11-13",
           "frequency": "monthly",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "official_exchange_rate_latest_lcu_per_usd",
           "name": "official_exchange_rate_latest_lcu_per_usd",
-          "retrieved_at": "2026-10-23T12:30:03.543540Z",
+          "retrieved_at": "2026-11-13T05:20:50.383653Z",
           "source": "bot_tz_signals",
           "unit": "lcu_per_usd",
-          "value": 2636.7419
+          "value": 2644.4933
         },
         {
           "as_of_period": "2026-Q4",
@@ -2160,7 +2160,7 @@
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-10-23T12:30:03.543540Z",
+          "retrieved_at": "2026-11-13T05:20:50.383653Z",
           "source": "bot_tz_signals",
           "unit": "percent",
           "value": 6.25
@@ -2173,20 +2173,20 @@
     "UG": {
       "country_code": "UG",
       "country_name": "Uganda",
-      "generated_at": "2026-11-12T13:18:23.523247Z",
+      "generated_at": "2026-11-13T12:42:01.086810Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to UGX exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "UGX per USD",
-          "value": 4166.1686
+          "value": 4023.5035
         },
         {
           "as_of_period": "2026-09",
@@ -2220,20 +2220,20 @@
     "ZA": {
       "country_code": "ZA",
       "country_name": "South Africa",
-      "generated_at": "2026-11-12T13:19:56.538398Z",
+      "generated_at": "2026-11-13T12:43:32.393549Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to ZAR exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "ZAR per USD",
-          "value": 16.5781
+          "value": 16.7354
         },
         {
           "as_of_period": "2026-09",
@@ -2279,20 +2279,20 @@
     "ZM": {
       "country_code": "ZM",
       "country_name": "Zambia",
-      "generated_at": "2026-11-12T13:18:36.914312Z",
+      "generated_at": "2026-11-13T12:42:14.230281Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-10-24",
+          "as_of_period": "2026-11-13",
           "frequency": "daily",
-          "freshness": "recent",
+          "freshness": "current",
           "location_name": null,
           "metric_key": "fx_usd_daily",
           "name": "USD to ZMW exchange rate",
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "ZMW per USD",
-          "value": 20.1405
+          "value": 20.4097
         },
         {
           "as_of_period": "2026-09",
@@ -2326,7 +2326,7 @@
     "ZW": {
       "country_code": "ZW",
       "country_name": "Zimbabwe",
-      "generated_at": "2026-11-12T13:18:50.219873Z",
+      "generated_at": "2026-11-13T12:42:27.282452Z",
       "message": null,
       "observations": [
         {
@@ -2350,7 +2350,7 @@
   "countries_failed": 0,
   "countries_refreshed": 54,
   "countries_requested": 54,
-  "generated_at": "2026-11-12T13:19:56Z",
+  "generated_at": "2026-11-13T12:43:32Z",
   "source": "Africa API country signals endpoint",
   "source_url": "https://africa-api.com/docs/signals"
 }

@@ -608,3 +608,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "JSE.JO"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-12", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Jubilee-Holdings-Limited-Audited-Consolidated-Results-for-the-Year-Ended-31-Dec-2025.pdf", "status": "collected", "ticker": "JUB.NR"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-12", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "JUFO.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46462_JULI_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "JULI.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KABO.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "KAL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "KAP.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Kapchorua-Tea-Kenya-Plc-Audited-Full-year-Results-2025.pdf", "status": "collected", "ticker": "KAPC.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KASA.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KASABF.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KBO.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KCB.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KDV.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/KenGen-Plc-–-Audited-Financial-Results-for-the-Year-Ended-30-June-2026.pdf", "status": "collected", "ticker": "KEGN.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KEH.JO"}
