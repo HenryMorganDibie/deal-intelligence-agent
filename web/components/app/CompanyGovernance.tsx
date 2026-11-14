@@ -48,7 +48,7 @@ export function CompanyGovernance({ identity, governance: g, country, web }: { i
   const website = str(id.website);
   const facts: [string, ReactNode][] = ([
     ["Registered office", str(g?.registered_office) ?? str(id.address)],
-    ["RC number", g?.rc_number ? `RC ${g.rc_number}` : null],
+    [g?.rc_number?.includes("/") ? "Registration number" : "RC number", g?.rc_number ? (g.rc_number.includes("/") ? g.rc_number : `RC ${g.rc_number}`) : null],
     ["Incorporated", str(id.incorporated)],
     ["Listed", str(id.listed)],
     ["ISIN", str(id.isin)],

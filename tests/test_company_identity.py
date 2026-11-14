@@ -140,3 +140,21 @@ def test_a_fact_cited_on_the_wrong_page_is_kept_on_the_one_page_that_has_it():
     assert out["shareholders"][0]["page"] == 9
     # Not on any page read: still dropped.
     assert gov.verify({"board": [{"name": "Invented Person", "page": 2}]}, _pages(), allowed=[2, 9, 10]) == {}
+
+
+def test_corporate_page_beats_agm_notice_and_tables_run_onto_the_next_page():
+    agm = "Notice of Annual General Meeting. Proxies ... the Office of the Registrars, Coronation Registrars Ltd ... auditors"
+    corp = ("Corporate Information. Registration information RC Number 208767 Registered office Leadway Marble House "
+            "Registrars Coronation Registrars Limited")
+    holders = "Substantial interest in shares: the following held more than 5%"
+    table = "Dangote Industries Ltd. % 86.65 Stanbic IBTC Nominees Ltd 5.47"
+    pages = [agm, corp, "x " * 200, holders, table]
+    assert gov.section_pages(pages, "corporate")[0] == 2
+    assert gov.section_pages(pages, "shareholders")[:2] == [4, 5]
+    raw = {"rc_number": "RC 208767", "rc_page": "214", "registrar": "Coronation Registrars Limited",
+           "corporate_page": 214, "shareholders": [{"name": "Dangote Industries Ltd.", "percent": "86.65", "page": 101}]}
+    out = gov.verify(raw, pages, allowed=[1, 2, 4, 5])
+    assert out["rc_number"] == "208767" and out["registrar"] == "Coronation Registrars Limited"
+    assert out["shareholders"] == [{"name": "Dangote Industries Ltd.", "page": 5, "percent": 86.65}]
+    assert gov.verify({"rc_number": "1925/001431/06", "rc_page": 1}, ["Registration number: 1925/001431/06"], [1])["rc_number"] == "1925/001431/06"
+    assert gov.verify({"rc_number": "2087", "rc_page": 1}, ["RC 208767"], [1]) == {}       # part of a number: no

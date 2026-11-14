@@ -118,17 +118,31 @@ def _score(key: str, text: str) -> float:
     if key == "board":                  # a list of directors names many people next to their roles
         return 1 + len(_ROLE.findall(text))
     if key == "corporate":
-        return 1 + sum(bool(re.search(p, text, re.I)) for p in (r"registered\s+office", r"auditor", r"registrar",
-                                                                  r"company\s+secretary", r"\bRC\b|company\s+number"))
+        score = 1 + sum(bool(re.search(p, text, re.I)) for p in (r"registered\s+office", r"auditor", r"registrar",
+                                                                   r"company\s+secretary", r"\bRC\b|company\s+number"))
+        if re.search(r"(?i)corporate\s+information|registration\s+information|company\s+information", text):
+            score += 6                  # the page itself, not one that mentions the registrar in passing
+        if re.search(r"(?i)notice\s+of\s+(the\s+)?annual\s+general\s+meeting|\bprox(y|ies)\b", text):
+            score -= 4                  # AGM notices and proxy forms name the registrar and auditor too
+        return max(score, 0)
     if key == "shareholders":
         return 1 + len(_PCT.findall(text))
     return 1 + len(re.findall(r"(?i)committee", text))
 
 
 def section_pages(pages: list[str], key: str) -> list[int]:
-    """1-based numbers of the pages most likely to set out one kind of fact, best first."""
+    """1-based numbers of the pages most likely to set out one kind of fact, best first. For shareholders and the
+    corporate details the page after each one found is read too: a table often runs on past its heading's page."""
     scored = sorted(((_score(key, t), i + 1) for i, t in enumerate(pages)), key=lambda x: (-x[0], x[1]))
-    return [n for sc, n in scored if sc > 0][:_PER_SECTION[key]]
+    best = [n for sc, n in scored if sc > 0][:_PER_SECTION[key]]
+    if key not in ("shareholders", "corporate"):
+        return best
+    out: list[int] = []
+    for n in best:
+        for m in (n, n + 1):
+            if m <= len(pages) and m not in out and not _is_contents(pages[m - 1]):
+                out.append(m)
+    return out[:_PER_SECTION[key] * 2]
 
 
 def select_pages(pages: list[str]) -> list[int]:
@@ -200,30 +214,44 @@ def verify(raw: dict, pages: list[str], allowed: list[int]) -> dict:
     out: dict = {}
     rc = str(raw.get("rc_number") or "")
     digits = re.sub(r"\D", "", rc)
-    if 4 <= len(digits) <= 9 and ok(raw.get("rc_page")) and digits in re.sub(r"\D", " ", _page(pages, raw["rc_page"])).split():
-        out["rc_number"] = digits
-    def find(cited, test) -> Optional[int]:
-        """The page the fact is on: the one cited when it is there, else the only page read that has it (a model can
-        cite a report's printed page number instead of the [p N] tag)."""
+    if 4 <= len(digits) <= 14:
+        # a whole printed number, plain (208767) or in a slash format (1925/001431/06)
+        has = lambda t: any(re.sub(r"\D", "", tok) == digits for tok in re.findall(r"\d[\d/]*\d|\d", t))  # noqa: E731
+        if (ok(raw.get("rc_page")) and has(_page(pages, raw["rc_page"]))) or \
+                [n for n in allowed if _page(pages, n) is not None and has(_page(pages, n))]:
+            printed = re.search(r"\d[\d/]*\d", rc)                 # as printed: 208767, 1925/001431/06
+            out["rc_number"] = printed.group(0) if printed else digits
+    def find(cited, test, section: Optional[str] = None) -> Optional[int]:
+        """The page the fact is on: the one cited when it is there; else a page read that has it (a model can cite a
+        report's printed page number instead of the [p N] tag): the only one, or, when several do, the one that
+        looks most like the section the fact belongs to."""
         if ok(cited) and test(_page(pages, cited)):
             return cited
         hits = [n for n in allowed if _page(pages, n) is not None and test(_page(pages, n))]
-        return hits[0] if len(hits) == 1 else None
+        if len(hits) == 1:
+            return hits[0]
+        if hits and section:
+            ranked = sorted(hits, key=lambda n: -_score(section, _page(pages, n)))
+            if _score(section, _page(pages, ranked[0])) > _score(section, _page(pages, ranked[1])):
+                return ranked[0]
+        return None
 
     office = raw.get("registered_office")
     if isinstance(office, str):
         words = [w for w in _norm(office).split() if len(w) > 2]
-        if words and find(raw.get("office_page"), lambda t: sum(w in _norm(t) for w in words) >= 0.8 * len(words)):
+        if words and find(raw.get("office_page"), lambda t: sum(w in _norm(t) for w in words) >= 0.8 * len(words),
+                          "corporate"):
             out["registered_office"] = " ".join(office.split())
     for key in ("company_secretary", "auditor", "registrar", "holding_company"):
         v = raw.get(key)
-        if isinstance(v, str) and v.strip() and find(raw.get("corporate_page"), lambda t, v=v: _name_on_page(v, t)):
+        if isinstance(v, str) and v.strip() and find(raw.get("corporate_page"), lambda t, v=v: _name_on_page(v, t),
+                                                     "corporate"):
             out[key] = " ".join(v.split())
     board = []
     for b in raw.get("board") or []:
         if not (isinstance(b, dict) and isinstance(b.get("name"), str)):
             continue
-        n = find(b.get("page"), lambda t, b=b: _name_on_page(b["name"], t))
+        n = find(b.get("page"), lambda t, b=b: _name_on_page(b["name"], t), "board")
         if not n:
             continue
         text = _page(pages, n)
@@ -256,7 +284,7 @@ def verify(raw: dict, pages: list[str], allowed: list[int]) -> dict:
             if not (isinstance(r, dict) and isinstance(r.get("name"), str)):
                 continue
             pct = r.get("percent")
-            n = find(r.get("page"), lambda t, r=r, pct=pct: _name_on_page(r["name"], t) and _percent_on_page(pct, t))
+            n = find(r.get("page"), lambda t, r=r, pct=pct: _name_on_page(r["name"], t) and _percent_on_page(pct, t), key)
             if not n:
                 continue
             if key == "shareholders" and (pct in (None, "") or float(str(pct).replace("%", "")) < 5):
