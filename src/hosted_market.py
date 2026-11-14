@@ -893,14 +893,19 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     # The company's own website, read by web-harvester in the hourly job: queued here when the site is known.
     from src import company_web
     site = (profile.get("identity") or {}).get("website")
-    stored = await run_in_threadpool(company_web.request, profile.get("name") or name, site)
+    stored = await run_in_threadpool(company_web.request, profile.get("name") or name, site, profile.get("country"),
+                                     profile.pop("filing_pending_ocr", None))
     if stored:
         profile["web"] = {"website": stored.get("website"), "status": stored.get("status"),
                           "crawled_at": stored.get("crawled_at"), "facts": stored.get("facts") or None}
-        report = (stored.get("facts") or {}).get("report")
-        if report and not profile.get("governance"):    # no filing read from the exchange: the site's annual report
-            profile["governance"] = report
-            profile["sources"].append("Annual report (company website)")
+        facts = stored.get("facts") or {}
+        if not profile.get("governance"):
+            if facts.get("filing"):                     # the exchange filing, a scan, read by OCR
+                profile["governance"] = facts["filing"]
+                profile["sources"].append("Annual statements (governance, OCR)")
+            elif facts.get("report"):                   # no exchange filing: the annual report on the company's site
+                profile["governance"] = facts["report"]
+                profile["sources"].append("Annual report (company website)")
     mark = profile["valuation"].get("latest_mark")
     if mark and not profile.get("listing"):
         from src.engines import markets

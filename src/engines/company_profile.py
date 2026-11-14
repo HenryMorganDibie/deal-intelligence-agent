@@ -310,7 +310,14 @@ def _governance(statements: dict, company: str) -> Optional[dict]:
         log.warning("governance: %s could not be fetched: %s", url, e)
         return None
     document = str(statements.get("source") or "").split(": ", 1)[-1] or url
-    return governance.extract(data, company, document, url, statements.get("filed"))
+    gov = governance.extract(data, company, document, url, statements.get("filed"))
+    if gov is None:
+        try:
+            if governance.is_scanned(governance.page_texts(data, max_pages=12)):
+                return {"pending_ocr": url}             # a scan: the scheduled job reads it by OCR
+        except Exception:
+            pass
+    return gov
 
 
 def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None,
@@ -360,7 +367,9 @@ def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None
         statements = listed.get("financials") or {}
         if fetch is None and statements.get("source_url") and ticker and ticker.upper().endswith((".LG", ".NR")):
             gov = _governance(statements, profile["name"])
-            if gov:
+            if gov and gov.get("pending_ocr"):
+                profile["filing_pending_ocr"] = gov["pending_ocr"]
+            elif gov:
                 profile["governance"] = gov
                 profile["sources"].append("Annual statements (governance)")
     if listing:

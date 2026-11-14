@@ -65,7 +65,8 @@ def test_apply_stores_facts_and_marks_sites_without_pages_failed(monkeypatch):
     model = lambda s, u: json.dumps({"board": [{"name": "Ada Obi", "role": "Chairman", "page": 1}]})   # noqa: E731
     out = cw.apply_crawl([{"name_key": "acme", "name": "Acme", "website": "https://acme.ng/"},
                           {"name_key": "beta", "name": "Beta", "website": "https://beta.ng/"}], PAGES, call=model)
-    assert out == {"sites": 2, "with_facts": 1, "pages": 3}
+    assert {k: out[k] for k in ("sites", "with_facts", "pages")} == {"sites": 2, "with_facts": 1, "pages": 3}
+    assert [d["company"] for d in out["detail"]] == ["acme", "beta"]
     by = {a["p_name_key"]: a for _, a in saved}
     assert by["acme"]["p_status"] == "done" and by["acme"]["p_facts"]["board"][0]["name"] == "Ada Obi"
     assert by["beta"]["p_status"] == "failed" and "robots" in by["beta"]["p_error"]
@@ -116,3 +117,42 @@ def test_a_report_is_fetched_only_when_robots_allows_it(monkeypatch):
     assert cw._robots_allow("https://x.com/files/a.pdf") is False                # unreachable: not allowed
     monkeypatch.setattr(cw, "_robots_allow", lambda url: False)
     assert cw.read_report({"name": "X"}, [{"links": ["https://x.com/annual-report-2025.pdf"]}], call=lambda s, u: "{}") is None
+
+
+def test_a_company_with_only_a_scanned_filing_is_queued_and_read(monkeypatch):
+    from src import hosted_market as hm
+    calls = []
+
+    class R:
+        status_code = 200
+
+        def json(self):
+            return {"status": "queued"}
+    monkeypatch.setattr(hm, "_configured", lambda: True)
+    monkeypatch.setattr(hm, "_rpc_sync", lambda fn, args, timeout=30: calls.append((fn, args)) or R())
+    monkeypatch.setattr(cw, "wikidata_website", lambda name, country=None: None)
+    cw.request("Acme Plc", None, "NG", "https://doclib.ngxgroup.com/acme-2025.pdf")
+    assert calls[0] == ("company_web_request", {"p_name_key": "acme", "p_name": "Acme Plc", "p_website": None,
+                                                "p_filing_url": "https://doclib.ngxgroup.com/acme-2025.pdf"})
+    cfg_companies = [{"name_key": "acme", "name": "Acme Plc", "website": None, "filing_url": "https://x/acme.pdf"}]
+    monkeypatch.setattr(cw, "read_filing", lambda c, call=None: {"rc_number": "123456", "ocr": True})
+    saved = []
+    monkeypatch.setattr(hm, "_rpc_sync", lambda fn, args, timeout=30: saved.append(args) or R())
+    assert cw.apply_crawl(cfg_companies, [])["with_facts"] == 1
+    assert saved[0]["p_status"] == "done" and saved[0]["p_facts"]["filing"]["ocr"] is True
+
+
+def test_wikidata_supplies_a_website_only_for_a_matching_company(monkeypatch):
+    responses = {
+        "wbsearchentities": {"search": [{"id": "Q1"}, {"id": "Q2"}]},
+        "wbgetentities": {"entities": {
+            "Q1": {"labels": {"en": {"value": "Acme Cement"}}, "claims": {
+                "P31": [{"mainsnak": {"datavalue": {"value": {"id": "Q4830453"}}}}],
+                "P856": [{"mainsnak": {"datavalue": {"value": "http://www.acme.ng"}}}]}},
+            "Q2": {"labels": {"en": {"value": "Acme Cement (book)"}}, "claims": {}}}},
+    }
+    monkeypatch.setattr(cw, "_wikidata", lambda params: responses[params["action"]])
+    assert cw.wikidata_website("Acme Cement") == "https://www.acme.ng/"
+    assert cw.wikidata_website("Other Name") is None
+    responses["wbgetentities"]["entities"]["Q1"]["claims"]["P31"] = [{"mainsnak": {"datavalue": {"value": {"id": "Q5"}}}}]
+    assert cw.wikidata_website("Acme Cement") is None                     # not a company

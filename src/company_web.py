@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from typing import Callable, Optional
 from urllib.parse import urlparse
@@ -71,18 +72,103 @@ def normalise_site(url: Optional[str]) -> Optional[str]:
     return f"https://{host}/"
 
 
+# ── A website for a company no listing names one for: Wikidata ─────────────
+
+WIKIDATA = "https://www.wikidata.org/w/api.php"
+_WD_AGENT = "deal-intelligence/1.0 (https://deal-intelligence.app)"
+# Wikidata items that are kinds of company: business, enterprise, public company, company, bank, conglomerate,
+# subsidiary, holding company, state-owned enterprise, startup.
+_COMPANY_KINDS = {"Q4830453", "Q6881511", "Q891723", "Q783794", "Q22687", "Q778575", "Q658255", "Q219577", "Q270791",
+                  "Q1058914", "Q18388277", "Q166280"}
+
+
+def _wikidata(params: dict) -> dict:
+    import urllib.parse
+    import urllib.request
+    req = urllib.request.Request(f"{WIKIDATA}?{urllib.parse.urlencode({**params, 'format': 'json'})}",
+                                 headers={"User-Agent": _WD_AGENT})
+    with urllib.request.urlopen(req, timeout=10) as r:            # nosec: fixed Wikidata API address
+        return json.loads(r.read())
+
+
+def wikidata_website(name: str, country: Optional[str] = None) -> Optional[str]:
+    """The official website Wikidata records for the company: a company item whose name matches ours (and whose
+    country does, when we know it). None when there is no confident match."""
+    try:
+        found = _wikidata({"action": "wbsearchentities", "search": name, "language": "en", "type": "item", "limit": 5})
+        ids = [x["id"] for x in found.get("search", [])]
+        if not ids:
+            return None
+        ents = _wikidata({"action": "wbgetentities", "ids": "|".join(ids), "props": "claims|labels|aliases",
+                          "languages": "en"}).get("entities", {})
+    except Exception as e:
+        log.info("wikidata lookup failed for %s: %s", name, e)
+        return None
+    want = name_key(name)
+
+    def values(e: dict, prop: str) -> list:
+        return [c["mainsnak"].get("datavalue", {}).get("value") for c in e.get("claims", {}).get(prop, [])]
+    for qid in ids:
+        e = ents.get(qid) or {}
+        names = [e.get("labels", {}).get("en", {}).get("value", "")] + [a.get("value", "") for a in e.get("aliases", {}).get("en", [])]
+        if want not in {name_key(n) for n in names if n}:
+            continue
+        kinds = {v.get("id") for v in values(e, "P31") if isinstance(v, dict)}
+        if not kinds & _COMPANY_KINDS:
+            continue
+        if country and not _country_matches(values(e, "P17"), country):
+            continue
+        sites = [v for v in values(e, "P856") if isinstance(v, str)]
+        site = normalise_site(sites[0]) if sites else None
+        if site:
+            return site
+    return None
+
+
+def _country_matches(claims: list, country: str) -> bool:
+    """The item's country (P17) is ours: its ISO code (P297) against our two-letter code."""
+    ids = [v.get("id") for v in claims if isinstance(v, dict) and v.get("id")]
+    if not ids:
+        return True                     # no country recorded: the name and kind decide
+    try:
+        ents = _wikidata({"action": "wbgetentities", "ids": "|".join(ids[:3]), "props": "claims"}).get("entities", {})
+    except Exception:
+        return False
+    for e in ents.values():
+        for c in e.get("claims", {}).get("P297", []):
+            if str(c["mainsnak"].get("datavalue", {}).get("value", "")).upper() == country.upper():
+                return True
+    return False
+
+
 # ── Queue and storage (the API's shared-secret database functions) ─────────
 
-def request(name: str, website: Optional[str]) -> Optional[dict]:
-    """Queue the company's site for the next crawl (if due) and return what is stored for it."""
+def request(name: str, website: Optional[str], country: Optional[str] = None,
+            filing_url: Optional[str] = None) -> Optional[dict]:
+    """Queue the company's site for the next crawl (if due) and return what is stored for it. With no website from
+    a listing, the one Wikidata records is used (and remembered with the queued site)."""
     from src import hosted_market as hm
-    site = normalise_site(website)
     key = name_key(name)
     if not hm._configured() or len(key) < 2:
         return None
+    site = normalise_site(website)
+    if not site and not filing_url:
+        try:
+            stored = hm._rpc_sync("company_web_get", {"p_name_key": key}, 10)
+            if stored.status_code == 200 and stored.json():
+                return stored.json()                     # already known (and queued or read)
+        except Exception as e:
+            log.warning("company web lookup failed for %s: %s", name, e)
+            return None
+        site = wikidata_website(name, country)
+    if not site and filing_url:
+        site = wikidata_website(name, country)
     try:
-        if site:
-            hm._rpc_sync("company_web_request", {"p_name_key": key, "p_name": name, "p_website": site}, 10)
+        if site or filing_url:
+            args = {"p_name_key": key, "p_name": name, "p_website": site}
+            if filing_url:
+                args["p_filing_url"] = filing_url
+            hm._rpc_sync("company_web_request", args, 10)
         r = hm._rpc_sync("company_web_get", {"p_name_key": key}, 10)
         return r.json() if r.status_code == 200 else None
     except Exception as e:                      # the profile never fails because of the website queue
@@ -101,7 +187,7 @@ def crawl_config(output_path: str, limit: int = SITES_PER_RUN) -> tuple[dict, li
         "concurrency": 3, "max_retries": 0, "request_timeout": "15s",
         "rate_per_host_rps": 0.5, "rate_burst": 1, "adaptive_rate": True,
         "sink_backend": "jsonl", "output_path": output_path, "report_interval": "30s",
-        "targets": [target(dict(c, website=resolve(c["website"]))) for c in companies],
+        "targets": [target(dict(c, website=resolve(c["website"]))) for c in companies if c.get("website")],
     }
     return cfg, companies
 
@@ -122,7 +208,9 @@ def resolve(site: str) -> str:
 def target(company: dict) -> dict:
     return {"name": company["name_key"], "start_urls": [company["website"]], "max_depth": 1,
             "max_pages": PAGES_PER_SITE, "include": INCLUDE, "exclude": EXCLUDE,
-            "extract": {"text_limit": 20000}}             # links kept: annual report PDFs are found among them
+            "extract": {"text_limit": 20000},             # links kept: annual report PDFs are found among them
+            # A page that is an empty JavaScript shell is rendered in headless Chromium (when the job installed it).
+            **({"render": "auto"} if os.environ.get("HARVESTER_RENDER") == "auto" else {})}
 
 
 # ── Reading the crawled pages ──────────────────────────────────────────────
@@ -237,11 +325,21 @@ def apply_crawl(companies: list[dict], pages: list[dict], call: Optional[Callabl
         report = read_report(c, site_pages, call) if site_pages else None
         if report:
             facts = {**(facts or {}), "report": report}
-        status = "done" if site_pages else "failed"
-        error = None if site_pages else "no pages fetched (robots.txt, timeout or no matching pages)"
+        filing = read_filing(c, call) if c.get("filing_url") else None
+        if filing:
+            facts = {**(facts or {}), "filing": filing}
+        ok = bool(site_pages) or bool(filing) or (not c.get("website") and bool(c.get("filing_url")))
+        status = "done" if ok else "failed"
+        error = None if ok else "no pages fetched (robots.txt, timeout or no matching pages)"
         hm._rpc_sync("company_web_save", {"p_name_key": c["name_key"], "p_status": status,
                                           "p_facts": facts or {}, "p_error": error}, 15)
         out["with_facts"] += bool(facts)
+        out.setdefault("detail", []).append({
+            "company": c["name_key"], "pages": len(site_pages), "report_url": find_report(site_pages) if site_pages else None,
+            "facts": sorted(k for k in (facts or {}) if k not in ("pages", "report", "filing")),
+            "report_facts": sorted(k for k in (report or {}) if isinstance((report or {}).get(k), (list, str)) and k not in
+                                   ("source", "source_url", "method")),
+            "filing_facts": sorted(k for k in (filing or {}) if isinstance((filing or {}).get(k), (list, str)))})
     return out
 
 
@@ -308,4 +406,17 @@ def read_report(company: dict, pages: list[dict], call: Optional[Callable[[str, 
         return None
     name = urlparse(url).path.rsplit("/", 1)[-1]
     return governance.extract(data, company["name"], name, url, None, call,
-                              source_label="Annual report published on the company's website")
+                              source_label="Annual report published on the company's website", allow_ocr=True)
+
+
+def read_filing(company: dict, call: Optional[Callable[[str, str], str]] = None) -> Optional[dict]:
+    """The company's filed annual statements when they are a scan: read by OCR here, where Tesseract is installed."""
+    from src.engines import financials as fin
+    url = company["filing_url"]
+    try:
+        data = fin.pdf_bytes(url)
+    except Exception as e:
+        log.warning("company web: filing %s could not be fetched: %s", url, e)
+        return None
+    name = urlparse(url).path.rsplit("/", 1)[-1]
+    return governance.extract(data, company["name"], name, url, None, call, allow_ocr=True)

@@ -23,6 +23,8 @@ for _name in ("DEAL_INTEL_API_SECRET", "SUPABASE_PUBLISHABLE_KEY"):
 
 
 def main(argv: list[str]) -> int:
+    import logging
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     from src import company_web
 
     if len(argv) >= 4 and argv[0] == "prepare":

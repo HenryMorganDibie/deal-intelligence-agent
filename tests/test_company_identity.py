@@ -98,6 +98,7 @@ def test_governance_facts_are_kept_only_when_found_on_their_page():
 
 def test_extract_reads_each_kind_of_fact_in_its_own_pass(monkeypatch):
     monkeypatch.setattr(gov, "page_texts", lambda data, max_pages=gov.MAX_PAGES: _pages())
+    monkeypatch.setattr(gov, "is_scanned", lambda pages: False)        # the sample pages are short, not a scan
     prompts = []
 
     def model(system, user):
@@ -117,3 +118,15 @@ def test_extract_reads_each_kind_of_fact_in_its_own_pass(monkeypatch):
 def test_subsidiary_pages_are_chosen_by_their_ownership_percentages():
     pages = ["Auditor's report: impairment of investment in subsidiaries", "a", SUBS + "\nAbc Ltd Ghana 51.00%"]
     assert 3 in gov.select_pages(pages) and 1 not in gov.select_pages(pages)
+
+
+
+def test_a_scanned_filing_is_read_by_ocr_only_where_ocr_is_allowed(monkeypatch):
+    blank = [""] * 5
+    monkeypatch.setattr(gov, "page_texts", lambda data, max_pages=gov.MAX_PAGES: blank)
+    monkeypatch.setattr(gov, "ocr_pages", lambda data, **k: _pages())
+    model = lambda s, u: '{"rc_number": "395010", "rc_page": 2}'          # noqa: E731
+    assert gov.is_scanned(blank) and not gov.is_scanned(["x" * 500] * 3)
+    assert gov.extract(b"pdf", "MTN", "d", "u", call=model) is None                  # the profile: no OCR there
+    out = gov.extract(b"pdf", "MTN", "d", "u", call=model, allow_ocr=True)            # the scheduled job
+    assert out["rc_number"] == "395010" and out["ocr"] is True

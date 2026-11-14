@@ -69,6 +69,36 @@ def page_texts(data: bytes, max_pages: int = MAX_PAGES) -> list[str]:
     return out
 
 
+OCR_MAX_PAGES = 220
+
+
+def is_scanned(pages: list[str]) -> bool:
+    """A PDF of page images: almost no text on its pages (a text PDF carries hundreds of characters a page)."""
+    return bool(pages) and sum(len(t.strip()) for t in pages) / len(pages) < 120
+
+
+def ocr_pages(data: bytes, max_pages: int = OCR_MAX_PAGES, dpi: int = 150) -> list[str]:
+    """Page text from a scanned PDF by optical character recognition (Poppler's pdftoppm and Tesseract, both
+    open source). Used by the scheduled job, where both are installed; an empty list where they are not."""
+    import shutil
+    import subprocess
+    import tempfile
+    from pathlib import Path
+    if not (shutil.which("pdftoppm") and shutil.which("tesseract")):
+        return []
+    with tempfile.TemporaryDirectory() as tmp:
+        pdf = Path(tmp) / "doc.pdf"
+        pdf.write_bytes(data)
+        subprocess.run(["pdftoppm", "-r", str(dpi), "-gray", "-png", "-l", str(max_pages), str(pdf), f"{tmp}/p"],
+                       check=True, timeout=900, capture_output=True)
+        out = []
+        for img in sorted(Path(tmp).glob("p-*.png"), key=lambda f: int(f.stem.split("-")[-1])):
+            r = subprocess.run(["tesseract", str(img), "-", "--psm", "3"], capture_output=True, timeout=120)
+            out.append(r.stdout.decode("utf-8", "ignore"))
+            img.unlink()
+        return out
+
+
 _PCT = re.compile(r"(?<![\d.])\d{1,3}(?:\.\d{1,3})?\s?%")
 _PRIORITY = ("corporate", "shareholders", "board", "subsidiaries", "committees")
 _PAGE_CHARS = 3500
@@ -220,7 +250,8 @@ _SECTION_OF = {**dict.fromkeys(("rc_number", "registered_office", "company_secre
 
 def extract(data: bytes, company: str, document: str, source_url: str, filed: Optional[str] = None,
             call: Optional[Callable[[str, str], str]] = None,
-            source_label: str = "Annual financial statements filed with the exchange") -> Optional[dict]:
+            source_label: str = "Annual financial statements filed with the exchange",
+            allow_ocr: bool = False) -> Optional[dict]:
     """Governance facts from one annual statement PDF, each with the page it was read from; None when nothing on
     the pages could be confirmed. `call(system, user)` returns the model's text (the cached LLM by default)."""
     try:
@@ -228,6 +259,17 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
     except Exception as e:
         log.warning("governance: %s unreadable: %s", source_url, e)
         return None
+    ocr = False
+    if is_scanned(pages):
+        if not allow_ocr:
+            return None
+        try:
+            pages, ocr = ocr_pages(data), True
+        except Exception as e:
+            log.warning("governance: OCR of %s failed: %s", source_url, e)
+            return None
+        if not pages:
+            return None
     if call is None:
         call = _default_call()
         if call is None:
@@ -255,6 +297,8 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
             log.warning("governance: extraction failed for %s (%s): %s", source_url, "/".join(group), e)
             continue
         found = verify(raw, pages, used)
+        log.info("governance: %s pass %s read pages %s; returned %s; confirmed %s", document, "/".join(group), used,
+                 sorted(k for k, v in raw.items() if v), sorted(found))
         for k, v in found.items():      # a fact from the pass made for it wins over one found in passing
             if k not in facts or _SECTION_OF.get(k) in group:
                 facts[k] = v
@@ -262,6 +306,8 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
     if not facts:
         return None
     used = sorted(used_all)
+    if ocr:
+        facts["ocr"] = True
     return {**facts, "source": f"{source_label}: {document}",
             "source_url": source_url, "filed": filed, "pages_read": used,
             "method": "Read from the report; each fact appears on the page cited, names and percentages "
