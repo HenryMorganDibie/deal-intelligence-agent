@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Container } from "../../../components/primitives";
-import { ErrorNote, Loading, PageHeader, Pagination, Table, Td, usd, words } from "../../../components/app/ui";
+import { ErrorNote, Loading, Pagination, Table, Td, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { SECTORS, get, type InvestorRow } from "../../../lib/market";
 
@@ -12,10 +12,27 @@ const ROLES = ["", "investor", "lender", "acquirer", "seller", "lp", "gp"];
 const KINDS = ["", "dfi", "multilateral", "private_equity", "private_credit", "venture_capital", "growth", "impact",
   "sovereign", "pension", "bank", "foundation", "corporate_venture", "accelerator", "investment_firm", "corporate"];
 const STAGES = ["", "pre-seed", "seed", "series a", "series b", "series c", "series d", "growth", "bridge"];
+type Tab = "investors" | "funds";
+const TABS: [Tab, string][] = [["investors", "Investors"], ["funds", "Fund raises"]];
 const MIN_SIZES: [string, string][] = [["", "Any round size"], ["1000000", "$1m+"], ["5000000", "$5m+"], ["20000000", "$20m+"],
   ["100000000", "$100m+"]];
 
 export default function InvestorsPage() {
+  // The open tab follows the address (#funds), so a link can open it directly.
+  const [tab, setTab] = useState<Tab>("investors");
+  const pick = (id: Tab) => {
+    setTab(id);
+    try { window.history.replaceState(null, "", `#${id}`); } catch { /* ignore */ }
+  };
+  useEffect(() => {
+    const follow = () => {
+      const h = window.location.hash.replace("#", "");
+      if (TABS.some(([id]) => id === h)) setTab(h as Tab);
+    };
+    follow();
+    window.addEventListener("hashchange", follow);
+    return () => window.removeEventListener("hashchange", follow);
+  }, []);
   const [role, setRole] = useState("");
   const [kind, setKind] = useState("");
   const [sector, setSector] = useState("");
@@ -37,6 +54,7 @@ export default function InvestorsPage() {
   const [fundsError, setFundsError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (tab !== "investors") return;
     let active = true;
     const load = () => {
       setError(null);
@@ -60,9 +78,10 @@ export default function InvestorsPage() {
       window.clearInterval(interval);
       window.removeEventListener("focus", load);
     };
-  }, [role, kind, sector, country, stage, since, minUsd, leadOnly, investorOffset, investorLimit]);
+  }, [tab, role, kind, sector, country, stage, since, minUsd, leadOnly, investorOffset, investorLimit]);
 
   useEffect(() => {
+    if (tab !== "funds") return;
     let active = true;
     const load = () => {
       setFundsError(null);
@@ -81,15 +100,32 @@ export default function InvestorsPage() {
       window.clearInterval(interval);
       window.removeEventListener("focus", load);
     };
-  }, [fundOffset, fundLimit]);
+  }, [tab, fundOffset, fundLimit]);
 
   return (
     <Container className="py-10 lg:py-14">
-      <PageHeader eyebrow="Investors and funds" title="Who is investing, lending, buying and raising.">
-        Every party to a deal gets a role: equity investor, lender, acquirer, seller, limited partner (LP) or fund manager
-        (GP). Known development finance institutions, private equity and venture firms are matched across their name
-        variants.
-      </PageHeader>
+      <header className="mb-6">
+        <h1 className="h2 text-[1.75rem] sm:text-[2rem]">Investors</h1>
+        <p className="mt-1.5 max-w-3xl text-[0.875rem] text-[color:var(--muted)]">
+          {tab === "investors"
+            ? "Everyone on the other side of a deal: investors, lenders, acquirers, sellers, LPs and fund managers."
+            : "Funds raised and closed by managers investing in Africa, with their anchors and LPs where named."}
+        </p>
+      </header>
+
+      <div role="tablist" aria-label="Investors" className="-mx-1 mb-6 flex gap-6 overflow-x-auto border-b hairline px-1">
+        {TABS.map(([id, label]) => (
+          <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => pick(id)}
+                  className={`-mb-px shrink-0 border-b-2 pb-2.5 text-[0.9375rem] transition-colors ${
+                    tab === id ? "border-[color:var(--text)] text-[color:var(--text)]" : "border-transparent text-[color:var(--muted)] hover:text-[color:var(--text)]"}`}>
+            {label}
+            {id === "investors" && rows !== null && <span className="ml-1.5 text-[0.8125rem] text-[color:var(--dim)]">{investorTotal.toLocaleString()}</span>}
+            {id === "funds" && funds !== null && <span className="ml-1.5 text-[0.8125rem] text-[color:var(--dim)]">{fundTotal.toLocaleString()}</span>}
+          </button>
+        ))}
+      </div>
+
+      {tab === "investors" && (<>
       <div className="flex flex-wrap gap-3">
         <select value={role} onChange={(e) => { setRole(e.target.value); setInvestorOffset(0); }} className="field w-auto" aria-label="Role">
           {ROLES.map((r) => (
@@ -126,8 +162,7 @@ export default function InvestorsPage() {
       </div>
       {dealsInScope !== null && (
         <p className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">
-          Ranked on {dealsInScope.toLocaleString()} matching deal{dealsInScope === 1 ? "" : "s"}. Lead investors and round stages
-          come from the article text where it names them.
+          Ranked on {dealsInScope.toLocaleString()} matching deal{dealsInScope === 1 ? "" : "s"}. Leads and round stages come from the article where it names them.
         </p>
       )}
       {error && <ErrorNote message={error} />}
@@ -169,10 +204,11 @@ export default function InvestorsPage() {
           </>
         )}
       </div>
+      </>)}
 
-      <h2 className="eyebrow mt-12">Fund raises and closes (GP activity)</h2>
+      {tab === "funds" && (<>
       {fundsError && <ErrorNote message={fundsError} />}
-      <div className="mt-4">
+      <div>
         {funds === null ? (
           <Loading />
         ) : (
@@ -199,6 +235,7 @@ export default function InvestorsPage() {
           ) : <p className="text-sm text-[color:var(--muted)]">No fund raises or closes recorded.</p>
         )}
       </div>
+      </>)}
     </Container>
   );
 }
