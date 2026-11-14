@@ -384,6 +384,16 @@ def read_site(company: dict, pages: list[dict], call: Optional[Callable[[str, st
     return facts
 
 
+def _stored_facts(key: str) -> dict:
+    """What an earlier read stored for the company (empty when nothing, or when the lookup fails)."""
+    from src import hosted_market as hm
+    try:
+        r = hm._rpc_sync("company_web_get", {"p_name_key": key}, 10)
+        return ((r.json() or {}).get("facts") or {}) if r.status_code == 200 else {}
+    except Exception:
+        return {}
+
+
 def apply_crawl(companies: list[dict], pages: list[dict], call: Optional[Callable[[str, str], str]] = None) -> dict:
     """Read each crawled site and store its facts (or the failure)."""
     from src import hosted_market as hm
@@ -393,11 +403,12 @@ def apply_crawl(companies: list[dict], pages: list[dict], call: Optional[Callabl
     out = {"sites": len(companies), "with_facts": 0, "pages": len(pages)}
     for c in companies:
         site_pages = by_target.get(c["name_key"], [])
+        before = _stored_facts(c["name_key"])
         facts = read_site(c, site_pages, call) if site_pages else None
-        report = read_report(c, site_pages, call) if site_pages else None
+        report = governance.merge_reads(read_report(c, site_pages, call) if site_pages else None, before.get("report"))
         if report:
             facts = {**(facts or {}), "report": report}
-        filing = read_filing(c, call) if c.get("filing_url") else None
+        filing = governance.merge_reads(read_filing(c, call) if c.get("filing_url") else None, before.get("filing"))
         if filing:
             facts = {**(facts or {}), "filing": filing}
         if c.get("website_source") and c.get("website"):

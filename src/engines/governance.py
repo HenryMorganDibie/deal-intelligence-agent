@@ -35,7 +35,7 @@ _SECTIONS = {
 }
 _PER_SECTION = {"corporate": 3, "board": 3, "committees": 3, "shareholders": 3, "subsidiaries": 4}
 # Each group is read in its own pass with its own budget, so one long section cannot crowd out another.
-GROUPS = (("corporate",), ("board", "committees"), ("shareholders",), ("subsidiaries",))
+GROUPS = (("corporate",), ("board",), ("committees",), ("shareholders",), ("subsidiaries",))
 _ROLE = re.compile(r"(?i)\b(chairman|chairperson|non-executive|independent|executive director|managing director|"
                    r"chief executive|director)\b")
 
@@ -125,7 +125,8 @@ def _score(key: str, text: str) -> float:
     if key == "corporate":
         score = 1 + sum(bool(re.search(p, text, re.I)) for p in (r"registered\s+office", r"auditor", r"registrar",
                                                                    r"company\s+secretary", r"\bRC\b|company\s+number"))
-        if re.search(r"(?i)corporate\s+information|registration\s+information|company\s+information", text):
+        if re.search(r"(?i)corporate\s+information|registration\s+information|company\s+information|"
+                     r"professional\s+advisers|statutory\s+information", text):
             score += 6                  # the page itself, not one that mentions the registrar in passing
         if re.search(r"(?i)notice\s+of\s+(the\s+)?annual\s+general\s+meeting|\bprox(y|ies)\b", text):
             score -= 4                  # AGM notices and proxy forms name the registrar and auditor too
@@ -444,10 +445,33 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
 _FOCUS = {
     ("corporate",): "In this pass give only rc_number, registered_office, company_secretary, auditor, registrar and "
                     "holding_company (with their pages).\n",
-    ("board", "committees"): "In this pass give only board and committees, every director listed.\n",
+    ("board",): "In this pass give only board, every director listed.\n",
+    ("committees",): "In this pass give only committees, with their members.\n",
     ("shareholders",): "In this pass give only shareholders.\n",
     ("subsidiaries",): "In this pass give only subsidiaries, every one listed, keeping each item short.\n",
 }
+
+
+_LISTS = ("board", "committees", "shareholders", "subsidiaries")
+
+
+def merge_reads(new: Optional[dict], old: Optional[dict]) -> Optional[dict]:
+    """Two reads of the same report: every fact confirmed in either is kept, and for a list the longer confirmed one.
+    Free models vary from run to run; a weaker run must not erase what an earlier one confirmed on the page."""
+    if not old or not new or old.get("source_url") != new.get("source_url"):
+        return new or None
+    out = dict(new)
+    for k, v in old.items():
+        if k in _LISTS:
+            if isinstance(v, list) and len(v) > len(out.get(k) or []):
+                out[k] = v
+        elif k in _SCALAR_FACTS and v and not out.get(k):
+            out[k] = v
+            for pk in (k + "_page", "rc_page" if k == "rc_number" else "", "office_page" if k == "registered_office" else ""):
+                if pk and old.get(pk) and not out.get(pk):
+                    out[pk] = old[pk]
+    out["pages_read"] = sorted(set(out.get("pages_read") or []) | set(old.get("pages_read") or []))
+    return out
 
 
 def _default_call() -> Optional[Callable[[str, str], str]]:

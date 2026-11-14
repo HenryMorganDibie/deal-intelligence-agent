@@ -139,7 +139,7 @@ def test_a_company_with_only_a_scanned_filing_is_queued_and_read(monkeypatch):
     saved = []
     monkeypatch.setattr(hm, "_rpc_sync", lambda fn, args, timeout=30: saved.append(args) or R())
     assert cw.apply_crawl(cfg_companies, [])["with_facts"] == 1
-    assert saved[0]["p_status"] == "done" and saved[0]["p_facts"]["filing"]["ocr"] is True
+    assert saved[-1]["p_status"] == "done" and saved[-1]["p_facts"]["filing"]["ocr"] is True
 
 
 def test_wikidata_supplies_a_website_only_for_a_matching_company(monkeypatch):
