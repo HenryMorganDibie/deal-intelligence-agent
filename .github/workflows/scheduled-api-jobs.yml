@@ -98,6 +98,22 @@ jobs:
           "$RUNNER_TEMP/crawl" -config "$RUNNER_TEMP/crawl.json" -i-have-reviewed-tos
           python scripts/election_articles.py apply "$RUNNER_TEMP/pages.jsonl"
 
+      # Company websites: sites queued by profile lookups, read by the same crawler (about, leadership, board,
+      # governance, subsidiary and contact pages only; robots.txt permitting; one page every two seconds per site).
+      - name: Read company websites with web-harvester
+        if: steps.pick.outputs.job == 'election-news'
+        continue-on-error: true
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          test -x "$RUNNER_TEMP/crawl" || (cd web-harvester && go build -o "$RUNNER_TEMP/crawl" ./cmd/crawl)
+          status=0
+          python scripts/company_web.py prepare "$RUNNER_TEMP/company-crawl.json" "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json" || status=$?
+          if [ "$status" = 3 ]; then echo "No company sites queued"; exit 0; fi
+          if [ "$status" != 0 ]; then exit "$status"; fi
+          "$RUNNER_TEMP/crawl" -config "$RUNNER_TEMP/company-crawl.json" -i-have-reviewed-tos || true
+          python scripts/company_web.py apply "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json"
+
       - name: Read imported result sheets
         if: steps.pick.outputs.job == 'election-news'
         continue-on-error: true

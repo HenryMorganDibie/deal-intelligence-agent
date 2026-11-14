@@ -11,6 +11,14 @@ export type Governance = {
   subsidiaries?: { name: string; country?: string; percent?: number; page: number }[];
   source: string; source_url: string; filed?: string | null; pages_read: number[]; method: string;
 };
+type WebPerson = { name: string; role?: string; page: number };
+export type WebFacts = {
+  registered_office?: string; office_page?: number; phone?: string; phone_page?: number; email?: string; email_page?: number;
+  founded?: string; founded_page?: number; board?: WebPerson[]; management?: WebPerson[];
+  subsidiaries?: { name: string; country?: string; percent?: number; page: number }[];
+  pages?: { n: number; url: string; title: string }[];
+};
+export type Web = { website: string; status: "queued" | "crawling" | "done" | "failed"; crawled_at?: string | null; facts: WebFacts | null };
 export type Identity = Record<string, unknown> & {
   board?: string[]; officers?: Officer[]; address?: string; website?: string; phone?: string; auditor?: string;
   company_secretary?: string; incorporated?: string; listed?: string; employees?: number; isin?: string;
@@ -35,7 +43,7 @@ function PageRef({ g, page }: { g: Governance; page: number }) {
 }
 
 /** Corporate facts, people, ownership and subsidiaries, each from a named source; absent facts are not shown. */
-export function CompanyGovernance({ identity, governance: g, country }: { identity?: Identity; governance?: Governance; country: string | null }) {
+export function CompanyGovernance({ identity, governance: g, country, web }: { identity?: Identity; governance?: Governance; country: string | null; web?: Web }) {
   const id = identity ?? {};
   const website = str(id.website);
   const facts: [string, ReactNode][] = ([
@@ -62,7 +70,7 @@ export function CompanyGovernance({ identity, governance: g, country }: { identi
       {g.filed ? `, filed ${g.filed}` : ""}. Each fact appears on the page shown, as printed; anything that could not be confirmed is left out.</>
   ) : null;
 
-  if (!facts.length && !board.length && !officers.length && !g) return null;
+  if (!facts.length && !board.length && !officers.length && !g && !web) return null;
   return (
     <div className="space-y-8">
       {facts.length > 0 && (
@@ -167,7 +175,66 @@ export function CompanyGovernance({ identity, governance: g, country }: { identi
         </div>
       )}
 
+      {web && <WebSection web={web} />}
+
       {sourceNote && <p className="border-t hairline pt-3 text-[0.75rem] text-[color:var(--dim)]">Board, committees, shareholders, subsidiaries and corporate details: {sourceNote}</p>}
     </div>
+  );
+}
+
+function WebSection({ web }: { web: Web }) {
+  const f = web.facts && Object.keys(web.facts).length ? web.facts : null;
+  const host = web.website.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const link = (n?: number) => {
+    const page = f?.pages?.find((p) => p.n === n);
+    return page ? <a href={page.url} target="_blank" rel="noreferrer" className="text-[0.75rem] text-[color:var(--dim)] hover:underline" title={page.title}>source</a> : null;
+  };
+  const people = [...(f?.board ?? []).map((p) => ({ ...p, group: "Board" })), ...(f?.management ?? []).map((p) => ({ ...p, group: "Management" }))];
+  const contact: [string, string | undefined, number | undefined][] = [
+    ["Head office", f?.registered_office, f?.office_page], ["Phone", f?.phone, f?.phone_page],
+    ["Email", f?.email, f?.email_page], ["Founded", f?.founded, f?.founded_page]];
+  return (
+    <Section title="From the company's website"
+      note={f ? <>Read from {host}{web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""} with web-harvester (robots.txt respected). Each fact is on the page linked beside it.</> : undefined}>
+      {!f ? (
+        <p className="text-[0.8125rem] text-[color:var(--muted)]">
+          {web.status === "done" ? `${host} was read${web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""}; its pages gave nothing that could be confirmed.`
+            : web.status === "failed" ? `${host} could not be read (its robots.txt, a timeout, or no about, leadership or contact pages).`
+            : `${host} is queued: its about, leadership, board and contact pages are read within the hour.`}
+        </p>
+      ) : (
+        <div className="space-y-5">
+          {contact.some(([, v]) => v) && (
+            <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
+              {contact.filter(([, v]) => v).map(([k, v, n]) => (
+                <div key={k}><dt className="text-[0.75rem] text-[color:var(--dim)]">{k} {link(n)}</dt><dd className="mt-0.5 text-[0.875rem] text-[color:var(--text)]">{v}</dd></div>
+              ))}
+            </dl>
+          )}
+          {people.length > 0 && (
+            <table className="w-full text-left text-[0.8125rem]">
+              <tbody className="divide-y divide-white/[0.07] border-y hairline">
+                {people.map((p) => (
+                  <tr key={p.group + p.name}>
+                    <td className="py-2 pr-3 text-[color:var(--text)]">{p.name}</td>
+                    <td className="py-2 pr-3 text-[color:var(--muted)]">{p.role ?? ""}</td>
+                    <td className="py-2 pr-3 text-[color:var(--dim)]">{p.group}</td>
+                    <td className="py-2 text-right">{link(p.page)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {f.subsidiaries && f.subsidiaries.length > 0 && (
+            <div>
+              <p className="text-[0.8125rem] text-[color:var(--muted)]">Group companies named on the site</p>
+              <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[0.8125rem]">
+                {f.subsidiaries.map((s) => <li key={s.name}>{s.name}{s.country ? <span className="text-[color:var(--dim)]"> · {s.country}</span> : null}{s.percent != null ? <span className="kbd text-[color:var(--dim)]"> {pct(s.percent)}</span> : null} {link(s.page)}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </Section>
   );
 }

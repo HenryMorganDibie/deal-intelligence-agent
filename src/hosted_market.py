@@ -890,6 +890,13 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     profile = await run_in_threadpool(company_profile.build, name, ticker.upper() if ticker else None, country,
                                       deals(), cik, None, listing)
     profile["valuation"] = market_risk.valuation_view(profile.get("name") or name, deals(), profile)
+    # The company's own website, read by web-harvester in the hourly job: queued here when the site is known.
+    from src import company_web
+    site = (profile.get("identity") or {}).get("website")
+    stored = await run_in_threadpool(company_web.request, profile.get("name") or name, site)
+    if stored:
+        profile["web"] = {"website": stored.get("website"), "status": stored.get("status"),
+                          "crawled_at": stored.get("crawled_at"), "facts": stored.get("facts") or None}
     mark = profile["valuation"].get("latest_mark")
     if mark and not profile.get("listing"):
         from src.engines import markets

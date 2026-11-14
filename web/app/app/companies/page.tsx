@@ -6,7 +6,7 @@ import { Container } from "../../../components/primitives";
 import { DealRows, ErrorNote, Field, Loading, Pill, Stat, Table, Td, num, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { get, type Comparables, type Deal } from "../../../lib/market";
-import { CompanyGovernance, type Governance, type Identity } from "../../../components/app/CompanyGovernance";
+import { CompanyGovernance, type Governance, type Identity, type Web } from "../../../components/app/CompanyGovernance";
 
 type Item = { current: number; prior?: number; line?: string };
 type Financials = {
@@ -31,6 +31,7 @@ type Profile = {
   sources: string[];
   identity?: Identity & { business?: string };
   governance?: Governance;
+  web?: Web;
   market?: Record<string, unknown> | null;
   multiples?: Record<string, number>;
   multiples_withheld?: string;
@@ -196,7 +197,7 @@ export default function CompaniesPage() {
             {p.identity?.business && <p className="mt-4 max-w-3xl text-[0.875rem] leading-relaxed text-[color:var(--muted)]">{String(p.identity.business).slice(0, 700)}</p>}
           </section>
 
-          <CompanyGovernance identity={p.identity} governance={p.governance} country={p.country} />
+          <CompanyGovernance identity={p.identity} governance={p.governance} country={p.country} web={p.web} />
 
           {p.market && (
             <section>
