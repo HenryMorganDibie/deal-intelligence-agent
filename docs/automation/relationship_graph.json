@@ -1419,6 +1419,30 @@
     "sintana exposed pel": {
       "name": "Sintana-exposed PEL",
       "kind": "organization"
+    },
+    "benjamin danso": {
+      "name": "Benjamin Danso",
+      "kind": "organization"
+    },
+    "ndc greater accra": {
+      "name": "NDC Greater Accra",
+      "kind": "organization"
+    },
+    "advanta": {
+      "name": "Advanta",
+      "kind": "organization"
+    },
+    "misr hytech": {
+      "name": "Misr Hytech",
+      "kind": "organization"
+    },
+    "ethiopia": {
+      "name": "Ethiopia",
+      "kind": "organization"
+    },
+    "bridge initiative": {
+      "name": "BRIDGE Initiative",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -4850,7 +4874,49 @@
           "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPVm5zeVo3ZWJhNVktSHk2OTk2d2dPbnl4a21qUkYtOXVsbzRGMmVXZjNKaERieW1STjgtZGJkUWNxNjhDNDd3cmZKeWcxalpqN01qX0xON3J4eEQyYkh2UUpkR1J4eGI2ZVZ3WDFURl9nRjJBbDBhTW52SFQwOE1MTTFPT2FEdDZGMUZPSWpWZ0IxMkVXYzl5eC1IdlRrbks5cU85clVYbjAwTEtxOFdwa2dab3JycUVDUXlweHNhSzBSNEMzRjNFcXpEWjRLRnZo?oc=5"
         }
       ]
+    },
+    "cce0dc68912cd45cc845": {
+      "id": "cce0dc68912cd45cc845",
+      "from": "benjamin danso",
+      "to": "ndc greater accra",
+      "type": "acquisition",
+      "first_seen": "2026-11-14",
+      "sources": [
+        {
+          "title": "Ashie Moore unseated as Benjamin Danso takes over NDC Greater Accra chairmanship",
+          "publisher": "CitiNewsroom.com",
+          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOSGNQaUdUT3NvVjZTb1FyQ2tUbFhqMVpodU44elNrbWtWYXkwazBZWE12U3J4TDlzZDNIQWg1REoxMzM0bHZuVm9HeTgtZzUwWFFya0twVXdxZG5OeFE2ZzROWDNiUXh6ZVJoVFNrdkRkX2tYdDlrUDNqWkI4NDJNWFRkZWF5V3ozSGhGcWVnTmRMd3FpTk1ZcjZzY1QxUVNBSnJGN1VvaElxU19DQ0tpc19tcFB3OE1NSmc?oc=5"
+        }
+      ]
+    },
+    "6a1a715ebc6b60a92965": {
+      "id": "6a1a715ebc6b60a92965",
+      "from": "advanta",
+      "to": "misr hytech",
+      "type": "acquisition",
+      "first_seen": "2026-11-14",
+      "sources": [
+        {
+          "title": "UPL's Advanta to acquire Egypt's Misr Hytech, eyes bigger Africa play",
+          "publisher": "Fortune India",
+          "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQcWlFQXRKRDZRRmV1c295Y1hJdjgwS3BOUXdYekhoQXA5N1NnUUZ4c24zTkhITndEUGR2dEIwUnk2bzVyajUxeUR6Zy11ZzJtRFYwRlBxbFN6TFNRMEh6aGgxV2E4MTRBejI1TjZnbDRnNXNYUDZzM3A2REo1eTlXeklObWE4dXdxaW0tdVRtRFVCTDZNU0FTdzAxLXVhMFhGeXE3bW5JcGVodlZKM1dJQlVwZnVGcFnSAcQBQVVfeXFMTWFNbjJjcmhpeHBGQ0dSSzVuRVFBSTM0OUZHZEVSdHNxM2hqZkVxSXdDTnllWUVvUExnQVZpSzRyejBMZ05LU2xfSkxOM3VEeU1Ja2Y0NzFacFFQc1dwb1oydnJnSUxhN3ZWcVpRcjVZXzZiMjdKUEVMM1BrZ2YtaEp5V3JHUndnVm5FTldmTmJIczJKX3drcUhfcUhoNnc4Z1BIZ3RkeTdkdnA5dFVnUlMxRW1QanN2OHJVNXRjZ3AtOXFBZQ?oc=5"
+        }
+      ]
+    },
+    "6bc9131ae84d92489743": {
+      "id": "6bc9131ae84d92489743",
+      "from": "ethiopia",
+      "to": "bridge initiative",
+      "type": "equity_funding",
+      "first_seen": "2026-11-14",
+      "sources": [
+        {
+          "title": "Ethiopia Backs Country-Led Climate Investment Drive at Launch of COP31’s BRIDGE Initiative",
+          "publisher": "Fana Media Corporation S.C",
+          "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNczVhQkVFOXdiMmJ2SWN5bnN3dTJVQUxqMDFQd2ktQVBlUk4zZHRBU1lSdzhud205OUR0ZlktVzJ0bThkT3N3b2YyNlpCclBVZEJqVGxlcHlmZDlfVzIxRlVhUXRIWFU0TlA3NFRoa21PYzFHWkRtMlNXUklxS21kOVh5bWhaTEZDRlZ6M2xiRUFYaHBxY3FBOTBnejl1SGppVGZxSTg4cGt5RjB1cXVRRWF4eEpIYnZ5MmZwZVln?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-14T11:54:56.622346+00:00"
+  "updated_at": "2026-11-14T19:26:45.365012+00:00"
 }
