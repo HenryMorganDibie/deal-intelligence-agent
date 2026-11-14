@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-14T10:39:22.041175+00:00",
+  "updated_at": "2026-11-14T13:12:35.181895+00:00",
   "current": {
     "company": "Standard Bank",
     "company_url": "/companies?name=Standard%20Bank",
@@ -32,7 +32,7 @@
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-11-07",
     "period_end": "2026-11-13",
-    "selected_at": "2026-11-14T10:39:22.039310+00:00",
+    "selected_at": "2026-11-14T13:12:35.180009+00:00",
     "selection_version": 5,
     "companies": [
       {
@@ -66,7 +66,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-11-07",
         "period_end": "2026-11-13",
-        "selected_at": "2026-11-14T10:39:22.039310+00:00",
+        "selected_at": "2026-11-14T13:12:35.180009+00:00",
         "selection_version": 5
       },
       {
@@ -100,7 +100,41 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-11-07",
         "period_end": "2026-11-13",
-        "selected_at": "2026-11-14T10:39:22.039310+00:00",
+        "selected_at": "2026-11-14T13:12:35.180009+00:00",
+        "selection_version": 5
+      },
+      {
+        "company": "OSP",
+        "company_url": "/companies?name=OSP",
+        "headline": "Service Passport Scandal: OSP Opens Probe Into Alleged Sales",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "GH",
+        "sector": "logistics",
+        "announced": "2026-11-10",
+        "score": 49.61,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Modern Ghana",
+            "title": "Service Passport Scandal: OSP Opens Probe Into Alleged Sales",
+            "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE9GQ3c0QTM3XzRCLWRETHhuWHhKWVVTcVgwYjRlSk1DR1BONjF2Z2otSm5udDlRanhxcEt2bUhVRllwOVE2SWdqUWp2bUc4X0VBMGd5LXctSjVicGxVc0FhbHoyWdIBXEFVX3lxTE1velFsLWYxbFdIRlRMMzVsTHpna1ZsdjJCZXhQenM3Szc5T0xHeEhscXFLRElwZHl6bE5FS2FMTGhxV3lKaE9OckxPNi1OaHdUNzdHdGNEX1pfazZY?oc=5",
+            "date": "2026-11-10",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-07",
+        "period_end": "2026-11-13",
+        "selected_at": "2026-11-14T13:12:35.180009+00:00",
         "selection_version": 5
       },
       {
@@ -134,7 +168,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-11-07",
         "period_end": "2026-11-13",
-        "selected_at": "2026-11-14T10:39:22.039310+00:00",
+        "selected_at": "2026-11-14T13:12:35.180009+00:00",
         "selection_version": 5
       },
       {
@@ -168,7 +202,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-11-07",
         "period_end": "2026-11-13",
-        "selected_at": "2026-11-14T10:39:22.039310+00:00",
+        "selected_at": "2026-11-14T13:12:35.180009+00:00",
         "selection_version": 5
       }
     ],
@@ -4196,7 +4230,7 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-11-07",
       "period_end": "2026-11-13",
-      "selected_at": "2026-11-14T10:39:22.039310+00:00",
+      "selected_at": "2026-11-14T13:12:35.180009+00:00",
       "selection_version": 5,
       "companies": [
         {
@@ -4230,7 +4264,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-11-07",
           "period_end": "2026-11-13",
-          "selected_at": "2026-11-14T10:39:22.039310+00:00",
+          "selected_at": "2026-11-14T13:12:35.180009+00:00",
           "selection_version": 5
         },
         {
@@ -4264,7 +4298,41 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-11-07",
           "period_end": "2026-11-13",
-          "selected_at": "2026-11-14T10:39:22.039310+00:00",
+          "selected_at": "2026-11-14T13:12:35.180009+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "OSP",
+          "company_url": "/companies?name=OSP",
+          "headline": "Service Passport Scandal: OSP Opens Probe Into Alleged Sales",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "GH",
+          "sector": "logistics",
+          "announced": "2026-11-10",
+          "score": 49.61,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Modern Ghana",
+              "title": "Service Passport Scandal: OSP Opens Probe Into Alleged Sales",
+              "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE9GQ3c0QTM3XzRCLWRETHhuWHhKWVVTcVgwYjRlSk1DR1BONjF2Z2otSm5udDlRanhxcEt2bUhVRllwOVE2SWdqUWp2bUc4X0VBMGd5LXctSjVicGxVc0FhbHoyWdIBXEFVX3lxTE1velFsLWYxbFdIRlRMMzVsTHpna1ZsdjJCZXhQenM3Szc5T0xHeEhscXFLRElwZHl6bE5FS2FMTGhxV3lKaE9OckxPNi1OaHdUNzdHdGNEX1pfazZY?oc=5",
+              "date": "2026-11-10",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-07",
+          "period_end": "2026-11-13",
+          "selected_at": "2026-11-14T13:12:35.180009+00:00",
           "selection_version": 5
         },
         {
@@ -4298,7 +4366,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-11-07",
           "period_end": "2026-11-13",
-          "selected_at": "2026-11-14T10:39:22.039310+00:00",
+          "selected_at": "2026-11-14T13:12:35.180009+00:00",
           "selection_version": 5
         },
         {
@@ -4332,7 +4400,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-11-07",
           "period_end": "2026-11-13",
-          "selected_at": "2026-11-14T10:39:22.039310+00:00",
+          "selected_at": "2026-11-14T13:12:35.180009+00:00",
           "selection_version": 5
         }
       ],
