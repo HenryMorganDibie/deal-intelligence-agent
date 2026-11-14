@@ -169,61 +169,102 @@ def _page(pages: list[str], n) -> Optional[str]:
     return pages[n - 1] if isinstance(n, int) and 1 <= n <= len(pages) else None
 
 
+def _page_number(v):
+    """A page number as the model wrote it ("92", 92.0, "p 92", "p92") as an int; anything else unchanged."""
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, float) and v.is_integer():
+        return int(v)
+    if isinstance(v, str):
+        m = re.fullmatch(r"\s*(?:p(?:age)?\.?\s*)?(\d{1,4})\s*", v, re.I)
+        return int(m.group(1)) if m else v
+    return v
+
+
+def _normalise_pages(raw: dict) -> dict:
+    out = {}
+    for k, v in raw.items():
+        if k.endswith("_page"):
+            out[k] = _page_number(v)
+        elif isinstance(v, list):
+            out[k] = [{**i, "page": _page_number(i.get("page"))} if isinstance(i, dict) else i for i in v]
+        else:
+            out[k] = v
+    return out
+
+
 def verify(raw: dict, pages: list[str], allowed: list[int]) -> dict:
     """Only the facts found on the page they cite (one of the pages that were read)."""
+    raw = _normalise_pages(raw if isinstance(raw, dict) else {})
     ok = lambda n: n in allowed and _page(pages, n) is not None         # noqa: E731
     out: dict = {}
     rc = str(raw.get("rc_number") or "")
     digits = re.sub(r"\D", "", rc)
     if 4 <= len(digits) <= 9 and ok(raw.get("rc_page")) and digits in re.sub(r"\D", " ", _page(pages, raw["rc_page"])).split():
         out["rc_number"] = digits
+    def find(cited, test) -> Optional[int]:
+        """The page the fact is on: the one cited when it is there, else the only page read that has it (a model can
+        cite a report's printed page number instead of the [p N] tag)."""
+        if ok(cited) and test(_page(pages, cited)):
+            return cited
+        hits = [n for n in allowed if _page(pages, n) is not None and test(_page(pages, n))]
+        return hits[0] if len(hits) == 1 else None
+
     office = raw.get("registered_office")
-    if isinstance(office, str) and ok(raw.get("office_page")):
+    if isinstance(office, str):
         words = [w for w in _norm(office).split() if len(w) > 2]
-        hay = _norm(_page(pages, raw["office_page"]))
-        if words and sum(w in hay for w in words) >= 0.8 * len(words):
+        if words and find(raw.get("office_page"), lambda t: sum(w in _norm(t) for w in words) >= 0.8 * len(words)):
             out["registered_office"] = " ".join(office.split())
     for key in ("company_secretary", "auditor", "registrar", "holding_company"):
         v = raw.get(key)
-        if isinstance(v, str) and v.strip() and ok(raw.get("corporate_page")) and _name_on_page(v, _page(pages, raw["corporate_page"])):
+        if isinstance(v, str) and v.strip() and find(raw.get("corporate_page"), lambda t, v=v: _name_on_page(v, t)):
             out[key] = " ".join(v.split())
     board = []
     for b in raw.get("board") or []:
-        if isinstance(b, dict) and isinstance(b.get("name"), str) and ok(b.get("page")) and _name_on_page(b["name"], _page(pages, b["page"])):
-            item = {"name": " ".join(b["name"].split()), "page": b["page"]}
-            role = b.get("role")
-            if isinstance(role, str) and role.strip() and _name_on_page(role, _page(pages, b["page"])):
-                item["role"] = " ".join(role.split())
-            if isinstance(b.get("nationality"), str) and _name_on_page(b["nationality"], _page(pages, b["page"])):
-                item["nationality"] = b["nationality"].strip()
-            if item["name"].lower() not in {x["name"].lower() for x in board}:
-                board.append(item)
+        if not (isinstance(b, dict) and isinstance(b.get("name"), str)):
+            continue
+        n = find(b.get("page"), lambda t, b=b: _name_on_page(b["name"], t))
+        if not n:
+            continue
+        text = _page(pages, n)
+        item = {"name": " ".join(b["name"].split()), "page": n}
+        role = b.get("role")
+        if isinstance(role, str) and role.strip() and _name_on_page(role, text):
+            item["role"] = " ".join(role.split())
+        if isinstance(b.get("nationality"), str) and _name_on_page(b["nationality"], text):
+            item["nationality"] = b["nationality"].strip()
+        if item["name"].lower() not in {x["name"].lower() for x in board}:
+            board.append(item)
     if board:
         out["board"] = board
     committees = []
     for c in raw.get("committees") or []:
-        if isinstance(c, dict) and isinstance(c.get("name"), str) and ok(c.get("page")) and _name_on_page(c["name"], _page(pages, c["page"])):
-            members = [" ".join(m.split()) for m in c.get("members") or []
-                       if isinstance(m, str) and _name_on_page(m, _page(pages, c["page"]))]
-            if members:
-                committees.append({"name": " ".join(c["name"].split()), "members": members, "page": c["page"]})
+        if not (isinstance(c, dict) and isinstance(c.get("name"), str)):
+            continue
+        n = find(c.get("page"), lambda t, c=c: _name_on_page(c["name"], t))
+        if not n:
+            continue
+        members = [" ".join(m.split()) for m in c.get("members") or []
+                   if isinstance(m, str) and _name_on_page(m, _page(pages, n))]
+        if members:
+            committees.append({"name": " ".join(c["name"].split()), "members": members, "page": n})
     if committees:
         out["committees"] = committees
     for key in ("shareholders", "subsidiaries"):
         rows = []
         for r in raw.get(key) or []:
-            if not (isinstance(r, dict) and isinstance(r.get("name"), str) and ok(r.get("page"))):
+            if not (isinstance(r, dict) and isinstance(r.get("name"), str)):
                 continue
-            text = _page(pages, r["page"])
             pct = r.get("percent")
-            if not _name_on_page(r["name"], text) or not _percent_on_page(pct, text):
+            n = find(r.get("page"), lambda t, r=r, pct=pct: _name_on_page(r["name"], t) and _percent_on_page(pct, t))
+            if not n:
                 continue
             if key == "shareholders" and (pct in (None, "") or float(str(pct).replace("%", "")) < 5):
                 continue
-            item = {"name": " ".join(r["name"].split()), "page": r["page"]}
+            item = {"name": " ".join(r["name"].split()), "page": n}
             if pct not in (None, ""):
                 item["percent"] = float(str(pct).replace("%", ""))
-            if key == "subsidiaries" and isinstance(r.get("country"), str) and _name_on_page(r["country"], text):
+            if key == "subsidiaries" and isinstance(r.get("country"), str) and _name_on_page(r["country"], _page(pages, n)):
                 item["country"] = r["country"].strip()
             if item["name"].lower() not in {x["name"].lower() for x in rows}:
                 rows.append(item)

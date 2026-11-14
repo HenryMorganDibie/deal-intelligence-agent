@@ -113,7 +113,10 @@ jobs:
           set -euo pipefail
           test -x "$RUNNER_TEMP/crawl" || (cd web-harvester && go build -o "$RUNNER_TEMP/crawl" ./cmd/crawl)
           sudo apt-get install -y -q tesseract-ocr poppler-utils >/dev/null || echo "OCR tools unavailable"
-          if (cd web-harvester && timeout 240 sh scripts/install-playwright.sh --with-deps >/dev/null); then
+          # Playwright's system-package installer does not know every runner image yet (Ubuntu 26.04); the runner
+          # already carries Chromium's libraries, so the browser alone is tried next.
+          if (cd web-harvester && timeout 240 sh scripts/install-playwright.sh --with-deps >/dev/null) || \
+             (cd web-harvester && timeout 240 sh scripts/install-playwright.sh >/dev/null); then
             export HARVESTER_RENDER=auto
           else
             echo "Chromium unavailable; crawling over plain HTTP"

@@ -130,3 +130,13 @@ def test_a_scanned_filing_is_read_by_ocr_only_where_ocr_is_allowed(monkeypatch):
     assert gov.extract(b"pdf", "MTN", "d", "u", call=model) is None                  # the profile: no OCR there
     out = gov.extract(b"pdf", "MTN", "d", "u", call=model, allow_ocr=True)            # the scheduled job
     assert out["rc_number"] == "395010" and out["ocr"] is True
+
+
+def test_a_fact_cited_on_the_wrong_page_is_kept_on_the_one_page_that_has_it():
+    raw = {"board": [{"name": "Mr. Karl Toriola", "role": "Chief Executive Officer", "page": "118"}],      # printed page
+           "shareholders": [{"name": "MTN International (Mauritius) Limited", "percent": "73.39", "page": 2}]}
+    out = gov.verify(raw, _pages(), allowed=[2, 9, 10])
+    assert out["board"] == [{"name": "Mr. Karl Toriola", "page": 2, "role": "Chief Executive Officer"}]
+    assert out["shareholders"][0]["page"] == 9
+    # Not on any page read: still dropped.
+    assert gov.verify({"board": [{"name": "Invented Person", "page": 2}]}, _pages(), allowed=[2, 9, 10]) == {}
