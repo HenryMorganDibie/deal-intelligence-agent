@@ -188,7 +188,7 @@ def test_compact_directors_list_outranks_profile_pages():
 
 def test_rereading_a_report_never_loses_confirmed_facts():
     from src.engines import governance as g
-    old = {"source_url": "u", "board": [{"name": f"Director {chr(65 + i)}"} for i in range(11)], "auditor": "KPMG", "auditor_page": 213,
+    old = {"source_url": "u", "checker": 2, "board": [{"name": f"Director {chr(65 + i)}"} for i in range(11)], "auditor": "KPMG", "auditor_page": 213,
            "committees": [{"name": "Audit"}], "pages_read": [92]}
     new = {"source_url": "u", "board": [{"name": "a"}] * 4, "subsidiaries": [{"name": "s"}] * 48, "pages_read": [166]}
     m = g.merge_reads(new, old)
@@ -215,3 +215,72 @@ def test_profile_style_board_pages_and_shareholder_analysis_are_found():
     assert g._score("board", profiles) > g._score("board", "Board of directors met four times.")
     analysis = "Analysis of shareholders\nPublic Investment Corporation 22.53 172 387 018"
     assert g._score("shareholders", analysis) > 0
+
+
+def test_departed_directors_and_layout_board_check():
+    from src.engines import governance as g
+    footnoted = ("Directors\nAliko Dangote, GCON* Chairman\nEmmanuel Ikazoboh** Independent Non-Executive Director\n"
+                 "Arvind Pathak Group Managing Director\n* Retired effective 25 July 2025\n"
+                 "** Appointed Chairman effective 25th July 2025\n")
+    assert g.departed("Aliko Dangote", footnoted) and not g.departed("Emmanuel Ikazoboh", footnoted)
+    assert not g.departed("Arvind Pathak", footnoted)
+    profiles = ("Steve Pacak\n71, male, South African\nNon-executive director\nDate of first appointment:\n"
+                "15 January 2015\nDeceased:\n20 April 2026\nMark Sorour\n64, male, South African\n"
+                "Non-executive director\nDate of first appointment:\n15 January 2015\n"
+                "Fabricio Bloisi Nico Marais\nChief executive Financial director\n")
+    assert g.departed("Steve Pacak", profiles) and not g.departed("Mark Sorour", profiles)
+    assert g.board_from_layout(profiles) == ["Steve Pacak", "Mark Sorour"]
+
+
+def test_values_must_appear_as_printed_and_lose_page_tags():
+    from src.engines import governance as g
+    page = "Independent auditor\nDeloitte & Touche\n5 Magwa Crescent\nRegistered office\n40 Heerengracht"
+    assert g._phrase_on_page("Deloitte & Touche", page)
+    assert not g._phrase_on_page("Deloitte & Touche South Africa (Deloitte)", page)
+    assert g._clean("40 Heerengracht, Cape Town [p 150]") == "40 Heerengracht, Cape Town"
+    assert g._page_number("[p 103]") == 103
+
+
+def test_combined_reads_keep_every_confirmed_entry_once():
+    from src.engines import governance as g
+    a = {"auditor": "KPMG", "committees": [{"name": "Audit Committee", "members": [], "page": 87}],
+         "shareholders": [{"name": "Dangote Industries Limited", "percent": 86.65, "page": 101}]}
+    b = {"auditor": "KPMG Professional Services",
+         "committees": [{"name": "Audit Committee", "members": ["A", "B"], "page": 103},
+                        {"name": "Finance Committee", "members": [], "page": 87}],
+         "shareholders": [{"name": "Stanbic IBTC Nominees Ltd", "percent": 5.47, "page": 102}]}
+    m = g.combine_reads([a, b])
+    assert m["auditor"] == "KPMG"
+    assert [c["name"] for c in m["committees"]] == ["Audit Committee", "Finance Committee"]
+    assert m["committees"][0]["members"] == ["A", "B"]
+    assert len(m["shareholders"]) == 2
+
+
+def test_list_entries_are_read_whatever_the_model_called_or_tagged_them():
+    from src.engines import governance as g
+    pages = ["", "Substantial interest\nDangote Industries Ltd. Stanbic IBTC Nominees Ltd\n% 86.65 5.47"]
+    raw = {"shareholders": [{"name": "Dangote Industries Ltd.", "percent": "86.65 [p 2]", "page": "[p 2]"},
+                            {"shareholder": "Stanbic IBTC Nominees Ltd", "percentage": "5.47%", "page": 2}]}
+    out = g.verify(raw, pages, [2])
+    assert [(r["name"], r["percent"]) for r in out["shareholders"]] == [
+        ("Dangote Industries Ltd.", 86.65), ("Stanbic IBTC Nominees Ltd", 5.47)]
+
+
+def test_registration_number_with_a_copied_page_tag_is_still_read():
+    from src.engines import governance as g
+    pages = ["Naspers\n(Registration number: 1925/001431/06)"]
+    assert g.verify({"rc_number": "1925/001431/06 [p 1]", "rc_page": 1}, pages, [1])["rc_number"] == "1925/001431/06"
+
+
+def test_a_percentage_must_be_printed_beside_its_name():
+    from src.engines import governance as g
+    diagram = "Prosus N.V. Heemstede\nBeleggings\nLimited\nMedia24\n\n\n\n100%\n100%\n43.42% Prosus N.V.\n"
+    table = "Dangote Cement Zambia Limited Cement production Zambia 99.96% 99.96%\n"
+    out = g.verify({"subsidiaries": [{"name": "Media24", "percent": "100", "page": 1},
+                                     {"name": "Dangote Cement Zambia Limited", "percent": "99.96", "page": 2}]},
+                   ["", diagram, table][1:], [1, 2])
+    rows = {r["name"]: r.get("percent") for r in out["subsidiaries"]}
+    assert rows == {"Media24": None, "Dangote Cement Zambia Limited": 99.96}
+    shares = "Date Details Dangote Industries Ltd. Stanbic IBTC Nominees Ltd\nAs of 31st Dec. 2025\nUnits 1 2\n% 86.65 5.47"
+    sh = g.verify({"shareholders": [{"name": "Stanbic IBTC Nominees Ltd", "percent": "5.47", "page": 1}]}, [shares], [1])
+    assert sh["shareholders"][0]["percent"] == 5.47

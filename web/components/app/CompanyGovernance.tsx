@@ -132,7 +132,7 @@ export function CompanyGovernance({ identity, governance: g, country, web }: { i
             {g.committees.map((c) => (
               <li key={c.name} className="text-[0.8125rem]">
                 <span className="text-[color:var(--text)]">{c.name}</span> <PageRef g={g} page={c.page} />
-                <p className="mt-0.5 text-[color:var(--muted)]">{c.members.join(", ")}</p>
+                {c.members?.length > 0 && <p className="mt-0.5 text-[color:var(--muted)]">{c.members.join(", ")}</p>}
               </li>
             ))}
           </ul>

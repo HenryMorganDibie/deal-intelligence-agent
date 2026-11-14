@@ -27,6 +27,7 @@ import asyncio
 import hashlib
 import json
 import re
+import time
 from typing import Any, Optional
 
 import os
@@ -140,6 +141,41 @@ def _gemini_client():
     import httpx
     # A stalled model fails over after 90 s instead of holding the request for three minutes.
     return httpx.Client(base_url=GEMINI_BASE, timeout=90, headers={"Authorization": f"Bearer {api_key}"})
+
+
+GEMINI_SECOND = os.getenv("DEAL_INTEL_GEMINI_SECOND", "gemini-3.1-flash-lite")
+# The free tier rejects bursts (429): calls in flight at once are capped, and a rejected call waits and retries.
+_GEMINI_SLOTS = __import__("threading").BoundedSemaphore(int(os.getenv("DEAL_INTEL_GEMINI_CONCURRENCY", "4")))
+
+
+def _gemini_post(client, body: dict):
+    """One Gemini request within the concurrency cap; a 429 (over the per-minute limit) waits and tries again, up to
+    three times, before the caller moves on to another model."""
+    for attempt in range(3):
+        with _GEMINI_SLOTS:
+            r = client.post("/chat/completions", json=body)
+        if r.status_code != 429 or attempt == 2:
+            return r
+        time.sleep(4 * (attempt + 1))
+    return r
+
+
+def second_opinion():
+    """A call to a second, different model (Gemini Flash-Lite by default) for reading the same text independently;
+    None when no Gemini key is set or the second model is the chain's first."""
+    if not os.getenv("GEMINI_API_KEY") or not GEMINI_SECOND or (GEMINI_MODELS and GEMINI_MODELS[0] == GEMINI_SECOND):
+        return None
+    client = _gemini_client()
+
+    def call(system: str, user: str, max_tokens: int) -> str:
+        body = {"model": GEMINI_SECOND, "max_tokens": max_tokens + 4000, "temperature": 0,
+                "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]}
+        if GEMINI_EFFORT:
+            body["reasoning_effort"] = GEMINI_EFFORT
+        r = _gemini_post(client, body)
+        r.raise_for_status()
+        return ((r.json().get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+    return call
 
 
 def _ollama_client():
@@ -381,7 +417,7 @@ def _call_llm_uncached(client, provider: str, system: str, user: str, max_tokens
                         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]}
                 if GEMINI_EFFORT:
                     body["reasoning_effort"] = GEMINI_EFFORT
-                r = client.post("/chat/completions", json=body)
+                r = _gemini_post(client, body)
                 r.raise_for_status()           # 429 quota / 503 busy: try the next model
                 text = ((r.json().get("choices") or [{}])[0].get("message") or {}).get("content") or ""
             except Exception as e:
