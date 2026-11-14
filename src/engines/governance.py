@@ -62,6 +62,23 @@ Return one JSON object with these keys (omit a key, or use an empty list, when t
 
 
 def page_texts(data: bytes, max_pages: int = MAX_PAGES) -> list[str]:
+    """Each page's text. PDFium reads a 236-page report in about a second (pypdf takes ten); pypdf remains the
+    fallback when PDFium is not installed or cannot open the file."""
+    try:
+        import pypdfium2 as pdfium
+        doc = pdfium.PdfDocument(data)
+        try:
+            out = []
+            for i in range(min(len(doc), max_pages)):
+                try:
+                    out.append(doc[i].get_textpage().get_text_range().replace("\r\n", "\n").replace("\r", "\n"))
+                except Exception:
+                    out.append("")
+            return out
+        finally:
+            doc.close()
+    except Exception:
+        pass
     from pypdf import PdfReader
     reader = PdfReader(io.BytesIO(data))
     out = []
@@ -407,14 +424,12 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
         call = _default_call()
         if call is None:
             return None
-    facts: dict = {}
-    used_all: list[int] = []
-    for group in GROUPS:
+    def run(group: tuple) -> tuple[tuple, dict, list[int]]:
         chosen: list[int] = []
         for key in group:
             chosen += [n for n in section_pages(pages, key) if n not in chosen]
         if not chosen:
-            continue
+            return group, {}, []
         blocks, used = [], []
         for n in chosen:                # best pages first, each trimmed, within this pass's budget
             block = f"[p {n}]\n{pages[n - 1].strip()[:_PAGE_CHARS]}\n"
@@ -429,10 +444,19 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
                                                  focus=_FOCUS[group])))
         except Exception as e:
             log.warning("governance: extraction failed for %s (%s): %s", source_url, "/".join(group), e)
-            continue
+            return group, {}, used
         found = verify(raw, pages, used)
         log.info("governance: %s pass %s read pages %s; returned %s; confirmed %s", document, "/".join(group), used,
                  sorted(k for k, v in raw.items() if v), sorted(found))
+        return group, found, used
+
+    # The passes are independent: run together, a report takes as long as its slowest pass, not their sum.
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=len(GROUPS)) as pool:
+        results = list(pool.map(run, GROUPS))
+    facts: dict = {}
+    used_all: list[int] = []
+    for group, found, used in results:   # in GROUPS order, so the outcome does not depend on timing
         for k, v in found.items():      # a fact from the pass made for it wins over one found in passing
             if k not in facts or _SECTION_OF.get(k) in group:
                 facts[k] = v
@@ -500,7 +524,10 @@ def merge_reads(new: Optional[dict], old: Optional[dict]) -> Optional[dict]:
         if k in _LISTS:
             if k == "board" and isinstance(v, list):
                 v = dedupe_board(v)
-            if isinstance(v, list) and len(v) > len(out.get(k) or []):
+            mine = out.get(k) or []
+            # A much shorter new list is a weak read: keep the earlier one. A slightly shorter one is kept: the
+            # board pass leaves out directors who have since retired.
+            if isinstance(v, list) and len(mine) < 0.75 * len(v):
                 out[k] = v
         elif k in _SCALAR_FACTS and v and not out.get(k):
             out[k] = v

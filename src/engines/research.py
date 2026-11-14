@@ -952,12 +952,23 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
         p["query_plan"] = query_plan
         fetched_news = []
         successful_queries = 0
-        for planned_query in query_plan:
+        # The news queries and the open-web search are independent: all run at once, so retrieval takes as long
+        # as the slowest one rather than their sum.
+        from concurrent.futures import ThreadPoolExecutor
+        pool = ThreadPoolExecutor(max_workers=len(query_plan) + 1)
+        web_future = pool.submit(web_search, question, p) if news is None else None
+
+        def one(planned_query: str):
             try:
-                fetched_news.extend(news_search(planned_query, news_country) or [])
-                successful_queries += 1
+                return news_search(planned_query, news_country) or [], None
             except Exception as e:
-                log.error("research news search failed for %r: %s", planned_query, e)
+                return [], e
+        for planned_query, (found, error) in zip(query_plan, pool.map(one, query_plan)):
+            if error is None:
+                fetched_news.extend(found)
+                successful_queries += 1
+            else:
+                log.error("research news search failed for %r: %s", planned_query, error)
         # De-duplicate across queries before relevance ranking; preserve publisher metadata.
         unique_news = {}
         for item in fetched_news:
@@ -1024,11 +1035,11 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
                     for candidate in group:
                         candidate["syndication_group_size"] = len(group)
                         candidate["syndicated_publishers"] = publishers
-            full_text_attempts = 0
-            for it in valid_news:
-                if news is None and full_text_attempts < 4:
-                    enriched = _fetch_article_content(it)
-                    full_text_attempts += 1
+            # The first four articles' full text, fetched together.
+            fetched_text = list(pool.map(_fetch_article_content, valid_news[:4])) if news is None else []
+            for idx, it in enumerate(valid_news):
+                if idx < len(fetched_text):
+                    enriched = fetched_text[idx]
                 else:
                     enriched = {
                         **it,
@@ -1052,7 +1063,12 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
                     items[-1]["syndication_group_size"] = enriched["syndication_group_size"]
                     items[-1]["syndicated_publishers"] = enriched.get("syndicated_publishers", [])
         # The open web (licensed search API): company pages, filings and reports that news search misses.
-        web = web_search(question, p) if news is None else []
+        try:
+            web = web_future.result(timeout=25) if web_future else []
+        except Exception as e:
+            log.warning("research web search did not finish: %s", e)
+            web = []
+        pool.shutdown(wait=False)
         seen = {(it.get("url") or "").rstrip("/").lower() for it in items if it.get("url")}
         web = [w for w in web if w["url"].rstrip("/").lower() not in seen and _date_in_scope(w.get("date"), p)]
         web = web[:min(_WEB_EVIDENCE_LIMIT, max_items)]

@@ -87,7 +87,11 @@ OPENROUTER_MODELS = [m for m in os.getenv(
 # free option, with a million-token context. DEAL_INTEL_GEMINI_MODELS changes the list as Google's models change.
 GEMINI_BASE   = os.getenv("GEMINI_BASE", "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")
 GEMINI_MODELS = [m for m in os.getenv(
-    "DEAL_INTEL_GEMINI_MODELS", "gemini-3.8-flash,gemini-3.7-flash,gemini-3.5-flash,gemini-4-hydrogen").split(",") if m]
+    "DEAL_INTEL_GEMINI_MODELS", "gemini-4-hydrogen,gemini-3.1-flash-lite,gemini-3.5-flash").split(",") if m]
+# Measured: at low thinking Gemini 4 Hydrogen answers in about 7 s and Flash-Lite in 3 s; at the default setting
+# Hydrogen can spend its whole budget thinking and return nothing, and 3.5 Flash takes 40-60 s. The newest Flash
+# models (3.7, 3.8) were overloaded (503) most of the time, so they are left out by default.
+GEMINI_EFFORT = os.getenv("DEAL_INTEL_GEMINI_EFFORT", "low")
 MODEL            = GROQ_MODEL if PROVIDER == "groq" else ANTHROPIC_MODEL
 
 # Thinking is always on for current Claude models and counts toward max_tokens,
@@ -134,7 +138,8 @@ def _gemini_client():
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY environment variable not set.")
     import httpx
-    return httpx.Client(base_url=GEMINI_BASE, timeout=180, headers={"Authorization": f"Bearer {api_key}"})
+    # A stalled model fails over after 90 s instead of holding the request for three minutes.
+    return httpx.Client(base_url=GEMINI_BASE, timeout=90, headers={"Authorization": f"Bearer {api_key}"})
 
 
 def _ollama_client():
@@ -275,12 +280,16 @@ def set_shared_llm_cache(get, put) -> None:
     _SHARED_LLM_CACHE = (get, put) if get and put else None
 
 
+_CACHE_LOCK = __import__("threading").Lock()   # calls run in parallel (governance passes); the file is shared
+
+
 def _call_llm(client, provider: str, system: str, user: str, max_tokens: int = 3000) -> str:
     """LLM call through the reproducibility cache (see LLM_CACHE_PATH)."""
     if os.getenv("DEAL_INTEL_LLM_CACHE", "1") == "0":
         return _call_llm_uncached(client, provider, system, user, max_tokens)
     key = _llm_cache_key(provider, system, user, max_tokens, client)
-    cache: dict = load_json(LLM_CACHE_PATH, dict)
+    with _CACHE_LOCK:
+        cache: dict = load_json(LLM_CACHE_PATH, dict)
     if key in cache:
         return cache[key]["text"]
     shared = None
@@ -298,11 +307,13 @@ def _call_llm(client, provider: str, system: str, user: str, max_tokens: int = 3
                 _SHARED_LLM_CACHE[1](key, text)
             except Exception:
                 pass
-    cache[key] = {"text": text, "at": utcnow().isoformat()}
-    if len(cache) > _LLM_CACHE_MAX:   # drop the oldest entries
-        for old in sorted(cache, key=lambda k: cache[k]["at"])[: len(cache) - _LLM_CACHE_MAX]:
-            del cache[old]
-    save_json(LLM_CACHE_PATH, cache)
+    with _CACHE_LOCK:                 # re-read: another call may have stored a reply meanwhile
+        cache = load_json(LLM_CACHE_PATH, dict)
+        cache[key] = {"text": text, "at": utcnow().isoformat()}
+        if len(cache) > _LLM_CACHE_MAX:   # drop the oldest entries
+            for old in sorted(cache, key=lambda k: cache[k]["at"])[: len(cache) - _LLM_CACHE_MAX]:
+                del cache[old]
+        save_json(LLM_CACHE_PATH, cache)
     return text
 
 
@@ -366,9 +377,11 @@ def _call_llm_uncached(client, provider: str, system: str, user: str, max_tokens
         errors = []
         for model in GEMINI_MODELS:
             try:
-                r = client.post("/chat/completions", json={
-                    "model": model, "max_tokens": max_tokens + 4000, "temperature": 0,
-                    "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]})
+                body = {"model": model, "max_tokens": max_tokens + 4000, "temperature": 0,
+                        "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]}
+                if GEMINI_EFFORT:
+                    body["reasoning_effort"] = GEMINI_EFFORT
+                r = client.post("/chat/completions", json=body)
                 r.raise_for_status()           # 429 quota / 503 busy: try the next model
                 text = ((r.json().get("choices") or [{}])[0].get("message") or {}).get("content") or ""
             except Exception as e:
