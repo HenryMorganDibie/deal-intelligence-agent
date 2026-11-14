@@ -1,4 +1,9 @@
 {
+  "The Big Deal": {
+    "url": "https://news.google.com/rss/search?q=site%3Athebigdeal.substack.com%20when%3A2d&hl=en-GB&gl=GB&ceid=GB:en",
+    "since": "2026-11-14",
+    "reason": "preferred feed: HTTPStatusError 403"
+  },
   "The Reporter Ethiopia": {
     "url": "https://news.google.com/rss/search?q=site%3Athereporterethiopia.com%20when%3A2d&hl=en-ET&gl=ET&ceid=ET:en",
     "since": "2026-11-09",
