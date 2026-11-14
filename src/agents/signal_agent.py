@@ -82,6 +82,12 @@ OPENROUTER_BASE   = os.getenv("OPENROUTER_BASE", "https://openrouter.ai/api/v1")
 OPENROUTER_MODELS = [m for m in os.getenv(
     "DEAL_INTEL_OPENROUTER_MODELS",
     "nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free,nvidia/nemotron-3.5-super-vl:free").split(",") if m]
+# Google Gemini (GEMINI_API_KEY): the AI Studio free tier's Flash models, newest first, through Gemini's
+# OpenAI-compatible endpoint. Pro models are not in the free tier. Tried before Groq and OpenRouter: the strongest
+# free option, with a million-token context. DEAL_INTEL_GEMINI_MODELS changes the list as Google's models change.
+GEMINI_BASE   = os.getenv("GEMINI_BASE", "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")
+GEMINI_MODELS = [m for m in os.getenv(
+    "DEAL_INTEL_GEMINI_MODELS", "gemini-3.8-flash,gemini-3.7-flash,gemini-3.5-flash,gemini-4-hydrogen").split(",") if m]
 MODEL            = GROQ_MODEL if PROVIDER == "groq" else ANTHROPIC_MODEL
 
 # Thinking is always on for current Claude models and counts toward max_tokens,
@@ -121,6 +127,14 @@ def _openrouter_client():
     import httpx
     return httpx.Client(base_url=OPENROUTER_BASE, timeout=180, headers={
         "Authorization": f"Bearer {api_key}", "X-Title": "Deal Intelligence", "HTTP-Referer": "https://deal-intelligence.app"})
+
+
+def _gemini_client():
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY environment variable not set.")
+    import httpx
+    return httpx.Client(base_url=GEMINI_BASE, timeout=180, headers={"Authorization": f"Bearer {api_key}"})
 
 
 def _ollama_client():
@@ -182,9 +196,11 @@ def _get_llm_client():
         return _zen_client(), "zen"
     if PROVIDER == "openrouter":
         return _openrouter_client(), "openrouter"
+    if PROVIDER == "gemini":
+        return _gemini_client(), "gemini"
     available, errors = [], []
     for make, name in ((_anthropic_client, "anthropic"), (_zen_client, "zen"), (_ollama_client, "ollama"),
-                       (_groq_client, "groq"), (_openrouter_client, "openrouter")):
+                       (_gemini_client, "gemini"), (_groq_client, "groq"), (_openrouter_client, "openrouter")):
         try:
             available.append((make(), name))
         except RuntimeError as e:
@@ -205,7 +221,8 @@ def _model_label(client, provider: str) -> str:
         return getattr(client, "last_model", None) or "unknown"
     return _last_model.get(provider) or {"groq": GROQ_MODEL, "ollama": OLLAMA_MODEL,
                                          "zen": ZEN_MODELS[0] if ZEN_MODELS else "unknown",
-                                         "openrouter": OPENROUTER_MODELS[0] if OPENROUTER_MODELS else "unknown"
+                                         "openrouter": OPENROUTER_MODELS[0] if OPENROUTER_MODELS else "unknown",
+                                         "gemini": GEMINI_MODELS[0] if GEMINI_MODELS else "unknown"
                                          }.get(provider, ANTHROPIC_MODEL)
 
 
@@ -232,7 +249,7 @@ _LLM_CACHE_MAX = 2000
 def _provider_models(provider: str) -> str:
     return {"groq": f"{GROQ_MODEL}|{','.join(GROQ_FALLBACK_MODELS)}",
             "ollama": f"{OLLAMA_MODEL}|{','.join(OLLAMA_FALLBACK_MODELS)}",
-            "zen": ",".join(ZEN_MODELS), "openrouter": ",".join(OPENROUTER_MODELS)}.get(
+            "zen": ",".join(ZEN_MODELS), "openrouter": ",".join(OPENROUTER_MODELS), "gemini": ",".join(GEMINI_MODELS)}.get(
         provider, f"{ANTHROPIC_MODEL}|{ANTHROPIC_EFFORT}")
 
 
@@ -345,6 +362,24 @@ def _call_llm_uncached(client, provider: str, system: str, user: str, max_tokens
                 return text
             errors.append(f"{model}: empty reply")
         raise RuntimeError("Ollama failed: " + "; ".join(errors))
+    if provider == "gemini":
+        errors = []
+        for model in GEMINI_MODELS:
+            try:
+                r = client.post("/chat/completions", json={
+                    "model": model, "max_tokens": max_tokens + 4000, "temperature": 0,
+                    "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]})
+                r.raise_for_status()           # 429 quota / 503 busy: try the next model
+                text = ((r.json().get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+            except Exception as e:
+                errors.append(f"{model}: {e}")
+                continue
+            text = re.sub(r"(?s)<think>.*?</think>", "", text).strip()
+            if text:
+                _last_model["gemini"] = model
+                return text
+            errors.append(f"{model}: empty reply")
+        raise RuntimeError("Gemini failed: " + "; ".join(errors))
     if provider == "openrouter":
         errors = []
         for model in OPENROUTER_MODELS:

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import ipaddress
 import logging
+import os
 from html.parser import HTMLParser
 import re
 from collections import Counter
@@ -1050,7 +1051,59 @@ def retrieve(question: str, deals: Iterable[dict] = (), events: Iterable[dict] =
                 if enriched.get("syndication_group_size"):
                     items[-1]["syndication_group_size"] = enriched["syndication_group_size"]
                     items[-1]["syndicated_publishers"] = enriched.get("syndicated_publishers", [])
+        # The open web (licensed search API): company pages, filings and reports that news search misses.
+        web = web_search(question, p) if news is None else []
+        seen = {(it.get("url") or "").rstrip("/").lower() for it in items if it.get("url")}
+        web = [w for w in web if w["url"].rstrip("/").lower() not in seen and _date_in_scope(w.get("date"), p)]
+        web = web[:min(_WEB_EVIDENCE_LIMIT, max_items)]
+        if web:
+            items = items[:max_items - len(web)]
+            for w in web:
+                add("web", w["title"], w["text"], w["url"], w.get("date"), w["source"])
+                items[-1]["content_status"] = "search_extract"
+        p.setdefault("query_execution", {})["web_results"] = len(web)
     return p, items[:max_items]
+
+
+_WEB_EVIDENCE_LIMIT = 6
+TAVILY_SEARCH = "https://api.tavily.com/search"
+
+
+def web_search(question: str, parsed: dict, client: Optional[httpx.Client] = None) -> list[dict]:
+    """Up to eight open-web results for the question from Tavily's search API (TAVILY_API_KEY), each with its page's
+    own URL and an extract of its text. One basic search (one credit) per question; nothing when no key is set or
+    the search fails, so research never depends on it."""
+    key = os.environ.get("TAVILY_API_KEY", "").strip()
+    if not key:
+        return []
+    names = [get_country(c).name for c in parsed.get("countries", [])[:1] if get_country(c)]
+    query = question.strip()
+    if names and names[0].lower() not in query.lower():
+        query = f"{query} {names[0]}"
+    body = {"query": query[:380], "search_depth": "basic", "max_results": 8, "include_answer": False}
+    if parsed.get("since"):
+        body["start_date"] = str(parsed["since"])[:10]
+    if parsed.get("until"):
+        body["end_date"] = str(parsed["until"])[:10]
+    try:
+        c = client or httpx.Client(timeout=20)
+        r = c.post(TAVILY_SEARCH, headers={"Authorization": f"Bearer {key}"}, json=body)
+        r.raise_for_status()
+        rows = r.json().get("results") or []
+    except Exception as e:                       # out of credits, timeout: research continues without the web
+        log.warning("research web search failed: %s", e)
+        return []
+    out = []
+    for row in rows:
+        url = str(row.get("url") or "")
+        text = re.sub(r"\s+", " ", str(row.get("content") or "")).strip()
+        if not url.startswith("https://") or len(text) < 40:
+            continue
+        host = (urlparse(url).hostname or "").lower().removeprefix("www.")
+        out.append({"title": str(row.get("title") or host)[:300], "text": text[:1500], "url": url,
+                    "date": (str(row.get("published_date") or "")[:10] or None), "source": host,
+                    "score": row.get("score")})
+    return out
 
 
 SYSTEM = """You are a global research analyst covering companies, private markets, financial markets and country risk, with particular depth in African markets.
@@ -1066,7 +1119,8 @@ Answer the question using ONLY the numbered evidence items provided. Rules:
 - Distinguish announced, signed, closed and completed transactions; do not treat them as interchangeable.
 - Cite with square brackets only, e.g. [4], never other bracket styles.
 - Write in plain text only, not Markdown or other markup. Do not use hash-prefixed headings, asterisk/underscore emphasis, Markdown bullets, numbered-list prefixes, tables, blockquotes, code fences, or Markdown links. Use short section titles on their own lines and complete natural-language paragraphs. Keep citations such as [4] exactly as citations.
-- Be concise: a short direct answer, then the key supporting points. Use currencies as reported and label conversions or derived figures clearly."""
+- Items marked "web" are extracts of pages found by open-web search: use them like news, and prefer an official page (the company, a regulator, an exchange) among them for figures.
+- Start with a direct answer in one or two sentences, then the supporting points, then what remains unconfirmed. Use currencies as reported and label conversions or derived figures clearly."""
 
 
 def _evidence_block(items: list[dict]) -> str:
@@ -1426,7 +1480,7 @@ def answer(question: str, items: list[dict], parsed: Optional[dict] = None, llm:
         return {"answer": text, "mode": "deterministic", "model": None, **_validation_summary(text, items)}
     user = f"Question: {question}\n\nEvidence items:\n{_evidence_block(items)}\n\nAnswer with citations."
     try:
-        text = llm(SYSTEM, user, 1200)
+        text = llm(SYSTEM, user, 2500)
         model = model_of() if model_of else None
     except Exception as e:
         log.warning("research LLM call failed: %s", e)
