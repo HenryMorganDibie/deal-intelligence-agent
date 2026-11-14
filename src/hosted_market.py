@@ -896,7 +896,8 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     stored = await run_in_threadpool(company_web.request, profile.get("name") or name, site, profile.get("country"),
                                      profile.pop("filing_pending_ocr", None))
     if stored:
-        profile["web"] = {"website": stored.get("website"), "status": stored.get("status"),
+        profile["web"] = {"website": stored.get("website") or (stored.get("facts") or {}).get("website"),
+                          "status": stored.get("status"),
                           "crawled_at": stored.get("crawled_at"), "facts": stored.get("facts") or None}
         facts = stored.get("facts") or {}
         if not profile.get("governance"):

@@ -23,6 +23,7 @@ from src.engines import governance
 log = logging.getLogger(__name__)
 
 PAGES_PER_SITE = 16
+SEARCHES_PER_RUN = 1                    # Tavily's free tier is 1,000 credits a month; hourly runs, one each, stay inside
 SITES_PER_RUN = 15
 INCLUDE = [r"(?i)/(about|about-us|who-we-are|our-company|company|corporate|profile|overview|history|leadership|"
            r"management|team|executive|board|directors|governance|subsidiar|group|structure|businesses|our-businesses|"
@@ -141,6 +142,48 @@ def _country_matches(claims: list, country: str) -> bool:
     return False
 
 
+# ── A website by web search, in the scheduled job: Tavily ──────────────────
+
+TAVILY = "https://api.tavily.com/search"
+_NOT_COMPANY_SITES = re.compile(
+    r"(?i)(linkedin|facebook|twitter|x\.com|instagram|youtube|wikipedia|wikidata|crunchbase|bloomberg|reuters|"
+    r"zoominfo|dnb\.com|opencorporates|glassdoor|indeed|pitchbook|cbinsights|tracxn|ft\.com|forbes|techcabal|"
+    r"techcrunch|businessday|nairametrics|punchng|guardian|vanguardngr|thisdaylive|premiumtimesng|allafrica|"
+    r"african|ngxgroup|nse\.co\.ke|jse\.co\.za|marketscreener|investing\.com|yahoo|google|apple\.com|play\.google)")
+
+
+def _name_in_domain(name: str, host: str) -> bool:
+    """The site's domain carries the company's name: a distinctive word of it, or its initials."""
+    label = host.lower().removeprefix("www.").split(".")[0].replace("-", "")
+    words = [w for w in name_key(name).split() if len(w) >= 4]
+    initials = "".join(w[0] for w in name_key(name).split() if w)
+    # Initials count when they are three letters or more, or two on a short domain (gtco.com for Guaranty Trust).
+    return any(w in label for w in words) or (len(initials) >= 3 and label.startswith(initials)) or \
+        (len(initials) == 2 and len(label) <= 5 and label.startswith(initials))
+
+
+def search_website(name: str, country_name: Optional[str] = None) -> Optional[str]:
+    """The company's own website from a web search: the first result whose domain carries its name and is not a
+    news site, social network, directory or exchange. None when no result qualifies."""
+    import httpx
+    key = os.environ.get("TAVILY_API_KEY", "").strip()
+    if not key:
+        return None
+    query = f"{name} official website" + (f" {country_name}" if country_name else "")
+    try:
+        r = httpx.post(TAVILY, headers={"Authorization": f"Bearer {key}"}, timeout=20,
+                       json={"query": query, "max_results": 6, "search_depth": "basic"})
+        results = r.json().get("results", []) if r.status_code == 200 else []
+    except (httpx.HTTPError, ValueError) as e:
+        log.warning("company web: search failed for %s: %s", name, e)
+        return None
+    for res in results:
+        host = urlparse(str(res.get("url") or "")).hostname or ""
+        if host and not _NOT_COMPANY_SITES.search(host) and _name_in_domain(name, host):
+            return normalise_site(f"https://{host}/")
+    return None
+
+
 # ── Queue and storage (the API's shared-secret database functions) ─────────
 
 def request(name: str, website: Optional[str], country: Optional[str] = None,
@@ -164,7 +207,8 @@ def request(name: str, website: Optional[str], country: Optional[str] = None,
     if not site and filing_url:
         site = wikidata_website(name, country)
     try:
-        if site or filing_url:
+        if site or filing_url or os.environ.get("COMPANY_WEB_SEARCH", "1") != "0":
+            # With no website at all the company is still queued: the scheduled job looks for its site.
             args = {"p_name_key": key, "p_name": name, "p_website": site}
             if filing_url:
                 args["p_filing_url"] = filing_url
@@ -182,6 +226,13 @@ def crawl_config(output_path: str, limit: int = SITES_PER_RUN) -> tuple[dict, li
     from src.engines.election_news import USER_AGENT
     r = hm._rpc_sync("company_web_take", {"p_limit": limit}, 15)
     companies = r.json() if r.status_code == 200 and isinstance(r.json(), list) else []
+    searches = 0
+    for c in companies:                 # no website known: look for the official one (licensed search API)
+        if not c.get("website") and searches < SEARCHES_PER_RUN and os.environ.get("TAVILY_API_KEY"):
+            searches += 1
+            found = search_website(c["name"])
+            if found:
+                c["website"], c["website_source"] = found, "Tavily web search"
     cfg = {
         "user_agent": USER_AGENT, "robots_agent": "web-harvester",
         "concurrency": 3, "max_retries": 0, "request_timeout": "15s",
@@ -328,9 +379,14 @@ def apply_crawl(companies: list[dict], pages: list[dict], call: Optional[Callabl
         filing = read_filing(c, call) if c.get("filing_url") else None
         if filing:
             facts = {**(facts or {}), "filing": filing}
+        if c.get("website_source") and c.get("website"):
+            facts = {**(facts or {}), "website": c["website"], "website_source": c["website_source"]}
         ok = bool(site_pages) or bool(filing) or (not c.get("website") and bool(c.get("filing_url")))
+        if not c.get("website") and not c.get("filing_url"):
+            ok, site_pages = True, site_pages            # nothing to read yet: done until the next request
         status = "done" if ok else "failed"
-        error = None if ok else "no pages fetched (robots.txt, timeout or no matching pages)"
+        error = (None if ok else "no pages fetched (robots.txt, timeout or no matching pages)") if c.get("website") or \
+            c.get("filing_url") else "no website found"
         hm._rpc_sync("company_web_save", {"p_name_key": c["name_key"], "p_status": status,
                                           "p_facts": facts or {}, "p_error": error}, 15)
         out["with_facts"] += bool(facts)

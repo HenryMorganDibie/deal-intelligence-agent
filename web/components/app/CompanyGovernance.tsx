@@ -18,7 +18,7 @@ export type WebFacts = {
   subsidiaries?: { name: string; country?: string; percent?: number; page: number }[];
   pages?: { n: number; url: string; title: string }[];
 };
-export type Web = { website: string; status: "queued" | "crawling" | "done" | "failed"; crawled_at?: string | null; facts: WebFacts | null };
+export type Web = { website: string | null; status: "queued" | "crawling" | "done" | "failed"; crawled_at?: string | null; facts: WebFacts | null };
 export type Identity = Record<string, unknown> & {
   board?: string[]; officers?: Officer[]; address?: string; website?: string; phone?: string; auditor?: string;
   company_secretary?: string; incorporated?: string; listed?: string; employees?: number; isin?: string;
@@ -184,7 +184,7 @@ export function CompanyGovernance({ identity, governance: g, country, web }: { i
 
 function WebSection({ web }: { web: Web }) {
   const f = web.facts && Object.keys(web.facts).length ? web.facts : null;
-  const host = web.website.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const host = (web.website ?? "").replace(/^https?:\/\//, "").replace(/\/$/, "") || "The company's website";
   const link = (n?: number) => {
     const page = f?.pages?.find((p) => p.n === n);
     return page ? <a href={page.url} target="_blank" rel="noreferrer" className="text-[0.75rem] text-[color:var(--dim)] hover:underline" title={page.title}>source</a> : null;
@@ -198,7 +198,8 @@ function WebSection({ web }: { web: Web }) {
       note={f ? <>Read from {host}{web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""} with web-harvester (robots.txt respected). Each fact is on the page linked beside it.</> : undefined}>
       {!f ? (
         <p className="text-[0.8125rem] text-[color:var(--muted)]">
-          {web.status === "done" ? `${host} was read${web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""}; its pages gave nothing that could be confirmed.`
+          {!web.website ? (web.status === "done" ? "No website could be found for this company." : "Looking for the company's website: it is read within the hour once found.")
+            : web.status === "done" ? `${host} was read${web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""}; its pages gave nothing that could be confirmed.`
             : web.status === "failed" ? `${host} could not be read (its robots.txt, a timeout, or no about, leadership or contact pages).`
             : `${host} is queued: its about, leadership, board and contact pages are read within the hour.`}
         </p>

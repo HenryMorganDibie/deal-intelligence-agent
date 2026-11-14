@@ -156,3 +156,28 @@ def test_wikidata_supplies_a_website_only_for_a_matching_company(monkeypatch):
     assert cw.wikidata_website("Other Name") is None
     responses["wbgetentities"]["entities"]["Q1"]["claims"]["P31"] = [{"mainsnak": {"datavalue": {"value": {"id": "Q5"}}}}]
     assert cw.wikidata_website("Acme Cement") is None                     # not a company
+
+
+def test_web_search_accepts_only_the_company_own_domain(monkeypatch):
+    import httpx
+
+    class R:
+        status_code = 200
+
+        def __init__(self, results):
+            self._r = results
+
+        def json(self):
+            return {"results": self._r}
+    results = [{"url": "https://www.linkedin.com/company/moniepoint"}, {"url": "https://techcabal.com/moniepoint-raises"},
+               {"url": "https://moniepoint.com/ng/about"}, {"url": "https://other.com/"}]
+    monkeypatch.setenv("TAVILY_API_KEY", "test-key")
+    sent = {}
+    monkeypatch.setattr(httpx, "post", lambda url, headers=None, json=None, timeout=None: sent.update(json=json, headers=headers) or R(results))
+    assert cw.search_website("Moniepoint Inc") == "https://moniepoint.com/"
+    assert "official website" in sent["json"]["query"] and sent["headers"]["Authorization"] == "Bearer test-key"
+    monkeypatch.setattr(httpx, "post", lambda *a, **k: R([{"url": "https://nairametrics.com/acme"}, {"url": "https://unrelated.io/"}]))
+    assert cw.search_website("Acme Holdings") is None
+    assert cw._name_in_domain("Guaranty Trust Holding Company", "www.gtco.com")            # initials
+    monkeypatch.delenv("TAVILY_API_KEY")
+    assert cw.search_website("Moniepoint") is None                                         # no key: no search
