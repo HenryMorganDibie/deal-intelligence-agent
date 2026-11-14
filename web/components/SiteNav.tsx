@@ -18,8 +18,8 @@ const NAV = [
 ];
 
 export function SiteNav() {
-  // Signed in: straight to the app's home; otherwise through sign-in, which returns there.
-  const appHref = usePlan() ? "/briefs" : "/account?next=%2Fbriefs";
+  // Signed in: straight to the app (Deals); otherwise through sign-in, which returns there.
+  const appHref = usePlan() ? "/deals" : "/account?next=%2Fdeals";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 

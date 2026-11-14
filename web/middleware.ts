@@ -113,7 +113,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   if (path.startsWith("/api/data/")) return await proxyToApi(request);
   if (path === "/app" || path.startsWith("/app/")) {             // old links: the short address, permanently
     const url = request.nextUrl.clone();
-    url.pathname = path.slice(4) || "/briefs";
+    url.pathname = path.slice(4) || "/deals";              // the app opens on Deals
     return NextResponse.redirect(url, 308);
   }
   const kind = pageKind(path);
