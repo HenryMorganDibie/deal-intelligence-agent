@@ -197,3 +197,21 @@ def test_rereading_a_report_never_loses_confirmed_facts():
     other = {**new, "source_url": "newer-report"}
     assert g.merge_reads(other, old) is other          # a new report replaces the old one's facts
     assert g.merge_reads(None, old) is None
+
+
+def test_board_initials_merge_into_the_full_name():
+    from src.engines import governance as g
+    board = [{"name": "Koos Bekker"}, {"name": "JP Bekker"}, {"name": "Fabricio Bloisi"}, {"name": "F Bloisi"},
+             {"name": "Aliko Dangote"}, {"name": "Mariya Aliko Dangote"}, {"name": "A Smith"}]
+    names = [d["name"] for d in g.dedupe_board(board)]
+    assert names == ["Koos Bekker", "Fabricio Bloisi", "Aliko Dangote", "Mariya Aliko Dangote", "A Smith"]
+
+
+def test_profile_style_board_pages_and_shareholder_analysis_are_found():
+    from src.engines import governance as g
+    profiles = "Our board and management\n" + "\n".join(
+        f"Person {i}\n60, female, South African\nIndependent non-executive director\nDate of first appointment"
+        for i in range(6))
+    assert g._score("board", profiles) > g._score("board", "Board of directors met four times.")
+    analysis = "Analysis of shareholders\nPublic Investment Corporation 22.53 172 387 018"
+    assert g._score("shareholders", analysis) > 0

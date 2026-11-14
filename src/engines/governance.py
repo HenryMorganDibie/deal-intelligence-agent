@@ -26,14 +26,16 @@ _SECTIONS = {
                             r"registered\s+company\s+number"),
     "board": re.compile(r"(?i)board\s+of\s+directors|directors\W{0,3}\s+(report|profile)|composition\s+of\s+the\s+board|"
                         r"directors\s+who\s+served|directors\s+and\s+(professional\s+)?advisers|"
-                        r"directors\s+and\s+(other\s+)?corporate\s+information|^\s*directors\s*$"),
+                        r"directors\s+and\s+(other\s+)?corporate\s+information|^\s*directors\s*$|"
+                        r"our\s+board|board\s+and\s+management|directors\s+and\s+management"),
     "committees": re.compile(r"(?i)(audit|risk|remuneration|nomination|governance)[\w ,&]{0,30}\s+committee"),
     "shareholders": re.compile(r"(?i)substantial\s+(interest|shareholding)|major\s+shareholders|holding\s+(5|five)\s*%|"
-                               r"shareholding\s+(analysis|structure)|analysis\s+of\s+shareholding|top\s+\d+\s+shareholders|"
+                               r"shareholding\s+(analysis|structure)|analysis\s+of\s+shareholding|analysis\s+of\s+shareholders|"
+                               r"shareholder\s+spread|top\s+\d+\s+shareholders|"
                                r"(5|five)\s*%\s+(and\s+above|or\s+more)|more\s+than\s+(5|five)\s*%"),
     "subsidiaries": re.compile(r"(?i)(investments?\s+in|list\s+of|principal)\s+subsidiar|subsidiar(y|ies)\s+(undertakings|companies)"),
 }
-_PER_SECTION = {"corporate": 3, "board": 3, "committees": 3, "shareholders": 3, "subsidiaries": 4}
+_PER_SECTION = {"corporate": 3, "board": 4, "committees": 3, "shareholders": 3, "subsidiaries": 4}
 # Each group is read in its own pass with its own budget, so one long section cannot crowd out another.
 GROUPS = (("corporate",), ("board",), ("committees",), ("shareholders",), ("subsidiaries",))
 _ROLE = re.compile(r"(?i)\b(chairman|chairperson|non-executive|independent|executive director|managing director|"
@@ -121,7 +123,11 @@ def _score(key: str, text: str) -> float:
         # A compact list (one director a line, role at the end) is the whole board on one page: it outranks
         # profile pages, which name fewer directors in more words.
         listed = len(re.findall(r"(?im)^[^\n]{3,80}?\b(chairman|chairperson|director|chief executive officer)\s*\**\s*$", text))
-        return 1 + len(_ROLE.findall(text)) + (2 * listed if listed >= 6 else 0)
+        # Profile pages print each director's role on its own line under the name (Naspers: "Independent
+        # non-executive director"): several such lines are a run of board profiles.
+        roles = len(re.findall(r"(?im)^\s*(lead\s+)?(independent\s+)?(non-?\s?executive\s+|executive\s+)?"
+                               r"(chair(man|person)?|director|chief\s+executive)[\w ,&-]{0,40}$", text))
+        return 1 + len(_ROLE.findall(text)) + (2 * listed if listed >= 6 else 0) + (2 * roles if roles >= 4 else 0)
     if key == "corporate":
         score = 1 + sum(bool(re.search(p, text, re.I)) for p in (r"registered\s+office", r"auditor", r"registrar",
                                                                    r"company\s+secretary", r"\bRC\b|company\s+number"))
@@ -433,6 +439,8 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
         used_all += [n for n in used if n not in used_all]
     if not facts:
         return None
+    if facts.get("board"):
+        facts["board"] = dedupe_board(facts["board"])
     used = sorted(used_all)
     if ocr:
         facts["ocr"] = True
@@ -445,7 +453,8 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
 _FOCUS = {
     ("corporate",): "In this pass give only rc_number, registered_office, company_secretary, auditor, registrar and "
                     "holding_company (with their pages).\n",
-    ("board",): "In this pass give only board, every director listed.\n",
+    ("board",): "In this pass give only board: every current director listed, leaving out anyone marked as "
+                "retired, resigned or deceased.\n",
     ("committees",): "In this pass give only committees, with their members.\n",
     ("shareholders",): "In this pass give only shareholders.\n",
     ("subsidiaries",): "In this pass give only subsidiaries, every one listed, keeping each item short.\n",
@@ -453,6 +462,32 @@ _FOCUS = {
 
 
 _LISTS = ("board", "committees", "shareholders", "subsidiaries")
+_INITIALS = re.compile(r"^(?:[A-Z]{1,4}\.?\s*)+$")
+
+
+def dedupe_board(board: list) -> list:
+    """One entry per director. A report may print a director by initials in one place ("JP Bekker") and by name in
+    another ("Koos Bekker"); the initials form is dropped when exactly one full name shares its surname."""
+    def split(name: str) -> tuple[str, str]:
+        parts = re.sub(r",.*$", "", str(name or "")).split()
+        return (" ".join(parts[:-1]), parts[-1].lower()) if len(parts) > 1 else ("", (parts or [""])[0].lower())
+    full: dict[str, int] = {}
+    for d in board:
+        given, surname = split(d.get("name") if isinstance(d, dict) else d)
+        if given and not _INITIALS.match(given):
+            full[surname] = full.get(surname, 0) + 1
+    out, seen = [], set()
+    for d in board:
+        name = d.get("name") if isinstance(d, dict) else d
+        given, surname = split(name)
+        if given and _INITIALS.match(given) and full.get(surname) == 1:
+            continue
+        key = re.sub(r"[^a-z]", "", str(name).lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(d)
+    return out
 
 
 def merge_reads(new: Optional[dict], old: Optional[dict]) -> Optional[dict]:
@@ -463,6 +498,8 @@ def merge_reads(new: Optional[dict], old: Optional[dict]) -> Optional[dict]:
     out = dict(new)
     for k, v in old.items():
         if k in _LISTS:
+            if k == "board" and isinstance(v, list):
+                v = dedupe_board(v)
             if isinstance(v, list) and len(v) > len(out.get(k) or []):
                 out[k] = v
         elif k in _SCALAR_FACTS and v and not out.get(k):
