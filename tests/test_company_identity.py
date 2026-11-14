@@ -107,7 +107,7 @@ def test_extract_reads_each_kind_of_fact_in_its_own_pass(monkeypatch):
             return '{"shareholders": [{"name": "MTN International (Mauritius) Limited", "percent": "73.39", "page": 9}]}'
         return 'Here it is: {"rc_number": "395010", "rc_page": 2}' if "[p 2]" in user else "{}"
     out = gov.extract(b"pdf", "MTN Nigeria", "2025 AFS", "https://doclib.example/mtn.pdf", "2026-02-26", call=model)
-    assert len(prompts) == 3                                    # corporate/board/committees, shareholders, subsidiaries
+    assert len(prompts) == len([g for g in gov.GROUPS if any(gov.section_pages(_pages(), k) for k in g)])   # a pass per group with pages
     assert any("[p 10]" in p and "[p 2]" not in p for p in prompts)     # subsidiaries read on their own
     assert out["rc_number"] == "395010" and out["shareholders"][0]["percent"] == 73.39
     assert out["source_url"] == "https://doclib.example/mtn.pdf" and {2, 9} <= set(out["pages_read"])
@@ -158,3 +158,14 @@ def test_corporate_page_beats_agm_notice_and_tables_run_onto_the_next_page():
     assert out["shareholders"] == [{"name": "Dangote Industries Ltd.", "page": 5, "percent": 86.65}]
     assert gov.verify({"rc_number": "1925/001431/06", "rc_page": 1}, ["Registration number: 1925/001431/06"], [1])["rc_number"] == "1925/001431/06"
     assert gov.verify({"rc_number": "2087", "rc_page": 1}, ["RC 208767"], [1]) == {}       # part of a number: no
+
+
+def test_corporate_facts_written_as_objects_with_their_own_pages_are_read():
+    raw = {"auditor": {"name": "Ernst & Young Nigeria", "page": 2}, "company_secretary": "Uto Ukpanah",
+           "company_secretary_page": "p 2", "registrar": {"name": "Coronation Registrars Limited", "page": 99},
+           "rc_number": {"number": "395010", "page": 2}}
+    out = gov.verify(raw, _pages(), allowed=[2, 9, 10])
+    assert out["auditor"] == "Ernst & Young Nigeria" and out["company_secretary"] == "Uto Ukpanah"
+    assert out["registrar"] == "Coronation Registrars Limited"          # cited a page not read; found on p2
+    assert out["rc_number"] == "395010"
+    assert gov.GROUPS[0] == ("corporate",)                               # corporate details read on their own

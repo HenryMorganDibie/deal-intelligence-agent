@@ -32,9 +32,9 @@ _SECTIONS = {
                                r"(5|five)\s*%\s+(and\s+above|or\s+more)|more\s+than\s+(5|five)\s*%"),
     "subsidiaries": re.compile(r"(?i)(investments?\s+in|list\s+of|principal)\s+subsidiar|subsidiar(y|ies)\s+(undertakings|companies)"),
 }
-_PER_SECTION = {"corporate": 2, "board": 3, "committees": 3, "shareholders": 3, "subsidiaries": 4}
+_PER_SECTION = {"corporate": 3, "board": 3, "committees": 3, "shareholders": 3, "subsidiaries": 4}
 # Each group is read in its own pass with its own budget, so one long section cannot crowd out another.
-GROUPS = (("corporate", "board", "committees"), ("shareholders",), ("subsidiaries",))
+GROUPS = (("corporate",), ("board", "committees"), ("shareholders",), ("subsidiaries",))
 _ROLE = re.compile(r"(?i)\b(chairman|chairperson|non-executive|independent|executive director|managing director|"
                    r"chief executive|director)\b")
 
@@ -49,7 +49,8 @@ USER = """Pages from the {company} annual financial statements ({document}):
 Return one JSON object with these keys (omit a key, or use an empty list, when the pages do not state it):
 "rc_number": registration number as printed (e.g. "RC 208767"), with "rc_page";
 "registered_office": the registered office address, with "office_page";
-"company_secretary", "auditor", "registrar", "holding_company": names as printed, with "corporate_page";
+"company_secretary", "auditor", "registrar", "holding_company": names as printed, each with its own page
+("company_secretary_page", "auditor_page", "registrar_page", "holding_company_page");
 "board": [{{"name", "role" (e.g. "Chairman", "Independent Non-Executive Director", "Chief Executive Officer"), "nationality" if stated, "page"}}];
 "committees": [{{"name", "members": [names], "page"}}];
 "shareholders": [{{"name", "percent" (as printed, e.g. "86.65"), "page"}}] for holders of 5% or more;
@@ -195,7 +196,18 @@ def _page_number(v):
     return v
 
 
+_SCALAR_FACTS = ("rc_number", "registered_office", "company_secretary", "auditor", "registrar", "holding_company")
+
+
 def _normalise_pages(raw: dict) -> dict:
+    raw = dict(raw)
+    for k in _SCALAR_FACTS:             # {"name": "KPMG", "page": 102} as well as "KPMG" with "auditor_page"
+        v = raw.get(k)
+        if isinstance(v, dict):
+            raw[k] = next((v[f] for f in ("name", "value", "address", "number", "text") if isinstance(v.get(f), str)), None)
+            if v.get("page") is not None:
+                page_key = {"rc_number": "rc_page", "registered_office": "office_page"}.get(k, f"{k}_page")
+                raw.setdefault(page_key, v["page"])
     out = {}
     for k, v in raw.items():
         if k.endswith("_page"):
@@ -244,8 +256,8 @@ def verify(raw: dict, pages: list[str], allowed: list[int]) -> dict:
             out["registered_office"] = " ".join(office.split())
     for key in ("company_secretary", "auditor", "registrar", "holding_company"):
         v = raw.get(key)
-        if isinstance(v, str) and v.strip() and find(raw.get("corporate_page"), lambda t, v=v: _name_on_page(v, t),
-                                                     "corporate"):
+        if isinstance(v, str) and v.strip() and find(raw.get(f"{key}_page", raw.get("corporate_page")),
+                                                     lambda t, v=v: _name_on_page(v, t), "corporate"):
             out[key] = " ".join(v.split())
     board = []
     for b in raw.get("board") or []:
