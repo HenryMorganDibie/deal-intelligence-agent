@@ -75,6 +75,13 @@ _ZEN_MESSAGES_API = re.compile(r"^(claude-|qwen3\.8-flash|qwen3\.[56]-plus)")
 OLLAMA_HOST          = os.getenv("OLLAMA_HOST", "https://ollama.com").rstrip("/")
 OLLAMA_MODEL         = os.getenv("DEAL_INTEL_OLLAMA_MODEL", "gemma4:31b")
 OLLAMA_FALLBACK_MODELS = [m for m in os.getenv("DEAL_INTEL_OLLAMA_FALLBACKS", "gpt-oss:120b").split(",") if m]
+# OpenRouter (OPENROUTER_API_KEY): its free models, strongest first; free models come and go, so the list is
+# configurable (DEAL_INTEL_OPENROUTER_MODELS). Tried after Groq: both are free, and either one's rate limit falls
+# through to the other.
+OPENROUTER_BASE   = os.getenv("OPENROUTER_BASE", "https://openrouter.ai/api/v1").rstrip("/")
+OPENROUTER_MODELS = [m for m in os.getenv(
+    "DEAL_INTEL_OPENROUTER_MODELS",
+    "nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free,nvidia/nemotron-3.5-super-vl:free").split(",") if m]
 MODEL            = GROQ_MODEL if PROVIDER == "groq" else ANTHROPIC_MODEL
 
 # Thinking is always on for current Claude models and counts toward max_tokens,
@@ -94,7 +101,8 @@ def _groq_client():
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError("GROQ_API_KEY environment variable not set.")
-    return GroqClient(api_key=api_key)
+    # One retry: a rate-limited call moves on to the next provider instead of waiting out Groq's back-off.
+    return GroqClient(api_key=api_key, max_retries=1)
 
 
 def _zen_client():
@@ -104,6 +112,15 @@ def _zen_client():
     import httpx
     return httpx.Client(base_url=ZEN_BASE, timeout=180, headers={
         "Authorization": f"Bearer {api_key}", "x-api-key": api_key, "anthropic-version": "2023-06-01"})
+
+
+def _openrouter_client():
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENROUTER_API_KEY environment variable not set.")
+    import httpx
+    return httpx.Client(base_url=OPENROUTER_BASE, timeout=180, headers={
+        "Authorization": f"Bearer {api_key}", "X-Title": "Deal Intelligence", "HTTP-Referer": "https://deal-intelligence.app"})
 
 
 def _ollama_client():
@@ -163,9 +180,11 @@ def _get_llm_client():
         return _ollama_client(), "ollama"
     if PROVIDER == "zen":
         return _zen_client(), "zen"
+    if PROVIDER == "openrouter":
+        return _openrouter_client(), "openrouter"
     available, errors = [], []
     for make, name in ((_anthropic_client, "anthropic"), (_zen_client, "zen"), (_ollama_client, "ollama"),
-                       (_groq_client, "groq")):
+                       (_groq_client, "groq"), (_openrouter_client, "openrouter")):
         try:
             available.append((make(), name))
         except RuntimeError as e:
@@ -185,7 +204,9 @@ def _model_label(client, provider: str) -> str:
     if provider == "router":
         return getattr(client, "last_model", None) or "unknown"
     return _last_model.get(provider) or {"groq": GROQ_MODEL, "ollama": OLLAMA_MODEL,
-                                         "zen": ZEN_MODELS[0] if ZEN_MODELS else "unknown"}.get(provider, ANTHROPIC_MODEL)
+                                         "zen": ZEN_MODELS[0] if ZEN_MODELS else "unknown",
+                                         "openrouter": OPENROUTER_MODELS[0] if OPENROUTER_MODELS else "unknown"
+                                         }.get(provider, ANTHROPIC_MODEL)
 
 
 def public_model_name(model: Optional[str]) -> Optional[str]:
@@ -211,7 +232,7 @@ _LLM_CACHE_MAX = 2000
 def _provider_models(provider: str) -> str:
     return {"groq": f"{GROQ_MODEL}|{','.join(GROQ_FALLBACK_MODELS)}",
             "ollama": f"{OLLAMA_MODEL}|{','.join(OLLAMA_FALLBACK_MODELS)}",
-            "zen": ",".join(ZEN_MODELS)}.get(
+            "zen": ",".join(ZEN_MODELS), "openrouter": ",".join(OPENROUTER_MODELS)}.get(
         provider, f"{ANTHROPIC_MODEL}|{ANTHROPIC_EFFORT}")
 
 
@@ -324,6 +345,24 @@ def _call_llm_uncached(client, provider: str, system: str, user: str, max_tokens
                 return text
             errors.append(f"{model}: empty reply")
         raise RuntimeError("Ollama failed: " + "; ".join(errors))
+    if provider == "openrouter":
+        errors = []
+        for model in OPENROUTER_MODELS:
+            try:
+                r = client.post("/chat/completions", json={
+                    "model": model, "max_tokens": max_tokens + 4000, "temperature": 0,
+                    "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]})
+                r.raise_for_status()           # 402/429: no credit or over the free limit: try the next
+                text = ((r.json().get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+            except Exception as e:
+                errors.append(f"{model}: {e}")
+                continue
+            text = re.sub(r"(?s)<think>.*?</think>", "", text).strip()
+            if text:
+                _last_model["openrouter"] = model
+                return text
+            errors.append(f"{model}: empty reply")
+        raise RuntimeError("OpenRouter failed: " + "; ".join(errors))
     if provider == "groq":
         errors = []
         for model in [GROQ_MODEL, *[m for m in GROQ_FALLBACK_MODELS if m != GROQ_MODEL]]:
