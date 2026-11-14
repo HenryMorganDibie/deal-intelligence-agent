@@ -38,9 +38,14 @@ export default function AccountPage() {
     if (params.get("mode") === "sign-up") setMode("sign-up");
     if (params.get("error") === "oauth_unavailable") setError("Google sign-in is temporarily unavailable. Please try again.");
     fetch("/api/portfolio/auth", { cache: "no-store" })
-      .then(async (r) => setSession(r.ok ? ((await r.json()) as Session) : { authenticated: false }))
+      .then(async (r) => {
+        const s = r.ok ? ((await r.json()) as Session) : { authenticated: false };
+        // Already signed in and sent here on the way to a page (an "Open the app" button): go straight there.
+        if (s.authenticated && params.get("next")) { router.replace(safeNext(params.get("next"))); return; }
+        setSession(s);
+      })
       .catch(() => setSession({ authenticated: false }));
-  }, []);
+  }, [router]);
 
   // Live username availability, debounced.
   useEffect(() => {

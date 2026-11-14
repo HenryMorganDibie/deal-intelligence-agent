@@ -45,7 +45,7 @@ export default function NewMarketBriefPage() {
 
   return (
     <Container className="max-w-3xl py-10 lg:py-14">
-      <Link href="/" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">← All briefs</Link>
+      <Link href="/briefs" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">← All briefs</Link>
       <p className="eyebrow mt-8">New market brief</p>
       <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">Deals &amp; M&amp;A intelligence</h1>
       <p className="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">

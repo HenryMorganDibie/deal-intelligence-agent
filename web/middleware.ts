@@ -5,7 +5,8 @@ import { AUTH_STATE_COOKIE, AUTH_STATE_TTL_SECONDS, readAuthState, signAuthState
 // The app lives at the site's own addresses (/deals, /markets, /companies...); its pages are files under app/app/ and
 // are served there by a rewrite here. Old /app/... links redirect permanently to the short address.
 //   - App-only pages (/companies, /countries, /investors...) need a signed-in account.
-//   - Shared pages (/, /deals, /deals/<id>, /markets, /coverage) also have a public version: a signed-in visitor
+//   - The home page (/) is the public site for everyone; the app's home is /briefs.
+//   - Shared pages (/deals, /deals/<id>, /markets, /coverage) also have a public version: a signed-in visitor
 //     gets the app, everyone else (and search engines) the public page.
 // A signed-in account is checked here:
 //   1. the session token's signature is verified against Supabase's published signing key (ES256);
@@ -86,9 +87,9 @@ async function proxyToApi(request: NextRequest): Promise<NextResponse> {
   return NextResponse.rewrite(target, { request: { headers } });
 }
 
-const SHARED = [/^\/$/, /^\/deals$/, /^\/deals\/[^/]+$/, /^\/markets$/, /^\/coverage$/];
+const SHARED = [/^\/deals$/, /^\/deals\/[^/]+$/, /^\/markets$/, /^\/coverage$/];
 const APP_ONLY = [
-  /^\/api-keys$/, /^\/briefs\/[^/]+$/, /^\/companies$/, /^\/countries(\/[^/]+)?$/, /^\/elections(\/.*)?$/, /^\/evaluation$/,
+  /^\/api-keys$/, /^\/briefs$/, /^\/briefs\/[^/]+$/, /^\/companies$/, /^\/countries(\/[^/]+)?$/, /^\/elections(\/.*)?$/, /^\/evaluation$/,
   /^\/investors(\/[^/]+)?$/, /^\/market-briefs\/.+$/, /^\/research$/, /^\/watchlists(\/[^/]+)?$/,
   /^\/markets\/(compare|investments|monitoring|portfolio|portfolio\/cloud|screener|valuation)$/,
 ];
@@ -102,7 +103,8 @@ function pageKind(path: string): "app" | "shared" | null {
 
 function appRewrite(request: NextRequest): NextResponse {
   const url = request.nextUrl.clone();
-  url.pathname = request.nextUrl.pathname === "/" ? "/app" : `/app${request.nextUrl.pathname}`;
+  // /briefs is the app's home page (app/app/page.tsx); every other page sits at /app + its address.
+  url.pathname = request.nextUrl.pathname === "/briefs" ? "/app" : `/app${request.nextUrl.pathname}`;
   return NextResponse.rewrite(url);
 }
 
@@ -111,7 +113,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   if (path.startsWith("/api/data/")) return await proxyToApi(request);
   if (path === "/app" || path.startsWith("/app/")) {             // old links: the short address, permanently
     const url = request.nextUrl.clone();
-    url.pathname = path.slice(4) || "/";
+    url.pathname = path.slice(4) || "/briefs";
     return NextResponse.redirect(url, 308);
   }
   const kind = pageKind(path);
@@ -182,7 +184,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 }
 
 export const config = {
-  matcher: ["/", "/app", "/app/:path*", "/api/data/:path*", "/api-keys", "/briefs/:path*", "/companies", "/countries/:path*",
+  matcher: ["/app", "/app/:path*", "/api/data/:path*", "/api-keys", "/briefs/:path*", "/companies", "/countries/:path*",
             "/coverage", "/deals/:path*", "/elections/:path*", "/evaluation", "/investors/:path*", "/market-briefs/:path*",
             "/markets/:path*", "/research", "/watchlists/:path*"],
 };

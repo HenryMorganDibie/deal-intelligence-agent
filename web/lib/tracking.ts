@@ -124,5 +124,5 @@ export function setInApp(value: boolean) {
   inApp = value;
 }
 export function recordedPath(path: string): string {
-  return inApp ? (path === "/" ? "/app" : `/app${path}`) : path;
+  return inApp ? (path === "/briefs" ? "/app" : `/app${path}`) : path;    // the app home was /app
 }

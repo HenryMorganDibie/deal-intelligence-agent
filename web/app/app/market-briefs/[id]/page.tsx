@@ -128,7 +128,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
   return (
     <Container className="max-w-5xl py-10 lg:py-14">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3 print-hide">
-        <Link href="/" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">← All briefs</Link>
+        <Link href="/briefs" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">← All briefs</Link>
         {row && <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-ghost h-8 px-3 text-[0.8125rem]" onClick={async () => {
             try { await navigator.clipboard.writeText(window.location.href); setCopied(true); }

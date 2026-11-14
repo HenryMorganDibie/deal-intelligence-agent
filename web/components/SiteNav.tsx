@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { LINKS } from "../lib/site";
+import { usePlan } from "../lib/plan";
 import { Container, LogoMark } from "./primitives";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -17,6 +18,8 @@ const NAV = [
 ];
 
 export function SiteNav() {
+  // Signed in: straight to the app's home; otherwise through sign-in, which returns there.
+  const appHref = usePlan() ? "/briefs" : "/account?next=%2Fbriefs";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -58,7 +61,7 @@ export function SiteNav() {
           <a href={LINKS.methodology} className="btn btn-ghost hidden h-9 px-3.5 text-sm xl:inline-flex">
             Methodology
           </a>
-          <a href="/account?next=%2Fdeals" className="btn btn-primary hidden h-9 px-3.5 text-sm sm:inline-flex">
+          <a href={appHref} className="btn btn-primary hidden h-9 px-3.5 text-sm sm:inline-flex">
             Open app
           </a>
           <button
@@ -97,7 +100,7 @@ export function SiteNav() {
               <a href={LINKS.methodology} className="btn btn-ghost h-10 flex-1 text-sm">
                 Methodology
               </a>
-              <a href="/account?next=%2Fdeals" className="btn btn-primary h-10 flex-1 text-sm">
+              <a href={appHref} className="btn btn-primary h-10 flex-1 text-sm">
                 Open app
               </a>
             </div>

@@ -17,14 +17,14 @@ const NAV: [string, string][] = [
   ["/investors", "Investors"],
   ["/companies", "Companies"],
   ["/countries", "Countries"],
-  ["/", "Briefs"],
+  ["/briefs", "Briefs"],
   ["/research", "Research"],
   ["/watchlists", "Alerts"],
 ];
 
 // Line icons for the phone tab bar (24px grid, drawn with currentColor).
 const ICONS: Record<string, ReactNode> = {
-  "/": <><path d="M7 3h7l5 5v13H7z" /><path d="M14 3v5h5M10 13h6M10 17h6" /></>,
+  "/briefs": <><path d="M7 3h7l5 5v13H7z" /><path d="M14 3v5h5M10 13h6M10 17h6" /></>,
   "/research": <><circle cx="11" cy="11" r="6" /><path d="m20 20-4.5-4.5" /></>,
   "/markets": <><path d="M4 19h16" /><path d="m5 15 4-4 3 3 6-7" /><path d="M15 7h3v3" /></>,
   "/deals": <><path d="M7 7h11l-3-3M17 17H6l3 3" /></>,
@@ -35,7 +35,7 @@ const ICONS: Record<string, ReactNode> = {
 };
 
 const isActive = (pathname: string, href: string) =>
-  href === "/" ? pathname === "/" || pathname.startsWith("/briefs") : pathname.startsWith(href);
+  href === "/briefs" ? pathname.startsWith("/briefs") || pathname.startsWith("/market-briefs") : pathname.startsWith(href);
 
 /** Phone navigation: a bottom tab bar within thumb reach that slides sideways to show every section. */
 function MobileTabs({ pathname }: { pathname: string }) {
@@ -101,7 +101,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 border-b hairline bg-ink/85 backdrop-blur-xl">
         <Container className="flex h-14 items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-6">
-            <Link href="/" className="flex shrink-0 items-center gap-2.5 text-[0.9375rem] font-medium tracking-tight">
+            <Link href="/" title="Home page" className="flex shrink-0 items-center gap-2.5 text-[0.9375rem] font-medium tracking-tight">
               <LogoMark />
               <span className="hidden sm:inline">Deal Intelligence</span>
             </Link>
