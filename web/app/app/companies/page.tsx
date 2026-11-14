@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { Container } from "../../../components/primitives";
-import { DealRows, ErrorNote, Field, Loading, PageHeader, Pill, Stat, Table, Td, num, usd, words } from "../../../components/app/ui";
+import { DealRows, ErrorNote, Field, Loading, Pill, Stat, Table, Td, num, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { get, type Comparables, type Deal } from "../../../lib/market";
 
@@ -152,12 +152,12 @@ export default function CompaniesPage() {
       : "unchecked";
   return (
     <Container className="py-10 lg:py-14">
-      <PageHeader eyebrow="Companies" title="Profiles and financial statements.">
-        Listed companies: exchange profile, market data and the latest audited statements, parsed from the filing and
-        checked with accounting identities (each figure is marked verified, inconsistent or unchecked). NGX and NSE Kenya
-        statements come from the exchanges&apos; own filings; other listings from Yahoo Finance, cross-checked against SEC
-        filings when a CIK is given. Private companies: funding rounds, valuations and investors from the deals database.
-      </PageHeader>
+      <header className="mb-6">
+        <h1 className="h2 text-[1.75rem] sm:text-[2rem]">Companies</h1>
+        <p className="mt-1.5 max-w-3xl text-[0.875rem] text-[color:var(--muted)]">
+          Any company listed on the NGX, NSE, JSE, EGX or Casablanca, or that has appeared in a deal, with statements checked line by line where the exchange publishes them.
+        </p>
+      </header>
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_auto]">
         <Field label="Company">
           <input required value={form.name} onChange={set("name")} placeholder="Dangote Cement" className="field" />
