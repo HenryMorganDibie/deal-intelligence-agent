@@ -482,8 +482,8 @@ def dedupe_board(board: list) -> list:
         given, surname = split(name)
         if given and _INITIALS.match(given) and full.get(surname) == 1:
             continue
-        key = re.sub(r"[^a-z]", "", str(name).lower())
-        if key in seen:
+        key = re.sub(r"[^a-z0-9]", "", str(name).lower())
+        if key and key in seen:
             continue
         seen.add(key)
         out.append(d)

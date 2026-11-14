@@ -188,7 +188,7 @@ def test_compact_directors_list_outranks_profile_pages():
 
 def test_rereading_a_report_never_loses_confirmed_facts():
     from src.engines import governance as g
-    old = {"source_url": "u", "board": [{"name": str(i)} for i in range(11)], "auditor": "KPMG", "auditor_page": 213,
+    old = {"source_url": "u", "board": [{"name": f"Director {chr(65 + i)}"} for i in range(11)], "auditor": "KPMG", "auditor_page": 213,
            "committees": [{"name": "Audit"}], "pages_read": [92]}
     new = {"source_url": "u", "board": [{"name": "a"}] * 4, "subsidiaries": [{"name": "s"}] * 48, "pages_read": [166]}
     m = g.merge_reads(new, old)
