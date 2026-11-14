@@ -66,7 +66,7 @@ export function CompanyGovernance({ identity, governance: g, country, web }: { i
   const officers = id.officers ?? [];
   const nigeria = country === "NG";
   const sourceNote = g ? (
-    <>read from <a href={g.source_url} target="_blank" rel="noreferrer" className="hover:underline">{g.source.replace(/^Annual financial statements filed with the exchange: /, "")}</a>
+    <>read from {g.source.startsWith("Annual report published on the company's website") ? "the annual report on the company's website, " : ""}<a href={g.source_url} target="_blank" rel="noreferrer" className="hover:underline">{g.source.replace(/^[^:]+: /, "")}</a>
       {g.filed ? `, filed ${g.filed}` : ""}. Each fact appears on the page shown, as printed; anything that could not be confirmed is left out.</>
   ) : null;
 

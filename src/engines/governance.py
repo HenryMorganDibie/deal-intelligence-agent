@@ -18,7 +18,7 @@ from typing import Callable, Optional
 
 log = logging.getLogger(__name__)
 
-MAX_PAGES = 140                 # notes on subsidiaries sit well into the statements
+MAX_PAGES = 600                 # every page: notes on subsidiaries sit deep in long reports (GTCO's runs to 336)
 _MAX_PROMPT_CHARS = 18000
 
 _SECTIONS = {
@@ -27,10 +27,16 @@ _SECTIONS = {
     "board": re.compile(r"(?i)board\s+of\s+directors|directors\W{0,3}\s+(report|profile)|composition\s+of\s+the\s+board|"
                         r"directors\s+who\s+served"),
     "committees": re.compile(r"(?i)(audit|risk|remuneration|nomination|governance)[\w ,&]{0,30}\s+committee"),
-    "shareholders": re.compile(r"(?i)substantial\s+(interest|shareholding)|major\s+shareholders|holding\s+(5|five)\s*%"),
+    "shareholders": re.compile(r"(?i)substantial\s+(interest|shareholding)|major\s+shareholders|holding\s+(5|five)\s*%|"
+                               r"shareholding\s+(analysis|structure)|analysis\s+of\s+shareholding|top\s+\d+\s+shareholders|"
+                               r"(5|five)\s*%\s+(and\s+above|or\s+more)|more\s+than\s+(5|five)\s*%"),
     "subsidiaries": re.compile(r"(?i)(investments?\s+in|list\s+of|principal)\s+subsidiar|subsidiar(y|ies)\s+(undertakings|companies)"),
 }
-_PER_SECTION = {"corporate": 2, "board": 3, "committees": 2, "shareholders": 2, "subsidiaries": 3}
+_PER_SECTION = {"corporate": 2, "board": 3, "committees": 3, "shareholders": 3, "subsidiaries": 4}
+# Each group is read in its own pass with its own budget, so one long section cannot crowd out another.
+GROUPS = (("corporate", "board", "committees"), ("shareholders",), ("subsidiaries",))
+_ROLE = re.compile(r"(?i)\b(chairman|chairperson|non-executive|independent|executive director|managing director|"
+                   r"chief executive|director)\b")
 
 SYSTEM = ("You read pages of a company's audited annual financial statements and return governance facts as JSON. "
           "Copy every name, title and figure exactly as printed. Never infer, translate or complete a value; leave out "
@@ -68,20 +74,38 @@ _PRIORITY = ("corporate", "shareholders", "board", "subsidiaries", "committees")
 _PAGE_CHARS = 3500
 
 
+def _score(key: str, text: str) -> float:
+    """How strongly a page looks like the place a kind of fact is set out, 0 when it is not."""
+    if _is_contents(text):
+        return 0
+    if key == "subsidiaries":
+        # The list of subsidiaries carries an ownership percentage on every row; pages that only mention them
+        # (the auditor's report, five-year summaries) carry none.
+        n = len(_PCT.findall(text))
+        return n if re.search(r"(?i)subsidiar", text) and n >= 3 else 0
+    if not _SECTIONS[key].search(text):
+        return 0
+    if key == "board":                  # a list of directors names many people next to their roles
+        return 1 + len(_ROLE.findall(text))
+    if key == "corporate":
+        return 1 + sum(bool(re.search(p, text, re.I)) for p in (r"registered\s+office", r"auditor", r"registrar",
+                                                                  r"company\s+secretary", r"\bRC\b|company\s+number"))
+    if key == "shareholders":
+        return 1 + len(_PCT.findall(text))
+    return 1 + len(re.findall(r"(?i)committee", text))
+
+
+def section_pages(pages: list[str], key: str) -> list[int]:
+    """1-based numbers of the pages most likely to set out one kind of fact, best first."""
+    scored = sorted(((_score(key, t), i + 1) for i, t in enumerate(pages)), key=lambda x: (-x[0], x[1]))
+    return [n for sc, n in scored if sc > 0][:_PER_SECTION[key]]
+
+
 def select_pages(pages: list[str]) -> list[int]:
-    """1-based numbers of the pages most likely to hold each kind of fact, most important kind first (corporate
-    details, shareholders, board, subsidiaries, committees). A contents page is skipped."""
+    """Every page chosen for any kind of fact, most important kind first."""
     chosen: list[int] = []
     for key in _PRIORITY:
-        pattern = _SECTIONS[key]
-        hits = [i + 1 for i, t in enumerate(pages) if pattern.search(t) and not _is_contents(t)]
-        if key == "subsidiaries":
-            # The list of subsidiaries carries an ownership percentage on every row; pages that only mention them
-            # (the auditor's report, five-year summaries) carry none.
-            scored = [(len(_PCT.findall(pages[i])), i + 1) for i, t in enumerate(pages)
-                      if re.search(r"(?i)subsidiar", t) and not _is_contents(t)]
-            hits = [n for c, n in sorted(scored, key=lambda x: (-x[0], x[1])) if c >= 3]
-        for n in hits[:_PER_SECTION[key]]:
+        for n in section_pages(pages, key):
             if n not in chosen:
                 chosen.append(n)
     return chosen
@@ -189,8 +213,14 @@ def _json(text: str) -> dict:
     return data if isinstance(data, dict) else {}
 
 
+_SECTION_OF = {**dict.fromkeys(("rc_number", "registered_office", "company_secretary", "auditor", "registrar",
+                                 "holding_company"), "corporate"),
+               "board": "board", "committees": "committees", "shareholders": "shareholders", "subsidiaries": "subsidiaries"}
+
+
 def extract(data: bytes, company: str, document: str, source_url: str, filed: Optional[str] = None,
-            call: Optional[Callable[[str, str], str]] = None) -> Optional[dict]:
+            call: Optional[Callable[[str, str], str]] = None,
+            source_label: str = "Annual financial statements filed with the exchange") -> Optional[dict]:
     """Governance facts from one annual statement PDF, each with the page it was read from; None when nothing on
     the pages could be confirmed. `call(system, user)` returns the model's text (the cached LLM by default)."""
     try:
@@ -198,33 +228,43 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
     except Exception as e:
         log.warning("governance: %s unreadable: %s", source_url, e)
         return None
-    chosen = select_pages(pages)
-    if not chosen:
-        return None
-    blocks, used = [], []
-    for n in chosen:                    # most important first, each page trimmed, within the prompt budget
-        block = f"[p {n}]\n{pages[n - 1].strip()[:_PAGE_CHARS]}\n"
-        if sum(len(b) for b in blocks) + len(block) > _MAX_PROMPT_CHARS:
-            continue
-        blocks.append(block)
-        used.append(n)
-    order = sorted(range(len(used)), key=lambda i: used[i])          # pages in document order for the reader
-    blocks, used = [blocks[i] for i in order], [used[i] for i in order]
     if call is None:
         call = _default_call()
         if call is None:
             return None
-    try:
-        raw = _json(call(SYSTEM, USER.format(company=company, document=document, pages="\n".join(blocks))))
-    except Exception as e:
-        log.warning("governance: extraction failed for %s: %s", source_url, e)
-        return None
-    facts = verify(raw, pages, used)
+    facts: dict = {}
+    used_all: list[int] = []
+    for group in GROUPS:
+        chosen: list[int] = []
+        for key in group:
+            chosen += [n for n in section_pages(pages, key) if n not in chosen]
+        if not chosen:
+            continue
+        blocks, used = [], []
+        for n in chosen:                # best pages first, each trimmed, within this pass's budget
+            block = f"[p {n}]\n{pages[n - 1].strip()[:_PAGE_CHARS]}\n"
+            if sum(len(b) for b in blocks) + len(block) > _MAX_PROMPT_CHARS:
+                continue
+            blocks.append(block)
+            used.append(n)
+        order = sorted(range(len(used)), key=lambda i: used[i])
+        blocks, used = [blocks[i] for i in order], [used[i] for i in order]
+        try:
+            raw = _json(call(SYSTEM, USER.format(company=company, document=document, pages="\n".join(blocks))))
+        except Exception as e:
+            log.warning("governance: extraction failed for %s (%s): %s", source_url, "/".join(group), e)
+            continue
+        found = verify(raw, pages, used)
+        for k, v in found.items():      # a fact from the pass made for it wins over one found in passing
+            if k not in facts or _SECTION_OF.get(k) in group:
+                facts[k] = v
+        used_all += [n for n in used if n not in used_all]
     if not facts:
         return None
-    return {**facts, "source": f"Annual financial statements filed with the exchange: {document}",
+    used = sorted(used_all)
+    return {**facts, "source": f"{source_label}: {document}",
             "source_url": source_url, "filed": filed, "pages_read": used,
-            "method": "Read from the filed statements; each fact appears on the page cited, names and percentages "
+            "method": "Read from the report; each fact appears on the page cited, names and percentages "
                       "as printed. Facts that could not be found on their page are left out."}
 
 

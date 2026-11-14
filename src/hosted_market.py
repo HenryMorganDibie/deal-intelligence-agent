@@ -897,6 +897,10 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     if stored:
         profile["web"] = {"website": stored.get("website"), "status": stored.get("status"),
                           "crawled_at": stored.get("crawled_at"), "facts": stored.get("facts") or None}
+        report = (stored.get("facts") or {}).get("report")
+        if report and not profile.get("governance"):    # no filing read from the exchange: the site's annual report
+            profile["governance"] = report
+            profile["sources"].append("Annual report (company website)")
     mark = profile["valuation"].get("latest_mark")
     if mark and not profile.get("listing"):
         from src.engines import markets

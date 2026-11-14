@@ -96,17 +96,21 @@ def test_governance_facts_are_kept_only_when_found_on_their_page():
     assert gov.verify({"rc_number": "395010", "rc_page": 2}, _pages(), allowed=[9]) == {}
 
 
-def test_extract_reads_selected_pages_and_returns_sourced_facts(monkeypatch):
+def test_extract_reads_each_kind_of_fact_in_its_own_pass(monkeypatch):
     monkeypatch.setattr(gov, "page_texts", lambda data, max_pages=gov.MAX_PAGES: _pages())
-    seen = {}
+    prompts = []
 
     def model(system, user):
-        seen["user"] = user
-        return 'Here it is: {"rc_number": "395010", "rc_page": 2, "shareholders": [{"name": "MTN International (Mauritius) Limited", "percent": "73.39", "page": 9}]}'
+        prompts.append(user)
+        if "[p 9]" in user and "[p 2]" not in user:            # the shareholders pass
+            return '{"shareholders": [{"name": "MTN International (Mauritius) Limited", "percent": "73.39", "page": 9}]}'
+        return 'Here it is: {"rc_number": "395010", "rc_page": 2}' if "[p 2]" in user else "{}"
     out = gov.extract(b"pdf", "MTN Nigeria", "2025 AFS", "https://doclib.example/mtn.pdf", "2026-02-26", call=model)
-    assert "[p 2]" in seen["user"] and "[p 9]" in seen["user"]
+    assert len(prompts) == 3                                    # corporate/board/committees, shareholders, subsidiaries
+    assert any("[p 10]" in p and "[p 2]" not in p for p in prompts)     # subsidiaries read on their own
     assert out["rc_number"] == "395010" and out["shareholders"][0]["percent"] == 73.39
-    assert out["source_url"] == "https://doclib.example/mtn.pdf" and 2 in out["pages_read"]
+    assert out["source_url"] == "https://doclib.example/mtn.pdf" and {2, 9} <= set(out["pages_read"])
+    assert out["source"].startswith("Annual financial statements filed with the exchange")
     assert gov.extract(b"pdf", "MTN", "d", "u", call=lambda s, u: "not json") is None
 
 

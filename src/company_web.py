@@ -21,11 +21,12 @@ from src.engines import governance
 
 log = logging.getLogger(__name__)
 
-PAGES_PER_SITE = 12
+PAGES_PER_SITE = 16
 SITES_PER_RUN = 15
 INCLUDE = [r"(?i)/(about|about-us|who-we-are|our-company|company|corporate|profile|overview|history|leadership|"
            r"management|team|executive|board|directors|governance|subsidiar|group|structure|businesses|our-businesses|"
-           r"brands|portfolio|operations|investor|contact)(?:[/?#._-]|$)"]
+           r"brands|portfolio|operations|investor|contact|annual-report|integrated-report|reports|results|financial)"
+           r"(?:[/?#._-]|$)"]
 EXCLUDE = [r"(?i)/(careers?|jobs|news|blog|press|media|events|login|signin|cart|shop|privacy|terms|cookie)",
            r"(?i)\.(pdf|jpe?g|png|zip)$", r"(?i)[?&](utm_|page=|lang=)"]
 _RANK = re.compile(r"(?i)board|director|governance|leadership|management|executive|subsidiar|group|structure|about|"
@@ -121,7 +122,7 @@ def resolve(site: str) -> str:
 def target(company: dict) -> dict:
     return {"name": company["name_key"], "start_urls": [company["website"]], "max_depth": 1,
             "max_pages": PAGES_PER_SITE, "include": INCLUDE, "exclude": EXCLUDE,
-            "extract": {"skip_links": True, "text_limit": 20000}}
+            "extract": {"text_limit": 20000}}             # links kept: annual report PDFs are found among them
 
 
 # ── Reading the crawled pages ──────────────────────────────────────────────
@@ -233,9 +234,78 @@ def apply_crawl(companies: list[dict], pages: list[dict], call: Optional[Callabl
     for c in companies:
         site_pages = by_target.get(c["name_key"], [])
         facts = read_site(c, site_pages, call) if site_pages else None
+        report = read_report(c, site_pages, call) if site_pages else None
+        if report:
+            facts = {**(facts or {}), "report": report}
         status = "done" if site_pages else "failed"
         error = None if site_pages else "no pages fetched (robots.txt, timeout or no matching pages)"
         hm._rpc_sync("company_web_save", {"p_name_key": c["name_key"], "p_status": status,
                                           "p_facts": facts or {}, "p_error": error}, 15)
         out["with_facts"] += bool(facts)
     return out
+
+
+# ── The annual report the site publishes ───────────────────────────────────
+
+_REPORT = re.compile(r"(?i)(annual|integrated)[\W_]*(report|financial[\W_]*statements?|results)")
+MAX_REPORT_BYTES = 40 * 1024 * 1024
+
+
+def find_report(pages: list[dict]) -> Optional[str]:
+    """The newest annual or integrated report PDF linked from the crawled pages (the latest year in its address)."""
+    links = {u for p in pages for u in (p.get("links") or []) if isinstance(u, str)}
+    reports = [u for u in links if urlparse(u).path.lower().endswith(".pdf") and _REPORT.search(urlparse(u).path)
+               and not re.search(r"(?i)summar|abridged|notice|proxy|agm|presentation", urlparse(u).path)]
+    if not reports:
+        return None
+
+    def year(u: str) -> int:
+        years = [int(y) for y in re.findall(r"(?<!\d)(20[0-3]\d)(?!\d)", u)]
+        return max(years) if years else 0
+    return max(reports, key=lambda u: (year(u), u))
+
+
+def _robots_allow(url: str) -> bool:
+    """The site's robots.txt allows web-harvester to fetch this address (as the crawler checks for pages)."""
+    import httpx
+    from urllib import robotparser
+    from src.engines.election_news import USER_AGENT
+    p = urlparse(url)
+    rp = robotparser.RobotFileParser()
+    try:
+        r = httpx.get(f"{p.scheme}://{p.netloc}/robots.txt", headers={"User-Agent": USER_AGENT}, timeout=15,
+                      follow_redirects=True)
+    except httpx.HTTPError:
+        return False                    # unreachable robots.txt: assume not allowed, as the crawler does
+    if r.status_code >= 500:
+        return False
+    if r.status_code >= 400:
+        return True                     # no robots.txt: everything allowed
+    rp.parse(r.text.splitlines())
+    return rp.can_fetch("web-harvester", url)
+
+
+def read_report(company: dict, pages: list[dict], call: Optional[Callable[[str, str], str]] = None) -> Optional[dict]:
+    """Board, committees, shareholders, subsidiaries and corporate details from the annual report the company's own
+    site links to, robots.txt permitting; each fact on the page it cites."""
+    import httpx
+    from src.engines.election_news import USER_AGENT
+    url = find_report(pages)
+    if not url or not _robots_allow(url):
+        return None
+    try:
+        with httpx.stream("GET", url, headers={"User-Agent": USER_AGENT}, timeout=60, follow_redirects=True) as r:
+            if r.status_code != 200:
+                return None
+            data = b""
+            for chunk in r.iter_bytes():
+                data += chunk
+                if len(data) > MAX_REPORT_BYTES:
+                    log.info("company web: report too large, skipped: %s", url)
+                    return None
+    except httpx.HTTPError as e:
+        log.warning("company web: report %s could not be fetched: %s", url, e)
+        return None
+    name = urlparse(url).path.rsplit("/", 1)[-1]
+    return governance.extract(data, company["name"], name, url, None, call,
+                              source_label="Annual report published on the company's website")

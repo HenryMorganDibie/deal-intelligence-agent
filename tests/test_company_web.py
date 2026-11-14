@@ -13,7 +13,7 @@ def test_websites_are_normalised_to_a_home_page_and_social_pages_refused():
 
 def test_crawl_target_follows_only_pages_that_say_what_they_hold():
     t = cw.target({"name_key": "mtn nigeria", "name": "MTN Nigeria", "website": "https://www.mtn.ng/"})
-    assert t["start_urls"] == ["https://www.mtn.ng/"] and t["max_depth"] == 1 and t["max_pages"] == 12
+    assert t["start_urls"] == ["https://www.mtn.ng/"] and t["max_depth"] == 1 and t["max_pages"] == 16
     import re
     inc = [re.compile(p) for p in t["include"]]
     exc = [re.compile(p) for p in t["exclude"]]
@@ -90,3 +90,29 @@ def test_text_every_page_shares_is_dropped_so_the_page_content_is_read():
     assert out[0] == "Board of Directors Emmanuel Ikazoboh Chairman"
     assert out[2] == "Contact Us Call +234 1 460 6430"
     assert cw.strip_shared(pages[:2]) == pages[:2]                  # too few pages to tell the menu apart
+
+
+def test_the_newest_full_annual_report_is_found_among_the_site_links():
+    pages = [{"links": ["https://x.com/files/annual-report-2023.pdf", "https://x.com/files/Integrated_Annual_Report_2025.pdf",
+                        "https://x.com/files/annual-report-2025-summary.pdf", "https://x.com/files/agm-notice-2025.pdf",
+                        "https://x.com/about", "https://x.com/files/2025-annual-financial-statements.pdf"]}]
+    assert cw.find_report(pages) in ("https://x.com/files/Integrated_Annual_Report_2025.pdf",
+                                     "https://x.com/files/2025-annual-financial-statements.pdf")
+    assert cw.find_report([{"links": ["https://x.com/brochure.pdf"]}]) is None
+
+
+def test_a_report_is_fetched_only_when_robots_allows_it(monkeypatch):
+    import httpx
+
+    class R:
+        def __init__(self, status, text=""):
+            self.status_code, self.text = status, text
+    monkeypatch.setattr(httpx, "get", lambda url, **k: R(200, "User-agent: *\nDisallow: /files/"))
+    assert cw._robots_allow("https://x.com/files/annual-report-2025.pdf") is False
+    assert cw._robots_allow("https://x.com/reports/annual-report-2025.pdf") is True
+    monkeypatch.setattr(httpx, "get", lambda url, **k: R(404))
+    assert cw._robots_allow("https://x.com/files/a.pdf") is True                 # no robots.txt
+    monkeypatch.setattr(httpx, "get", lambda url, **k: R(503))
+    assert cw._robots_allow("https://x.com/files/a.pdf") is False                # unreachable: not allowed
+    monkeypatch.setattr(cw, "_robots_allow", lambda url: False)
+    assert cw.read_report({"name": "X"}, [{"links": ["https://x.com/annual-report-2025.pdf"]}], call=lambda s, u: "{}") is None
