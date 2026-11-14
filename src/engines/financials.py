@@ -212,10 +212,25 @@ def _pdf_text(data: bytes, max_pages: int = 45) -> str:
     return "\n".join(pages)
 
 
+_pdf_cache: dict[str, bytes] = {}
+
+
+def pdf_bytes(url: str) -> bytes:
+    """A filed PDF, kept for the last few documents so the statements and the governance pages are read from one
+    download."""
+    if url in _pdf_cache:
+        return _pdf_cache[url]
+    data = httpx.get(url, headers=_HEADERS, timeout=60, follow_redirects=True).content
+    _pdf_cache[url] = data
+    while len(_pdf_cache) > 4:
+        _pdf_cache.pop(next(iter(_pdf_cache)))
+    return data
+
+
 def statement_from_pdf(url: str, fetch: Optional[Callable[[str], bytes]] = None) -> Optional[dict]:
     """Parse one statement PDF; None when it cannot be read or holds no statement lines."""
     try:
-        data = fetch(url) if fetch else httpx.get(url, headers=_HEADERS, timeout=60, follow_redirects=True).content
+        data = fetch(url) if fetch else pdf_bytes(url)
         text = _pdf_text(data)
     except Exception as e:
         log.warning("statement %s unreadable: %s", url, e)
@@ -298,6 +313,48 @@ def nse_documents(company: str, client: Optional[httpx.Client] = None) -> list[d
         docs.append({"title": title, "url": r.get("source_url"), "filed": (r.get("date") or "")[:10],
                      "audited": bool(_ANNUAL_TITLE.search(title)) and not re.search(r"(?i)unaudited|six\s+months|half", title)})
     return docs
+
+
+NSE_LISTED = "https://www.nse.co.ke/listed-companies/"
+_nse_listed_cache: dict = {"at": 0.0, "value": None}
+
+
+def parse_nse_listed(page: str) -> list[dict]:
+    """NSE Kenya's listed companies page: each security's name, trading symbol, ISIN and the sector section
+    (a toggle heading) it sits under."""
+    import html as _html
+    pattern = re.compile(r"\|\s*([^|]{3,120}?)\s*\|\s*Trading Symbol:\s*\|?\s*([A-Z0-9.]{2,12})\s*\|\s*"
+                         r"ISIN(?: CODE)?:\s*\|?\s*([A-Z]{2}[A-Z0-9]{10})")
+    out = []
+    for chunk in re.split(r'class="toggle-heading"', page)[1:]:
+        head = re.search(r"</i>\s*([^<]+)</a>", chunk)
+        sector = _html.unescape(head.group(1)).strip().title() if head else None
+        text = _html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " | ", chunk)))
+        text = re.sub(r"(\|\s*)+", "| ", text)
+        for m in pattern.finditer(text):
+            out.append({"name": m.group(1).strip(), "symbol": m.group(2).split(".")[0], "isin": m.group(3),
+                        "sector": sector})
+    return out
+
+
+def nse_listing(name: str, ticker: Optional[str] = None, client: Optional[httpx.Client] = None) -> Optional[dict]:
+    """The company's entry on NSE Kenya's listed companies page, by trading symbol or name (cached for a day)."""
+    import time as _time
+    if not _nse_listed_cache["value"] or _time.monotonic() - _nse_listed_cache["at"] > 86400:
+        try:
+            c = client or httpx.Client(timeout=30, headers=_HEADERS, follow_redirects=True)
+            _nse_listed_cache.update(at=_time.monotonic(), value=parse_nse_listed(c.get(NSE_LISTED).text))
+        except Exception as e:
+            log.warning("NSE listed companies unavailable: %s", e)
+            return None
+    rows = _nse_listed_cache["value"] or []
+    sym = (ticker or "").upper().split(".")[0]
+    if sym:
+        hit = next((r for r in rows if r["symbol"] == sym), None)
+        if hit:
+            return hit
+    key = re.sub(r"[^a-z]", "", (name or "").lower())[:12]
+    return next((r for r in rows if key and re.sub(r"[^a-z]", "", r["name"].lower()).startswith(key)), None)
 
 
 NSE_PRICES_PAGE = "https://www.nse.co.ke/dataservices/market-statistics/"

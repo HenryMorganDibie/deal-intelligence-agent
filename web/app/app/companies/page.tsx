@@ -6,6 +6,7 @@ import { Container } from "../../../components/primitives";
 import { DealRows, ErrorNote, Field, Loading, Pill, Stat, Table, Td, num, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { get, type Comparables, type Deal } from "../../../lib/market";
+import { CompanyGovernance, type Governance, type Identity } from "../../../components/app/CompanyGovernance";
 
 type Item = { current: number; prior?: number; line?: string };
 type Financials = {
@@ -28,7 +29,8 @@ type Profile = {
   country_name: string | null;
   exchange: string | null;
   sources: string[];
-  identity?: Record<string, unknown> & { board?: string[]; business?: string; source?: string };
+  identity?: Identity & { business?: string };
+  governance?: Governance;
   market?: Record<string, unknown> | null;
   multiples?: Record<string, number>;
   multiples_withheld?: string;
@@ -192,11 +194,9 @@ export default function CompaniesPage() {
             </p>
             <p className="mt-1 text-[0.75rem] text-[color:var(--dim)]">Sources: {p.sources.join(", ") || "none found"}</p>
             {p.identity?.business && <p className="mt-4 max-w-3xl text-[0.875rem] leading-relaxed text-[color:var(--muted)]">{String(p.identity.business).slice(0, 700)}</p>}
-            {p.identity?.board && p.identity.board.length > 0 && (
-              <p className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">Board: {p.identity.board.join(", ")}</p>
-            )}
-            {typeof p.identity?.auditor === "string" && <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">Auditor: {p.identity.auditor}</p>}
           </section>
+
+          <CompanyGovernance identity={p.identity} governance={p.governance} country={p.country} />
 
           {p.market && (
             <section>

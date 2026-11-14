@@ -156,6 +156,10 @@ def _scaled_unit(currency: Optional[str], stated: Optional[str]) -> str:
 def _nse_section(name: str, fetch=None, ticker: Optional[str] = None) -> dict:
     data = fin.nse_financials(name, fetch=fetch)
     out: dict = {"filings": data["statements"]}
+    listed = fin.nse_listing(name, ticker) if fetch is None else None    # tests inject documents only
+    if listed:
+        out["identity"] = {"name": re.sub(r"\s+Ord\.?\s*[\d.]*\s*$", "", listed["name"]).strip(), "symbol": listed["symbol"], "isin": listed["isin"],
+                           "sector": listed["sector"], "source": "NSE Kenya listed companies"}
     prices = fin.nse_prices() if fetch is None else None      # tests inject documents only
     row = fin.nse_price_for(name, prices, ticker)
     if row:
@@ -180,6 +184,21 @@ def _nse_section(name: str, fetch=None, ticker: Optional[str] = None) -> dict:
     return out
 
 
+def _yahoo_address(info: dict) -> Optional[str]:
+    parts = [info.get(k) for k in ("address1", "address2", "city", "zip", "country")]
+    return ", ".join(str(p).strip() for p in parts if p and str(p).strip()) or None
+
+
+def _yahoo_officers(info: dict) -> list[dict]:
+    """Named executives with their titles (Yahoo's companyOfficers), in the order Yahoo lists them."""
+    out = []
+    for o in info.get("companyOfficers") or []:
+        if isinstance(o, dict) and o.get("name") and o.get("title"):
+            out.append({"name": " ".join(str(o["name"]).split()), "title": " ".join(str(o["title"]).split()),
+                        **({"year_born": o["yearBorn"]} if isinstance(o.get("yearBorn"), int) else {})})
+    return out[:12]
+
+
 _MINOR_UNITS = {"ZAc": ("ZAR", 100), "ZAC": ("ZAR", 100), "GBp": ("GBP", 100), "GBX": ("GBP", 100)}
 
 
@@ -199,7 +218,9 @@ def _yahoo_section(ticker: str) -> Optional[dict]:
     out = {
         "identity": {"name": info.get("longName"), "sector": info.get("sector"), "industry": info.get("industry"),
                      "business": info.get("longBusinessSummary"), "employees": info.get("fullTimeEmployees"),
-                     "website": info.get("website"), "country": info.get("country"), "source": "Yahoo Finance"},
+                     "website": info.get("website"), "country": info.get("country"),
+                     "address": _yahoo_address(info), "phone": info.get("phone"),
+                     "officers": _yahoo_officers(info), "source": "Yahoo Finance"},
         "market": {"price": major(info.get("currentPrice") or info.get("regularMarketPrice")), "currency": currency,
                    "quoted_currency": info.get("currency"),
                    # Yahoo states market value and enterprise value in the major unit already.
@@ -279,6 +300,19 @@ def _flag_stale_price(profile: dict, today: Optional[datetime] = None) -> None:
         profile["multiples"] = {}
 
 
+def _governance(statements: dict, company: str) -> Optional[dict]:
+    """Board, committees, shareholders, subsidiaries and corporate details from the filed annual statements."""
+    from src.engines import governance
+    url = statements["source_url"]
+    try:
+        data = fin.pdf_bytes(url)
+    except Exception as e:
+        log.warning("governance: %s could not be fetched: %s", url, e)
+        return None
+    document = str(statements.get("source") or "").split(": ", 1)[-1] or url
+    return governance.extract(data, company, document, url, statements.get("filed"))
+
+
 def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None,
           deals: Iterable[dict] = (), cik: Optional[int] = None, fetch=None, listing: Optional[dict] = None,
           today: Optional[datetime] = None) -> dict:
@@ -323,6 +357,12 @@ def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None
         profile.update(listed)
         if listed.get("identity", {}).get("name"):
             profile["name"] = listed["identity"]["name"]
+        statements = listed.get("financials") or {}
+        if fetch is None and statements.get("source_url") and ticker and ticker.upper().endswith((".LG", ".NR")):
+            gov = _governance(statements, profile["name"])
+            if gov:
+                profile["governance"] = gov
+                profile["sources"].append("Annual statements (governance)")
     if listing:
         _apply_listing(profile, listing)
         profile["sources"].append("Daily exchange price list")
