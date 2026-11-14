@@ -192,7 +192,7 @@ def test_rereading_a_report_never_loses_confirmed_facts():
            "committees": [{"name": "Audit"}], "pages_read": [92]}
     new = {"source_url": "u", "board": [{"name": "a"}] * 4, "subsidiaries": [{"name": "s"}] * 48, "pages_read": [166]}
     m = g.merge_reads(new, old)
-    assert len(m["board"]) == 11 and len(m["subsidiaries"]) == 48 and m["committees"] == [{"name": "Audit"}]
+    assert len(m["board"]) == 12 and len(m["subsidiaries"]) == 1 and m["committees"] == [{"name": "Audit"}]
     assert m["auditor"] == "KPMG" and m["auditor_page"] == 213 and m["pages_read"] == [92, 166]
     other = {**new, "source_url": "newer-report"}
     assert g.merge_reads(other, old) is other          # a new report replaces the old one's facts
@@ -284,3 +284,11 @@ def test_a_percentage_must_be_printed_beside_its_name():
     shares = "Date Details Dangote Industries Ltd. Stanbic IBTC Nominees Ltd\nAs of 31st Dec. 2025\nUnits 1 2\n% 86.65 5.47"
     sh = g.verify({"shareholders": [{"name": "Stanbic IBTC Nominees Ltd", "percent": "5.47", "page": 1}]}, [shares], [1])
     assert sh["shareholders"][0]["percent"] == 5.47
+
+
+def test_diagram_percentages_are_not_attached_to_a_subsidiary():
+    from src.engines import governance as g
+    page = "100% 100% 100% OXL\nGlobal B.V.\nVarious\n43.42% Prosus N.V.\nDangote Cement Senegal S.A * Cement production Senegal 89.99% 99.99%"
+    assert not g._percent_near("OXL Global B.V.", "100", page, 0)
+    assert g._percent_near("Prosus N.V.", "43.42", page, 0)
+    assert g._percent_near("Dangote Cement Senegal S.A", "89.99", page, 0)

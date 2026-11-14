@@ -239,10 +239,22 @@ def _percent_near(name: str, percent, page: str, lines_after: int) -> bool:
         return False
     p = str(percent).replace("%", "").strip()
     pattern = r"\W+".join(re.escape(w) for w in words)
+    num = rf"(?<![\d.]){re.escape(p)}(?![\d])"
     for m in re.finditer(pattern, page or "", re.I):
         start = page.rfind("\n", 0, m.start()) + 1
+        if lines_after == 0:
+            # A subsidiary: its own table row (the figure after the name, on the line where the name ends) or a
+            # label line with one figure only ("43.42% Prosus N.V."). "100% 100% 100% OXL" is ambiguous.
+            end = page.find("\n", m.end())
+            end = len(page) if end < 0 else end
+            if re.search(num, page[m.end():end]):
+                return True
+            lines = page[start:end]
+            if re.search(num, lines) and len(_PCT.findall(lines)) == 1:
+                return True
+            continue
         window = page[start:].split("\n")[:lines_after + 1 + m.group(0).count("\n")]
-        if re.search(rf"(?<![\d.]){re.escape(p)}(?![\d])", "\n".join(window)):
+        if re.search(num, "\n".join(window)):
             return True
     return False
 
@@ -615,15 +627,13 @@ def merge_reads(new: Optional[dict], old: Optional[dict]) -> Optional[dict]:
     if not old or not new or old.get("source_url") != new.get("source_url") or old.get("checker") != CHECKER:
         return new or None
     out = dict(new)
+    # Both reads passed the same checks on the same report, so every entry either confirmed is kept, once.
+    lists = combine_reads([{k: new[k] for k in _LISTS if isinstance(new.get(k), list)},
+                           {k: old[k] for k in _LISTS if isinstance(old.get(k), list)}])
+    out.update(lists)
     for k, v in old.items():
         if k in _LISTS:
-            if k == "board" and isinstance(v, list):
-                v = dedupe_board(v)
-            mine = out.get(k) or []
-            # A much shorter new list is a weak read: keep the earlier one. A slightly shorter one is kept: the
-            # board pass leaves out directors who have since retired.
-            if isinstance(v, list) and len(mine) < 0.75 * len(v):
-                out[k] = v
+            continue
         elif k in _SCALAR_FACTS and v and not out.get(k):
             out[k] = v
             for pk in (k + "_page", "rc_page" if k == "rc_number" else "", "office_page" if k == "registered_office" else ""):
