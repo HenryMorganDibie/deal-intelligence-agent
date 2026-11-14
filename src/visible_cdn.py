@@ -20,6 +20,8 @@ from typing import Optional
 import httpx
 
 PATH = "/api/internal/visible-page"
+SNAPSHOT_PATH = "/api/internal/market-snapshot-page"
+SNAPSHOT_KINDS = ("quotes", "indices", "fx", "intraday", "instruments")
 _BACKOFF = 3600            # after a failure this instance reads the database directly for an hour
 _failed_at = 0.0
 
@@ -46,6 +48,36 @@ def version_key(version: Optional[dict]) -> Optional[str]:
     if not isinstance(version, dict) or version.get("changed") is None:
         return None
     return f"{version.get('count')}-{version.get('changed')}"
+
+
+def day_key(now: Optional[float] = None) -> str:
+    """Today's key (UTC). Pages cached under it hold the data as of the first read that day; a reader patches them
+    with the rows changed since midnight, so the database is read in full about once a day rather than once per
+    write (see hosted_market._load_visible)."""
+    return "d" + time.strftime("%Y-%m-%d", time.gmtime(now))
+
+
+def day_start_iso(now: Optional[float] = None) -> str:
+    """Midnight UTC of today, less ten minutes of margin, as the change-feed watermark for day-keyed pages."""
+    import calendar
+    t = time.gmtime(now)
+    start = calendar.timegm((t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0)) - 600
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(start))
+
+
+def hour_key(now: Optional[float] = None) -> str:
+    return time.strftime("%Y-%m-%dT%H", time.gmtime(now))
+
+
+def snapshot_signature(secret: str, kind: str, bucket: str) -> str:
+    return hmac.new(secret.encode(), f"snapshot|{kind}|{bucket}".encode(), hashlib.sha256).hexdigest()[:40]
+
+
+def fetch_snapshot(secret: str, kind: str) -> httpx.Response:
+    """The latest market snapshot rows of a kind, through the CDN: one database read per kind per hour."""
+    bucket = hour_key()
+    return httpx.get(f"{base()}{SNAPSHOT_PATH}", timeout=httpx.Timeout(15, connect=3),
+                     params={"kind": kind, "b": bucket, "k": snapshot_signature(secret, kind, bucket)})
 
 
 def signature(secret: str, kind: str, v: str, since: str, limit: int, after: Optional[str], max_id: Optional[str]) -> str:

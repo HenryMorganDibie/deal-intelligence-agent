@@ -260,10 +260,15 @@ def test_cold_instances_read_visible_pages_through_the_cdn_and_fall_back_to_the_
 
     page = {"max_id": "b", "rows": [{"id": "a", "announced": "2026-11-10"}, {"id": "b", "announced": "2026-11-09"}]}
 
+    changed_today = {"rows": [], "limit": 2000}
+
     def fake_sync(fn, args, timeout=30):
         db_calls.append(fn)
         if fn == "store_version":
             return R({"deals": {"changed": "2026-11-11T10:00:00Z", "count": 2}})
+        if fn == "list_changed_rows":
+            assert args["p_changed_after"].endswith("T23:50:00Z")      # midnight UTC less ten minutes
+            return R(changed_today)
         return R(page)
 
     page_fn = TestClient(vp.app)
@@ -288,7 +293,9 @@ def test_cold_instances_read_visible_pages_through_the_cdn_and_fall_back_to_the_
     hm._cache.pop("deals:visible", None)
     assert [r["id"] for r in hm._load_visible("deals")] == ["a", "b"]
     assert "list_visible_page" not in db_calls                     # the database was not read by the instance
-    assert cdn_params[0]["v"] == "2-2026-11-11T10:00:00Z" and len(cdn_params[0]["k"]) == 40
+    # Keyed by day, not by version: a write during the day does not send every reader back to the database.
+    assert cdn_params[0]["v"] == visible_cdn.day_key() and len(cdn_params[0]["k"]) == 40
+    assert "list_changed_rows" in db_calls                         # patched with today's changes only
     r = page_fn.get(visible_cdn.PATH, params=cdn_params[0])
     assert r.status_code == 200 and "s-maxage=86400" in r.headers["cache-control"]
     assert page_fn.get(visible_cdn.PATH, params={**cdn_params[0], "v": "9-2030-01-01"}).status_code == 404
@@ -302,4 +309,68 @@ def test_cold_instances_read_visible_pages_through_the_cdn_and_fall_back_to_the_
     assert [r["id"] for r in hm._load_visible("deals")] == ["a", "b"]
     assert "list_visible_page" in db_calls
     assert not visible_cdn.available()                           # and the instance stops trying for an hour
+    monkeypatch.setattr(visible_cdn, "_failed_at", 0.0)
+
+    # Today's changes are applied over the cached pages: an edited row is replaced, a hidden one dropped, a new one
+    # added; with too many to patch, the version-keyed pages are read instead.
+    monkeypatch.setattr(visible_cdn.httpx, "get", fake_get)
+    changed_today["rows"] = [{"id": "a", "announced": "2026-11-10", "title": "edited"},
+                             {"id": "b", "merged_into": "a"}, {"id": "c", "announced": "2026-11-12"}]
+    hm._cache.pop("deals:visible", None)
+    got = hm._load_visible("deals")
+    assert [r["id"] for r in got] == ["c", "a"] and got[1]["title"] == "edited"
+    changed_today.update(rows=[{"id": "x"}] * 2, limit=2)
+    cdn_params.clear()
+    hm._cache.pop("deals:visible", None)
+    assert [r["id"] for r in hm._load_visible("deals")] == ["a", "b"]
+    assert cdn_params[-1]["v"] == "2-2026-11-11T10:00:00Z"
+
+
+def test_market_snapshots_are_read_through_the_cdn_once_an_hour(env, monkeypatch):
+    import api.visible_page as vp
+    from src import visible_cdn
+
+    rows = [{"scope": "ngx", "snapshot_date": "2026-11-13", "payload": {"quotes": []}}]
+    db_calls, posted = [], []
+
+    class R:
+        status_code = 200
+
+        def __init__(self, payload):
+            self._p = payload
+            self.content = json.dumps(payload).encode()
+
+        def json(self):
+            return self._p
+
+    page_fn = TestClient(vp.app)
+
+    def fake_get(url, params=None, timeout=None):
+        assert url.endswith(visible_cdn.SNAPSHOT_PATH) and params["b"] == visible_cdn.hour_key()
+        r = page_fn.get(visible_cdn.SNAPSHOT_PATH, params=params)
+        out = R(r.json() if r.status_code == 200 else None)
+        out.status_code = r.status_code
+        assert "s-maxage=3600" in r.headers.get("cache-control", "")
+        return out
+
+    def fake_post(url, headers=None, json=None, timeout=None):
+        posted.append(json["p_kind"])
+        assert url.endswith("/rpc/list_market_snapshots")
+        return R(rows)
+
+    monkeypatch.setattr(hm, "_rpc_sync", lambda fn, args, timeout=30: db_calls.append(fn) or R(rows))
+    monkeypatch.setattr(visible_cdn.httpx, "get", fake_get)
+    monkeypatch.setattr(vp.httpx, "post", fake_post)
+    monkeypatch.setenv("DATA_CDN_URL", "https://api.example")
+    monkeypatch.setattr(hm, "API_SECRET", "api-secret")
+    monkeypatch.setattr(visible_cdn, "_failed_at", 0.0)
+    assert hm._snapshot_rows("instruments").json() == rows
+    assert db_calls == [] and posted == ["instruments"]
+    bad = {"kind": "quotes", "b": visible_cdn.hour_key(), "k": "0" * 40}
+    assert page_fn.get(visible_cdn.SNAPSHOT_PATH, params=bad).status_code == 404
+
+    def broken_get(*a, **k):
+        raise visible_cdn.httpx.ConnectError("down")
+    monkeypatch.setattr(visible_cdn.httpx, "get", broken_get)
+    assert hm._snapshot_rows("quotes").json() == rows and db_calls == ["list_market_snapshots"]
     monkeypatch.setattr(visible_cdn, "_failed_at", 0.0)

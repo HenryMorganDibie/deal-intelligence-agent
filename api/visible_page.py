@@ -42,3 +42,22 @@ def visible_page(kind: str, v: str, since: str, limit: int, k: str,
         raise HTTPException(502, "Data store unavailable.")
     return Response(r.content, media_type="application/json",
                     headers={"Cache-Control": "public, max-age=0, s-maxage=86400"})
+
+
+@app.get(visible_cdn.SNAPSHOT_PATH)
+def snapshot_page(kind: str, b: str, k: str) -> Response:
+    """The latest market snapshot rows of a kind for one hour bucket (b), for the CDN to keep for that hour."""
+    secret = os.environ.get("DEAL_INTEL_API_SECRET", "")
+    if not secret or not hmac.compare_digest(k, visible_cdn.snapshot_signature(secret, kind, b)):
+        raise HTTPException(404, "Not found.")
+    if kind not in visible_cdn.SNAPSHOT_KINDS:
+        raise HTTPException(400, "Bad snapshot request.")
+    url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+    key = os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")
+    r = httpx.post(f"{url}/rest/v1/rpc/list_market_snapshots", timeout=30,
+                   headers={"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                   json={"secret": secret, "p_kind": kind})
+    if r.status_code != 200:
+        raise HTTPException(502, "Data store unavailable.")
+    return Response(r.content, media_type="application/json",
+                    headers={"Cache-Control": "public, max-age=0, s-maxage=3600"})

@@ -362,6 +362,26 @@ def _load(kind: str) -> list[dict]:
     return rows
 
 
+def _patch_day_pages(kind: str, rows: list[dict], watermark: str) -> Optional[list[dict]]:
+    """Day-keyed CDN pages brought up to date with every row changed since midnight (UTC), or None when there are
+    too many to patch. Rows that became hidden are dropped."""
+    r = _rpc_sync("list_changed_rows", {"p_kind": kind, "p_since": HISTORY_START.isoformat(),
+                                        "p_changed_after": watermark, "p_limit": 2000}, 30)
+    r.raise_for_status()
+    payload = r.json()
+    changed = payload.get("rows") if isinstance(payload, dict) else None
+    if not isinstance(changed, list) or len(changed) >= int(payload.get("limit") or 2000):
+        return None
+    by_id = {row.get("id"): row for row in rows}
+    for row in changed:
+        if isinstance(row, dict) and row.get("id"):
+            if deals_mod.is_visible(row):
+                by_id[row["id"]] = row
+            else:
+                by_id.pop(row["id"], None)
+    return _sort_rows(kind, list(by_id.values()))
+
+
 def _load_visible(kind: str) -> list[dict]:
     """The rows the product can show (not merged, not excluded), for serving pages. The database filters them, so a
     cold instance downloads about a third less; ingestion keeps using _load, which reads every row. An instance that
@@ -392,11 +412,20 @@ def _load_visible(kind: str) -> list[dict]:
             version = None
         from src import visible_cdn
         rows = None
-        if (vkey := visible_cdn.version_key(version)) and visible_cdn.available() and API_SECRET:
+        if visible_cdn.version_key(version) and visible_cdn.available() and API_SECRET:
             try:
-                rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True, version=vkey)
+                # Today's pages from the CDN, patched with the rows changed since midnight: the database is read
+                # in full about once a day, not after every write.
+                now = time.time()                       # one instant for the key and the watermark
+                rows = _patch_day_pages(kind, _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True,
+                                                              version=visible_cdn.day_key(now)),
+                                        visible_cdn.day_start_iso(now))
+                if rows is None:                        # too many changes today to patch: this version's pages
+                    rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True,
+                                           version=visible_cdn.version_key(version))
             except (httpx.HTTPError, ValueError, RuntimeError) as e:
                 visible_cdn.failed()
+                rows = None
                 log.warning("visible %s through the CDN failed, reading the database for an hour: %s", kind, e)
         if rows is None:
             rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True)
@@ -2413,6 +2442,22 @@ _markets_cache: dict[str, tuple[float, dict]] = {}
 _MARKETS_TTL = 1800  # snapshots change hourly at most; each read is ~0.1 MB of database egress
 
 
+def _snapshot_rows(kind: str):
+    """The list_market_snapshots rows for a kind: through the CDN (one database read per kind per hour) when it is
+    available, else from the database. Returns the response."""
+    from src import visible_cdn
+    if visible_cdn.available() and API_SECRET:
+        try:
+            r = visible_cdn.fetch_snapshot(API_SECRET, kind)
+            if r.status_code == 200:
+                return r
+            log.warning("snapshot %s through the CDN returned %s", kind, r.status_code)
+        except httpx.HTTPError as e:
+            visible_cdn.failed()
+            log.warning("snapshot %s through the CDN failed, reading the database: %s", kind, e)
+    return _rpc_sync("list_market_snapshots", {"p_kind": kind})
+
+
 def _market_snapshot() -> dict:
     """The latest stored snapshot of every exchange's quotes, the indices and FX."""
     from src.engines import markets
@@ -2424,7 +2469,7 @@ def _market_snapshot() -> dict:
     else:
         parts = {}
         for kind in ("quotes", "indices", "fx"):
-            r = _rpc_sync("list_market_snapshots", {"p_kind": kind})
+            r = _snapshot_rows(kind)
             if r.status_code != 200:
                 log.error("market snapshot read failed: %s %s", r.status_code, r.text[:300])
                 if hit:
@@ -2433,7 +2478,7 @@ def _market_snapshot() -> dict:
             parts[kind] = r.json() or []
         snap = markets.from_rows(parts["quotes"], parts["indices"], parts["fx"])
         today = datetime.now(timezone.utc).date().isoformat()
-        r = _rpc_sync("list_market_snapshots", {"p_kind": "intraday"})
+        r = _snapshot_rows("intraday")
         if r.status_code == 200:
             snap["intraday"] = {row["scope"]: row.get("payload") or {} for row in r.json() or []
                                 if str(row.get("snapshot_date")) == today}
@@ -2558,7 +2603,7 @@ def _instruments() -> dict[str, dict]:
     if not _configured():
         blocks = instruments.load_local()
     else:
-        r = _rpc_sync("list_market_snapshots", {"p_kind": "instruments"})
+        r = _snapshot_rows("instruments")
         if r.status_code != 200:
             log.warning("instruments read failed: %s %s", r.status_code, r.text[:300])
             return hit[1] if hit else {}

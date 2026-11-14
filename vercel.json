@@ -39,6 +39,10 @@
       "destination": "/api/visible_page"
     },
     {
+      "source": "/api/internal/market-snapshot-page",
+      "destination": "/api/visible_page"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api/index"
     }
