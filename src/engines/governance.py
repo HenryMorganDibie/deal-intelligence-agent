@@ -19,13 +19,14 @@ from typing import Callable, Optional
 log = logging.getLogger(__name__)
 
 MAX_PAGES = 600                 # every page: notes on subsidiaries sit deep in long reports (GTCO's runs to 336)
-_MAX_PROMPT_CHARS = 18000
+_MAX_PROMPT_CHARS = 26000
 
 _SECTIONS = {
     "corporate": re.compile(r"(?i)corporate\s+information|registered\s+office|company\s+secretary|\bRC\s*(no|number)\b|"
                             r"registered\s+company\s+number"),
     "board": re.compile(r"(?i)board\s+of\s+directors|directors\W{0,3}\s+(report|profile)|composition\s+of\s+the\s+board|"
-                        r"directors\s+who\s+served"),
+                        r"directors\s+who\s+served|directors\s+and\s+(professional\s+)?advisers|"
+                        r"directors\s+and\s+(other\s+)?corporate\s+information|^\s*directors\s*$"),
     "committees": re.compile(r"(?i)(audit|risk|remuneration|nomination|governance)[\w ,&]{0,30}\s+committee"),
     "shareholders": re.compile(r"(?i)substantial\s+(interest|shareholding)|major\s+shareholders|holding\s+(5|five)\s*%|"
                                r"shareholding\s+(analysis|structure)|analysis\s+of\s+shareholding|top\s+\d+\s+shareholders|"
@@ -55,7 +56,7 @@ Return one JSON object with these keys (omit a key, or use an empty list, when t
 "committees": [{{"name", "members": [names], "page"}}];
 "shareholders": [{{"name", "percent" (as printed, e.g. "86.65"), "page"}}] for holders of 5% or more;
 "subsidiaries": [{{"name", "country" if stated, "percent" (ownership, as printed) if stated, "page"}}].
-Return only the JSON object."""
+{focus}Return only the JSON object."""
 
 
 def page_texts(data: bytes, max_pages: int = MAX_PAGES) -> list[str]:
@@ -102,7 +103,7 @@ def ocr_pages(data: bytes, max_pages: int = OCR_MAX_PAGES, dpi: int = 150) -> li
 
 _PCT = re.compile(r"(?<![\d.])\d{1,3}(?:\.\d{1,3})?\s?%")
 _PRIORITY = ("corporate", "shareholders", "board", "subsidiaries", "committees")
-_PAGE_CHARS = 3500
+_PAGE_CHARS = 8000              # a full board or subsidiaries page (Dangote's run to 7,800 characters)
 
 
 def _score(key: str, text: str) -> float:
@@ -117,7 +118,10 @@ def _score(key: str, text: str) -> float:
     if not _SECTIONS[key].search(text):
         return 0
     if key == "board":                  # a list of directors names many people next to their roles
-        return 1 + len(_ROLE.findall(text))
+        # A compact list (one director a line, role at the end) is the whole board on one page: it outranks
+        # profile pages, which name fewer directors in more words.
+        listed = len(re.findall(r"(?im)^[^\n]{3,80}?\b(chairman|chairperson|director|chief executive officer)\s*\**\s*$", text))
+        return 1 + len(_ROLE.findall(text)) + (2 * listed if listed >= 6 else 0)
     if key == "corporate":
         score = 1 + sum(bool(re.search(p, text, re.I)) for p in (r"registered\s+office", r"auditor", r"registrar",
                                                                    r"company\s+secretary", r"\bRC\b|company\s+number"))
@@ -314,14 +318,55 @@ def verify(raw: dict, pages: list[str], allowed: list[int]) -> dict:
 
 
 def _json(text: str) -> dict:
-    m = re.search(r"\{.*\}", text or "", re.S)
-    if not m:
+    """The model's JSON object. An answer cut off by the output limit (a long subsidiaries list) keeps every item
+    completed before the cut instead of being discarded."""
+    start = (text or "").find("{")
+    if start < 0:
         return {}
-    try:
-        data = json.loads(m.group(0))
-    except json.JSONDecodeError:
-        return {}
-    return data if isinstance(data, dict) else {}
+    body = text[start:]
+    m = re.search(r"\{.*\}", body, re.S)
+    if m:
+        try:
+            data = json.loads(m.group(0))
+            return data if isinstance(data, dict) else {}
+        except json.JSONDecodeError:
+            pass
+    return _repair_truncated(body)
+
+
+def _repair_truncated(body: str) -> dict:
+    """Close a JSON object cut off mid-answer at the last point where a value was complete."""
+    stack: list[str] = []
+    in_str = esc = False
+    cuts: list[tuple[int, str]] = []          # (end index, closers) after each completed value
+    for i, ch in enumerate(body):
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+            continue
+        if ch == '"':
+            in_str = True
+        elif ch in "{[":
+            stack.append("}" if ch == "{" else "]")
+        elif ch in "}]":
+            if not stack:
+                break
+            stack.pop()
+            if not stack:
+                cuts.append((i + 1, ""))
+                break
+            cuts.append((i + 1, "".join(reversed(stack))))
+    for end, closers in reversed(cuts):
+        try:
+            data = json.loads(body[:end] + closers)
+        except json.JSONDecodeError:
+            continue
+        return data if isinstance(data, dict) else {}
+    return {}
 
 
 _SECTION_OF = {**dict.fromkeys(("rc_number", "registered_office", "company_secretary", "auditor", "registrar",
@@ -373,7 +418,8 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
         order = sorted(range(len(used)), key=lambda i: used[i])
         blocks, used = [blocks[i] for i in order], [used[i] for i in order]
         try:
-            raw = _json(call(SYSTEM, USER.format(company=company, document=document, pages="\n".join(blocks))))
+            raw = _json(call(SYSTEM, USER.format(company=company, document=document, pages="\n".join(blocks),
+                                                 focus=_FOCUS[group])))
         except Exception as e:
             log.warning("governance: extraction failed for %s (%s): %s", source_url, "/".join(group), e)
             continue
@@ -395,6 +441,15 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
                       "as printed. Facts that could not be found on their page are left out."}
 
 
+_FOCUS = {
+    ("corporate",): "In this pass give only rc_number, registered_office, company_secretary, auditor, registrar and "
+                    "holding_company (with their pages).\n",
+    ("board", "committees"): "In this pass give only board and committees, every director listed.\n",
+    ("shareholders",): "In this pass give only shareholders.\n",
+    ("subsidiaries",): "In this pass give only subsidiaries, every one listed, keeping each item short.\n",
+}
+
+
 def _default_call() -> Optional[Callable[[str, str], str]]:
     try:
         from src.agents import signal_agent as sa
@@ -402,4 +457,4 @@ def _default_call() -> Optional[Callable[[str, str], str]]:
     except Exception as e:
         log.info("governance: no language model configured: %s", e)
         return None
-    return lambda system, user: sa._call_llm(client, provider, system, user, max_tokens=2500)
+    return lambda system, user: sa._call_llm(client, provider, system, user, max_tokens=8000)   # room for reasoning models' thinking and a 45-row list

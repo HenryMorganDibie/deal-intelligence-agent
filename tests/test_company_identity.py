@@ -169,3 +169,18 @@ def test_corporate_facts_written_as_objects_with_their_own_pages_are_read():
     assert out["registrar"] == "Coronation Registrars Limited"          # cited a page not read; found on p2
     assert out["rc_number"] == "395010"
     assert gov.GROUPS[0] == ("corporate",)                               # corporate details read on their own
+
+
+def test_truncated_answer_keeps_completed_items():
+    from src.engines import governance as g
+    cut = '{"subsidiaries": [{"name": "Dangote Cement Zambia Limited", "percent": "99.96", "page": 166}, {"name": "Dang'
+    assert g._json(cut) == {"subsidiaries": [{"name": "Dangote Cement Zambia Limited", "percent": "99.96", "page": 166}]}
+    assert g._json("no json here") == {}
+
+
+def test_compact_directors_list_outranks_profile_pages():
+    from src.engines import governance as g
+    compact = "Directors and professional advisers\nDirectors\n" + "\n".join(
+        f"Person {i} Non-Executive Director" for i in range(12))
+    profile = "Board of Directors\n" + "Mr A is a director and chairman of the board. " * 10
+    assert g._score("board", compact) > g._score("board", profile)
