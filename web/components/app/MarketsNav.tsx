@@ -5,19 +5,19 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 const TABS: [string, string][] = [
-  ["/app/markets", "Overview"],
-  ["/app/markets/screener", "Screener"],
-  ["/app/markets/investments", "Funds & fixed income"],
-  ["/app/markets/compare", "Compare"],
-  ["/app/markets/valuation", "Valuation"],
-  ["/app/markets/portfolio", "Portfolio"],
-  ["/app/markets/monitoring", "Monitoring"],
+  ["/markets", "Overview"],
+  ["/markets/screener", "Screener"],
+  ["/markets/investments", "Funds & fixed income"],
+  ["/markets/compare", "Compare"],
+  ["/markets/valuation", "Valuation"],
+  ["/markets/portfolio", "Portfolio"],
+  ["/markets/monitoring", "Monitoring"],
 ];
 
 /** The Markets section's menu, the same on every Markets page. */
 export function MarketsNav() {
   const path = usePathname() ?? "";
-  const active = (href: string) => (href === "/app/markets" ? path === href : path.startsWith(href));
+  const active = (href: string) => (href === "/markets" ? path === href : path.startsWith(href));
   return (
     <nav aria-label="Markets" className="-mx-1 flex gap-5 overflow-x-auto border-b hairline px-1">
       {TABS.map(([href, label]) => (

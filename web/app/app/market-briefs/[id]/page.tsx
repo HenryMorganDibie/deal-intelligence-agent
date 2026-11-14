@@ -118,7 +118,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
         audience: newsletterAudience,
         ...(newsletterInstructions.trim() ? { instructions: newsletterInstructions.trim() } : {}),
       });
-      router.push("/app/market-briefs/" + encodeURIComponent(created.id));
+      router.push("/market-briefs/" + encodeURIComponent(created.id));
     } catch (err) {
       setNewsletterError(err instanceof ApiError ? err.message : "Could not generate the newsletter. Please try again.");
       setGeneratingNewsletter(false);
@@ -128,7 +128,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
   return (
     <Container className="max-w-5xl py-10 lg:py-14">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3 print-hide">
-        <Link href="/app" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">← All briefs</Link>
+        <Link href="/" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">← All briefs</Link>
         {row && <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-ghost h-8 px-3 text-[0.8125rem]" onClick={async () => {
             try { await navigator.clipboard.writeText(window.location.href); setCopied(true); }
@@ -145,7 +145,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
         <h1 className="h2 mt-3 text-[2rem] sm:text-[2.75rem]">{row.title}</h1>
         <p className="mt-3 text-sm text-[color:var(--muted)]">{row.report.scope_label}</p>
         <p className="mt-1 text-xs text-[color:var(--dim)]">Announcement window {row.report.period_start} to {row.report.period_end} · Generated {new Date(row.report.generated_at).toLocaleString()}</p>
-        {row.report.parent_brief_id && <p className="mt-2 text-sm"><Link href={"/app/market-briefs/" + encodeURIComponent(row.report.parent_brief_id)} className="underline underline-offset-4">Open source research brief ↗</Link></p>}
+        {row.report.parent_brief_id && <p className="mt-2 text-sm"><Link href={"/market-briefs/" + encodeURIComponent(row.report.parent_brief_id)} className="underline underline-offset-4">Open source research brief ↗</Link></p>}
         {row.report.brief_type === "research_newsletter" && <p className="mt-2 text-xs text-[color:var(--muted)]">Draft newsletter · verify every source and claim before external distribution.</p>}
 
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

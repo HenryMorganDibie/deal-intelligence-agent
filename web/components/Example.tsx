@@ -96,7 +96,7 @@ export function Example({ brief = null }: { brief?: ShowcaseBrief | null }) {
                         )}
                       </div>
                     )}
-                    <a href={`/app/briefs/${live.id}`} className="kbd mt-5 inline-block text-[0.8125rem] text-verified hover:underline">
+                    <a href={`/briefs/${live.id}`} className="kbd mt-5 inline-block text-[0.8125rem] text-verified hover:underline">
                       Read the full brief →
                     </a>
                   </>
@@ -109,7 +109,7 @@ export function Example({ brief = null }: { brief?: ShowcaseBrief | null }) {
                     <p className="mt-5 text-sm leading-relaxed text-[color:var(--muted)]">
                       A quiet result is still informative: the system can return no qualifying signal rather than inventing one. Review the full brief for the sources checked and any review flags.
                     </p>
-                    <a href={`/app/briefs/${live.id}`} className="kbd mt-5 inline-block text-[0.8125rem] text-verified hover:underline">
+                    <a href={`/briefs/${live.id}`} className="kbd mt-5 inline-block text-[0.8125rem] text-verified hover:underline">
                       Read the full brief →
                     </a>
                   </>

@@ -114,3 +114,15 @@ export function trackProductAction(
   }
   send(payload);
 }
+
+
+// The app is served at the site's own addresses (/deals, /markets...), where some pages also have a public
+// version. The app's layout marks itself while it is shown, so its page views are recorded as /app/... as before
+// and the admin page can tell app use from public visits.
+let inApp = false;
+export function setInApp(value: boolean) {
+  inApp = value;
+}
+export function recordedPath(path: string): string {
+  return inApp ? (path === "/" ? "/app" : `/app${path}`) : path;
+}

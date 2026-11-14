@@ -23,7 +23,7 @@ export function FinalCta() {
         </Reveal>
         <Reveal delay={160}>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <a href="/app" className="btn btn-primary">
+            <a href="/account?next=%2F" className="btn btn-primary">
               Run your first brief
               <ArrowRight />
             </a>
@@ -50,7 +50,7 @@ export function SiteFooter() {
         { label: "Attribution", href: "/attribution" },
         { label: "Coverage", href: "/coverage" },
         { label: "Example brief", href: "/example" },
-        { label: "Open the app", href: "/app" },
+        { label: "Open the app", href: "/account?next=%2F" },
       ],
     },
     {
@@ -58,7 +58,7 @@ export function SiteFooter() {
       links: [
         { label: "Methodology", href: LINKS.methodology },
         { label: "Evaluation", href: LINKS.evaluation },
-        { label: "Coverage by country", href: "/app/coverage" },
+        { label: "Coverage by country", href: "/coverage" },
         { label: "Known limits", href: "/limits" },
         { label: "Pricing", href: "/pricing" },
         { label: "API and integrations", href: "/developers" },

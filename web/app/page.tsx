@@ -36,25 +36,25 @@ const CAPABILITIES = [
   {
     title: "Discover deals",
     body: "Search reported PE, VC, debt and M&A transactions with source links and field-level evidence.",
-    href: "/app/deals",
+    href: "/deals",
     label: "Explore the deal feed",
   },
   {
     title: "Track companies",
     body: "Review financial statements, company events and signals with the underlying evidence in view.",
-    href: "/app/companies",
+    href: "/companies",
     label: "Explore company research",
   },
   {
     title: "Follow markets",
     body: "Daily prices, returns in dollars and valuations for 1,500+ listed African companies, with a valuation workspace that checks every input against evidence.",
-    href: "/app/markets",
+    href: "/markets",
     label: "Explore markets",
   },
   {
     title: "Understand countries",
     body: "Compare country context, investor activity and risk while keeping data coverage and gaps visible.",
-    href: "/app/countries",
+    href: "/countries",
     label: "Explore country coverage",
   },
 ];

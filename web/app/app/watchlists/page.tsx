@@ -145,7 +145,7 @@ export default function WatchlistsPage() {
           method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: true }),
         }).catch(() => undefined);
       }
-      window.location.href = `/app/watchlists/${r.id}`;
+      window.location.href = `/watchlists/${r.id}`;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "The watchlist could not be created.");
       setBusy(false);
@@ -188,7 +188,7 @@ export default function WatchlistsPage() {
                 <ul className="mt-4 divide-y divide-white/[0.07] border-y hairline">
                   {saved.map((w) => (
                     <li key={w.id}>
-                      <Link href={`/app/watchlists/${w.id}`} className="flex items-center justify-between gap-3 py-3 text-[0.9375rem] hover:text-[color:var(--text)]">
+                      <Link href={`/watchlists/${w.id}`} className="flex items-center justify-between gap-3 py-3 text-[0.9375rem] hover:text-[color:var(--text)]">
                         <span>{w.name}</span>
                         <span className="kbd text-[0.75rem] text-[color:var(--dim)]">{w.created_at.slice(0, 10)} →</span>
                       </Link>
@@ -294,9 +294,9 @@ export default function WatchlistsPage() {
               Incidents, coverage and results as they&apos;re reported, one message per incident however many outlets carry it.
             </p>
             <p className="flex gap-4 text-[0.8125rem]">
-              <Link href="/app/elections/gambia" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">Gambia results</Link>
-              <Link href="/app/elections/nigeria" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">Nigeria results</Link>
-              <Link href="/app/elections/nigeria/governorship" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">Governorship</Link>
+              <Link href="/elections/gambia" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">Gambia results</Link>
+              <Link href="/elections/nigeria" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">Nigeria results</Link>
+              <Link href="/elections/nigeria/governorship" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">Governorship</Link>
               <Link href="/developers#elections" className="text-[color:var(--muted)] hover:text-[color:var(--text)]">API</Link>
             </p>
           </div>

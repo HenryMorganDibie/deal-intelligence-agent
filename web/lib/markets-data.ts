@@ -71,7 +71,7 @@ export type Directory = { total: number; offset: number; rows: DirectoryRow[]; c
 export function directoryHref(r: DirectoryRow): string {
   if (r.kind === "listed" && r.exchange && r.symbol) return companyHref({ name: r.name, exchange: r.exchange, symbol: r.symbol });
   const p = new URLSearchParams({ name: r.name, ...(r.country ? { country: r.country } : {}) });
-  return `/app/companies?${p}`;
+  return `/companies?${p}`;
 }
 
 export type ExchangeTile = {
@@ -150,7 +150,7 @@ export function heat(v: number | null | undefined, cap: number): string {
 
 export function companyHref(q: Pick<Quote, "exchange" | "symbol" | "name">): string {
   const p = new URLSearchParams({ name: q.name, exchange: q.exchange, symbol: q.symbol });
-  return `/app/companies?${p}`;
+  return `/companies?${p}`;
 }
 
 export function asOf(day: string | null | undefined): string {

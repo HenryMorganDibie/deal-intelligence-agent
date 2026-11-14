@@ -75,7 +75,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
       } catch {
         // The server-side deletion succeeded; local browser cleanup is best-effort.
       }
-      window.location.href = "/app/watchlists";
+      window.location.href = "/watchlists";
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : "Could not delete the watchlist.");
     }
@@ -116,7 +116,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
   const dismissedCount = alerts.filter((a) => review[a.kind + ":" + a.id] === "dismissed").length;
   return (
     <Container className="max-w-4xl py-10 lg:py-14">
-      <Link href="/app/watchlists" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">← Watchlists</Link>
+      <Link href="/watchlists" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">← Watchlists</Link>
       <div className="mt-4">
         <PageHeader eyebrow="Watchlist" title={w.name}>
           Companies: {w.companies.join(", ") || "none"}. Countries: {w.countries.join(", ") || "none"}. Event types:{" "}
@@ -186,7 +186,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
                 </div>
                 <p className="mt-1">
                   {a.kind === "deal" ? (
-                    <Link href={`/app/deals/${encodeURIComponent(a.id)}`} className="hover:underline">{a.title}</Link>
+                    <Link href={`/deals/${encodeURIComponent(a.id)}`} className="hover:underline">{a.title}</Link>
                   ) : a.url ? (
                     <a href={a.url} target="_blank" rel="noreferrer" className="hover:underline">{a.title}</a>
                   ) : <span>{a.title}</span>}

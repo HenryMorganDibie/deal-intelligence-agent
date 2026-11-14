@@ -55,7 +55,7 @@ SPECS: dict[str, dict] = {
         "national_registered": gm.NATIONAL_REGISTERED, "rejected": False, "rule": None,
         "ballot": _gm_ballot, "unit": gm.constituency,
         "baseline": {"year": 2021, "national": gm.BASELINE_2021["votes"], "units": {}},
-        "page": "/app/elections/gambia",
+        "page": "/elections/gambia",
         "notes": "Results as announced by the IEC, constituency by constituency, entered as they are read out. "
                  "Votes are cast with marbles, so there are no rejected ballots.",
     },
@@ -66,7 +66,7 @@ SPECS: dict[str, dict] = {
         "national_registered": None, "rejected": True, "rule": "ng_spread",
         "ballot": _ng_ballot, "unit": _ng_unit,
         "baseline": None,                     # filled from src/data/ng_results_history.py when present
-        "page": "/app/elections/nigeria",
+        "page": "/elections/nigeria",
         "notes": "Results as INEC's returning officers declare them at the national collation centre, state by state. "
                  "A candidate wins with the most votes and at least 25% of the votes in two-thirds of the states.",
     },
@@ -137,7 +137,7 @@ def _gov_specs() -> dict[str, dict]:
             "baseline": {"year": None, "national": {}, "units": {}},
             "store": gov.ELECTION, "alert_election": gov.ELECTION,
             "previous": {"year": 2023, "results": gov.RESULTS_2023.get(st, [])},
-            "page": f"/app/elections/nigeria/governorship/{gov_slug(st)}",
+            "page": f"/elections/nigeria/governorship/{gov_slug(st)}",
             "notes": f"Results as INEC's returning officer for {st} declares them at the state collation centre, LGA by LGA. "
                      "A candidate wins with the most votes and at least 25% in two-thirds of the state's LGAs.",
         }

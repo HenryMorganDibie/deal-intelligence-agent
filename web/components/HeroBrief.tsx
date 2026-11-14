@@ -91,7 +91,7 @@ function view(b: ShowcaseBrief | null | undefined): View {
       source: s.source,
     })),
     dropped: b.unattributed_title,
-    href: `/app/briefs/${b.id}`,
+    href: `/briefs/${b.id}`,
   };
 }
 

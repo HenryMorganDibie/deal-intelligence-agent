@@ -49,7 +49,7 @@ export default function AuthConfirmPage() {
     else if (link.type === "email_change") {
       setMessage("Your email address has been changed.");
       router.replace("/account/security");
-    } else router.replace("/app/deals");
+    } else router.replace("/deals");
   }
 
   const copy = link ? COPY[link.type] : null;

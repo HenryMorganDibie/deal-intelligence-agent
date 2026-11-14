@@ -200,7 +200,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
   const { country: c, risk, currency: cur, coverage: cov } = d;
   return (
     <Container className="max-w-5xl py-10 lg:py-14">
-      <Link href="/app/countries" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">
+      <Link href="/countries" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">
         ← All countries
       </Link>
       <div className="mt-4">
@@ -236,7 +236,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         <button type="button" onClick={makeReport} disabled={busy} className="btn btn-primary">
           {busy ? "Writing report..." : "Generate research report"}
         </button>
-        <Link href={`/app/deals?country=${c.iso2}`} className="btn btn-ghost">
+        <Link href={`/deals?country=${c.iso2}`} className="btn btn-ghost">
           Deals in {c.name}
         </Link>
       </div>
@@ -369,7 +369,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
                   {profile.largest_deals.map((deal) => (
                     <tr key={deal.id}>
                       <Td className="kbd text-[color:var(--muted)]">{deal.announced ?? "n/a"}</Td>
-                      <Td><Link href={`/app/deals/${encodeURIComponent(deal.id)}`} className="hover:underline">{deal.headline}</Link></Td>
+                      <Td><Link href={`/deals/${encodeURIComponent(deal.id)}`} className="hover:underline">{deal.headline}</Link></Td>
                       <Td className="text-[color:var(--muted)]">{deal.deal_type ? words(deal.deal_type) : "n/a"}</Td>
                       <Td className="text-[color:var(--muted)]">{deal.stage ? words(deal.stage) : "n/a"}</Td>
                       <Td className="text-xs text-[color:var(--muted)]">{(deal.independent_stories ?? 0) >= 2 ? `${deal.independent_stories} independent` : "Single source"}{deal.countries && deal.countries.length > 1 ? <span className="block">Also: {deal.countries.filter((x) => x !== params.code.toUpperCase()).join(", ")}</span> : null}</Td>
@@ -562,7 +562,7 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           <ul className="mt-3 flex flex-wrap gap-2">
             {d.investors.map((i) => (
               <li key={i.name}>
-                <Link href={`/app/investors/${encodeURIComponent(i.name)}`} className="inline-flex rounded-full border hairline px-3 py-1.5 text-[0.8125rem] hover:text-verified">
+                <Link href={`/investors/${encodeURIComponent(i.name)}`} className="inline-flex rounded-full border hairline px-3 py-1.5 text-[0.8125rem] hover:text-verified">
                   {i.name} <span className="ml-2 text-[color:var(--dim)]">{i.deal_count}</span>
                 </Link>
               </li>

@@ -97,7 +97,7 @@ export function VerificationPanel({ v, accuracy }: { v: V; accuracy: FieldAccura
         <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">
           On the held-out evaluation set, {Math.round(accuracy.fully_correct_record.value * 100)}% of records had every field
           right (n={accuracy.fully_correct_record.n}). Field accuracy is for this kind of field in general, not for this record.{" "}
-          <a href="/app/evaluation#data-quality" className="text-verified hover:underline">How this is measured</a>
+          <a href="/evaluation#data-quality" className="text-verified hover:underline">How this is measured</a>
         </p>
       )}
 

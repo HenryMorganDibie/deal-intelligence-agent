@@ -88,7 +88,7 @@ export default function BillingPage() {
   const paying = sub && sub.status !== "cancelled";
   return (
     <Container className="max-w-6xl py-24 sm:py-28">
-      <Link href="/app/deals" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">← Back to the app</Link>
+      <Link href="/deals" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">← Back to the app</Link>
       <h1 className="h2 mt-4">Plan and billing</h1>
       {billing && (
         <div className="panel mt-6 p-6">

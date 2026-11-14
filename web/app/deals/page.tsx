@@ -91,7 +91,7 @@ export default async function LatestDeals() {
         </ul>
         <p className="mt-8 text-sm text-[color:var(--muted)]">
           Search every deal, follow investors and set alerts in the app.{" "}
-          <Link href="/app/deals" className="text-verified hover:underline">Open the deal database</Link>
+          <Link href="/account?next=%2Fdeals" className="text-verified hover:underline">Open the deal database</Link>
         </p>
       </Container>
     </PublicPage>

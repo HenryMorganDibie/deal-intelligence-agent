@@ -97,7 +97,7 @@ export default function Dashboard() {
         compliance,
       });
       addToHistory({ ...result, created_at: new Date().toISOString() });
-      router.push(`/app/briefs/${result.id}`);
+      router.push(`/briefs/${result.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "The analysis failed. Try again in a minute.");
       setRunning(null);
@@ -225,7 +225,7 @@ export default function Dashboard() {
                 {rows.map((r) => (
                   <li key={r.id} className="flex items-center gap-2 border-b hairline">
                     <Link
-                      href={`/app/briefs/${r.id}`}
+                      href={`/briefs/${r.id}`}
                       className="flex min-w-0 flex-1 items-center gap-4 rounded-lg py-4 pl-1 pr-2 transition-colors hover:bg-white/[0.03]"
                     >
                       <div className="min-w-0 flex-1">
@@ -264,20 +264,20 @@ export default function Dashboard() {
         <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
           Create an analyst-ready market report with dated transactions, disclosed-value metrics, comparable activity and linked source evidence.
         </p>
-        <Link href="/app/market-briefs/new" className="btn btn-primary mt-4 inline-flex">
+        <Link href="/market-briefs/new" className="btn btn-primary mt-4 inline-flex">
           Create market brief
         </Link>
         <div className="mt-8">
           <div className="flex items-baseline justify-between">
             <p className="eyebrow">Recent market briefs</p>
-            <Link href="/app/market-briefs/new" className="text-xs text-[color:var(--muted)] hover:text-[color:var(--text)]">New brief →</Link>
+            <Link href="/market-briefs/new" className="text-xs text-[color:var(--muted)] hover:text-[color:var(--text)]">New brief →</Link>
           </div>
           <div className="mt-3 border-t hairline">
             {marketBriefs === null ? <p className="py-3 text-sm text-[color:var(--dim)]">Loading market briefs…</p> :
              visibleMarketBriefs.length === 0 ? <p className="py-3 text-sm text-[color:var(--muted)]">{marketBriefs.length ? "No visible market briefs. Removed items stay saved and can still be opened with their original links." : "Your generated market briefs will appear here."}</p> :
              <ul>{visibleMarketBriefs.slice(0, 5).map((brief) => (
                <li key={brief.id} className="flex items-center gap-2 border-b hairline">
-                 <Link href={"/app/market-briefs/" + encodeURIComponent(brief.id)} className="min-w-0 flex-1 py-3 transition-colors hover:text-[color:var(--text)]">
+                 <Link href={"/market-briefs/" + encodeURIComponent(brief.id)} className="min-w-0 flex-1 py-3 transition-colors hover:text-[color:var(--text)]">
                    <p className="font-medium">{brief.title}</p>
                    <p className="mt-1 text-xs text-[color:var(--muted)]">{brief.scope_label} · {brief.transaction_count} records</p>
                    <p className="mt-1 text-xs text-[color:var(--dim)]">{formatDate(brief.created_at)}</p>

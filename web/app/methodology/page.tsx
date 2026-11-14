@@ -101,7 +101,7 @@ export default async function MethodologyPage() {
             Each figure in the product is either <strong className="text-[color:var(--text)]">measured</strong> from
             outcomes or a stated <strong className="text-[color:var(--text)]">design choice</strong>. Nothing is presented
             as data that is not. Results, including weak ones, are on the{" "}
-            <a href="/app/evaluation" className="text-verified hover:underline">evaluation page</a>.
+            <a href="/evaluation" className="text-verified hover:underline">evaluation page</a>.
           </p>
           {pulse && <CurrentState pulse={pulse} />}
           <nav aria-label="Sections" className="mt-8 flex flex-wrap gap-2 text-[0.8125rem]">
@@ -207,7 +207,7 @@ export default async function MethodologyPage() {
               Accuracy is measured on labelled samples of raw headlines, with a held-out set drawn after all fixes and never used
               for tuning{quality?.dealComplete ? `: ${ciText(quality.dealPrecision)} of extracted records are genuine transactions, ${ciText(quality.dealRecall)} of deal-like headlines are caught, and ${ciText(quality.dealComplete)} of records have every field right` : ""}.
               Field-by-field results, by country, source, language and deal type, are on the{" "}
-              <a href="/app/evaluation#data-quality" className="text-verified hover:underline">evaluation page</a>.
+              <a href="/evaluation#data-quality" className="text-verified hover:underline">evaluation page</a>.
             </p>
             <p>
               Comparables are scored <Label kind="design" />: 3 points for the same sector, 2 for the same type, 2 for the same
@@ -280,7 +280,7 @@ export default async function MethodologyPage() {
               Every country gets news search in its own languages, deal and event extraction, regulator detection and country
               risk. Machine-readable filings and prices exist for NGX and NSE Kenya (tier A); vendor data for JSE, EGX and
               Casablanca (tier B); the other countries are covered through news, deals and risk data (tier C). The{" "}
-              <a href="/app/coverage" className="text-verified hover:underline">coverage page</a> states this for each country.
+              <a href="/coverage" className="text-verified hover:underline">coverage page</a> states this for each country.
             </p>
           </Part>
 

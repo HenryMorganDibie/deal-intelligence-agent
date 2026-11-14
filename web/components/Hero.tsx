@@ -57,7 +57,7 @@ export function Hero({ pulse = null, brief = null }: { pulse?: Pulse | null; bri
 
           <Reveal delay={180}>
             <div className="mt-9 flex flex-wrap gap-3">
-              <a href="/app" className="btn btn-primary">
+              <a href="/account?next=%2F" className="btn btn-primary">
                 Run your first brief
                 <ArrowRight />
               </a>

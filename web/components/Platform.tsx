@@ -5,51 +5,51 @@ const modules = (pulse: Pulse | null) => [
   {
     title: "Companies and financial statements",
     body: "NGX and NSE Kenya audited statements parsed from the filing and checked with accounting identities, figure by figure. Yahoo Finance and SEC cross-checks for other listings.",
-    href: "/app/companies",
+    href: "/companies",
   },
   {
     title: "PE, VC, debt and M&A transactions",
     body: pulse?.deals.total
       ? `${count(pulse.deals.total)} deals in ${pulse.deals.countries} countries, ${pulse.deals.recent} of them in the last ${pulse.deals.window_days} days, extracted daily in English, French and Portuguese, every source linked.`
       : "1,700+ deals over two years in 48 countries, extracted daily in English, French and Portuguese, every source linked.",
-    href: "/app/deals",
+    href: "/deals",
   },
   {
     title: "Investors, funds, LPs and GPs",
     body: "Who invested, lent, bought, sold, committed as an LP or closed a fund, with DFIs, PE and VC firms matched across their name variants.",
-    href: "/app/investors",
+    href: "/investors",
   },
   {
     title: "Valuations and comparable deals",
     body: "Reported and stake-implied valuations, comparables scored on sector, type, country and size, listed multiples.",
-    href: "/app/deals",
+    href: "/deals",
   },
   {
     title: "Country, currency and sector risk",
     body: "All 54 African countries scored from World Bank data with every formula shown; 42 currencies by regime and depreciation; sector event balance.",
-    href: "/app/countries",
+    href: "/countries",
   },
   {
     title: "Source-grounded AI research",
     body: "Answers written only from numbered evidence, with citations checked and uncited sentences flagged. Country and sector reports.",
-    href: "/app/research",
+    href: "/research",
   },
   {
     title: "Event monitoring and alerts",
     body: "A daily feed of corporate events and deals across 54 countries. Watchlists by company, country and event type, with RSS and webhooks.",
-    href: "/app/watchlists",
+    href: "/watchlists",
   },
   {
     title: "Historical outcomes and evaluation",
     body: pulse?.measured.backtest?.companies
       ? `A walk-forward backtest over ${count(pulse.measured.backtest.companies.us + pulse.measured.backtest.companies.africa)} US and African companies, re-run every month: precision against base rates, recall and price moves, each with its interval. Weak results are published as they are.`
       : "A walk-forward backtest with precision against base rates, recall and price moves, re-run every month. Weak results are published as they are.",
-    href: "/app/evaluation",
+    href: "/evaluation",
   },
   {
     title: "Coverage and verification by country",
     body: "For each country: what is read, which languages, which regulators, and how far a signal there can be verified.",
-    href: "/app/coverage",
+    href: "/coverage",
   },
 ];
 

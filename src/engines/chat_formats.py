@@ -170,7 +170,7 @@ def sample_alerts() -> list[dict]:
     return [
         {"kind": "deal", "id": "test-1", "day": today, "title": "Test alert: this is how a new deal will look",
          "deal_type": "equity_funding", "amount_usd": 12_000_000, "publisher": BRAND,
-         "url": "https://deal-intelligence.app/app/deals"},
+         "url": "https://deal-intelligence.app/deals"},
         {"kind": "event", "id": "test-2", "day": today, "title": "Test alert: this is how a corporate event will look",
          "signal_type": "leadership_change", "publisher": BRAND, "url": "https://deal-intelligence.app/app"},
     ]

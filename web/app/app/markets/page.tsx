@@ -118,7 +118,7 @@ function ExchangeTable({ exchanges }: { exchanges: Exchange[] }) {
               return (
                 <tr key={t.exchange} className="hover:bg-white/[0.02]">
                   <td className="py-2 pr-4">
-                    <Link href={`/app/markets/screener?exchange=${t.exchange}`} className="hover:underline">{t.name.replace(/ \(.*\)$/, "")}</Link>
+                    <Link href={`/markets/screener?exchange=${t.exchange}`} className="hover:underline">{t.name.replace(/ \(.*\)$/, "")}</Link>
                     <span className="ml-2 text-[0.75rem] text-[color:var(--dim)]">{t.currency}</span>
                   </td>
                   <td className="kbd py-2 pr-4 text-right" title={t.index?.name}>{t.index ? t.index.level.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "–"}</td>
@@ -137,7 +137,7 @@ function ExchangeTable({ exchanges }: { exchanges: Exchange[] }) {
       <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">
         Year-to-date returns are cap-weighted where market caps are published, otherwise the median share (hover a figure to see which).
         {quiet.length > 0 && <> No recent index for: {quiet.map((t, k) => (
-          <span key={t.exchange}>{k ? ", " : ""}<Link href={`/app/markets/screener?exchange=${t.exchange}`} className="hover:underline">{t.name.replace(/ \(.*\)$/, "")}</Link></span>
+          <span key={t.exchange}>{k ? ", " : ""}<Link href={`/markets/screener?exchange=${t.exchange}`} className="hover:underline">{t.name.replace(/ \(.*\)$/, "")}</Link></span>
         ))}.</>}
       </p>
     </>
@@ -183,7 +183,7 @@ export default function MarketsPage() {
             <Stat label="Market cap covered" value={usd(totalCap)}
               note={`${overview.coverage.with_market_cap.toLocaleString()} shares with a published cap`} />
             <Stat label="Companies on record" value={companies ? (companies.listed + companies.private).toLocaleString() : overview.coverage.shares.toLocaleString()}
-              note={companies ? <><Link className="hover:underline" href="/app/markets/screener">{companies.listed.toLocaleString()} listed</Link> · <Link className="hover:underline" href="/app/markets/screener?view=private">{companies.private.toLocaleString()} private</Link></> : `${overview.coverage.exchanges} exchanges`} />
+              note={companies ? <><Link className="hover:underline" href="/markets/screener">{companies.listed.toLocaleString()} listed</Link> · <Link className="hover:underline" href="/markets/screener?view=private">{companies.private.toLocaleString()} private</Link></> : `${overview.coverage.exchanges} exchanges`} />
             <Stat label="Snapshot" value={asOf(overview.captured_at)} note={`FX: ${overview.fx_as_of ? overview.fx_as_of.slice(5, 16) : "n/a"}`} />
           </section>
 
@@ -218,7 +218,7 @@ export default function MarketsPage() {
               {overview.sectors.map((s) => {
                 const v = heatBy === "chg_1d" ? s.chg_1d : s.ytd_usd;
                 return (
-                  <Link key={s.sector} href={`/app/markets/screener?sector=${encodeURIComponent(s.sector)}`}
+                  <Link key={s.sector} href={`/markets/screener?sector=${encodeURIComponent(s.sector)}`}
                     className="rounded-lg p-3 transition hover:opacity-90" style={{ background: heat(v, heatBy === "chg_1d" ? 0.05 : 0.5) }}>
                     <p className="truncate text-sm font-medium">{s.sector}</p>
                     <p className="kbd mt-1 text-base">{pct(v, heatBy === "chg_1d" ? 2 : 1)}</p>
@@ -252,7 +252,7 @@ export default function MarketsPage() {
           <div className="min-w-0">
             <div className="mb-3 flex items-end justify-between gap-3">
               <h2 className="h3 text-xl">Private deal flow, last 30 days</h2>
-              <Link href="/app/deals" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Browse deals →</Link>
+              <Link href="/deals" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Browse deals →</Link>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <Stat label="Deals" value={pulse.deals.recent.toLocaleString()} note={`${pulse.deals.recent_countries} countries`} />
@@ -277,7 +277,7 @@ export default function MarketsPage() {
           <div className="min-w-0">
             <div className="mb-3 flex items-end justify-between gap-3">
               <h2 className="h3 text-xl">Corporate events, last 7 days</h2>
-              <Link href="/app/markets/monitoring" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Monitor holdings →</Link>
+              <Link href="/markets/monitoring" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Monitor holdings →</Link>
             </div>
             {pulse.events.latest.length === 0 && <p className="panel p-4 text-sm text-[color:var(--muted)]">No events in the last seven days.</p>}
             <div className="space-y-2">

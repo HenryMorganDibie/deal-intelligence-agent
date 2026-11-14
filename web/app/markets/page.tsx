@@ -130,7 +130,7 @@ export default async function MarketsToday() {
 
         <p className="mt-12 text-sm text-[color:var(--muted)]">
           Screen 1,600+ listed shares, see quotes and track a portfolio in the app.{" "}
-          <Link href="/app/markets" className="text-verified hover:underline">Open the markets dashboard</Link>
+          <Link href="/account?next=%2Fmarkets" className="text-verified hover:underline">Open the markets dashboard</Link>
         </p>
       </Container>
     </PublicPage>

@@ -749,8 +749,8 @@ export default function MarketsValuationPage() {
 
                 <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
                   <button type="button" className="btn btn-secondary" onClick={saveValuationLocally}>Save to portfolio</button>
-                  <Link href={`/app/companies?name=${encodeURIComponent(form.company)}`} className="text-[0.8125rem] text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Company profile</Link>
-                  <Link href={`/app/research?question=${encodeURIComponent(countercaseQuestion)}`} className="text-[0.8125rem] text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Research the countercase</Link>
+                  <Link href={`/companies?name=${encodeURIComponent(form.company)}`} className="text-[0.8125rem] text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Company profile</Link>
+                  <Link href={`/research?question=${encodeURIComponent(countercaseQuestion)}`} className="text-[0.8125rem] text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Research the countercase</Link>
                 </div>
                 {savedMessage && <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]" role="status" aria-live="polite">{savedMessage}</p>}
                 <p className="mt-4 text-[0.75rem] text-[color:var(--dim)]">A mechanical comparison of the quote with three scenarios, not a target price or a recommendation. The 15% band around the base case is a display convention.</p>

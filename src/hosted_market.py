@@ -1169,7 +1169,7 @@ class AlertReviewBody(BaseModel):
 
 
 def _watch_link(wl_id: str) -> str:
-    return f"{APP_URL}/app/watchlists/{wl_id}" if APP_URL else f"/app/watchlists/{wl_id}"
+    return f"{APP_URL}/watchlists/{wl_id}" if APP_URL else f"/watchlists/{wl_id}"
 
 
 @router.post("/api/watchlists")
@@ -1295,7 +1295,7 @@ async def test_webhook(body: WebhookTestBody, request: Request) -> dict:
         raise HTTPException(422, "Webhooks must be https URLs on a public host.")
     wl = {"id": "test", "name": body.name.strip() or "Your watchlist"}
     alerts = chat_formats.sample_alerts()
-    link = f"{APP_URL}/app/watchlists" if APP_URL else "https://deal-intelligence.app/app/watchlists"
+    link = f"{APP_URL}/watchlists" if APP_URL else "https://deal-intelligence.app/watchlists"
     payload = chat_formats.payload(url, wl, alerts, link, watch.webhook_payload(wl, alerts, link))
     result = await watch.deliver_webhook(url, payload, "deal-intel-test-" + uuid.uuid4().hex[:24])
     kind = chat_formats.destination(url)

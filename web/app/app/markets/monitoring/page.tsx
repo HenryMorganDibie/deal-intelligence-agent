@@ -116,8 +116,8 @@ export default function MarketsMonitoringPage() {
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
-          <Link href="/app/markets/portfolio" className="btn btn-secondary">My Portfolio</Link>
-          <Link href="/app/watchlists" className="btn btn-ghost">Existing Watchlists</Link>
+          <Link href="/markets/portfolio" className="btn btn-secondary">My Portfolio</Link>
+          <Link href="/watchlists" className="btn btn-ghost">Existing Watchlists</Link>
           <button type="button" className="btn btn-primary" onClick={() => void loadEvents()} disabled={eventsLoading || !portfolioReady || holdings.length === 0}>
             {eventsLoading ? "Refreshing…" : "Refresh events"}
           </button>
@@ -136,7 +136,7 @@ export default function MarketsMonitoringPage() {
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--muted)]">
             Add company names or ticker symbols to My Portfolio first. This page reads those entries in your browser and requests the general market-events feed without uploading your holdings.
           </p>
-          <Link href="/app/markets/portfolio" className="btn btn-primary mt-5">Set up My Portfolio</Link>
+          <Link href="/markets/portfolio" className="btn btn-primary mt-5">Set up My Portfolio</Link>
         </section>
       ) : null}
 
@@ -170,7 +170,7 @@ export default function MarketsMonitoringPage() {
                     Base-case estimate changed from {alert.previousBasePerShare.toLocaleString("en", { maximumFractionDigits: 2 })} to {alert.currentBasePerShare.toLocaleString("en", { maximumFractionDigits: 2 })} {alert.currency}. Compared with the previous saved run on {displayDate(alert.previousCalculatedAt)}. Statement period: {alert.previousStatementPeriod} → {alert.statementPeriod}.
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
-                    <Link href={`/app/markets/valuation?company=${encodeURIComponent(alert.company)}${alert.ticker ? `&ticker=${encodeURIComponent(alert.ticker)}` : ""}${alert.country ? `&country=${encodeURIComponent(alert.country)}` : ""}`} className="underline-offset-4 hover:underline">Review current model →</Link>
+                    <Link href={`/markets/valuation?company=${encodeURIComponent(alert.company)}${alert.ticker ? `&ticker=${encodeURIComponent(alert.ticker)}` : ""}${alert.country ? `&country=${encodeURIComponent(alert.country)}` : ""}`} className="underline-offset-4 hover:underline">Review current model →</Link>
                     {alert.statementSourceUrl && validHttpUrl(alert.statementSourceUrl) ? <a href={alert.statementSourceUrl} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">Statement source ↗</a> : null}
                     {alert.quoteSourceUrl && validHttpUrl(alert.quoteSourceUrl) ? <a href={alert.quoteSourceUrl} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">Quote source ↗</a> : null}
                   </div>
@@ -212,7 +212,7 @@ export default function MarketsMonitoringPage() {
               <div className="rounded-xl border hairline p-5">
                 <h3 className="text-sm font-medium">No exact name or ticker matches found</h3>
                 <p className="mt-2 text-sm leading-relaxed text-[color:var(--muted)]">That does not mean there are no relevant developments. Company aliases, subsidiaries, translated names and ticker omissions can prevent a match. Open Watchlists for the existing monitored-company alert workflow.</p>
-                <Link href="/app/watchlists" className="mt-3 inline-flex text-sm underline-offset-4 hover:underline">Open Watchlists →</Link>
+                <Link href="/watchlists" className="mt-3 inline-flex text-sm underline-offset-4 hover:underline">Open Watchlists →</Link>
               </div>
             ) : null}
 
@@ -241,7 +241,7 @@ export default function MarketsMonitoringPage() {
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <span className="text-xs text-[color:var(--muted)]">Possible match for</span>
                     {relatedHoldings.map((holding) => (
-                      <Link key={holding.id} href={`/app/markets/valuation?company=${encodeURIComponent(holding.name)}${holding.ticker ? `&ticker=${encodeURIComponent(holding.ticker)}` : ""}${holding.country ? `&country=${encodeURIComponent(holding.country)}` : ""}`} className="rounded-full border hairline px-2.5 py-1 text-xs underline-offset-4 hover:underline">
+                      <Link key={holding.id} href={`/markets/valuation?company=${encodeURIComponent(holding.name)}${holding.ticker ? `&ticker=${encodeURIComponent(holding.ticker)}` : ""}${holding.country ? `&country=${encodeURIComponent(holding.country)}` : ""}`} className="rounded-full border hairline px-2.5 py-1 text-xs underline-offset-4 hover:underline">
                         {holding.name}{holding.ticker ? ` · ${holding.ticker}` : ""}
                       </Link>
                     ))}

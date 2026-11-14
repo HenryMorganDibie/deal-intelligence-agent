@@ -123,7 +123,7 @@ export function DealRows({ deals, showWhy = false }: { deals: Deal[]; showWhy?: 
           <Td className="whitespace-nowrap kbd text-[0.75rem] text-[color:var(--muted)]">{d.announced ?? ""}</Td>
           <Td className="whitespace-nowrap">{words(d.deal_type)}</Td>
           <Td>
-            <Link href={`/app/deals/${d.id}`} className="underline-offset-2 hover:underline">
+            <Link href={`/deals/${d.id}`} className="underline-offset-2 hover:underline">
               {d.target ?? "Unnamed"}
             </Link>
             <span className="mt-0.5 block text-[0.75rem] text-[color:var(--dim)]">{d.headline}</span>

@@ -114,7 +114,7 @@ export default function DevelopersPage() {
         <p className="lede mt-5 max-w-3xl">
           A REST API for African deals, corporate events, investors, countries and market prices, and watchlist alerts
           delivered to Slack, Microsoft Teams, Discord, Google Chat or any webhook. Create a key on the{" "}
-          <Link href="/app/api" className="underline">API keys page</Link> once you have an account.
+          <Link href="/api-keys" className="underline">API keys page</Link> once you have an account.
         </p>
         <p className="mt-6 max-w-3xl rounded-xl border border-verified/30 bg-verified/[0.06] px-4 py-3 text-[0.875rem] leading-relaxed" role="note">
           <span className="font-medium text-[color:var(--text)]">Start free with 30 requests a month.</span>{" "}
@@ -197,7 +197,7 @@ for e in r.json()["events"]:
         </Section>
 
         <Section id="chat" title="Alerts in Slack, Teams, Discord and Google Chat">
-          <p>Create a watchlist on the <Link href="/app/watchlists" className="underline">Alerts</Link> page and paste the channel&apos;s webhook URL. The format is chosen from the URL, and <span className={ink}>Send test message</span> shows what alerts will look like before you save. Alerts arrive daily after each update, or as a Friday digest. Chat delivery does not use your API allowance.</p>
+          <p>Create a watchlist on the <Link href="/watchlists" className="underline">Alerts</Link> page and paste the channel&apos;s webhook URL. The format is chosen from the URL, and <span className={ink}>Send test message</span> shows what alerts will look like before you save. Alerts arrive daily after each update, or as a Friday digest. Chat delivery does not use your API allowance.</p>
           <ol className="list-decimal space-y-3 pl-5">
             <li><span className={ink}>Slack:</span> at api.slack.com/apps create an app, turn on <em>Incoming Webhooks</em>, choose <em>Add New Webhook to Workspace</em>, pick the channel and copy the URL (starts with https://hooks.slack.com/).</li>
             <li><span className={ink}>Microsoft Teams:</span> in the channel open <em>Workflows</em> and choose the template <em>Post to a channel when a webhook request is received</em>. Finish the steps and copy the URL it gives you.</li>

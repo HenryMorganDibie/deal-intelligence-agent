@@ -492,7 +492,7 @@ export default function MarketsPortfolioPage() {
     if (!uniqueCompanies.length) return;
     try {
       window.sessionStorage.setItem("deal-intelligence:portfolio-watchlist-prefill", JSON.stringify({ name: "Portfolio monitoring", companies: uniqueCompanies }));
-      window.location.href = "/app/watchlists?from=portfolio";
+      window.location.href = "/watchlists?from=portfolio";
     } catch {
       setError("The watchlist draft could not be prefilled in this browser. You can still copy company names into the existing Watchlists page manually.");
     }
@@ -589,7 +589,7 @@ export default function MarketsPortfolioPage() {
                       return (
                         <tr key={holding.id} className="border-b hairline align-top last:border-0">
                           <td className="py-2.5 pr-3">
-                            <Link href={`/app/companies?name=${encodeURIComponent(holding.name)}${holding.ticker ? `&ticker=${encodeURIComponent(holding.ticker)}` : ""}`} className="text-[color:var(--text)] underline-offset-4 hover:underline">{holding.name}</Link>
+                            <Link href={`/companies?name=${encodeURIComponent(holding.name)}${holding.ticker ? `&ticker=${encodeURIComponent(holding.ticker)}` : ""}`} className="text-[color:var(--text)] underline-offset-4 hover:underline">{holding.name}</Link>
                             <p className="mt-0.5 text-[0.75rem] text-[color:var(--dim)]">{[holding.ticker, holding.assetType, holding.currency].filter(Boolean).join(" · ")}</p>
                           </td>
                           <td className="py-2.5 pr-3 text-[color:var(--muted)]">{[holding.country || "–", holding.sector || "–"].join(" · ")}</td>
@@ -612,7 +612,7 @@ export default function MarketsPortfolioPage() {
                           <td className="kbd py-2.5 pr-3">{value == null ? "–" : amount(value, baseCurrency)}</td>
                           <td className={`kbd py-2.5 pr-3 ${gain != null && gain > 0 ? "text-verified" : gain != null && gain < 0 ? "text-risk" : ""}`}>{gain == null ? "–" : amount(gain, baseCurrency)}</td>
                           <td className="whitespace-nowrap py-2.5 text-[0.75rem]">
-                            <Link href={`/app/markets/valuation?${q}`} className="text-[color:var(--muted)] underline-offset-4 hover:underline">Value</Link>
+                            <Link href={`/markets/valuation?${q}`} className="text-[color:var(--muted)] underline-offset-4 hover:underline">Value</Link>
                             <button type="button" className="ml-3 text-[color:var(--muted)] underline-offset-4 hover:underline" onClick={() => removeHolding(holding.id)} aria-label={`Remove ${holding.name}`}>Remove</button>
                           </td>
                         </tr>
@@ -623,7 +623,7 @@ export default function MarketsPortfolioPage() {
               </div>
               <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[0.8125rem]">
                 <button type="button" className="text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline" onClick={preparePortfolioWatchlist}>Watch these companies for events</button>
-                <Link href="/app/markets/portfolio/cloud" className="text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Cloud portfolios and team workspaces</Link>
+                <Link href="/markets/portfolio/cloud" className="text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Cloud portfolios and team workspaces</Link>
               </p>
             </>
           )}
@@ -764,7 +764,7 @@ export default function MarketsPortfolioPage() {
       {tab === "valuations" && (
         <section aria-label="Valuations">
           <p className="max-w-3xl text-[0.8125rem] text-[color:var(--muted)]">
-            Models saved in <Link href="/app/markets/valuation" className="underline underline-offset-4">Valuation</Link>, set against each holding. A match needs a suitable model, fresh sources, the same currency and a portfolio price and date equal to the saved quote.
+            Models saved in <Link href="/markets/valuation" className="underline underline-offset-4">Valuation</Link>, set against each holding. A match needs a suitable model, fresh sources, the same currency and a portfolio price and date equal to the saved quote.
           </p>
           {valuationStorageWarning ? <div className="mt-3"><ErrorNote message={valuationStorageWarning} /></div> : null}
           <div className="mt-4 grid grid-cols-2 gap-4 border-y hairline py-4 sm:grid-cols-4">
@@ -791,7 +791,7 @@ export default function MarketsPortfolioPage() {
                         <td className="kbd py-2.5 pr-3">{ready ? amount(review.quotePrice, review.currency) : "–"}</td>
                         <td className="kbd py-2.5 pr-3">{ready && review.gapPct != null ? `${review.gapPct > 0 ? "+" : ""}${review.gapPct.toFixed(1)}%` : "–"}</td>
                         <td className="whitespace-nowrap py-2.5 text-[0.75rem]">
-                          <Link href={`/app/markets/valuation?company=${encodeURIComponent(review.company)}${review.ticker ? `&ticker=${encodeURIComponent(review.ticker)}` : ""}${review.country ? `&country=${encodeURIComponent(review.country)}` : ""}`} className="text-[color:var(--muted)] underline-offset-4 hover:underline">{ready ? "Update" : "Value"}</Link>
+                          <Link href={`/markets/valuation?company=${encodeURIComponent(review.company)}${review.ticker ? `&ticker=${encodeURIComponent(review.ticker)}` : ""}${review.country ? `&country=${encodeURIComponent(review.country)}` : ""}`} className="text-[color:var(--muted)] underline-offset-4 hover:underline">{ready ? "Update" : "Value"}</Link>
                           {ready && review.statementSourceUrl ? <a href={review.statementSourceUrl} target="_blank" rel="noreferrer" className="ml-3 text-[color:var(--muted)] underline-offset-4 hover:underline">Source ↗</a> : null}
                         </td>
                       </tr>

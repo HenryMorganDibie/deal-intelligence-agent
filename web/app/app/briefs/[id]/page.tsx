@@ -38,7 +38,7 @@ export default function BriefPage({ params }: { params: { id: string } }) {
   return (
     <Container className="max-w-4xl py-10 lg:py-14">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-        <Link href="/app" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">
+        <Link href="/" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">
           ← All briefs
         </Link>
         {row && (

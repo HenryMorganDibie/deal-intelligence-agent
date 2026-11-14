@@ -38,8 +38,8 @@ export function MarketsToday({ data }: { data: { overview: Overview; companies: 
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <a href="/app/markets" className="btn btn-primary">Open markets <ArrowRight /></a>
-            <a href="/app/markets/screener" className="btn btn-ghost">Screen companies <ArrowRight /></a>
+            <a href="/markets" className="btn btn-primary">Open markets <ArrowRight /></a>
+            <a href="/markets/screener" className="btn btn-ghost">Screen companies <ArrowRight /></a>
           </div>
         </div>
         <dl className="mt-7 grid grid-cols-1 gap-px overflow-hidden rounded-[14px] border hairline bg-[color:var(--line)] sm:grid-cols-3">
@@ -57,7 +57,7 @@ export function MarketsToday({ data }: { data: { overview: Overview; companies: 
           {tiles.map((t, i) => {
             const ytd = t.ytd_usd ?? t.ytd_median_usd;
             return (
-              <a key={t.exchange} href={`/app/markets/screener?exchange=${t.exchange}`} className={`panel p-4 transition hover:bg-white/[0.03] ${i >= 4 ? "hidden sm:block" : ""}`}>
+              <a key={t.exchange} href={`/markets/screener?exchange=${t.exchange}`} className={`panel p-4 transition hover:bg-white/[0.03] ${i >= 4 ? "hidden sm:block" : ""}`}>
                 <p className="truncate text-sm font-medium">{t.name}</p>
                 <div className="mt-2 flex items-baseline justify-between gap-2">
                   <span className="text-xs text-[color:var(--dim)]">{t.index?.name ?? t.exchange.toUpperCase()}</span>
@@ -78,7 +78,7 @@ export function MarketsToday({ data }: { data: { overview: Overview; companies: 
               <ul className="mt-3 divide-y divide-[color:var(--line)]">
                 {rows.slice(0, 4).map((r) => (
                   <li key={`${r.exchange}:${r.symbol}`} className="flex items-center justify-between gap-3 py-2 text-sm">
-                    <a className="block min-w-0 flex-1 truncate hover:underline" href={`/app/companies?${new URLSearchParams({ name: r.name, exchange: r.exchange, symbol: r.symbol })}`}>
+                    <a className="block min-w-0 flex-1 truncate hover:underline" href={`/companies?${new URLSearchParams({ name: r.name, exchange: r.exchange, symbol: r.symbol })}`}>
                       {r.name} <span className="text-xs text-[color:var(--dim)]">{r.exchange.toUpperCase()}</span>
                     </a>
                     <span className={`kbd shrink-0 ${tone(r.chg_1d)}`}>{pct(r.chg_1d, 2)}</span>

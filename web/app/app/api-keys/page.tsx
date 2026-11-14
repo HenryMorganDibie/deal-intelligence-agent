@@ -89,7 +89,7 @@ export default function ApiAccessPage() {
       <PageHeader eyebrow="API access" title="Use Deal Intelligence from your own tools.">
         Pull deals, corporate events, investors, countries and market prices into your code, spreadsheets or internal
         bots. Watchlist alerts can go straight to Slack, Teams, Discord or Google Chat from the{" "}
-        <Link href="/app/watchlists" className="underline">Alerts</Link> page. Full reference on the{" "}
+        <Link href="/watchlists" className="underline">Alerts</Link> page. Full reference on the{" "}
         <Link href="/developers" className="underline">developer docs</Link>.
       </PageHeader>
 

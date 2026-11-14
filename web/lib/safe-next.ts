@@ -1,5 +1,6 @@
-/** Only paths inside this site's app or account pages; anything else (other hosts, //, schemes) goes to /app. */
+/** A return path after sign-in: a page on this site only; anything else goes to the home page. */
 export function safeNext(value: string | null | undefined): string {
-  if (!value || !/^\/(app|account)(\/|$|\?)/.test(value) || value.startsWith("//") || value.includes("\\")) return "/app";
+  // A page on this site: a path, never another origin ("//host"), a backslash trick or an API route.
+  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\") || /^\/api(\/|$|\?)/.test(value)) return "/";
   return value;
 }

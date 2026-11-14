@@ -340,7 +340,7 @@ def select_company(deals: list[dict], events: list[dict], start: date, end: date
             })
         ranked.append({
             "company": company,
-            "company_url": "/app/companies?name=" + quote(company),
+            "company_url": "/companies?name=" + quote(company),
             "headline": featured.get("headline") or f"{company}: corporate event",
             "deal_type": signal,
             "amount_usd": None,

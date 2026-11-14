@@ -22,7 +22,7 @@ export function MarketPulse({ pulse, compact = false }: { pulse: Pulse | null; c
                 Counts reflect records currently stored, not every transaction that occurred. The latest record is dated {shortDate(pulse.latest_record) || "not available"}.
               </p>
             </div>
-            <a href="/app/deals" className="btn btn-ghost">Browse all deals <ArrowRight /></a>
+            <a href="/deals" className="btn btn-ghost">Browse all deals <ArrowRight /></a>
           </div>
           <dl className="mt-7 grid grid-cols-1 gap-px overflow-hidden rounded-[14px] border hairline bg-[color:var(--line)] sm:grid-cols-3">
             {stats.map((s) => (
@@ -38,12 +38,12 @@ export function MarketPulse({ pulse, compact = false }: { pulse: Pulse | null; c
           <div className="panel mt-3 overflow-hidden">
             <div className="flex items-center justify-between border-b hairline px-5 py-3">
               <h3 className="h3">Latest reported deals</h3>
-              <a href="/app/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">Full feed <ArrowRight /></a>
+              <a href="/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">Full feed <ArrowRight /></a>
             </div>
             <ul>
               {deals.latest.slice(0, 4).map((d, i) => (
                 <li key={d.id} className={i ? "border-t hairline" : ""}>
-                  <a href={`/app/deals/${d.id}`} className="grid gap-2 px-5 py-4 transition-colors hover:bg-white/[0.02] sm:grid-cols-[1fr_auto] sm:items-center sm:gap-6">
+                  <a href={`/deals/${d.id}`} className="grid gap-2 px-5 py-4 transition-colors hover:bg-white/[0.02] sm:grid-cols-[1fr_auto] sm:items-center sm:gap-6">
                     <div className="min-w-0">
                       <p className="text-[0.9375rem] font-medium">{d.headline}</p>
                       <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
@@ -105,14 +105,14 @@ export function MarketPulse({ pulse, compact = false }: { pulse: Pulse | null; c
             <div className="panel h-full overflow-hidden">
               <div className="flex items-center justify-between border-b hairline px-6 py-4">
                 <h3 className="h3">Latest deals</h3>
-                <a href="/app/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">
+                <a href="/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">
                   All {count(deals.total)} <ArrowRight />
                 </a>
               </div>
               <ul>
                 {deals.latest.map((d, i) => (
                   <li key={d.id} className={i ? "border-t hairline" : ""}>
-                    <a href={`/app/deals/${d.id}`} className="grid gap-1 px-6 py-4 transition-colors hover:bg-white/[0.02] sm:grid-cols-[1fr_auto] sm:gap-6">
+                    <a href={`/deals/${d.id}`} className="grid gap-1 px-6 py-4 transition-colors hover:bg-white/[0.02] sm:grid-cols-[1fr_auto] sm:gap-6">
                       <div className="min-w-0">
                         <p className="truncate text-[0.9375rem] font-medium">{d.headline}</p>
                         <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
@@ -157,7 +157,7 @@ export function MarketPulse({ pulse, compact = false }: { pulse: Pulse | null; c
                     <ul className="mt-3 space-y-2 text-[0.875rem]">
                       {deals.top_countries.map((c) => (
                         <li key={c.code} className="flex justify-between gap-3">
-                          <a href={`/app/countries/${c.code}`} className="hover:text-verified">{c.name}</a>
+                          <a href={`/countries/${c.code}`} className="hover:text-verified">{c.name}</a>
                           <span className="kbd text-[color:var(--muted)]">{c.deals}</span>
                         </li>
                       ))}
@@ -168,7 +168,7 @@ export function MarketPulse({ pulse, compact = false }: { pulse: Pulse | null; c
                     <ul className="mt-3 space-y-2 text-[0.875rem]">
                       {deals.active_investors.map((v) => (
                         <li key={v.name} className="flex justify-between gap-3">
-                          <a href={`/app/investors/${encodeURIComponent(v.name)}`} className="truncate hover:text-verified">
+                          <a href={`/investors/${encodeURIComponent(v.name)}`} className="truncate hover:text-verified">
                             {v.name}
                           </a>
                           <span className="kbd text-[color:var(--muted)]">{v.deals}</span>
@@ -187,7 +187,7 @@ export function MarketPulse({ pulse, compact = false }: { pulse: Pulse | null; c
             <div className="panel mt-4 overflow-hidden">
               <div className="flex items-center justify-between border-b hairline px-6 py-4">
                 <h3 className="h3">Corporate events this week</h3>
-                <a href="/app/watchlists" className="eyebrow inline-flex items-center gap-2 hover:text-verified">
+                <a href="/watchlists" className="eyebrow inline-flex items-center gap-2 hover:text-verified">
                   Watch a market <ArrowRight />
                 </a>
               </div>

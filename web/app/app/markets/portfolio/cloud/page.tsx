@@ -416,7 +416,7 @@ export default function CloudPortfolioPage() {
       </PageHeader>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Link href="/app/markets/portfolio" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Browser-only portfolio</Link>
+        <Link href="/markets/portfolio" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Browser-only portfolio</Link>
         <div className="flex items-center gap-3 text-sm">
           {user ? <span className="text-[color:var(--muted)]">{user.email || user.id}</span> : null}
           {user ? <button type="button" className="btn btn-secondary" onClick={signOut}>Sign out</button> : <Link className="btn btn-primary" href="/account">Sign in</Link>}

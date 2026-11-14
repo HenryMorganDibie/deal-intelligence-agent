@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
     if (!ok) { setError(data.error || "Could not update your password."); return; }
     setPassword(""); setConfirmation("");
     setMessage("Your password has been updated.");
-    window.setTimeout(() => router.replace("/app/deals"), 800);
+    window.setTimeout(() => router.replace("/deals"), 800);
   }
 
   return (

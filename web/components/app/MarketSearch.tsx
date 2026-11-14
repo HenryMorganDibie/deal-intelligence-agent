@@ -40,7 +40,7 @@ export function MarketSearch({ placeholder = "Search any African company: listed
       {results && (
         <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border hairline bg-[color:var(--bg)] shadow-xl">
           {results.length === 0 ? (
-            <p className="p-3 text-sm text-[color:var(--muted)]">No company on record matches. Try another spelling, or <Link className="underline" href={`/app/companies?name=${encodeURIComponent(q)}`}>build a profile</Link> from public sources.</p>
+            <p className="p-3 text-sm text-[color:var(--muted)]">No company on record matches. Try another spelling, or <Link className="underline" href={`/companies?name=${encodeURIComponent(q)}`}>build a profile</Link> from public sources.</p>
           ) : (
             <ul>
               {results.map((r) => (

@@ -243,7 +243,7 @@ export function LiveResults({ election, title, intro }: { election: string; titl
       <header>
         <p className="text-[0.8125rem] text-[color:var(--dim)]">
           {election.startsWith("ng-2027-gov-")
-            ? <Link href="/app/elections/nigeria/governorship" className="underline-offset-2 hover:text-[color:var(--text)] hover:underline">Governorship elections</Link>
+            ? <Link href="/elections/nigeria/governorship" className="underline-offset-2 hover:text-[color:var(--text)] hover:underline">Governorship elections</Link>
             : "Live results"}
         </p>
         <h1 className="h2 mt-1 text-[1.75rem] sm:text-[2rem]">{title.split(":")[0]}<span className="text-[color:var(--muted)]"> · {cap(title.split(":")[1]?.split(",")[0]?.trim() ?? "")}</span></h1>
@@ -254,8 +254,8 @@ export function LiveResults({ election, title, intro }: { election: string; titl
             <span className="inline-flex items-center gap-1.5 rounded-full border hairline px-2.5 py-0.5 text-[0.75rem]">
               <span className={`h-1.5 w-1.5 rounded-full ${counting && !nat?.complete ? "animate-pulse bg-[color:var(--verified,#6ee7c8)]" : "bg-[color:var(--dim)]"}`} />{status}
             </span>
-            <Link href="/app/watchlists#elections" className="text-[color:var(--muted)] underline-offset-2 hover:text-[color:var(--text)] hover:underline">Alerts</Link>
-            {nigeria && <Link href="/app/elections/nigeria/governorship" className="text-[color:var(--muted)] underline-offset-2 hover:text-[color:var(--text)] hover:underline">Governorship races</Link>}
+            <Link href="/watchlists#elections" className="text-[color:var(--muted)] underline-offset-2 hover:text-[color:var(--text)] hover:underline">Alerts</Link>
+            {nigeria && <Link href="/elections/nigeria/governorship" className="text-[color:var(--muted)] underline-offset-2 hover:text-[color:var(--text)] hover:underline">Governorship races</Link>}
           </p>
         )}
         <p className="mt-2 max-w-3xl text-[0.8125rem] text-[color:var(--dim)]">{intro}</p>

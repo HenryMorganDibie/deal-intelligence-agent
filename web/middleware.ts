@@ -2,7 +2,12 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
 import { AUTH_STATE_COOKIE, AUTH_STATE_TTL_SECONDS, readAuthState, signAuthState } from "./lib/auth-state";
 
-// The app requires a signed-in account. Every /app request is checked here:
+// The app lives at the site's own addresses (/deals, /markets, /companies...); its pages are files under app/app/ and
+// are served there by a rewrite here. Old /app/... links redirect permanently to the short address.
+//   - App-only pages (/companies, /countries, /investors...) need a signed-in account.
+//   - Shared pages (/, /deals, /deals/<id>, /markets, /coverage) also have a public version: a signed-in visitor
+//     gets the app, everyone else (and search engines) the public page.
+// A signed-in account is checked here:
 //   1. the session token's signature is verified against Supabase's published signing key (ES256);
 //   2. an expired session is renewed with the refresh token;
 //   3. an account with an authenticator app must have completed the second step (aal2);
@@ -81,11 +86,41 @@ async function proxyToApi(request: NextRequest): Promise<NextResponse> {
   return NextResponse.rewrite(target, { request: { headers } });
 }
 
+const SHARED = [/^\/$/, /^\/deals$/, /^\/deals\/[^/]+$/, /^\/markets$/, /^\/coverage$/];
+const APP_ONLY = [
+  /^\/api-keys$/, /^\/briefs\/[^/]+$/, /^\/companies$/, /^\/countries(\/[^/]+)?$/, /^\/elections(\/.*)?$/, /^\/evaluation$/,
+  /^\/investors(\/[^/]+)?$/, /^\/market-briefs\/.+$/, /^\/research$/, /^\/watchlists(\/[^/]+)?$/,
+  /^\/markets\/(compare|investments|monitoring|portfolio|portfolio\/cloud|screener|valuation)$/,
+];
+
+/** Which kind of page a path is: one only the app has, one with a public version too, or neither. */
+function pageKind(path: string): "app" | "shared" | null {
+  if (APP_ONLY.some((re) => re.test(path))) return "app";
+  if (SHARED.some((re) => re.test(path))) return "shared";
+  return null;
+}
+
+function appRewrite(request: NextRequest): NextResponse {
+  const url = request.nextUrl.clone();
+  url.pathname = request.nextUrl.pathname === "/" ? "/app" : `/app${request.nextUrl.pathname}`;
+  return NextResponse.rewrite(url);
+}
+
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
-  if (request.nextUrl.pathname.startsWith("/api/data/")) return await proxyToApi(request);
+  const path = request.nextUrl.pathname;
+  if (path.startsWith("/api/data/")) return await proxyToApi(request);
+  if (path === "/app" || path.startsWith("/app/")) {             // old links: the short address, permanently
+    const url = request.nextUrl.clone();
+    url.pathname = path.slice(4) || "/";
+    return NextResponse.redirect(url, 308);
+  }
+  const kind = pageKind(path);
+  if (!kind) return NextResponse.next();
   // Browser tests run against a local production build without an account; never in a Vercel production deploy.
-  if (process.env.DI_E2E_AUTH_BYPASS === "1" && process.env.VERCEL_ENV !== "production") return NextResponse.next();
-  if (!SUPABASE_URL || !SUPABASE_KEY) return redirectTo(request, "/account");
+  if (process.env.DI_E2E_AUTH_BYPASS === "1" && process.env.VERCEL_ENV !== "production") return appRewrite(request);
+  // A visitor with no session at all sees a shared page's public version straight away.
+  if (kind === "shared" && !request.cookies.get(ACCESS)?.value && !request.cookies.get(REFRESH)?.value) return NextResponse.next();
+  if (!SUPABASE_URL || !SUPABASE_KEY) return kind === "shared" ? NextResponse.next() : redirectTo(request, "/account");
 
   let accessToken = request.cookies.get(ACCESS)?.value;
   let claims = await verify(accessToken);
@@ -108,7 +143,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     }
   }
   if (!claims || !accessToken) {
-    const response = redirectTo(request, "/account");
+    const response = kind === "shared" ? NextResponse.next() : redirectTo(request, "/account");
     response.cookies.set(ACCESS, "", cookieOptions(0));
     response.cookies.set(REFRESH, "", cookieOptions(0));
     return response;
@@ -118,7 +153,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   let state = await readAuthState(request.cookies.get(AUTH_STATE_COOKIE)?.value, STATE_SECRET, claims.sub);
   if (!state) {
     const facts = await accountFacts(accessToken, claims.sub);
-    if (!facts) return redirectTo(request, "/account");
+    if (!facts) return kind === "shared" ? NextResponse.next() : redirectTo(request, "/account");
     state = { sub: claims.sub, ...facts, exp: 0 };
     // Record that this account used the app today (for the owner's admin page). This runs only when the
     // 30-minute account check is renewed, never per page, and never delays the response.
@@ -136,7 +171,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   let response: NextResponse;
   if (state.mfa && claims.aal !== "aal2") response = redirectTo(request, "/account/mfa");
   else if (!state.profile) response = redirectTo(request, "/account/profile");
-  else response = NextResponse.next();
+  else response = appRewrite(request);
 
   if (renewed.access_token && renewed.refresh_token) {
     response.cookies.set(ACCESS, renewed.access_token, cookieOptions(Math.max(60, renewed.expires_in || 3600)));
@@ -146,4 +181,8 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   return response;
 }
 
-export const config = { matcher: ["/app", "/app/:path*", "/api/data/:path*"] };
+export const config = {
+  matcher: ["/", "/app", "/app/:path*", "/api/data/:path*", "/api-keys", "/briefs/:path*", "/companies", "/countries/:path*",
+            "/coverage", "/deals/:path*", "/elections/:path*", "/evaluation", "/investors/:path*", "/market-briefs/:path*",
+            "/markets/:path*", "/research", "/watchlists/:path*"],
+};

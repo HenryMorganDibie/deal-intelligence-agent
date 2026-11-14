@@ -234,7 +234,7 @@ function Property({ rows }: { rows: Instruments["property"] }) {
       <h2 id="property-h" className="h3 text-xl">Listed property</h2>
       <p className="mt-1 max-w-3xl text-sm text-[color:var(--muted)]">
         Real estate investment trusts and property companies: a share of rental income without owning a building.
-        {` ${rows.length} listed, largest first; the `}<Link href="/app/markets/screener" className="underline underline-offset-4">screener</Link> filters every listed share by sector.
+        {` ${rows.length} listed, largest first; the `}<Link href="/markets/screener" className="underline underline-offset-4">screener</Link> filters every listed share by sector.
       </p>
       {rows.length === 0 ? <p className="mt-4 text-sm text-[color:var(--dim)]">No listed property prices have been recorded yet.</p> : (
         <div className="mt-4">

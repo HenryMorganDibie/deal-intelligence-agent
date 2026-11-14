@@ -220,7 +220,7 @@ export default function CompaniesPage() {
                 {String(p.market.source ?? "")}
                 {p.market.low_52w != null ? ` · 52-week range ${num(p.market.low_52w as number, 2)} to ${num(p.market.high_52w as number, 2)}` : ""}
                 {p.listing?.secondary_of ? ` · secondary listing; primary on ${p.listing.secondary_of.toUpperCase()}` : ""}
-                {p.listing ? <> · <Link className="hover:underline" href={`/app/markets/screener?exchange=${p.listing.exchange}${p.listing.sector ? `&sector=${encodeURIComponent(p.listing.sector)}` : ""}`}>peers on {p.listing.exchange_name}</Link></> : null}
+                {p.listing ? <> · <Link className="hover:underline" href={`/markets/screener?exchange=${p.listing.exchange}${p.listing.sector ? `&sector=${encodeURIComponent(p.listing.sector)}` : ""}`}>peers on {p.listing.exchange_name}</Link></> : null}
               </p>
             </section>
           )}
@@ -318,7 +318,7 @@ export default function CompaniesPage() {
                 {p.private_markets.investors_and_lenders.map((n, i) => (
                   <span key={n}>
                     {i > 0 && ", "}
-                    <Link href={`/app/investors/${encodeURIComponent(n)}`} className="hover:underline">
+                    <Link href={`/investors/${encodeURIComponent(n)}`} className="hover:underline">
                       {n}
                     </Link>
                   </span>
@@ -344,7 +344,7 @@ export default function CompaniesPage() {
                 </p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-5">
                   {b.largest_peers.map((r) => (
-                    <Link key={`${r.exchange}:${r.symbol}`} href={`/app/companies?${new URLSearchParams({ name: r.name, exchange: r.exchange, symbol: r.symbol })}`} className="rounded-lg border hairline p-3 text-[0.8125rem] hover:bg-white/[0.03]">
+                    <Link key={`${r.exchange}:${r.symbol}`} href={`/companies?${new URLSearchParams({ name: r.name, exchange: r.exchange, symbol: r.symbol })}`} className="rounded-lg border hairline p-3 text-[0.8125rem] hover:bg-white/[0.03]">
                       <span className="block truncate">{r.name}</span>
                       <span className="kbd text-[color:var(--muted)]">{usd(r.mcap_usd)}</span>
                     </Link>

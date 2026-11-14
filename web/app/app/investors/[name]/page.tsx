@@ -46,7 +46,7 @@ export default function InvestorPage({ params }: { params: { name: string } }) {
   const top = (o?: Record<string, number>) => Object.entries(o ?? {}).map(([k, v]) => `${words(k)} (${v})`).join(", ") || "n/a";
   return (
     <Container className="max-w-5xl py-10 lg:py-14">
-      <Link href="/app/investors" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">
+      <Link href="/investors" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">
         ← All investors
       </Link>
       <div className="mt-4">
@@ -60,13 +60,13 @@ export default function InvestorPage({ params }: { params: { name: string } }) {
               <span key={r.name}>
                 {i > 0 ? " · " : ""}
                 {r.relation === "investment arm" ? "Investment arm: " : r.relation === "parent company" ? "Part of " : `${words(r.relation)}: `}
-                <Link href={`/app/investors/${encodeURIComponent(r.name)}`} className="underline hover:text-[color:var(--text)]">{r.name}</Link>
+                <Link href={`/investors/${encodeURIComponent(r.name)}`} className="underline hover:text-[color:var(--text)]">{r.name}</Link>
               </span>
             ))}
             . Counted separately: the company buys and sells businesses, the arm invests.
           </p>
         )}
-        <Link href={`/app/watchlists?follow=${encodeURIComponent(p.name)}`} className="btn btn-ghost mt-4 inline-flex h-9 px-4 text-sm">
+        <Link href={`/watchlists?follow=${encodeURIComponent(p.name)}`} className="btn btn-ghost mt-4 inline-flex h-9 px-4 text-sm">
           Follow this investor
         </Link>
       </div>
@@ -102,7 +102,7 @@ export default function InvestorPage({ params }: { params: { name: string } }) {
             <Table head={["Company", "First deal", "Role", "Since then"]}>
               {p.portfolio.map((c) => (
                 <tr key={c.deal_id}>
-                  <Td><Link href={`/app/deals/${c.deal_id}`} className="hover:underline">{c.company}</Link></Td>
+                  <Td><Link href={`/deals/${c.deal_id}`} className="hover:underline">{c.company}</Link></Td>
                   <Td className="kbd whitespace-nowrap text-[0.75rem] text-[color:var(--muted)]">{c.first_deal ?? ""}</Td>
                   <Td>{c.role}</Td>
                   <Td className="text-[color:var(--muted)]">{c.status}{c.status_date ? ` (${c.status_date})` : ""}</Td>
@@ -121,7 +121,7 @@ export default function InvestorPage({ params }: { params: { name: string } }) {
               <Td>{r.role}</Td>
               <Td>{words(r.deal_type)}</Td>
               <Td>
-                <Link href={`/app/deals/${r.id}`} className="hover:underline">
+                <Link href={`/deals/${r.id}`} className="hover:underline">
                   {r.target ?? "Deal"}
                 </Link>
                 <span className="block text-[0.75rem] text-[color:var(--dim)]">{r.headline}</span>

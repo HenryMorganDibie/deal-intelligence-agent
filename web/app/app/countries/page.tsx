@@ -177,7 +177,7 @@ export default function CountriesPage() {
           </div>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[38rem] border-collapse text-left text-sm">
-              <thead><tr className="border-b hairline"><th className="py-2 pr-4 font-normal text-[color:var(--dim)]">Indicator</th>{selectedRows.map((c) => <th key={c.iso2} className="py-2 pr-4 font-medium"><Link className="hover:underline" href={`/app/countries/${c.iso2}`}>{c.name}</Link></th>)}</tr></thead>
+              <thead><tr className="border-b hairline"><th className="py-2 pr-4 font-normal text-[color:var(--dim)]">Indicator</th>{selectedRows.map((c) => <th key={c.iso2} className="py-2 pr-4 font-medium"><Link className="hover:underline" href={`/countries/${c.iso2}`}>{c.name}</Link></th>)}</tr></thead>
               <tbody>
                 {[
                   ["Region", (c: Row) => c.region],
@@ -234,7 +234,7 @@ export default function CountriesPage() {
                   />
                 </Td>
                 <Td>
-                  <Link href={`/app/countries/${c.iso2}`} className="font-medium hover:underline">{c.name}</Link>
+                  <Link href={`/countries/${c.iso2}`} className="font-medium hover:underline">{c.name}</Link>
                   <span className="kbd ml-2 text-xs text-[color:var(--dim)]">{c.iso2}</span>
                   {c.exchange && <span className="mt-1 block text-xs text-[color:var(--dim)]">{c.exchange}</span>}
                 </Td>

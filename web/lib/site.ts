@@ -20,7 +20,7 @@ export const SITE = {
 export const LINKS = {
   methodology: "/methodology",
   limitations: "/methodology#limits",
-  evaluation: "/app/evaluation",
+  evaluation: "/evaluation",
   contact: "/contact",
 } as const;
 

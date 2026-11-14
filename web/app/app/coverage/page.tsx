@@ -57,7 +57,7 @@ export default function CoveragePage() {
               {m.countries.map((c) => (
                 <tr key={c.iso2}>
                   <Td>
-                    <Link href={`/app/countries/${c.iso2}`} className="hover:underline">
+                    <Link href={`/countries/${c.iso2}`} className="hover:underline">
                       {c.country}
                     </Link>
                   </Td>

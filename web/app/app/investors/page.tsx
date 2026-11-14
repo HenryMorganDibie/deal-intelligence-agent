@@ -175,7 +175,7 @@ export default function InvestorsPage() {
             {rows.map((r) => (
               <tr key={r.name}>
                 <Td>
-                  <Link href={`/app/investors/${encodeURIComponent(r.name)}`} className="hover:underline">
+                  <Link href={`/investors/${encodeURIComponent(r.name)}`} className="hover:underline">
                     {r.name}
                   </Link>
                   {r.hq && <span className="block text-[0.75rem] text-[color:var(--dim)]">{r.hq}</span>}
@@ -219,7 +219,7 @@ export default function InvestorsPage() {
                 <tr key={f.id}>
                   <Td className="kbd whitespace-nowrap text-[0.75rem] text-[color:var(--muted)]">{f.announced ?? ""}</Td>
                   <Td>
-                    <Link href={`/app/deals/${f.id}`} className="hover:underline">
+                    <Link href={`/deals/${f.id}`} className="hover:underline">
                       {f.fund_or_manager}
                     </Link>
                     <span className="block text-[0.75rem] text-[color:var(--dim)]">{f.headline}</span>

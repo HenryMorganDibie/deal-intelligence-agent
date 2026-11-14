@@ -2,19 +2,19 @@ const { test, expect } = require("@playwright/test");
 const fs = require("node:fs/promises");
 
 const routes = [
-  "/app/markets",
-  "/app/markets/screener",
-  "/app/markets/investments",
-  "/app/markets/valuation",
-  "/app/markets/portfolio",
-  "/app/markets/compare",
-  "/app/markets/monitoring",
-  "/app/markets/portfolio/cloud",
-  "/app/companies",
-  "/app/research",
-  "/app/deals",
-  "/app/watchlists",
-  "/app/coverage",
+  "/markets",
+  "/markets/screener",
+  "/markets/investments",
+  "/markets/valuation",
+  "/markets/portfolio",
+  "/markets/compare",
+  "/markets/monitoring",
+  "/markets/portfolio/cloud",
+  "/companies",
+  "/research",
+  "/deals",
+  "/watchlists",
+  "/coverage",
 ];
 
 test("Markets and adjacent workspaces render without route failures", async ({ page }) => {
@@ -29,7 +29,7 @@ test("Markets and adjacent workspaces render without route failures", async ({ p
 });
 
 test("Markets overview keeps Research and Coverage in their own workspaces", async ({ page }) => {
-  await page.goto("/app/markets");
+  await page.goto("/markets");
   await expect(page.getByRole("heading", { name: "African equity markets today" })).toBeVisible();
   await expect(page.getByLabel("Search listed companies")).toBeVisible();
   await expect(page.getByText("Research a company", { exact: false })).toHaveCount(0);
@@ -37,7 +37,7 @@ test("Markets overview keeps Research and Coverage in their own workspaces", asy
 });
 
 test("local portfolio supports add, persistence, CSV backup, clear and import", async ({ page }) => {
-  await page.goto("/app/markets/portfolio");
+  await page.goto("/markets/portfolio");
   await expect(page.getByRole("heading", { name: "Portfolio", exact: true })).toBeVisible();
 
   await page.getByLabel("Company or investment name *").fill("Browser Test Equity");
@@ -139,7 +139,7 @@ test("valuation history JSON backup exports, restores and rejects malformed data
     storageKey: key,
     initial: [snapshot],
   });
-  await page.goto("/app/markets/valuation");
+  await page.goto("/markets/valuation");
   await page.getByRole("tab", { name: /Saved valuations/ }).click();
   await expect(page.getByRole("row").filter({ hasText: "Example Bank" })).toBeVisible();
 
@@ -174,7 +174,7 @@ test("valuation history JSON backup exports, restores and rejects malformed data
 
 
 test("currency conversion inputs update when the reporting currency changes", async ({ page }) => {
-  await page.goto("/app/markets/portfolio");
+  await page.goto("/markets/portfolio");
   await page.getByLabel("Company or investment name *").fill("FX Test Equity");
   await page.getByLabel("Holding currency").selectOption("NGN");
   await page.getByLabel("Quantity / units *").fill("10");
@@ -207,7 +207,7 @@ test("monitoring presents explicit empty and feed-error states", async ({ page }
     contentType: "application/json",
     body: JSON.stringify({ events: [], count: 0 }),
   }));
-  await page.goto("/app/markets/monitoring");
+  await page.goto("/markets/monitoring");
   await expect(page.getByText(/No events were returned for this period/i)).toBeVisible();
 
   await page.unroute(eventsRoute);
@@ -221,7 +221,7 @@ test("monitoring presents explicit empty and feed-error states", async ({ page }
 });
 
 test("portfolio inputs support keyboard focus navigation", async ({ page }) => {
-  await page.goto("/app/markets/portfolio");
+  await page.goto("/markets/portfolio");
   const name = page.getByLabel("Company or investment name *");
   const ticker = page.getByLabel("Ticker / identifier");
   await name.focus();
@@ -233,7 +233,7 @@ test("portfolio inputs support keyboard focus navigation", async ({ page }) => {
 
 test("portfolio page remains usable at a narrow mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/app/markets/portfolio");
+  await page.goto("/markets/portfolio");
   await expect(page.getByRole("heading", { name: "Portfolio", exact: true })).toBeVisible();
   await expect(page.getByLabel("Company or investment name *")).toBeVisible();
   await expect(page.getByRole("button", { name: "Add holding" })).toBeVisible();
@@ -413,7 +413,7 @@ test("the app header has an account menu that signs out", async ({ page }) => {
     signedOut = true;
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
   });
-  await page.goto("/app/deals");
+  await page.goto("/deals");
   const trigger = page.getByRole("button", { name: "Account menu for Ada" });
   await expect(trigger).toBeVisible();
   await trigger.click();

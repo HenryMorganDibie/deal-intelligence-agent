@@ -199,7 +199,7 @@ export default function MarketsComparePage() {
       <MarketsTitle title="Compare companies">Up to four side by side. Missing figures stay missing, and a lower multiple alone doesn&apos;t make a company cheaper.</MarketsTitle>
 
       <div className="mb-6 flex flex-wrap gap-3">
-        <Link href="/app/companies" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Explore company profiles →</Link>
+        <Link href="/companies" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Explore company profiles →</Link>
       </div>
 
       <section className="panel p-5 sm:p-6" aria-labelledby="compare-add-title">
@@ -256,9 +256,9 @@ export default function MarketsComparePage() {
                   <p><span className="text-[color:var(--dim)]">Statement period:</span> {profile.financials?.period?.end || "Not available"}</p>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-xs">
-                  <Link href={`/app/companies?name=${encodeURIComponent(profile.name)}${profile.ticker ? `&ticker=${encodeURIComponent(profile.ticker)}` : ""}`} className="underline-offset-4 hover:underline">Profile</Link>
-                  <Link href={`/app/markets/valuation?company=${encodeURIComponent(profile.name)}${profile.ticker ? `&ticker=${encodeURIComponent(profile.ticker)}` : ""}`} className="underline-offset-4 hover:underline">Valuation</Link>
-                  <Link href={`/app/research?question=${encodeURIComponent(countercaseQuestion(profile))}`} className="underline-offset-4 hover:underline">Research countercase</Link>
+                  <Link href={`/companies?name=${encodeURIComponent(profile.name)}${profile.ticker ? `&ticker=${encodeURIComponent(profile.ticker)}` : ""}`} className="underline-offset-4 hover:underline">Profile</Link>
+                  <Link href={`/markets/valuation?company=${encodeURIComponent(profile.name)}${profile.ticker ? `&ticker=${encodeURIComponent(profile.ticker)}` : ""}`} className="underline-offset-4 hover:underline">Valuation</Link>
+                  <Link href={`/research?question=${encodeURIComponent(countercaseQuestion(profile))}`} className="underline-offset-4 hover:underline">Research countercase</Link>
                   {profile.financials?.source_url && <a href={profile.financials.source_url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">Statement source ↗</a>}
                 </div>
               </article>

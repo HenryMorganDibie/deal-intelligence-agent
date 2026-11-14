@@ -144,7 +144,7 @@ def render_email(sub: dict, stories: list[dict]) -> tuple[str, str, str]:
                f"{'s' if n != 1 else ''} · {name}" + (f" ({high} high severity)" if high else ""))
     unsub = unsubscribe_link(str(sub["id"]))
     app = __import__("os").environ.get("DEAL_INTEL_APP_URL", "https://deal-intelligence.app").rstrip("/")
-    manage = f"{app}/app/watchlists"
+    manage = f"{app}/watchlists"
     rows, text = [], [f"{name}: {n} new item{'s' if n != 1 else ''}", ""]
     for i in items[:25]:
         title = str(i.get("title") or "")

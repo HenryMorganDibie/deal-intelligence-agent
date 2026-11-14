@@ -33,7 +33,7 @@ export default function DealPage({ params }: { params: { id: string } }) {
   const valuation = d.reported_valuation_usd ?? d.implied_valuation_usd;
   return (
     <Container className="max-w-5xl py-10 lg:py-14">
-      <Link href="/app/deals" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">
+      <Link href="/deals" className="text-[0.8125rem] text-[color:var(--muted)] hover:text-[color:var(--text)]">
         ← All deals
       </Link>
       <ShareDeal id={d.id} title={d.target ?? d.headline} />
@@ -54,7 +54,7 @@ export default function DealPage({ params }: { params: { id: string } }) {
         {parties.map((p) => (
           <li key={p.name + p.role}>
             <Link
-              href={`/app/investors/${encodeURIComponent(p.name)}`}
+              href={`/investors/${encodeURIComponent(p.name)}`}
               className="inline-flex rounded-full border hairline px-3 py-1.5 text-[0.8125rem] hover:text-verified"
             >
               {p.name} <span className="ml-2 text-[color:var(--dim)]">{p.role}</span>
@@ -64,7 +64,7 @@ export default function DealPage({ params }: { params: { id: string } }) {
         {d.target && (
           <li>
             <Link
-              href={`/app/companies?name=${encodeURIComponent(d.target)}${d.country ? `&country=${d.country}` : ""}`}
+              href={`/companies?name=${encodeURIComponent(d.target)}${d.country ? `&country=${d.country}` : ""}`}
               className="inline-flex rounded-full border hairline px-3 py-1.5 text-[0.8125rem] hover:text-verified"
             >
               {d.target} <span className="ml-2 text-[color:var(--dim)]">target profile</span>

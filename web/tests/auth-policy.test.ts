@@ -35,10 +35,11 @@ test("username and nickname rules", () => {
   assert.ok(displayNameProblem("<script>"));
 });
 
-test("return paths stay inside the app", () => {
-  assert.equal(safeNext("/app/markets?x=1"), "/app/markets?x=1");
+test("return paths stay on this site", () => {
+  assert.equal(safeNext("/markets?x=1"), "/markets?x=1");
+  assert.equal(safeNext("/deals/abc"), "/deals/abc");
   assert.equal(safeNext("/account/security"), "/account/security");
-  for (const bad of ["https://evil.example", "//evil.example", "/\\evil.example", "/apple", "javascript:alert(1)", "", null]) {
-    assert.equal(safeNext(bad), "/app", String(bad));
+  for (const bad of ["https://evil.example", "//evil.example", "/\\evil.example", "/api/data/me", "javascript:alert(1)", "", null]) {
+    assert.equal(safeNext(bad), "/", String(bad));
   }
 });

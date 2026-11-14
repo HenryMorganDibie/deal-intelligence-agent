@@ -7,11 +7,11 @@ import { usePlan } from "../lib/plan";
  * offered an account. (The page itself is cached for everyone, so this is decided in the browser.) */
 export function PublicDealCta({ id }: { id: string }) {
   const plan = usePlan();
-  const next = encodeURIComponent(`/app/deals/${id}`);
+  const next = encodeURIComponent(`/deals/${id}`);
   if (plan) {
     return (
       <div className="mt-5 flex flex-wrap gap-3">
-        <Link href={`/app/deals/${id}`} className="btn btn-primary">Open in the app</Link>
+        <Link href={`/deals/${id}`} className="btn btn-primary">Open in the app</Link>
       </div>
     );
   }

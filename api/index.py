@@ -937,7 +937,7 @@ async def create_market_newsletter(body: NewsletterBody, request: Request) -> di
     lines = [
         f"# {title}", "",
         f"**Audience:** {body.audience}  ",
-        f"**Source brief:** [{source_row.get('title')}](/app/market-briefs/{source_id})  ",
+        f"**Source brief:** [{source_row.get('title')}](/market-briefs/{source_id})  ",
         f"**Generated:** {now}  ",
         f"**Selected deal records:** {len(selected_deals)} · **Selected web evidence items:** {len(selected_web)}", "",
         "---", "", answer, "",
