@@ -3,11 +3,11 @@
     "AO": {
       "country_code": "AO",
       "country_name": "Angola",
-      "generated_at": "2026-11-13T12:36:45.629732Z",
+      "generated_at": "2026-11-14T11:46:59.556215Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -16,7 +16,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "AOA per USD",
-          "value": 916.1729
+          "value": 927.3967
         },
         {
           "as_of_period": "2026-09",
@@ -38,11 +38,11 @@
     "BF": {
       "country_code": "BF",
       "country_name": "Burkina Faso",
-      "generated_at": "2026-11-13T12:33:26.900861Z",
+      "generated_at": "2026-11-14T11:43:39.704275Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -51,7 +51,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -85,11 +85,11 @@
     "BI": {
       "country_code": "BI",
       "country_name": "Burundi",
-      "generated_at": "2026-11-13T12:38:44.495406Z",
+      "generated_at": "2026-11-14T11:49:00.417464Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -98,7 +98,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "BIF per USD",
-          "value": 3004.903
+          "value": 3008.8749
         },
         {
           "as_of_period": "2026-10",
@@ -120,11 +120,11 @@
     "BJ": {
       "country_code": "BJ",
       "country_name": "Benin",
-      "generated_at": "2026-11-13T12:33:13.769793Z",
+      "generated_at": "2026-11-14T11:43:26.279382Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -133,7 +133,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -167,11 +167,11 @@
     "BW": {
       "country_code": "BW",
       "country_name": "Botswana",
-      "generated_at": "2026-11-13T12:42:40.334124Z",
+      "generated_at": "2026-11-14T11:52:59.646706Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -180,7 +180,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "BWP per USD",
-          "value": 14.1803
+          "value": 14.4485
         },
         {
           "as_of_period": "2026-08",
@@ -214,11 +214,11 @@
     "CD": {
       "country_code": "CD",
       "country_name": "Democratic Republic of the Congo",
-      "generated_at": "2026-11-13T12:37:52.473156Z",
+      "generated_at": "2026-11-14T11:48:07.095089Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -227,7 +227,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "CDF per USD",
-          "value": 2310.4027
+          "value": 2250.6859
         },
         {
           "as_of_period": "2026-09",
@@ -249,11 +249,11 @@
     "CF": {
       "country_code": "CF",
       "country_name": "Central African Republic",
-      "generated_at": "2026-11-13T12:37:12.725513Z",
+      "generated_at": "2026-11-14T11:47:26.480512Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -262,7 +262,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-10",
@@ -296,11 +296,11 @@
     "CG": {
       "country_code": "CG",
       "country_name": "Republic of the Congo",
-      "generated_at": "2026-11-13T12:37:39.095100Z",
+      "generated_at": "2026-11-14T11:47:53.318024Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -309,7 +309,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-01",
@@ -343,11 +343,11 @@
     "CI": {
       "country_code": "CI",
       "country_name": "C\u00f4te d'Ivoire",
-      "generated_at": "2026-11-13T12:33:53.129753Z",
+      "generated_at": "2026-11-14T11:44:06.496043Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -356,7 +356,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-10",
@@ -390,11 +390,11 @@
     "CM": {
       "country_code": "CM",
       "country_name": "Cameroon",
-      "generated_at": "2026-11-13T12:36:59.927314Z",
+      "generated_at": "2026-11-14T11:47:13.149988Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -403,7 +403,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -437,11 +437,11 @@
     "CV": {
       "country_code": "CV",
       "country_name": "Cabo Verde",
-      "generated_at": "2026-11-13T12:33:39.829651Z",
+      "generated_at": "2026-11-14T11:43:52.974956Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -450,7 +450,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "CVE per USD",
-          "value": 99.6169
+          "value": 99.8946
         },
         {
           "as_of_period": "2026-07",
@@ -472,11 +472,11 @@
     "DJ": {
       "country_code": "DJ",
       "country_name": "Djibouti",
-      "generated_at": "2026-11-13T12:39:10.347196Z",
+      "generated_at": "2026-11-14T11:49:26.813973Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -507,11 +507,11 @@
     "DZ": {
       "country_code": "DZ",
       "country_name": "Algeria",
-      "generated_at": "2026-11-13T12:31:54.638250Z",
+      "generated_at": "2026-11-14T11:42:05.691736Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -520,7 +520,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "DZD per USD",
-          "value": 136.8584
+          "value": 136.8364
         },
         {
           "as_of_period": "2026-07",
@@ -554,11 +554,11 @@
     "EG": {
       "country_code": "EG",
       "country_name": "Egypt",
-      "generated_at": "2026-11-13T12:32:08.132643Z",
+      "generated_at": "2026-11-14T11:42:19.138556Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -567,7 +567,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "EGP per USD",
-          "value": 53.4462
+          "value": 53.437
         },
         {
           "as_of_period": "2026-08",
@@ -601,11 +601,11 @@
     "ER": {
       "country_code": "ER",
       "country_name": "Eritrea",
-      "generated_at": "2026-11-13T12:39:23.227704Z",
+      "generated_at": "2026-11-14T11:49:39.920772Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -636,11 +636,11 @@
     "ET": {
       "country_code": "ET",
       "country_name": "Ethiopia",
-      "generated_at": "2026-11-13T12:39:36.389206Z",
+      "generated_at": "2026-11-14T11:49:53.227839Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -649,7 +649,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "ETB per USD",
-          "value": 161.4543
+          "value": 161.2154
         },
         {
           "as_of_period": "2026-09",
@@ -671,11 +671,11 @@
     "GA": {
       "country_code": "GA",
       "country_name": "Gabon",
-      "generated_at": "2026-11-13T12:38:18.512777Z",
+      "generated_at": "2026-11-14T11:48:33.860809Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -684,7 +684,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -718,11 +718,11 @@
     "GH": {
       "country_code": "GH",
       "country_name": "Ghana",
-      "generated_at": "2026-11-13T12:34:19.410380Z",
+      "generated_at": "2026-11-14T11:44:33.252888Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -731,7 +731,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "GHS per USD",
-          "value": 11.7163
+          "value": 11.7559
         },
         {
           "as_of_period": "2026-08",
@@ -746,25 +746,25 @@
           "value": 4.997866
         },
         {
-          "as_of_period": "2026-11-12",
+          "as_of_period": "2026-11-13",
           "frequency": "monthly",
           "freshness": "current",
           "location_name": null,
           "metric_key": "official_exchange_rate_latest_lcu_per_usd",
           "name": "official_exchange_rate_latest_lcu_per_usd",
-          "retrieved_at": "2026-11-13T05:20:07.811727Z",
+          "retrieved_at": "2026-11-14T05:23:00.201631Z",
           "source": "bog_gh_signals",
           "unit": "lcu_per_usd",
-          "value": 11.71
+          "value": 11.69
         },
         {
-          "as_of_period": "2026-11-12",
+          "as_of_period": "2026-11-13",
           "frequency": "ad_hoc",
           "freshness": "current",
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-11-13T05:20:07.811727Z",
+          "retrieved_at": "2026-11-14T05:23:00.201631Z",
           "source": "bog_gh_signals",
           "unit": "percent",
           "value": 14.0
@@ -777,11 +777,11 @@
     "GM": {
       "country_code": "GM",
       "country_name": "Gambia",
-      "generated_at": "2026-11-13T12:34:06.150648Z",
+      "generated_at": "2026-11-14T11:44:19.738514Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -790,7 +790,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "GMD per USD",
-          "value": 74.8204
+          "value": 74.8168
         },
         {
           "as_of_period": "2026-10",
@@ -812,11 +812,11 @@
     "GN": {
       "country_code": "GN",
       "country_name": "Guinea",
-      "generated_at": "2026-11-13T12:34:32.450982Z",
+      "generated_at": "2026-11-14T11:44:46.484735Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -825,7 +825,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "GNF per USD",
-          "value": 8849.4555
+          "value": 8854.5123
         },
         {
           "as_of_period": "2026-10",
@@ -847,11 +847,11 @@
     "GQ": {
       "country_code": "GQ",
       "country_name": "Equatorial Guinea",
-      "generated_at": "2026-11-13T12:38:05.379316Z",
+      "generated_at": "2026-11-14T11:48:20.561191Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -860,7 +860,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -894,11 +894,11 @@
     "GW": {
       "country_code": "GW",
       "country_name": "Guinea-Bissau",
-      "generated_at": "2026-11-13T12:34:45.567656Z",
+      "generated_at": "2026-11-14T11:44:59.571187Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -907,7 +907,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -941,11 +941,11 @@
     "KE": {
       "country_code": "KE",
       "country_name": "Kenya",
-      "generated_at": "2026-11-13T12:39:49.052254Z",
+      "generated_at": "2026-11-14T11:50:06.086253Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -954,7 +954,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "KES per USD",
-          "value": 130.0351
+          "value": 129.9924
         },
         {
           "as_of_period": "2026-10",
@@ -963,7 +963,7 @@
           "location_name": null,
           "metric_key": "inflation_cpi_latest_yoy_pct",
           "name": "inflation_cpi_latest_yoy_pct",
-          "retrieved_at": "2026-11-13T04:26:57.212327Z",
+          "retrieved_at": "2026-11-14T05:23:30.959829Z",
           "source": "cbk_ke_signals",
           "unit": "percent",
           "value": 7.32
@@ -981,16 +981,16 @@
           "value": 129.74
         },
         {
-          "as_of_period": "2026-11-11",
+          "as_of_period": "2026-11-12",
           "frequency": "ad_hoc",
           "freshness": "current",
           "location_name": null,
           "metric_key": "overnight_interbank_rate_pct",
           "name": "overnight_interbank_rate_pct",
-          "retrieved_at": "2026-11-13T04:26:57.212327Z",
+          "retrieved_at": "2026-11-14T05:23:30.959829Z",
           "source": "cbk_ke_signals",
           "unit": "percent",
-          "value": 8.7513
+          "value": 8.7509
         },
         {
           "as_of_period": "2026-10-07",
@@ -999,7 +999,7 @@
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-11-13T04:26:57.212327Z",
+          "retrieved_at": "2026-11-14T05:23:30.959829Z",
           "source": "cbk_ke_signals",
           "unit": "percent",
           "value": 8.75
@@ -1012,11 +1012,11 @@
     "KM": {
       "country_code": "KM",
       "country_name": "Comoros",
-      "generated_at": "2026-11-13T12:38:57.156833Z",
+      "generated_at": "2026-11-14T11:49:13.599325Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1025,7 +1025,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "KMF per USD",
-          "value": 444.4592
+          "value": 445.6985
         },
         {
           "as_of_period": "2026-10",
@@ -1047,11 +1047,11 @@
     "LR": {
       "country_code": "LR",
       "country_name": "Liberia",
-      "generated_at": "2026-11-13T12:34:58.559208Z",
+      "generated_at": "2026-11-14T11:45:12.750703Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1060,7 +1060,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "LRD per USD",
-          "value": 171.2341
+          "value": 170.8033
         },
         {
           "as_of_period": "2025-08",
@@ -1082,11 +1082,11 @@
     "LS": {
       "country_code": "LS",
       "country_name": "Lesotho",
-      "generated_at": "2026-11-13T12:43:06.369326Z",
+      "generated_at": "2026-11-14T11:53:26.496171Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1095,7 +1095,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "LSL per USD",
-          "value": 16.733
+          "value": 16.8977
         },
         {
           "as_of_period": "2026-08",
@@ -1129,11 +1129,11 @@
     "LY": {
       "country_code": "LY",
       "country_name": "Libya",
-      "generated_at": "2026-11-13T12:32:21.260677Z",
+      "generated_at": "2026-11-14T11:42:32.353325Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1164,11 +1164,11 @@
     "MA": {
       "country_code": "MA",
       "country_name": "Morocco",
-      "generated_at": "2026-11-13T12:32:34.399327Z",
+      "generated_at": "2026-11-14T11:42:45.811467Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1177,7 +1177,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MAD per USD",
-          "value": 9.8527
+          "value": 9.8884
         },
         {
           "as_of_period": "2026-08",
@@ -1210,7 +1210,7 @@
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-11-13T05:53:12.923831Z",
+          "retrieved_at": "2026-11-14T05:54:06.578086Z",
           "source": "bkam_ma_policy_signals",
           "unit": "percent",
           "value": 2.25
@@ -1223,11 +1223,11 @@
     "MG": {
       "country_code": "MG",
       "country_name": "Madagascar",
-      "generated_at": "2026-11-13T12:40:02.266862Z",
+      "generated_at": "2026-11-14T11:50:19.556687Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1236,7 +1236,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MGA per USD",
-          "value": 4582.8951
+          "value": 4574.2276
         },
         {
           "as_of_period": "2026-10",
@@ -1258,11 +1258,11 @@
     "ML": {
       "country_code": "ML",
       "country_name": "Mali",
-      "generated_at": "2026-11-13T12:35:11.680201Z",
+      "generated_at": "2026-11-14T11:45:26.083705Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1271,7 +1271,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -1305,11 +1305,11 @@
     "MR": {
       "country_code": "MR",
       "country_name": "Mauritania",
-      "generated_at": "2026-11-13T12:35:24.734967Z",
+      "generated_at": "2026-11-14T11:45:39.352399Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1318,7 +1318,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MRU per USD",
-          "value": 40.5486
+          "value": 40.5488
         },
         {
           "as_of_period": "2024-08",
@@ -1340,11 +1340,11 @@
     "MU": {
       "country_code": "MU",
       "country_name": "Mauritius",
-      "generated_at": "2026-11-13T12:40:28.537331Z",
+      "generated_at": "2026-11-14T11:50:46.226962Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1353,7 +1353,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MUR per USD",
-          "value": 47.5806
+          "value": 47.6379
         },
         {
           "as_of_period": "2026-08",
@@ -1387,11 +1387,11 @@
     "MW": {
       "country_code": "MW",
       "country_name": "Malawi",
-      "generated_at": "2026-11-13T12:40:15.483205Z",
+      "generated_at": "2026-11-14T11:50:32.958047Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1400,7 +1400,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MWK per USD",
-          "value": 1743.8894
+          "value": 1747.005
         },
         {
           "as_of_period": "2026-09",
@@ -1422,11 +1422,11 @@
     "MZ": {
       "country_code": "MZ",
       "country_name": "Mozambique",
-      "generated_at": "2026-11-13T12:40:41.566698Z",
+      "generated_at": "2026-11-14T11:50:59.462057Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1435,7 +1435,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "MZN per USD",
-          "value": 63.7389
+          "value": 63.7421
         },
         {
           "as_of_period": "2026-08",
@@ -1469,11 +1469,11 @@
     "NA": {
       "country_code": "NA",
       "country_name": "Namibia",
-      "generated_at": "2026-11-13T12:43:19.624940Z",
+      "generated_at": "2026-11-14T11:53:39.924362Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1482,7 +1482,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "NAD per USD",
-          "value": 16.733
+          "value": 16.8977
         },
         {
           "as_of_period": "2026-08",
@@ -1528,11 +1528,11 @@
     "NE": {
       "country_code": "NE",
       "country_name": "Niger",
-      "generated_at": "2026-11-13T12:35:37.810072Z",
+      "generated_at": "2026-11-14T11:45:52.611819Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1541,7 +1541,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -1575,11 +1575,11 @@
     "NG": {
       "country_code": "NG",
       "country_name": "Nigeria",
-      "generated_at": "2026-11-13T12:35:51.164064Z",
+      "generated_at": "2026-11-14T11:46:06.067333Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1588,7 +1588,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "NGN per USD",
-          "value": 1350.4591
+          "value": 1352.3621
         },
         {
           "as_of_period": "2026-09",
@@ -1597,22 +1597,22 @@
           "location_name": null,
           "metric_key": "inflation_cpi_latest_yoy_pct",
           "name": "inflation_cpi_latest_yoy_pct",
-          "retrieved_at": "2026-11-13T05:53:06.709743Z",
+          "retrieved_at": "2026-11-14T05:54:00.586860Z",
           "source": "cbn_ng_signals",
           "unit": "percent",
           "value": 14.63
         },
         {
-          "as_of_period": "2026-11-12",
+          "as_of_period": "2026-11-13",
           "frequency": "monthly",
           "freshness": "current",
           "location_name": null,
           "metric_key": "official_exchange_rate_latest_lcu_per_usd",
           "name": "official_exchange_rate_latest_lcu_per_usd",
-          "retrieved_at": "2026-11-13T05:53:06.709743Z",
+          "retrieved_at": "2026-11-14T05:54:00.586860Z",
           "source": "cbn_ng_signals",
           "unit": "lcu_per_usd",
-          "value": 1355.3815
+          "value": 1353.4741
         },
         {
           "as_of_period": "2026-09-01",
@@ -1621,7 +1621,7 @@
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-11-13T05:53:06.709743Z",
+          "retrieved_at": "2026-11-14T05:54:00.586860Z",
           "source": "cbn_ng_signals",
           "unit": "percent",
           "value": 23.0
@@ -1634,11 +1634,11 @@
     "RW": {
       "country_code": "RW",
       "country_name": "Rwanda",
-      "generated_at": "2026-11-13T12:40:54.823837Z",
+      "generated_at": "2026-11-14T11:51:12.980547Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1647,7 +1647,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "RWF per USD",
-          "value": 1479.389
+          "value": 1479.7449
         },
         {
           "as_of_period": "2026-10",
@@ -1669,11 +1669,11 @@
     "SC": {
       "country_code": "SC",
       "country_name": "Seychelles",
-      "generated_at": "2026-11-13T12:41:07.632260Z",
+      "generated_at": "2026-11-14T11:51:25.976613Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1682,7 +1682,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SCR per USD",
-          "value": 14.0259
+          "value": 13.9168
         },
         {
           "as_of_period": "2026-10",
@@ -1704,11 +1704,11 @@
     "SD": {
       "country_code": "SD",
       "country_name": "Sudan",
-      "generated_at": "2026-11-13T12:32:47.365042Z",
+      "generated_at": "2026-11-14T11:42:59.517635Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1717,7 +1717,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SDG per USD",
-          "value": 482.955
+          "value": 480.8812
         },
         {
           "as_of_period": "2023-10",
@@ -1739,11 +1739,11 @@
     "SL": {
       "country_code": "SL",
       "country_name": "Sierra Leone",
-      "generated_at": "2026-11-13T12:36:17.670455Z",
+      "generated_at": "2026-11-14T11:46:32.684624Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1774,11 +1774,11 @@
     "SN": {
       "country_code": "SN",
       "country_name": "Senegal",
-      "generated_at": "2026-11-13T12:36:04.251334Z",
+      "generated_at": "2026-11-14T11:46:19.433829Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1787,7 +1787,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -1821,11 +1821,11 @@
     "SO": {
       "country_code": "SO",
       "country_name": "Somalia",
-      "generated_at": "2026-11-13T12:41:20.913640Z",
+      "generated_at": "2026-11-14T11:51:39.213530Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1834,7 +1834,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SOS per USD",
-          "value": 571.832
+          "value": 571.8116
         },
         {
           "as_of_period": "2018-06",
@@ -1856,11 +1856,11 @@
     "SS": {
       "country_code": "SS",
       "country_name": "South Sudan",
-      "generated_at": "2026-11-13T12:41:34.029096Z",
+      "generated_at": "2026-11-14T11:51:52.433878Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1869,7 +1869,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SSP per USD",
-          "value": 5752.8201
+          "value": 5751.9329
         }
       ],
       "source": "Africa API (source attribution retained per observation)",
@@ -1879,11 +1879,11 @@
     "ST": {
       "country_code": "ST",
       "country_name": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
-      "generated_at": "2026-11-13T12:38:31.409720Z",
+      "generated_at": "2026-11-14T11:48:47.021611Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1892,7 +1892,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "STN per USD",
-          "value": 22.1341
+          "value": 22.1958
         },
         {
           "as_of_period": "2026-05",
@@ -1914,11 +1914,11 @@
     "SZ": {
       "country_code": "SZ",
       "country_name": "Eswatini",
-      "generated_at": "2026-11-13T12:42:53.305423Z",
+      "generated_at": "2026-11-14T11:53:13.128607Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1927,7 +1927,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "SZL per USD",
-          "value": 16.733
+          "value": 16.8977
         },
         {
           "as_of_period": "2026-10",
@@ -1949,11 +1949,11 @@
     "TD": {
       "country_code": "TD",
       "country_name": "Chad",
-      "generated_at": "2026-11-13T12:37:25.856077Z",
+      "generated_at": "2026-11-14T11:47:39.861495Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -1962,7 +1962,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XAF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -1996,11 +1996,11 @@
     "TG": {
       "country_code": "TG",
       "country_name": "Togo",
-      "generated_at": "2026-11-13T12:36:30.750857Z",
+      "generated_at": "2026-11-14T11:46:45.781024Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -2009,7 +2009,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "XOF per USD",
-          "value": 592.6123
+          "value": 594.2646
         },
         {
           "as_of_period": "2026-08",
@@ -2043,11 +2043,11 @@
     "TN": {
       "country_code": "TN",
       "country_name": "Tunisia",
-      "generated_at": "2026-11-13T12:33:00.702602Z",
+      "generated_at": "2026-11-14T11:43:12.930420Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -2056,7 +2056,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "TND per USD",
-          "value": 3.0135
+          "value": 3.02
         },
         {
           "as_of_period": "2026-08",
@@ -2071,25 +2071,25 @@
           "value": 5.389541
         },
         {
-          "as_of_period": "2026-11-11",
+          "as_of_period": "2026-11-12",
           "frequency": "monthly",
           "freshness": "current",
           "location_name": null,
           "metric_key": "official_exchange_rate_latest_lcu_per_usd",
           "name": "official_exchange_rate_latest_lcu_per_usd",
-          "retrieved_at": "2026-11-13T04:15:30.291009Z",
+          "retrieved_at": "2026-11-14T04:15:47.969867Z",
           "source": "bct_tn_signals",
           "unit": "lcu_per_usd",
-          "value": 3.0248
+          "value": 3.0335
         },
         {
-          "as_of_period": "2026-11-12",
+          "as_of_period": "2026-11-13",
           "frequency": "ad_hoc",
           "freshness": "current",
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-11-13T04:15:30.291009Z",
+          "retrieved_at": "2026-11-14T04:15:47.969867Z",
           "source": "bct_tn_signals",
           "unit": "percent",
           "value": 7.0
@@ -2102,11 +2102,11 @@
     "TZ": {
       "country_code": "TZ",
       "country_name": "Tanzania",
-      "generated_at": "2026-11-13T12:41:47.286569Z",
+      "generated_at": "2026-11-14T11:52:06.020477Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -2115,7 +2115,7 @@
           "retrieved_at": null,
           "source": "bot_tz_fx_rates",
           "unit": "TZS per USD",
-          "value": 2644.4933
+          "value": 2644.81175
         },
         {
           "as_of_period": "2026-10",
@@ -2124,7 +2124,7 @@
           "location_name": null,
           "metric_key": "inflation_cpi_latest_yoy_pct",
           "name": "inflation_cpi_latest_yoy_pct",
-          "retrieved_at": "2026-11-13T05:20:50.383653Z",
+          "retrieved_at": "2026-11-14T05:23:25.292392Z",
           "source": "bot_tz_signals",
           "unit": "percent",
           "value": 4.2
@@ -2142,16 +2142,16 @@
           "value": 6.4
         },
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "monthly",
           "freshness": "current",
           "location_name": null,
           "metric_key": "official_exchange_rate_latest_lcu_per_usd",
           "name": "official_exchange_rate_latest_lcu_per_usd",
-          "retrieved_at": "2026-11-13T05:20:50.383653Z",
+          "retrieved_at": "2026-11-14T05:23:25.292392Z",
           "source": "bot_tz_signals",
           "unit": "lcu_per_usd",
-          "value": 2644.4933
+          "value": 2644.81175
         },
         {
           "as_of_period": "2026-Q4",
@@ -2160,7 +2160,7 @@
           "location_name": null,
           "metric_key": "policy_rate_pct",
           "name": "policy_rate_pct",
-          "retrieved_at": "2026-11-13T05:20:50.383653Z",
+          "retrieved_at": "2026-11-14T05:23:25.292392Z",
           "source": "bot_tz_signals",
           "unit": "percent",
           "value": 6.25
@@ -2173,11 +2173,11 @@
     "UG": {
       "country_code": "UG",
       "country_name": "Uganda",
-      "generated_at": "2026-11-13T12:42:01.086810Z",
+      "generated_at": "2026-11-14T11:52:19.647580Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -2186,7 +2186,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "UGX per USD",
-          "value": 4023.5035
+          "value": 4024.6007
         },
         {
           "as_of_period": "2026-09",
@@ -2220,11 +2220,11 @@
     "ZA": {
       "country_code": "ZA",
       "country_name": "South Africa",
-      "generated_at": "2026-11-13T12:43:32.393549Z",
+      "generated_at": "2026-11-14T11:53:52.884603Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -2233,7 +2233,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "ZAR per USD",
-          "value": 16.7354
+          "value": 16.8981
         },
         {
           "as_of_period": "2026-09",
@@ -2279,11 +2279,11 @@
     "ZM": {
       "country_code": "ZM",
       "country_name": "Zambia",
-      "generated_at": "2026-11-13T12:42:14.230281Z",
+      "generated_at": "2026-11-14T11:52:33.028028Z",
       "message": null,
       "observations": [
         {
-          "as_of_period": "2026-11-13",
+          "as_of_period": "2026-11-14",
           "frequency": "daily",
           "freshness": "current",
           "location_name": null,
@@ -2292,7 +2292,7 @@
           "retrieved_at": null,
           "source": "fx_usd_daily",
           "unit": "ZMW per USD",
-          "value": 20.4097
+          "value": 20.4401
         },
         {
           "as_of_period": "2026-09",
@@ -2326,7 +2326,7 @@
     "ZW": {
       "country_code": "ZW",
       "country_name": "Zimbabwe",
-      "generated_at": "2026-11-13T12:42:27.282452Z",
+      "generated_at": "2026-11-14T11:52:46.370449Z",
       "message": null,
       "observations": [
         {
@@ -2350,7 +2350,7 @@
   "countries_failed": 0,
   "countries_refreshed": 54,
   "countries_requested": 54,
-  "generated_at": "2026-11-13T12:43:32Z",
+  "generated_at": "2026-11-14T11:53:52Z",
   "source": "Africa API country signals endpoint",
   "source_url": "https://africa-api.com/docs/signals"
 }

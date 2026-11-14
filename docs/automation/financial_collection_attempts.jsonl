@@ -632,3 +632,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-13", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "KST.JO"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Kakuzi-Plc-Group-Results-for-the-Year-Ended-31-Dec-2025.pdf", "status": "collected", "ticker": "KUKZ.NR"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-13", "market": "africa", "status": "no_annual_data_returned", "ticker": "KURV.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-14", "market": "africa", "status": "no_annual_data_returned", "ticker": "KWIN.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-14", "market": "africa", "status": "no_annual_data_returned", "ticker": "KZPC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-14", "market": "africa", "status": "no_annual_data_returned", "ticker": "L2D.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-14", "market": "africa", "status": "no_annual_data_returned", "ticker": "L4L.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-14", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "LAB.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-14", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Laptrust-Imara-I-REIT-–-Audited-Financial-Statements-for-the-Year-Ended-31-December-2025.pdf", "status": "collected", "ticker": "LAPR.NR"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-14", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/43682_LASACO_ASSURANCE_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2024_FINANCIAL_STATEMENTS_APRIL_2025.pdf", "status": "collected", "ticker": "LASACO.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-14", "market": "africa", "status": "no_annual_data_returned", "ticker": "LAWUNION.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-14", "market": "africa", "status": "no_annual_data_returned", "ticker": "LBH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-14", "market": "africa", "status": "no_annual_data_returned", "ticker": "LBHP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-14", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "LBR.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-14", "market": "africa", "status": "no_annual_data_returned", "ticker": "LBTY.NR"}
