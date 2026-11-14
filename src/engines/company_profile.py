@@ -322,7 +322,7 @@ def _governance(statements: dict, company: str) -> Optional[dict]:
 
 def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None,
           deals: Iterable[dict] = (), cik: Optional[int] = None, fetch=None, listing: Optional[dict] = None,
-          today: Optional[datetime] = None) -> dict:
+          today: Optional[datetime] = None, with_governance: bool = True) -> dict:
     """Full profile. Sections a source cannot fill are absent rather than guessed. `listing` is the company's
     quote in the daily market snapshot, when the name or ticker resolves to one."""
     deals = list(deals)
@@ -365,6 +365,13 @@ def build(name: str, ticker: Optional[str] = None, country: Optional[str] = None
         if listed.get("identity", {}).get("name"):
             profile["name"] = listed["identity"]["name"]
         statements = listed.get("financials") or {}
+        if fetch is None and statements.get("source_url") and ticker and ticker.upper().endswith((".LG", ".NR")):
+            if not with_governance:
+                # Reading the board and shareholders takes several model passes: the caller does it separately
+                # (and stores the result), so the rest of the profile is not held back by it.
+                profile["governance_source"] = {"url": statements["source_url"], "source": statements.get("source"),
+                                                "filed": statements.get("filed")}
+                statements = {}
         if fetch is None and statements.get("source_url") and ticker and ticker.upper().endswith((".LG", ".NR")):
             gov = _governance(statements, profile["name"])
             if gov and gov.get("pending_ocr"):

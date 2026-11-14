@@ -256,13 +256,21 @@ def ngx_company(symbol: str, client: Optional[httpx.Client] = None) -> dict:
     c = client or httpx.Client(timeout=30, headers=_HEADERS, follow_redirects=True)
     code = symbol.upper().rsplit(".", 1)[0]
     out: dict = {"symbol": code}
-    for section in ("profile", "summary", "financial-statements"):
+
+    def one(section: str):
         try:
             r = c.get(NGX_WIDGETS + section, params={"symbol": code})
-            out[section] = r.json() if r.status_code == 200 else None
+            return r.json() if r.status_code == 200 else None
         except Exception as e:
             log.warning("NGX %s for %s unavailable: %s", section, code, e)
-            out[section] = None
+            return None
+
+    # The three widgets are independent: fetched together, so a profile waits for the slowest, not their sum.
+    from concurrent.futures import ThreadPoolExecutor
+    sections = ("profile", "summary", "financial-statements")
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        for section, value in zip(sections, pool.map(one, sections)):
+            out[section] = value
     docs = []
     for row in out.pop("financial-statements") or []:
         if not isinstance(row, dict):

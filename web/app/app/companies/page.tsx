@@ -31,6 +31,7 @@ type Profile = {
   sources: string[];
   identity?: Identity & { business?: string };
   governance?: Governance;
+  governance_pending?: boolean;
   web?: Web;
   market?: Record<string, unknown> | null;
   multiples?: Record<string, number>;
@@ -102,12 +103,14 @@ export default function CompaniesPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [p, setP] = useState<Profile | null>(null);
+  const [reading, setReading] = useState(false);
 
   async function load(f = form, exact = listing) {
     if (!f.name.trim()) return;
     setBusy(true);
     setError(null);
     setP(null);
+    setReading(false);
     setEvents(null);
     try {
       const profile = await get<Profile>("/api/companies/profile", {
@@ -115,6 +118,17 @@ export default function CompaniesPage() {
         exchange: exact?.exchange, symbol: exact?.symbol,
       });
       setP(profile);
+      if (profile.governance_pending) {
+        // The board and shareholders are read from the filed annual report after the profile is shown.
+        setReading(true);
+        get<{ governance: Governance | null }>("/api/companies/governance", {
+          name: f.name.trim(), ticker: f.ticker.trim(), country: f.country.trim(), cik: f.cik.trim(),
+          exchange: exact?.exchange, symbol: exact?.symbol,
+        })
+          .then((r) => r.governance && setP((cur) => (cur && cur.name === profile.name ? { ...cur, governance: r.governance ?? undefined } : cur)))
+          .catch(() => undefined)
+          .finally(() => setReading(false));
+      }
       const since = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
       get<{ events: CompanyEvent[] }>("/api/events", { q: newsName(profile.listing?.name ?? profile.name), since, limit: 12 })
         .then((r) => setEvents(r.events))
@@ -197,6 +211,11 @@ export default function CompaniesPage() {
             {p.identity?.business && <p className="mt-4 max-w-3xl text-[0.875rem] leading-relaxed text-[color:var(--muted)]">{String(p.identity.business).slice(0, 700)}</p>}
           </section>
 
+          {reading && !p.governance && (
+            <p className="text-[0.8125rem] text-[color:var(--muted)]" role="status">
+              Reading the board, shareholders and subsidiaries from the latest annual report. The rest of the profile is ready below.
+            </p>
+          )}
           <CompanyGovernance identity={p.identity} governance={p.governance} country={p.country} web={p.web} />
 
           {p.market && (

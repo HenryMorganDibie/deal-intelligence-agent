@@ -181,3 +181,41 @@ def test_web_search_accepts_only_the_company_own_domain(monkeypatch):
     assert cw._name_in_domain("Guaranty Trust Holding Company", "www.gtco.com")            # initials
     monkeypatch.delenv("TAVILY_API_KEY")
     assert cw.search_website("Moniepoint") is None                                         # no key: no search
+
+
+def test_profile_defers_governance_to_its_own_request(monkeypatch):
+    """The board read takes several model passes: build leaves it out and says which filing to read."""
+    from src.engines import company_profile as cp
+    called = []
+    monkeypatch.setattr(cp, "_ngx_section", lambda t, f=None: {
+        "identity": {"name": "Acme Plc"},
+        "financials": {"source_url": "https://ngxgroup.com/a.pdf", "source": "NGX: FY", "filed": "2026-04-01"}})
+    monkeypatch.setattr(cp, "_governance", lambda *a: called.append(a) or {"board": []})
+    p = cp.build("Acme", "ACME.LG", "NG", with_governance=False)
+    assert not called and "governance" not in p
+    assert p["governance_source"]["url"] == "https://ngxgroup.com/a.pdf"
+    p = cp.build("Acme", "ACME.LG", "NG")
+    assert called and p["governance"] == {"board": []}
+
+
+def test_store_filing_merges_with_stored_facts(monkeypatch):
+    from src import company_web, hosted_market as hm
+    calls = []
+
+    class R:
+        def __init__(self, body):
+            self.status_code, self._b = 200, body
+
+        def json(self):
+            return self._b
+
+    def rpc(fn, args, timeout):
+        calls.append((fn, args))
+        return R({"status": "done", "facts": {"website": "https://acme.com"}} if fn == "company_web_get" else True)
+
+    monkeypatch.setattr(hm, "_configured", lambda: True)
+    monkeypatch.setattr(hm, "_rpc_sync", rpc)
+    assert company_web.store_filing("Acme Plc", {"board": [{"name": "A"}]})
+    fn, args = calls[-1]
+    assert fn == "company_web_save" and args["p_status"] == "done"
+    assert args["p_facts"] == {"website": "https://acme.com", "filing": {"board": [{"name": "A"}]}}

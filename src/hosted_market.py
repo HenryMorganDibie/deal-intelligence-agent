@@ -888,25 +888,34 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     else:
         listing = await run_in_threadpool(_listing_for, name, ticker, country)
     profile = await run_in_threadpool(company_profile.build, name, ticker.upper() if ticker else None, country,
-                                      deals(), cik, None, listing)
+                                      deals(), cik, None, listing, None, False)
     profile["valuation"] = market_risk.valuation_view(profile.get("name") or name, deals(), profile)
     # The company's own website, read by web-harvester in the hourly job: queued here when the site is known.
     from src import company_web
     site = (profile.get("identity") or {}).get("website")
     stored = await run_in_threadpool(company_web.request, profile.get("name") or name, site, profile.get("country"),
                                      profile.pop("filing_pending_ocr", None))
+    filing_src = profile.get("governance_source")       # the exchange filing to read the board from, if any
     if stored:
         profile["web"] = {"website": stored.get("website") or (stored.get("facts") or {}).get("website"),
                           "status": stored.get("status"),
                           "crawled_at": stored.get("crawled_at"), "facts": stored.get("facts") or None}
         facts = stored.get("facts") or {}
         if not profile.get("governance"):
-            if facts.get("filing"):                     # the exchange filing, a scan, read by OCR
-                profile["governance"] = facts["filing"]
-                profile["sources"].append("Annual statements (governance, OCR)")
-            elif facts.get("report"):                   # no exchange filing: the annual report on the company's site
+            filing = facts.get("filing")
+            if filing and (not filing_src or filing.get("source_url") == filing_src["url"]):
+                profile["governance"] = filing          # the exchange filing, read once and stored
+                profile["sources"].append("Annual statements (governance)")
+            elif facts.get("report") and not filing_src:  # no exchange filing: the annual report on the company's site
                 profile["governance"] = facts["report"]
                 profile["sources"].append("Annual report (company website)")
+    if filing_src and not profile.get("governance"):
+        known = _governance_cache.get(filing_src["url"])
+        if known:
+            profile["governance"] = known
+            profile["sources"].append("Annual statements (governance)")
+        else:
+            profile["governance_pending"] = True         # the page asks /api/companies/governance next
     mark = profile["valuation"].get("latest_mark")
     if mark and not profile.get("listing"):
         from src.engines import markets
@@ -922,6 +931,43 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
             pass
     _profile_cache[key] = (time.monotonic(), profile)
     return profile
+
+
+_governance_cache: dict[str, dict] = {}
+
+
+@router.get("/api/companies/governance")
+async def company_governance(name: str = Query(..., min_length=1, max_length=120), ticker: Optional[str] = None,
+                             country: Optional[str] = None, cik: Optional[int] = None,
+                             exchange: Optional[str] = Query(None, max_length=8),
+                             symbol: Optional[str] = Query(None, max_length=20)) -> dict:
+    """The board, shareholders and subsidiaries read from the company's filed annual statements. Asked for after
+    the profile, which arrives without them: reading takes several model passes, done once per filing and stored."""
+    from src import company_web
+    profile = await company(name, ticker, country, cik, exchange, symbol)
+    if not profile.get("governance_pending"):
+        return {"governance": profile.get("governance"), "pending_ocr": False}
+    src = profile["governance_source"]
+    gov = _governance_cache.get(src["url"])
+    if gov is None:
+        gov = await run_in_threadpool(company_profile._governance,
+                                      {"source_url": src["url"], "source": src.get("source"), "filed": src.get("filed")},
+                                      profile["name"])
+    label = "Annual statements (governance)"
+    pending = bool(gov and gov.get("pending_ocr"))
+    if pending:                                          # a scan: the scheduled job reads it by OCR
+        site = (profile.get("web") or {}).get("website") or (profile.get("identity") or {}).get("website")
+        await run_in_threadpool(company_web.request, profile["name"], site, profile.get("country"), src["url"])
+        gov = ((profile.get("web") or {}).get("facts") or {}).get("report")
+        label = "Annual report (company website)"
+    elif gov:
+        _governance_cache[src["url"]] = gov
+        await run_in_threadpool(company_web.store_filing, profile["name"], gov)
+    profile.pop("governance_pending", None)             # the cached profile now carries the answer
+    if gov:
+        profile["governance"] = gov
+        profile["sources"].append(label)
+    return {"governance": gov, "pending_ocr": pending, "source": label if gov else None}
 
 
 @router.get("/api/valuation/cost-of-equity")

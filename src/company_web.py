@@ -220,6 +220,27 @@ def request(name: str, website: Optional[str], country: Optional[str] = None,
         return None
 
 
+def store_filing(name: str, governance: dict) -> bool:
+    """Keep the governance read from the company's exchange filing with its stored facts, so it is read once."""
+    from src import hosted_market as hm
+    key = name_key(name)
+    if not hm._configured() or len(key) < 2:
+        return False
+    try:
+        r = hm._rpc_sync("company_web_get", {"p_name_key": key}, 10)
+        row = r.json() if r.status_code == 200 else None
+        if not row:
+            hm._rpc_sync("company_web_request", {"p_name_key": key, "p_name": name, "p_website": None}, 10)
+            row = {"status": "queued", "facts": {}}
+        facts = {**(row.get("facts") or {}), "filing": governance}
+        hm._rpc_sync("company_web_save", {"p_name_key": key, "p_status": row.get("status") or "queued",
+                                          "p_facts": facts, "p_error": None}, 15)
+        return True
+    except Exception as e:                       # the governance is still shown; it is read again next time
+        log.warning("company web: governance for %s not stored: %s", name, e)
+        return False
+
+
 def crawl_config(output_path: str, limit: int = SITES_PER_RUN) -> tuple[dict, list[dict]]:
     """A web-harvester crawl config for the queued sites, and the companies it covers."""
     from src import hosted_market as hm
