@@ -2,7 +2,7 @@
 Company websites, read with web-harvester (github.com/HenryMorganDibie/web-harvester).
 
 When someone looks a company up and its website is known (from the exchange profile, Yahoo Finance or the filed
-statements), the site is queued. The hourly job builds a crawl config: from the home page, only the pages whose
+statements), the site is queued. The dedicated five-minute worker builds a crawl config: from the home page, only the pages whose
 address says what they hold (about, leadership, board, governance, subsidiaries, contact, investors), at most 12 per
 site, robots.txt respected and one page every two seconds per site. The crawled pages are read by the cached language
 model into fields and kept only where they can be found on the page they cite (src/engines/governance.verify), then
@@ -12,9 +12,9 @@ from __future__ import annotations
 
 import json
 import logging
-from concurrent.futures import ThreadPoolExecutor
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Optional
 from urllib.parse import urlparse
 
