@@ -598,6 +598,11 @@ def not_a_deal(headline: str, target: Optional[str], deal_type: Optional[str] = 
     # calls the recipient an "aid fund".
     if re.search(r"(?i)\b(?:aid\s+fund|development\s+aid|budget\s+support|eu\s+20\d{2}\s+budget)\b", h):
         return "public aid or budget allocation, not a transaction"
+    # A fund launch or target is not a fundraise. Keep it only when the headline reports capital
+    # actually raised/committed or a first/final close, rather than a target size or fundraising plan.
+    if deal_type == "fund_raise" and re.search(r"(?i)\\blaunch(?:es|ed)?\\b.{0,100}\\bfund\\b", h) \\
+            and not re.search(r"(?i)\\b(?:first|final|second|third|interim)\\s+close\\b|\\b(?:raises?|raised|secures?|closed|closes|reaches?|reached)\\b.{0,45}\\b(?:fund|close|capital)\\b|\\b(?:capital|commitments?)\\s+(?:is\\s+)?(?:committed|raised|secured)\\b", h):
+        return "fund launch or target size, not a reported capital raise or close"
     # A government-backed initiative or investment drive is not a deal unless a named company/fund
     # receives a specific financing instrument. These headlines only announce a programme.
     if re.search(r"(?i)\b(?:launch(?:es|ed)?|at\s+launch\s+of)\b.{0,100}\b(?:initiative|investment\s+drive|programme|program)\b", h):
