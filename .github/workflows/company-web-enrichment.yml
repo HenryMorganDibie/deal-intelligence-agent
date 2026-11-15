@@ -1,7 +1,7 @@
 name: Company website enrichment
 
-# Company profiles enqueue work immediately; this dedicated worker drains the queue independently
-# of election ingestion. Eight websites are processed per run, with a conservative per-host rate.
+# Company profiles enqueue work immediately; this worker drains the queue independently
+# of election ingestion. A bounded batch of sites is processed on each five-minute run.
 on:
   schedule:
     - cron: "*/5 * * * *"
@@ -42,17 +42,36 @@ jobs:
       - name: Install API dependencies
         run: pip install --disable-pip-version-check -r requirements.txt
 
+      - name: Prepare queued company sites
+        id: prepare
+        run: |
+          set -euo pipefail
+          status=0
+          python scripts/company_web.py prepare "$RUNNER_TEMP/company-crawl.json" "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json" || status=$?
+          if [ "$status" = "3" ]; then
+            echo "No company sites queued"
+            echo "sites=0" >> "$GITHUB_OUTPUT"
+            echo "targets=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$status" != "0" ]; then exit "$status"; fi
+          echo "sites=$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$RUNNER_TEMP/companies.json")" >> "$GITHUB_OUTPUT"
+          echo "targets=$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1])).get("targets", [])))' "$RUNNER_TEMP/company-crawl.json")" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v4
+        if: steps.prepare.outputs.targets != '0'
         with:
           repository: HenryMorganDibie/web-harvester
           path: web-harvester
 
       - uses: actions/setup-go@v5
+        if: steps.prepare.outputs.targets != '0'
         with:
           go-version-file: web-harvester/go.mod
           cache-dependency-path: web-harvester/go.sum
 
       - name: Restore crawler and browser cache
+        if: steps.prepare.outputs.targets != '0'
         uses: actions/cache@v4
         with:
           path: |
@@ -62,6 +81,7 @@ jobs:
           key: company-crawler-${{ runner.os }}-${{ hashFiles('web-harvester/go.sum') }}-playwright-1.60.0
 
       - name: Build crawler
+        if: steps.prepare.outputs.targets != '0'
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.cache/deal-intel-web-harvester"
@@ -70,6 +90,7 @@ jobs:
           fi
 
       - name: Restore browser renderer when cache is cold
+        if: steps.prepare.outputs.targets != '0'
         id: browser
         run: |
           set -euo pipefail
@@ -87,22 +108,8 @@ jobs:
             echo "render=auto" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Prepare queued company sites
-        id: prepare
-        run: |
-          set -euo pipefail
-          status=0
-          python scripts/company_web.py prepare "$RUNNER_TEMP/company-crawl.json" "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json" || status=$?
-          if [ "$status" = "3" ]; then
-            echo "No company sites queued"
-            echo "sites=0" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if [ "$status" != "0" ]; then exit "$status"; fi
-          echo "sites=$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$RUNNER_TEMP/companies.json")" >> "$GITHUB_OUTPUT"
-
       - name: Crawl company websites
-        if: steps.prepare.outputs.sites != '0'
+        if: steps.prepare.outputs.targets != '0'
         env:
           HARVESTER_RENDER: ${{ steps.browser.outputs.render }}
         run: |
@@ -115,7 +122,10 @@ jobs:
           if python - "$RUNNER_TEMP/companies.json" "$RUNNER_TEMP/company-pages.jsonl" <<'PY'
           import json, re, sys
           companies = json.load(open(sys.argv[1]))
-          pages = [json.loads(line) for line in open(sys.argv[2]) if line.strip()]
+          try:
+              pages = [json.loads(line) for line in open(sys.argv[2]) if line.strip()]
+          except FileNotFoundError:
+              pages = []
           filing = any(c.get("filing_url") for c in companies)
           report = any(
               isinstance(url, str)
