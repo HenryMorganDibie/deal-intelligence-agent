@@ -39,15 +39,28 @@ jobs:
           cache: pip
           cache-dependency-path: requirements.txt
 
-      - name: Install API dependencies
-        run: pip install --disable-pip-version-check -r requirements.txt
+      - name: Restore Python environment cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/deal-intel-venv
+          key: company-python-${{ runner.os }}-3.13-${{ hashFiles('requirements.txt') }}
+
+      - name: Install API dependencies when the environment cache is cold
+        run: |
+          set -euo pipefail
+          if [ ! -x "$HOME/.cache/deal-intel-venv/bin/python" ]; then
+            python -m venv "$HOME/.cache/deal-intel-venv"
+            "$HOME/.cache/deal-intel-venv/bin/python" -m pip install --disable-pip-version-check -r requirements.txt
+          else
+            echo "Using cached Python environment"
+          fi
 
       - name: Prepare queued company sites
         id: prepare
         run: |
           set -euo pipefail
           status=0
-          python scripts/company_web.py prepare "$RUNNER_TEMP/company-crawl.json" "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json" || status=$?
+          "$HOME/.cache/deal-intel-venv/bin/python" scripts/company_web.py prepare "$RUNNER_TEMP/company-crawl.json" "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json" || status=$?
           if [ "$status" = "3" ]; then
             echo "No company sites queued"
             echo "sites=0" >> "$GITHUB_OUTPUT"
@@ -144,4 +157,4 @@ jobs:
 
       - name: Extract and persist company facts
         if: steps.prepare.outputs.sites != '0'
-        run: python scripts/company_web.py apply "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json"
+        run: "$HOME/.cache/deal-intel-venv/bin/python" scripts/company_web.py apply "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json"
