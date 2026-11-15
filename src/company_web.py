@@ -256,6 +256,9 @@ def crawl_config(output_path: str, limit: int = SITES_PER_RUN) -> tuple[dict, li
             found = search_website(c["name"])
             if found:
                 c["website"], c["website_source"] = found, "Tavily web search"
+                # Persist the discovered official domain so subsequent refreshes do not spend another search credit.
+                hm._rpc_sync("company_web_request", {"p_name_key": c["name_key"], "p_name": c["name"],
+                                                     "p_website": found}, 10)
     # Resolve independent company home pages concurrently. The per-host rate remains conservative:
     # concurrency is across companies, never permission to hammer one company's website.
     with ThreadPoolExecutor(max_workers=min(8, max(1, len(companies)))) as pool:
@@ -430,9 +433,7 @@ def apply_crawl(companies: list[dict], pages: list[dict], call: Optional[Callabl
             facts = {**(facts or {}), "filing": filing}
         if c.get("website_source") and c.get("website"):
             facts = {**(facts or {}), "website": c["website"], "website_source": c["website_source"]}
-        ok = bool(site_pages) or bool(filing) or (not c.get("website") and bool(c.get("filing_url")))
-        if not c.get("website") and not c.get("filing_url"):
-            ok = True
+        ok = bool(site_pages) or bool(filing)
         status = "done" if ok else "failed"
         error = (None if ok else "no pages fetched (robots.txt, timeout or no matching pages)") if c.get("website") or c.get("filing_url") else "no website found"
         hm._rpc_sync("company_web_save", {"p_name_key": key, "p_status": status,
