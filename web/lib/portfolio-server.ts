@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 const ACCESS_COOKIE = "di_portfolio_access";
 const REFRESH_COOKIE = "di_portfolio_refresh";
 
-export type PortfolioUser = { id: string; email?: string | null };
+export type PortfolioUser = { id: string; email?: string | null; factors?: { id: string; factor_type?: string; status?: string; friendly_name?: string }[] };
 export type PortfolioSession = { accessToken: string; user: PortfolioUser };
 type AuthSessionPayload = {
   access_token?: string;
