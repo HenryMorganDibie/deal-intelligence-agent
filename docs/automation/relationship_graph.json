@@ -1,5 +1,9 @@
 {
   "nodes": {
+    "85": {
+      "name": "85%",
+      "kind": "organization"
+    },
     "finnfund": {
       "name": "Finnfund",
       "kind": "organization"
@@ -1256,10 +1260,6 @@
       "name": "Botswana to double De Beers stake to 30%",
       "kind": "organization"
     },
-    "85": {
-      "name": "85%",
-      "kind": "organization"
-    },
     "chevron operated namibia": {
       "name": "Chevron-operated Namibia",
       "kind": "organization"
@@ -1418,14 +1418,6 @@
     },
     "sintana exposed pel": {
       "name": "Sintana-exposed PEL",
-      "kind": "organization"
-    },
-    "benjamin danso": {
-      "name": "Benjamin Danso",
-      "kind": "organization"
-    },
-    "ndc greater accra": {
-      "name": "NDC Greater Accra",
       "kind": "organization"
     },
     "advanta": {
@@ -4875,20 +4867,6 @@
         }
       ]
     },
-    "cce0dc68912cd45cc845": {
-      "id": "cce0dc68912cd45cc845",
-      "from": "benjamin danso",
-      "to": "ndc greater accra",
-      "type": "acquisition",
-      "first_seen": "2026-11-14",
-      "sources": [
-        {
-          "title": "Ashie Moore unseated as Benjamin Danso takes over NDC Greater Accra chairmanship",
-          "publisher": "CitiNewsroom.com",
-          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOSGNQaUdUT3NvVjZTb1FyQ2tUbFhqMVpodU44elNrbWtWYXkwazBZWE12U3J4TDlzZDNIQWg1REoxMzM0bHZuVm9HeTgtZzUwWFFya0twVXdxZG5OeFE2ZzROWDNiUXh6ZVJoVFNrdkRkX2tYdDlrUDNqWkI4NDJNWFRkZWF5V3ozSGhGcWVnTmRMd3FpTk1ZcjZzY1QxUVNBSnJGN1VvaElxU19DQ0tpc19tcFB3OE1NSmc?oc=5"
-        }
-      ]
-    },
     "6a1a715ebc6b60a92965": {
       "id": "6a1a715ebc6b60a92965",
       "from": "advanta",
@@ -4918,5 +4896,5 @@
       ]
     }
   },
-  "updated_at": "2026-11-14T19:26:45.365012+00:00"
+  "updated_at": "2026-11-15T01:16:51.142Z"
 }
