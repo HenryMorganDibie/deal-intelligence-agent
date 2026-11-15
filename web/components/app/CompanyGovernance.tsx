@@ -208,7 +208,7 @@ function WebSection({ web }: { web: Web }) {
         <p className="text-[0.8125rem] text-[color:var(--muted)]">
           {!web.website && web.status === "done" ? "No website could be found for this company."
             : web.status === "done" ? `${host} was read${web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""}; its pages gave nothing that could be confirmed.`
-            : web.status === "failed" ? `${host} could not be read (its robots.txt, a timeout, or no about, leadership or contact pages).`
+            : web.status === "failed" ? (web.website ? `${host} could not be read (its robots.txt, a timeout, or no about, leadership or contact pages).` : "No official company website could be found after repeated discovery attempts.")
             : `${web.website ? `${host}: ` : ""}${web.stage ? progress[web.stage] : "Queued for the next company-enrichment run (normally within five minutes)."}`}
         </p>
       ) : (
