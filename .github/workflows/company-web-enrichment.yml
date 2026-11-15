@@ -70,15 +70,21 @@ jobs:
           fi
 
       - name: Restore browser renderer when cache is cold
-        continue-on-error: true
+        id: browser
         run: |
           set -euo pipefail
           DRIVER="$HOME/.cache/ms-playwright-go/1.60.0/node"
           BROWSER="$(find "$HOME/.cache/ms-playwright" -maxdepth 1 -type d -name 'chromium-*' -print -quit 2>/dev/null || true)"
           if [ ! -x "$DRIVER" ] || [ -z "$BROWSER" ]; then
-            (cd web-harvester && sh scripts/install-playwright.sh)
+            if (cd web-harvester && sh scripts/install-playwright.sh); then
+              echo "render=auto" >> "$GITHUB_OUTPUT"
+            else
+              echo "Playwright unavailable; continuing with plain HTTP"
+              echo "render=off" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "Using cached Playwright driver and Chromium"
+            echo "render=auto" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Prepare queued company sites
@@ -108,7 +114,7 @@ jobs:
       - name: Crawl and extract company websites
         if: steps.prepare.outputs.sites != '0'
         env:
-          HARVESTER_RENDER: auto
+          HARVESTER_RENDER: ${{ steps.browser.outputs.render }}
         run: |
           set -euo pipefail
           "$HOME/.cache/deal-intel-web-harvester/crawl" -config "$RUNNER_TEMP/company-crawl.json" -i-have-reviewed-tos
