@@ -95,7 +95,7 @@ export type Pulse = {
 export async function getLatestDeals(limit = 4): Promise<Deal[]> {
   if (!API_CONFIGURED) return [];
   try {
-    const resp = await fetch(apiUrl(`/api/deals?limit=${limit}`), {
+    const resp = await fetch(apiUrl(`/api/deals?limit=${limit}&chronological=true`), {
       headers: apiHeaders(),
       next: { revalidate: REVALIDATE },
     });
