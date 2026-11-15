@@ -17,6 +17,8 @@ on:
       - "ruff.toml"
       - "evaluation/**/*.py"
       - ".github/workflows/python-quality-gates.yml"
+      - ".github/workflows/company-web-enrichment.yml"
+      - ".github/workflows/validate-company-enrichment-workflow.yml"
   push:
     branches: [main]
     paths:
@@ -62,3 +64,9 @@ jobs:
         run: python -m pytest -q
       - name: Recompute duplicate-detection metrics
         run: python -c "import json; from evaluation.deals.score import dedup; r,e=dedup(); print(json.dumps({\"metrics\":r,\"errors\":e}, indent=2))"
+      - name: Set up Go for workflow validation
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: Validate company enrichment workflow with actionlint
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 .github/workflows/company-web-enrichment.yml
