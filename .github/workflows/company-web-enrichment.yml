@@ -85,7 +85,14 @@ jobs:
         id: prepare
         run: |
           set -euo pipefail
-          python scripts/company_web.py prepare "$RUNNER_TEMP/company-crawl.json" "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json"
+          status=0
+          python scripts/company_web.py prepare "$RUNNER_TEMP/company-crawl.json" "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json" || status=$?
+          if [ "$status" = "3" ]; then
+            echo "No company sites queued"
+            echo "sites=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$status" != "0" ]; then exit "$status"; fi
           echo "sites=$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$RUNNER_TEMP/companies.json")" >> "$GITHUB_OUTPUT"
 
       - name: Install OCR only when a queued filing needs it
