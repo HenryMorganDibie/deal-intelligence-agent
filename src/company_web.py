@@ -3,7 +3,7 @@ Company websites, read with web-harvester (github.com/HenryMorganDibie/web-harve
 
 When someone looks a company up and its website is known (from the exchange profile, Yahoo Finance or the filed
 statements), the site is queued. The dedicated five-minute worker builds a crawl config: from the home page, only the pages whose
-address says what they hold (about, leadership, board, governance, subsidiaries, contact, investors), at most 12 per
+address says what they hold (about, leadership, board, governance, subsidiaries, contact, investors), at most 16 per
 site, robots.txt respected and one page every two seconds per site. The crawled pages are read by the cached language
 model into fields and kept only where they can be found on the page they cite (src/engines/governance.verify), then
 stored for the profile. A site is read again at most every 30 days.
