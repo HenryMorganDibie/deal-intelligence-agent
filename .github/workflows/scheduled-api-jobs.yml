@@ -102,34 +102,6 @@ jobs:
           "$RUNNER_TEMP/crawl" -config "$RUNNER_TEMP/crawl.json" -i-have-reviewed-tos
           python scripts/election_articles.py apply "$RUNNER_TEMP/pages.jsonl"
 
-      # Company websites: sites queued by profile lookups, read by the same crawler (about, leadership, board,
-      # governance, subsidiary and contact pages only; robots.txt permitting; one page every two seconds per site).
-      # Sites built in the browser are rendered in headless Chromium (web-harvester's render: auto), and annual
-      # reports or filings that are scans are read by OCR (Tesseract); a failed install leaves plain HTTP and
-      # text-only reading.
-      - name: Read company websites with web-harvester
-        if: steps.pick.outputs.job == 'election-news'
-        continue-on-error: true
-        timeout-minutes: 25
-        run: |
-          set -euo pipefail
-          test -x "$RUNNER_TEMP/crawl" || (cd web-harvester && go build -o "$RUNNER_TEMP/crawl" ./cmd/crawl)
-          sudo apt-get install -y -q tesseract-ocr poppler-utils >/dev/null || echo "OCR tools unavailable"
-          # Playwright's system-package installer does not know every runner image yet (Ubuntu 26.04); the runner
-          # already carries Chromium's libraries, so the browser alone is tried next.
-          if (cd web-harvester && timeout 240 sh scripts/install-playwright.sh --with-deps >/dev/null) || \
-             (cd web-harvester && timeout 240 sh scripts/install-playwright.sh >/dev/null); then
-            export HARVESTER_RENDER=auto
-          else
-            echo "Chromium unavailable; crawling over plain HTTP"
-          fi
-          status=0
-          python scripts/company_web.py prepare "$RUNNER_TEMP/company-crawl.json" "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json" || status=$?
-          if [ "$status" = 3 ]; then echo "No company sites queued"; exit 0; fi
-          if [ "$status" != 0 ]; then exit "$status"; fi
-          "$RUNNER_TEMP/crawl" -config "$RUNNER_TEMP/company-crawl.json" -i-have-reviewed-tos || true
-          python scripts/company_web.py apply "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json"
-
       - name: Read imported result sheets
         if: steps.pick.outputs.job == 'election-news'
         continue-on-error: true

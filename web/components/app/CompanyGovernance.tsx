@@ -18,7 +18,7 @@ export type WebFacts = {
   subsidiaries?: { name: string; country?: string; percent?: number; page: number }[];
   pages?: { n: number; url: string; title: string }[];
 };
-export type Web = { website: string | null; status: "queued" | "crawling" | "done" | "failed"; crawled_at?: string | null; facts: WebFacts | null };
+export type Web = { website: string | null; status: "queued" | "crawling" | "done" | "failed"; stage?: "queued" | "finding_website" | "fetching_pages" | "verifying" | "completed" | "failed"; crawled_at?: string | null; facts: WebFacts | null };
 export type Identity = Record<string, unknown> & {
   board?: string[]; officers?: Officer[]; address?: string; website?: string; phone?: string; auditor?: string;
   company_secretary?: string; incorporated?: string; listed?: string; employees?: number; isin?: string;
@@ -193,15 +193,23 @@ function WebSection({ web }: { web: Web }) {
   const contact: [string, string | undefined, number | undefined][] = [
     ["Head office", f?.registered_office, f?.office_page], ["Phone", f?.phone, f?.phone_page],
     ["Email", f?.email, f?.email_page], ["Founded", f?.founded, f?.founded_page]];
+  const progress = {
+    queued: "Queued for the next company-enrichment run.",
+    finding_website: "Finding the company's official website.",
+    fetching_pages: "Fetching the company's About, leadership, board and contact pages.",
+    verifying: "Checking extracted facts against their original pages.",
+    completed: "Company website enrichment completed.",
+    failed: "Company website enrichment could not be completed after retries.",
+  } as const;
   return (
     <Section title="From the company's website"
       note={f ? <>Read from {host}{web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""} with web-harvester (robots.txt respected). Each fact is on the page linked beside it.</> : undefined}>
       {!f ? (
         <p className="text-[0.8125rem] text-[color:var(--muted)]">
-          {!web.website ? (web.status === "done" ? "No website could be found for this company." : "Looking for the company's website: it is read within the hour once found.")
+          {!web.website && web.status === "done" ? "No website could be found for this company."
             : web.status === "done" ? `${host} was read${web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""}; its pages gave nothing that could be confirmed.`
-            : web.status === "failed" ? `${host} could not be read (its robots.txt, a timeout, or no about, leadership or contact pages).`
-            : `${host} is queued: its about, leadership, board and contact pages are read within the hour.`}
+            : web.status === "failed" ? (web.website ? `${host} could not be read (its robots.txt, a timeout, or no about, leadership or contact pages).` : "No official company website could be found after repeated discovery attempts.")
+            : `${web.website ? `${host}: ` : ""}${web.stage ? progress[web.stage] : "Queued for the next company-enrichment run (normally within five minutes)."}`}
         </p>
       ) : (
         <div className="space-y-5">

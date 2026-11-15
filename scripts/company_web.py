@@ -4,7 +4,7 @@
     <web-harvester>/crawl -config crawl.json -i-have-reviewed-tos                # fetch them (robots.txt, rate limits)
     python scripts/company_web.py apply pages.jsonl companies.json               # read and store the facts
 
-Runs in the hourly job (.github/workflows/scheduled-api-jobs.yml), after the election articles. The database is
+Runs in the dedicated five-minute company enrichment workflow (.github/workflows/company-web-enrichment.yml), independently of election ingestion. The database is
 reached as the API reaches it, through the shared-secret functions.
 """
 from __future__ import annotations

@@ -191,6 +191,7 @@ The workflow inventory changes as the platform evolves. The following are the pr
 | Workflow | Purpose |
 |---|---|
 | scheduled-api-jobs.yml | Twice-daily deal and event ingestion, outcome labelling and showcase refresh; hourly election-news collection, article enrichment and queued result-sheet processing |
+| company-web-enrichment.yml | Five-minute company website enrichment queue; concurrent site crawling, source verification and filing/report OCR |
 | live-deal-ingestion.yml | Nightly rolling ingestion, country-risk snapshots and Corporate of the Week refresh |
 | market-intraday.yml | Weekday intraday market quotes and instrument refresh |
 | market-snapshot.yml | Market snapshot and instrument refresh |

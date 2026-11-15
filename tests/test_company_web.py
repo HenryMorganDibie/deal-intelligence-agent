@@ -219,3 +219,100 @@ def test_store_filing_merges_with_stored_facts(monkeypatch):
     fn, args = calls[-1]
     assert fn == "company_web_save" and args["p_status"] == "done"
     assert args["p_facts"] == {"website": "https://acme.com", "filing": {"board": [{"name": "A"}]}}
+
+
+def test_crawl_config_processes_independent_sites_concurrently_and_keeps_host_rate_limit(monkeypatch):
+    from src import hosted_market as hm
+
+    class R:
+        status_code = 200
+
+        def json(self):
+            return [
+                {"name_key": "alpha", "name": "Alpha Plc", "website": "https://alpha.example/"},
+                {"name_key": "beta", "name": "Beta Plc", "website": "https://beta.example/"},
+            ]
+
+    monkeypatch.setattr(hm, "_rpc_sync", lambda *a, **k: R())
+    monkeypatch.setattr(cw, "resolve", lambda site: site.replace("www.", ""))
+    cfg, companies = cw.crawl_config("pages.jsonl")
+    assert len(companies) == 2
+    assert cfg["concurrency"] == 8
+    assert cfg["rate_per_host_rps"] == 0.5
+    assert {t["name"] for t in cfg["targets"]} == {"alpha", "beta"}
+
+
+def test_apply_crawl_extracts_companies_in_parallel_and_persists_each(monkeypatch):
+    import threading
+    from src import hosted_market as hm
+
+    worker_threads = []
+    saved = []
+    lock = threading.Lock()
+    barrier = threading.Barrier(2)
+
+    class R:
+        status_code = 200
+
+        def json(self):
+            return True
+
+    monkeypatch.setattr(cw, "_stored_facts", lambda key: {})
+    def read_site(company, pages, call=None):
+        barrier.wait(timeout=5)
+        worker_threads.append(threading.current_thread().name)
+        return {"phone": company["name"]}
+
+    monkeypatch.setattr(cw, "read_site", read_site)
+    monkeypatch.setattr(cw, "read_report", lambda *a, **k: None)
+    monkeypatch.setattr(cw, "read_filing", lambda *a, **k: None)
+
+    def rpc(fn, args, timeout=30):
+        with lock:
+            saved.append((fn, args))
+        return R()
+
+    monkeypatch.setattr(hm, "_rpc_sync", rpc)
+    companies = [
+        {"name_key": "alpha", "name": "Alpha Plc", "website": "https://alpha.example/"},
+        {"name_key": "beta", "name": "Beta Plc", "website": "https://beta.example/"},
+    ]
+    pages = [{"target": "alpha", "status_code": 200, "text": "Alpha"},
+             {"target": "beta", "status_code": 200, "text": "Beta"}]
+    out = cw.apply_crawl(companies, pages)
+    assert out["with_facts"] == 2
+    assert len(out["detail"]) == 2
+    assert all(name.startswith("ThreadPoolExecutor") for name in worker_threads)
+    final = {args["p_name_key"]: args for fn, args in saved if fn == "company_web_save" and args["p_status"] == "done"}
+    assert set(final) == {"alpha", "beta"}
+
+
+def test_official_website_discovery_uses_the_shared_hourly_search_budget(monkeypatch):
+    from src import hosted_market as hm
+
+    calls = []
+
+    class R:
+        status_code = 200
+
+        def __init__(self, body):
+            self.body = body
+
+        def json(self):
+            return self.body
+
+    def rpc(fn, args, timeout=30):
+        calls.append((fn, args))
+        if fn == "company_web_take":
+            return R([{"name_key": "acme", "name": "Acme Plc", "website": None, "search_allowed": True}])
+        return R("queued")
+
+    monkeypatch.setattr(hm, "_rpc_sync", rpc)
+    monkeypatch.setenv("TAVILY_API_KEY", "test-key")
+    monkeypatch.setattr(cw, "search_website", lambda name: "https://acme.example/")
+    monkeypatch.setattr(cw, "resolve", lambda site: site)
+    cfg, companies = cw.crawl_config("pages.jsonl")
+    assert cfg["targets"][0]["start_urls"] == ["https://acme.example/"]
+    assert companies[0]["website_source"] == "Tavily web search"
+    assert calls[0] == ("company_web_take", {"p_limit": cw.SITES_PER_RUN, "p_search_enabled": True})
+    assert any(fn == "company_web_request" for fn, _ in calls)
