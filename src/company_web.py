@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor
 import os
 import re
 from typing import Callable, Optional
@@ -23,8 +24,9 @@ from src.engines import governance
 log = logging.getLogger(__name__)
 
 PAGES_PER_SITE = 16
-SEARCHES_PER_RUN = 1                    # Tavily's free tier is 1,000 credits a month; hourly runs, one each, stay inside
-SITES_PER_RUN = 15
+SEARCHES_PER_RUN = 1                    # 288 maximum searches/month at the five-minute worker cadence
+SITES_PER_RUN = 8                         # bounded batch; independent sites run concurrently
+APPLY_CONCURRENCY = 4
 INCLUDE = [r"(?i)/(about|about-us|who-we-are|our-company|company|corporate|profile|overview|history|leadership|"
            r"management|team|executive|board|directors|governance|subsidiar|group|structure|businesses|our-businesses|"
            r"brands|portfolio|operations|investor|contact|annual-report|integrated-report|reports|results|financial)"
@@ -254,12 +256,22 @@ def crawl_config(output_path: str, limit: int = SITES_PER_RUN) -> tuple[dict, li
             found = search_website(c["name"])
             if found:
                 c["website"], c["website_source"] = found, "Tavily web search"
+    # Resolve independent company home pages concurrently. The per-host rate remains conservative:
+    # concurrency is across companies, never permission to hammer one company's website.
+    with ThreadPoolExecutor(max_workers=min(8, max(1, len(companies)))) as pool:
+        resolved = list(pool.map(resolve, [c["website"] for c in companies if c.get("website")]))
+    resolved_by_key = iter(resolved)
+    targets = []
+    for c in companies:
+        if c.get("website"):
+            c["website"] = next(resolved_by_key)
+            targets.append(target(c))
     cfg = {
         "user_agent": USER_AGENT, "robots_agent": "web-harvester",
-        "concurrency": 3, "max_retries": 0, "request_timeout": "15s",
+        "concurrency": 8, "max_retries": 0, "request_timeout": "15s",
         "rate_per_host_rps": 0.5, "rate_burst": 1, "adaptive_rate": True,
-        "sink_backend": "jsonl", "output_path": output_path, "report_interval": "30s",
-        "targets": [target(dict(c, website=resolve(c["website"]))) for c in companies if c.get("website")],
+        "sink_backend": "jsonl", "output_path": output_path, "report_interval": "15s",
+        "targets": targets,
     }
     return cfg, companies
 
@@ -395,15 +407,20 @@ def _stored_facts(key: str) -> dict:
 
 
 def apply_crawl(companies: list[dict], pages: list[dict], call: Optional[Callable[[str, str], str]] = None) -> dict:
-    """Read each crawled site and store its facts (or the failure)."""
+    """Extract and persist each company independently; a slow model call cannot block other profiles."""
     from src import hosted_market as hm
     by_target: dict[str, list[dict]] = {}
     for p in pages:
         by_target.setdefault(p.get("target"), []).append(p)
     out = {"sites": len(companies), "with_facts": 0, "pages": len(pages)}
-    for c in companies:
-        site_pages = by_target.get(c["name_key"], [])
-        before = _stored_facts(c["name_key"])
+
+    def process(c: dict) -> dict:
+        key = c["name_key"]
+        site_pages = by_target.get(key, [])
+        # Expose progress before expensive extraction so profiles distinguish crawling from verification.
+        hm._rpc_sync("company_web_save", {"p_name_key": key, "p_status": "crawling",
+                                          "p_facts": None, "p_error": None, "p_stage": "verifying"}, 15)
+        before = _stored_facts(key)
         facts = read_site(c, site_pages, call) if site_pages else None
         report = governance.merge_reads(read_report(c, site_pages, call) if site_pages else None, before.get("report"))
         if report:
@@ -415,19 +432,25 @@ def apply_crawl(companies: list[dict], pages: list[dict], call: Optional[Callabl
             facts = {**(facts or {}), "website": c["website"], "website_source": c["website_source"]}
         ok = bool(site_pages) or bool(filing) or (not c.get("website") and bool(c.get("filing_url")))
         if not c.get("website") and not c.get("filing_url"):
-            ok, site_pages = True, site_pages            # nothing to read yet: done until the next request
+            ok = True
         status = "done" if ok else "failed"
-        error = (None if ok else "no pages fetched (robots.txt, timeout or no matching pages)") if c.get("website") or \
-            c.get("filing_url") else "no website found"
-        hm._rpc_sync("company_web_save", {"p_name_key": c["name_key"], "p_status": status,
-                                          "p_facts": facts or {}, "p_error": error}, 15)
-        out["with_facts"] += bool(facts)
-        out.setdefault("detail", []).append({
-            "company": c["name_key"], "pages": len(site_pages), "report_url": find_report(site_pages) if site_pages else None,
+        error = (None if ok else "no pages fetched (robots.txt, timeout or no matching pages)") if c.get("website") or c.get("filing_url") else "no website found"
+        hm._rpc_sync("company_web_save", {"p_name_key": key, "p_status": status,
+                                          "p_facts": facts or {}, "p_error": error,
+                                          "p_stage": "completed" if ok else "failed"}, 15)
+        return {
+            "company": key, "with_facts": bool(facts), "pages": len(site_pages),
+            "report_url": find_report(site_pages) if site_pages else None,
             "facts": sorted(k for k in (facts or {}) if k not in ("pages", "report", "filing")),
-            "report_facts": sorted(k for k in (report or {}) if isinstance((report or {}).get(k), (list, str)) and k not in
-                                   ("source", "source_url", "method")),
-            "filing_facts": sorted(k for k in (filing or {}) if isinstance((filing or {}).get(k), (list, str)))})
+            "report_facts": sorted(k for k in (report or {}) if isinstance((report or {}).get(k), (list, str)) and k not in ("source", "source_url", "method")),
+            "filing_facts": sorted(k for k in (filing or {}) if isinstance((filing or {}).get(k), (list, str))),
+        }
+
+    # Persist as each company finishes. executor.map keeps summary order deterministic.
+    with ThreadPoolExecutor(max_workers=min(APPLY_CONCURRENCY, max(1, len(companies)))) as pool:
+        details = list(pool.map(process, companies))
+    out["with_facts"] = sum(bool(d["with_facts"]) for d in details)
+    out["detail"] = details
     return out
 
 
