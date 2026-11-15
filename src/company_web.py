@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 PAGES_PER_SITE = 16
 SEARCHES_PER_RUN = 1                    # 288 maximum searches/month at the five-minute worker cadence
 SITES_PER_RUN = 8                         # bounded batch; independent sites run concurrently
-APPLY_CONCURRENCY = 4
+APPLY_CONCURRENCY = 2
 INCLUDE = [r"(?i)/(about|about-us|who-we-are|our-company|company|corporate|profile|overview|history|leadership|"
            r"management|team|executive|board|directors|governance|subsidiar|group|structure|businesses|our-businesses|"
            r"brands|portfolio|operations|investor|contact|annual-report|integrated-report|reports|results|financial)"
