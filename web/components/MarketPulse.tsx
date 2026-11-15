@@ -1,8 +1,18 @@
 import { DEAL_TYPE, SIGNAL_TYPE, count, label, shortDate, usd, type Pulse } from "../lib/pulse";
+import type { Deal } from "../lib/market";
 import { ArrowRight, Container, Heading, Reveal, Section } from "./primitives";
 
+function dealCountry(code: string | null): string | null {
+  if (!code) return null;
+  try {
+    return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
 /** The current month of African deal flow and this week's corporate events, re-rendered from the live feed. */
-export function MarketPulse({ pulse, compact = false }: { pulse: Pulse | null; compact?: boolean }) {
+export function MarketPulse({ pulse, latestDeals, compact = false }: { pulse: Pulse | null; latestDeals: Deal[]; compact?: boolean }) {
   if (!pulse || !pulse.deals.total) return null;
   const { deals, events } = pulse;
   if (compact) {
@@ -41,13 +51,13 @@ export function MarketPulse({ pulse, compact = false }: { pulse: Pulse | null; c
               <a href="/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">Full feed <ArrowRight /></a>
             </div>
             <ul>
-              {deals.latest.slice(0, 4).map((d, i) => (
+              {latestDeals.slice(0, 4).map((d, i) => (
                 <li key={d.id} className={i ? "border-t hairline" : ""}>
                   <a href={`/deals/${d.id}`} className="grid gap-2 px-5 py-4 transition-colors hover:bg-white/[0.02] sm:grid-cols-[1fr_auto] sm:items-center sm:gap-6">
                     <div className="min-w-0">
                       <p className="text-[0.9375rem] font-medium">{d.headline}</p>
                       <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
-                        {label(DEAL_TYPE, d.deal_type)}{d.country ? ` · ${d.country.name}` : ""}{d.publisher ? ` · ${d.publisher}` : ""}{d.announced ? ` · ${shortDate(d.announced)}` : ""}
+                        {label(DEAL_TYPE, d.deal_type)}{dealCountry(d.country) ? ` · ${dealCountry(d.country)}` : ""}{d.sources?.[0]?.publisher ? ` · ${d.sources[0].publisher}` : ""}{d.announced ? ` · ${shortDate(d.announced)}` : ""}
                       </p>
                     </div>
                     <span className="kbd text-[0.8125rem] text-verified">{usd(d.amount_usd)}</span>
@@ -110,15 +120,15 @@ export function MarketPulse({ pulse, compact = false }: { pulse: Pulse | null; c
                 </a>
               </div>
               <ul>
-                {deals.latest.map((d, i) => (
+                {latestDeals.map((d, i) => (
                   <li key={d.id} className={i ? "border-t hairline" : ""}>
                     <a href={`/deals/${d.id}`} className="grid gap-1 px-6 py-4 transition-colors hover:bg-white/[0.02] sm:grid-cols-[1fr_auto] sm:gap-6">
                       <div className="min-w-0">
                         <p className="truncate text-[0.9375rem] font-medium">{d.headline}</p>
                         <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
                           {label(DEAL_TYPE, d.deal_type)}
-                          {d.country ? ` · ${d.country.name}` : ""}
-                          {d.publisher ? ` · ${d.publisher}` : ""} · {shortDate(d.announced)}
+                          {dealCountry(d.country) ? ` · ${dealCountry(d.country)}` : ""}
+                          {d.sources?.[0]?.publisher ? ` · ${d.sources[0].publisher}` : ""} · {shortDate(d.announced)}
                         </p>
                       </div>
                       <span className="kbd self-start text-[0.8125rem] text-verified">{usd(d.amount_usd)}</span>
