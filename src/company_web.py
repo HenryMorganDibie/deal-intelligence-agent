@@ -24,7 +24,7 @@ from src.engines import governance
 log = logging.getLogger(__name__)
 
 PAGES_PER_SITE = 16
-SEARCHES_PER_RUN = 1                    # 288 maximum searches/month at the five-minute worker cadence
+SEARCHES_PER_RUN = 1                    # guarded by a database-wide one-search-per-hour claim
 SITES_PER_RUN = 8                         # bounded batch; independent sites run concurrently
 APPLY_CONCURRENCY = 2
 INCLUDE = [r"(?i)/(about|about-us|who-we-are|our-company|company|corporate|profile|overview|history|leadership|"
@@ -252,6 +252,14 @@ def crawl_config(output_path: str, limit: int = SITES_PER_RUN) -> tuple[dict, li
     searches = 0
     for c in companies:                 # no website known: look for the official one (licensed search API)
         if not c.get("website") and searches < SEARCHES_PER_RUN and os.environ.get("TAVILY_API_KEY"):
+            try:
+                claim = hm._rpc_sync("company_web_search_claim", {}, 10)
+                allowed = claim.status_code == 200 and claim.json() is True
+            except Exception as e:
+                log.info("company web: search budget unavailable: %s", e)
+                allowed = False
+            if not allowed:
+                continue
             searches += 1
             found = search_website(c["name"])
             if found:
