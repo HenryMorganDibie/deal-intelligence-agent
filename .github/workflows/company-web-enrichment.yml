@@ -172,4 +172,5 @@ jobs:
 
       - name: Extract and persist company facts
         if: steps.prepare.outputs.sites != '0'
-        run: "$HOME/.cache/deal-intel-venv/bin/python" scripts/company_web.py apply "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json"
+        run: |
+          "$HOME/.cache/deal-intel-venv/bin/python" scripts/company_web.py apply "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json"
