@@ -285,3 +285,36 @@ def test_apply_crawl_extracts_companies_in_parallel_and_persists_each(monkeypatc
     assert all(name.startswith("ThreadPoolExecutor") for name in worker_threads)
     final = {args["p_name_key"]: args for fn, args in saved if fn == "company_web_save" and args["p_status"] == "done"}
     assert set(final) == {"alpha", "beta"}
+
+
+def test_official_website_discovery_uses_the_shared_hourly_search_budget(monkeypatch):
+    from src import hosted_market as hm
+
+    calls = []
+
+    class R:
+        status_code = 200
+
+        def __init__(self, body):
+            self.body = body
+
+        def json(self):
+            return self.body
+
+    def rpc(fn, args, timeout=30):
+        calls.append(fn)
+        if fn == "company_web_take":
+            return R([{"name_key": "acme", "name": "Acme Plc", "website": None}])
+        if fn == "company_web_search_claim":
+            return R(True)
+        return R("queued")
+
+    monkeypatch.setattr(hm, "_rpc_sync", rpc)
+    monkeypatch.setenv("TAVILY_API_KEY", "test-key")
+    monkeypatch.setattr(cw, "search_website", lambda name: "https://acme.example/")
+    monkeypatch.setattr(cw, "resolve", lambda site: site)
+    cfg, companies = cw.crawl_config("pages.jsonl")
+    assert cfg["targets"][0]["start_urls"] == ["https://acme.example/"]
+    assert companies[0]["website_source"] == "Tavily web search"
+    assert calls.count("company_web_search_claim") == 1
+    assert "company_web_request" in calls
