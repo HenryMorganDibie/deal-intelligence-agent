@@ -1198,8 +1198,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None
     # Political-party leadership handovers are not company acquisitions. In particular,
     # "takes over [party] chairmanship" must not match the corporate "takes over" pattern.
-    if re.search(r"(?i)\\b(?:chairmanship|party\\s+chair(?:man|person)?|regional\\s+chair(?:man|person)?|party\\s+leadership)\\b", title) \\
-            and re.search(r"(?i)\\b(?:unseated|elected|wins?|takes?\\s+over|replaces?|succeeds?|appointed)\\b", title):
+    if re.search(r"(?i)\b(?:chairmanship|party\s+chair(?:man|person)?|regional\s+chair(?:man|person)?|party\s+leadership)\b", title) \
+            and re.search(r"(?i)\b(?:unseated|elected|wins?|takes?\s+over|replaces?|succeeds?|appointed)\b", title):
         return None
     text = f"{title}. {snippet or ''}"
 
