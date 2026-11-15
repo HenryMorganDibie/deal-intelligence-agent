@@ -91,8 +91,17 @@ export async function GET() {
   try {
     const session = await getPortfolioSession();
     if (!session) return NextResponse.json({ authenticated: false }, { status: 401, headers: NO_STORE });
-    const [userRes, profile] = await Promise.all([supabase("/auth/v1/user", { token: session.accessToken }), profileOf(session.accessToken, session.user.id)]);
-    const user = userRes.ok ? ((await userRes.json()) as AuthUser) : session.user;
+    // getPortfolioSession already verifies the access token with /auth/v1/user.
+    // Reuse that response; only request user details again after a refresh response
+    // that did not include factor metadata needed for the MFA status.
+    const [user, profile] = await Promise.all([
+      session.user.factors !== undefined
+        ? Promise.resolve(session.user as AuthUser)
+        : supabase("/auth/v1/user", { token: session.accessToken }).then(async (r) =>
+            r.ok ? ((await r.json()) as AuthUser) : (session.user as AuthUser)
+          ),
+      profileOf(session.accessToken, session.user.id),
+    ]);
     const factor = verifiedFactor(user);
     return NextResponse.json({
       authenticated: true,
