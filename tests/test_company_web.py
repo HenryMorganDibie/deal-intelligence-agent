@@ -249,6 +249,7 @@ def test_apply_crawl_extracts_companies_in_parallel_and_persists_each(monkeypatc
     worker_threads = []
     saved = []
     lock = threading.Lock()
+    barrier = threading.Barrier(2)
 
     class R:
         status_code = 200
@@ -257,8 +258,12 @@ def test_apply_crawl_extracts_companies_in_parallel_and_persists_each(monkeypatc
             return True
 
     monkeypatch.setattr(cw, "_stored_facts", lambda key: {})
-    monkeypatch.setattr(cw, "read_site", lambda company, pages, call=None:
-                        worker_threads.append(threading.current_thread().name) or {"phone": company["name"]})
+    def read_site(company, pages, call=None):
+        barrier.wait(timeout=5)
+        worker_threads.append(threading.current_thread().name)
+        return {"phone": company["name"]}
+
+    monkeypatch.setattr(cw, "read_site", read_site)
     monkeypatch.setattr(cw, "read_report", lambda *a, **k: None)
     monkeypatch.setattr(cw, "read_filing", lambda *a, **k: None)
 
