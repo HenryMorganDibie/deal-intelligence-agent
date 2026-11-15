@@ -17,9 +17,9 @@ const NAV = [
 ];
 
 export function SiteNav() {
-  // /briefs is the app entry point; middleware handles sign-in and return paths.
+  // Open app takes users to Deals; the dedicated hero CTA opens Briefs.
   // Keep public navigation independent of account and subscription lookups.
-  const appHref = "/briefs";
+  const appHref = "/deals";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
