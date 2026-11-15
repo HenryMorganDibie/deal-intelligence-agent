@@ -16,11 +16,21 @@ export function AccountMenu() {
   const [busy, setBusy] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  // App routes are already protected by middleware. Fetch account details only when
+  // someone opens the menu, rather than delaying the header on every app navigation.
   useEffect(() => {
+    if (!open || session !== null) return;
+    let live = true;
     fetch("/api/portfolio/auth", { cache: "no-store" })
-      .then(async (r) => setSession(r.ok ? ((await r.json()) as Session) : { authenticated: false }))
-      .catch(() => setSession({ authenticated: false }));
-  }, []);
+      .then(async (r) => {
+        const next = r.ok ? ((await r.json()) as Session) : { authenticated: false };
+        if (live) setSession(next);
+      })
+      .catch(() => {
+        if (live) setSession({ authenticated: false });
+      });
+    return () => { live = false; };
+  }, [open, session]);
 
   useEffect(() => {
     if (!open) return;
@@ -45,13 +55,8 @@ export function AccountMenu() {
     }
   }
 
-  if (session === null) return <span className="h-8 w-8 shrink-0" aria-hidden="true" />;
-  if (!session.authenticated) {
-    return <Link href="/account" className="btn btn-ghost h-8 shrink-0 px-3 text-[0.8125rem]">Sign in</Link>;
-  }
-
-  const name = session.profile?.displayName || session.profile?.username || (session.user?.email || "Account").split("@")[0];
-  const initial = name.trim().charAt(0).toUpperCase() || "?";
+  const name = session?.profile?.displayName || session?.profile?.username || (session?.user?.email || "Account").split("@")[0];
+  const initial = name.trim().charAt(0).toUpperCase() || "A";
   const itemClass = "block w-full rounded-lg px-3 py-2 text-left text-sm text-[color:var(--muted)] transition-colors hover:bg-white/[0.04] hover:text-[color:var(--text)]";
 
   return (
@@ -69,20 +74,31 @@ export function AccountMenu() {
       </button>
       {open && (
         <div role="menu" aria-label="Account" className="absolute right-0 top-full mt-2 w-60 rounded-xl border hairline bg-raised/[0.98] p-2 shadow-xl">
-          <div className="border-b hairline px-3 pb-2 pt-1">
-            <p className="truncate text-sm font-medium text-[color:var(--text)]">{name}</p>
-            {session.profile?.username ? <p className="truncate text-xs text-[color:var(--muted)]">@{session.profile.username}</p> : null}
-            {session.user?.email ? <p className="truncate text-xs text-[color:var(--muted)]" title={session.user.email}>{session.user.email}</p> : null}
-          </div>
-          <div className="pt-1">
-            <Link role="menuitem" href="/account/profile" className={itemClass} onClick={() => setOpen(false)}>Profile</Link>
-            <Link role="menuitem" href="/account/security" className={itemClass} onClick={() => setOpen(false)}>Password and security</Link>
-            <Link role="menuitem" href="/account/billing" className={itemClass} onClick={() => setOpen(false)}>Plan and billing</Link>
-            <Link role="menuitem" href="/api-keys" className={itemClass} onClick={() => setOpen(false)}>API keys</Link>
-            <button role="menuitem" type="button" onClick={signOut} disabled={busy} className={`${itemClass} disabled:opacity-60`}>
-              {busy ? "Signing out…" : "Sign out"}
-            </button>
-          </div>
+          {session === null ? (
+            <p className="px-3 py-2 text-sm text-[color:var(--muted)]" role="status">Loading account…</p>
+          ) : !session.authenticated ? (
+            <div className="px-3 py-2">
+              <p className="mb-2 text-sm text-[color:var(--muted)]">Your session could not be loaded.</p>
+              <Link href="/account" className="text-sm text-[color:var(--text)]">Sign in again</Link>
+            </div>
+          ) : (
+            <>
+              <div className="border-b hairline px-3 pb-2 pt-1">
+                <p className="truncate text-sm font-medium text-[color:var(--text)]">{name}</p>
+                {session.profile?.username ? <p className="truncate text-xs text-[color:var(--muted)]">@{session.profile.username}</p> : null}
+                {session.user?.email ? <p className="truncate text-xs text-[color:var(--muted)]" title={session.user.email}>{session.user.email}</p> : null}
+              </div>
+              <div className="pt-1">
+                <Link role="menuitem" href="/account/profile" className={itemClass} onClick={() => setOpen(false)}>Profile</Link>
+                <Link role="menuitem" href="/account/security" className={itemClass} onClick={() => setOpen(false)}>Password and security</Link>
+                <Link role="menuitem" href="/account/billing" className={itemClass} onClick={() => setOpen(false)}>Plan and billing</Link>
+                <Link role="menuitem" href="/api-keys" className={itemClass} onClick={() => setOpen(false)}>API keys</Link>
+                <button role="menuitem" type="button" onClick={signOut} disabled={busy} className={`${itemClass} disabled:opacity-60`}>
+                  {busy ? "Signing out…" : "Sign out"}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
