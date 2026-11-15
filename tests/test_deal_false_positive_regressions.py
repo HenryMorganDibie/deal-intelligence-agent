@@ -249,3 +249,11 @@ def test_praise_and_capacity_are_cleaned_from_a_project_target():
     fix = _deals.reclassify({"id": "x", "deal_type": "debt_financing", "target": "Landmark 300MW Aysha Wind Farm",
                              "headline": "AfDB Backs Ethiopia’s Landmark 300MW Aysha Wind Farm with $110M"})
     assert fix == {"target": "Aysha Wind Farm"}
+
+
+def test_political_party_chairmanship_handover_is_not_an_acquisition():
+    assert extract_deal(
+        "Ashie Moore unseated as Benjamin Danso takes over NDC Greater Accra chairmanship",
+        published="2026-11-14",
+        africa_source=True,
+    ) is None
