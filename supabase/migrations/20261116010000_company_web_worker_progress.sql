@@ -44,7 +44,7 @@ begin
   perform private.check_secret(secret);
   with picked as (
     select name_key from public.company_web
-     where (status = 'queued' or (status = 'crawling' and taken_at < now() - interval '1 hour')) and attempts < 3
+     where (status = 'queued' or (status = 'crawling' and taken_at < now() - interval '30 minutes')) and attempts < 3
      order by requested_at limit greatest(0, least(coalesce(p_limit, 0), 50)) for update skip locked)
   update public.company_web w
      set status = 'crawling', stage = case
