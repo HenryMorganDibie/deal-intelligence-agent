@@ -1435,6 +1435,10 @@
     "bridge initiative": {
       "name": "BRIDGE Initiative",
       "kind": "organization"
+    },
+    "c r e a m platform": {
+      "name": "C.R.E.A.M. Platform",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -4878,6 +4882,11 @@
           "title": "UPL's Advanta to acquire Egypt's Misr Hytech, eyes bigger Africa play",
           "publisher": "Fortune India",
           "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQcWlFQXRKRDZRRmV1c295Y1hJdjgwS3BOUXdYekhoQXA5N1NnUUZ4c24zTkhITndEUGR2dEIwUnk2bzVyajUxeUR6Zy11ZzJtRFYwRlBxbFN6TFNRMEh6aGgxV2E4MTRBejI1TjZnbDRnNXNYUDZzM3A2REo1eTlXeklObWE4dXdxaW0tdVRtRFVCTDZNU0FTdzAxLXVhMFhGeXE3bW5JcGVodlZKM1dJQlVwZnVGcFnSAcQBQVVfeXFMTWFNbjJjcmhpeHBGQ0dSSzVuRVFBSTM0OUZHZEVSdHNxM2hqZkVxSXdDTnllWUVvUExnQVZpSzRyejBMZ05LU2xfSkxOM3VEeU1Ja2Y0NzFacFFQc1dwb1oydnJnSUxhN3ZWcVpRcjVZXzZiMjdKUEVMM1BrZ2YtaEp5V3JHUndnVm5FTldmTmJIczJKX3drcUhfcUhoNnc4Z1BIZ3RkeTdkdnA5dFVnUlMxRW1QanN2OHJVNXRjZ3AtOXFBZQ?oc=5"
+        },
+        {
+          "title": "UPL's Advanta to acquire Egypt's Misr Hytech, eyes bigger Africa play",
+          "publisher": "Fortune India",
+          "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQcWlFQXRKRDZRRmV1c295Y1hJdjgwS3BOUXdYekhoQXA5N1NnUUZ4c24zTkhITndEUGR2dEIwUnk2bzVyajUxeUR6Zy11ZzJtRFYwRlBxbFN6TFNRMEh6aGgxV2E4MTRBejI1TjZnbDRnNXNYUDZzM3A2REo1eTlXeklObWE4dXdxaW0tdVRtRFVCTDZNU0FTdzAxLXVhMFhGeXE3bW5JcGVodlZKM1dJQlVwZnVGcFk?oc=5"
         }
       ]
     },
@@ -4894,7 +4903,21 @@
           "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNczVhQkVFOXdiMmJ2SWN5bnN3dTJVQUxqMDFQd2ktQVBlUk4zZHRBU1lSdzhud205OUR0ZlktVzJ0bThkT3N3b2YyNlpCclBVZEJqVGxlcHlmZDlfVzIxRlVhUXRIWFU0TlA3NFRoa21PYzFHWkRtMlNXUklxS21kOVh5bWhaTEZDRlZ6M2xiRUFYaHBxY3FBOTBnejl1SGppVGZxSTg4cGt5RjB1cXVRRWF4eEpIYnZ5MmZwZVln?oc=5"
         }
       ]
+    },
+    "56fb3cccf2caa4fdc100": {
+      "id": "56fb3cccf2caa4fdc100",
+      "from": "afreximbank",
+      "to": "c r e a m platform",
+      "type": "acquisition",
+      "first_seen": "2026-11-15",
+      "sources": [
+        {
+          "title": "Afreximbank Acquires Equity Stake In D’banj’s C.R.E.A.M. Platform",
+          "publisher": "DAILY TIMES Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOOERLay1RSGQzbG13dGJoV2JRY3NreXowWlNReDNGNEhxd3RId0xxclRmcVM1c0VtRjhnTHRIUHY5RWNBTzQ0dlVCT0NYazU4d2ZzdXdEOHgtb1N3azFzejB4RFRUUGNBWlBZcU1RVzkySmM1akNmb1B6YW9vX0RkUnBjaFJONkstUl9qRVQyTmRUUQ?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-15T01:16:51.142Z"
+  "updated_at": "2026-11-15T12:24:21.132833+00:00"
 }
