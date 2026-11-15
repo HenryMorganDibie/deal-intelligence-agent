@@ -636,17 +636,19 @@ async def deal_search(q: str = "", country: Optional[str] = None, type: Optional
                       sector: Optional[str] = None, investor: Optional[str] = None, since: Optional[str] = None,
                       until: Optional[str] = None, min_usd: Optional[float] = None,
                       limit: int = Query(50, ge=1, le=100),
-                      offset: int = Query(0, ge=0, le=100000)) -> dict:
+                      offset: int = Query(0, ge=0, le=100000),
+                      chronological: bool = False) -> dict:
     country = _country_or_404(country).iso2 if country else None
     ds = deals()
     # The store is already cached in memory. Filter before slicing so pagination
     # covers the complete matching result set rather than only the first page.
     matching = deals_mod.search(ds, q=q, country=country, deal_type=type, sector=sector, since=since, until=until,
                                 investor=investor, min_usd=min_usd, limit=max(len(ds), 1))
-    # Engagement may make only a small, evidence-gated adjustment to the existing
-    # relevance order. It never changes deal facts or verification labels.
-    interest = await run_in_threadpool(_behavioral_interest_scores)
-    matching = _rerank_with_behavioral_interest(matching, interest)
+    # Latest-deals consumers can request strict announcement-date order without
+    # behavioural reranking. Other discovery surfaces retain their existing ranking.
+    if not chronological:
+        interest = await run_in_threadpool(_behavioral_interest_scores)
+        matching = _rerank_with_behavioral_interest(matching, interest)
     total_matching = len(matching)
     rows = matching[offset:offset + limit]
     from src.engines import deal_sanity, provenance
