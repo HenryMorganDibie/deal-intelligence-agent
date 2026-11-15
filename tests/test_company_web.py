@@ -302,11 +302,9 @@ def test_official_website_discovery_uses_the_shared_hourly_search_budget(monkeyp
             return self.body
 
     def rpc(fn, args, timeout=30):
-        calls.append(fn)
+        calls.append((fn, args))
         if fn == "company_web_take":
-            return R([{"name_key": "acme", "name": "Acme Plc", "website": None}])
-        if fn == "company_web_search_claim":
-            return R(True)
+            return R([{"name_key": "acme", "name": "Acme Plc", "website": None, "search_allowed": True}])
         return R("queued")
 
     monkeypatch.setattr(hm, "_rpc_sync", rpc)
@@ -316,5 +314,5 @@ def test_official_website_discovery_uses_the_shared_hourly_search_budget(monkeyp
     cfg, companies = cw.crawl_config("pages.jsonl")
     assert cfg["targets"][0]["start_urls"] == ["https://acme.example/"]
     assert companies[0]["website_source"] == "Tavily web search"
-    assert calls.count("company_web_search_claim") == 1
-    assert "company_web_request" in calls
+    assert calls[0] == ("company_web_take", {"p_limit": cw.SITES_PER_RUN, "p_search_enabled": True})
+    assert any(fn == "company_web_request" for fn, _ in calls)
