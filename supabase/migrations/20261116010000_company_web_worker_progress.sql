@@ -50,7 +50,7 @@ revoke all on private.company_web_search_budget from public, anon, authenticated
 
 drop function if exists public.company_web_take(text, integer);
 create function public.company_web_take(secret text, p_limit integer, p_search_enabled boolean default false)
-returns jsonb language plpgsql security definer set search_path = '' as $
+returns jsonb language plpgsql security definer set search_path = '' as $company_web_take$
 declare rows jsonb;
 declare search_allowed boolean := false;
 begin
@@ -82,7 +82,7 @@ begin
                                                'search_allowed', search_allowed)), '[]'::jsonb)
     into rows from public.company_web where status = 'crawling' and taken_at >= now() - interval '5 seconds';
   return rows;
-end; $;
+end; $company_web_take$;
 
 drop function if exists public.company_web_save(text, text, text, jsonb, text);
 create function public.company_web_save(secret text, p_name_key text, p_status text, p_facts jsonb, p_error text,
