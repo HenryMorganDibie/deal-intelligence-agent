@@ -3,8 +3,14 @@ name: Company website enrichment
 # Company profiles enqueue work immediately; this worker drains the queue independently
 # of election ingestion. A bounded batch of sites is processed on each five-minute run.
 on:
+  # Bootstrap the worker on the first main-branch workflow update as well as on its
+  # recurring schedule. This gives us a real runner execution to verify the setup.
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/company-web-enrichment.yml"
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "2,7,12,17,22,27,32,37,42,47,52,57 * * * *"
   workflow_dispatch:
 
 permissions:
