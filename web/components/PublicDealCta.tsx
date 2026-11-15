@@ -1,24 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePlan } from "../lib/plan";
 
-/** The public deal page's call to action: a signed-in visitor goes straight to the deal in the app; anyone else is
- * offered an account. (The page itself is cached for everyone, so this is decided in the browser.) */
+/** The public deal page CTA stays independent of auth state; the account page routes signed-in visitors onward. */
 export function PublicDealCta({ id }: { id: string }) {
-  const plan = usePlan();
   const next = encodeURIComponent(`/deals/${id}`);
-  if (plan) {
-    return (
-      <div className="mt-5 flex flex-wrap gap-3">
-        <Link href={`/deals/${id}`} className="btn btn-primary">Open in the app</Link>
-      </div>
-    );
-  }
   return (
     <div className="mt-5 flex flex-wrap gap-3">
-      <Link href={`/account?mode=sign-up&next=${next}`} className="btn btn-primary">Create a free account</Link>
-      <Link href={`/account?next=${next}`} className="btn btn-ghost">Sign in</Link>
+      <Link href={`/account?next=${next}`} className="btn btn-primary">Continue to deal</Link>
+      <Link href={`/account?mode=sign-up&next=${next}`} className="btn btn-ghost">Create a free account</Link>
     </div>
   );
 }

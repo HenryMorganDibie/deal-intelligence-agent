@@ -402,8 +402,10 @@ test("admin page lists accounts and who is using the app", async ({ page }) => {
 
 test("the app header has an account menu that signs out", async ({ page }) => {
   let signedOut = false;
+  let sessionReads = 0;
   await page.route("**/api/portfolio/auth", async (route) => {
     if (route.request().method() === "GET") {
+      sessionReads += 1;
       await route.fulfill({ status: signedOut ? 401 : 200, contentType: "application/json", body: JSON.stringify(signedOut
         ? { authenticated: false }
         : { authenticated: true, user: { email: "ada@example.com" }, profile: { username: "ada_l", displayName: "Ada" }, mfa: { enrolled: false } }) });
@@ -414,10 +416,12 @@ test("the app header has an account menu that signs out", async ({ page }) => {
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
   });
   await page.goto("/deals");
-  const trigger = page.getByRole("button", { name: "Account menu for Ada" });
+  const trigger = page.getByRole("button", { name: "Open account menu" });
   await expect(trigger).toBeVisible();
+  expect(sessionReads).toBe(0);
   await trigger.click();
   await expect(page.getByRole("menu", { name: "Account" })).toContainText("@ada_l");
+  expect(sessionReads).toBe(1);
   await expect(page.getByRole("menu", { name: "Account" })).toContainText("ada@example.com");
   await expect(page.getByRole("menuitem", { name: "Password and security" })).toHaveAttribute("href", "/account/security");
   await page.keyboard.press("Escape");

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { LINKS } from "../lib/site";
-import { usePlan } from "../lib/plan";
 import { Container, LogoMark } from "./primitives";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -18,8 +17,9 @@ const NAV = [
 ];
 
 export function SiteNav() {
-  // Signed in: straight to the app (Deals); otherwise through sign-in, which returns there.
-  const appHref = usePlan() ? "/deals" : "/account?next=%2Fdeals";
+  // /briefs is the app entry point; middleware handles sign-in and return paths.
+  // Keep public navigation independent of account and subscription lookups.
+  const appHref = "/briefs";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
