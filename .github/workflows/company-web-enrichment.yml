@@ -101,21 +101,37 @@ jobs:
           if [ "$status" != "0" ]; then exit "$status"; fi
           echo "sites=$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$RUNNER_TEMP/companies.json")" >> "$GITHUB_OUTPUT"
 
-      - name: Install OCR only when a queued filing needs it
-        if: steps.prepare.outputs.sites != '0'
-        run: |
-          if python -c 'import json,sys; raise SystemExit(0 if any(c.get("filing_url") for c in json.load(open(sys.argv[1]))) else 1)' "$RUNNER_TEMP/companies.json"; then
-            sudo apt-get update -qq
-            sudo apt-get install -y -qq tesseract-ocr poppler-utils
-          else
-            echo "No queued filing PDFs; skipping OCR system packages"
-          fi
-
-      - name: Crawl and extract company websites
+      - name: Crawl company websites
         if: steps.prepare.outputs.sites != '0'
         env:
           HARVESTER_RENDER: ${{ steps.browser.outputs.render }}
         run: |
           set -euo pipefail
           "$HOME/.cache/deal-intel-web-harvester/crawl" -config "$RUNNER_TEMP/company-crawl.json" -i-have-reviewed-tos
-          python scripts/company_web.py apply "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json"
+
+      - name: Install OCR only when a queued filing or discovered annual report needs it
+        if: steps.prepare.outputs.sites != '0'
+        run: |
+          if python - "$RUNNER_TEMP/companies.json" "$RUNNER_TEMP/company-pages.jsonl" <<'PY'
+          import json, re, sys
+          companies = json.load(open(sys.argv[1]))
+          pages = [json.loads(line) for line in open(sys.argv[2]) if line.strip()]
+          filing = any(c.get("filing_url") for c in companies)
+          report = any(
+              isinstance(url, str)
+              and url.lower().endswith(".pdf")
+              and re.search(r"(annual|integrated)[\\W_]*(report|financial[\\W_]*statements?|results)", url, re.I)
+              for page in pages for url in (page.get("links") or [])
+          )
+          raise SystemExit(0 if filing or report else 1)
+          PY
+          then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq tesseract-ocr poppler-utils
+          else
+            echo "No queued filing or discovered annual report PDFs; skipping OCR system packages"
+          fi
+
+      - name: Extract and persist company facts
+        if: steps.prepare.outputs.sites != '0'
+        run: python scripts/company_web.py apply "$RUNNER_TEMP/company-pages.jsonl" "$RUNNER_TEMP/companies.json"
