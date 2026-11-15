@@ -66,7 +66,7 @@ export function AccountMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`Account menu for ${name}`}
+        aria-label="Open account menu"
         className="flex h-8 items-center gap-2 rounded-full border hairline pl-1 pr-1 text-[0.8125rem] transition-colors hover:bg-white/[0.04] sm:pr-3"
       >
         <span aria-hidden="true" className="grid h-6 w-6 place-items-center rounded-full bg-white/90 text-xs font-semibold text-black">{initial}</span>
