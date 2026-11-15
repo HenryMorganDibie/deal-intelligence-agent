@@ -588,12 +588,29 @@ _ASSET_OR_PLACE_TARGET = re.compile(
 
 def not_a_deal(headline: str, target: Optional[str], deal_type: Optional[str] = None) -> Optional[str]:
     """Why a headline the deal patterns matched is not a company transaction, or None."""
-    if _ROUNDUP.search(headline or ""):
+    h = headline or ""
+    if _ROUNDUP.search(h):
         return "market roundup, not a transaction"
     for reason, pattern in _NOT_TRANSACTION_HEADLINE:
-        if pattern.search(headline or ""):
+        if pattern.search(h):
             return reason
+    # Public aid allocations and budget lines are not private fund closes, even when the headline
+    # calls the recipient an "aid fund".
+    if re.search(r"(?i)\\b(?:aid\\s+fund|development\\s+aid|budget\\s+support|eu\\s+20\\d{2}\\s+budget)\\b", h):
+        return "public aid or budget allocation, not a transaction"
+    # A government-backed initiative or investment drive is not a deal unless a named company/fund
+    # receives a specific financing instrument. These headlines only announce a programme.
+    if re.search(r"(?i)\\b(?:launch(?:es|ed)?|at\\s+launch\\s+of)\\b.{0,100}\\b(?:initiative|investment\\s+drive|programme|program)\\b", h):
+        return "public initiative or programme, not a transaction"
+    if re.search(r"(?i)\\b(?:investment\\s+ambition|prize\\s+pool|plans?\\s+\\d[\\d,]*\\s?mw\\s+power\\s+intervention)\\b", h):
+        return "investment ambition, prize or spending plan, not a transaction"
+    if re.search(r"(?i)\\bcommit\\w*\\b.{0,70}\\bto\\s+boost\\s+investment\\s+in\\b", h):
+        return "programme funding for a broad beneficiary group, not a company transaction"
     t = (target or "").strip()
+    if normalise_name(t) in {"pacific nations", "african mineral processing"}:
+        return "the target is a broad region or industry, not a named company or fund"
+    if t and re.search(r"(?i)\\binitiative$|\\bprogramme$|\\bprogram$", t):
+        return "the target is a programme or initiative, not a company or fund"
     if t and (_GOVERNMENT_TARGET.search(t) or _STATE_TARGET.match(t) or t.lower() in _WORLD_COUNTRIES
               or t.lower() in {c.name.lower() for c in COUNTRIES}):
         return "the target is a government, a state or a country: public finance or spending, not a company deal"
