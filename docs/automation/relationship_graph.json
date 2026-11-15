@@ -1439,6 +1439,14 @@
     "c r e a m platform": {
       "name": "C.R.E.A.M. Platform",
       "kind": "organization"
+    },
+    "danone": {
+      "name": "Danone",
+      "kind": "organization"
+    },
+    "made group": {
+      "name": "Made Group",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -4917,7 +4925,21 @@
           "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOOERLay1RSGQzbG13dGJoV2JRY3NreXowWlNReDNGNEhxd3RId0xxclRmcVM1c0VtRjhnTHRIUHY5RWNBTzQ0dlVCT0NYazU4d2ZzdXdEOHgtb1N3azFzejB4RFRUUGNBWlBZcU1RVzkySmM1akNmb1B6YW9vX0RkUnBjaFJONkstUl9qRVQyTmRUUQ?oc=5"
         }
       ]
+    },
+    "a1e9300ac12dcd29ada7": {
+      "id": "a1e9300ac12dcd29ada7",
+      "from": "danone",
+      "to": "made group",
+      "type": "acquisition",
+      "first_seen": "2026-11-14",
+      "sources": [
+        {
+          "title": "Danone completes Made Group acquisition",
+          "publisher": "Food Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBjbTlBcXZnaDFYRkVpdC1vUlo2ZnZVamN1Ymg5X0xTYkUxeXJaTDNCeGdWRWJ3S1BzTHl6M0lBZUVnR2tmYVZZQXJUb2t2bTJ0VEpQdlFmR3VEb0JCWDdCUkY3aGxKRmZJZEN3bkVZUVdvX2M5Zi1qWWx3VjE?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-15T12:24:21.132833+00:00"
+  "updated_at": "2026-11-15T19:56:54.967180+00:00"
 }

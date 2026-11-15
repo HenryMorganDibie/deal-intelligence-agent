@@ -668,3 +668,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "LYD.CS"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "M2M.CS"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MAAL.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "MAB.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "MAC.GH"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "MANDRID.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-15", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46527_AXA_MANSARD_INSURANCE_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_APRIL_2026.pdf", "status": "collected", "ticker": "MANSARD.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "MAP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "MAS.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "MASH.NR"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-15", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46387_MAY_AND_BAKER-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "MAYBAKER.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "MBEN.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-15", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47041_MUTUAL_BENEFITS_ASSURANCE_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MAY_2026.pdf", "status": "collected", "ticker": "MBENEFIT.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MBSC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "MCG.JO"}
