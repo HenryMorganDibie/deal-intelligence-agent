@@ -2,7 +2,7 @@
 
 > **Proprietary software. All rights reserved.** This repository is the private property of Henry Chukwunwike Dibie (Deal Intelligence). No licence is granted to use, copy, clone, modify or distribute any part of it. See [LICENSE](LICENSE). Licensing enquiries: info@deal-intelligence.app
 
-**Deal Intelligence is a market-research and data platform for African and US markets.** It brings together private-market transactions, listed securities, corporate events, investors, country and currency risk, portfolios, valuation, source-grounded research, and election intelligence.
+**Deal Intelligence is an African financial and market intelligence platform.** It brings together private-market transactions, listed securities and other investment instruments, corporate events, investors and funds, company financials and governance, country and currency risk, valuation and portfolio research, and election intelligence. Its core promise is traceable evidence: figures, classifications and research should lead back to the source that supports them.
 
 **Live platform:** [deal-intelligence.app](https://deal-intelligence.app)  
 **Developer documentation:** [deal-intelligence.app/developers](https://deal-intelligence.app/developers)  
@@ -26,14 +26,14 @@ Deal Intelligence is research and data software. It does not provide investment 
 | **Comparables** | Search and compare reported transactions using available attributes such as sector, country, transaction type and disclosed value. |
 | **Country and sector research** | Country risk, currency risk, sector risk, deal activity and event context, with underlying observations and sources exposed where available. |
 
-Deal coverage is built from public reporting and disclosures. Undisclosed transactions cannot be represented, and an absent record is not evidence that no transaction occurred.
+Deal coverage is built from public reporting and disclosures across African markets. Country inclusion does not mean equal deal volume, source depth or verification in every market. Undisclosed transactions cannot be represented, and an absent record is not evidence that no transaction occurred.
 
 ### Listed markets and multi-asset data
 
 - Listed-company discovery, company directory, exchange overview, quotes, movers, sectors and cross-market screening.
-- Coverage across 24 African exchanges, with source and observation dates attached to market data.
-- Delayed intraday quotes for selected markets, including Johannesburg and Lagos; availability and delay depend on the source.
-- Multi-asset discovery includes exchange-traded funds, Treasury bills, selected government-bond reference yields, listed property securities, policy rates, deposit rates and selected unlisted-fund reference data.
+- The exchange universe represents 24 African exchanges. Listing, quote, filing and statement depth differs by country and source; the Coverage registry describes the available data and verification tier rather than implying that every exchange has equivalent live data.
+- Market snapshots include dated prices, index levels, movers, sector views, market capitalisation where available, and local- and USD-denominated return context. Intraday or delayed quotes are available only for selected sources and exchanges; the observation date is shown so stale prices are not mistaken for current ones.
+- Multi-asset discovery includes exchange-traded funds listed in Johannesburg, Lagos and Nairobi; Treasury bills sourced from central-bank and regional auctions; selected government-bond auction and benchmark-yield references; listed property securities; policy rates; selected bank-deposit rates; and limited unlisted-fund reference data such as reported assets under management. It does not provide a complete security master, all bond inventories, fund returns or every country's auction data.
 - Treasury-bill observations come from central-bank or regional auction sources. Quoting conventions and day-count bases are preserved rather than silently normalised where the source does not establish them.
 - Market snapshots, FX conversion and instrument data carry dates so stale or differently dated observations are not mistaken for live prices.
 
@@ -41,25 +41,26 @@ This is public-source market information, not an execution venue or a complete i
 
 ### Companies, portfolios and valuation
 
-- Company profiles combine available exchange, filing and news information with financial statements where supported by source data.
-- Company briefs surface confirmed signals from filings, exchange disclosures and news.
-- Valuation views include DCF and multiples workflows, with inputs checked against available exchange data, filings and cited sources.
-- Country cost-of-equity build-ups expose their component assumptions.
-- Portfolio tools support holdings, multi-currency exposure, valuation review and available market-price refreshes. Portfolio storage and access controls are documented in [the portfolio storage and access model](docs/portfolio-storage-and-access-model.md).
+- Company profiles combine exchange, filing, financial-statement and news data where available. NGX and NSE Kenya audited statements are parsed and checked against accounting identities; other listed-company financials depend on the source available for that listing.
+- Company governance research extracts board members and roles, committees, substantial shareholders, subsidiaries and corporate-registration details from filed annual reports. Company websites can also be crawled for board, management, group structure and contact facts. Extracted facts are checked against the cited page; names or percentages that cannot be verified are omitted rather than silently completed.
+- Company briefs surface source-backed signals from filings, exchange disclosures and news, with the underlying evidence available for review.
+- Valuation supports evidence-gated DCF and dividend-discount (DDM) workflows, scenario analysis and sensitivity review. Model suitability, statement dates, quote dates, source URLs, currencies and missing inputs are checked; unsupported or stale inputs should prevent a confident valuation conclusion.
+- Reported transaction comparables and listed-company multiples provide additional context where comparable data exists. Country cost-of-equity build-ups expose their component assumptions.
+- Portfolio tools support holdings, multi-currency exposure, CSV/XLSX workflows, transaction and valuation review, and available market-price/FX refreshes. The database-backed personal and organization portfolio model has separate ownership, role, RLS and audit controls; its implementation and release caveats are documented in [the portfolio storage and access model](docs/portfolio-storage-and-access-model.md).
 
 A missing quote, stale input, unsupported asset or incomplete filing should remain visible as a limitation rather than being filled with an invented value.
 
 ### Research, reports and monitoring
 
-- Research answers are grounded in retrieved deals, corporate events, investors, country risk and current news. Evidence is numbered and citations are checked before being returned.
-- Country and sector research reports use the available source-backed data.
-- Watchlists can follow companies, countries and event types.
+- Research answers retrieve relevant deals, corporate events, investors, company profiles, country and currency risk, market context and current news. Optional open-web search can add company pages, filings and reports when configured. Evidence is numbered, citations are checked against the retrieved sources, and unsupported or uncited claims are surfaced rather than treated as verified.
+- Country and sector research reports assemble source-backed evidence into structured sections; the language model helps explain the evidence rather than becoming the source of truth.
+- Watchlists can follow companies, countries and event types. A separate Corporate of the Week selection highlights up to five companies with verified, source-linked operating events from the latest seven complete days; transaction headlines already represented in Latest Deals and non-corporate political or sports stories are excluded.
 - Watchlist updates can be delivered by email, RSS and supported webhook formats, including Slack, Microsoft Teams, Discord and Google Chat.
 - Evaluation tools track labelled extraction, attribution and signal outcomes; results are published with sample sizes and uncertainty intervals.
 
 ### Election intelligence
 
-Election intelligence is a distinct research capability, not a corporate-deal feed. It monitors election news and reported incidents, and provides structured election datasets for configured elections.
+Election intelligence is a distinct research capability, not a corporate-deal feed. It monitors election news and reported incidents across configured country profiles, with deeper structured candidate, constituency and polling-unit coverage for Nigeria. Configured live-results contests include The Gambia's presidential election and Nigeria's 2027 presidential and governorship elections.
 
 Current functionality in the repository includes:
 
@@ -67,7 +68,7 @@ Current functionality in the repository includes:
 - News collection, article enrichment, cross-outlet story merging and tagging by election, party, candidate or public figure, state or region, topic and race.
 - Incident classification and severity, including reported violence, thuggery, abduction, arson, ballot snatching, vote buying, intimidation, election-technology failures, logistics, arrests and hate speech.
 - Nigeria-specific coverage including candidates, constituencies, states, LGAs, wards and polling-unit reference data.
-- Live-results workflows for configured contests, with result sources and review status. Result sheets are checked and can be held as provisional or sent for review; they should not be confused with officially declared results.
+- Live-results tracking records results as electoral commissions declare them, entered by authorised operators and retained with version history. This is distinct from the Nigerian polling-unit result-sheet workflow: submitted EC8A sheets are read by a vision model, checked against polling-unit references and arithmetic rules, and remain provisional until a human reviewer verifies them. A sheet that passes automated checks is not, by itself, an official declared result.
 - Published polls and poll summaries where available.
 - Election alerts with filters for election, incident type, severity, geography, candidates, parties and topics, delivered through supported webhook channels.
 - CSV exports and API access subject to plan and endpoint permissions.
@@ -80,14 +81,14 @@ Election profiles, dates, result availability and feature entitlements vary by c
 
 Deal Intelligence is designed around source traceability rather than an opaque aggregate score.
 
-- **Geography:** all 54 African countries for the platform's country and private-market coverage, alongside US listed-company and filing coverage.
-- **Exchanges:** 24 African exchanges are represented in listed-market coverage. Individual exchange datasets differ in depth, freshness and machine-readable availability.
+- **Geography:** country-risk indicators and country-level reference coverage span all 54 African countries. Private-market deals, corporate events, listed-company data and machine-readable filings vary materially by country; the coverage registry exposes those differences.
+- **Exchanges:** the exchange universe represents 24 African exchanges. Individual datasets differ in listing coverage, price freshness, financial-statement availability and machine-readable disclosure depth.
 - **Currencies:** country and currency-risk data covers currencies represented by the source datasets; official and parallel-market observations are distinguished where available.
 - **Languages:** African private-market news collection includes English, French and Portuguese sources.
 - **Evidence:** deal and event records retain source links and available verification details. Market observations retain source and date information.
 - **Confidence and uncertainty:** corroboration, source quality, data freshness and measured historical performance are surfaced where relevant.
 
-Coverage is not uniform. Some exchanges publish limited machine-readable filings, some private transactions do not disclose amounts or counterparties, and some instruments have only periodic official observations. See the live [Coverage](https://deal-intelligence.app/coverage), [Methodology](https://deal-intelligence.app/methodology) and [Limits](https://deal-intelligence.app/limits) pages for current country-level detail and known limitations.
+Coverage is not uniform. The current coverage model distinguishes stronger official filing and price sources from markets where verification relies on vendor data or credible news, and from countries where the platform provides country, news and deal context without a complete listed-company data feed. Some private transactions do not disclose amounts or counterparties, and some instruments have only periodic official observations. See the live [Coverage](https://deal-intelligence.app/coverage), [Methodology](https://deal-intelligence.app/methodology) and [Limits](https://deal-intelligence.app/limits) pages for current country-level detail and known limitations.
 
 ---
 
@@ -102,7 +103,7 @@ Coverage is not uniform. Some exchanges publish limited machine-readable filings
             |
             v
     Deterministic data and signal engines
-      deals, events, entity resolution, investors, instruments, risk, elections
+      African deals, corporate events, company governance, investors, instruments, country risk, elections
             |
             v
     Supabase
@@ -118,7 +119,7 @@ Coverage is not uniform. Some exchanges publish limited machine-readable filings
 
 ### Research and signal principles
 
-**Deterministic first.** Deal extraction, event classification, signal detection, severity rules and compound-event logic are handled by reproducible engines. A language model can explain confirmed findings and help compose research; it is not the source of truth for whether a deterministic signal exists.
+**Deterministic first.** Deal extraction, corporate-event classification, signal detection, severity rules, source checks and compound-event logic are handled by reproducible engines. Language models assist with explanation, research synthesis and reading long company documents, but extracted facts are checked against source text and models do not decide whether a deterministic deal or signal exists.
 
 **Evidence before narrative.** The system retains source references and supporting evidence. Research answers are assembled from retrieved material, and unsupported citations or snippets are not intended to survive post-processing.
 
@@ -147,7 +148,7 @@ The web application is not a single /app page. It has public product and informa
 
 Public pages include the product overview, platform, pricing, methodology, coverage, limits, attribution and developer documentation. Public deal, market and research information is exposed only where the application explicitly supports it.
 
-Authenticated product areas include Deals, Investors, Companies, company briefs, Markets, investment discovery, portfolios, valuation, monitoring, Research, Countries, Market briefs, Watchlists, election news, incidents, results, candidates, polling units, election alerts, API-key management and account security.
+Authenticated product areas include Deals, Investors, Companies and company governance, company briefs, Markets and multi-asset investment discovery, portfolios, valuation, monitoring, Research, Countries, Market briefs, Watchlists, election news, incidents, results, candidates, polling units, election alerts, API-key management and account security.
 
 Legacy /app/... URLs redirect to current short routes. Access is determined by middleware and endpoint-level authorization, not by the route name alone.
 
