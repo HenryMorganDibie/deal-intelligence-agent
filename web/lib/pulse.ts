@@ -6,6 +6,7 @@
  */
 
 import { API_CONFIGURED, apiHeaders, apiUrl } from "./api-base";
+import type { Deal } from "./market";
 export const REVALIDATE = 1800;
 /** Cached API responses are keyed to the deployed commit, so a deploy (such as the monthly backtest
  * commit) never serves numbers fetched before it. */
@@ -89,6 +90,22 @@ export type Pulse = {
     } | null;
   };
 };
+
+/** The homepage deal cards use the same canonical endpoint as the public Deals page. */
+export async function getLatestDeals(limit = 4): Promise<Deal[]> {
+  if (!API_CONFIGURED) return [];
+  try {
+    const resp = await fetch(apiUrl(`/api/deals?limit=${limit}`), {
+      headers: apiHeaders(),
+      next: { revalidate: REVALIDATE },
+    });
+    if (!resp.ok) return [];
+    const payload = (await resp.json()) as { deals?: Deal[] };
+    return Array.isArray(payload.deals) ? payload.deals.filter((deal) => deal.target) : [];
+  } catch {
+    return [];
+  }
+}
 
 export async function getPulse(): Promise<Pulse | null> {
   if (!API_CONFIGURED) return null;
