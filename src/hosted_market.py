@@ -892,7 +892,7 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     profile = await run_in_threadpool(company_profile.build, name, ticker.upper() if ticker else None, country,
                                       deals(), cik, None, listing, None, False)
     profile["valuation"] = market_risk.valuation_view(profile.get("name") or name, deals(), profile)
-    # The company's own website, read by web-harvester in the hourly job: queued here when the site is known.
+    # The company's own website, read by the independent five-minute enrichment worker: queued here when known.
     from src import company_web
     site = (profile.get("identity") or {}).get("website")
     stored = await run_in_threadpool(company_web.request, profile.get("name") or name, site, profile.get("country"),
@@ -900,7 +900,7 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     filing_src = profile.get("governance_source")       # the exchange filing to read the board from, if any
     if stored:
         profile["web"] = {"website": stored.get("website") or (stored.get("facts") or {}).get("website"),
-                          "status": stored.get("status"),
+                          "status": stored.get("status"), "stage": stored.get("stage"),
                           "crawled_at": stored.get("crawled_at"), "facts": stored.get("facts") or None}
         facts = stored.get("facts") or {}
         if not profile.get("governance"):
