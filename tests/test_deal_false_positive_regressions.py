@@ -257,3 +257,27 @@ def test_political_party_chairmanship_handover_is_not_an_acquisition():
         published="2026-11-14",
         africa_source=True,
     ) is None
+
+
+@pytest.mark.parametrize("deal_type,target,headline", [
+    ("fund_raise", "Morocco Aid Fund", "Amid Ceuta Dispute, Spain Backs €26 Million Boost to Morocco Aid Fund in EU 2027 Budget"),
+    ("equity_funding", "BRIDGE Initiative", "Ethiopia Backs Country-Led Climate Investment Drive at Launch of COP31’s BRIDGE Initiative"),
+    ("equity_funding", "Pacific Nations", "Pacific Nations Secure Over $200m for Climate Resilience, Lead Adaptation Efforts"),
+    ("equity_funding", "Dangote", "Dangote Raises Africa Investment Ambition to $70bn, Plans 10,000MW Power Intervention"),
+    ("equity_funding", "African Mineral Processing", "China Invests $16.3 Billion in African Mineral Processing"),
+    ("equity_funding", "Old Mutual", "Old Mutual raises SEED prize pool to N$650 000"),
+    ("equity_funding", "Undisclosed women-led businesses", "FSD Africa, UK commit $335,000 to boost investment in Nigerian women-led businesses"),
+])
+def test_public_programmes_ambitions_and_broad_beneficiary_groups_are_not_deals(deal_type, target, headline):
+    assert _deals.not_a_deal(headline, target, deal_type)
+
+
+def test_real_company_and_fund_transactions_survive_new_public_programme_gates():
+    keep = [
+        ("debt_financing", "Jindal Power", "Jindal Power gets $470 million loan for Botswana project"),
+        ("acquisition", "Misr Hytech", "UPL's Advanta to acquire Egypt's Misr Hytech, eyes bigger Africa play"),
+        ("fund_raise", "AI Africa Fund", "Enza Capital reaches first close of $60m AI Africa Fund"),
+        ("debt_financing", "Yoco", "SA Fintech Yoco Snags $100m Private Credit Facility to Scale SME Lending"),
+    ]
+    for deal_type, target, headline in keep:
+        assert _deals.not_a_deal(headline, target, deal_type) is None, headline
