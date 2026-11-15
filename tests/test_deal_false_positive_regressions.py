@@ -1,3 +1,5 @@
+import pytest
+
 from src.engines.deals import extract_deal
 
 
