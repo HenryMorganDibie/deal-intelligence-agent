@@ -281,3 +281,21 @@ def test_real_company_and_fund_transactions_survive_new_public_programme_gates()
     ]
     for deal_type, target, headline in keep:
         assert _deals.not_a_deal(headline, target, deal_type) is None, headline
+
+
+@pytest.mark.parametrize("headline,target", [
+    ("Kenafric launches $10M fund to scale Africa's consumer startups", "Kenafric"),
+    ("New Wind Ventures launches $100m Africa fund with Qatar's MBK Holding in Abidjan", "New Wind Ventures"),
+    ("Nithio launches $150M debt fund for African e-mobility fleets", "Nithio"),
+    ("NSIA launches $300m distributed energy fund", "NSIA"),
+])
+def test_fund_target_announcements_without_a_close_are_not_fundraises(headline, target):
+    assert _deals.not_a_deal(headline, target, "fund_raise")
+
+
+def test_fund_first_close_remains_a_fundraise():
+    assert _deals.not_a_deal(
+        "Enza Capital reaches $21m first close for AI Africa Fund",
+        "Enza Capital",
+        "fund_raise",
+    ) is None
