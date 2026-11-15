@@ -69,11 +69,10 @@ begin
   next_status := case when p_status = 'failed' and
                             (select attempts from public.company_web where name_key = p_name_key) < 3
                       then 'queued' else p_status end;
-  next_stage := coalesce(p_stage, case
-    when next_status = 'queued' then 'queued'
+  next_stage := case when next_status = 'queued' then 'queued' else coalesce(p_stage, case
     when next_status = 'done' then 'completed'
     when next_status = 'failed' then 'failed'
-    else 'fetching_pages' end);
+    else 'fetching_pages' end) end;
   if next_stage not in ('queued', 'finding_website', 'fetching_pages', 'verifying', 'completed', 'failed') then
     raise exception 'invalid company enrichment stage';
   end if;
