@@ -1,17 +1,14 @@
-name: Company website enrichment
+name: company-web-enrichment
 
-# Company profiles enqueue work immediately; this worker drains the queue independently
-# of election ingestion. A bounded batch of sites is processed on each five-minute run.
 on:
-  # Bootstrap the worker on the first main-branch workflow update as well as on its
-  # recurring schedule. This gives us a real runner execution to verify the setup.
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - ".github/workflows/company-web-enrichment.yml"
-  schedule:
-    - cron: "2,7,12,17,22,27,32,37,42,47,52,57 * * * *"
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -20,26 +17,28 @@ concurrency:
   group: company-website-enrichment
   cancel-in-progress: false
 
-env:
-  SUPABASE_URL: https://ygvpormskihofvgntldo.supabase.co
-  SUPABASE_PUBLISHABLE_KEY: sb_publishable_oEqYxYLm60MdGk5JA-QfgQ_6z7uSozn
-  DEAL_INTEL_APP_URL: https://deal-intelligence.app
-  DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
-  GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-  OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
-  OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-  OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
-  TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
-
 jobs:
   enrich:
+    name: Enrich queued company websites
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      SUPABASE_URL: https://ygvpormskihofvgntldo.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_oEqYxYLm60MdGk5JA-QfgQ_6z7uSozn
+      DEAL_INTEL_APP_URL: https://deal-intelligence.app
+      DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out Deal Intelligence
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: pip
@@ -51,7 +50,8 @@ jobs:
           path: ~/.cache/deal-intel-venv
           key: company-python-${{ runner.os }}-3.13-${{ hashFiles('requirements.txt') }}
 
-      - name: Install API dependencies when the environment cache is cold
+      - name: Install API dependencies when cache is cold
+        shell: bash
         run: |
           set -euo pipefail
           if [ ! -x "$HOME/.cache/deal-intel-venv/bin/python" ]; then
@@ -63,6 +63,7 @@ jobs:
 
       - name: Prepare queued company sites
         id: prepare
+        shell: bash
         run: |
           set -euo pipefail
           status=0
@@ -73,18 +74,22 @@ jobs:
             echo "targets=0" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if [ "$status" != "0" ]; then exit "$status"; fi
+          if [ "$status" != "0" ]; then
+            exit "$status"
+          fi
           echo "sites=$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$RUNNER_TEMP/companies.json")" >> "$GITHUB_OUTPUT"
           echo "targets=$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1])).get("targets", [])))' "$RUNNER_TEMP/company-crawl.json")" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
+      - name: Check out web-harvester
         if: steps.prepare.outputs.targets != '0'
+        uses: actions/checkout@v4
         with:
           repository: HenryMorganDibie/web-harvester
           path: web-harvester
 
-      - uses: actions/setup-go@v5
+      - name: Set up Go
         if: steps.prepare.outputs.targets != '0'
+        uses: actions/setup-go@v5
         with:
           go-version-file: web-harvester/go.mod
           cache-dependency-path: web-harvester/go.sum
@@ -101,6 +106,7 @@ jobs:
 
       - name: Build crawler
         if: steps.prepare.outputs.targets != '0'
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.cache/deal-intel-web-harvester"
@@ -111,6 +117,7 @@ jobs:
       - name: Restore browser renderer when cache is cold
         if: steps.prepare.outputs.targets != '0'
         id: browser
+        shell: bash
         run: |
           set -euo pipefail
           DRIVER="$HOME/.cache/ms-playwright-go/1.60.0/node"
@@ -131,12 +138,14 @@ jobs:
         if: steps.prepare.outputs.targets != '0'
         env:
           HARVESTER_RENDER: ${{ steps.browser.outputs.render }}
+        shell: bash
         run: |
           set -euo pipefail
           "$HOME/.cache/deal-intel-web-harvester/crawl" -config "$RUNNER_TEMP/company-crawl.json" -i-have-reviewed-tos
 
-      - name: Install OCR only when a queued filing or discovered annual report needs it
+      - name: Install OCR only when a queued filing or annual report needs it
         if: steps.prepare.outputs.sites != '0'
+        shell: bash
         run: |
           if python - "$RUNNER_TEMP/companies.json" "$RUNNER_TEMP/company-pages.jsonl" <<'PY'
           import json, re, sys
