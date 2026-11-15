@@ -247,19 +247,11 @@ def crawl_config(output_path: str, limit: int = SITES_PER_RUN) -> tuple[dict, li
     """A web-harvester crawl config for the queued sites, and the companies it covers."""
     from src import hosted_market as hm
     from src.engines.election_news import USER_AGENT
-    r = hm._rpc_sync("company_web_take", {"p_limit": limit}, 15)
+    r = hm._rpc_sync("company_web_take", {"p_limit": limit, "p_search_enabled": bool(os.environ.get("TAVILY_API_KEY"))}, 15)
     companies = r.json() if r.status_code == 200 and isinstance(r.json(), list) else []
     searches = 0
     for c in companies:                 # no website known: look for the official one (licensed search API)
-        if not c.get("website") and searches < SEARCHES_PER_RUN and os.environ.get("TAVILY_API_KEY"):
-            try:
-                claim = hm._rpc_sync("company_web_search_claim", {}, 10)
-                allowed = claim.status_code == 200 and claim.json() is True
-            except Exception as e:
-                log.info("company web: search budget unavailable: %s", e)
-                allowed = False
-            if not allowed:
-                continue
+        if not c.get("website") and searches < SEARCHES_PER_RUN and c.get("search_allowed"):
             searches += 1
             found = search_website(c["name"])
             if found:
