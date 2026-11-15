@@ -120,7 +120,7 @@ jobs:
           report = any(
               isinstance(url, str)
               and url.lower().endswith(".pdf")
-              and re.search(r"(annual|integrated)[\\W_]*(report|financial[\\W_]*statements?|results)", url, re.I)
+              and re.search(r"(annual|integrated)[\W_]*(report|financial[\W_]*statements?|results)", url, re.I)
               for page in pages for url in (page.get("links") or [])
           )
           raise SystemExit(0 if filing or report else 1)
