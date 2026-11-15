@@ -92,3 +92,24 @@ begin
                                     'crawled_at', crawled_at, 'facts', facts)
             from public.company_web where name_key = p_name_key);
 end; $$;
+
+-- Keep Tavily's paid/free search usage bounded even though the worker now runs every five minutes.
+create table if not exists public.company_web_search_budget (
+  id smallint primary key check (id = 1),
+  last_search_at timestamptz
+);
+insert into public.company_web_search_budget (id, last_search_at)
+values (1, null) on conflict (id) do nothing;
+alter table public.company_web_search_budget enable row level security;
+revoke all on public.company_web_search_budget from public, anon, authenticated;
+
+create or replace function public.company_web_search_claim(secret text)
+returns boolean language plpgsql security definer set search_path = '' as $$
+begin
+  perform private.check_secret(secret);
+  update public.company_web_search_budget
+     set last_search_at = now()
+   where id = 1
+     and (last_search_at is null or last_search_at < now() - interval '1 hour');
+  return found;
+end; $$;
