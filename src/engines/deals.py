@@ -2111,11 +2111,22 @@ _INVESTMENT_OPPORTUNITY = re.compile(
 )
 
 
+# A headline that reports a completed transaction, or a court case, is not a solicitation even when it also says
+# "seeks capital" ("raises $20m as it seeks fresh capital for expansion"; "courts block investment").
+_COMPLETED_OR_LEGAL = re.compile(
+    r"(?i)\b(?:raises?|raised|secures?|secured|closes?|closed|acquires?|acquired|completes?|completed|bags?|lands?|"
+    r"nets?|injects?|invested|commits?|committed|backs|backed|lawsuit|suit|injunction|ruling|rules|ruled|orders?|"
+    r"blocks?|halts?)\b")
+
+
 def is_investment_opportunity(deal: dict) -> bool:
     """Identify proposed investment solicitations without treating them as completed transactions."""
     if deal.get("record_type") == "investment_opportunity":
         return True
-    return bool(_INVESTMENT_OPPORTUNITY.search(str(deal.get("headline") or "")))
+    if deal.get("record_type") == "transaction":
+        return False
+    headline = str(deal.get("headline") or "")
+    return bool(_INVESTMENT_OPPORTUNITY.search(headline)) and not _COMPLETED_OR_LEGAL.search(headline)
 
 
 def is_visible(deal: dict) -> bool:

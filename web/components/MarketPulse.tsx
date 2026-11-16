@@ -51,7 +51,7 @@ export function MarketPulse({ pulse, latestDeals, compact = false }: {
             <div className="flex items-center justify-between border-b hairline px-5 py-3">
               <div>
                 <h3 className="h3">Latest deals</h3>
-                <p className="mt-1 text-xs text-[color:var(--muted)]">Newest-first, with a small reader-interest adjustment.</p>
+                <p className="mt-1 text-xs text-[color:var(--muted)]">Newest first, with a small adjustment for what readers open most.</p>
               </div>
               <a href="/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">Full feed <ArrowRight /></a>
             </div>
@@ -122,7 +122,7 @@ export function MarketPulse({ pulse, latestDeals, compact = false }: {
               <div className="flex items-center justify-between border-b hairline px-6 py-4">
                 <div>
                   <h3 className="h3">Latest deals</h3>
-                  <p className="mt-1 text-xs text-[color:var(--muted)]">Freshness-led, with a limited reader-interest signal.</p>
+                  <p className="mt-1 text-xs text-[color:var(--muted)]">Newest first, with a small adjustment for what readers open most.</p>
                 </div>
                 <a href="/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">
                   All {count(deals.total)} <ArrowRight />

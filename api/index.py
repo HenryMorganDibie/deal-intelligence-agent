@@ -375,8 +375,9 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
         from src.hosted_market import company as get_company_profile
         # Use the same cached profile route as the Companies workspace, including its
         # existing website-enrichment and governance hand-off.
+        # Every parameter is passed: called directly, FastAPI's Query(...) defaults are not replaced by None.
         profile = await get_company_profile(
-            name=body.company, ticker=body.ticker, country=body.country,
+            name=body.company, ticker=body.ticker, country=body.country, cik=None, exchange=None, symbol=None,
         )
         brief_json["company_intelligence"] = {
             "identity": profile.get("identity"),

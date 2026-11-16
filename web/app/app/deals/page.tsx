@@ -78,10 +78,16 @@ export default function DealsPage() {
   return (
     <Container className="py-10 lg:py-14">
       <PageHeader eyebrow={view === "deals" ? "Deals" : "Investment opportunities"} title={view === "deals" ? "Private equity, venture, debt and M&A across Africa." : "Proposed investments seeking capital or strategic partners."}>
+        {view === "deals" ? (<>
         Transactions extracted daily from African business and private-capital publications in English, French and
         Portuguese, with every source linked. Amounts are as reported, converted to US dollars at the year&apos;s official
         rate. History runs from 2010; earlier years are thinner and back-filled records are kept only when an African
         market and a transaction are both stated. Undisclosed deals that no one reports cannot appear.
+        </>) : (<>
+          Announcements of companies, governments and projects seeking investors or strategic partners, kept apart from
+          completed transactions: they carry no committed amount and never count in deal totals or market statistics.
+          Every source is linked.
+        </>)}
       </PageHeader>
 
       <div className="mb-6 flex flex-wrap gap-2" role="tablist" aria-label="Market records">
@@ -152,9 +158,9 @@ export default function DealsPage() {
           </div>
           <div className="mt-6">
             {rows.length ? <>{view === "deals" ? <DealRows deals={rows} /> :
-              <div className="divide-y divide-white/[0.06] border-y hairline">{rows.map((item) => <article key={item.id} className="py-5">
+              <div className="divide-y divide-[color:var(--line)] border-y hairline">{rows.map((item) => <article key={item.id} className="py-5">
                 <div className="flex flex-wrap items-center gap-2 text-xs text-[color:var(--muted)]">
-                  <span className="rounded-full border border-white/20 px-2 py-1">Proposed investment</span>
+                  <span className="rounded-full border hairline px-2 py-1">Proposed investment</span>
                   <span>{item.opportunity_status ?? "Under discussion"}</span><span>{item.country ?? "Pan-African"}</span><span>{item.announced ?? ""}</span>
                 </div>
                 <h2 className="mt-2 font-medium">{item.opportunity_title ?? item.headline}</h2>
