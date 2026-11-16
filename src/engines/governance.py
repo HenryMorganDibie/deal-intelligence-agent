@@ -145,7 +145,25 @@ def _other_board(text: str, company: Optional[str]) -> bool:
     ours = {w for w in re.findall(r"[a-z0-9]+", company.lower()) if w not in _ENTITY_WORDS}
     # The company's own board is headed with its own name; any other word ("Fund Managers", "GTBank") is another
     # entity, a subsidiary, even when it shares the group name (Guaranty Trust Fund Managers Limited).
-    return bool(theirs) and not theirs <= ours
+    words = re.findall(r"[a-z0-9]+", company.lower())
+    return bool(theirs) and not all(w in ours or _abbreviates(w, words) for w in theirs)
+
+
+def _abbreviates(token: str, words: list[str]) -> bool:
+    """The token is built from the starts of the company's words, in order, some words skipped: "gtco" from
+    Guaranty Trust (Holding) Company. "gtbank" is not: no word of the name starts with "bank"."""
+    if len(token) < 3:
+        return False
+
+    def match(t: str, i: int, used: int) -> bool:
+        if not t:
+            return used >= 2
+        for j in range(i, len(words)):
+            for k in range(min(len(t), len(words[j])), 0, -1):
+                if words[j][:k] == t[:k] and match(t[k:], j + 1, used + 1):
+                    return True
+        return False
+    return match(token, 0, 0)
 
 
 def _score(key: str, text: str, company: Optional[str] = None) -> float:
@@ -241,8 +259,8 @@ def _name_on_page(name: str, page: str) -> bool:
 _GENERIC_HOLDER = re.compile(r"(?i)^\s*(the\s+)?((general|other|foreign|local|retail|institutional|individual|minority)\s+)*"
                              r"(public|investors?|shareholders?|others?|free\s+float|minorit(y|ies)|individuals?)"
                              r"(\s+(investors?|shareholders?|holders?))?\s*$|"
-                             r"^\s*(institutionnels?|fonds|flottant|public|personnel|salari[ée]s|divers|autres|"
-                             r"actionnaires)\b[\w\s,&'’-]{0,40}$")
+                             r"^\s*((institutionnels?|fonds|flottant|personnel|salari[ée]s|divers|autres|actionnaires|"
+                             r"investisseurs|et|le|la|les|du|des|grand|public)\s*[,&]?\s*)+$")
 _TITLES = {"mr", "mrs", "ms", "dr", "chief", "alhaji", "prof", "sir", "dame", "amb", "engr", "monsieur", "madame",
            "mademoiselle", "mme", "mlle", "me"}
 

@@ -67,6 +67,8 @@ def clean_filters(raw: Optional[dict]) -> dict:
         if not isinstance(vals, list) or len(vals) > 40 or not all(isinstance(v, str) and 0 < len(v) <= 60 for v in vals):
             raise HTTPException(400, f"{key} must be a list of up to 40 names.")
         out[key] = [v.strip() for v in vals]
+    if raw.get("white_label"):
+        out["white_label"] = True       # messages without the product's name or links, for forwarding to clients
     return out
 
 
@@ -186,10 +188,13 @@ async def _email(sub: dict, stories: list[dict]) -> bool:
 
 def _payload(sub: dict, stories: list[dict]) -> dict:
     items = [_alert_item(s) for s in stories]
-    wl = {"id": sub["id"], "name": sub["name"], "button": "API documentation", "kind_label": "election alert"}
+    # A white-label alert carries no product name or link: it may be forwarded to the subscriber's own clients.
+    white = bool((sub.get("filters") or {}).get("white_label"))
+    wl = {"id": sub["id"], "name": sub["name"], "button": "API documentation", "kind_label": "election alert",
+          "white_label": white}
     generic = {"subscription": {"id": str(sub["id"]), "name": sub["name"]}, "type": "election_alert",
                "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "stories": items}
-    return chat_formats.payload(sub["webhook_url"], wl, items, DOCS, generic)
+    return chat_formats.payload(sub["webhook_url"], wl, items, None if white else DOCS, generic)
 
 
 async def _send_all(subs: list[dict], stories: list[dict]) -> dict:

@@ -27,6 +27,11 @@ ACCENT = 0x0D7A5F
 _TEAMS_HOSTS = (".webhook.office.com", ".logic.azure.com", ".powerplatform.com", ".powerautomate.com")
 
 
+def _brand(wl: dict) -> Optional[str]:
+    """The name shown on a message; None for an unbranded (white-label) alert."""
+    return None if wl.get("white_label") else BRAND
+
+
 def destination(url: Optional[str]) -> str:
     """slack, teams, discord, google_chat or json."""
     if not url:
@@ -106,10 +111,14 @@ def slack(wl: dict, alerts: list[dict], link: str) -> dict:
         head = f"*<{a['url']}|{title}>*" if a.get("url") else f"*{title}*"
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": f"{head}\n{_slack_escape(facts(a))}"}})
     more = len(alerts) - MAX_SHOWN
-    blocks.append({"type": "actions", "elements": [{"type": "button", "url": link, "style": "primary",
-                                                     "text": {"type": "plain_text", "text":
-                                                              f"{wl.get('button') or 'Open watchlist'}{f' ({more} more)' if more > 0 else ''}"}}]})
-    blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": f"{BRAND} {wl.get('kind_label') or 'watchlist alert'}"}]})
+    if link:
+        blocks.append({"type": "actions", "elements": [{"type": "button", "url": link, "style": "primary",
+                                                         "text": {"type": "plain_text", "text":
+                                                                  f"{wl.get('button') or 'Open watchlist'}{f' ({more} more)' if more > 0 else ''}"}}]})
+    elif more > 0:
+        blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": f"and {more} more"}]})
+    if _brand(wl):
+        blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": f"{_brand(wl)} {wl.get('kind_label') or 'watchlist alert'}"}]})
     return {"text": summary_line(wl, alerts), "blocks": blocks, "unfurl_links": False}
 
 
@@ -126,7 +135,8 @@ def teams(wl: dict, alerts: list[dict], link: str) -> dict:
     more = len(alerts) - MAX_SHOWN
     card = {"$schema": "http://adaptivecards.io/schemas/adaptive-card.json", "type": "AdaptiveCard", "version": "1.4",
             "body": body, "actions": [{"type": "Action.OpenUrl", "url": link,
-                                       "title": f"{wl.get('button') or 'Open watchlist'}{f' ({more} more)' if more > 0 else ''}"}]}
+                                       "title": f"{wl.get('button') or 'Open watchlist'}{f' ({more} more)' if more > 0 else ''}"}]
+            if link else []}
     return {"type": "message", "attachments": [{"contentType": "application/vnd.microsoft.card.adaptive",
                                                  "contentUrl": None, "content": card}]}
 
@@ -140,8 +150,11 @@ def discord(wl: dict, alerts: list[dict], link: str) -> dict:
             e["url"] = a["url"]
         embeds.append(e)
     more = len(alerts) - MAX_SHOWN
-    content = f"**{summary_line(wl, alerts)}**\n<{link}>" + (f" ({more} more)" if more > 0 else "")
-    return {"username": BRAND, "content": content[:1900], "embeds": embeds, "allowed_mentions": {"parse": []}}
+    content = f"**{summary_line(wl, alerts)}**" + (f"\n<{link}>" if link else "") + (f" ({more} more)" if more > 0 else "")
+    out = {"content": content[:1900], "embeds": embeds, "allowed_mentions": {"parse": []}}
+    if _brand(wl):
+        out["username"] = _brand(wl)
+    return out
 
 
 # ── Google Chat ──
@@ -152,7 +165,10 @@ def google_chat(wl: dict, alerts: list[dict], link: str) -> dict:
         lines.append(f"• <{a['url']}|{title}>" if a.get("url") else f"• {title}")
         lines.append(f"   {facts(a)}")
     more = len(alerts) - MAX_SHOWN
-    lines.append(f"<{link}|{wl.get('button') or 'Open watchlist'}{f' ({more} more)' if more > 0 else ''}>")
+    if link:
+        lines.append(f"<{link}|{wl.get('button') or 'Open watchlist'}{f' ({more} more)' if more > 0 else ''}>")
+    elif more > 0:
+        lines.append(f"and {more} more")
     return {"text": "\n".join(lines)}
 
 

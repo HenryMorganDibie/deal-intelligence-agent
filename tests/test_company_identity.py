@@ -301,6 +301,7 @@ def test_subsidiary_boards_are_not_the_company_board():
     assert g._other_board(sub, "Guaranty Trust Holding Company Plc")
     assert not g._other_board(own, "Guaranty Trust Holding Company Plc")
     assert g._other_board("Board of Directors - GTBank Limited\n", "Guaranty Trust Holding Company Plc")
+    assert not g._other_board("Board of Directors - GTCO Plc\n", "Guaranty Trust Holding Company Plc")
 
 
 def test_board_and_holder_clean_up():
@@ -314,3 +315,5 @@ def test_board_and_holder_clean_up():
     assert g._key("Monsieur Alioune NDIAYE") == g._key("Alioune Ndiaye")
     assert g._GENERIC_HOLDER.search("Institutionnels et fonds") and g._GENERIC_HOLDER.search("public investors")
     assert not g._GENERIC_HOLDER.search("Orange MEA")
+    assert not g._GENERIC_HOLDER.search("Public Investment Corporation")
+    assert g._GENERIC_HOLDER.search("Grand public")

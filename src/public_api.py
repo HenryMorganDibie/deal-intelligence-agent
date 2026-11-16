@@ -584,7 +584,7 @@ class ElectionAlertBody(BaseModel):
 async def create_election_alert(body: ElectionAlertBody, request: Request, response: Response) -> dict:
     """Push election incidents (or, on Team and above, all coverage) matching filters to a Slack, Teams, Discord,
     Google Chat or JSON webhook as they are collected. Pro 2 alerts, Team 5, Institutional 25; messages uncapped. filters: kind (incidents | news), min_severity, states, lgas, incident_types, candidates,
-    parties, topics."""
+    parties, topics; white_label (true) sends messages without the product's name or links."""
     from src import election_alerts
     owner, plan = await _account(request, response)
 
