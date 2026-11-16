@@ -229,7 +229,7 @@ export function BriefView({ brief, resultId }: { brief: Brief; resultId?: string
           <div>
             <h2 id="company-intelligence-title" className="eyebrow">Company intelligence</h2>
             <p className="mt-2 text-sm text-[color:var(--muted)]">
-              Profile context from the Companies data pipeline, separate from the signal engine's historical confirmation scores.
+              Profile context from the Companies data pipeline, separate from the signal engine&apos;s historical confirmation scores.
             </p>
           </div>
           {brief.company_intelligence.status === "unavailable" ? (
