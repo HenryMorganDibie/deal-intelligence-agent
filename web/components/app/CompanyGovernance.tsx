@@ -14,7 +14,7 @@ export type Governance = {
 type WebPerson = { name: string; role?: string; page: number };
 export type WebFacts = {
   registered_office?: string; office_page?: number; phone?: string; phone_page?: number; email?: string; email_page?: number;
-  founded?: string; founded_page?: number; board?: WebPerson[]; management?: WebPerson[];
+  founded?: string; founded_page?: number; board?: WebPerson[]; management?: WebPerson[]; origin?: string;
   subsidiaries?: { name: string; country?: string; percent?: number; page: number }[];
   pages?: { n: number; url: string; title: string }[];
 };
@@ -97,7 +97,7 @@ export function CompanyGovernance({ identity, governance: g, country, web }: { i
           {board.length > 0 && (
             <Section title={`Board of directors · ${board.length}`} note={!g?.board?.length && id.source ? `Names: ${id.source}` : undefined}>
               <table className="w-full text-left text-[0.8125rem]">
-                <tbody className="divide-y divide-white/[0.07] border-y hairline">
+                <tbody className="divide-y divide-[color:var(--line)] border-y hairline">
                   {board.map((b) => (
                     <tr key={b.name}>
                       <td className="py-2 pr-3 text-[color:var(--text)]">{b.name}</td>
@@ -112,7 +112,7 @@ export function CompanyGovernance({ identity, governance: g, country, web }: { i
           {officers.length > 0 && (
             <Section title="Executives" note={id.source ? `Source: ${id.source}` : undefined}>
               <table className="w-full text-left text-[0.8125rem]">
-                <tbody className="divide-y divide-white/[0.07] border-y hairline">
+                <tbody className="divide-y divide-[color:var(--line)] border-y hairline">
                   {officers.map((o) => (
                     <tr key={o.name + o.title}>
                       <td className="py-2 pr-3 text-[color:var(--text)]">{o.name}</td>
@@ -144,7 +144,7 @@ export function CompanyGovernance({ identity, governance: g, country, web }: { i
           {g.shareholders && g.shareholders.length > 0 && (
             <Section title="Substantial shareholders (5% or more)">
               <table className="w-full text-left text-[0.8125rem]">
-                <tbody className="divide-y divide-white/[0.07] border-y hairline">
+                <tbody className="divide-y divide-[color:var(--line)] border-y hairline">
                   {g.shareholders.map((s) => (
                     <tr key={s.name}>
                       <td className="py-2 pr-3 text-[color:var(--text)]">{s.name}</td>
@@ -159,7 +159,7 @@ export function CompanyGovernance({ identity, governance: g, country, web }: { i
           {g.subsidiaries && g.subsidiaries.length > 0 && (
             <Section title={`Subsidiaries · ${g.subsidiaries.length}`}>
               <table className="w-full text-left text-[0.8125rem]">
-                <tbody className="divide-y divide-white/[0.07] border-y hairline">
+                <tbody className="divide-y divide-[color:var(--line)] border-y hairline">
                   {g.subsidiaries.map((s) => (
                     <tr key={s.name}>
                       <td className="py-2 pr-3 text-[color:var(--text)]">{s.name}</td>
@@ -191,10 +191,10 @@ function WebSection({ web }: { web: Web }) {
   };
   const people = [...(f?.board ?? []).map((p) => ({ ...p, group: "Board" })), ...(f?.management ?? []).map((p) => ({ ...p, group: "Management" }))];
   const contact: [string, string | undefined, number | undefined][] = [
-    ["Head office", f?.registered_office, f?.office_page], ["Phone", f?.phone, f?.phone_page],
+    [f?.origin === "public_sources" ? "Headquarters (as reported)" : "Head office", f?.registered_office, f?.office_page], ["Phone", f?.phone, f?.phone_page],
     ["Email", f?.email, f?.email_page], ["Founded", f?.founded, f?.founded_page]];
   const progress = {
-    queued: "Queued for the next company-enrichment run.",
+    queued: "Read when the profile is opened.",
     finding_website: "Finding the company's official website.",
     fetching_pages: "Fetching the company's About, leadership, board and contact pages.",
     verifying: "Checking extracted facts against their original pages.",
@@ -202,14 +202,16 @@ function WebSection({ web }: { web: Web }) {
     failed: "Company website enrichment could not be completed after retries.",
   } as const;
   return (
-    <Section title="From the company's website"
-      note={f ? <>Read from {host}{web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""} with web-harvester (robots.txt respected). Each fact is on the page linked beside it.</> : undefined}>
+    <Section title={f?.origin === "public_sources" ? "From public sources" : "From the company's website"}
+      note={f ? (f.origin === "public_sources"
+        ? <>The company&apos;s own site does not allow automated reading, so these facts come from public web sources. Each fact appears on the source linked beside it.</>
+        : <>Read from {host}{web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""} (robots.txt respected). Each fact is on the page linked beside it.</>) : undefined}>
       {!f ? (
         <p className="text-[0.8125rem] text-[color:var(--muted)]">
           {!web.website && web.status === "done" ? "No website could be found for this company."
             : web.status === "done" ? `${host} was read${web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""}; its pages gave nothing that could be confirmed.`
             : web.status === "failed" ? (web.website ? `${host} could not be read (its robots.txt, a timeout, or no about, leadership or contact pages).` : "No official company website could be found after repeated discovery attempts.")
-            : `${web.website ? `${host}: ` : ""}${web.stage ? progress[web.stage] : "Queued for the next company-enrichment run (normally within five minutes)."}`}
+            : `${web.website ? `${host}: ` : ""}${web.stage ? progress[web.stage] : "not read yet."}`}
         </p>
       ) : (
         <div className="space-y-5">
@@ -222,7 +224,7 @@ function WebSection({ web }: { web: Web }) {
           )}
           {people.length > 0 && (
             <table className="w-full text-left text-[0.8125rem]">
-              <tbody className="divide-y divide-white/[0.07] border-y hairline">
+              <tbody className="divide-y divide-[color:var(--line)] border-y hairline">
                 {people.map((p) => (
                   <tr key={p.group + p.name}>
                     <td className="py-2 pr-3 text-[color:var(--text)]">{p.name}</td>

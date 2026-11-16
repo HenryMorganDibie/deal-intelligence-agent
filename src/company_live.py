@@ -221,6 +221,43 @@ def search_report(name: str, country_name: Optional[str] = None) -> Optional[str
     return max(found, key=lambda u: (_year(u), -found.index(u))) if found else None
 
 
+def public_pages(name: str, country_name: Optional[str] = None) -> list[dict]:
+    """Search results about the company (its profile, then its leadership), as pages the site reader can read: each
+    result's text with its own address, so every fact keeps the source it was read from. Used when the company's own
+    site refuses automated readers. Two searches (two credits); none without a key."""
+    key = os.environ.get("TAVILY_API_KEY", "").strip()
+    if not key:
+        return []
+    where = f" {country_name}" if country_name else ""
+    queries = (f"{name}{where} company profile founded headquarters founders",
+               f"{name}{where} chief executive leadership team board of directors")
+
+    def one(q: str) -> list[dict]:
+        try:
+            r = httpx.post(company_web.TAVILY, headers={"Authorization": f"Bearer {key}"}, timeout=10,
+                           json={"query": q, "max_results": 6, "search_depth": "basic"})
+            return r.json().get("results", []) if r.status_code == 200 else []
+        except (httpx.HTTPError, ValueError) as e:
+            log.warning("company live: public search failed for %s: %s", name, e)
+            return []
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        rows = [row for batch in pool.map(one, queries) for row in batch]
+    pages, seen = [], set()
+    this_year = int(time.strftime("%Y"))
+    for row in rows:
+        url, text = str(row.get("url") or ""), " ".join(str(row.get("content") or "").split())
+        if not url.startswith("https://") or len(text) < 80 or url in seen:
+            continue
+        # An old document (a year in its address more than a year back) can name people who have since left.
+        years = [int(y) for y in re.findall(r"(?<!\d)(20[0-3]\d)(?!\d)", url)]
+        if years and max(years) < this_year - 1:
+            continue
+        seen.add(url)
+        pages.append({"url": url, "final_url": url, "status_code": 200, "title": str(row.get("title") or "")[:200],
+                      "text": text[:6000], "links": [], "depth": 1})
+    return pages[:10]
+
+
 def _download(url: str, client: httpx.Client) -> Optional[bytes]:
     deadline = time.monotonic() + REPORT_TIMEOUT
     try:
@@ -267,7 +304,18 @@ def read_now(name: str, website: Optional[str] = None, country_name: Optional[st
         robots = _Robots(client)
 
         def site_facts():
-            return company_web.read_site({"name": name, "website": site}, pages, call) if pages else None
+            facts = company_web.read_site({"name": name, "website": site}, pages, call) if pages else None
+            if facts:
+                return facts
+            # The site refused us (a bot challenge) or holds nothing readable: public sources, each fact cited.
+            public = public_pages(name, country_name)
+            facts = company_web.read_site({"name": name, "website": site}, public, call) if public else None
+            if facts:
+                facts["origin"] = "public_sources"
+                for key in ("board", "management"):     # one entry per person across sources
+                    if facts.get(key):
+                        facts[key] = governance.dedupe_board(facts[key])
+            return facts
 
         def report():
             if not (report_url and robots.allowed(report_url)):

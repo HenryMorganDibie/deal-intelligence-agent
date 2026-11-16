@@ -56,3 +56,17 @@ def test_crawl_reads_the_home_page_and_its_company_pages_only():
     assert got[0]["final_url"] == "https://acme.com/"
     assert {p["final_url"] for p in got[1:]} == {"https://acme.com/board-of-directors", "https://acme.com/about-us"}
     assert "https://acme.com/annual-report-2025.pdf" in got[0]["links"]
+
+
+def test_public_sources_skip_old_documents_and_thin_results(monkeypatch):
+    monkeypatch.setenv("TAVILY_API_KEY", "test")
+    year = int(__import__("time").strftime("%Y"))
+    rows = [{"url": "https://en.wikipedia.org/wiki/Acme", "title": "Acme", "content": "Acme was founded in 1990. " * 5},
+            {"url": f"https://acme.com/uploads/{year - 4}/report.pdf", "title": "Old", "content": "Old board list. " * 10},
+            {"url": "https://acme.com/about", "title": "About", "content": "short"}]
+    monkeypatch.setattr(cl.httpx, "post", lambda *a, **k: httpx.Response(200, json={"results": rows}))
+    got = cl.public_pages("Acme Plc")
+    assert [p["url"] for p in got] == ["https://en.wikipedia.org/wiki/Acme"]
+    assert got[0]["status_code"] == 200 and "founded in 1990" in got[0]["text"]
+    monkeypatch.delenv("TAVILY_API_KEY")
+    assert cl.public_pages("Acme Plc") == []
