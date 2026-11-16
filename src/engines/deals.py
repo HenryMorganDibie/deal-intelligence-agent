@@ -2105,9 +2105,9 @@ def same_transaction(a: dict, b: dict) -> bool:
 
 
 _INVESTMENT_OPPORTUNITY = re.compile(
-    r"(?i)\\b(?:investment\\s+opportunit(?:y|ies)|project\\s+seeking\\s+(?:an?\\s+)?investors?|"
-    r"seeking\\s+(?:a\\s+)?strategic\\s+investor|(?:woos|courts|seeks?|seeking|invites?|urges?|calls?\\s+on)"
-    r"\\b.{0,120}\\b(?:invest(?:ment|or|ors)?|capital|funding)\\b)"
+    r"(?i)\b(?:investment\s+opportunit(?:y|ies)|project\s+seeking\s+(?:an?\s+)?investors?|"
+    r"seeking\s+(?:a\s+)?strategic\s+investor|(?:woos|courts|seeks?|seeking|invites?|urges?|calls?\s+on)"
+    r"\b.{0,120}\b(?:invest(?:ment|or|ors)?|capital|funding)\b)"
 )
 
 
