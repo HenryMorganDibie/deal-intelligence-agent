@@ -107,6 +107,22 @@ export async function getLatestDeals(limit = 4): Promise<Deal[]> {
   }
 }
 
+/** Aggregate reader-engagement ranking; separate from the strictly chronological latest feed. */
+export async function getReaderRecommendedDeals(limit = 4): Promise<Deal[]> {
+  if (!API_CONFIGURED) return [];
+  try {
+    const resp = await fetch(apiUrl(`/api/deals?limit=${limit}`), {
+      headers: apiHeaders(),
+      next: { revalidate: REVALIDATE },
+    });
+    if (!resp.ok) return [];
+    const payload = (await resp.json()) as { deals?: Deal[] };
+    return Array.isArray(payload.deals) ? payload.deals.filter((deal) => deal.target) : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getPulse(): Promise<Pulse | null> {
   if (!API_CONFIGURED) return null;
   try {
