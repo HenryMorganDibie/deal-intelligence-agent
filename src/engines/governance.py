@@ -409,6 +409,12 @@ def _percent_near(name: str, percent, page: str, lines_after: int) -> bool:
         window = page[start:].split("\n")[:lines_after + 1 + m.group(0).count("\n")]
         if re.search(num, "\n".join(window)):
             return True
+        # A profile that gives the stake as a labelled figure below a paragraph ("Ownership: 12.76%"): the first
+        # such figure after the name is the holder's own.
+        label = re.search(r"(?i)\b(ownership|shareholding|stake|holding|interest\s+held)\s*[:\-]?\s*(\d{1,3}(?:\.\d+)?)\s?%",
+                          page[m.end():m.end() + 4000])
+        if label and label.group(2) == p:
+            return True
     return False
 
 
@@ -424,6 +430,10 @@ def _page_number(v):
         return int(v)
     if isinstance(v, str):
         m = re.fullmatch(r"\s*\[?\s*(?:p(?:age)?\.?\s*)?(\d{1,4})\s*\]?\s*", v, re.I)
+        if m:
+            return int(m.group(1))
+        # Several pages ("[p 76, 77]", "p 76-77"): the first one; the checker still confirms the fact is there.
+        m = re.fullmatch(r"\s*\[?\s*(?:p(?:ages?)?\.?\s*)?(\d{1,4})\s*(?:[,\-–&]|and)\s*\d{1,4}\s*\]?\s*", v, re.I)
         return int(m.group(1)) if m else v
     return v
 
@@ -431,8 +441,23 @@ def _page_number(v):
 _SCALAR_FACTS = ("rc_number", "registered_office", "company_secretary", "auditor", "registrar", "holding_company")
 
 
-def _normalise_pages(raw: dict) -> dict:
+def _auditor_list(items: list, pages: list[str]) -> Optional[str]:
+    """Joint auditors returned as a list (often with their signing partners): the firms only, joined. A name that
+    the page follows with "Associé" or "Partner" is a signing partner, not a firm."""
+    names = [(i.get("name") if isinstance(i, dict) else i) for i in items]
+    names = [_clean(n) for n in names if isinstance(n, str) and n.strip()]
+    text = "\n".join(pages)
+    firms = [n for n in names if not re.search(rf"(?im)^[ \t]*{re.escape(n)}[ \t]*\n[ \t]*(associ[ée]e?|partner)\b", text)]
+    return " and ".join(firms) if firms else None
+
+
+def _normalise_pages(raw: dict, pages: Optional[list[str]] = None) -> dict:
     raw = dict(raw)
+    if isinstance(raw.get("auditor"), list):
+        first = next((i for i in raw["auditor"] if isinstance(i, dict)), {})
+        raw["auditor"] = _auditor_list(raw["auditor"], pages or [])
+        if first.get("auditor_page") is not None or first.get("page") is not None:
+            raw.setdefault("auditor_page", first.get("auditor_page", first.get("page")))
     for k in _SCALAR_FACTS:             # {"name": "KPMG", "page": 102} as well as "KPMG" with "auditor_page"
         v = raw.get(k)
         if isinstance(v, dict):
@@ -478,7 +503,7 @@ def _normalise_item(item: dict) -> dict:
 
 def verify(raw: dict, pages: list[str], allowed: list[int]) -> dict:
     """Only the facts found on the page they cite (one of the pages that were read)."""
-    raw = _normalise_pages(raw if isinstance(raw, dict) else {})
+    raw = _normalise_pages(raw if isinstance(raw, dict) else {}, [p for n, p in enumerate(pages, 1) if n in allowed])
     ok = lambda n: n in allowed and _page(pages, n) is not None         # noqa: E731
     out: dict = {}
     rc = _clean(str(raw.get("rc_number") or ""))
@@ -547,7 +572,7 @@ def verify(raw: dict, pages: list[str], allowed: list[int]) -> dict:
     for c in raw.get("committees") or []:
         if not (isinstance(c, dict) and isinstance(c.get("name"), str)):
             continue
-        n = find(c.get("page"), lambda t, c=c: _name_on_page(c["name"], t))
+        n = find(c.get("page"), lambda t, c=c: _name_on_page(c["name"], t), "committees")
         if not n:
             continue
         members = [" ".join(m.split()) for m in c.get("members") or []
@@ -556,6 +581,12 @@ def verify(raw: dict, pages: list[str], allowed: list[int]) -> dict:
         # the board's committees); members are only those found on the same page.
         committees.append({"name": _clean(c["name"]), "members": members, "page": n})
     if committees:
+        # The same five or more people listed for several committees is a page where membership is shown by icons
+        # or a grid the text does not keep: the memberships cannot be confirmed, so only the committees are kept.
+        lists = [tuple(sorted(x.lower() for x in c["members"])) for c in committees]
+        for c, members in zip(committees, lists):
+            if len(members) >= 5 and lists.count(members) >= 2:
+                c["members"] = []
         out["committees"] = committees
     for key in ("shareholders", "subsidiaries"):
         rows = []

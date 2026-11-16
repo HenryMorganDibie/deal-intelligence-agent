@@ -333,3 +333,19 @@ def test_joint_auditors_and_signature_pages():
     out = g.verify({"auditor": "Deloitte Senegal and GARECGO", "auditor_page": 1}, [page], [1])
     assert out["auditor"] == "Deloitte Senegal and GARECGO"
     assert "auditor" not in g.verify({"auditor": "Deloitte Senegal and KPMG", "auditor_page": 1}, [page], [1])
+
+
+def test_multi_page_citations_icon_memberships_partners_and_labelled_stakes():
+    from src.engines import governance as g
+    assert g._page_number("[p 76, 77]") == 76 and g._page_number("p 76-77") == 76
+    page = "Committees\nGroup audit committee\nGroup risk committee\n" + "\n".join(f"Director {c}" for c in "ABCDEF")
+    everyone = [f"Director {c}" for c in "ABCDEF"]
+    out = g.verify({"committees": [{"name": "Group audit committee", "members": everyone, "page": 1},
+                                   {"name": "Group risk committee", "members": everyone, "page": 1}]}, [page], [1])
+    assert [c["members"] for c in out["committees"]] == [[], []]
+    sig = "LES COMMISSAIRES AUX COMPTES\nDELOITTE SENEGAL\nTAFSIR IBNOU NDOYE\nASSOCIE\nGARECGO\nEL HADJI GUEYE\nASSOCIE\n"
+    raw = {"auditor": [{"name": "DELOITTE SENEGAL", "auditor_page": 1}, {"name": "TAFSIR IBNOU NDOYE"},
+                       {"name": "GARECGO"}, {"name": "EL HADJI GUEYE"}]}
+    assert g.verify(raw, [sig], [1])["auditor"] == "DELOITTE SENEGAL and GARECGO"
+    profile = "Our Largest Shareholders\nArise B.V\n" + "Arise is an investment company.\n" * 20 + "Ownership: 12.76%\n"
+    assert g._percent_near("Arise B.V", "12.76", profile, 10)
