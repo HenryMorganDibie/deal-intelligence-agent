@@ -828,9 +828,38 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
             )
     else:
         analytical_readout.append("No matching transactions were found for the selected filters and period; no activity trend can be inferred.")
+    update_comparison = None
+    if body.parent_brief_id:
+        try:
+            uuid.UUID(body.parent_brief_id)
+        except ValueError:
+            raise HTTPException(422, "The previous brief identifier is invalid.")
+        async with httpx.AsyncClient(timeout=15) as client:
+            previous_response = await _rpc(client, "get_market_brief", {"p_id": body.parent_brief_id})
+        previous_rows = previous_response.json() if previous_response.status_code == 200 else []
+        if not previous_rows:
+            raise HTTPException(404, "The previous brief could not be found.")
+        previous_report = previous_rows[0].get("report") or {}
+        previous_ids = {str(item.get("id")) for item in previous_report.get("key_transactions", []) if item.get("id")}
+        current_ids = {str(item.get("id")) for item in key_transactions if item.get("id")}
+        new_records = [item for item in key_transactions if item.get("id") and str(item.get("id")) not in previous_ids]
+        update_comparison = {
+            "previous_brief_id": body.parent_brief_id,
+            "previous_generated_at": previous_report.get("generated_at"),
+            "previous_transaction_count": (previous_report.get("metrics") or {}).get("transaction_count", 0),
+            "current_transaction_count": len(selected),
+            "transaction_count_change": len(selected) - int((previous_report.get("metrics") or {}).get("transaction_count", 0)),
+            "new_records": [
+                {"headline": item.get("headline") or item.get("target") or "Transaction",
+                 "announced": item.get("announced"), "url": next((source.get("url") for source in item.get("sources", []) if source.get("url")), None)}
+                for item in new_records[:10]
+            ],
+            "new_record_count": len(new_records),
+        }
     report = {
         "brief_type": "market_deals",
         "parent_brief_id": body.parent_brief_id,
+        "update_comparison": update_comparison,
         "title": f"{country_name or 'Africa'} Deals & M&A Intelligence Brief",
         "audience": body.audience,
         "research_question": focus,

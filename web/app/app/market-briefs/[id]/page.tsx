@@ -16,6 +16,7 @@ type MarketReport = {
   investor_activity?: Array<{ name: string; transaction_count: number }>;
   monthly_activity?: Array<{ month: string; transaction_count: number }>;
   analytical_readout?: string[];
+  update_comparison?: { previous_brief_id?: string; previous_generated_at?: string | null; previous_transaction_count?: number; current_transaction_count?: number; transaction_count_change?: number; new_records?: Array<{headline: string; announced?: string | null; url?: string | null}>; new_record_count?: number };
   filters?: { lookback_days?: number; country?: string | null; sector?: string | null; deal_type?: string | null };
   newsletter_selected_evidence?: Array<{ n?: number; kind?: string; title: string; text?: string; url: string | null; date?: string | null; source?: string | null; source_quality?: string; source_quality_note?: string }>;
   advisory_signals: Array<{ title: string; rationale: string; evidence_count: number; evidence: Array<{ headline: string; url: string | null }> }>;
@@ -149,7 +150,7 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
         <h1 className="h2 mt-3 text-[2rem] sm:text-[2.75rem]">{row.title}</h1>
         <p className="mt-3 text-sm text-[color:var(--muted)]">{row.report.scope_label}</p>
         <p className="mt-1 text-xs text-[color:var(--dim)]">Announcement window {row.report.period_start} to {row.report.period_end} · Generated {new Date(row.report.generated_at).toLocaleString()}</p>
-        {row.report.parent_brief_id && <p className="mt-2 text-sm"><Link href={"/market-briefs/" + encodeURIComponent(row.report.parent_brief_id)} className="underline underline-offset-4">Open source research brief ↗</Link></p>}
+        {row.report.parent_brief_id && <p className="mt-2 text-sm"><Link href={"/market-briefs/" + encodeURIComponent(row.report.parent_brief_id)} className="underline underline-offset-4">Open previous brief version ↗</Link></p>}
         {row.report.brief_type === "research_newsletter" && <p className="mt-2 text-xs text-[color:var(--muted)]">Draft newsletter · verify every source and claim before external distribution.</p>}
         {row.report.brief_type === "market_deals" && (
           <a
@@ -196,6 +197,23 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
           </section>
         </>}
 
+        {row.report.update_comparison && (
+          <section className="mt-6 panel p-5">
+            <p className="eyebrow">Version comparison</p>
+            <h2 className="h3 mt-2 text-lg">What changed since the previous brief</h2>
+            <p className="mt-2 text-sm text-[color:var(--muted)]">
+              {row.report.update_comparison.new_record_count ?? 0} newly appearing transaction record(s) in the current top-15 evidence list.
+              {" "}Transaction sample size changed by {row.report.update_comparison.transaction_count_change ?? 0}.
+            </p>
+            {(row.report.update_comparison.new_records ?? []).length > 0 && (
+              <ul className="mt-3 space-y-2 text-sm">
+                {row.report.update_comparison.new_records?.map((item, index) => (
+                  <li key={index}>{item.url ? <a className="underline underline-offset-4" href={item.url} target="_blank" rel="noreferrer">{item.headline}</a> : item.headline} <span className="text-[color:var(--muted)]">· {item.announced ?? "Date unknown"}</span></li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
         {row.report.brief_type === "market_deals" && (
           <section className="mt-8 space-y-4">
             <div>
