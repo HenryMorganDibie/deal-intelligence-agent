@@ -372,15 +372,11 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
     # Enrich the signal brief with the same company-profile data used by Companies.
     # Governance extraction and website crawling remain in their existing asynchronous workflow.
     try:
-        from src.engines import company_profile as company_profile_engine
-        from src.hosted_market import deals as market_deals
-        profile = await run_in_threadpool(
-            company_profile_engine.build, body.company, body.ticker, body.country,
-            market_deals(), None, None, None, None, False,
-        )
-        from src.engines import market_risk as market_risk_engine
-        profile["valuation"] = market_risk_engine.valuation_view(
-            profile.get("name") or body.company, market_deals(), profile
+        from src.hosted_market import company as get_company_profile
+        # Use the same cached profile route as the Companies workspace, including its
+        # existing website-enrichment and governance hand-off.
+        profile = await get_company_profile(
+            name=body.company, ticker=body.ticker, country=body.country,
         )
         brief_json["company_intelligence"] = {
             "identity": profile.get("identity"),
