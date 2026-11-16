@@ -1,7 +1,7 @@
 "use client";
 
 import { ErrorNote } from "../../../../components/app/ui";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Container } from "../../../../components/primitives";
@@ -21,6 +21,18 @@ export default function NewMarketBriefPage() {
   const [researchQuestion, setResearchQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [parentBriefId, setParentBriefId] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("lookback_days")) setLookback(params.get("lookback_days") || "30");
+    if (params.has("country")) setCountry(params.get("country") || "");
+    if (params.has("sector")) setSector(params.get("sector") || "");
+    if (params.has("deal_type")) setDealType(params.get("deal_type") || "");
+    if (params.has("audience")) setAudience(params.get("audience") || "Investment banking analyst");
+    if (params.has("question")) setResearchQuestion(params.get("question") || "");
+    if (params.has("parent_brief_id")) setParentBriefId(params.get("parent_brief_id") || "");
+  }, []);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -35,6 +47,7 @@ export default function NewMarketBriefPage() {
         ...(dealType ? { deal_type: dealType } : {}),
         audience,
         ...(researchQuestion.trim() ? { research_question: researchQuestion.trim() } : {}),
+        ...(parentBriefId ? { parent_brief_id: parentBriefId } : {}),
       });
       router.push("/market-briefs/" + encodeURIComponent(result.id));
     } catch (err) {
@@ -47,7 +60,8 @@ export default function NewMarketBriefPage() {
     <Container className="max-w-3xl py-10 lg:py-14">
       <Link href="/briefs" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">← All briefs</Link>
       <p className="eyebrow mt-8">New market brief</p>
-      <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">Deals &amp; M&amp;A intelligence</h1>
+      <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">{parentBriefId ? "Update market intelligence" : "Deals &amp; M&amp;A intelligence"}</h1>
+      {parentBriefId && <p className="mt-2 text-sm text-[color:var(--muted)]">A new version will be saved and linked to the previous brief. The original report will remain unchanged.</p>}
       <p className="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
         Build an analyst-ready brief from Deal Intelligence records plus live web research. The LLM synthesizes numbered evidence,
         links sources, and separates reported facts from interpretation. Company analysis remains available separately.

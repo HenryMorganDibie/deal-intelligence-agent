@@ -13,6 +13,10 @@ type MarketReport = {
   brief_type: string; title: string; audience: string; period_start: string; period_end: string; generated_at: string;
   scope_label: string; metrics: { transaction_count: number; disclosed_value_count: number; disclosed_value_usd_label: string; countries_represented: number };
   key_transactions: Array<Record<string, any>>; comparables: Array<Record<string, any>>; observed_patterns: string[];
+  investor_activity?: Array<{ name: string; transaction_count: number }>;
+  monthly_activity?: Array<{ month: string; transaction_count: number }>;
+  analytical_readout?: string[];
+  filters?: { lookback_days?: number; country?: string | null; sector?: string | null; deal_type?: string | null };
   newsletter_selected_evidence?: Array<{ n?: number; kind?: string; title: string; text?: string; url: string | null; date?: string | null; source?: string | null; source_quality?: string; source_quality_note?: string }>;
   advisory_signals: Array<{ title: string; rationale: string; evidence_count: number; evidence: Array<{ headline: string; url: string | null }> }>;
   methodology: string; coverage_note: string; markdown: string;
@@ -147,6 +151,22 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
         <p className="mt-1 text-xs text-[color:var(--dim)]">Announcement window {row.report.period_start} to {row.report.period_end} · Generated {new Date(row.report.generated_at).toLocaleString()}</p>
         {row.report.parent_brief_id && <p className="mt-2 text-sm"><Link href={"/market-briefs/" + encodeURIComponent(row.report.parent_brief_id)} className="underline underline-offset-4">Open source research brief ↗</Link></p>}
         {row.report.brief_type === "research_newsletter" && <p className="mt-2 text-xs text-[color:var(--muted)]">Draft newsletter · verify every source and claim before external distribution.</p>}
+        {row.report.brief_type === "market_deals" && (
+          <a
+            className="btn btn-ghost mt-3 inline-flex h-9 items-center px-3 text-sm"
+            href={"/market-briefs/new?" + new URLSearchParams({
+              lookback_days: String(row.report.filters?.lookback_days ?? 30),
+              country: row.report.filters?.country ?? "",
+              sector: row.report.filters?.sector ?? "",
+              deal_type: row.report.filters?.deal_type ?? "",
+              audience: row.report.audience,
+              question: row.report.research_question ?? "",
+              parent_brief_id: row.id,
+            }).toString()}
+          >
+            Update this brief
+          </a>
+        )}
 
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
@@ -176,6 +196,32 @@ export default function MarketBriefPage({ params }: { params: { id: string } }) 
           </section>
         </>}
 
+        {row.report.brief_type === "market_deals" && (
+          <section className="mt-8 space-y-4">
+            <div>
+              <p className="eyebrow">Market analysis</p>
+              <h2 className="h3 mt-2 text-xl">What the selected evidence indicates</h2>
+              <p className="mt-2 text-sm text-[color:var(--muted)]">Descriptive analysis of the records in this brief. Party extraction and database coverage are incomplete, so these figures are not market-share estimates.</p>
+            </div>
+            {row.report.analytical_readout?.length ? <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed">{row.report.analytical_readout.map((item, index) => <li key={index}>{item}</li>)}</ul> : null}
+            <div className="grid gap-3 md:grid-cols-2">
+              <section className="panel p-4">
+                <h3 className="text-sm font-semibold">Investor and counterparty activity</h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {(row.report.investor_activity ?? []).map((item) => <li key={item.name} className="flex justify-between gap-3"><span>{item.name}</span><span className="text-[color:var(--muted)]">{item.transaction_count}</span></li>)}
+                </ul>
+                {!(row.report.investor_activity ?? []).length && <p className="mt-2 text-xs text-[color:var(--muted)]">No parties resolved in the selected records.</p>}
+              </section>
+              <section className="panel p-4">
+                <h3 className="text-sm font-semibold">Monthly transaction activity</h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {(row.report.monthly_activity ?? []).map((item) => <li key={item.month} className="flex justify-between gap-3"><span>{item.month}</span><span className="text-[color:var(--muted)]">{item.transaction_count}</span></li>)}
+                </ul>
+                {!(row.report.monthly_activity ?? []).length && <p className="mt-2 text-xs text-[color:var(--muted)]">No dated monthly observations available.</p>}
+              </section>
+            </div>
+          </section>
+        )}
         <section className="mt-10 panel p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>

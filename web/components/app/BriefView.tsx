@@ -224,6 +224,72 @@ export function BriefView({ brief, resultId }: { brief: Brief; resultId?: string
         </section>
       )}
 
+      {brief.company_intelligence && (
+        <section aria-labelledby="company-intelligence-title" className="space-y-4">
+          <div>
+            <h2 id="company-intelligence-title" className="eyebrow">Company intelligence</h2>
+            <p className="mt-2 text-sm text-[color:var(--muted)]">
+              Profile context from the Companies data pipeline, separate from the signal engine's historical confirmation scores.
+            </p>
+          </div>
+          {brief.company_intelligence.status === "unavailable" ? (
+            <p className="panel p-4 text-sm text-[color:var(--muted)]">{brief.company_intelligence.coverage_note}</p>
+          ) : (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  ["Private-market records", brief.company_intelligence.private_markets?.deal_count],
+                  ["Total reported funding", brief.company_intelligence.private_markets?.total_raised_usd],
+                  ["Equity funding", brief.company_intelligence.private_markets?.equity_raised_usd],
+                  ["Debt financing", brief.company_intelligence.private_markets?.debt_raised_usd],
+                ].map(([name, value]) => (
+                  <div key={String(name)} className="panel p-4">
+                    <p className="text-xs text-[color:var(--muted)]">{name}</p>
+                    <p className="mt-2 text-lg font-semibold">{value == null ? "Not available" : typeof value === "number" && String(name).includes("funding") || typeof value === "number" && String(name).includes("financing") ? "$" + value.toLocaleString() : String(value)}</p>
+                  </div>
+                ))}
+              </div>
+              {brief.company_intelligence.financials && (
+                <div className="panel p-5">
+                  <h3 className="font-semibold">Financial statement data</h3>
+                  <p className="mt-1 text-xs text-[color:var(--muted)]">
+                    {String(brief.company_intelligence.financials.source ?? "Source not specified")} · {String(brief.company_intelligence.financials.period ?? "Period not specified")}
+                  </p>
+                  {brief.company_intelligence.financials.items && typeof brief.company_intelligence.financials.items === "object" && (
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {Object.entries(brief.company_intelligence.financials.items as Record<string, {current?: number; prior?: number}>).slice(0, 12).map(([key, value]) => (
+                        <div key={key} className="border-b hairline pb-2">
+                          <p className="text-xs capitalize text-[color:var(--muted)]">{key.replace(/_/g, " ")}</p>
+                          <p className="mt-1 text-sm font-medium">{value?.current == null ? "Not reported" : Number(value.current).toLocaleString()}</p>
+                          {value?.prior != null && <p className="text-xs text-[color:var(--dim)]">Prior: {Number(value.prior).toLocaleString()}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {brief.company_intelligence.private_markets?.deals?.length ? (
+                <div className="panel p-5">
+                  <h3 className="font-semibold">Funding and transaction history</h3>
+                  <ul className="mt-3 divide-y divide-white/[0.07]">
+                    {brief.company_intelligence.private_markets.deals.slice(0, 8).map((deal, index) => (
+                      <li key={String(deal.id ?? index)} className="py-3">
+                        <p className="text-sm font-medium">{String(deal.headline ?? deal.target ?? deal.deal_type ?? "Transaction")}</p>
+                        <p className="mt-1 text-xs text-[color:var(--muted)]">{String(deal.announced ?? "Date unknown")} · {String(deal.deal_type ?? "Type unknown")} · {deal.amount_usd == null ? "Amount undisclosed" : "$" + Number(deal.amount_usd).toLocaleString()}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {brief.company_intelligence.sources?.length ? (
+                <p className="text-xs text-[color:var(--dim)]">Profile sources: {brief.company_intelligence.sources.join(" · ")}</p>
+              ) : null}
+              {brief.company_intelligence.financials_note && <p className="text-xs text-[color:var(--dim)]">{brief.company_intelligence.financials_note}</p>}
+            </>
+          )}
+        </section>
+      )}
+
       <section aria-labelledby="signals-title">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="signals-title" className="eyebrow">

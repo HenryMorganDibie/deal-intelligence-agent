@@ -55,8 +55,27 @@ export type CompoundSignal = {
 export type RiskFactor = { factor: string; impact: string; likelihood: Severity; mitigation?: string | null };
 export type KeyMetric = { name: string; value: string; period: string; interpretation: string };
 
+export type CompanyIntelligence = {
+  status?: string;
+  coverage_note?: string;
+  identity?: Record<string, unknown> | null;
+  financials?: Record<string, unknown> | null;
+  financials_note?: string | null;
+  market?: Record<string, unknown> | null;
+  multiples?: Record<string, unknown> | null;
+  private_markets?: {
+    deal_count?: number; total_raised_usd?: number | null; equity_raised_usd?: number | null;
+    debt_raised_usd?: number | null; investors_and_lenders?: string[];
+    deals?: Array<Record<string, unknown>>;
+  } | null;
+  valuation?: Record<string, unknown> | null;
+  governance?: Record<string, unknown> | null;
+  sources?: string[];
+};
+
 export type Brief = {
   company_name: string;
+  company_intelligence?: CompanyIntelligence | null;
   ticker?: string | null;
   brief_date: string;
   analyst_model: string;

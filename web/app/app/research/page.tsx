@@ -496,7 +496,13 @@ export default function ResearchPage() {
               </li>
             ))}
           </ol>
-          <ResultFeedback resultType="research" resultId={result.result_id} />
+          <div className="flex flex-wrap items-center gap-3">
+            <a className="btn btn-primary inline-flex h-9 items-center px-3 text-sm" href={"/market-briefs/new?question=" + encodeURIComponent(question.trim())}>
+              Turn this research into a brief
+            </a>
+            <span className="text-xs text-[color:var(--muted)]">Carries your research question into the structured market-brief workflow.</span>
+          </div>
+                    <ResultFeedback resultType="research" resultId={result.result_id} />
         </section>
       )}
     </Container>
