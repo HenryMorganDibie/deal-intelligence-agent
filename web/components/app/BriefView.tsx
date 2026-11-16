@@ -255,7 +255,7 @@ export function BriefView({ brief, resultId }: { brief: Brief; resultId?: string
                   <p className="mt-1 text-xs text-[color:var(--muted)]">
                     {String(brief.company_intelligence.financials.source ?? "Source not specified")} · {String(brief.company_intelligence.financials.period ?? "Period not specified")}
                   </p>
-                  {brief.company_intelligence.financials.items && typeof brief.company_intelligence.financials.items === "object" && (
+                  {Boolean(brief.company_intelligence.financials.items) && typeof brief.company_intelligence.financials.items === "object" && (
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       {Object.entries(brief.company_intelligence.financials.items as Record<string, {current?: number; prior?: number}>).slice(0, 12).map(([key, value]) => (
                         <div key={key} className="border-b hairline pb-2">
@@ -291,7 +291,7 @@ export function BriefView({ brief, resultId }: { brief: Brief; resultId?: string
                         <li key={index} className="border-b hairline pb-2">
                           <span className="font-medium">{String(mark.headline ?? mark.deal_type ?? "Transaction")}</span>
                           <span className="ml-2 text-[color:var(--muted)]">{String(mark.announced ?? "Date unknown")} · {mark.valuation_usd == null ? "Valuation not disclosed" : "$" + Number(mark.valuation_usd).toLocaleString()}</span>
-                          {mark.basis && <span className="ml-2 text-xs text-[color:var(--dim)]">({String(mark.basis)})</span>}
+                          {mark.basis != null && <span className="ml-2 text-xs text-[color:var(--dim)]">({String(mark.basis)})</span>}
                         </li>
                       ))}
                     </ul>
