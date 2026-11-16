@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-15T22:49:42.184834+00:00",
+  "updated_at": "2026-11-16T02:15:38.887606+00:00",
   "current": {
     "company": "Standard Bank",
     "company_url": "/companies?name=Standard%20Bank",
@@ -10,7 +10,7 @@
     "country": "ZA",
     "sector": "banking",
     "announced": "2026-11-13",
-    "score": 52.47,
+    "score": 51.04,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
@@ -30,9 +30,9 @@
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-11-08",
-    "period_end": "2026-11-14",
-    "selected_at": "2026-11-15T22:49:42.183470+00:00",
+    "period_start": "2026-11-09",
+    "period_end": "2026-11-15",
+    "selected_at": "2026-11-16T02:15:38.886657+00:00",
     "selection_version": 5,
     "companies": [
       {
@@ -44,7 +44,7 @@
         "country": "ZA",
         "sector": "banking",
         "announced": "2026-11-13",
-        "score": 52.47,
+        "score": 51.04,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +64,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-08",
-        "period_end": "2026-11-14",
-        "selected_at": "2026-11-15T22:49:42.183470+00:00",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-15",
+        "selected_at": "2026-11-16T02:15:38.886657+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +78,7 @@
         "country": "NG",
         "sector": "banking",
         "announced": "2026-11-11",
-        "score": 49.16,
+        "score": 47.74,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +98,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-08",
-        "period_end": "2026-11-14",
-        "selected_at": "2026-11-15T22:49:42.183470+00:00",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-15",
+        "selected_at": "2026-11-16T02:15:38.886657+00:00",
         "selection_version": 5
       },
       {
@@ -112,7 +112,7 @@
         "country": "GH",
         "sector": "logistics",
         "announced": "2026-11-10",
-        "score": 48.19,
+        "score": 46.76,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-08",
-        "period_end": "2026-11-14",
-        "selected_at": "2026-11-15T22:49:42.183470+00:00",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-15",
+        "selected_at": "2026-11-16T02:15:38.886657+00:00",
         "selection_version": 5
       },
       {
@@ -146,7 +146,7 @@
         "country": "BW",
         "sector": null,
         "announced": "2026-11-09",
-        "score": 52.61,
+        "score": 51.18,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -166,9 +166,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-08",
-        "period_end": "2026-11-14",
-        "selected_at": "2026-11-15T22:49:42.183470+00:00",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-15",
+        "selected_at": "2026-11-16T02:15:38.886657+00:00",
         "selection_version": 5
       },
       {
@@ -180,7 +180,7 @@
         "country": "NG",
         "sector": "energy",
         "announced": "2026-11-09",
-        "score": 50.06,
+        "score": 48.63,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -200,9 +200,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-08",
-        "period_end": "2026-11-14",
-        "selected_at": "2026-11-15T22:49:42.183470+00:00",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-15",
+        "selected_at": "2026-11-16T02:15:38.886657+00:00",
         "selection_version": 5
       }
     ],
@@ -4608,6 +4608,213 @@
           "period_start": "2026-11-08",
           "period_end": "2026-11-14",
           "selected_at": "2026-11-15T22:49:42.183470+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": []
+    },
+    {
+      "company": "Standard Bank",
+      "company_url": "/companies?name=Standard%20Bank",
+      "headline": "Standard Bank hit with a R17 million fine and administrative sanctions",
+      "deal_type": "regulatory_action",
+      "amount_usd": null,
+      "country": "ZA",
+      "sector": "banking",
+      "announced": "2026-11-13",
+      "score": 51.04,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: regulatory action",
+        "Event rule confidence: 0.93",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Daily Investor",
+          "title": "Standard Bank hit with a R17 million fine and administrative sanctions",
+          "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPSkFSbDdFVGxpOV9mRGdLOE0xanNLb1otMzRMOXlpdS1Qc2RvQW83NEEwUFNhUnR5N3BTVkhOMWl1UC1tTE5YUEE3N0N4a2s0SzFhR1psMXNjRExuVjhKTGJxbk5qNmx5Um8xb0hMeDctY0w3bUZHbmZoMmJFYTBJWWJveVgyenpaT0xjSmlvSDJlekwxZl96Ujg2U1RBZHVtaGxFWkc4ZVNpcWF2V3h0UDR3?oc=5",
+          "date": "2026-11-13",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-09",
+      "period_end": "2026-11-15",
+      "selected_at": "2026-11-16T02:15:38.886657+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "Standard Bank",
+          "company_url": "/companies?name=Standard%20Bank",
+          "headline": "Standard Bank hit with a R17 million fine and administrative sanctions",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ZA",
+          "sector": "banking",
+          "announced": "2026-11-13",
+          "score": 51.04,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Daily Investor",
+              "title": "Standard Bank hit with a R17 million fine and administrative sanctions",
+              "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPSkFSbDdFVGxpOV9mRGdLOE0xanNLb1otMzRMOXlpdS1Qc2RvQW83NEEwUFNhUnR5N3BTVkhOMWl1UC1tTE5YUEE3N0N4a2s0SzFhR1psMXNjRExuVjhKTGJxbk5qNmx5Um8xb0hMeDctY0w3bUZHbmZoMmJFYTBJWWJveVgyenpaT0xjSmlvSDJlekwxZl96Ujg2U1RBZHVtaGxFWkc4ZVNpcWF2V3h0UDR3?oc=5",
+              "date": "2026-11-13",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-09",
+          "period_end": "2026-11-15",
+          "selected_at": "2026-11-16T02:15:38.886657+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Alternative Bank",
+          "company_url": "/companies?name=Alternative%20Bank",
+          "headline": "Sterling HoldCo Subsidiary, Alternative Bank appoints Gul Khan as MD/CEO",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "banking",
+          "announced": "2026-11-11",
+          "score": 47.74,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "Sterling HoldCo Subsidiary, Alternative Bank appoints Gul Khan as MD/CEO",
+              "url": "https://nairametrics.com/2026/11/11/sterling-holdco-subsidiary-alt-bank-appoints-gul-khan-as-md-ceo/",
+              "date": "2026-11-11",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-09",
+          "period_end": "2026-11-15",
+          "selected_at": "2026-11-16T02:15:38.886657+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "OSP",
+          "company_url": "/companies?name=OSP",
+          "headline": "Service Passport Scandal: OSP Opens Probe Into Alleged Sales",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "GH",
+          "sector": "logistics",
+          "announced": "2026-11-10",
+          "score": 46.76,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Modern Ghana",
+              "title": "Service Passport Scandal: OSP Opens Probe Into Alleged Sales",
+              "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE9GQ3c0QTM3XzRCLWRETHhuWHhKWVVTcVgwYjRlSk1DR1BONjF2Z2otSm5udDlRanhxcEt2bUhVRllwOVE2SWdqUWp2bUc4X0VBMGd5LXctSjVicGxVc0FhbHoyWdIBXEFVX3lxTE1velFsLWYxbFdIRlRMMzVsTHpna1ZsdjJCZXhQenM3Szc5T0xHeEhscXFLRElwZHl6bE5FS2FMTGhxV3lKaE9OckxPNi1OaHdUNzdHdGNEX1pfazZY?oc=5",
+              "date": "2026-11-10",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-09",
+          "period_end": "2026-11-15",
+          "selected_at": "2026-11-16T02:15:38.886657+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "De Beers",
+          "company_url": "/companies?name=De%20Beers",
+          "headline": "Botswana to double De Beers holding under Anglo stake sale, president says",
+          "deal_type": "insider_activity",
+          "amount_usd": null,
+          "country": "BW",
+          "sector": null,
+          "announced": "2026-11-09",
+          "score": 51.18,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.85",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Reuters",
+              "title": "Botswana to double De Beers holding under Anglo stake sale, president says",
+              "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNLTZmUHRjbG0yQ3FkNGc2aTNDUG8wSXhIVkQtWDVNNlZtTEoxMmNfc2RUQjVJbGZSd2lrclMxaTBtc2ZJeXJwQ1cwa0tkOTlmZGtteFplbjZDbGdsY1F6SXBFc3luNWlJSUhpR1NnYmVualItRU5HQ3ZKWENNYzRqZnVESnVXc2ZXX3YtV3V4aHlqZmQ5S2ltWkIwbjFQbHowSlkxZWYyZ2tLZFRacXc?oc=5",
+              "date": "2026-11-09",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-09",
+          "period_end": "2026-11-15",
+          "selected_at": "2026-11-16T02:15:38.886657+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Solad Power Group",
+          "company_url": "/companies?name=Solad%20Power%20Group",
+          "headline": "Yewande Olagbende Joins Solad Power Group Board of Directors",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "energy",
+          "announced": "2026-11-09",
+          "score": 48.63,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "ThisDay Nigeria",
+              "title": "Yewande Olagbende Joins Solad Power Group Board of Directors",
+              "url": "https://www.thisdaylive.com/2026/11/10/yewande-olagbende-joins-solad-power-group-board-of-directors/",
+              "date": "2026-11-09",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-09",
+          "period_end": "2026-11-15",
+          "selected_at": "2026-11-16T02:15:38.886657+00:00",
           "selection_version": 5
         }
       ],
