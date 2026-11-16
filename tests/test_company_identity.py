@@ -292,3 +292,25 @@ def test_diagram_percentages_are_not_attached_to_a_subsidiary():
     assert not g._percent_near("OXL Global B.V.", "100", page, 0)
     assert g._percent_near("Prosus N.V.", "43.42", page, 0)
     assert g._percent_near("Dangote Cement Senegal S.A", "89.99", page, 0)
+
+
+def test_subsidiary_boards_are_not_the_company_board():
+    from src.engines import governance as g
+    sub = "Board of Directors - Guaranty Trust Fund Managers Limited\nMr. A. Bee\nChairman\n"
+    own = "Board of Directors - Guaranty Trust Holding Company Plc\nMrs. C. N. Echeozo\nChairman\n"
+    assert g._other_board(sub, "Guaranty Trust Holding Company Plc")
+    assert not g._other_board(own, "Guaranty Trust Holding Company Plc")
+    assert g._other_board("Board of Directors - GTBank Limited\n", "Guaranty Trust Holding Company Plc")
+
+
+def test_board_and_holder_clean_up():
+    from src.engines import governance as g
+    board = [{"name": n} for n in ("Mrs. C. N. Echeozo", "Mrs. C. Echeozo", "Monsieur Alioune NDIAYE",
+                                   "Cabinet Secretary, The National Treasury", "Cabinet Secretary, The National",
+                                   "Aliko Dangote", "Mariya Aliko Dangote")]
+    names = [d["name"] for d in g.dedupe_board(board)]
+    assert "Mrs. C. Echeozo" not in names and "Mrs. C. N. Echeozo" in names
+    assert "Aliko Dangote" in names and "Mariya Aliko Dangote" in names
+    assert g._key("Monsieur Alioune NDIAYE") == g._key("Alioune Ndiaye")
+    assert g._GENERIC_HOLDER.search("Institutionnels et fonds") and g._GENERIC_HOLDER.search("public investors")
+    assert not g._GENERIC_HOLDER.search("Orange MEA")
