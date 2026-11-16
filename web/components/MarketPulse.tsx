@@ -12,8 +12,8 @@ function dealCountry(code: string | null): string | null {
 }
 
 /** The current month of African deal flow and this week's corporate events, re-rendered from the live feed. */
-export function MarketPulse({ pulse, latestDeals, recommendedDeals = [], compact = false }: {
-  pulse: Pulse | null; latestDeals: Deal[]; recommendedDeals?: Deal[]; compact?: boolean;
+export function MarketPulse({ pulse, latestDeals, compact = false }: {
+  pulse: Pulse | null; latestDeals: Deal[]; compact?: boolean;
 }) {
   if (!pulse || !pulse.deals.total) return null;
   const { deals, events } = pulse;
@@ -49,7 +49,10 @@ export function MarketPulse({ pulse, latestDeals, recommendedDeals = [], compact
           </dl>
           <div className="panel mt-3 overflow-hidden">
             <div className="flex items-center justify-between border-b hairline px-5 py-3">
-              <h3 className="h3">Latest reported deals</h3>
+              <div>
+                <h3 className="h3">Latest deals</h3>
+                <p className="mt-1 text-xs text-[color:var(--muted)]">Freshness-led, with a limited reader-interest signal.</p>
+              </div>
               <a href="/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">Full feed <ArrowRight /></a>
             </div>
             <ul>
@@ -68,34 +71,7 @@ export function MarketPulse({ pulse, latestDeals, recommendedDeals = [], compact
               ))}
             </ul>
           </div>
-          {recommendedDeals.length > 0 && (
-            <div className="panel mt-4 overflow-hidden">
-              <div className="border-b hairline px-5 py-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="h3">Reader-informed picks</h3>
-                  <span className="eyebrow">Behavioural ranking</span>
-                </div>
-                <p className="mt-1 max-w-2xl text-xs leading-relaxed text-[color:var(--muted)]">
-                  Deals receiving meaningful reader engagement, with small-sample activity smoothed and the ranking influence capped. Engagement is a discovery signal, not evidence of deal quality or verification.
-                </p>
-              </div>
-              <ul>
-                {recommendedDeals.slice(0, 4).map((d, i) => (
-                  <li key={d.id} className={i ? "border-t hairline" : ""}>
-                    <a href={`/deals/${d.id}`} className="grid gap-2 px-5 py-4 transition-colors hover:bg-white/[0.02] sm:grid-cols-[1fr_auto] sm:items-center sm:gap-6">
-                      <div className="min-w-0">
-                        <p className="text-[0.9375rem] font-medium">{d.headline}</p>
-                        <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
-                          {label(DEAL_TYPE, d.deal_type)}{dealCountry(d.country) ? ` · ${dealCountry(d.country)}` : ""}{d.sources?.[0]?.publisher ? ` · ${d.sources[0].publisher}` : ""}{d.announced ? ` · ${shortDate(d.announced)}` : ""}
-                        </p>
-                      </div>
-                      <span className="kbd text-[0.8125rem] text-verified">{usd(d.amount_usd)}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+
         </Container>
       </Section>
     );
@@ -144,7 +120,10 @@ export function MarketPulse({ pulse, latestDeals, recommendedDeals = [], compact
           <Reveal>
             <div className="panel h-full overflow-hidden">
               <div className="flex items-center justify-between border-b hairline px-6 py-4">
-                <h3 className="h3">Latest deals</h3>
+                <div>
+                  <h3 className="h3">Latest deals</h3>
+                  <p className="mt-1 text-xs text-[color:var(--muted)]">Freshness-led, with a limited reader-interest signal.</p>
+                </div>
                 <a href="/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">
                   All {count(deals.total)} <ArrowRight />
                 </a>
