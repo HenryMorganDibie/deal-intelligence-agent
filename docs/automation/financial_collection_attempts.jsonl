@@ -692,3 +692,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MEDVIEWAIR.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MEGM.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MEI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MENA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MEPA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MFI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MFINEG.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MFL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MFPC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MFSC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MHB.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MHOT.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MIC.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MICH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MILS.CA"}

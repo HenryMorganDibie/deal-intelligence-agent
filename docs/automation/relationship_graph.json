@@ -1491,6 +1491,30 @@
     "african development fund": {
       "name": "African Development Fund",
       "kind": "organization"
+    },
+    "nairobi exchange": {
+      "name": "Nairobi Exchange",
+      "kind": "organization"
+    },
+    "ngx": {
+      "name": "NGX",
+      "kind": "organization"
+    },
+    "sunbeth": {
+      "name": "Sunbeth",
+      "kind": "organization"
+    },
+    "livestock feeds": {
+      "name": "Livestock Feeds",
+      "kind": "organization"
+    },
+    "standard chartered bank uganda": {
+      "name": "Standard Chartered Bank Uganda",
+      "kind": "organization"
+    },
+    "group": {
+      "name": "Group",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -4869,6 +4893,11 @@
           "title": "Absa completes acquisition of Standard Chartered Uganda",
           "publisher": "Africa Business Communities",
           "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOOGE4d2VSVS1PNUJpUmo1SGlRQllSTk5NQm1Gb3FVVGJXWFRTR09EQkRKN1Y2TUFFVl9FU0lBYXdVMXVZUXM1WGF5enU0aUdfV3B1aXhaMl9xWTB3REIzVXhURUlTVWpBNVpHOC0yaGF5VkNiRkF6VjlmWGYwS3JYVjBxMzZueWpIQ2U1SU43UTBfanN4RWEwbm5UeTZxM1Y4dm45Sw?oc=5"
+        },
+        {
+          "title": "Absa completes acquisition of Standard Chartered Uganda retail, wealth business",
+          "publisher": "Pulse Uganda",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxQdXRyZWRfNk52WWdqTVdfSS1leFIwdlUyeDE5THY3NE9NMDZSTkkweW5Ka3pjWmtZN1Izd3FoRjJTdXFfVkNiNGRwWXpjZGRFVjVXSzM5cFBvQkhxZVl0b1hKNVpwWHBZYm5TZi1COWFsTUwtaXE3SGFnOGpJcGVmbEdnQjFyZW5RUkFOMkFYRE4yNTlRYXNzNFNoVldMY3g2a2tOYk40cjlxUQ?oc=5"
         }
       ]
     },
@@ -5030,6 +5059,26 @@
           "title": "NGX Group acquires stake in Nairobi Securities Exchange to deepen African market links",
           "publisher": "Innovation Village",
           "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPb2I3Z0k0Und6WFA3aVdkakhRbmJpNXp5bDFCUmd1V2VJM3FjWElRbFg5endvR2xOazNyaEdKVFlKVTF1S2JuZ2ljeFFFZTJ1b0VJa3pEQVJoWXRHUTloaXprU1Q3VTcwekpZZDBCU3I4RjZNNTEzVEcyTm55MUUzQmdOY2E3WmZxOU1rSXFTS1lEMlZFSGtKMVN1OHpQWFBoeGRfNFd5RnZ4OURDaFpBbklZeDN2aGg5YXc?oc=5"
+        },
+        {
+          "title": "Nigeria’s NGX Group buys 10 per cent stake in Nairobi Securities Exchange",
+          "publisher": "The Eastleigh Voice",
+          "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNY19PNFZySktDcUUyRy03a0c1WGU5b3lyQWhweGoxOWJnTzZuUDVUZUlkUGRBeVMySmtnWDZBaEtWVDlnMUFlSHRqRENNM0EyZXJ4Mjk5VXB3NHc1TEg3NEgySjB3enhHWGVpVXJ3VFFITUwxcXNDOTItcThqclRuM1ZyWFJmdnkxLUNsQnFpdTFjdGl0UC05b2poRkV3RFVfWWlYZmUtSVZIMTE0WG84eFlkT1JTa1B1ZDRJcG1mUTM?oc=5"
+        },
+        {
+          "title": "NGX Group Acquires 10 Percent Stake in Nairobi Securities Exchange",
+          "publisher": "Head Topics",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNeW1lYUZxaHlBazAzTGtndElvZUtNbVAxUVdUekJ1enJfUE1VOXlZTkdUQ29JQV80aDVYQzJNYUJyT25KTndIOE9IZ0p6RG9pa1J3bDY5dW95SnAxV0hTVHJtWmNQeGdiaWhsMHlqVjFpQ1NFV2ZNd2NLcm5DWlJldnNEdXFreE5GNURDZi14d1lzcXVHSUlKWmdNZ3RNdw?oc=5"
+        },
+        {
+          "title": "NGX Group Acquires 10% Stake in Nairobi Securities Exchange to Expand Beyond Nigeria",
+          "publisher": "Techeconomy",
+          "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPX1RxdVYwUGVkTzN2WEJ1TDJRR1ZwX0Fqbm5ZcGRNb3RVMDZaMFMtMm9wd2VBOG5tQlNRQkxKX1FaNGZfNk1sR0RXOVNORW1TZUZ1YU4zOEhVMmZCZmxXN3FwYWt5VnpuU1h0WVozeVBoZGpjTHJDcy1ja2cxNEFqMGFJUGNBeUMwWWxTUmxfVQ?oc=5"
+        },
+        {
+          "title": "NGX Group acquires 10% stake in Nairobi Securities Exchange, expands African footprint",
+          "publisher": "Technext24.com",
+          "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE5US2tCVFppSjltTndfTmhVd1VYY1R5bWpra2w1dVlnN3JVT1FaT19XazVOOVc0WkYyQjlacHNERVpsRXZKb3lIV1V6WVVXbk0ydHlMN1NjNjZEOFJ2R2V2OGp6ZWhVcFdGOTJ4M21oNGdSa1hxYW9hbWdjdWw?oc=5"
         }
       ]
     },
@@ -5078,6 +5127,11 @@
           "title": "Absa Completes Acquisition of Standard Chartered’s Retail and Wealth Banking Business in Uganda",
           "publisher": "SSBCrack",
           "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQUGp5eF9pYXBxRDY4RzdRN3FrSGIxdllTN2dwWXAzSzhwX3FPaEV0bXhZRXR3eUhBZm8zTFZFLUpicklkTDh1RGJDSVJEWmFXb1BrbV91NExaYjNHSkw3OEFfNEowTlVZVURCVE1hck9CTnR1OThYd0MxUHQxV01aYmEzY2dOWHc4dnd4M18zeWdCMWFfcFNtb2tfVkNpSXFnVVVNRmJfb0NmZU5yNkxya1E2d2VhQjVLdDgySjJ3?oc=5"
+        },
+        {
+          "title": "Absa takes over Standard Chartered’s Uganda business, ending 114-year presence",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQS3JBYzlzdkRTZ2FkQ0RqVmRxOGtqcGt0WW1xeGhhT0lwaHVGcy1ZOEpQVnRJSlpxVHhjS3pEM2N2cG5PSEpWbkI3VEYxeXQ4bjZBdUFzVXR1TngyUWVEN1JHR25TdS0xdTZaWl9PbXpFZ2taZDVJU3k1dnAzSXM0QjVsZjhRUGFmQUVWa055TVEweXI1UHloTnhISFdNeW9fazRnalJvSmNCNnJV?oc=5"
         }
       ]
     },
@@ -5150,7 +5204,77 @@
           "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPYkVhX0R0cldqVTJSY1ZrcDhtOVVINEJuaTdSUWI5dWJMQ3Q0VTBXZ21HNU93aHAtWDZOVm9raWx0RXVQdnFQZnBIVEhpcjhRWTJnXzVOTk90YjFKU1pIVGtuQnUzV0FHZW56ZlBQc1dxY2V6eFQ2VHd5MzlDNlVRZnhScVZ1QlJJdU4xLVlocWYyYnNUdWtnV1Q1U0VkVzFTcURqOXRQTGlac2Jo?oc=5"
         }
       ]
+    },
+    "e65c8480ea5c53b9e65f": {
+      "id": "e65c8480ea5c53b9e65f",
+      "from": "ngx group",
+      "to": "nairobi exchange",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "NGX Group Acquires 10% Equity Stake in Nairobi Exchange",
+          "publisher": "ThisDay Nigeria",
+          "url": "https://www.thisdaylive.com/2026/11/17/ngx-group-acquires-10-equity-stake-in-nairobi-exchange/"
+        }
+      ]
+    },
+    "f1d9d94fa96e9e88ea69": {
+      "id": "f1d9d94fa96e9e88ea69",
+      "from": "ngx",
+      "to": "nairobi securities exchange",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "NGX acquires 10% stake in Nairobi Securities Exchange",
+          "publisher": "The Guardian Nigeria News",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOX210aVlUbTJCYW1UTW9Pcm9FZG5ucXpmWXZMLWtKcFRkVkw5RnhLUmRWdjIxNTBQMl9qczZBaXBhT3VjSVo2UnRqUVlSalhPZlRHXzlDWUxNaWROZEZ4UFBkMXd2TjYyLTFyQWFUWUY1TmI0NWxxY2ptU3c1VTZtWkVtM053TlhRXzJsN0FtTnVNYnUxWTlvTU1iSzRQeGZmQzI1bzhtZw?oc=5"
+        }
+      ]
+    },
+    "0645e579d8f719a4d3c9": {
+      "id": "0645e579d8f719a4d3c9",
+      "from": "sunbeth",
+      "to": "livestock feeds",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "Sunbeth Completes Acquisition Of Controlling Stake In Livestock Feeds",
+          "publisher": "The Whistler Newspaper",
+          "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQVEpxUU9rTHR6SG5YQlRoMEdiWV9sNWtHUjN6NFpVOGJsdzVmMXZ4clAwR3JkNHlCWGlsWDR6Z01EM3ROYVplTktZWUFCVzIxQlU0SVdXUjBjNlpIMjF3endHOHVaeWYzV3FpUGFNc1ZEMFlady1yWGNVaE1tdFlLWThnT0prYm5VWDF1U0dhTVlOQlRDRmU1QQ?oc=5"
+        }
+      ]
+    },
+    "07cf6acce5d70a767505": {
+      "id": "07cf6acce5d70a767505",
+      "from": "absa bank",
+      "to": "standard chartered bank uganda",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "Absa Bank Completes Acquisition of Standard Chartered Bank Uganda",
+          "publisher": "PC Tech Magazine",
+          "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxOX2FpX3hFNHVkVWUyWkRuNmNKRVoyOHVqTUktNkZTaUxkR1BOZlpndl9paU1WUnNCVnFxV1BPS1hiN0NoSi1EejBHT2k1c1NvZ19BT3Z6MHNCTHVEWWM2dEtLM0xxOEFZLWdRUUJPbl8ybkJZRFVRSVZwLUkxMjVjMTJwZUVIeUJqSVcwc1FvU3FCRUk?oc=5"
+        }
+      ]
+    },
+    "c0d176615360157de30e": {
+      "id": "c0d176615360157de30e",
+      "from": "group",
+      "to": "nairobi securities exchange",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "NGX ‌Group acquires 10% stake in Nairobi Securities Exchange",
+          "publisher": "Peoples Gazette Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPWTUxRlM4VVk1X1k2eGt3cm53YVJKcktTTzdHbkRLdFJhd2N6OU1wa0UzdXV5ajhyUkZkQ2ktalFiM1lfSEsyUnpyTE1Dd25pelhwb1VOWU5YTlowU09hUk1oQmtvSnNva0FmQXRBWnBvUTBaTTdSd0ljNTdOc0RnUmFiWTlyLVYwZlE?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-16T13:19:28.750446+00:00"
+  "updated_at": "2026-11-16T23:29:37.384517+00:00"
 }
