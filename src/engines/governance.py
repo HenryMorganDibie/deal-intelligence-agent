@@ -24,23 +24,28 @@ _MAX_PROMPT_CHARS = 26000
 
 _SECTIONS = {
     "corporate": re.compile(r"(?i)corporate\s+information|registered\s+office|company\s+secretary|\bRC\s*(no|number)\b|"
-                            r"registered\s+company\s+number"),
+                            r"registered\s+company\s+number|si[eè]ge\s+social|commissaires?\s+aux\s+comptes|\bRCCM\b|"
+                            r"secr[ée]taire\s+(g[ée]n[ée]ral|du\s+conseil)"),
     "board": re.compile(r"(?i)board\s+of\s+directors|directors\W{0,3}\s+(report|profile)|composition\s+of\s+the\s+board|"
                         r"directors\s+who\s+served|directors\s+and\s+(professional\s+)?advisers|"
                         r"directors\s+and\s+(other\s+)?corporate\s+information|^\s*directors\s*$|"
-                        r"our\s+board|board\s+and\s+management|directors\s+and\s+management"),
-    "committees": re.compile(r"(?i)(audit|risk|remuneration|nomination|governance)[\w ,&]{0,30}\s+committee"),
+                        r"our\s+board|board\s+and\s+management|directors\s+and\s+management|"
+                        r"(non-?\s?executive|executive|independent)\s+directors|conseil\s+d.administration|administrateurs"),
+    "committees": re.compile(r"(?i)(audit|risk|remuneration|nomination|governance)[\w ,&]{0,30}\s+committee|"
+                             r"comit[ée]\s+(d.audit|des?\s+\w+)"),
     "shareholders": re.compile(r"(?i)substantial\s+(interest|shareholding)|major\s+shareholders|holding\s+(5|five)\s*%|"
                                r"shareholding\s+(analysis|structure)|analysis\s+of\s+shareholding|analysis\s+of\s+shareholders|"
-                               r"shareholder\s+spread|top\s+\d+\s+shareholders|"
+                               r"shareholder\s+spread|top\s+\d+\s+shareholders|actionnariat|r[ée]partition\s+du\s+capital|"
+                               r"principaux\s+actionnaires|"
                                r"(5|five)\s*%\s+(and\s+above|or\s+more)|more\s+than\s+(5|five)\s*%"),
-    "subsidiaries": re.compile(r"(?i)(investments?\s+in|list\s+of|principal)\s+subsidiar|subsidiar(y|ies)\s+(undertakings|companies)"),
+    "subsidiaries": re.compile(r"(?i)(investments?\s+in|list\s+of|principal)\s+subsidiar|subsidiar(y|ies)\s+(undertakings|companies)|"
+                               r"filiales"),
 }
 _PER_SECTION = {"corporate": 3, "board": 4, "committees": 3, "shareholders": 3, "subsidiaries": 4}
 # Each group is read in its own pass with its own budget, so one long section cannot crowd out another.
 GROUPS = (("corporate",), ("board",), ("committees",), ("shareholders",), ("subsidiaries",))
 _ROLE = re.compile(r"(?i)\b(chairman|chairperson|non-executive|independent|executive director|managing director|"
-                   r"chief executive|director)\b")
+                   r"chief executive|director|administrat(eur|rice)|pr[ée]sident(e)?|directeur\s+g[ée]n[ée]ral)\b")
 
 SYSTEM = ("You read pages of a company's audited annual financial statements and return governance facts as JSON. "
           "Copy every name, title and figure exactly as printed. Never infer, translate or complete a value; leave out "
@@ -126,7 +131,22 @@ _PRIORITY = ("corporate", "shareholders", "board", "subsidiaries", "committees")
 _PAGE_CHARS = 8000              # a full board or subsidiaries page (Dangote's run to 7,800 characters)
 
 
-def _score(key: str, text: str) -> float:
+_ENTITY_WORDS = {"plc", "limited", "ltd", "group", "holding", "holdings", "company", "the", "of", "and", "co", "sa",
+                 "inc", "pty", "proprietary", "nigeria", "kenya", "bank"}
+
+
+def _other_board(text: str, company: Optional[str]) -> bool:
+    """The page heads the board of another named entity ("Board of Directors - GTBank Limited") that does not share
+    a distinctive word with the company: a subsidiary's board."""
+    m = re.search(r"(?im)^\s*board\s+of\s+directors\s*[-–—:]\s*([^\n]{3,80})$", text or "")
+    if not m or not company:
+        return bool(m and re.search(r"(?i)\b(limited|ltd|plc|bank|s\.?a\.?)\b", m.group(1)) and not company)
+    theirs = {w for w in re.findall(r"[a-z0-9]+", m.group(1).lower()) if w not in _ENTITY_WORDS}
+    ours = {w for w in re.findall(r"[a-z0-9]+", company.lower()) if w not in _ENTITY_WORDS}
+    return bool(theirs) and not (theirs & ours)
+
+
+def _score(key: str, text: str, company: Optional[str] = None) -> float:
     """How strongly a page looks like the place a kind of fact is set out, 0 when it is not."""
     if _is_contents(text):
         return 0
@@ -134,8 +154,10 @@ def _score(key: str, text: str) -> float:
         # The list of subsidiaries carries an ownership percentage on every row; pages that only mention them
         # (the auditor's report, five-year summaries) carry none.
         n = len(_PCT.findall(text))
-        return n if re.search(r"(?i)subsidiar", text) and n >= 3 else 0
-    if not _SECTIONS[key].search(text):
+        return n if re.search(r"(?i)subsidiar|filiale", text) and n >= 3 else 0
+    if key == "board" and _other_board(text, company):
+        return 0                        # "Board of Directors - GTBank Limited": a subsidiary's board, not the company's
+    if not _SECTIONS[key].search(text) and not (key == "board" and len(_ROLE.findall(text)) >= 8):
         return 0
     if key == "board":                  # a list of directors names many people next to their roles
         # A compact list (one director a line, role at the end) is the whole board on one page: it outranks
@@ -160,11 +182,20 @@ def _score(key: str, text: str) -> float:
     return 1 + len(re.findall(r"(?i)committee", text))
 
 
-def section_pages(pages: list[str], key: str) -> list[int]:
+def section_pages(pages: list[str], key: str, company: Optional[str] = None) -> list[int]:
     """1-based numbers of the pages most likely to set out one kind of fact, best first. For shareholders and the
     corporate details the page after each one found is read too: a table often runs on past its heading's page."""
-    scored = sorted(((_score(key, t), i + 1) for i, t in enumerate(pages)), key=lambda x: (-x[0], x[1]))
+    scored = sorted(((_score(key, t, company), i + 1) for i, t in enumerate(pages)), key=lambda x: (-x[0], x[1]))
     best = [n for sc, n in scored if sc > 0][:_PER_SECTION[key]]
+    if key == "board":
+        # Board profiles often run over two pages ("Non-executive directors" after the chairman's page).
+        out = []
+        for n in best:
+            for m in (n, n + 1):
+                if m <= len(pages) and m not in out and (m == n or (len(_ROLE.findall(pages[m - 1])) >= 4
+                                                                   and not _other_board(pages[m - 1], company))):
+                    out.append(m)
+        return out[:_PER_SECTION[key] + 2]
     if key not in ("shareholders", "corporate"):
         return best
     out: list[int] = []
@@ -202,6 +233,9 @@ def _name_on_page(name: str, page: str) -> bool:
     return bool(words) and all(f" {w} " in hay or f" {w}." in hay for w in words)
 
 
+_GENERIC_HOLDER = re.compile(r"(?i)^\s*(the\s+)?((general|other|foreign|local|retail|institutional|individual|minority)\s+)*"
+                             r"(public|investors?|shareholders?|others?|free\s+float|minorit(y|ies)|individuals?)"
+                             r"(\s+(investors?|shareholders?|holders?))?\s*$")
 _TITLES = {"mr", "mrs", "ms", "dr", "chief", "alhaji", "prof", "sir", "dame"}
 
 
@@ -415,6 +449,8 @@ def verify(raw: dict, pages: list[str], allowed: list[int]) -> dict:
                 continue
             if key == "shareholders" and (pct in (None, "") or float(str(pct).replace("%", "")) < 5):
                 continue
+            if key == "shareholders" and _GENERIC_HOLDER.search(r["name"]):
+                continue                        # "public investors", "free float": a category, not a shareholder
             item = {"name": " ".join(r["name"].split()), "page": n}
             if pct not in (None, ""):
                 item["percent"] = float(str(pct).replace("%", ""))
@@ -514,7 +550,7 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
     def run(group: tuple) -> tuple[tuple, dict, list[int]]:
         chosen: list[int] = []
         for key in group:
-            chosen += [n for n in section_pages(pages, key) if n not in chosen]
+            chosen += [n for n in section_pages(pages, key, company) if n not in chosen]
         if not chosen:
             return group, {}, []
         blocks, used = [], []
@@ -579,8 +615,9 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
 _FOCUS = {
     ("corporate",): "In this pass give only rc_number, registered_office, company_secretary, auditor, registrar and "
                     "holding_company (with their pages).\n",
-    ("board",): "In this pass give only board: every current director listed, leaving out anyone marked as "
-                "retired, resigned or deceased, and not skipping anyone listed after them.\n",
+    ("board",): "In this pass give only board: every current director of this company's own board (not the boards of "
+                "its subsidiaries), leaving out anyone marked as retired, resigned or deceased, and not skipping anyone "
+                "listed after them.\n",
     ("committees",): "In this pass give only committees, with their members.\n",
     ("shareholders",): "In this pass give only shareholders: every holder of 5% or more named in the text or in a table "
                        "on these pages, with the latest percentage shown.\n",
@@ -607,11 +644,18 @@ def dedupe_board(board: list) -> list:
         given, surname = split(d.get("name") if isinstance(d, dict) else d)
         if given and not _INITIALS.match(given):
             full[surname] = full.get(surname, 0) + 1
+    def words(name: str) -> set:
+        return set(_phrase(re.sub(r",.*$", "", str(name or ""))).split())
+    all_words = [words(d.get("name") if isinstance(d, dict) else d) for d in board]
     out, seen = [], set()
-    for d in board:
+    for i, d in enumerate(board):
         name = d.get("name") if isinstance(d, dict) else d
         given, surname = split(name)
         if given and _INITIALS.match(given) and full.get(surname) == 1:
+            continue
+        mine = all_words[i]
+        # A single word after titles ("DR. JAMES") is a fragment, not a director's name.
+        if len(mine) < 2:
             continue
         key = re.sub(r"[^a-z0-9]", "", str(name).lower())
         if key and key in seen:
@@ -668,13 +712,15 @@ def combine_reads(reads: list[dict]) -> dict:
     return out
 
 
-_ROLE_LINE = re.compile(r"(?i)^\s*(lead\s+)?(senior\s+)?(independent\s+)?(non-?\s?executive\s+|executive\s+)?"
+_ROLE_LINE = re.compile(r"(?i)^\s*((lead\s+)?(senior\s+)?(deputy\s+)?(independent\s+)?(non-?\s?executive\s+|executive\s+)?"
                         r"(chair(man|person)?|vice[- ]chair(man|person)?|director|chief\s+executive(\s+officer)?|"
-                        r"group\s+managing\s+director|managing\s+director)\b[\w ,&()-]{0,50}$")
+                        r"group\s+managing\s+director|managing\s+director)\b[\w ,&()-]{0,50}|"
+                        r"(independent|non-?\s?executive|senior\s+deputy|deputy)(\s+non-?\s?executive)?\s*)$")
 _NAME_LINE = re.compile(r"^(?:[A-Z][\w'’.-]+|de|du|da|dos|van|von|der|la|le|bin|al)(?:\s+(?:[A-Z][\w'’.-]+|de|du|da|dos|"
-                        r"van|von|der|la|le|bin|al)){1,5}(?:,\s*[A-Z][\w.,\s]{1,20})?\**$")
+                        r"van|von|der|la|le|bin|al)){1,5}(?:,\s*[A-Z][\w.,\s]{1,20})?(?:\s+\d{2})?\**$")
 _NOT_NAME = re.compile(r"(?i)\b(board|committee|report|date|appointment|expertise|contribution|directors?|management|"
-                       r"company|limited|plc|group|annual|governance|chair|executive|independent|our)\b")
+                       r"company|limited|plc|group|annual|governance|chair|chairman|chairperson|chairwoman|executive|independent|"
+                       r"officer|our)\b")
 
 
 def board_from_layout(page: str) -> list[str]:
@@ -683,14 +729,15 @@ def board_from_layout(page: str) -> list[str]:
     lines = [ln.strip() for ln in (page or "").splitlines()]
     names = []
     for i, ln in enumerate(lines):
+        ln = re.sub(r"\s+\d{2}\**$", "", ln)            # an age after the name ("Paul Cook 45")
         bare = re.sub(r",.*$", "", ln).replace("*", "").split()
-        if not _NAME_LINE.match(ln) or _NOT_NAME.search(" ".join(bare)) or any(ch.isdigit() for ch in ln):
-            continue
+        if not _NAME_LINE.match(ln) or _NOT_NAME.search(ln) or any(ch.isdigit() for ch in ln):
+            continue                    # the whole line: "Ernest Ndukwe, OFR Nigerian Chairman" is not a bare name
         # Four or more words with no particle (de, van...) is two names on one line (a signature block).
         if len(bare) >= 4 and not any(w in {"de", "du", "da", "dos", "van", "von", "der", "la", "le", "bin", "al"}
                                       for w in bare):
             continue
-        if any(_ROLE_LINE.match(nxt) for nxt in lines[i + 1:i + 3] if nxt):
+        if any(_ROLE_LINE.match(nxt) for nxt in lines[i + 1:i + 4] if nxt):
             name = re.sub(r"\**$", "", ln).strip()
             if name not in names:
                 names.append(name)

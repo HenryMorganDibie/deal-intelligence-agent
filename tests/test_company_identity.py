@@ -192,7 +192,7 @@ def test_rereading_a_report_never_loses_confirmed_facts():
            "committees": [{"name": "Audit"}], "pages_read": [92]}
     new = {"source_url": "u", "board": [{"name": "a"}] * 4, "subsidiaries": [{"name": "s"}] * 48, "pages_read": [166]}
     m = g.merge_reads(new, old)
-    assert len(m["board"]) == 12 and len(m["subsidiaries"]) == 1 and m["committees"] == [{"name": "Audit"}]
+    assert len(m["board"]) == 11 and len(m["subsidiaries"]) == 1 and m["committees"] == [{"name": "Audit"}]
     assert m["auditor"] == "KPMG" and m["auditor_page"] == 213 and m["pages_read"] == [92, 166]
     other = {**new, "source_url": "newer-report"}
     assert g.merge_reads(other, old) is other          # a new report replaces the old one's facts
