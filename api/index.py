@@ -837,7 +837,6 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
             raise HTTPException(404, "The previous brief could not be found.")
         previous_report = previous_rows[0].get("report") or {}
         previous_ids = {str(item.get("id")) for item in previous_report.get("key_transactions", []) if item.get("id")}
-        current_ids = {str(item.get("id")) for item in key_transactions if item.get("id")}
         new_records = [item for item in key_transactions if item.get("id") and str(item.get("id")) not in previous_ids]
         update_comparison = {
             "previous_brief_id": body.parent_brief_id,
