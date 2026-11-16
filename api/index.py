@@ -24,6 +24,7 @@ from pathlib import Path
 os.environ.setdefault("DEAL_INTEL_DATA_DIR", "/tmp/deal-intel-data")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import asyncio  # noqa: E402
 import hashlib  # noqa: E402
 import json  # noqa: E402
 import logging  # noqa: E402
@@ -379,7 +380,21 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
         profile = await get_company_profile(
             name=body.company, ticker=body.ticker, country=body.country, cik=None, exchange=None, symbol=None,
         )
+        if profile.get("governance_pending"):
+            # Nothing stored yet: read the company's filing, site and annual report now, within a minute.
+            from src.hosted_market import company_governance
+            try:
+                read = await asyncio.wait_for(company_governance(
+                    name=body.company, ticker=body.ticker, country=body.country, cik=None, exchange=None,
+                    symbol=None), timeout=60)
+                if read.get("governance"):
+                    profile = {**profile, "governance": read["governance"]}
+                if read.get("web"):
+                    profile = {**profile, "web": read["web"]}
+            except Exception as exc:                 # the brief goes ahead without it; the profile reads it later
+                log.info("company read during brief skipped for %s: %s", body.company, exc)
         brief_json["company_intelligence"] = {
+            "web": profile.get("web"),
             "identity": profile.get("identity"),
             "financials": profile.get("financials"),
             "financials_note": profile.get("financials_note"),
