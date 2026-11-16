@@ -5,7 +5,7 @@ import { MarketPulse } from "../components/MarketPulse";
 import { Problem } from "../components/Problem";
 import { SiteNav } from "../components/SiteNav";
 import { SourceMarquee } from "../components/SourceMarquee";
-import { getLatestDeals, getMarkets, getPulse, getReaderRecommendedDeals, getShowcase } from "../lib/pulse";
+import { getLatestDeals, getMarkets, getPulse, getShowcase } from "../lib/pulse";
 import { MarketsToday } from "../components/MarketsToday";
 import corporateOfWeekArchive from "../data/corporate-of-week.json";
 import { ArrowRight, Container, Reveal } from "../components/primitives";
@@ -60,8 +60,8 @@ const CAPABILITIES = [
 ];
 
 export default async function LandingPage() {
-  const [pulse, latestDeals, recommendedDeals, showcase, markets] = await Promise.all([
-    getPulse(), getLatestDeals(4), getReaderRecommendedDeals(4), getShowcase(), getMarkets(),
+  const [pulse, latestDeals, showcase, markets] = await Promise.all([
+    getPulse(), getLatestDeals(4), getShowcase(), getMarkets(),
   ]);
   return (
     <div className="relative overflow-x-clip">
@@ -76,7 +76,7 @@ export default async function LandingPage() {
         <Hero pulse={pulse} brief={showcase?.hero ?? null} />
         <SourceMarquee />
         <Problem compact />
-        <MarketPulse pulse={pulse} latestDeals={latestDeals} recommendedDeals={recommendedDeals} compact />
+        <MarketPulse pulse={pulse} latestDeals={latestDeals} compact />
         <MarketsToday data={markets} />
         <section aria-labelledby="corporate-week-title" className="border-t hairline py-14 sm:py-16">
           <Container>
