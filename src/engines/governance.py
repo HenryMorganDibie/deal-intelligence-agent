@@ -97,6 +97,93 @@ def page_texts(data: bytes, max_pages: int = MAX_PAGES) -> list[str]:
 
 
 OCR_MAX_PAGES = 220
+VISION_PAGES = 12                         # pages of a scan transcribed on the spot (within free-tier rate limits)
+VISION_PDF_BYTES = 18 * 1024 * 1024       # a scan sent whole to locate its sections (Gemini's inline limit is 20 MB)
+
+
+def _png(width: int, height: int, gray: bytes, stride: int) -> bytes:
+    """A grayscale PNG from raw 8-bit rows, with the standard library only (no imaging package needed)."""
+    import struct
+    import zlib
+    raw = b"".join(b"\x00" + gray[y * stride:y * stride + width] for y in range(height))
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 0, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw, 6)) + chunk(b"IEND", b""))
+
+
+def _page_png(doc, i: int, scale: float = 2.0) -> bytes:
+    bitmap = doc[i].render(scale=scale, grayscale=True)
+    return _png(bitmap.width, bitmap.height, bytes(bitmap.buffer), bitmap.stride)
+
+
+def _locate_sections(data: bytes, n_pages: int) -> list[int]:
+    """1-based pages of a scanned report that hold the governance sections, from Gemini reading the whole PDF;
+    the first pages when the file is too large to send or no page list comes back."""
+    import base64
+    from src.agents.signal_agent import gemini_vision
+    pages: list[int] = []
+    if len(data) <= VISION_PDF_BYTES:
+        prompt = ("This is a company's annual report. Return only a JSON object mapping each of these sections to "
+                  "the PDF page numbers (1-based position in this file, not the printed page numbers) where it "
+                  "appears: corporate_information (registered office, company secretary, auditors, registrars), "
+                  "board_of_directors (list or profiles of directors), committees, shareholders (shareholding "
+                  "analysis, holders of 5% or more), subsidiaries. Use empty lists for sections not present.")
+        try:
+            raw = _json(gemini_vision([{"inline_data": {"mime_type": "application/pdf",
+                                                         "data": base64.b64encode(data).decode()}},
+                                       {"text": prompt}], max_tokens=2000))
+            for key in ("corporate_information", "board_of_directors", "shareholders", "committees", "subsidiaries"):
+                for v in raw.get(key) or []:
+                    n = _page_number(v)
+                    if isinstance(n, int) and 1 <= n <= n_pages:
+                        for m in (n, n + 1):    # a list often runs onto the next page
+                            if m <= n_pages and m not in pages:
+                                pages.append(m)
+        except Exception as e:
+            log.warning("governance: locating sections in a scan failed: %s", e)
+    if not pages:
+        pages = list(range(1, min(n_pages, VISION_PAGES) + 1))
+    return pages[:VISION_PAGES]
+
+
+def vision_pages(data: bytes) -> Optional[list[str]]:
+    """Text of a scanned report's governance pages, transcribed by Gemini from page images on the spot; the other
+    pages are left empty. None when no Gemini key is set or nothing could be transcribed."""
+    import base64
+    import os
+    if not os.getenv("GEMINI_API_KEY"):
+        return None
+    import pypdfium2 as pdfium
+    from src.agents.signal_agent import gemini_vision
+    doc = pdfium.PdfDocument(data)
+    try:
+        n = len(doc)
+        wanted = _locate_sections(data, n)
+        images = {p: _page_png(doc, p - 1) for p in wanted}
+    finally:
+        doc.close()
+    prompt = ("Transcribe all the text on this page of a company's annual report exactly as printed, line by line, "
+              "including tables (one row per line). Output only the text.")
+
+    retry = ("List every line of text visible on this page image, in reading order, one per line, including names, "
+             "titles, addresses and table rows with their figures.")
+
+    def read(p: int) -> tuple[int, str]:
+        image = {"inline_data": {"mime_type": "image/png", "data": base64.b64encode(images[p]).decode()}}
+        for text in (prompt, retry):          # a model can decline to copy text verbatim; ask again differently
+            try:
+                return p, gemini_vision([image, {"text": text}], max_tokens=6000)
+            except Exception as e:
+                log.warning("governance: transcribing page %s failed: %s", p, e)
+        return p, ""
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        texts = dict(pool.map(read, wanted))
+    if not any(t.strip() for t in texts.values()):
+        return None
+    return [texts.get(i + 1, "") for i in range(n)]
 
 
 def is_scanned(pages: list[str]) -> bool:
@@ -138,7 +225,9 @@ _ENTITY_WORDS = {"plc", "limited", "ltd", "group", "holding", "holdings", "compa
 def _other_board(text: str, company: Optional[str]) -> bool:
     """The page heads the board of another named entity ("Board of Directors - GTBank Limited") that does not share
     a distinctive word with the company: a subsidiary's board."""
-    m = re.search(r"(?im)^\s*board\s+of\s+directors\s*[-–—:]\s*([^\n]{3,80})$", text or "")
+    # The entity named on the heading's own line ("Board of Directors - GTBank Limited"), never the next line: a
+    # heading "BOARD OF DIRECTORS:" followed by a director's name on its own line is the company's board.
+    m = re.search(r"(?im)^[ \t]*board[ \t]+of[ \t]+directors[ \t]*[-–—:][ \t]*([^\n]{3,80})$", text or "")
     if not m or not company:
         return bool(m and re.search(r"(?i)\b(limited|ltd|plc|bank|s\.?a\.?)\b", m.group(1)) and not company)
     theirs = {w for w in re.findall(r"[a-z0-9]+", m.group(1).lower()) if w not in _ENTITY_WORDS}
@@ -559,14 +648,19 @@ def extract(data: bytes, company: str, document: str, source_url: str, filed: Op
         return None
     ocr = False
     if is_scanned(pages):
-        if not allow_ocr:
-            return None
-        try:
-            pages, ocr = ocr_pages(data), True
-        except Exception as e:
-            log.warning("governance: OCR of %s failed: %s", source_url, e)
-            return None
-        if not pages:
+        # A scan: its governance pages are transcribed by Gemini on the spot; Tesseract remains where it is installed.
+        vision = vision_pages(data) if call is None else None
+        if vision:
+            pages, ocr = vision, True
+        elif allow_ocr:
+            try:
+                pages, ocr = ocr_pages(data), True
+            except Exception as e:
+                log.warning("governance: OCR of %s failed: %s", source_url, e)
+                return None
+            if not pages:
+                return None
+        else:
             return None
     callers = [call] if call is not None else _default_calls()
     if not callers:

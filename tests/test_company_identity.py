@@ -302,6 +302,7 @@ def test_subsidiary_boards_are_not_the_company_board():
     assert not g._other_board(own, "Guaranty Trust Holding Company Plc")
     assert g._other_board("Board of Directors - GTBank Limited\n", "Guaranty Trust Holding Company Plc")
     assert not g._other_board("Board of Directors - GTCO Plc\n", "Guaranty Trust Holding Company Plc")
+    assert not g._other_board("Corporate Information\nBOARD OF DIRECTORS:\nMr. Olusegun Layode\n", "McNichols Plc")
 
 
 def test_board_and_holder_clean_up():

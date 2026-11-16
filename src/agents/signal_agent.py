@@ -178,6 +178,45 @@ def second_opinion():
     return call
 
 
+GEMINI_NATIVE = os.getenv("GEMINI_NATIVE_BASE", "https://generativelanguage.googleapis.com/v1beta").rstrip("/")
+# Models that read images and PDFs, fastest first (Flash-Lite answered in about 3 s in our measurements).
+GEMINI_VISION_MODELS = [m for m in os.getenv(
+    "DEAL_INTEL_GEMINI_VISION_MODELS", "gemini-3.1-flash-lite,gemini-4-hydrogen,gemini-3.5-flash").split(",") if m]
+
+
+def gemini_vision(parts: list[dict], max_tokens: int = 8000, timeout: float = 90) -> str:
+    """Text from Gemini for a request that includes images or a PDF (parts in Gemini's own format, e.g.
+    {"inline_data": {"mime_type": "image/png", "data": <base64>}} and {"text": "..."}), trying each vision model in
+    turn within the shared concurrency cap. Raises RuntimeError when no model answers."""
+    import httpx
+    key = os.getenv("GEMINI_API_KEY")
+    if not key:
+        raise RuntimeError("GEMINI_API_KEY environment variable not set.")
+    errors = []
+    with httpx.Client(timeout=timeout, headers={"x-goog-api-key": key}) as client:
+        for model in GEMINI_VISION_MODELS:
+            body = {"contents": [{"role": "user", "parts": parts}],
+                    "generationConfig": {"temperature": 0, "maxOutputTokens": max_tokens}}
+            try:
+                r = None
+                for attempt in range(3):
+                    with _GEMINI_SLOTS:
+                        r = client.post(f"{GEMINI_NATIVE}/models/{model}:generateContent", json=body)
+                    if r.status_code != 429 or attempt == 2:
+                        break
+                    time.sleep(4 * (attempt + 1))
+                r.raise_for_status()
+                cands = r.json().get("candidates") or []
+                text = "".join(p.get("text", "") for p in ((cands[0].get("content") or {}).get("parts") or [])) if cands else ""
+            except Exception as e:
+                errors.append(f"{model}: {e}")
+                continue
+            if text.strip():
+                return text
+            errors.append(f"{model}: empty reply")
+    raise RuntimeError("Gemini vision failed: " + "; ".join(errors))
+
+
 def _ollama_client():
     api_key = os.getenv("OLLAMA_API_KEY")
     if not api_key:
