@@ -369,6 +369,42 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
         raise HTTPException(502, "The analysis failed. The data sources may be unavailable; try again in a minute.")
 
     brief_json = json.loads(brief.model_dump_json())
+    # Enrich the signal brief with the same company-profile data used by Companies.
+    # Governance extraction and website crawling remain in their existing asynchronous workflow.
+    try:
+        from src.hosted_market import company as get_company_profile
+        # Use the same cached profile route as the Companies workspace, including its
+        # existing website-enrichment and governance hand-off.
+        profile = await get_company_profile(
+            name=body.company, ticker=body.ticker, country=body.country,
+        )
+        brief_json["company_intelligence"] = {
+            "identity": profile.get("identity"),
+            "financials": profile.get("financials"),
+            "financials_note": profile.get("financials_note"),
+            "market": profile.get("market"),
+            "multiples": profile.get("multiples"),
+            "private_markets": profile.get("private_markets"),
+            "valuation": profile.get("valuation"),
+            "governance": profile.get("governance"),
+            "sources": profile.get("sources") or [],
+        }
+    except Exception as exc:
+        log.warning("company intelligence enrichment failed for %s: %s", body.company, exc)
+        brief_json["company_intelligence"] = {
+            "status": "unavailable",
+            "coverage_note": "Company-profile enrichment was unavailable for this run; signal analysis remains available.",
+        }
+    brief_markdown = brief_to_markdown(brief)
+    intelligence = brief_json.get("company_intelligence") or {}
+    if intelligence.get("status") != "unavailable":
+        private = intelligence.get("private_markets") or {}
+        brief_markdown += "\n\n## Company intelligence context\n\n"
+        brief_markdown += f"- **Profile sources:** {', '.join(intelligence.get('sources') or []) or 'None returned'}\n"
+        brief_markdown += f"- **Private-market records:** {private.get('deal_count', 0)}\n"
+        brief_markdown += f"- **Reported funding total:** {private.get('total_raised_usd') if private.get('total_raised_usd') is not None else 'Not disclosed'}\n"
+        brief_markdown += f"- **Financial statements:** {'Available' if intelligence.get('financials') else 'Not available in this run'}\n"
+        brief_markdown += "\n> Company-profile information is presented with its underlying source labels. Missing information is not evidence that an event or financial item does not exist.\n"
     try:
         async with httpx.AsyncClient(timeout=15) as client:
             resp = await _rpc(client, "finish_run", {
@@ -377,7 +413,7 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
                 "p_severity": brief_json.get("overall_severity"),
                 "p_signal_count": len(brief.detected_signals),
                 "p_llm_used": "LLM unavailable" not in (brief_json.get("analyst_model") or ""),
-                "p_brief": brief_json, "p_markdown": brief_to_markdown(brief),
+                "p_brief": brief_json, "p_markdown": brief_markdown,
             })
     except httpx.HTTPError as e:
         log.error("finish_run unreachable for %r: %r", body.company, e)
@@ -478,8 +514,9 @@ class MarketBriefBody(BaseModel):
     deal_type: str | None = Field(None, max_length=60)
     audience: str = Field("Investment banking analyst", min_length=1, max_length=100)
     research_question: str | None = Field(None, max_length=500)
+    parent_brief_id: str | None = Field(None, max_length=64)
 
-    @field_validator("country", "sector", "deal_type", "audience", "research_question")
+    @field_validator("country", "sector", "deal_type", "audience", "research_question", "parent_brief_id")
     @classmethod
     def market_brief_strip(cls, value: str | None) -> str | None:
         value = value.strip() if value else value
@@ -529,7 +566,19 @@ def _market_brief_markdown(report: dict) -> str:
             if source.get("url"):
                 lines.append(f"- **Source:** [{source.get('publisher') or source.get('title') or 'Open source'}]({source['url']})")
         lines.append("")
-    lines += ["## Observed patterns", ""]
+    lines += ["## Analytical readout", ""]
+    lines += [f"- {x}" for x in report.get("analytical_readout", [])] or ["- No additional analytical readout is available."]
+    lines += ["", "## Investor and counterparty activity", ""]
+    for investor in report.get("investor_activity", []):
+        lines.append(f"- **{investor['name']}** — appears in {investor['transaction_count']} selected record(s)")
+    if not report.get("investor_activity"):
+        lines.append("- No investor, lender or acquirer parties were resolved in the selected records.")
+    lines += ["", "## Monthly transaction activity", ""]
+    for month in report.get("monthly_activity", []):
+        lines.append(f"- **{month['month']}** — {month['transaction_count']} record(s)")
+    if not report.get("monthly_activity"):
+        lines.append("- No dated monthly observations available.")
+    lines += ["", "## Observed patterns", ""]
     lines += [f"- {x}" for x in report["observed_patterns"]] or ["- The current filtered sample is too small to support a meaningful pattern."]
     lines += ["", "## Potential advisory research leads", ""]
     for signal in report["advisory_signals"]:
@@ -740,8 +789,72 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
         }
     await _finish(run_id)
 
+    # Descriptive investor and time-series analysis from the selected transaction sample.
+    from src.engines.investors import parties
+    investor_counts: dict[str, int] = {}
+    monthly_counts: dict[str, int] = {}
+    for deal in selected:
+        month = str(deal.get("announced") or "")[:7]
+        if re.fullmatch(r"\d{4}-\d{2}", month):
+            monthly_counts[month] = monthly_counts.get(month, 0) + 1
+        for party_name, party_role in parties(deal):
+            if party_role in ("investor", "lender", "acquirer"):
+                investor_counts[party_name] = investor_counts.get(party_name, 0) + 1
+    investor_activity = [
+        {"name": name, "transaction_count": count}
+        for name, count in sorted(investor_counts.items(), key=lambda item: (-item[1], item[0]))[:10]
+    ]
+    monthly_activity = [
+        {"month": month, "transaction_count": count}
+        for month, count in sorted(monthly_counts.items())
+    ]
+    analytical_readout = [
+        f"The selected sample contains {len(selected)} dated transaction records; this is platform coverage, not a census of market activity."
+    ]
+    if selected:
+        if investor_activity:
+            analytical_readout.append(
+                f"{investor_activity[0]['name']} appears in {investor_activity[0]['transaction_count']} selected record(s); party extraction can be incomplete and repeated appearances do not establish market share."
+            )
+        if len(selected) < 10:
+            analytical_readout.append("The sample is small; apparent sector, country or investor concentration should be treated as descriptive rather than representative.")
+        if len(disclosed) < len(selected):
+            analytical_readout.append(
+                f"{len(selected) - len(disclosed)} selected record(s) have no positive disclosed USD amount, so the disclosed-value total is incomplete."
+            )
+    else:
+        analytical_readout.append("No matching transactions were found for the selected filters and period; no activity trend can be inferred.")
+    update_comparison = None
+    if body.parent_brief_id:
+        try:
+            uuid.UUID(body.parent_brief_id)
+        except ValueError:
+            raise HTTPException(422, "The previous brief identifier is invalid.")
+        async with httpx.AsyncClient(timeout=15) as client:
+            previous_response = await _rpc(client, "get_market_brief", {"p_id": body.parent_brief_id})
+        previous_rows = previous_response.json() if previous_response.status_code == 200 else []
+        if not previous_rows:
+            raise HTTPException(404, "The previous brief could not be found.")
+        previous_report = previous_rows[0].get("report") or {}
+        previous_ids = {str(item.get("id")) for item in previous_report.get("key_transactions", []) if item.get("id")}
+        new_records = [item for item in key_transactions if item.get("id") and str(item.get("id")) not in previous_ids]
+        update_comparison = {
+            "previous_brief_id": body.parent_brief_id,
+            "previous_generated_at": previous_report.get("generated_at"),
+            "previous_transaction_count": (previous_report.get("metrics") or {}).get("transaction_count", 0),
+            "current_transaction_count": len(selected),
+            "transaction_count_change": len(selected) - int((previous_report.get("metrics") or {}).get("transaction_count", 0)),
+            "new_records": [
+                {"headline": item.get("headline") or item.get("target") or "Transaction",
+                 "announced": item.get("announced"), "url": next((source.get("url") for source in item.get("sources", []) if source.get("url")), None)}
+                for item in new_records[:10]
+            ],
+            "new_record_count": len(new_records),
+        }
     report = {
         "brief_type": "market_deals",
+        "parent_brief_id": body.parent_brief_id,
+        "update_comparison": update_comparison,
         "title": f"{country_name or 'Africa'} Deals & M&A Intelligence Brief",
         "audience": body.audience,
         "research_question": focus,
@@ -760,6 +873,9 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
         },
         "key_transactions": key_transactions,
         "comparables": comparables,
+        "investor_activity": investor_activity,
+        "monthly_activity": monthly_activity,
+        "analytical_readout": analytical_readout,
         "observed_patterns": patterns,
         "advisory_signals": advisory_signals,
         "web_research": web_research,
