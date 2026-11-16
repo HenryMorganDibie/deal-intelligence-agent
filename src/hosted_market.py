@@ -967,6 +967,9 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
         read_at = ((stored or {}).get("facts") or {}).get("read_at") if stored else None
         if not (read_at and _days_since(read_at) < 30):
             profile["governance_pending"] = True
+    elif filing_src and profile.get("governance") and len(profile["governance"].get("board") or []) < 3:
+        # A thin stored read of the filing (a weak model run): read it again so the merge can fill it in.
+        profile["governance_pending"] = True
     mark = profile["valuation"].get("latest_mark")
     if mark and not profile.get("listing"):
         from src.engines import markets

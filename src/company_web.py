@@ -223,6 +223,7 @@ def request(name: str, website: Optional[str], country: Optional[str] = None,
 
 
 def store_filing(name: str, governance: dict) -> bool:
+    from src.engines import governance as governance_mod
     """Keep the governance read from the company's exchange filing with its stored facts, so it is read once."""
     from src import hosted_market as hm
     key = name_key(name)
@@ -234,7 +235,9 @@ def store_filing(name: str, governance: dict) -> bool:
         if not row:
             hm._rpc_sync("company_web_request", {"p_name_key": key, "p_name": name, "p_website": None}, 10)
             row = {"status": "queued", "facts": {}}
-        facts = {**(row.get("facts") or {}), "filing": governance}
+        before = (row.get("facts") or {}).get("filing")
+        # A later read of the same filing only adds to what earlier reads confirmed (free models vary by run).
+        facts = {**(row.get("facts") or {}), "filing": governance_mod.merge_reads(governance, before)}
         hm._rpc_sync("company_web_save", {"p_name_key": key, "p_status": row.get("status") or "queued",
                                           "p_facts": facts, "p_error": None}, 15)
         return True
