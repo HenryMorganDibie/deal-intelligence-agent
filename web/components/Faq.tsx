@@ -23,7 +23,7 @@ const FAQ = [
   },
   {
     q: "Is the hosted app free?",
-    a: "Yes, and there is no account to create. Click Run your first brief and go: up to 1,000 analyses a day per visitor, subject to service capacity. Each brief gets its own link you can share, and your list of briefs is kept in your browser.",
+    a: "Yes, there is a free plan. Create a free account and run up to 30 briefs and research runs a month (up to 15 a day); browsing deals, companies, markets and countries is unlimited. Each brief gets its own link you can share. Pro and Team add more runs, alerts and exports.",
   },
   {
     q: "How do I know the numbers are right?",

@@ -205,7 +205,7 @@ export default function Dashboard() {
             ))}
           </div>
           <p className="mt-6 text-[0.8125rem] leading-relaxed text-[color:var(--dim)]">
-            Free to use. Up to 1,000 analyses a day per visitor, subject to service capacity. No account needed.
+            The free plan includes 30 briefs and research runs a month (up to 15 a day). Pro and Team include more, with no daily limit.
           </p>
         </div>
         <div className="mt-8">
