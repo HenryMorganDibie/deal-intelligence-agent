@@ -281,6 +281,41 @@ export function BriefView({ brief, resultId }: { brief: Brief; resultId?: string
                   </ul>
                 </div>
               ) : null}
+              {brief.company_intelligence.valuation && (
+                <div className="panel p-5">
+                  <h3 className="font-semibold">Valuation and comparables</h3>
+                  <p className="mt-1 text-xs text-[color:var(--muted)]">{String(brief.company_intelligence.valuation.note ?? "Valuation evidence from reported company transactions and matched comparables.")}</p>
+                  {(brief.company_intelligence.valuation.transaction_marks as Array<Record<string, unknown>> | undefined)?.length ? (
+                    <ul className="mt-3 space-y-2 text-sm">
+                      {(brief.company_intelligence.valuation.transaction_marks as Array<Record<string, unknown>>).slice(-5).map((mark, index) => (
+                        <li key={index} className="border-b hairline pb-2">
+                          <span className="font-medium">{String(mark.headline ?? mark.deal_type ?? "Transaction")}</span>
+                          <span className="ml-2 text-[color:var(--muted)]">{String(mark.announced ?? "Date unknown")} · {mark.valuation_usd == null ? "Valuation not disclosed" : "$" + Number(mark.valuation_usd).toLocaleString()}</span>
+                          {mark.basis && <span className="ml-2 text-xs text-[color:var(--dim)]">({String(mark.basis)})</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <p className="mt-2 text-sm text-[color:var(--muted)]">No transaction valuation marks available.</p>}
+                </div>
+              )}
+              {brief.company_intelligence.market && (
+                <div className="panel p-5">
+                  <h3 className="font-semibold">Listed-market context</h3>
+                  <p className="mt-1 text-sm text-[color:var(--muted)]">
+                    {brief.company_intelligence.market.price == null ? "No current price available" : "Latest price: " + String(brief.company_intelligence.market.price)}
+                    {brief.company_intelligence.market.currency ? " " + String(brief.company_intelligence.market.currency) : ""}
+                    {brief.company_intelligence.market.as_at ? " · " + String(brief.company_intelligence.market.as_at) : ""}
+                  </p>
+                  {brief.company_intelligence.market.stale === true && <p className="mt-2 text-xs text-[color:var(--muted)]">The available quote is marked stale; valuation multiples are withheld by the profile pipeline.</p>}
+                </div>
+              )}
+              {brief.company_intelligence.governance && (
+                <div className="panel p-5">
+                  <h3 className="font-semibold">Governance and ownership</h3>
+                  <p className="mt-1 text-sm text-[color:var(--muted)]">Governance data was available from the company profile. Review the original annual filing and source material before relying on extracted names or roles.</p>
+                  <p className="mt-2 text-xs text-[color:var(--dim)]">{Object.keys(brief.company_intelligence.governance).slice(0, 8).join(" · ")}</p>
+                </div>
+              )}
               {brief.company_intelligence.sources?.length ? (
                 <p className="text-xs text-[color:var(--dim)]">Profile sources: {brief.company_intelligence.sources.join(" · ")}</p>
               ) : null}

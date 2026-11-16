@@ -197,3 +197,36 @@ def test_research_marks_repeated_headlines_as_possible_syndication():
     assert len(news) == 2
     assert all(item["syndication_group_size"] == 2 for item in news)
     assert all(item["syndicated_publishers"] == ["Publisher One", "Publisher Two"] for item in news)
+
+
+
+def test_market_brief_supports_linked_updates_and_analytical_sections():
+    from api.index import MarketBriefBody, _market_brief_markdown
+
+    body = MarketBriefBody(parent_brief_id="a2a4a9b0-6d1e-4a32-a9c3-9fdc5d1dff10")
+    assert body.parent_brief_id == "a2a4a9b0-6d1e-4a32-a9c3-9fdc5d1dff10"
+
+    report = {
+        "title": "Africa Deals & M&A Intelligence Brief",
+        "period_start": "2026-10-01",
+        "period_end": "2026-10-31",
+        "generated_at": "2026-11-01T00:00:00+00:00",
+        "scope_label": "Africa · All sectors · 30 days",
+        "audience": "Investment banking analyst",
+        "metrics": {"transaction_count": 3, "disclosed_value_count": 1,
+                    "disclosed_value_usd_label": "$5,000,000", "countries_represented": 2},
+        "key_transactions": [],
+        "analytical_readout": ["This is a platform sample, not a census."],
+        "investor_activity": [{"name": "Example Capital", "transaction_count": 2}],
+        "monthly_activity": [{"month": "2026-10", "transaction_count": 3}],
+        "observed_patterns": [],
+        "advisory_signals": [],
+        "comparables": [],
+        "methodology": "Selected by announcement date.",
+        "coverage_note": "Coverage is incomplete.",
+        "web_research": {"mode": "deterministic", "answer": "", "evidence": []},
+    }
+    markdown = _market_brief_markdown(report)
+    assert "Analytical readout" in markdown
+    assert "Example Capital" in markdown
+    assert "2026-10" in markdown
