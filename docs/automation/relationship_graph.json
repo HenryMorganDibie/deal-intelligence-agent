@@ -1447,6 +1447,50 @@
     "made group": {
       "name": "Made Group",
       "kind": "organization"
+    },
+    "ngx group": {
+      "name": "NGX Group",
+      "kind": "organization"
+    },
+    "nairobi securities exchange": {
+      "name": "Nairobi Securities Exchange",
+      "kind": "organization"
+    },
+    "telkom": {
+      "name": "Telkom",
+      "kind": "organization"
+    },
+    "standard chartered": {
+      "name": "Standard Chartered",
+      "kind": "organization"
+    },
+    "exchange": {
+      "name": "Exchange",
+      "kind": "organization"
+    },
+    "nigerian exchange": {
+      "name": "Nigerian Exchange",
+      "kind": "organization"
+    },
+    "kenyan exchange": {
+      "name": "Kenyan Exchange",
+      "kind": "organization"
+    },
+    "nigerian exchange group": {
+      "name": "Nigerian Exchange Group",
+      "kind": "organization"
+    },
+    "japan": {
+      "name": "Japan",
+      "kind": "organization"
+    },
+    "african development bank": {
+      "name": "African Development Bank",
+      "kind": "organization"
+    },
+    "african development fund": {
+      "name": "African Development Fund",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -4679,6 +4723,11 @@
           "title": "Zimbabwe’s NSSA acquires 8.5% stake in Dairibord",
           "publisher": "Food Business Middle East & Africa",
           "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOZU9ZSmxJMVNoVzdnNXRKUWZxUXMyZ3BMU2ViNk5yc0ZmcEwyRklnbVBPS1BDVmhNN1k3eXpza0NLUWxBNW92c0xWYnRvVW96TFN6VVQ2V0RxX29LM0Q5dkNGOHlCTGtRX0k4N0VvWG5RS2ZUVm5zLVJjQW1hamd4R3Rqd09lQQ?oc=5"
+        },
+        {
+          "title": "Zimbabwe’s NSSA acquires 8.5% stake in Dairibord",
+          "publisher": "Dairy Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPQUJzSjBjdjFQRHFmSHBmZ20wMFhjZ0djZlFRWm52VmtTVC1DZVNUUWpUdm9yelhkREVRVTAwUTZnOUxGZXRvSV9jbm1yMFNMXzJvejE1bTJxSFJIUXFuTG1aWDBfdS12dF9WcjYyWkF4R1FBcEl6LV8zRDFwZUVIallwU2NoUFFXRXVzQ3o3Qjg?oc=5"
         }
       ]
     },
@@ -4895,6 +4944,11 @@
           "title": "UPL's Advanta to acquire Egypt's Misr Hytech, eyes bigger Africa play",
           "publisher": "Fortune India",
           "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQcWlFQXRKRDZRRmV1c295Y1hJdjgwS3BOUXdYekhoQXA5N1NnUUZ4c24zTkhITndEUGR2dEIwUnk2bzVyajUxeUR6Zy11ZzJtRFYwRlBxbFN6TFNRMEh6aGgxV2E4MTRBejI1TjZnbDRnNXNYUDZzM3A2REo1eTlXeklObWE4dXdxaW0tdVRtRFVCTDZNU0FTdzAxLXVhMFhGeXE3bW5JcGVodlZKM1dJQlVwZnVGcFk?oc=5"
+        },
+        {
+          "title": "Advanta set to acquire Egypt’s Misr Hytech Seed in major push to expand Africa footprint",
+          "publisher": "Indian Chemical News",
+          "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxPOTF2d2JXTGhTNlhaMVE4aklRN19haWJXTk5wN19YT01fNWRLUUV5MGpFRFl0UExtcGo2b2hFZUhkTnZDczY3TzdTUmZWZ0hrQlJzVE9ZVFpsQlVLZU4tWmU5NzgtZWZZZV93U25oV2hjLTFFSXdFeXRnY1kzWmNhOXNwVmsxZDNRQU85SVo3V1J2LXp4cWEzT2FVcjZTVUVBM0NKazRQVkxPQTRuelJNQWtSNnVmRDFtVlZWS3Ywdk1HQk5taVNZV1A3YXdQY3VWM2fSAdgBQVVfeXFMTUlYQ1B3U0RMNE9qWW5lY28zdGI4d3FrcV9mMVZFY0pHUXh2b1E1ZXRTNXZLTGtNdElBcVRjUVQxZ1dMcUh2aWFJOTlwM25XVnlfQW5zU0pRSU1UUU0zNWpsOVJ6RTAxU1FOSHpnTE1iNmY0OUtYLVlwODI0TkFnNndFWEVkZW1hZVFCald4ZXFkcWlfZl9WNUJFQXJFYTZPU3BSeTEySWhXZlJkc0xESmF0ZWRhbkxKZVVxaFE4TlRVWEo5dU5vUnhuX1VDUmZjR096X0s4a3gz?oc=5"
         }
       ]
     },
@@ -4937,9 +4991,166 @@
           "title": "Danone completes Made Group acquisition",
           "publisher": "Food Business Middle East & Africa",
           "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBjbTlBcXZnaDFYRkVpdC1vUlo2ZnZVamN1Ymg5X0xTYkUxeXJaTDNCeGdWRWJ3S1BzTHl6M0lBZUVnR2tmYVZZQXJUb2t2bTJ0VEpQdlFmR3VEb0JCWDdCUkY3aGxKRmZJZEN3bkVZUVdvX2M5Zi1qWWx3VjE?oc=5"
+        },
+        {
+          "title": "Danone completes its acquisition of MADE Group",
+          "publisher": "Dairy Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPNEVqZ0N3X2NPbkJCTWhMS0FpQ3Zyb1JQWEtsSEtES19FRER6bllMYnkzZUJLeWlrOXhvbThrX1A4d1dpQVpkMmEyTHVEUVJfbUQyTFpBU0M5aGVXcWhkSTBLNkFVY25mM3NIUFh0ZWZzbDRMaFVNbmJyV3RfT2xkV1dQWXFhUldtRHh1aGkzUlk?oc=5"
+        }
+      ]
+    },
+    "0244a2517fa763d61c37": {
+      "id": "0244a2517fa763d61c37",
+      "from": "ngx group",
+      "to": "nairobi securities exchange",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "NGX Group acquires 10% strategic stake in Nairobi Securities Exchange",
+          "publisher": "Nairametrics",
+          "url": "https://nairametrics.com/2026/11/16/ngx-group-acquires-10-strategic-stake-in-nairobi-securities-exchange-2/"
+        },
+        {
+          "title": "Nigeria’s NGX Group acquires 10% stake in Nairobi Securities Exchange",
+          "publisher": "Businessfront",
+          "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxQRWIxUEdBLTdwXzVRc3NRdHJjR1I2NTR3VTRYd0hKaGsxRXJ2TXM0OTNzZ0xrYWZHMUNsTDcxNUpKSjNRc2IwVmtSMGE3ajZILUpzeWw5NzBBeldtOVZCYy1ySjZRem9xdHBBMzJfclZkVkxKNkdsYmRXLXRRTGsycDNKblhDeEk?oc=5"
+        },
+        {
+          "title": "NGX Group Acquires 10% Stake in Kenya’s Nairobi Securities Exchange",
+          "publisher": "Proshare",
+          "url": "https://news.google.com/rss/articles/CBMi9wFBVV95cUxOTnRfMXJKMzdiQU5kbWF6ZWZ0UUppcmh1RjVvVnBUdGdYbmV3d3FNN0l2eXlJWmJ3LUtVaWJyNmxkTEFNZl9MZ3BDUmJhRktrTGxWTFFnc1drQkVfQUFjYk90SW9aVC04ME01N3I2RG14OXh1SWxRSXlmSWJsbXJBNF9INnNaLV85eVpWNkYyc3FDUktJX1RmZS1OUjc3RGhnRmtHanVEVE9CZ2M0dWVMY1YwX0g1UFFoUXNjZEptOUx6NmdRdkpwVHJhRmhPbVhZd01LS3pSMlR4T1piNmZRTUF0RVFwZ1BhWHpRV1Ita0hsVThDZUVJ?oc=5"
+        },
+        {
+          "title": "NGX Group takes 10% stake in Kenya’s Nairobi Securities Exchange",
+          "publisher": "Business Hallmark",
+          "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxPZWh0bzQ3WnU1Um5pYVpGOURpQTI1U3N4NVlZTmd2RGgxZF9vMnBCalpxOTBPLU9WZ0JWTF9CaVh4OXNPNHlWaXJuMWk3aTh0TEFJUHR2S2ZlQXN2OVJnRmM4LVRicDZKenZya1U3UF96dElUUGFTaHppVHh0VHo5RkFOa1Q0SlFzaEIyRVdLUm1lZ9IBkgFBVV95cUxPZWh0bzQ3WnU1Um5pYVpGOURpQTI1U3N4NVlZTmd2RGgxZF9vMnBCalpxOTBPLU9WZ0JWTF9CaVh4OXNPNHlWaXJuMWk3aTh0TEFJUHR2S2ZlQXN2OVJnRmM4LVRicDZKenZya1U3UF96dElUUGFTaHppVHh0VHo5RkFOa1Q0SlFzaEIyRVdLUm1lZw?oc=5"
+        },
+        {
+          "title": "NGX Group acquires stake in Nairobi Securities Exchange to deepen African market links",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPb2I3Z0k0Und6WFA3aVdkakhRbmJpNXp5bDFCUmd1V2VJM3FjWElRbFg5endvR2xOazNyaEdKVFlKVTF1S2JuZ2ljeFFFZTJ1b0VJa3pEQVJoWXRHUTloaXprU1Q3VTcwekpZZDBCU3I4RjZNNTEzVEcyTm55MUUzQmdOY2E3WmZxOU1rSXFTS1lEMlZFSGtKMVN1OHpQWFBoeGRfNFd5RnZ4OURDaFpBbklZeDN2aGg5YXc?oc=5"
+        }
+      ]
+    },
+    "cdaec8a430c32f76510f": {
+      "id": "cdaec8a430c32f76510f",
+      "from": "mtn",
+      "to": "telkom",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "MTN in talks to acquire South Africa’s Telkom in potential telecoms mega-deal",
+          "publisher": "Nairametrics",
+          "url": "https://nairametrics.com/2026/11/16/mtn-in-talks-to-acquire-south-africas-telkom-in-potential-telecoms-mega-deal/"
+        },
+        {
+          "title": "MTN wants to buy Telkom - in cash",
+          "publisher": "News24",
+          "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOWktqYnhvMk9YSTN2SV82THU0VUM2LVJ5RmIwU09Ha3liTjNWeHdKM0I4bHRENVFNeFNYTFh0WXZxV2JPMjdOTWtkNDR1bkk2eFdBMTlONTYxU3FkOHR6Xy1qWjdZcmVvQ3MwRFZLcnRmSGpmejZJWk1RSkl0U2F3UXBPUzhBSnZESlVVWmN4TUk?oc=5"
+        },
+        {
+          "title": "MTN in talks to buy Telkom in deal that could reshape South Africa's telecoms sector",
+          "publisher": "IOL",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQX0NfMk0yUnpxeWFycGU5blN1TDBEYk8xd2cxNDE0UFRHM3ZYTDVlSkdtWE8xbWFfVEhRcURtckJPbk1uSlVranVoZTdveC1NWUNXeDlSRjduU3lQd2dwRlBSMVhRcnM0N24zYmp5V0VEWUZUeU02bnhDelZhaUEtSVBCTDhLOVJWV2c3VHhpWVRqZjlQZ3FMQnBKU0RNMlRCMm5BM2gwVjRjRWxaeTJLRTNrc1BNaklyQkJvWE16QQ?oc=5"
+        },
+        {
+          "title": "MTN in talks to acquire Telkom four years after failed deal",
+          "publisher": "TechCabal",
+          "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTE9tV1dZTnl3cnNwZlhNMTZidXBhWmVUZEx2OE5VR1pZeDYwRVBBeEVRYTllR3QybURHTEI0bjRXMDVjT0ttLU9tWTNJMzlUVE1BWTJOTTR3eEZYb2VIWEljSVN6cmdEdkFPdWhzc2taUzVvOG9kUzVEWA?oc=5"
+        },
+        {
+          "title": "MTN in talks to acquire Telkom",
+          "publisher": "MyBroadband",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxOZncyQzRYYXgzMWNxR1A2bTllb2pQLXJsdDhnNlpzV2pscDFsYnZsZ2tXZXlKenMzaDZCQWJaYV9pYTdSM0RwSzRpbDl3ZDIzYzhGWThWNFA3QjJpX29kaUpjaENVVklId1oxajMyeVlxRFVUX3k2MklJMTZ1X0pMR1RTZXpRSHNSeHc?oc=5"
+        }
+      ]
+    },
+    "12e2eca6db2fa69de5df": {
+      "id": "12e2eca6db2fa69de5df",
+      "from": "absa",
+      "to": "standard chartered",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "Absa Completes Acquisition of Standard Chartered’s Retail and Wealth Banking Business in Uganda",
+          "publisher": "SSBCrack",
+          "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQUGp5eF9pYXBxRDY4RzdRN3FrSGIxdllTN2dwWXAzSzhwX3FPaEV0bXhZRXR3eUhBZm8zTFZFLUpicklkTDh1RGJDSVJEWmFXb1BrbV91NExaYjNHSkw3OEFfNEowTlVZVURCVE1hck9CTnR1OThYd0MxUHQxV01aYmEzY2dOWHc4dnd4M18zeWdCMWFfcFNtb2tfVkNpSXFnVVVNRmJfb0NmZU5yNkxya1E2d2VhQjVLdDgySjJ3?oc=5"
+        }
+      ]
+    },
+    "dbc5d4dcf71087be409a": {
+      "id": "dbc5d4dcf71087be409a",
+      "from": "ngx group",
+      "to": "exchange",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "Nigeria’s NGX Group Buys A 10% Stake In Nairobi’s Exchange",
+          "publisher": "Finimize",
+          "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxOUGp0MU01UkVaeFpiRWVTTU1xRHNicEI4MV9sbUFScHJDNGJHUHhDbU9UV0NRM2FGRU5zVnhVbXdFY0FTdzRVeWh6cFFJMFB5bHF4aWhXM1FfeXJ1SzhzVkJSUk1vT0FqLTdHOWhhQVM4WFZITURMVTV3WWo5ZXhCaWZVN3JkakUweUltRA?oc=5"
+        }
+      ]
+    },
+    "8e66f9f40fcfdca1db2d": {
+      "id": "8e66f9f40fcfdca1db2d",
+      "from": "nigerian exchange",
+      "to": "kenyan exchange",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "Nigerian Exchange acquires 10% strategic stake in Kenyan Exchange",
+          "publisher": "The Nation Newspaper",
+          "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxORVFNOXh1MDNWUkE5Z3BJUFlaNmdUTDRLWkVuZU5DeTM0MjVkaXdSTHM3SktoN3pHblpaMlkwUjV6aG5nWkczNE9jWkpuMmMxLXRuNGZVTV9ILXVWSmpNTGRRaklFd0VwZ1NiOVR6bjE4VGZZMnhTR0NpcndMc3ctTFNBeFBWd2RvMkxNVWtIQl8yZ3N6OHpUZTd0MNIBoAFBVV95cUxPMTAzRllWZ1huSmpaNUJRaHdIYVNlZUJEVnU0S2gwZEtlTnhxZjY5MUlEWWYwZS1HcUhWa1Y1RU52b1dYWTlfQlVzOVVFLVhwX0xoYVZVNmp5bXBRVWtDLXVrSy1qaVJrSjBjRk5NcWpaZ2xCcGpILUdSM2ptYk9WcGRKNkFzUGZjT3FTRllFWkNBczVPMGlGUFRoUEtTZmtL?oc=5"
+        }
+      ]
+    },
+    "2d74b2ba86d4cc6e2c49": {
+      "id": "2d74b2ba86d4cc6e2c49",
+      "from": "nigerian exchange group",
+      "to": "nairobi securities exchange",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "Nigerian Exchange Group Acquires 10% Stake in Nairobi Securities Exchange",
+          "publisher": "Uzalendo News",
+          "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPVnlhbDJ0V2hQWTVXU2JmYVd5clU3eld3WjQ2dzRLdGVEb2FVVWI1clJ4Z0RGRzNoRlF1RzIzUjU0T2hEWGRSOV9wYk5jMGM2dWt1SWljaEVhSWIzM05YdDJjbUpNdGhtc3ZKTU1QcEtOUmh0V2g1SXlzN0RQZG40WWZQTWN1NUJGaTc0dTJoVVBNSXJOaHNIcVg3UXNJS3U0?oc=5"
+        }
+      ]
+    },
+    "abcde42daf87d9c5c04e": {
+      "id": "abcde42daf87d9c5c04e",
+      "from": "japan",
+      "to": "african development bank",
+      "type": "debt_financing",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "Japan Set to Provide $583 Million Loan to African Development Bank – Investment",
+          "publisher": "New Business Ethiopia",
+          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPQl9xN0JZUWRvUTJYZGhCaGFBOG05bkNuRXJDejAyQXNJc2ZQc0QyNUlFZlp6ZGNhZ3BoTmxtWEJHZFVsUll4dUdPS2xqVVdweF8yc2hSYW1HeVlaM3IzN0RPX3hDckd0WVlZeU9CNlhZOXA3UE52azBoRWtGQllRZG83bGNjY2hOZWpyMUNUU2pxSTFmYVhyMlhJZkI5dXhQZFRWbU5FYmpJc2ZPVWc?oc=5"
+        }
+      ]
+    },
+    "3dcf7d0ec32f1d9ac0cf": {
+      "id": "3dcf7d0ec32f1d9ac0cf",
+      "from": "japan",
+      "to": "african development fund",
+      "type": "debt_financing",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "Japan Extends $583 Million Concessional Loan to African Development Fund",
+          "publisher": "Ethiopian Business Review",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPYkVhX0R0cldqVTJSY1ZrcDhtOVVINEJuaTdSUWI5dWJMQ3Q0VTBXZ21HNU93aHAtWDZOVm9raWx0RXVQdnFQZnBIVEhpcjhRWTJnXzVOTk90YjFKU1pIVGtuQnUzV0FHZW56ZlBQc1dxY2V6eFQ2VHd5MzlDNlVRZnhScVZ1QlJJdU4xLVlocWYyYnNUdWtnV1Q1U0VkVzFTcURqOXRQTGlac2Jo?oc=5"
         }
       ]
     }
   },
-  "updated_at": "2026-11-15T19:56:54.967180+00:00"
+  "updated_at": "2026-11-16T13:19:28.750446+00:00"
 }

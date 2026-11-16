@@ -680,3 +680,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-15", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47041_MUTUAL_BENEFITS_ASSURANCE_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MAY_2026.pdf", "status": "collected", "ticker": "MBENEFIT.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MBSC.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-15", "market": "africa", "status": "no_annual_data_returned", "ticker": "MCG.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MCNICHOLS.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MCQE.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MCRO.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MCZ.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MDI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MDPMA.CS"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-16", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/Mecure_-_2025_AFS.pdf", "status": "collected", "ticker": "MECURE.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MED.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MEDA.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MEDVIEWAIR.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MEGM.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-16", "market": "africa", "status": "no_annual_data_returned", "ticker": "MEI.JO"}

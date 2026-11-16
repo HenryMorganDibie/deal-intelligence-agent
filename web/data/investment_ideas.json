@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-15T19:56:58.614586+00:00",
+  "updated_at": "2026-11-16T13:19:32.400379+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 59,
+      "new_review_items_today": 87,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 0,
+      "new_review_items_today": 3,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 237,
-      "new_observations_today": 4,
-      "unreviewed_flagged_observations": 34,
+      "observations_collected": 242,
+      "new_observations_today": 5,
+      "unreviewed_flagged_observations": 36,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 225,
-      "entities": 362,
+      "relationships": 233,
+      "entities": 373,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,24 +177,23 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 237,
-    "new_rows": 4,
+    "collected_tickers": 242,
+    "new_rows": 5,
     "failures": [
-      "MAB.CS",
-      "MAC.GH",
-      "MANDRID.LG",
-      "MAP.JO",
-      "MAS.JO",
-      "MASH.NR",
-      "MBEN.CA",
-      "MCG.JO"
+      "MCNICHOLS.LG",
+      "MDPMA.CS",
+      "MED.JO",
+      "MEDA.CA",
+      "MEDVIEWAIR.LG",
+      "MEGM.CA",
+      "MEI.JO"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 362,
-    "relationships": 225,
-    "source_links": 293,
+    "nodes": 373,
+    "relationships": 233,
+    "source_links": 312,
     "most_connected": [
       {
         "name": "Afreximbank",
