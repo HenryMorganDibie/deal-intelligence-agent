@@ -121,11 +121,13 @@ export default function CompaniesPage() {
       if (profile.governance_pending) {
         // The board and shareholders are read from the filed annual report after the profile is shown.
         setReading(true);
-        get<{ governance: Governance | null }>("/api/companies/governance", {
+        get<{ governance: Governance | null; web?: Web | null }>("/api/companies/governance", {
           name: f.name.trim(), ticker: f.ticker.trim(), country: f.country.trim(), cik: f.cik.trim(),
           exchange: exact?.exchange, symbol: exact?.symbol,
         })
-          .then((r) => r.governance && setP((cur) => (cur && cur.name === profile.name ? { ...cur, governance: r.governance ?? undefined } : cur)))
+          .then((r) => setP((cur) => (cur && cur.name === profile.name
+            ? { ...cur, governance: r.governance ?? cur.governance, web: r.web ?? cur.web }
+            : cur)))
           .catch(() => undefined)
           .finally(() => setReading(false));
       }
@@ -213,7 +215,7 @@ export default function CompaniesPage() {
 
           {reading && !p.governance && (
             <p className="text-[0.8125rem] text-[color:var(--muted)]" role="status">
-              Reading the board, shareholders and subsidiaries from the latest annual report. The rest of the profile is ready below.
+              Reading the company&apos;s website and latest annual report for its board, shareholders and subsidiaries. This takes under a minute; the rest of the profile is ready below.
             </p>
           )}
           <CompanyGovernance identity={p.identity} governance={p.governance} country={p.country} web={p.web} />

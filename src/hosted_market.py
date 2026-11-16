@@ -961,6 +961,12 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
             profile["sources"].append("Annual statements (governance)")
         else:
             profile["governance_pending"] = True         # the page asks /api/companies/governance next
+    elif not profile.get("governance"):
+        # No exchange filing and nothing stored: the company's site and annual report are read on the spot when the
+        # page asks /api/companies/governance, unless a read in the last 30 days found nothing to read.
+        read_at = ((stored or {}).get("facts") or {}).get("read_at") if stored else None
+        if not (read_at and _days_since(read_at) < 30):
+            profile["governance_pending"] = True
     mark = profile["valuation"].get("latest_mark")
     if mark and not profile.get("listing"):
         from src.engines import markets
@@ -981,6 +987,14 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
 _governance_cache: dict[str, dict] = {}
 
 
+def _days_since(stamp: str) -> float:
+    try:
+        then = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+        return (datetime.now(timezone.utc) - then).total_seconds() / 86400
+    except (TypeError, ValueError):
+        return 1e9
+
+
 @router.get("/api/companies/governance")
 async def company_governance(name: str = Query(..., min_length=1, max_length=120), ticker: Optional[str] = None,
                              country: Optional[str] = None, cik: Optional[int] = None,
@@ -992,6 +1006,23 @@ async def company_governance(name: str = Query(..., min_length=1, max_length=120
     profile = await company(name, ticker, country, cik, exchange, symbol)
     if not profile.get("governance_pending"):
         return {"governance": profile.get("governance"), "pending_ocr": False}
+    if not profile.get("governance_source"):
+        # No exchange filing: read the company's own site and annual report now, while the user waits.
+        from src import company_live
+        site = (profile.get("web") or {}).get("website") or (profile.get("identity") or {}).get("website")
+        result = await run_in_threadpool(company_live.read_now, profile["name"], site, profile.get("country_name"))
+        await run_in_threadpool(company_live.store, profile["name"], result)
+        profile.pop("governance_pending", None)
+        gov = result.get("report")
+        if gov:
+            profile["governance"] = gov
+            profile["sources"].append(gov.get("source", "Annual report").split(":")[0])
+        if result.get("facts") or result.get("website"):
+            profile["web"] = {**(profile.get("web") or {}), "website": result.get("website"),
+                              "facts": {**((profile.get("web") or {}).get("facts") or {}), **(result.get("facts") or {})}}
+        log.info("company live read %s: %s", profile["name"], result.get("timings"))
+        return {"governance": gov, "pending_ocr": bool(result.get("report_scanned")), "web": profile.get("web"),
+                "source": (gov or {}).get("source")}
     src = profile["governance_source"]
     gov = _governance_cache.get(src["url"])
     if gov is None:
