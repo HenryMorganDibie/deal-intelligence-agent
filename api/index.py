@@ -376,7 +376,7 @@ async def analyse(body: AnalyseBody, request: Request) -> dict:
         from src.hosted_market import deals as market_deals
         profile = await run_in_threadpool(
             company_profile_engine.build, body.company, body.ticker, body.country,
-            None, market_deals(), None, None, None, False,
+            market_deals(), None, None, None, None, False,
         )
         from src.engines import market_risk as market_risk_engine
         profile["valuation"] = market_risk_engine.valuation_view(
@@ -799,7 +799,7 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
     monthly_counts: dict[str, int] = {}
     for deal in selected:
         month = str(deal.get("announced") or "")[:7]
-        if re.fullmatch(r"\\d{4}-\\d{2}", month):
+        if re.fullmatch(r"\d{4}-\d{2}", month):
             monthly_counts[month] = monthly_counts.get(month, 0) + 1
         for party_name, party_role in parties(deal):
             if party_role in ("investor", "lender", "acquirer"):
@@ -816,7 +816,6 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
         f"The selected sample contains {len(selected)} dated transaction records; this is platform coverage, not a census of market activity."
     ]
     if selected:
-        top_share = investor_activity[0]["transaction_count"] / max(1, len(selected)) if investor_activity else 0
         if investor_activity:
             analytical_readout.append(
                 f"{investor_activity[0]['name']} appears in {investor_activity[0]['transaction_count']} selected record(s); party extraction can be incomplete and repeated appearances do not establish market share."

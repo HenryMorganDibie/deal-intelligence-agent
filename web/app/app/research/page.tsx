@@ -502,7 +502,7 @@ export default function ResearchPage() {
             </a>
             <span className="text-xs text-[color:var(--muted)]">Carries your research question into the structured market-brief workflow.</span>
           </div>
-                    <ResultFeedback resultType="research" resultId={result.result_id} />
+          <ResultFeedback resultType="research" resultId={result.result_id} />
         </section>
       )}
     </Container>
