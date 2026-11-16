@@ -107,6 +107,13 @@ export type FieldAccuracy = {
 
 export type Deal = {
   id: string;
+  record_type?: "transaction" | "investment_opportunity";
+  opportunity_title?: string;
+  opportunity_status?: string;
+  soliciting_party?: string;
+  prospective_investors?: string[];
+  sectors?: string[];
+  commitment_confirmed?: boolean;
   deal_type: string;
   stage: string | null;
   round: string | null;

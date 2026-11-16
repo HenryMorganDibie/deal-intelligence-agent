@@ -442,10 +442,18 @@ def _load_visible(kind: str) -> list[dict]:
 
 
 def deals() -> list[dict]:
-    """Deals the product shows; merged duplicates and excluded non-transactions stay stored for audit."""
-    visible = [d for d in _load_visible("deals") if deals_mod.is_visible(d)]
-    investors.learn_variants(visible)                   # one name per investor firm across every page (cached)
+    """Transaction records only; proposed investment solicitations are excluded from all deal-flow metrics."""
+    visible = [d for d in _load_visible("deals")
+               if deals_mod.is_visible(d) and not deals_mod.is_investment_opportunity(d)]
+    investors.learn_variants(visible)
     return visible
+
+
+def opportunities() -> list[dict]:
+    """Proposed investment opportunities, separate from transaction and capital-flow calculations."""
+    return [{**d, "record_type": "investment_opportunity"}
+            for d in _load_visible("deals")
+            if deals_mod.is_visible(d) and deals_mod.is_investment_opportunity(d)]
 
 
 def _visible_events(rows: list[dict]) -> list[dict]:
@@ -665,6 +673,41 @@ async def deal_search(q: str = "", country: Optional[str] = None, type: Optional
             "limit": limit, "count": len(out), "deals": out}
 
 
+@router.get("/api/opportunities")
+async def opportunity_search(q: str = "", country: Optional[str] = None, sector: Optional[str] = None,
+                            since: Optional[str] = None, until: Optional[str] = None,
+                            limit: int = Query(50, ge=1, le=100),
+                            offset: int = Query(0, ge=0, le=100000)) -> dict:
+    """Search proposed investments separately; these records never enter deal-flow metrics."""
+    c = _country_or_404(country).iso2 if country else None
+    rows = opportunities()
+    needle = q.strip().casefold()
+    matching = []
+    for d in rows:
+        searchable = " ".join(str(d.get(k) or "") for k in
+                              ("headline", "target", "buyer", "soliciting_party", "opportunity_title"))
+        searchable += " " + " ".join(str(x) for x in (d.get("investors") or []))
+        if (needle and needle not in searchable.casefold()) or (c and c not in (d.get("countries") or [d.get("country")])):
+            continue
+        if sector and sector != d.get("sector"):
+            continue
+        if since and (d.get("announced") or "") < since:
+            continue
+        if until and (d.get("announced") or "") > until:
+            continue
+        matching.append(d)
+    matching.sort(key=lambda d: d.get("announced") or "", reverse=True)
+    page = matching[offset:offset + limit]
+    from src.engines import provenance
+    out = []
+    for d in page:
+        n = len(provenance.stories(d.get("sources") or []))
+        out.append({**d, "independent_stories": n,
+                    "verification": "corroborated" if n >= 2 else "single source"})
+    return {"total_in_database": len(rows), "total_matching": len(matching),
+            "offset": offset, "limit": limit, "count": len(out), "opportunities": out}
+
+
 _DEAL_EVAL = Path(__file__).resolve().parents[1] / "evaluation" / "deals" / "results.json"
 
 
@@ -708,7 +751,7 @@ async def deal(deal_id: str, comparables: bool = True) -> dict:
         # than load the whole store into a fresh instance.
         d = await run_in_threadpool(_one_deal, deal_id)
         if d is not None:
-            if not d or not deals_mod.is_visible(d):
+            if not d or not deals_mod.is_visible(d) or deals_mod.is_investment_opportunity(d):
                 raise HTTPException(404, "Deal not found.")
             return {"deal": d, "verification": provenance.verify(d), "field_accuracy": _field_accuracy(),
                     "parties": [{"name": n, "role": r} for n, r in investors.parties(d)], "comparables": []}
@@ -722,7 +765,7 @@ async def deal(deal_id: str, comparables: bool = True) -> dict:
     elif d is None:
         full = {x.get("id"): x for x in _load("deals")}
         d = full.get(deals_mod.canonical_id(deal_id, full))
-    if d is None or not deals_mod.is_visible(d):
+    if d is None or not deals_mod.is_visible(d) or deals_mod.is_investment_opportunity(d):
         raise HTTPException(404, "Deal not found.")
     return {"deal": d, "verification": provenance.verify(d), "field_accuracy": _field_accuracy(),
             "parties": [{"name": n, "role": r} for n, r in investors.parties(d)],
