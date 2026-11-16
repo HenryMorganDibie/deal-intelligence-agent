@@ -36,7 +36,7 @@ _SECTIONS = {
     "shareholders": re.compile(r"(?i)substantial\s+(interest|shareholding)|major\s+shareholders|holding\s+(5|five)\s*%|"
                                r"shareholding\s+(analysis|structure)|analysis\s+of\s+shareholding|analysis\s+of\s+shareholders|"
                                r"shareholder\s+spread|top\s+\d+\s+shareholders|actionnariat|r[ée]partition\s+du\s+capital|"
-                               r"principaux\s+actionnaires|"
+                               r"principaux\s+actionnaires|(largest|main|principal|major)\s+shareholders|"
                                r"(5|five)\s*%\s+(and\s+above|or\s+more)|more\s+than\s+(5|five)\s*%"),
     "subsidiaries": re.compile(r"(?i)(investments?\s+in|list\s+of|principal)\s+subsidiar|subsidiar(y|ies)\s+(undertakings|companies)|"
                                r"filiales"),
@@ -283,6 +283,9 @@ def _score(key: str, text: str, company: Optional[str] = None) -> float:
         if re.search(r"(?i)corporate\s+information|registration\s+information|company\s+information|"
                      r"professional\s+advisers|statutory\s+information", text):
             score += 6                  # the page itself, not one that mentions the registrar in passing
+        # The auditors' signature block names the audit firm(s): "LES COMMISSAIRES AUX COMPTES / DELOITTE SENEGAL".
+        if re.search(r"(?im)^[ \t]*(les?[ \t]+commissaires?[ \t]+aux[ \t]+comptes|chartered[ \t]+accountants)[ \t]*$", text):
+            score += 5
         if re.search(r"(?i)notice\s+of\s+(the\s+)?annual\s+general\s+meeting|\bprox(y|ies)\b", text):
             score -= 4                  # AGM notices and proxy forms name the registrar and auditor too
         return max(score, 0)
@@ -383,7 +386,8 @@ def _percent_near(name: str, percent, page: str, lines_after: int) -> bool:
     """The percentage is printed beside the name: on the line where the name is (or ends, for a name broken across
     lines) or within `lines_after` lines below it, not merely somewhere on the page (an ownership diagram prints
     "100%" many times)."""
-    words = [w for w in re.findall(r"[A-Za-z0-9]+", name or "") if w.lower() not in _TITLES]
+    # Letters of any alphabet: "Nestlé" is one word, not "Nestl" and "é".
+    words = [w for w in re.findall(r"[^\W_]+", name or "") if w.lower() not in _TITLES]
     if not words or percent in (None, ""):
         return False
     p = str(percent).replace("%", "").strip()
@@ -507,9 +511,15 @@ def verify(raw: dict, pages: list[str], allowed: list[int]) -> dict:
         if words and find(raw.get("office_page"), lambda t: sum(w in _norm(t) for w in words) >= 0.8 * len(words),
                           "corporate"):
             out["registered_office"] = " ".join(office.split())
+    def on_page(v: str, t: str, key: str) -> bool:
+        if _phrase_on_page(v, t):
+            return True
+        # Joint auditors ("Deloitte Senegal and GARECGO"): every firm printed on the page. "&" stays inside a name.
+        parts = [x.strip() for x in re.split(r"\s+(?:and|et)\s+|\s*;\s*", v) if x.strip()]
+        return key == "auditor" and len(parts) > 1 and all(_phrase_on_page(x, t) for x in parts)
     for key in ("company_secretary", "auditor", "registrar", "holding_company"):
         v = _clean(raw[key]) if isinstance(raw.get(key), str) else ""
-        if v and find(raw.get(f"{key}_page", raw.get("corporate_page")), lambda t, v=v: _phrase_on_page(v, t),
+        if v and find(raw.get(f"{key}_page", raw.get("corporate_page")), lambda t, v=v, key=key: on_page(v, t, key),
                       "corporate"):
             out[key] = v
     board = []

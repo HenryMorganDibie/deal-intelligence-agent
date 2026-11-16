@@ -318,3 +318,18 @@ def test_board_and_holder_clean_up():
     assert not g._GENERIC_HOLDER.search("Orange MEA")
     assert not g._GENERIC_HOLDER.search("Public Investment Corporation")
     assert g._GENERIC_HOLDER.search("Grand public")
+
+
+def test_percentages_beside_accented_names_are_found():
+    from src.engines import governance as g
+    line = "Societe Des Produits Nestlé S.A 1 0.00 561,280,306 70.81"
+    assert g._percent_near("Societe Des Produits Nestlé S.A", "70.81", line, 10)
+
+
+def test_joint_auditors_and_signature_pages():
+    from src.engines import governance as g
+    page = "Dakar, le 31 mars 2026\nLES COMMISSAIRES AUX COMPTES\nDELOITTE SENEGAL\nTAFSIR NDOYE\nGARECGO\n"
+    assert g._score("corporate", page) >= 5 or g._score("corporate", "Commissaires aux comptes\n" + page) >= 5
+    out = g.verify({"auditor": "Deloitte Senegal and GARECGO", "auditor_page": 1}, [page], [1])
+    assert out["auditor"] == "Deloitte Senegal and GARECGO"
+    assert "auditor" not in g.verify({"auditor": "Deloitte Senegal and KPMG", "auditor_page": 1}, [page], [1])
