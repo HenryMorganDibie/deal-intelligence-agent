@@ -60,7 +60,9 @@ const CAPABILITIES = [
 ];
 
 export default async function LandingPage() {
-  const [pulse, latestDeals, showcase, markets] = await Promise.all([getPulse(), getLatestDeals(4), getShowcase(), getMarkets()]);
+  const [pulse, latestDeals, showcase, markets] = await Promise.all([
+    getPulse(), getLatestDeals(4), getShowcase(), getMarkets(),
+  ]);
   return (
     <div className="relative overflow-x-clip">
       <a

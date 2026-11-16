@@ -12,7 +12,9 @@ function dealCountry(code: string | null): string | null {
 }
 
 /** The current month of African deal flow and this week's corporate events, re-rendered from the live feed. */
-export function MarketPulse({ pulse, latestDeals, compact = false }: { pulse: Pulse | null; latestDeals: Deal[]; compact?: boolean }) {
+export function MarketPulse({ pulse, latestDeals, compact = false }: {
+  pulse: Pulse | null; latestDeals: Deal[]; compact?: boolean;
+}) {
   if (!pulse || !pulse.deals.total) return null;
   const { deals, events } = pulse;
   if (compact) {
@@ -47,7 +49,10 @@ export function MarketPulse({ pulse, latestDeals, compact = false }: { pulse: Pu
           </dl>
           <div className="panel mt-3 overflow-hidden">
             <div className="flex items-center justify-between border-b hairline px-5 py-3">
-              <h3 className="h3">Latest reported deals</h3>
+              <div>
+                <h3 className="h3">Latest deals</h3>
+                <p className="mt-1 text-xs text-[color:var(--muted)]">Newest-first, with a small reader-interest adjustment.</p>
+              </div>
               <a href="/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">Full feed <ArrowRight /></a>
             </div>
             <ul>
@@ -66,6 +71,7 @@ export function MarketPulse({ pulse, latestDeals, compact = false }: { pulse: Pu
               ))}
             </ul>
           </div>
+
         </Container>
       </Section>
     );
@@ -114,7 +120,10 @@ export function MarketPulse({ pulse, latestDeals, compact = false }: { pulse: Pu
           <Reveal>
             <div className="panel h-full overflow-hidden">
               <div className="flex items-center justify-between border-b hairline px-6 py-4">
-                <h3 className="h3">Latest deals</h3>
+                <div>
+                  <h3 className="h3">Latest deals</h3>
+                  <p className="mt-1 text-xs text-[color:var(--muted)]">Freshness-led, with a limited reader-interest signal.</p>
+                </div>
                 <a href="/deals" className="eyebrow inline-flex items-center gap-2 hover:text-verified">
                   All {count(deals.total)} <ArrowRight />
                 </a>
