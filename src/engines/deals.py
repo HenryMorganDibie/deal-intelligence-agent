@@ -2104,8 +2104,22 @@ def same_transaction(a: dict, b: dict) -> bool:
     return True
 
 
+_INVESTMENT_OPPORTUNITY = re.compile(
+    r"(?i)\\b(?:investment\\s+opportunit(?:y|ies)|project\\s+seeking\\s+(?:an?\\s+)?investors?|"
+    r"seeking\\s+(?:a\\s+)?strategic\\s+investor|(?:woos|courts|seeks?|seeking|invites?|urges?|calls?\\s+on)"
+    r"\\b.{0,120}\\b(?:invest(?:ment|or|ors)?|capital|funding)\\b)"
+)
+
+
+def is_investment_opportunity(deal: dict) -> bool:
+    """Identify proposed investment solicitations without treating them as completed transactions."""
+    if deal.get("record_type") == "investment_opportunity":
+        return True
+    return bool(_INVESTMENT_OPPORTUNITY.search(str(deal.get("headline") or "")))
+
+
 def is_visible(deal: dict) -> bool:
-    """A record the product shows: not folded into another record, not excluded as a non-transaction."""
+    """A stored record that is neither merged nor excluded; consumers filter by record type."""
     return not deal.get("merged_into") and not deal.get("excluded")
 
 

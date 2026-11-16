@@ -12,6 +12,7 @@ const EMPTY: Filters = { q: "", country: "", type: "", sector: "", investor: "",
 
 export default function DealsPage() {
   const [filters, setFilters] = useState<Filters>(EMPTY);
+  const [view, setView] = useState<"deals" | "opportunities">("deals");
   const [rows, setRows] = useState<Deal[] | null>(null);
   const [totalMatching, setTotalMatching] = useState(0);
   const [totalInDatabase, setTotalInDatabase] = useState(0);
@@ -19,15 +20,19 @@ export default function DealsPage() {
   const [limit, setLimit] = useState(50);
   const [error, setError] = useState<string | null>(null);
 
-  async function load(f: Filters, nextOffset = 0, nextLimit = limit) {
+  async function load(f: Filters, nextOffset = 0, nextLimit = limit, nextView: "deals" | "opportunities" = view) {
     setOffset(nextOffset);
     setLimit(nextLimit);
     setRows(null);
     setError(null);
     try {
-      const r = await get<{ total_in_database: number; total_matching: number; deals: Deal[] }>("/api/deals", { ...f, limit: nextLimit, offset: nextOffset });
-      setRows(r.deals);
-      r.deals.forEach((deal, index) => {
+      const endpoint = nextView === "deals" ? "/api/deals" : "/api/opportunities";
+      const params = nextView === "deals" ? { ...f, limit: nextLimit, offset: nextOffset } :
+        { q: f.q, country: f.country, sector: f.sector, since: f.since, until: f.until, limit: nextLimit, offset: nextOffset };
+      const r = await get<{ total_in_database: number; total_matching: number; deals?: Deal[]; opportunities?: Deal[] }>(endpoint, params);
+      const loaded = nextView === "deals" ? (r.deals ?? []) : (r.opportunities ?? []);
+      setRows(loaded);
+      if (nextView === "deals") loaded.forEach((deal, index) => {
         trackProductAction("deal_impression", deal.id, {
           result_position: index + 1,
           has_query: Boolean(f.q.trim()),
@@ -72,13 +77,17 @@ export default function DealsPage() {
     : null;
   return (
     <Container className="py-10 lg:py-14">
-      <PageHeader eyebrow="Deals" title="Private equity, venture, debt and M&A across Africa.">
+      <PageHeader eyebrow={view === "deals" ? "Deals" : "Investment opportunities"} title={view === "deals" ? "Private equity, venture, debt and M&A across Africa." : "Proposed investments seeking capital or strategic partners."}>
         Transactions extracted daily from African business and private-capital publications in English, French and
         Portuguese, with every source linked. Amounts are as reported, converted to US dollars at the year&apos;s official
         rate. History runs from 2010; earlier years are thinner and back-filled records are kept only when an African
         market and a transaction are both stated. Undisclosed deals that no one reports cannot appear.
       </PageHeader>
 
+      <div className="mb-6 flex flex-wrap gap-2" role="tablist" aria-label="Market records">
+        <button type="button" role="tab" aria-selected={view === "deals"} className={view === "deals" ? "btn btn-primary" : "btn btn-ghost"} onClick={() => { setView("deals"); load(filters, 0, limit, "deals"); }}>Deals</button>
+        <button type="button" role="tab" aria-selected={view === "opportunities"} className={view === "opportunities" ? "btn btn-primary" : "btn btn-ghost"} onClick={() => { setView("opportunities"); load(filters, 0, limit, "opportunities"); }}>Investment opportunities</button>
+      </div>
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
         <div className="sm:col-span-2">
           <Field label="Search">
@@ -88,7 +97,7 @@ export default function DealsPage() {
         <Field label="Country (ISO)">
           <input value={filters.country} onChange={set("country")} maxLength={3} placeholder="NG" className="field kbd uppercase" />
         </Field>
-        <Field label="Type">
+        {view === "deals" && <Field label="Type">
           <select value={filters.type} onChange={set("type")} className="field">
             <option value="">All types</option>
             {DEAL_TYPES.map((t) => (
@@ -97,7 +106,7 @@ export default function DealsPage() {
               </option>
             ))}
           </select>
-        </Field>
+        </Field>}
         <Field label="Sector">
           <select value={filters.sector} onChange={set("sector")} className="field">
             <option value="">All sectors</option>
@@ -137,15 +146,22 @@ export default function DealsPage() {
       ) : (
         <>
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <Stat label="Matching deals" value={totalMatching.toLocaleString()} note={`${totalInDatabase.toLocaleString()} total in database`} />
-            <Stat label="Disclosed value on this page" value={usd(disclosed.reduce((a, d) => a + (d.amount_usd ?? 0), 0))} note={`${disclosed.length} with amounts`} />
-            <Stat
-              label="Median size on this page"
-              value={usd(medianSize)}
-            />
+            <Stat label={view === "deals" ? "Matching deals" : "Matching opportunities"} value={totalMatching.toLocaleString()} note={`${totalInDatabase.toLocaleString()} total in database`} />
+            {view === "deals" ? <Stat label="Disclosed value on this page" value={usd(disclosed.reduce((a, d) => a + (d.amount_usd ?? 0), 0))} note={`${disclosed.length} with amounts`} /> : <Stat label="Transaction value" value="Not applicable" note="Proposals are not completed funding." />}
+            {view === "deals" && <Stat label="Median size on this page" value={usd(medianSize)} />}
           </div>
           <div className="mt-6">
-            {rows.length ? <><DealRows deals={rows} /><Pagination total={totalMatching} offset={offset} limit={limit} onPageChange={(next) => load(filters, next, limit)} onPageSizeChange={(next) => load(filters, 0, next)} /></> : <p className="py-6 text-sm text-[color:var(--muted)]">No deals match these filters.</p>}
+            {rows.length ? <>{view === "deals" ? <DealRows deals={rows} /> :
+              <div className="divide-y divide-white/[0.06] border-y hairline">{rows.map((item) => <article key={item.id} className="py-5">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-[color:var(--muted)]">
+                  <span className="rounded-full border border-white/20 px-2 py-1">Proposed investment</span>
+                  <span>{item.opportunity_status ?? "Under discussion"}</span><span>{item.country ?? "Pan-African"}</span><span>{item.announced ?? ""}</span>
+                </div>
+                <h2 className="mt-2 font-medium">{item.opportunity_title ?? item.headline}</h2>
+                <p className="mt-1 text-sm text-[color:var(--muted)]">{item.soliciting_party ? `Soliciting party: ${item.soliciting_party}. ` : ""}{item.prospective_investors?.length ? `Prospective investor: ${item.prospective_investors.join(", ")}. ` : ""}No completed investment or committed amount confirmed.</p>
+                <div className="mt-2 flex flex-wrap gap-3 text-xs">{(item.sources ?? []).map((source, i) => source.url ? <a key={i} href={source.url} target="_blank" rel="noreferrer" className="text-verified hover:underline">{source.publisher ?? "Source"} ↗</a> : null)}</div>
+              </article>)}</div>}
+              <Pagination total={totalMatching} offset={offset} limit={limit} onPageChange={(next) => load(filters, next, limit)} onPageSizeChange={(next) => load(filters, 0, next)} /></> : <p className="py-6 text-sm text-[color:var(--muted)]">No {view === "deals" ? "deals" : "investment opportunities"} match these filters.</p>}
           </div>
         </>
       )}
