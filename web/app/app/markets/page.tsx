@@ -277,7 +277,7 @@ export default function MarketsPage() {
           <div className="min-w-0">
             <div className="mb-3 flex items-end justify-between gap-3">
               <h2 className="h3 text-xl">Corporate events, last 7 days</h2>
-              <Link href="/markets/monitoring" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Monitor holdings →</Link>
+              <Link href="/watchlists" className="text-xs text-[color:var(--muted)] underline-offset-4 hover:underline">Get alerts →</Link>
             </div>
             {pulse.events.latest.length === 0 && <p className="panel p-4 text-sm text-[color:var(--muted)]">No events in the last seven days.</p>}
             <div className="space-y-2">

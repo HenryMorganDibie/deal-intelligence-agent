@@ -11,7 +11,6 @@ const TABS: [string, string][] = [
   ["/markets/compare", "Compare"],
   ["/markets/valuation", "Valuation"],
   ["/markets/portfolio", "Portfolio"],
-  ["/markets/monitoring", "Monitoring"],
 ];
 
 /** The Markets section's menu, the same on every Markets page. */

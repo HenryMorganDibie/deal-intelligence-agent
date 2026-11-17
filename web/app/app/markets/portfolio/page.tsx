@@ -7,6 +7,7 @@ import { Container } from "../../../../components/primitives";
 import { ErrorNote } from "../../../../components/app/ui";
 import { calculateExposureRows, calculatePortfolioTotals, calculatePortfolioValuationReviews, calculatePortfolioValuationSummary, convertToBase, isSavedValuation, type SavedValuationSnapshot, ASSET_TYPES, CURRENCIES, normalizeAssetType } from "../../../../lib/markets-portfolio";
 import { parseCsv, stringifyCsv } from "../../../../lib/markets-csv";
+import { calculateValuationChangeAlerts } from "../../../../lib/markets-monitoring";
 import { createPortfolioWorkbook, parsePortfolioWorkbook } from "../../../../lib/markets-excel";
 import { post } from "../../../../lib/market";
 
@@ -178,6 +179,15 @@ export default function MarketsPortfolioPage() {
   const sectorExposure = useMemo(() => calculateExposureRows(holdings, "sector"), [holdings]);
   const assetTypeExposure = useMemo(() => calculateExposureRows(holdings, "assetType"), [holdings]);
   const currencyExposure = useMemo(() => calculateExposureRows(holdings, "currency"), [holdings]);
+  // Material moves between the last two saved estimates for a holding (same company, country, method and currency).
+  const valuationChanges = useMemo(() => calculateValuationChangeAlerts(savedValuations).filter((change) =>
+    holdings.some((holding) => {
+      const country = (holding.country ?? "").trim().toLowerCase();
+      if (!country || country !== (change.country ?? "").trim().toLowerCase()) return false;
+      if (holding.ticker && change.ticker) return holding.ticker.trim().toUpperCase() === change.ticker.trim().toUpperCase();
+      return holding.name.trim().toLowerCase() === change.company.trim().toLowerCase();
+    }),
+  ), [savedValuations, holdings]);
   const valuationReviews = useMemo(() => calculatePortfolioValuationReviews(holdings, savedValuations, baseCurrency), [holdings, savedValuations, baseCurrency]);
   const valuationSummary = useMemo(() => calculatePortfolioValuationSummary(valuationReviews), [valuationReviews]);
   const largestPosition = useMemo(() => {
@@ -491,7 +501,7 @@ export default function MarketsPortfolioPage() {
     })).values()].filter(Boolean);
     if (!uniqueCompanies.length) return;
     try {
-      window.sessionStorage.setItem("deal-intelligence:portfolio-watchlist-prefill", JSON.stringify({ name: "Portfolio monitoring", companies: uniqueCompanies }));
+      window.sessionStorage.setItem("deal-intelligence:portfolio-watchlist-prefill", JSON.stringify({ name: "My portfolio", companies: uniqueCompanies }));
       window.location.href = "/watchlists?from=portfolio";
     } catch {
       setError("The watchlist draft could not be prefilled in this browser. You can still copy company names into the existing Watchlists page manually.");
@@ -621,10 +631,31 @@ export default function MarketsPortfolioPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[0.8125rem]">
-                <button type="button" className="text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline" onClick={preparePortfolioWatchlist}>Watch these companies for events</button>
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.8125rem]">
+                <button type="button" className="btn btn-secondary h-9" onClick={preparePortfolioWatchlist}>Get alerts for these holdings</button>
+                <span className="text-[color:var(--dim)]">Deals and corporate events by email, Slack, Teams or webhook.</span>
                 <Link href="/markets/portfolio/cloud" className="text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Cloud portfolios and team workspaces</Link>
-              </p>
+              </div>
+              {valuationChanges.length > 0 && (
+                <section className="mt-6" aria-labelledby="valuation-changes-title">
+                  <h2 id="valuation-changes-title" className="h3 text-lg">Material changes in saved estimates</h2>
+                  <p className="mt-1 max-w-3xl text-[0.8125rem] leading-relaxed text-[color:var(--muted)]">The last two saved base-case estimates for a holding, compared. A change reflects new inputs or assumptions, not a price move or a recommendation.</p>
+                  <ul className="mt-3 space-y-2">
+                    {valuationChanges.map((change) => (
+                      <li key={`${change.country}-${change.ticker || change.company}-${change.calculatedAt}`} className="rounded-xl border hairline p-3 text-[0.8125rem]">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-medium">{change.company}{change.ticker ? ` · ${change.ticker}` : ""}</span>
+                          <span className={change.changePct < 0 ? "text-risk" : "text-verified"}>{change.changePct > 0 ? "+" : ""}{change.changePct.toFixed(1)}%</span>
+                        </div>
+                        <p className="mt-1 text-[color:var(--muted)]">
+                          {change.previousBasePerShare.toLocaleString("en", { maximumFractionDigits: 2 })} to {change.currentBasePerShare.toLocaleString("en", { maximumFractionDigits: 2 })} {change.currency} per share ({change.method.toUpperCase()}; statements {change.previousStatementPeriod} to {change.statementPeriod}).{" "}
+                          <Link href={`/markets/valuation?company=${encodeURIComponent(change.company)}${change.ticker ? `&ticker=${encodeURIComponent(change.ticker)}` : ""}${change.country ? `&country=${encodeURIComponent(change.country)}` : ""}`} className="underline-offset-4 hover:underline">Review the model</Link>
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
             </>
           )}
         </section>
