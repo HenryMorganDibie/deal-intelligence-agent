@@ -716,3 +716,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MMAT.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MMHGH.GH"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MMP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MND.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MNG.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MNHD.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MNK.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MNY.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MOED.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MOFIREIF.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MOIL.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MOIN.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-17", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46939_MORISON_INDUSTRIES_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MAY_2026.pdf", "status": "collected", "ticker": "MORISON.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MOSC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MOX.CS"}

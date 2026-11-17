@@ -1547,6 +1547,26 @@
     "undisclosed gas business": {
       "name": "Undisclosed gas business",
       "kind": "organization"
+    },
+    "a p moller capital": {
+      "name": "A.P. Moller Capital",
+      "kind": "organization"
+    },
+    "mainstream renewable power south africa": {
+      "name": "Mainstream Renewable Power South Africa",
+      "kind": "organization"
+    },
+    "absa uganda": {
+      "name": "Absa Uganda",
+      "kind": "organization"
+    },
+    "amd": {
+      "name": "AMD",
+      "kind": "organization"
+    },
+    "world labs": {
+      "name": "World Labs",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -5418,6 +5438,11 @@
           "title": "Nigeria’s NGX buys 10% stake in Kenya's NSE, broadening East Africa exchange portfolio",
           "publisher": "IntelliNews",
           "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxOVl8yNERlZ0YyXzRZTUJUZXdXRG1EYzJtY2V1OXA3ZlFZSmdhNUZacFN4UzZCT2JZVklHaDNiRS1vVk0wcHRrdzg4TjBZU2tYc1Q4c0hLUWFfVVE4SG1MSmlGZUxwcER4blo0TS1ySzNTN05vV2Fxb0RnMFZDVzdkRFpEYUhzNkt3STRlZUhhU1dkdzN5ajNpZ3A3U2w5TTNsMDB4akFiQlZYUXJ0VFBJMFRnWnpJWURpQmZuQTV6ejZmdFlhTWt6aHNlcUp6bTA5TGhzQU9yTlhrWGt4UVE?oc=5"
+        },
+        {
+          "title": "Nigeria’s NGX buys 10% stake in Kenya's NSE, broadening East Africa exchange portfolio",
+          "publisher": "IntelliNews",
+          "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPNDdwWTdqSWw1UlQzejlJanlsYmc0MEVyb2h1MmNSSWpWeXlyUkFRZndKUGtxc1JVQi1yb0x5YjdkeU1rTjZ6ckh1cnZHZTlwOWUyZHNEU1JtSDU3SW1vSFRUV2hVd3lhRFlkcUpWdzBDb3hqU3lmZW1KRXVZQjVqOWlNaDZKMEstbElSSjJhZnhUNlFMSE80ZUxCRE1XYXJMU2Mwcmx0OGZtMm12ZnBObFpfTUJvUGxiS0o5dzN1SE9BaUJuOTNLRzJwVk9fQQ?oc=5"
         }
       ]
     },
@@ -5448,7 +5473,54 @@
           "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNcXpJTnMyTG1hLVFZWmk2UXNKbFlqNE1UN1dScHk3X1N1S0lqYmdsdWxEU2lTV3ZCZm90V1JCTDlZd19PZUFfR1NwMkNMZmtPdUdMQ21GQlRwWENiYlpOdW9pekVNU2JOdTZsY2s0NUNxa1dCQ2NFV3RaSms0VGwxSEJJc29UTFQzQlFPWTJ1V2QxMXptbFJTMy1hSVdlbl9IS1E?oc=5"
         }
       ]
+    },
+    "187ac8f7c3713ad1ef3c": {
+      "id": "187ac8f7c3713ad1ef3c",
+      "from": "a p moller capital",
+      "to": "mainstream renewable power south africa",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "A.P. Moller Capital Acquires 100% Of Mainstream Renewable Power South Africa, Securing 11.9 GW Pipeline",
+          "publisher": "SolarQuarter",
+          "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxPNUo0MWNWNGl2bUd4eFdvRFdYcVpsVjh1WkhnN0pjWUoxOHd0SkNYTDJ6SnRaWlRLb2g2UENHYmdKMUl3a2JOZno0ejA5U1FFYmtkS0FQNEFwU3Q4TGRjdGd3UXhuT2p1VmdwdkZUeWVnYXRYR1Z0UGVEZ1VNNktJbG5BTFdNOWc3NkNpVGY0dlBwNUJCNDdqVjNLRFdscUdmVHRBM3JUZ1UxNXZhOGJ2N2RuaTFjZU53N2ZIc1pXY2pwYlZzb0VmLXlnS0lfSTIwRGQ4?oc=5"
+        },
+        {
+          "title": "A.P. Moller Capital acquires Mainstream Renewable Power South Africa",
+          "publisher": "Engineering News",
+          "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNd2xWdmlkNzRMS01SVFo0TWltQk1QT1RQc0xjSllGV0U2aXpBNkRYd3pRbXN6M3lOLTlJcXVKUlNiTTkxRVhSekZLaktkd0hacDJQMzR4WmF6bllqR3p2ZFpXcW93WDg0am4tbGNXRVRGN0pITmxzYW9tbFpOUk9peHZGYXlCRzFZQ2pPT1RpN1Uya29BNE42S3cxM2g2YWdtdnZxeURVNU1QNmNWQlhpRVhTN0xHdXZYT1NZ?oc=5"
+        }
+      ]
+    },
+    "f4cad43976d84780368b": {
+      "id": "f4cad43976d84780368b",
+      "from": "absa uganda",
+      "to": "standard chartered",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Absa Uganda Completes Acquisition of Standard Chartered’s Wealth and Retail Banking Business",
+          "publisher": "SoftPower News",
+          "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxONHk4WV81MmRJNDVvdTB4dUc1a21uTzdPT0xZbjMzVkhhNEJOVU8ya2dlWkhLTjNfR1ZHcjd1YjhnZmlITGtxcjlFMmw3UjBUcDZMU3lhUlJnSkttSVJwNl83SEFWY3Z6aE9lZXdjWXllLUZJZFY0VXlhaTU0Q044Zmt5eGFreXFQMFhGTks3d0xGeDgwYURfOWhtUi11NURXcFJmczZ3X2JMZFF1MEhfOHhIYw?oc=5"
+        }
+      ]
+    },
+    "3b87f5d563fb273998a4": {
+      "id": "3b87f5d563fb273998a4",
+      "from": "amd",
+      "to": "world labs",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "AMD completes acquisition of World Labs, adds AI research team By Investing.com",
+          "publisher": "Investing.com South Africa",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPaUlCc2NVb2pPMEoxQ3dGSlFnUlNoNTJzR2FfSUNoN1A0X2k4VDg2V21rUHo0QVNkYXplNk1uLUlVZUUxc0tsU21vTVgwRTJ2VzRQVnZPcy1zaWNqU0F4bEdGUWxLeE1aREFfdlRuTmEyWVpaWF80OEE4RUdrSVJEaUpTb1lQeThMNmRCbnA0dU9rZWc4T3BHcWNPdnFlRV85OHlHcWdlbEl2S1Z2RTJIcGVYNk80OHlJZTVDbDFiSQ?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-17T10:18:46.352847+00:00"
+  "updated_at": "2026-11-17T13:47:04.804251+00:00"
 }
