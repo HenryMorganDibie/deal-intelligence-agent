@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { MarketsTitle } from "../../../../components/app/MarketsNav";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, Field, Loading, Pagination, Table, Td, usd, words } from "../../../../components/app/ui";
@@ -28,6 +28,22 @@ const SECTOR_GROUPS = ["Financials", "Telecom", "Technology", "Oil & Gas", "Util
   "Basic Materials", "Consumer Goods", "Consumer Services", "Industrials", "Real Estate"];
 
 const COUNTRY_NAME = new Map(AFRICAN_COUNTRIES);
+
+/** On a phone, filters other than Search sit behind one button so results come first; from the small breakpoint up
+ * the wrapper takes no space of its own and the fields stay in the form's grid as before. */
+function MoreFilters({ active, children }: { active: number; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" className="btn btn-ghost h-10 w-full justify-between sm:hidden" aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}>
+        <span>{open ? "Hide filters" : "Filters"}{active ? ` · ${active} on` : ""}</span>
+        <span aria-hidden="true">{open ? "▴" : "▾"}</span>
+      </button>
+      <div className={`${open ? "grid" : "hidden"} gap-3 sm:contents`}>{children}</div>
+    </>
+  );
+}
 
 type PrivateFilters = { q: string; country: string; sector: string; sort: string };
 
@@ -56,6 +72,7 @@ function PrivateCompanies() {
         <Field label="Search">
           <input value={f.q} onChange={set("q")} placeholder="Company name" className="field" />
         </Field>
+        <MoreFilters active={[f.country, f.sector, f.sort !== "recent" ? f.sort : ""].filter(Boolean).length}>
         <Field label="Country">
           <select value={f.country} onChange={set("country")} className="field">
             <option value="">All countries</option>
@@ -73,6 +90,7 @@ function PrivateCompanies() {
             {PRIVATE_SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </Field>
+        </MoreFilters>
       </form>
       {error && <ErrorNote message={error} />}
       {!data && !error && <Loading label="Loading private companies…" />}
@@ -194,6 +212,8 @@ export default function ScreenerPage() {
           <Field label="Search">
             <input value={f.q} onChange={set("q")} placeholder="Name or ticker" className="field" />
           </Field>
+          <MoreFilters active={(["exchange", "sector", "min_mcap_usd", "sort", "securities", "include_stale"] as const)
+            .filter((k) => f[k] !== EMPTY[k]).length}>
           <Field label="Exchange">
             <select value={f.exchange} onChange={set("exchange")} className="field">
               {EXCHANGES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -230,6 +250,7 @@ export default function ScreenerPage() {
               <option value="true">Include stale prices</option>
             </select>
           </Field>
+          </MoreFilters>
         </form>
       )}
 
