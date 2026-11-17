@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-16T17:19:42.571623+00:00",
+  "updated_at": "2026-11-17T01:52:45.539892+00:00",
   "current": {
-    "company": "Standard Bank",
-    "company_url": "/companies?name=Standard%20Bank",
-    "headline": "Standard Bank hit with a R17 million fine and administrative sanctions",
+    "company": "Coca-Cola HBC",
+    "company_url": "/companies?name=Coca-Cola%20HBC",
+    "headline": "Coca-Cola HBC secures approval for secondary listing in South Africa",
     "deal_type": "regulatory_action",
     "amount_usd": null,
     "country": "ZA",
-    "sector": "banking",
-    "announced": "2026-11-13",
-    "score": 51.04,
+    "sector": null,
+    "announced": "2026-11-16",
+    "score": 53.9,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
@@ -22,19 +22,87 @@
     ],
     "sources": [
       {
-        "publisher": "Daily Investor",
-        "title": "Standard Bank hit with a R17 million fine and administrative sanctions",
-        "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPSkFSbDdFVGxpOV9mRGdLOE0xanNLb1otMzRMOXlpdS1Qc2RvQW83NEEwUFNhUnR5N3BTVkhOMWl1UC1tTE5YUEE3N0N4a2s0SzFhR1psMXNjRExuVjhKTGJxbk5qNmx5Um8xb0hMeDctY0w3bUZHbmZoMmJFYTBJWWJveVgyenpaT0xjSmlvSDJlekwxZl96Ujg2U1RBZHVtaGxFWkc4ZVNpcWF2V3h0UDR3?oc=5",
-        "date": "2026-11-13",
+        "publisher": "Sharecast.com",
+        "title": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+        "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPQS1CQ0hzbFZyLXc2OVlYeUdyNlB0T3lFcVF1aXRfdlYxdW5QTWNRR0kwYllaM2s5Z3Fkb1JsNUpKZ2xMT01XbXgtMGFIU3hqSmVwN2FtNkpjZ3V6aXZCT0JIX1FHeWlJendVY0R3QVlmZXJZcjN3alB0cmhURVdHQVpyZTV3a2hVZE1LYVF3UXBkYjF5TWhYSU1tcWxhMHhlZDU3RGhyR1BPeGxBOWRaQXRRRUZqZXEyclhGd3VqTFRkY0V6OTlKRmZHaGZSZkZZUUNaSE9TY1lmbHFIM3ZWYzFUTXE?oc=5",
+        "date": "2026-11-16",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-11-09",
-    "period_end": "2026-11-15",
-    "selected_at": "2026-11-16T17:19:42.570680+00:00",
+    "period_start": "2026-11-10",
+    "period_end": "2026-11-16",
+    "selected_at": "2026-11-17T01:52:45.538381+00:00",
     "selection_version": 5,
     "companies": [
+      {
+        "company": "Coca-Cola HBC",
+        "company_url": "/companies?name=Coca-Cola%20HBC",
+        "headline": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "ZA",
+        "sector": null,
+        "announced": "2026-11-16",
+        "score": 53.9,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Sharecast.com",
+            "title": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+            "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPQS1CQ0hzbFZyLXc2OVlYeUdyNlB0T3lFcVF1aXRfdlYxdW5QTWNRR0kwYllaM2s5Z3Fkb1JsNUpKZ2xMT01XbXgtMGFIU3hqSmVwN2FtNkpjZ3V6aXZCT0JIX1FHeWlJendVY0R3QVlmZXJZcjN3alB0cmhURVdHQVpyZTV3a2hVZE1LYVF3UXBkYjF5TWhYSU1tcWxhMHhlZDU3RGhyR1BPeGxBOWRaQXRRRUZqZXEyclhGd3VqTFRkY0V6OTlKRmZHaGZSZkZZUUNaSE9TY1lmbHFIM3ZWYzFUTXE?oc=5",
+            "date": "2026-11-16",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-10",
+        "period_end": "2026-11-16",
+        "selected_at": "2026-11-17T01:52:45.538381+00:00",
+        "selection_version": 5
+      },
+      {
+        "company": "Fortis Global Insurance",
+        "company_url": "/companies?name=Fortis%20Global%20Insurance",
+        "headline": "Nigeria : Fortis Global Insurance réduit sa perte nette de 35,5 %, à 1,03 million de dollars à fin septembre 2026",
+        "deal_type": "earnings_surprise",
+        "amount_usd": null,
+        "country": "NG",
+        "sector": "insurance",
+        "announced": "2026-11-16",
+        "score": 52.4,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: earnings surprise",
+          "Event rule confidence: 0.72",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Financial Afrik",
+            "title": "Nigeria : Fortis Global Insurance réduit sa perte nette de 35,5 %, à 1,03 million de dollars à fin septembre 2026",
+            "url": "https://www.financialafrik.com/2026/11/16/nigeria-fortis-global-insurance-reduit-sa-perte-nette-de-355-a-103-million-de-dollars-a-fin-septembre-2026/",
+            "date": "2026-11-16",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-10",
+        "period_end": "2026-11-16",
+        "selected_at": "2026-11-17T01:52:45.538381+00:00",
+        "selection_version": 5
+      },
       {
         "company": "Standard Bank",
         "company_url": "/companies?name=Standard%20Bank",
@@ -44,7 +112,7 @@
         "country": "ZA",
         "sector": "banking",
         "announced": "2026-11-13",
-        "score": 51.04,
+        "score": 49.61,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-09",
-        "period_end": "2026-11-15",
-        "selected_at": "2026-11-16T17:19:42.570680+00:00",
+        "period_start": "2026-11-10",
+        "period_end": "2026-11-16",
+        "selected_at": "2026-11-17T01:52:45.538381+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +146,7 @@
         "country": "NG",
         "sector": "banking",
         "announced": "2026-11-11",
-        "score": 47.74,
+        "score": 46.31,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +166,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-09",
-        "period_end": "2026-11-15",
-        "selected_at": "2026-11-16T17:19:42.570680+00:00",
+        "period_start": "2026-11-10",
+        "period_end": "2026-11-16",
+        "selected_at": "2026-11-17T01:52:45.538381+00:00",
         "selection_version": 5
       },
       {
@@ -112,7 +180,7 @@
         "country": "GH",
         "sector": "logistics",
         "announced": "2026-11-10",
-        "score": 46.76,
+        "score": 45.33,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,77 +200,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-09",
-        "period_end": "2026-11-15",
-        "selected_at": "2026-11-16T17:19:42.570680+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "De Beers",
-        "company_url": "/companies?name=De%20Beers",
-        "headline": "Botswana to double De Beers holding under Anglo stake sale, president says",
-        "deal_type": "insider_activity",
-        "amount_usd": null,
-        "country": "BW",
-        "sector": null,
-        "announced": "2026-11-09",
-        "score": 51.18,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: insider activity",
-          "Event rule confidence: 0.85",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Reuters",
-            "title": "Botswana to double De Beers holding under Anglo stake sale, president says",
-            "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNLTZmUHRjbG0yQ3FkNGc2aTNDUG8wSXhIVkQtWDVNNlZtTEoxMmNfc2RUQjVJbGZSd2lrclMxaTBtc2ZJeXJwQ1cwa0tkOTlmZGtteFplbjZDbGdsY1F6SXBFc3luNWlJSUhpR1NnYmVualItRU5HQ3ZKWENNYzRqZnVESnVXc2ZXX3YtV3V4aHlqZmQ5S2ltWkIwbjFQbHowSlkxZWYyZ2tLZFRacXc?oc=5",
-            "date": "2026-11-09",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-09",
-        "period_end": "2026-11-15",
-        "selected_at": "2026-11-16T17:19:42.570680+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "Solad Power Group",
-        "company_url": "/companies?name=Solad%20Power%20Group",
-        "headline": "Yewande Olagbende Joins Solad Power Group Board of Directors",
-        "deal_type": "leadership_change",
-        "amount_usd": null,
-        "country": "NG",
-        "sector": "energy",
-        "announced": "2026-11-09",
-        "score": 48.63,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.90",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "ThisDay Nigeria",
-            "title": "Yewande Olagbende Joins Solad Power Group Board of Directors",
-            "url": "https://www.thisdaylive.com/2026/11/10/yewande-olagbende-joins-solad-power-group-board-of-directors/",
-            "date": "2026-11-09",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-09",
-        "period_end": "2026-11-15",
-        "selected_at": "2026-11-16T17:19:42.570680+00:00",
+        "period_start": "2026-11-10",
+        "period_end": "2026-11-16",
+        "selected_at": "2026-11-17T01:52:45.538381+00:00",
         "selection_version": 5
       }
     ],
@@ -4815,6 +4815,213 @@
           "period_start": "2026-11-09",
           "period_end": "2026-11-15",
           "selected_at": "2026-11-16T17:19:42.570680+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": []
+    },
+    {
+      "company": "Coca-Cola HBC",
+      "company_url": "/companies?name=Coca-Cola%20HBC",
+      "headline": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+      "deal_type": "regulatory_action",
+      "amount_usd": null,
+      "country": "ZA",
+      "sector": null,
+      "announced": "2026-11-16",
+      "score": 53.9,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: regulatory action",
+        "Event rule confidence: 0.93",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Sharecast.com",
+          "title": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+          "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPQS1CQ0hzbFZyLXc2OVlYeUdyNlB0T3lFcVF1aXRfdlYxdW5QTWNRR0kwYllaM2s5Z3Fkb1JsNUpKZ2xMT01XbXgtMGFIU3hqSmVwN2FtNkpjZ3V6aXZCT0JIX1FHeWlJendVY0R3QVlmZXJZcjN3alB0cmhURVdHQVpyZTV3a2hVZE1LYVF3UXBkYjF5TWhYSU1tcWxhMHhlZDU3RGhyR1BPeGxBOWRaQXRRRUZqZXEyclhGd3VqTFRkY0V6OTlKRmZHaGZSZkZZUUNaSE9TY1lmbHFIM3ZWYzFUTXE?oc=5",
+          "date": "2026-11-16",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-10",
+      "period_end": "2026-11-16",
+      "selected_at": "2026-11-17T01:52:45.538381+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "Coca-Cola HBC",
+          "company_url": "/companies?name=Coca-Cola%20HBC",
+          "headline": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ZA",
+          "sector": null,
+          "announced": "2026-11-16",
+          "score": 53.9,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Sharecast.com",
+              "title": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+              "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPQS1CQ0hzbFZyLXc2OVlYeUdyNlB0T3lFcVF1aXRfdlYxdW5QTWNRR0kwYllaM2s5Z3Fkb1JsNUpKZ2xMT01XbXgtMGFIU3hqSmVwN2FtNkpjZ3V6aXZCT0JIX1FHeWlJendVY0R3QVlmZXJZcjN3alB0cmhURVdHQVpyZTV3a2hVZE1LYVF3UXBkYjF5TWhYSU1tcWxhMHhlZDU3RGhyR1BPeGxBOWRaQXRRRUZqZXEyclhGd3VqTFRkY0V6OTlKRmZHaGZSZkZZUUNaSE9TY1lmbHFIM3ZWYzFUTXE?oc=5",
+              "date": "2026-11-16",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-10",
+          "period_end": "2026-11-16",
+          "selected_at": "2026-11-17T01:52:45.538381+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Fortis Global Insurance",
+          "company_url": "/companies?name=Fortis%20Global%20Insurance",
+          "headline": "Nigeria : Fortis Global Insurance réduit sa perte nette de 35,5 %, à 1,03 million de dollars à fin septembre 2026",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "insurance",
+          "announced": "2026-11-16",
+          "score": 52.4,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.72",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Financial Afrik",
+              "title": "Nigeria : Fortis Global Insurance réduit sa perte nette de 35,5 %, à 1,03 million de dollars à fin septembre 2026",
+              "url": "https://www.financialafrik.com/2026/11/16/nigeria-fortis-global-insurance-reduit-sa-perte-nette-de-355-a-103-million-de-dollars-a-fin-septembre-2026/",
+              "date": "2026-11-16",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-10",
+          "period_end": "2026-11-16",
+          "selected_at": "2026-11-17T01:52:45.538381+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Standard Bank",
+          "company_url": "/companies?name=Standard%20Bank",
+          "headline": "Standard Bank hit with a R17 million fine and administrative sanctions",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ZA",
+          "sector": "banking",
+          "announced": "2026-11-13",
+          "score": 49.61,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Daily Investor",
+              "title": "Standard Bank hit with a R17 million fine and administrative sanctions",
+              "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPSkFSbDdFVGxpOV9mRGdLOE0xanNLb1otMzRMOXlpdS1Qc2RvQW83NEEwUFNhUnR5N3BTVkhOMWl1UC1tTE5YUEE3N0N4a2s0SzFhR1psMXNjRExuVjhKTGJxbk5qNmx5Um8xb0hMeDctY0w3bUZHbmZoMmJFYTBJWWJveVgyenpaT0xjSmlvSDJlekwxZl96Ujg2U1RBZHVtaGxFWkc4ZVNpcWF2V3h0UDR3?oc=5",
+              "date": "2026-11-13",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-10",
+          "period_end": "2026-11-16",
+          "selected_at": "2026-11-17T01:52:45.538381+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Alternative Bank",
+          "company_url": "/companies?name=Alternative%20Bank",
+          "headline": "Sterling HoldCo Subsidiary, Alternative Bank appoints Gul Khan as MD/CEO",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "banking",
+          "announced": "2026-11-11",
+          "score": 46.31,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "Sterling HoldCo Subsidiary, Alternative Bank appoints Gul Khan as MD/CEO",
+              "url": "https://nairametrics.com/2026/11/11/sterling-holdco-subsidiary-alt-bank-appoints-gul-khan-as-md-ceo/",
+              "date": "2026-11-11",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-10",
+          "period_end": "2026-11-16",
+          "selected_at": "2026-11-17T01:52:45.538381+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "OSP",
+          "company_url": "/companies?name=OSP",
+          "headline": "Service Passport Scandal: OSP Opens Probe Into Alleged Sales",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "GH",
+          "sector": "logistics",
+          "announced": "2026-11-10",
+          "score": 45.33,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Modern Ghana",
+              "title": "Service Passport Scandal: OSP Opens Probe Into Alleged Sales",
+              "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE9GQ3c0QTM3XzRCLWRETHhuWHhKWVVTcVgwYjRlSk1DR1BONjF2Z2otSm5udDlRanhxcEt2bUhVRllwOVE2SWdqUWp2bUc4X0VBMGd5LXctSjVicGxVc0FhbHoyWdIBXEFVX3lxTE1velFsLWYxbFdIRlRMMzVsTHpna1ZsdjJCZXhQenM3Szc5T0xHeEhscXFLRElwZHl6bE5FS2FMTGhxV3lKaE9OckxPNi1OaHdUNzdHdGNEX1pfazZY?oc=5",
+              "date": "2026-11-10",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-10",
+          "period_end": "2026-11-16",
+          "selected_at": "2026-11-17T01:52:45.538381+00:00",
           "selection_version": 5
         }
       ],
