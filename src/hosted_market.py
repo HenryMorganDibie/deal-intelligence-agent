@@ -996,6 +996,17 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
                 mark.get("announced"))
         except HTTPException:
             pass
+    # Facts submitted by someone at the company (published only when their email is at the company's own domain),
+    # and the key a signed-in visitor submits under. Shown labelled as the company's own, not verified.
+    from src import company_web as _cw
+    profile["claim_key"] = _cw.name_key(profile.get("name") or name)
+    if _configured():
+        try:
+            r = await run_in_threadpool(_rpc_sync, "company_claims_for", {"p_name_key": profile["claim_key"]}, 10)
+            if r.is_success and r.json():
+                profile["company_submitted"] = r.json()
+        except httpx.HTTPError as e:
+            log.info("company claims unavailable: %s", e)
     # Units of each of the profile's currencies per US dollar, from the snapshot's official rates, so the compare
     # page can put companies reporting in different currencies on one basis.
     currencies = {c.upper() for c in ((profile.get("financials") or {}).get("currency"),
@@ -1755,6 +1766,43 @@ async def admin_accounts(request: Request) -> Response:
     # Email addresses: never cached anywhere on the way.
     return Response(json.dumps(r.json()), media_type="application/json",
                     headers={"Cache-Control": "no-store, private"})
+
+
+@router.post("/api/admin/claims")
+async def admin_claims(request: Request) -> Response:
+    """Company-submitted facts for the owner to review (email addresses included); needs DEAL_INTEL_ADMIN_KEY."""
+    try:
+        body = await request.json()
+    except ValueError:
+        body = {}
+    if not isinstance(body, dict) or not _admin_key_ok(body):
+        raise HTTPException(status_code=401, detail="Wrong key")
+    status = body.get("status") if body.get("status") in ("published", "pending", "removed") else None
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_company_claims", {"p_status": status})
+    if not r.is_success:
+        log.error("admin_company_claims failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(status_code=502, detail="Submissions unavailable")
+    return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
+
+
+@router.post("/api/admin/claims/status")
+async def admin_claim_status(request: Request) -> dict:
+    """Publish, hold or remove one company submission; needs DEAL_INTEL_ADMIN_KEY."""
+    try:
+        body = await request.json()
+    except ValueError:
+        body = {}
+    if not isinstance(body, dict) or not _admin_key_ok(body):
+        raise HTTPException(status_code=401, detail="Wrong key")
+    claim_id, status = str(body.get("id") or ""), body.get("status")
+    if not re.fullmatch(r"[0-9a-f-]{36}", claim_id) or status not in ("published", "pending", "removed"):
+        raise HTTPException(status_code=422, detail="Invalid request")
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_set_company_claim", {"p_id": claim_id, "p_status": status})
+    if not r.is_success:
+        raise HTTPException(status_code=404 if "claim_not_found" in r.text else 502, detail="Could not update")
+    return {"id": claim_id, "status": status}
 
 
 # ── Account emails (Supabase Send Email hook -> SendByte) ────────────────────

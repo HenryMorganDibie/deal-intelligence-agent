@@ -4,6 +4,7 @@ import { apiUrl } from "../../lib/api-base";
 import { useEffect, useState } from "react";
 import { browserVisitorId } from "../../lib/tracking";
 import { AccountsPanel } from "../../components/admin/AccountsPanel";
+import { ClaimsPanel } from "../../components/admin/ClaimsPanel";
 
 type Row = { views: number; visitors: number; users: number };
 type ActionRow = { action: string; completions: number; clients: number };
@@ -275,6 +276,8 @@ export default function Admin() {
           <FunnelPanel funnel={stats.plan_funnel} />
 
           <AccountsPanel adminKey={loadedKey} days={days} />
+
+          <ClaimsPanel adminKey={loadedKey} />
 
           <h2 className="mt-8 font-semibold">Independent review: labelling links</h2>
           <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
+import { CompanySubmittedSection, type CompanySubmitted } from "../../../components/app/CompanySubmitted";
 import { Container } from "../../../components/primitives";
 import { DealRows, ErrorNote, Field, Loading, Pill, Stat, Table, Td, num, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
@@ -44,6 +45,8 @@ type Profile = {
   filings?: { title: string; url: string; filed: string }[];
   sec_cross_check?: { period: string; field: string; yahoo: number; sec_filing: number; match: boolean }[];
   official_records?: OfficialRecord[];
+  claim_key?: string;
+  company_submitted?: CompanySubmitted | null;
   private_markets: {
     deal_count: number;
     total_raised_usd: number | null;
@@ -399,6 +402,8 @@ export default function CompaniesPage() {
           </section>
 
           {p.official_records?.length ? <OfficialRecords records={p.official_records} /> : null}
+
+          <CompanySubmittedSection company={p.name} claimKey={p.claim_key} submitted={p.company_submitted} />
 
           {p.valuation.public_bridge && (() => {
             const b = p.valuation.public_bridge;
