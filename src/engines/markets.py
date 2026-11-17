@@ -906,6 +906,58 @@ def yahoo_indices(today: Optional[date] = None) -> list[dict]:
     return out
 
 
+# Cap-weighted all-share indices carried forward from their last official close by the combined value of their own
+# shares, while their published levels are unavailable. Kept to the exchanges where this reproduced the official
+# daily move to within 0.3 percentage points (28 October 2026: NGX ASI -0.455% against -0.44%); BRVM, Zimbabwe,
+# Mauritius and Rwanda were further off and keep their last official level, shown with its date.
+ESTIMATED_INDICES = {"ngx", "nse", "gse", "bvc", "luse", "mse", "dse"}
+_NOT_A_CONSTITUENT = re.compile(r"(?i)preference|\bpref\b|\bnotes?\b|\bbonds?\b|\betf\b|us dollar line")
+
+
+def cap_ratio(previous_rows: list[dict], current_rows: list[dict], min_constituents: int = 5) -> Optional[float]:
+    """Today's combined value of an exchange's shares over its value at the previous prices, today's share counts
+    held fixed: how a cap-weighted index moved between the two. None when too few shares are priced on both."""
+    before = {r.get("symbol"): r.get("price") for r in previous_rows if r.get("symbol") and r.get("price")}
+    now = was = 0.0
+    n = 0
+    for r in current_rows:
+        price, old = r.get("price"), before.get(r.get("symbol"))
+        if not price or not old or _NOT_A_CONSTITUENT.search(r.get("name") or ""):
+            continue
+        shares = r.get("shares") or ((r.get("mcap") or 0) / price if price else 0)
+        if not shares or shares <= 0:
+            continue
+        now += shares * price
+        was += shares * old
+        n += 1
+    return now / was if was > 0 and n >= min_constituents else None
+
+
+def chain_indices(snapshot: dict, previous_indices: list[dict], previous_quotes: dict[str, list[dict]]) -> None:
+    """Fill in today's level of each ESTIMATED_INDICES index the sources did not publish, from the previous stored
+    level and the prices it was set at; carry the previous level of any other index unchanged (it keeps its date,
+    so it shows as out of date rather than disappearing)."""
+    indices = {i["exchange"]: i for i in snapshot.get("indices") or []}
+    for prev in previous_indices or []:
+        ex = prev.get("exchange")
+        if not ex or (indices.get(ex) and (indices[ex].get("date") or "") >= (prev.get("date") or "")):
+            continue
+        current = (snapshot.get("quotes") or {}).get(ex) or []
+        latest, before = _latest_date(current), previous_quotes.get(ex) or []
+        estimate = None
+        if ex in ESTIMATED_INDICES and prev.get("level") and latest and prev.get("date") and latest > prev["date"] \
+                and _latest_date(before) == prev["date"]:   # the previous level was set at these previous prices
+            ratio = cap_ratio(before, current)
+            if ratio is not None:
+                one_session = _days_between(prev["date"], latest) <= 4
+                estimate = {"exchange": ex, "name": prev.get("name"), "level": round(prev["level"] * ratio, 2),
+                            "chg_1d": round(ratio - 1, 6) if one_session else None, "date": latest, "estimated": True,
+                            "base_date": prev.get("base_date") or prev["date"],
+                            "source": "Estimated from constituent prices"}
+        indices[ex] = estimate or prev
+    snapshot["indices"] = sorted(indices.values(), key=lambda i: i["exchange"])
+
+
 def build_snapshot(client: Optional[httpx.Client] = None, today: Optional[date] = None,
                    exchanges: Optional[Iterable[str]] = None, previous: Optional[dict] = None) -> dict:
     """Fetch every exchange, the index table and FX. {"quotes": {exchange: [...]}, "indices": [...], "fx": {...},
@@ -1162,6 +1214,20 @@ def _days_between(a: str, b: str) -> int:
         return 0
 
 
+_COMPANY_SUFFIX = re.compile(r"(?i)[\s,]+(plc|ltd\.?|limited|inc\.?|corporation|corp\.?|group|holdings?|s\.?a\.?)\b\.?")
+
+
+def _one_per_company(rows: list[dict]) -> list[dict]:
+    """A company listed on two lines of one exchange (Ninety One plc and Ninety One Ltd) appears once."""
+    seen, out = set(), []
+    for r in rows:
+        key = (r.get("exchange"), _COMPANY_SUFFIX.sub("", r.get("name") or "").strip().lower())
+        if key not in seen:
+            seen.add(key)
+            out.append(r)
+    return out
+
+
 def _liquid(r: dict, rates: dict) -> bool:
     """Traded enough for its move to mean something. A source that reports neither volume nor value is trusted."""
     vol, value = r.get("volume"), r.get("value_traded")
@@ -1205,7 +1271,8 @@ def overview(snapshot: dict, today: Optional[date] = None, movers: int = 8) -> d
         tiles.append({
             "exchange": ex.key, "name": ex.name, "country": ex.country, "currency": ex.currency,
             "index": idx and {"name": idx["name"], "level": idx["level"], "chg_1d": idx["chg_1d"], "date": idx["date"],
-                              "stale": index_stale, "source": idx.get("source")},
+                              "stale": index_stale, "source": idx.get("source"), "estimated": bool(idx.get("estimated")),
+                              "base_date": idx.get("base_date")},
             # The day's move from the exchange's own share prices: shown when its index is missing or out of date.
             "market_chg_1d": day_move,
             "market_chg_basis": "cap-weighted" if day_cap is not None else ("median share" if day_move is not None else None),
@@ -1235,8 +1302,8 @@ def overview(snapshot: dict, today: Optional[date] = None, movers: int = 8) -> d
     def slim(r: dict) -> dict:
         return {k: r.get(k) for k in ("exchange", "symbol", "name", "sector", "price", "currency", "chg_1d", "ytd",
                                       "ytd_usd", "mcap_usd", "volume", "value_traded", "date", "delayed", "quote_time")}
-    gainers = sorted((r for r in tradable if r["chg_1d"] > 0), key=lambda r: -r["chg_1d"])[:movers]
-    losers = sorted((r for r in tradable if r["chg_1d"] < 0), key=lambda r: r["chg_1d"])[:movers]
+    gainers = _one_per_company(sorted((r for r in tradable if r["chg_1d"] > 0), key=lambda r: -r["chg_1d"]))[:movers]
+    losers = _one_per_company(sorted((r for r in tradable if r["chg_1d"] < 0), key=lambda r: r["chg_1d"]))[:movers]
     active = sorted((r for r in fresh if r.get("value_traded") and not r.get("secondary_of")),
                     key=lambda r: -(_usd(r["value_traded"], r["currency"], rates) or 0))[:movers]
 

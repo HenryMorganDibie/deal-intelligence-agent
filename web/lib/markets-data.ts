@@ -79,7 +79,7 @@ export type ExchangeTile = {
   name: string;
   country: string;
   currency: string;
-  index: { name: string; level: number; chg_1d: number | null; date: string | null; stale?: boolean; source?: string | null } | null;
+  index: { name: string; level: number; chg_1d: number | null; date: string | null; stale?: boolean; source?: string | null; estimated?: boolean; base_date?: string | null } | null;
   /** The day's move from the exchange's own share prices, shown when its index is missing or out of date. */
   market_chg_1d?: number | null;
   market_chg_basis?: "cap-weighted" | "median share" | null;

@@ -2704,6 +2704,13 @@ async def cron_market_snapshot(request: Request) -> dict:
         previous = {}                                   # no earlier snapshot to compare with
     snap = await run_in_threadpool(lambda: markets.build_snapshot(previous=previous))
     markets.fill_daily_change(snap, previous)
+    # Indices no source published today are carried forward from the stored level and the daily closes it was set
+    # at (not the intraday-adjusted copy above, whose prices are today's).
+    try:
+        daily, _venues = await run_in_threadpool(_daily_quotes)
+        markets.chain_indices(snap, (previous or {}).get("indices") or [], daily)
+    except Exception as e:                                # noqa: BLE001
+        log.warning("index chaining skipped: %s", e)
     rows = markets.snapshot_rows(snap)
     if not rows:
         raise HTTPException(502, "No market source answered; nothing was recorded.")

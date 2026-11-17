@@ -576,3 +576,33 @@ def test_yahoo_index_levels(monkeypatch):
     out = {i["exchange"]: i for i in markets.yahoo_indices(date(2026, 11, 17))}
     assert out["jse"]["level"] == 110240.0 and round(out["jse"]["chg_1d"], 4) == round(110240 / 111520 - 1, 4)
     assert out["egx"]["chg_1d"] is None                               # one bar: a level, no day change
+
+
+def test_estimated_index_chains_from_the_prices_its_level_was_set_at():
+    prev_quotes = {"ngx": [{"symbol": f"S{i}", "name": f"Co {i}", "price": 10.0, "shares": 1e9, "date": "2026-11-16"} for i in range(6)],
+                   "zse": [{"symbol": "Z1", "name": "Z", "price": 1.0, "shares": 1e6, "date": "2026-11-16"}]}
+    snap = {"quotes": {"ngx": [{**q, "price": 11.0 if q["symbol"] == "S0" else 10.0, "date": "2026-11-17"} for q in prev_quotes["ngx"]]
+                       + [{"symbol": "PFX", "name": "Co preference shares", "price": 99.0, "shares": 1e12, "date": "2026-11-17"}],
+                       "zse": [{"symbol": "Z1", "name": "Z", "price": 2.0, "shares": 1e6, "date": "2026-11-17"}]},
+            "indices": []}
+    prev_idx = [{"exchange": "ngx", "name": "NGX ASI", "level": 252882.78, "chg_1d": None, "date": "2026-11-16", "base_date": "2026-10-28", "estimated": True},
+                {"exchange": "zse", "name": "ZSE ASI", "level": 489.68, "chg_1d": -0.0086, "date": "2026-10-28"}]
+    markets.chain_indices(snap, prev_idx, prev_quotes)
+    idx = {i["exchange"]: i for i in snap["indices"]}
+    # one of six equal shares up 10%: the index up 1/60; the preference line is not a constituent
+    assert round(idx["ngx"]["chg_1d"], 6) == round(61 / 60 - 1, 6) and idx["ngx"]["date"] == "2026-11-17"
+    assert idx["ngx"]["estimated"] and idx["ngx"]["base_date"] == "2026-10-28"
+    assert idx["zse"]["level"] == 489.68 and idx["zse"]["date"] == "2026-10-28"   # not estimated: carried as it was
+
+
+def test_no_estimate_from_prices_of_another_day():
+    prev_quotes = {"ngx": [{"symbol": f"S{i}", "price": 10.0, "shares": 1e9, "date": "2026-11-16"} for i in range(6)]}
+    snap = {"quotes": {"ngx": [{**q, "date": "2026-11-17"} for q in prev_quotes["ngx"]]}, "indices": []}
+    markets.chain_indices(snap, [{"exchange": "ngx", "name": "NGX ASI", "level": 1.0, "date": "2026-10-28"}], prev_quotes)
+    assert snap["indices"][0]["date"] == "2026-10-28" and not snap["indices"][0].get("estimated")
+
+
+def test_a_company_on_two_lines_appears_once_among_movers():
+    rows = [{"exchange": "jse", "name": "Ninety One plc", "chg_1d": -0.085}, {"exchange": "jse", "name": "Ninety One Ltd", "chg_1d": -0.082},
+            {"exchange": "jse", "name": "Aveng Limited", "chg_1d": -0.10}]
+    assert [r["name"] for r in markets._one_per_company(rows)] == ["Ninety One plc", "Aveng Limited"]

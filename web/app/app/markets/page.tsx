@@ -129,11 +129,14 @@ function ExchangeTable({ exchanges }: { exchanges: Exchange[] }) {
                     <Link href={`/markets/screener?exchange=${t.exchange}`} className="hover:underline">{t.name.replace(/ \(.*\)$/, "")}</Link>
                     <span className="ml-2 text-[0.75rem] text-[color:var(--dim)]">{t.currency}</span>
                   </td>
-                  <td className="kbd py-2 pr-4 text-right" title={t.index ? `${t.index.name}${t.index.date ? `, ${t.index.date}` : ""}${t.index.source ? ` (${t.index.source})` : ""}` : "No index published by a source we read"}>
+                  <td className="kbd py-2 pr-4 text-right" title={t.index ? (t.index.estimated
+                        ? `${t.index.name}, estimated: carried forward from the last official close (${asOf(t.index.base_date)}) by the value of its own shares`
+                        : `${t.index.name}${t.index.date ? `, ${t.index.date}` : ""}${t.index.source ? ` (${t.index.source})` : ""}`) : "No index published by a source we read"}>
                     {t.index ? (
                       <span className={t.index.stale ? "text-[color:var(--dim)]" : ""}>
                         {t.index.level.toLocaleString("en-US", { maximumFractionDigits: 2 })}
                         {t.index.stale && t.index.date && <span className="block text-[0.6875rem]">as of {asOf(t.index.date)}</span>}
+                        {t.index.estimated && !t.index.stale && <span className="block text-[0.6875rem] text-[color:var(--dim)]">est.</span>}
                       </span>
                     ) : <span className="text-[color:var(--dim)]">–</span>}
                   </td>
@@ -157,7 +160,7 @@ function ExchangeTable({ exchanges }: { exchanges: Exchange[] }) {
         </table>
       </div>
       <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">
-        Today is the exchange&apos;s index; * marks a move worked out from the exchange&apos;s own share prices where no current index is available (cap-weighted where caps are published). Year-to-date returns are cap-weighted where market caps are published, otherwise the median share (hover a figure to see which).
+        Today is the exchange&apos;s index (est. marks a level carried forward from its last official close by its own shares&apos; prices, while the published level is unavailable); * marks a move worked out from the exchange&apos;s own share prices where no current index is available (cap-weighted where caps are published). Year-to-date returns are cap-weighted where market caps are published, otherwise the median share (hover a figure to see which).
         {quiet.length > 0 && <> No recent prices for: {quiet.map((t, k) => (
           <span key={t.exchange}>{k ? ", " : ""}<Link href={`/markets/screener?exchange=${t.exchange}`} className="hover:underline">{t.name.replace(/ \(.*\)$/, "")}</Link></span>
         ))}.</>}
