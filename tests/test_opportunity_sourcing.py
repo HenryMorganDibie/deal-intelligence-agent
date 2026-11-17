@@ -61,3 +61,13 @@ def test_reports_combine_and_attach_to_stored_records():
 def test_list_of_parties_kept_whole():
     r = op.extract(item("Nigeria, UK seek private investment in three hydropower projects"))
     assert r["soliciting_party"] == "Nigeria, UK"
+
+
+def test_bid_rounds_name_the_offering_party_and_sector():
+    r = op.extract(item("Egypt Extends International Oil, Gas Bid Round Deadline"))
+    assert r["soliciting_party"] == "Egypt" and r["sector"] == "oil_gas" and r["opportunity_status"] == "Open for bids"
+    r = op.extract(item("Cameroon's SNH Launches 2026 Bid Round at AEW African Farmout Forum"))
+    assert r["soliciting_party"] == "Cameroon's SNH" and r["sector"] == "oil_gas"
+    assert op.extract(item("Guinea seeks investors for $3.8bn of road, rail and solar projects at Simandou summit"))["target"] \
+        == "$3.8bn of road, rail and solar projects"
+    assert op.extract(item("Business: Uganda seeks investors to boost mineral value addition"))["headline"].startswith("Uganda")

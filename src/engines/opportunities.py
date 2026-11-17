@@ -59,7 +59,9 @@ _COMPLETED = re.compile(
 # Names the country matcher leaves out as ambiguous: a bare "Congo" in business news is the DRC.
 _ALIASES = ((re.compile(r"(?i)\bcongo[- ]brazzaville\b|\brepublic\s+of\s+(?:the\s+)?congo\b"), "CG"),
             (re.compile(r"(?i)\bDRC\b|\bcongo\b"), "CD"))
-_PREFIX = re.compile(r"^\s*(?:[A-Z][\w-]*_[\w-]*|breaking|exclusive|update|video|watch|opinion|analysis)\s*[:\-|]\s*", re.I)
+_UPSTREAM = re.compile(r"(?i)\b(?:oil|gas|exploration|upstream|farm-?outs?|(?:bid|licensing)\s+round)\b")
+_PREFIX = re.compile(r"^\s*(?:[A-Z][\w-]*_[\w-]*|breaking|exclusive|update|video|watch|opinion|analysis|business|"
+                     r"economy|energy|markets?|finance|money|mining|agriculture|tech(?:nology)?|news)\s*[:\-|]\s*", re.I)
 
 _STATUS = {"investor": "Seeking investors", "investment": "Seeking investors", "capital": "Seeking investors",
            "partner": "Seeking partners", "partnership": "Seeking partners", "funding": "Seeking funding",
@@ -96,7 +98,10 @@ def _soliciting_party(title: str, start: int) -> Optional[str]:
 def _object_phrase(title: str, end: int) -> str:
     """What follows the solicitation: "for $26B Gas Pipeline to Morocco and Europe"."""
     tail = title[end:]
-    return re.split(r"(?i)\s+(?:at|amid|during|as|after|ahead\s+of|on\s+sidelines)\s+|[,;|]", tail, maxsplit=1)[0].strip()
+    # Commas stay ("road, rail and solar projects"); an event, a reason or a second clause ends the phrase.
+    phrase = re.split(r"(?i)\s+(?:at|amid|during|as|after|ahead\s+of|on\s+sidelines|with)\s+|[;|]|,\s+(?:says|said|as)\b",
+                      tail, maxsplit=1)[0].strip()
+    return re.sub(r"(?i)^(?:for|to|in|into)\s+", "", phrase)
 
 
 def extract(item: dict) -> Optional[dict]:
@@ -116,8 +121,12 @@ def extract(item: dict) -> Optional[dict]:
             return None                                 # "woos investors to Ghana", "seeks funding for a campaign"
         party = _soliciting_party(title, m.start())
     else:
-        status, what = "Open for bids", title
-        party = _soliciting_party(title, opened.start())
+        status = "Open for bids"
+        # "Egypt Extends International Oil, Gas Bid Round Deadline": the party is the opening name, up to the verb
+        lead = re.match(r"^(?P<p>.+?)\s+(?:opens?|launch(?:es)?|extends?|unveils?|offers?|puts?|invites?|announces?)\b",
+                        title, re.I)
+        party = lead.group("p").strip() if lead and len(lead.group("p").split()) <= 5 else None
+        what = title[lead.end():].strip() if lead else title
     text = f"{title} {item.get('snippet') or ''}"
     found = [c.iso2 for c in countries_in_text(title)] or [c.iso2 for c in countries_in_text(text)]
     if not found:
@@ -140,7 +149,8 @@ def extract(item: dict) -> Optional[dict]:
         "record_type": "investment_opportunity", "deal_type": "investment_opportunity", "stage": "proposed",
         "headline": title, "opportunity_title": title, "opportunity_status": status,
         "soliciting_party": party, "target": (what[:120] or title[:120]).strip(),
-        "country": countries[0], "countries": countries, "sector": deals_mod.classify_sector(title),
+        "country": countries[0], "countries": countries,
+        "sector": "oil_gas" if _UPSTREAM.search(title) else deals_mod.classify_sector(title),
         "announced": day, "amount": None, "amount_usd": None,
         "amount_sought": sought[0] if sought else None, "amount_sought_currency": sought[1] if sought else None,
         "amount_sought_usd": deals_mod.to_usd(sought[0], sought[1], year) if sought else None,
