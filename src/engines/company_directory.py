@@ -134,6 +134,14 @@ def curated_companies() -> list[dict]:
              "deal_count": 0, "source": "curated list"} for n, iso in AFRICAN_COMPANIES.items() if iso]
 
 
+def licensed_companies() -> list[dict]:
+    """Banks, microfinance banks, mortgage lenders and finance companies on their central bank's register."""
+    from src.engines.licensed_institutions import load
+    return [{"kind": "private", "key": company_key(r["name"]), "name": r["name"], "country": r["country"],
+             "sector": "Financials", "deal_count": 0, "licence": r["licence"], "regulator": r["regulator"],
+             "source": "licence register"} for r in load()]
+
+
 def directory(snapshot: dict, deals: Iterable[dict], today: Optional[date] = None,
               events: Iterable[dict] = ()) -> list[dict]:
     """Listed and private companies in one list. A private record that matches a listing in its country (exact
@@ -160,7 +168,7 @@ def directory(snapshot: dict, deals: Iterable[dict], today: Optional[date] = Non
             out.append(p)
     known = {(k, r.get("country")) for r in out for k in (deals_mod.normalise_name(r["name"]), company_key(r["name"]))} | \
             {k for r in out for k in (deals_mod.normalise_name(r["name"]), company_key(r["name"]))}
-    for extra in [*event_companies(events), *curated_companies()]:
+    for extra in [*event_companies(events), *curated_companies(), *licensed_companies()]:
         k = extra["key"]
         if not k or k in known or (k, extra["country"]) in known or by_key.get((k, extra["country"])):
             continue

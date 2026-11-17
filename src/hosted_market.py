@@ -944,6 +944,13 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     # The company's own website, read by the independent five-minute enrichment worker: queued here when known.
     from src import company_web
     site = (profile.get("identity") or {}).get("website")
+    if not site:
+        # A licensed institution's register entry often gives its website, from which its annual report is read.
+        from src.engines import licensed_institutions
+        hit = licensed_institutions.lookup(profile.get("name") or name, profile.get("country"))
+        if hit and hit.get("website"):
+            site = hit["website"]
+            profile["identity"] = {**(profile.get("identity") or {}), "website": site}
     stored = await run_in_threadpool(company_web.request, profile.get("name") or name, site, profile.get("country"),
                                      profile.pop("filing_pending_ocr", None))
     filing_src = profile.get("governance_source")       # the exchange filing to read the board from, if any

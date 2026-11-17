@@ -375,7 +375,9 @@ def test_directory_merges_listed_and_private_companies():
     dangote = next(r for r in rows if r.get("symbol") == "DANGCEM")
     assert dangote["kind"] == "listed" and dangote["deal_count"] == 1          # its deal history folds into the listing
     out = cd.query(rows, q="moniepoint")
-    assert out["rows"][0]["name"] == "Moniepoint" and out["counts"] == {"listed": 0, "private": 1}
+    assert out["rows"][0]["name"] == "Moniepoint"                  # its deals merged into one row
+    # its licensed microfinance-bank subsidiary is a separate entity, from the central bank's register
+    assert [r["name"] for r in out["rows"][1:]] == ["Moniepoint MFB"] and out["rows"][1]["source"] == "licence register"
     assert "Dangote Cement" not in {r["name"] for r in rows if r.get("source")}     # curated, but already listed
 
 

@@ -81,3 +81,19 @@ def test_fmdq_issues_match_the_company_not_a_namesake():
     assert [(r["kind"], r["detail"]) for r in lapo] == [("debt_issue", "Bond of ₦4.46bn")]
     assert debt.records_for("Dangote Industries Limited", records=recs) == []     # Dangote Cement is a different issuer
     assert len(debt.records_for("Dangote Cement Plc", records=recs)) == 1
+
+
+def test_licence_registers_parse_and_match():
+    from src.engines import licensed_institutions as lic
+    ng = lic.parse_cbn([{"name": "Lapo MFB"}, {"name": "OPAY MFB LIMITED"}, {"name": "x"}], "Microfinance bank")
+    assert [r["name"] for r in ng] == ["Lapo MFB", "Opay MFB Limited"]        # shouted names tidied; acronyms kept
+    page = ('<tr id="table_87_row_2" data-row-index="2"><td>Agricultural Development Bank Plc</td><td>Accra</td>'
+            '<td>233-302</td><td>http://www.agricbank.com</td><td>customercare@agricbank.com</td></tr>')
+    gh = lic.parse_bog(page, "Bank")
+    assert gh == [{"name": "Agricultural Development Bank Plc", "country": "GH", "regulator": "Bank of Ghana",
+                   "licence": "Bank", "website": "http://www.agricbank.com"}]
+    rows = ng + gh
+    assert lic.lookup("LAPO Microfinance Bank Limited", rows=rows)["licence"] == "Microfinance bank"
+    assert lic.lookup("Agricultural Development Bank", "GH", rows=rows)["website"] == "http://www.agricbank.com"
+    assert lic.lookup("Agricultural Development Bank", "NG", rows=rows) is None
+    assert lic.lookup("Moniepoint", rows=rows) is None

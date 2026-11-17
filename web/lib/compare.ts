@@ -21,7 +21,7 @@ export type CompareProfile = {
     debt_raised_usd?: number | null; last_round: string | null } | null;
   valuation?: { latest_mark: { valuation_usd: number; basis: string; announced: string } | null } | null;
   fx?: { per_usd: Record<string, number>; as_of?: string | null } | null;
-  official_records?: { kind: string; authority: string; date: string | null; amount_usd?: number | null }[];
+  official_records?: { kind: string; authority: string; date: string | null; amount_usd?: number | null; title?: string }[];
   financials_note?: string | null;
 };
 
@@ -96,6 +96,12 @@ export const METRICS: Metric[] = [
     } },
   { key: "sector", label: "Sector", group: "Company", kind: "text", better: null,
     value: (e) => e.profile.identity?.sector || e.facts?.sector || null },
+
+  { key: "licence", label: "Licensed by", group: "Company", kind: "text", better: null,
+    value: (e) => {
+      const l = (e.profile.official_records ?? []).find((r) => r.kind === "licence");
+      return l ? `${l.authority}${l.title ? ` (${l.title.replace(/^Licensed: /, "")})` : ""}` : null;
+    } },
 
   { key: "mcap", label: "Market capitalisation", group: "Market", kind: "usd", better: null, value: marketCapUsd },
   { key: "chg_1d", label: "Today", group: "Market", kind: "pct", better: "higher", value: (e) => e.facts?.chg_1d ?? null },
