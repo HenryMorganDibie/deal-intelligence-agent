@@ -3,6 +3,12 @@
 # A deployment empties the edge cache and restarts every function instance (each cold start reinstalls the
 # Python packages), so the API is redeployed only when something it serves has changed. Automatic data commits
 # that only the web app or the GitHub jobs read (feed replacements, Corporate of the Week) no longer redeploy it.
+# Branch previews of the API are not built: each kept deployment stores the whole Python bundle for three
+# functions, and branch pushes filled the free plan's 10 GB of Function Storage. Web previews still build and
+# use the production API; the API itself deploys from main only.
+if [ "${VERCEL_ENV:-}" != "production" ]; then
+  echo "Preview of branch ${VERCEL_GIT_COMMIT_REF:-?}: the API deploys from main only; skipping."; exit 0
+fi
 prev="${VERCEL_GIT_PREVIOUS_SHA:-}"
 if [ -z "$prev" ] || ! git cat-file -e "${prev}^{commit}" 2>/dev/null; then
   echo "No previous deployment to compare with: building."; exit 1
