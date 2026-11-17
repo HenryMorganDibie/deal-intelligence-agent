@@ -79,14 +79,11 @@ export default function DealsPage() {
     <Container className="py-10 lg:py-14">
       <PageHeader eyebrow={view === "deals" ? "Deals" : "Investment opportunities"} title={view === "deals" ? "Private equity, venture, debt and M&A across Africa." : "Proposed investments seeking capital or strategic partners."}>
         {view === "deals" ? (<>
-        Transactions extracted daily from African business and private-capital publications in English, French and
-        Portuguese, with every source linked. Amounts are as reported, converted to US dollars at the year&apos;s official
-        rate. History runs from 2010; earlier years are thinner and back-filled records are kept only when an African
-        market and a transaction are both stated. Undisclosed deals that no one reports cannot appear.
+        Funding rounds, debt, acquisitions, exits and fund closes across Africa since 2010, each linked to its sources.
+        Amounts are as reported, in US dollars.
         </>) : (<>
-          Announcements of companies, governments and projects seeking investors or strategic partners, kept apart from
-          completed transactions: they carry no committed amount and never count in deal totals or market statistics.
-          Every source is linked.
+          Companies, governments and projects looking for investors or partners. These are proposals, not completed
+          deals, so they&apos;re kept out of deal totals.
         </>)}
       </PageHeader>
 
@@ -153,15 +150,12 @@ export default function DealsPage() {
         <>
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <Stat label={view === "deals" ? "Matching deals" : "Matching opportunities"} value={totalMatching.toLocaleString()} note={`${totalInDatabase.toLocaleString()} total in database`} />
-            {view === "deals" ? <Stat label="Disclosed value on this page" value={usd(disclosed.reduce((a, d) => a + (d.amount_usd ?? 0), 0))} note={`${disclosed.length} with amounts`} /> : <Stat label="Transaction value" value="Not applicable" note="Proposals are not completed funding." />}
+            {view === "deals" ? <Stat label="Disclosed value on this page" value={usd(disclosed.reduce((a, d) => a + (d.amount_usd ?? 0), 0))} note={`${disclosed.length} with amounts`} /> : null}
             {view === "deals" && <Stat label="Median size on this page" value={usd(medianSize)} />}
           </div>
           <div className="mt-6">
             {rows.length ? <>{view === "deals" ? <DealRows deals={rows} /> :
-              <>
-                <OpportunityRows items={rows} />
-                <p className="mt-2 text-xs text-[color:var(--dim)]">Proposals reported in the news: no completed investment or committed amount is confirmed. They never count in deal totals.</p>
-              </>}
+              <OpportunityRows items={rows} />}
               <Pagination total={totalMatching} offset={offset} limit={limit} onPageChange={(next) => load(filters, next, limit)} onPageSizeChange={(next) => load(filters, 0, next)} /></> : <p className="py-6 text-sm text-[color:var(--muted)]">No {view === "deals" ? "deals" : "investment opportunities"} match these filters.</p>}
           </div>
         </>
