@@ -276,6 +276,18 @@ def _download(url: str, client: httpx.Client) -> Optional[bytes]:
         return None
 
 
+def _archived(site: str) -> list[dict]:
+    """The site's own pages from the Common Crawl archive, with its robots.txt read first (None if unreadable)."""
+    from src import company_archive
+    try:
+        r = httpx.get(f"{site.rstrip('/')}/robots.txt", headers={"User-Agent": _ua()}, timeout=PAGE_TIMEOUT,
+                      follow_redirects=True)
+        robots = r.text if r.status_code == 200 and "<html" not in r.text[:200].lower() else None
+    except httpx.HTTPError:
+        robots = None
+    return company_archive.archived_pages(site, robots)
+
+
 def read_now(name: str, website: Optional[str] = None, country_name: Optional[str] = None,
              call: Optional[Callable[[str, str], str]] = None) -> dict:
     """Read the company now: {"website", "facts" (site facts), "report" (governance from its annual report),
@@ -307,8 +319,20 @@ def read_now(name: str, website: Optional[str] = None, country_name: Optional[st
             facts = company_web.read_site({"name": name, "website": site}, pages, call) if pages else None
             if facts:
                 return facts
-            # The site refused us (a bot challenge) or holds nothing readable: public sources, each fact cited.
-            public = public_pages(name, country_name)
+            # The site refused us (a bot challenge) or holds nothing readable. Its own pages from the public web
+            # archive come first (robots.txt permitting), searched at the same time as public sources, so a slow or
+            # unavailable archive costs no extra time.
+            with ThreadPoolExecutor(max_workers=2) as both:
+                f_archive = both.submit(_archived, site) if site else None
+                f_public = both.submit(public_pages, name, country_name)
+                archived = f_archive.result() if f_archive else []
+                public = f_public.result()
+            if archived:
+                facts = company_web.read_site({"name": name, "website": site}, archived, call)
+                if facts:
+                    facts["origin"] = "web_archive"
+                    facts["archived_at"] = max(p.get("archived_at") or "" for p in archived) or None
+                    return facts
             facts = company_web.read_site({"name": name, "website": site}, public, call) if public else None
             if facts:
                 facts["origin"] = "public_sources"

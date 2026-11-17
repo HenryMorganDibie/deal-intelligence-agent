@@ -14,7 +14,7 @@ export type Governance = {
 type WebPerson = { name: string; role?: string; page: number };
 export type WebFacts = {
   registered_office?: string; office_page?: number; phone?: string; phone_page?: number; email?: string; email_page?: number;
-  founded?: string; founded_page?: number; board?: WebPerson[]; management?: WebPerson[]; origin?: string;
+  founded?: string; founded_page?: number; board?: WebPerson[]; management?: WebPerson[]; origin?: string; archived_at?: string | null;
   subsidiaries?: { name: string; country?: string; percent?: number; page: number }[];
   pages?: { n: number; url: string; title: string }[];
 };
@@ -202,9 +202,12 @@ function WebSection({ web }: { web: Web }) {
     failed: "Company website enrichment could not be completed after retries.",
   } as const;
   return (
-    <Section title={f?.origin === "public_sources" ? "From public sources" : "From the company's website"}
+    <Section title={f?.origin === "public_sources" ? "From public sources"
+        : f?.origin === "web_archive" ? "From the company's website (archived copy)" : "From the company's website"}
       note={f ? (f.origin === "public_sources"
         ? <>The company&apos;s own site does not allow automated reading, so these facts come from public web sources. Each fact appears on the source linked beside it.</>
+        : f.origin === "web_archive"
+        ? <>The company&apos;s site does not allow automated reading, so these facts come from its own pages as archived by Common Crawl{f.archived_at ? ` (${f.archived_at})` : ""}, a public archive that respects robots.txt. Each fact is on the page linked beside it; the live page may since have changed.</>
         : <>Read from {host}{web.crawled_at ? ` on ${web.crawled_at.slice(0, 10)}` : ""} (robots.txt respected). Each fact is on the page linked beside it.</>) : undefined}>
       {!f ? (
         <p className="text-[0.8125rem] text-[color:var(--muted)]">
