@@ -4,6 +4,7 @@ import { publicApiUrl } from "../../../../lib/api-base";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { WatchlistEmailAlerts } from "../../../../components/app/WatchlistEmailAlerts";
+import { WatchlistPriceMoves } from "../../../../components/app/WatchlistPriceMoves";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Pill, usd, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
@@ -12,7 +13,7 @@ import { del, get, post } from "../../../../lib/market";
 type Alert = { kind: string; id: string; day: string | null; title: string; signal_type?: string; deal_type?: string; amount_usd?: number | null; url?: string; publisher?: string; why: string[]; country?: string | null; countries?: string[]; duplicate_reports_merged?: number; source_count?: number; independent_stories?: number | null; verification?: string | null; sources?: { publisher?: string | null; url?: string | null; date?: string | null; title?: string | null }[] };
 type Quality = { alert_count: number; duplicate_reports_merged: number; with_source_evidence: number; source_evidence_coverage_pct: number | null; with_two_or_more_independent_stories: number; with_verification_label: number; accuracy_estimate: null; note: string };
 type Delivery = { attempted_at: string; delivered: boolean; attempt_count: number; http_status: number | null; alert_count: number; error_code: string | null; channel?: "webhook" | "email" };
-type Watchlist = { id: string; name: string; companies: string[]; countries: string[]; signal_types: string[]; include_deals: boolean; webhook_url: string | null; delivery_frequency: "daily" | "weekly"; last_delivered_at: string | null };
+type Watchlist = { id: string; name: string; companies: string[]; countries: string[]; signal_types: string[]; include_deals: boolean; webhook_url: string | null; delivery_frequency: "daily" | "weekly"; last_delivered_at: string | null; price_move_pct?: number | null };
 type ReviewState = "unreviewed" | "reviewed" | "dismissed";
 type ReviewMap = Record<string, ReviewState>;
 
@@ -131,6 +132,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
       </div>
       {actionError && <ErrorNote message={actionError} />}
       <WatchlistEmailAlerts watchlistId={w.id} frequency={w.delivery_frequency} />
+      <WatchlistPriceMoves watchlistId={w.id} initial={w.price_move_pct ?? null} />
       {w.webhook_url && (
         <section className="mt-5 rounded-lg border hairline p-4" aria-label="Webhook delivery health">
           <h2 className="eyebrow">Webhook delivery</h2>
@@ -157,7 +159,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
           </label>
           <label className="text-xs text-[color:var(--muted)]">Event source
             <select value={kindFilter} onChange={(e) => setKindFilter(e.target.value)} className="field mt-1">
-              <option value="all">All alerts</option><option value="event">Corporate events</option><option value="deal">Deals</option>
+              <option value="all">All alerts</option><option value="event">Corporate events</option><option value="deal">Deals</option><option value="price">Price moves</option>
             </select>
           </label>
           <label className="text-xs text-[color:var(--muted)]">Review status
@@ -176,7 +178,7 @@ export default function WatchlistPage({ params }: { params: { id: string } }) {
               <li key={key} className={`border-b hairline pb-3 text-[0.875rem] ${state === "dismissed" ? "opacity-60" : ""}`}>
                 <div className="flex flex-wrap items-center gap-2 text-[0.75rem] text-[color:var(--dim)]">
                   <span className="kbd">{a.day || "Date unavailable"}</span>
-                  <Pill value={a.signal_type ?? a.deal_type} />
+                  <Pill value={a.signal_type ?? a.deal_type ?? (a.kind === "price" ? "price_move" : undefined)} />
                   {(a.countries?.length || a.country) ? <span>{(a.countries?.length ? a.countries : [a.country]).filter(Boolean).join(", ")}</span> : null}
                   {a.amount_usd ? <span>{usd(a.amount_usd)}</span> : null}
                   <span>matched on {a.why.join("; ")}</span>

@@ -14,6 +14,7 @@ import { ApiError } from "../../../lib/api";
 import { SIGNAL_TYPES, post } from "../../../lib/market";
 import { DESTINATION_LABEL, webhookDestination } from "../../../lib/webhooks";
 import { readAlertsLink, uniqueNames, writeAlertsLink } from "../../../lib/portfolio-alerts";
+import { PRICE_MOVE_OPTIONS } from "../../../components/app/WatchlistPriceMoves";
 
 const KEY = "deal-intel:watchlists";
 type Saved = { id: string; name: string; created_at: string };
@@ -71,6 +72,7 @@ export default function WatchlistsPage() {
   const [prefillNotice, setPrefillNotice] = useState<string | null>(null);
   // Holdings copied from Markets > Portfolio; once saved, Portfolio can keep this watchlist in step with them.
   const [portfolioNames, setPortfolioNames] = useState<string[] | null>(null);
+  const [priceMove, setPriceMove] = useState<number | null>(null);
   // The watchlist Markets > Portfolio keeps in step with its holdings, if one was made.
   const [portfolioWatchlist, setPortfolioWatchlist] = useState<string | null>(null);
   useEffect(() => { setPortfolioWatchlist(readAlertsLink()?.watchlistId ?? null); }, []);
@@ -149,6 +151,11 @@ export default function WatchlistsPage() {
       if (portfolioNames) {
         const sent = new Set(split(companies).map((c) => c.toLowerCase()));
         writeAlertsLink({ watchlistId: r.id, synced: uniqueNames(portfolioNames.filter((n) => sent.has(n.trim().toLowerCase()))) });
+      }
+      if (priceMove) {
+        await fetch(`/api/watchlists/${encodeURIComponent(r.id)}/price-moves`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pct: priceMove }),
+        }).catch(() => undefined);
       }
       if (emailMe) {
         // Email goes only to the account's confirmed address; if it is not confirmed, the watchlist page says so.
@@ -251,6 +258,14 @@ export default function WatchlistsPage() {
                   <label className="flex items-center gap-2.5 text-[0.875rem] text-[color:var(--muted)]">
                     <input type="checkbox" checked={deals} onChange={(e) => setDeals(e.target.checked)} className="h-4 w-4 accent-verified" />
                     Include their deals
+                  </label>
+                  <label className="flex flex-wrap items-center gap-2.5 text-[0.875rem] text-[color:var(--muted)]">
+                    Price moves
+                    <select aria-label="Daily price move that triggers an alert" className="field h-8 w-auto py-1 text-[0.8125rem]" value={priceMove ?? ""}
+                            onChange={(e) => setPriceMove(e.target.value ? Number(e.target.value) : null)}>
+                      {PRICE_MOVE_OPTIONS.map(([v, label]) => <option key={label} value={v ?? ""}>{label}</option>)}
+                    </select>
+                    <span className="text-[0.75rem] text-[color:var(--dim)]">for listed companies, on a day&apos;s close</span>
                   </label>
                 </div>
               </div>

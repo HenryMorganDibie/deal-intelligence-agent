@@ -321,6 +321,73 @@ def matches(wl: dict, events: Iterable[dict], deals: Iterable[dict], since: Opti
     return out[:max(0, limit)]
 
 
+# ── Price moves ──────────────────────────────────────────────────────────────────
+
+_TICKER = re.compile(r"^[A-Z0-9.&-]{2,12}$")
+
+
+def _quote_matches(company: str, quote: dict) -> bool:
+    """A followed company is this listing: its name as a phrase in the listing's name (Dangote Cement), the
+    listing's name as a phrase in it (MTN Nigeria in MTN Nigeria Communications), or the ticker typed as one."""
+    c = company.strip()
+    name = str(quote.get("name") or "").strip()
+    if not c or not name:
+        return False
+    if _TICKER.match(c) and c.upper() == str(quote.get("symbol") or "").upper():
+        return True
+    if len(c) >= 4 and _phrase(c).search(name):
+        return True
+    if " " in name:
+        return len(name) >= 6 and bool(_phrase(name).search(c))
+    # A one-word listing (Safaricom) matches a followed name that starts with it (Safaricom PLC), not one that only
+    # contains it somewhere.
+    return len(name) >= 5 and c.split()[0].lower() == name.lower()
+
+
+def price_moves(wl: dict, quotes: dict[str, list[dict]], exchanges: dict[str, dict]) -> list[dict]:
+    """Alerts for followed listed companies whose latest close moved by at least the watchlist's threshold.
+
+    `quotes` is the daily snapshot ({exchange: rows}); `exchanges` gives each exchange's name and currency. Only a
+    listing's own latest close counts (no stale prices), with a price and, where the exchange reports it, at least
+    100 shares traded. One alert per listing per trading day, so a move is sent once."""
+    pct = wl.get("price_move_pct")
+    companies = [c for c in wl.get("companies") or [] if isinstance(c, str) and c.strip()]
+    if not pct or not companies:
+        return []
+    threshold = float(pct) / 100
+    out: dict[str, dict] = {}
+    for ex, rows in (quotes or {}).items():
+        latest = max((r.get("date") or "" for r in rows), default="")
+        meta = exchanges.get(ex) or {}
+        for q in rows:
+            chg, price, day = q.get("chg_1d"), q.get("price"), q.get("date")
+            if not isinstance(chg, (int, float)) or not isinstance(price, (int, float)) or price <= 0:
+                continue
+            if not day or day != latest or abs(chg) < threshold or abs(chg) > 0.6:      # >60% in a day is a data fault
+                continue
+            vol = q.get("volume")
+            if q.get("trades") == 0 or (isinstance(vol, (int, float)) and vol < 100):   # a handful of shares is noise
+                continue
+            hit = next((c for c in companies if _quote_matches(c, q)), None)
+            if not hit:
+                continue
+            key = f"{ex}:{q.get('symbol') or q.get('name')}:{day}"
+            direction = "up" if chg > 0 else "down"
+            venue = meta.get("name") or ex.upper()
+            currency = meta.get("currency") or ""
+            out[key] = {
+                "kind": "price", "id": key, "day": day,
+                "title": f"{q.get('name')} closed {direction} {abs(chg) * 100:.1f}% on the {venue}",
+                "facts_line": " · ".join(b for b in (
+                    f"Price move ({q.get('symbol')})" if q.get("symbol") else "Price move",
+                    f"close {price:,.2f} {currency}".strip(), day, venue) if b),
+                "url": None, "publisher": venue, "change_pct": round(chg * 100, 2), "price": price,
+                "currency": currency, "symbol": q.get("symbol"), "exchange": ex,
+                "why": [f"company: {hit}", f"moved {abs(chg) * 100:.1f}% (threshold {float(pct):g}%)"],
+            }
+    return sorted(out.values(), key=lambda a: abs(a["change_pct"]), reverse=True)
+
+
 def quality_metrics(alerts: list[dict]) -> dict:
     """Descriptive coverage metrics, not estimates of precision or factual accuracy."""
     count = len(alerts)
@@ -366,6 +433,8 @@ def rss(wl: dict, alerts: list[dict], link: str) -> str:
 
 def alert_fingerprint(alert: dict) -> str:
     """Fingerprint meaningful alert facts so material corrections can be re-alerted."""
+    if alert.get("kind") == "price":            # one alert per listing per trading day; a revised close is not news
+        return hashlib.sha256(f"price|{alert.get('id')}".encode("utf-8")).hexdigest()
     source_count = alert.get("source_count")
     evidence_bucket = None
     if isinstance(source_count, int):

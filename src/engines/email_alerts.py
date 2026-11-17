@@ -39,7 +39,10 @@ def unsubscribe_link(token: str) -> str:
 def _alert_line(alert: dict) -> tuple[str, str, Optional[str]]:
     """(headline, detail, source url) for one alert."""
     title = str(alert.get("title") or alert.get("headline") or alert.get("company") or "New match").strip()
-    bits = [str(alert.get(k)) for k in ("day", "publisher", "signal_type", "deal_type") if alert.get(k)]
+    if alert.get("facts_line"):                # price moves carry their own detail line
+        bits = [str(alert["facts_line"])]
+    else:
+        bits = [str(alert.get(k)) for k in ("day", "publisher", "signal_type", "deal_type") if alert.get(k)]
     if alert.get("change_type") == "updated":
         bits.append("updated")
     source = alert.get("url") or alert.get("source_url")

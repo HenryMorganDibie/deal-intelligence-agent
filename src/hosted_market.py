@@ -1298,8 +1298,8 @@ class AlertReviewBody(BaseModel):
     @field_validator("alert_key")
     @classmethod
     def validate_alert_key(cls, value: str) -> str:
-        if not re.match(r"^(event|deal):.+$", value):
-            raise ValueError("alert_key must start with event: or deal:")
+        if not re.match(r"^(event|deal|price):.+$", value):
+            raise ValueError("alert_key must start with event:, deal: or price:")
         return value
 
 
@@ -1359,6 +1359,9 @@ async def get_watchlist(wl_id: str, since: Optional[str] = None) -> dict:
     wl = await _get_watchlist(wl_id)
     since = since or (date.today() - timedelta(days=90)).isoformat()
     alerts = watch.matches(wl, events(), deals(), since=since)
+    if wl.get("price_move_pct"):
+        quotes, venues = await run_in_threadpool(_daily_quotes)
+        alerts = watch.price_moves(wl, quotes, venues) + alerts
     return {"watchlist": wl, "alerts": alerts, "quality": watch.quality_metrics(alerts)}
 
 
@@ -2458,8 +2461,11 @@ async def cron_ingest(
         log.warning("watchlist webhook lookup failed after successful ingestion: status=%s body=%s",
                     hooks.status_code, hooks.text[:300])
     delivered = 0
+    watchlists = hooks.json() if hooks.status_code == 200 and not month else []
+    price_quotes, price_venues = (await run_in_threadpool(_daily_quotes)
+                                  if any(w.get("price_move_pct") for w in watchlists) else ({}, {}))
     # Historical backfills populate the database silently; never send stale alerts.
-    for wl in (hooks.json() if hooks.status_code == 200 and not month else []):
+    for wl in watchlists:
         if not watch.delivery_due(wl.get("delivery_frequency", "daily"), last_delivered_at=wl.get("last_delivered_at")):
             continue
         use_webhook = bool(wl.get("webhook_url")) and _public_host(wl["webhook_url"])
@@ -2477,7 +2483,7 @@ async def cron_ingest(
         candidates_alerts = watch.matches(
             wl, new_events, list(merged.values()),
             since=(date.today() - timedelta(days=90)).isoformat(),
-        )
+        ) + watch.price_moves(wl, price_quotes, price_venues)
         if not candidates_alerts:
             continue
         candidates = [
@@ -2598,6 +2604,29 @@ def _snapshot_rows(kind: str):
             visible_cdn.failed()
             log.warning("snapshot %s through the CDN failed, reading the database: %s", kind, e)
     return _rpc_sync("list_market_snapshots", {"p_kind": kind})
+
+
+def _daily_quotes() -> tuple[dict[str, list[dict]], dict[str, dict]]:
+    """The latest daily closes per exchange (no intraday overlay) and each exchange's name and currency, for
+    price-move alerts. Empty when the store cannot be read: price alerts are skipped, news alerts still go out."""
+    from src.engines import markets
+    meta = {k: {"name": e.name, "currency": e.currency} for k, e in markets.EXCHANGES.items()}
+    hit = _markets_cache.get("daily_quotes")
+    if hit and time.monotonic() - hit[0] < _MARKETS_TTL:
+        return hit[1], meta
+    if not _configured():
+        return (markets.load_local().get("quotes") or {}), meta
+    try:
+        r = _snapshot_rows("quotes")
+    except httpx.HTTPError as e:
+        log.warning("daily quotes for price alerts unavailable: %s", e)
+        return {}, meta
+    if r.status_code != 200:
+        log.warning("daily quotes for price alerts unavailable: %s", r.status_code)
+        return {}, meta
+    quotes = markets.from_rows(r.json() or [], [], [])["quotes"]
+    _markets_cache["daily_quotes"] = (time.monotonic(), quotes)
+    return quotes, meta
 
 
 def _market_snapshot() -> dict:
