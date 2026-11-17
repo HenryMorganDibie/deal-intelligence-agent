@@ -8,7 +8,6 @@ const routes = [
   "/markets/valuation",
   "/markets/portfolio",
   "/markets/compare",
-  "/markets/monitoring",
   "/markets/portfolio/cloud",
   "/companies",
   "/research",
@@ -195,29 +194,14 @@ test("currency conversion inputs update when the reporting currency changes", as
   expect(after.holdings[0].currency).toBe("NGN");
 });
 
-test("monitoring presents explicit empty and feed-error states", async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("deal-intelligence-markets-portfolio-v1", JSON.stringify({
-    version: 1,
-    baseCurrency: "USD",
-    holdings: [{ id: "monitor-h1", name: "Example Bank", ticker: "EXBANK", country: "Nigeria" }],
-  })));
-  const eventsRoute = /\/api\/(?:data\/)?events(?:\?.*)?$/;
-  await page.route(eventsRoute, route => route.fulfill({
-    status: 200,
-    contentType: "application/json",
-    body: JSON.stringify({ events: [], count: 0 }),
-  }));
+test("the old Monitoring address forwards to Portfolio, which offers alerts for the holdings", async ({ page }) => {
   await page.goto("/markets/monitoring");
-  await expect(page.getByText(/No events were returned for this period/i)).toBeVisible();
-
-  await page.unroute(eventsRoute);
-  await page.route(eventsRoute, route => route.fulfill({
-    status: 503,
-    contentType: "application/json",
-    body: JSON.stringify({ detail: "Market events temporarily unavailable." }),
-  }));
-  await page.getByRole("button", { name: "Refresh events" }).click();
-  await expect(page.getByText(/service unavailable|temporarily unavailable|market events could not be loaded/i)).toBeVisible();
+  await expect(page).toHaveURL(/\/markets\/portfolio$/);
+  await page.getByLabel("Company or investment name *").fill("Example Bank");
+  await page.getByLabel("Quantity / units *").fill("10");
+  await page.getByLabel(/Cost per unit/).fill("5");
+  await page.getByRole("button", { name: "Add holding" }).click();
+  await expect(page.getByRole("button", { name: "Get alerts for these holdings" })).toBeVisible();
 });
 
 test("portfolio inputs support keyboard focus navigation", async ({ page }) => {
