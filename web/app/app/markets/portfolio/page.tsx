@@ -8,6 +8,7 @@ import { ErrorNote } from "../../../../components/app/ui";
 import { calculateExposureRows, calculatePortfolioTotals, calculatePortfolioValuationReviews, calculatePortfolioValuationSummary, convertToBase, isSavedValuation, type SavedValuationSnapshot, ASSET_TYPES, CURRENCIES, normalizeAssetType } from "../../../../lib/markets-portfolio";
 import { parseCsv, stringifyCsv } from "../../../../lib/markets-csv";
 import { calculateValuationChangeAlerts } from "../../../../lib/markets-monitoring";
+import { alertsDiff, readAlertsLink, uniqueNames, writeAlertsLink, type AlertsLink } from "../../../../lib/portfolio-alerts";
 import { createPortfolioWorkbook, parsePortfolioWorkbook } from "../../../../lib/markets-excel";
 import { post } from "../../../../lib/market";
 
@@ -107,6 +108,8 @@ export default function MarketsPortfolioPage() {
   const [storageWarning, setStorageWarning] = useState<string | null>(null);
   const [storageLoadFailed, setStorageLoadFailed] = useState(false);
   const [savedValuations, setSavedValuations] = useState<SavedValuationSnapshot[]>([]);
+  const [alertsLink, setAlertsLink] = useState<AlertsLink | null>(null);
+  const [syncingAlerts, setSyncingAlerts] = useState(false);
   const [valuationStorageWarning, setValuationStorageWarning] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -188,6 +191,37 @@ export default function MarketsPortfolioPage() {
       return holding.name.trim().toLowerCase() === change.company.trim().toLowerCase();
     }),
   ), [savedValuations, holdings]);
+  useEffect(() => { setAlertsLink(readAlertsLink()); }, []);
+  const holdingNames = useMemo(() => uniqueNames(holdings.map((h) => h.name)), [holdings]);
+  const alertsChange = useMemo(() => (alertsLink ? alertsDiff(holdingNames, alertsLink.synced) : null), [alertsLink, holdingNames]);
+
+  async function updateAlerts() {
+    if (!alertsLink || !alertsChange) return;
+    setSyncingAlerts(true);
+    setError(null);
+    try {
+      const r = await fetch(`/api/watchlists/${encodeURIComponent(alertsLink.watchlistId)}/companies`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(alertsChange),
+      });
+      const body = (await r.json().catch(() => ({}))) as { error?: string };
+      if (r.status === 404) {
+        writeAlertsLink(null);
+        setAlertsLink(null);
+        setError("The alerts watchlist for this portfolio no longer exists. Use Get alerts for these holdings to make a new one.");
+        return;
+      }
+      if (!r.ok) throw new Error(body.error || "Alerts could not be updated.");
+      const next = { watchlistId: alertsLink.watchlistId, synced: holdingNames };
+      writeAlertsLink(next);
+      setAlertsLink(next);
+      setMessage("Alerts updated: the watchlist now follows every holding.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Alerts could not be updated.");
+    } finally {
+      setSyncingAlerts(false);
+    }
+  }
+
   const valuationReviews = useMemo(() => calculatePortfolioValuationReviews(holdings, savedValuations, baseCurrency), [holdings, savedValuations, baseCurrency]);
   const valuationSummary = useMemo(() => calculatePortfolioValuationSummary(valuationReviews), [valuationReviews]);
   const largestPosition = useMemo(() => {
@@ -632,8 +666,25 @@ export default function MarketsPortfolioPage() {
                 </table>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.8125rem]">
-                <button type="button" className="btn btn-secondary h-9" onClick={preparePortfolioWatchlist}>Get alerts for these holdings</button>
-                <span className="text-[color:var(--dim)]">Deals and corporate events by email, Slack, Teams or webhook.</span>
+                {!alertsLink ? (
+                  <>
+                    <button type="button" className="btn btn-secondary h-9" onClick={preparePortfolioWatchlist}>Get alerts for these holdings</button>
+                    <span className="text-[color:var(--dim)]">Deals and corporate events by email, Slack, Teams or webhook.</span>
+                  </>
+                ) : alertsChange && (alertsChange.add.length || alertsChange.remove.length) ? (
+                  <>
+                    <button type="button" className="btn btn-primary h-9" onClick={updateAlerts} disabled={syncingAlerts}>{syncingAlerts ? "Updating…" : "Update alerts"}</button>
+                    <span className="text-[color:var(--muted)]">
+                      {[alertsChange.add.length ? `${alertsChange.add.length} new holding${alertsChange.add.length === 1 ? " is" : "s are"} not in your alerts` : "",
+                        alertsChange.remove.length ? `${alertsChange.remove.length} sold holding${alertsChange.remove.length === 1 ? " is" : "s are"} still in them` : ""].filter(Boolean).join("; ")}.
+                      {" "}Only company names are sent.
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-[color:var(--dim)]">
+                    Alerts follow every holding. <Link href={`/watchlists/${alertsLink.watchlistId}`} className="underline-offset-4 hover:text-[color:var(--text)] hover:underline">View alerts</Link>
+                  </span>
+                )}
                 <Link href="/markets/portfolio/cloud" className="text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Cloud portfolios and team workspaces</Link>
               </div>
               {valuationChanges.length > 0 && (

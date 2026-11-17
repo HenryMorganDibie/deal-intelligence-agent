@@ -13,6 +13,7 @@ import { ErrorNote, Field, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { SIGNAL_TYPES, post } from "../../../lib/market";
 import { DESTINATION_LABEL, webhookDestination } from "../../../lib/webhooks";
+import { uniqueNames, writeAlertsLink } from "../../../lib/portfolio-alerts";
 
 const KEY = "deal-intel:watchlists";
 type Saved = { id: string; name: string; created_at: string };
@@ -68,6 +69,8 @@ export default function WatchlistsPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prefillNotice, setPrefillNotice] = useState<string | null>(null);
+  // Holdings copied from Markets > Portfolio; once saved, Portfolio can keep this watchlist in step with them.
+  const [portfolioNames, setPortfolioNames] = useState<string[] | null>(null);
   const [tab, setTab] = useState<"watchlists" | "elections">("watchlists");
   const [formOpen, setFormOpen] = useState(false);
   // The tab follows the address (#elections), so links from the results pages open the right one.
@@ -101,6 +104,7 @@ export default function WatchlistsPage() {
       if (Array.isArray(parsed.companies)) {
         const names = parsed.companies.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
         setCompanies(names.join("\n"));
+        setPortfolioNames(names);
         if (names.length) setPrefillNotice("Portfolio holdings were copied into this draft locally. They are sent to the watchlist service only if you submit this form.");
       }
       window.sessionStorage.removeItem("deal-intelligence:portfolio-watchlist-prefill");
@@ -139,6 +143,10 @@ export default function WatchlistsPage() {
       });
       const rows = [{ id: r.id, name: name.trim() || "Watchlist", created_at: new Date().toISOString() }, ...readSaved()];
       writeSaved(rows);
+      if (portfolioNames) {
+        const sent = new Set(split(companies).map((c) => c.toLowerCase()));
+        writeAlertsLink({ watchlistId: r.id, synced: uniqueNames(portfolioNames.filter((n) => sent.has(n.trim().toLowerCase()))) });
+      }
       if (emailMe) {
         // Email goes only to the account's confirmed address; if it is not confirmed, the watchlist page says so.
         await fetch(`/api/watchlists/${encodeURIComponent(r.id)}/email`, {
