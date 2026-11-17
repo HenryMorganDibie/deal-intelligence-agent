@@ -45,3 +45,11 @@ def test_white_label_email_has_no_brand_header_footer_or_app_links(monkeypatch):
 def test_branded_email_keeps_header_and_manage_link(monkeypatch):
     body = _email(False, monkeypatch)
     assert "Manage election alerts" in body and "deal-intelligence" in body
+
+
+def test_white_label_test_message_is_unbranded_too():
+    sub = {"id": "test", "name": "Client feed", "webhook_url": "https://hooks.slack.com/services/T/B/X",
+           "filters": {"white_label": True}}
+    body = json.dumps(election_alerts._payload(sub, [election_alerts._sample_story(True)]))
+    assert chat_formats.BRAND not in body and "deal-intelligence" not in body
+    assert "Deal Intelligence" in json.dumps(election_alerts._sample_story(False))

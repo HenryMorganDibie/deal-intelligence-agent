@@ -304,19 +304,22 @@ def delete(owner: str, sub_id: str) -> dict:
     return {"deleted": True}
 
 
-def _sample_story() -> dict:
-    return {"id": "test", "title": "Test alert: this is how an election incident will look", "url": DOCS,
+def _sample_story(white_label: bool = False) -> dict:
+    """A marked sample incident; the unbranded one names no product and links nowhere."""
+    return {"id": "test", "title": "Test alert: this is how an election incident will look",
+            "url": None if white_label else DOCS,
             "day": datetime.now(timezone.utc).date().isoformat(), "severity": "high", "incident_types": ["violence"],
-            "states": ["Lagos"], "lgas": ["Ikeja, Lagos"], "outlets": ["Deal Intelligence"]}
+            "states": ["Lagos"], "lgas": ["Ikeja, Lagos"], "outlets": ["Sample source" if white_label else "Deal Intelligence"]}
 
 
-def test_url(webhook_url: str, name: str = "Election alert") -> dict:
+def test_url(webhook_url: str, name: str = "Election alert", white_label: bool = False) -> dict:
     """Send a clearly marked sample to a webhook before it is saved."""
     url = (webhook_url or "").strip()
     if not url or not watch.valid_webhook(url) or not hm._public_host(url):
         raise HTTPException(400, "webhook_url must be an https URL on a public host.")
-    sub = {"id": "test", "name": name.strip()[:80] or "Election alert", "webhook_url": url}
-    result = asyncio.run(watch.deliver_webhook(url, _payload(sub, [_sample_story()]), "di-election-test-" + uuid.uuid4().hex[:16]))
+    sub = {"id": "test", "name": name.strip()[:80] or "Election alert", "webhook_url": url,
+           "filters": {"white_label": True} if white_label else {}}
+    result = asyncio.run(watch.deliver_webhook(url, _payload(sub, [_sample_story(white_label)]), "di-election-test-" + uuid.uuid4().hex[:16]))
     kind = chat_formats.destination(url)
     return {"delivered": bool(result["delivered"]), "destination": chat_formats.LABELS[kind],
             "status_code": result.get("status_code"), "error": result.get("error")}
@@ -346,7 +349,7 @@ def test(owner: str, sub_id: str) -> dict:
     subs = [s for s in (r.json() or []) if str(s["id"]) == sub_id and str(s["owner"]) == owner] if r.status_code == 200 else []
     if not subs:
         raise HTTPException(404, "No such alert.")
-    sample = _sample_story()
+    sample = _sample_story(bool((subs[0].get("filters") or {}).get("white_label")))
     if not subs[0].get("webhook_url"):
         ok = asyncio.run(_email(subs[0], [sample]))
         return {"delivered": ok, "status_code": None, "error": None if ok else "email_not_sent"}
@@ -376,6 +379,7 @@ class AlertIn(BaseModel):
 class TestIn(BaseModel):
     webhook_url: str = Field(..., max_length=500)
     name: str = Field("Election alert", max_length=80)
+    white_label: bool = False
 
 
 def _id(alert_id: str) -> str:
@@ -431,7 +435,7 @@ async def app_test_url(body: TestIn, request: Request) -> dict:
     if len(recent) >= 5:
         raise HTTPException(429, "Too many test messages. Wait a minute and try again.")
     _tests[owner] = recent + [now]
-    return await run_in_threadpool(test_url, body.webhook_url, body.name)
+    return await run_in_threadpool(test_url, body.webhook_url, body.name, body.white_label)
 
 
 @router.post("/api/elections/alerts/{alert_id}/test")

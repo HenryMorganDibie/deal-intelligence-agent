@@ -45,6 +45,7 @@ function summary(f: Record<string, unknown>, info: (key: string) => ElectionInfo
   bits.push(states.length ? states.join(", ") : `all ${regionWord(e, true)}`);
   const types = (f.incident_types as string[] | undefined) ?? [];
   if (types.length) bits.push(types.map((t) => INCIDENT_TYPES.find(([k]) => k === t)?.[1] ?? t).join(", "));
+  if (f.white_label) bits.push("Unbranded");
   return bits.join(" · ");
 }
 
@@ -61,6 +62,7 @@ export function ElectionAlerts() {
   const [webhook, setWebhook] = useState("");
   const [starter, setStarter] = useState(false);
   const [emailMe, setEmailMe] = useState(true);
+  const [whiteLabel, setWhiteLabel] = useState(false);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
@@ -94,7 +96,7 @@ export function ElectionAlerts() {
   async function testNew() {
     setTesting("new"); setNote(null);
     try {
-      setNote(testText(await post<TestResult>("/api/elections/alerts/test", { webhook_url: webhook.trim(), name: name.trim() || "Election alert" })));
+      setNote(testText(await post<TestResult>("/api/elections/alerts/test", { webhook_url: webhook.trim(), name: name.trim() || "Election alert", white_label: whiteLabel })));
     } catch (e) {
       setNote({ ok: false, text: e instanceof ApiError ? e.message : "The test could not be sent." });
     } finally { setTesting(null); }
@@ -125,13 +127,14 @@ export function ElectionAlerts() {
     if (kind === "incidents") filters.min_severity = severity;
     if (states.length) filters.states = states;
     if (kind === "incidents" && types.length) filters.incident_types = types;
+    if (whiteLabel) filters.white_label = true;
     try {
       const r = await post<Alert & { backfill?: { sent: number } }>("/api/elections/alerts", {
         name: name.trim() || "Election alert", webhook_url: webhook.trim() || null, email: emailMe, filters,
         backfill_days: starter && full ? 7 : 0,
       });
       setNote({ ok: true, text: r.backfill ? `Alert created. ${r.backfill.sent} recent incident${r.backfill.sent === 1 ? "" : "s"} sent to start.` : "Alert created. New matching incidents will arrive within the hour." });
-      setName(""); setWebhook(""); setStates([]); setTypes([]); setStarter(false); setEmailMe(true); setOpen(false);
+      setName(""); setWebhook(""); setStates([]); setTypes([]); setStarter(false); setEmailMe(true); setWhiteLabel(false); setOpen(false);
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "The alert could not be created.");
@@ -285,6 +288,15 @@ export function ElectionAlerts() {
                     : <Link href="/developers#chat" className="underline">How to get a webhook URL</Link>}
                 </p>
               </Field>
+              <div>
+                <label className="flex items-center gap-2.5 text-[0.875rem] text-[color:var(--muted)]">
+                  <input type="checkbox" checked={whiteLabel} onChange={(e) => { setWhiteLabel(e.target.checked); setNote(null); }} className="h-4 w-4 accent-verified" />
+                  Unbranded (white label)
+                </label>
+                <p className="mt-1 pl-[1.625rem] text-[0.75rem] leading-relaxed text-[color:var(--dim)]">
+                  Messages carry no product name, logo or links back to us, so you can pass them on to your own clients. Channel webhooks are fully unbranded; emails still come from our sending address and keep a stop link.
+                </p>
+              </div>
               {full && (
                 <label className="flex items-center gap-2.5 text-[0.875rem] text-[color:var(--muted)]">
                   <input type="checkbox" checked={starter} onChange={(e) => setStarter(e.target.checked)} className="h-4 w-4 accent-verified" />
