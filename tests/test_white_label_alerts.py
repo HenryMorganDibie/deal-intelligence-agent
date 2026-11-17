@@ -27,3 +27,21 @@ def test_branded_alerts_are_unchanged_by_default():
     assert chat_formats.BRAND in _payload("https://hooks.slack.com/services/T/B/X", False)
     assert election_alerts.clean_filters({"white_label": True})["white_label"] is True
     assert "white_label" not in election_alerts.clean_filters({})
+
+
+def _email(white, monkeypatch):
+    monkeypatch.setattr(election_alerts, "unsubscribe_link", lambda sub_id: "https://api.example/stop?id=a1")
+    sub = {"id": "a1", "name": "Lagos incidents", "filters": {"white_label": white}}
+    subject, html, text = election_alerts.render_email(sub, [STORY])
+    return subject + html + text
+
+
+def test_white_label_email_has_no_brand_header_footer_or_app_links(monkeypatch):
+    body = _email(True, monkeypatch)
+    assert chat_formats.BRAND not in body and "deal-intelligence" not in body
+    assert "Ballot snatching" in body and "https://api.example/stop?id=a1" in body   # the stop link is kept
+
+
+def test_branded_email_keeps_header_and_manage_link(monkeypatch):
+    body = _email(False, monkeypatch)
+    assert "Manage election alerts" in body and "deal-intelligence" in body
