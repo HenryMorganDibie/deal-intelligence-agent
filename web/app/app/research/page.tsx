@@ -266,7 +266,7 @@ export default function ResearchPage() {
           <button type="submit" disabled={busy} className="btn btn-primary">
             {busy ? "Researching..." : "Ask"}
           </button>
-          <span className="text-[0.8125rem] text-[color:var(--dim)]">Counts toward the 1,000 free requests per visitor each day.</span>
+          <span className="text-[0.8125rem] text-[color:var(--dim)]">Counts toward your plan&apos;s monthly briefs and research runs (Free: 30 a month, up to 15 a day).</span>
         </div>
       </form>
       <section className="mt-8" aria-label="Research suggestions">
