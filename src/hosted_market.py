@@ -984,6 +984,20 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
                 mark.get("announced"))
         except HTTPException:
             pass
+    # Units of each of the profile's currencies per US dollar, from the snapshot's official rates, so the compare
+    # page can put companies reporting in different currencies on one basis.
+    currencies = {c.upper() for c in ((profile.get("financials") or {}).get("currency"),
+                                     (profile.get("market") or {}).get("currency")) if isinstance(c, str) and c}
+    if currencies:
+        try:
+            fx = (await run_in_threadpool(_market_snapshot)).get("fx") or {}
+            rates = {c: fx["rates"][c] for c in currencies if isinstance((fx.get("rates") or {}).get(c), (int, float))}
+            if "USD" in currencies:
+                rates["USD"] = 1.0
+            if rates:
+                profile["fx"] = {"per_usd": rates, "as_of": fx.get("as_of"), "source": "official rates (open.er-api.com)"}
+        except HTTPException:
+            pass
     _profile_cache[key] = (time.monotonic(), profile)
     return profile
 

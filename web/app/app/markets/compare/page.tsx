@@ -1,310 +1,293 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { MarketsTitle } from "../../../../components/app/MarketsNav";
 import { Container } from "../../../../components/primitives";
 import { ApiError } from "../../../../lib/api";
 import { ErrorNote } from "../../../../components/app/ui";
 import { get } from "../../../../lib/market";
+import type { Directory, DirectoryRow } from "../../../../lib/markets-data";
+import {
+  GROUPS, caveats, decodeEntries, encodeEntries, leaders, visibleMetrics,
+  type CompareProfile, type DirectoryFacts, type Entry, type EntryRef, type Metric,
+} from "../../../../lib/compare";
 
-type FinancialItem = { current: number; prior?: number };
-type Financials = {
-  source: string;
-  source_url?: string;
-  period: { end: string; months: number | null; label?: string } | null;
-  currency?: string;
-  unit?: string;
-  items?: Record<string, FinancialItem>;
-  checks?: { check: string; passed: boolean }[];
-  verified: boolean;
-};
-type Profile = {
-  name: string;
-  ticker: string | null;
-  country: string | null;
-  country_name: string | null;
-  exchange: string | null;
-  sources?: string[];
-  identity?: { sector?: string | null; industry?: string | null; business?: string } | null;
-  market?: { price?: number | null; currency?: string | null; market_cap?: number | null; source?: string; as_at?: string | null } | null;
-  multiples?: Record<string, number> | null;
-  financials?: Financials | null;
-  private_markets?: { deal_count: number; total_raised_usd: number | null; last_round: string | null } | null;
-  valuation?: { latest_mark: { valuation_usd: number; basis: string; announced: string } | null } | null;
-  financials_note?: string | null;
-};
-type Draft = { name: string; ticker: string; country: string };
+const MAX = 4;
+const MOVES = new Set(["chg_1d", "ytd", "growth"]);   // changes, shown with a sign; levels (margins, yields) without
+type Row = Entry & { ref: EntryRef };
 
-const EMPTY_DRAFT: Draft = { name: "", ticker: "", country: "" };
-const MAX_PROFILES = 4;
-
-function compact(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "Not available";
-  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 2 }).format(value);
+function usd(v: number): string {
+  const a = Math.abs(v);
+  return a >= 1e12 ? `$${(v / 1e12).toFixed(2)}tn` : a >= 1e9 ? `$${(v / 1e9).toFixed(a >= 1e10 ? 1 : 2)}bn`
+    : a >= 1e6 ? `$${(v / 1e6).toFixed(a >= 1e8 ? 0 : 1)}m` : `$${Math.round(v).toLocaleString("en")}`;
 }
 
-function money(value: number | null | undefined, currency: string | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "Not available";
-  if (!currency) return `${value.toLocaleString("en", { maximumFractionDigits: 2 })} · currency not reported`;
-  try {
-    return new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 2, notation: Math.abs(value) >= 1e12 ? "compact" : "standard" }).format(value);
-  } catch {
-    return `${value.toLocaleString("en", { maximumFractionDigits: 2 })} ${currency}`;
-  }
+function show(metric: Metric, v: number | string | null): string {
+  if (v == null || v === "") return "–";
+  if (typeof v === "string") return v;
+  if (metric.kind === "usd") return usd(v);
+  if (metric.kind === "pct") return `${v > 0 && MOVES.has(metric.key) ? "+" : ""}${(v * 100).toFixed(1)}%`;
+  if (metric.kind === "x") return `${v.toFixed(1)}×`;
+  return v.toLocaleString("en");
 }
 
-function multiple(value: number | null | undefined, key: string): string {
-  if (value == null || !Number.isFinite(value)) return "Not available";
-  if (key === "dividendYield") return `${(value * 100).toFixed(2)}%`;
-  return value.toLocaleString("en", { maximumFractionDigits: 2 });
+function refOf(r: DirectoryRow): EntryRef {
+  return r.kind === "listed" && r.exchange && r.symbol
+    ? { name: r.name, exchange: r.exchange, symbol: r.symbol, country: r.country }
+    : { name: r.name, country: r.country };
 }
 
-function statementValue(profile: Profile, key: string): string {
-  const financials = profile.financials;
-  const value = financials?.items?.[key]?.current;
-  if (value == null || !Number.isFinite(value)) return "Not available";
-  const amount = value.toLocaleString("en", { maximumFractionDigits: 2 });
-  const currency = financials?.currency ? ` ${financials.currency}` : "";
-  // Amounts arrive in whole currency units; the stated unit is shown only when the currency is unknown.
-  const unit = !financials?.currency && financials?.unit ? ` · ${financials.unit}` : "";
-  return `${amount}${currency}${unit}`;
+function factsOf(r: DirectoryRow): DirectoryFacts {
+  return { kind: r.kind, exchange: r.exchange, exchange_name: r.exchange_name, symbol: r.symbol, sector: r.sector,
+    chg_1d: r.chg_1d, ytd_usd: r.ytd_usd, mcap_usd: r.mcap_usd, pe: r.pe, deal_count: r.deal_count,
+    equity_raised_usd: r.equity_raised_usd, debt_raised_usd: r.debt_raised_usd, last_round: r.last_round,
+    last_deal_date: r.last_deal_date, valuation_usd: r.valuation_usd, valuation_date: r.valuation_date };
 }
 
-function dateAgeLabel(value: string | null | undefined, staleAfterDays: number): string {
-  if (!value) return "Date not reported";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "Date not reported";
-  const age = Math.floor((Date.now() - parsed.getTime()) / 86400000);
-  if (age < 0) return "Date appears to be in the future";
-  return age > staleAfterDays ? `${value.slice(0, 10)} · ${age} days old` : value.slice(0, 10);
-}
+const sameRef = (a: EntryRef, b: EntryRef) => (a.exchange && a.symbol
+  ? a.exchange === b.exchange && a.symbol === b.symbol
+  : !b.symbol && a.name.trim().toLowerCase() === b.name.trim().toLowerCase());
 
-function financialQuality(profile: Profile): string {
-  const financials = profile.financials;
-  if (!financials) return profile.financials_note ? `No structured financial statements: ${profile.financials_note}` : "No structured financial statements";
-  if (financials.checks?.some((check) => !check.passed)) return "Accounting checks have exceptions";
-  return financials.verified ? "Available accounting checks passed" : "Not fully verified";
-}
-
-const METRICS: { label: string; value: (profile: Profile) => string }[] = [
-  { label: "Country / exchange", value: (p) => [p.country_name || p.country, p.exchange].filter(Boolean).join(" · ") || "Not available" },
-  { label: "Sector / industry", value: (p) => [p.identity?.sector, p.identity?.industry].filter(Boolean).join(" · ") || "Not available" },
-  { label: "Share price", value: (p) => money(p.market?.price, p.market?.currency ?? p.financials?.currency) },
-  { label: "Market capitalisation", value: (p) => money(p.market?.market_cap, p.market?.currency) },
-  { label: "Price quote date", value: (p) => dateAgeLabel(p.market?.as_at, 7) },
-  { label: "Trailing P/E", value: (p) => multiple(p.multiples?.trailingPE, "trailingPE") },
-  { label: "Forward P/E", value: (p) => multiple(p.multiples?.forwardPE, "forwardPE") },
-  { label: "Price / book", value: (p) => multiple(p.multiples?.priceToBook, "priceToBook") },
-  { label: "EV / revenue", value: (p) => multiple(p.multiples?.enterpriseToRevenue, "enterpriseToRevenue") },
-  { label: "EV / EBITDA", value: (p) => multiple(p.multiples?.enterpriseToEbitda, "enterpriseToEbitda") },
-  { label: "Dividend yield", value: (p) => multiple(p.multiples?.dividendYield, "dividendYield") },
-  { label: "Beta", value: (p) => multiple(p.multiples?.beta, "beta") },
-  { label: "Revenue (reported)", value: (p) => statementValue(p, "revenue") },
-  { label: "Profit after tax (reported)", value: (p) => statementValue(p, "profit_after_tax") },
-  { label: "Total assets (reported)", value: (p) => statementValue(p, "total_assets") },
-  { label: "Total debt (reported)", value: (p) => statementValue(p, "total_debt") },
-  { label: "Total equity (reported)", value: (p) => statementValue(p, "total_equity") },
-  { label: "Free cash flow (reported)", value: (p) => statementValue(p, "free_cash_flow") },
-  { label: "Financial statement period", value: (p) => p.financials?.period?.end || "Not available" },
-  { label: "Statement freshness", value: (p) => dateAgeLabel(p.financials?.period?.end, 548) },
-  { label: "Accounting checks", value: financialQuality },
-  { label: "Financial statement source", value: (p) => p.financials?.source || "Not available" },
-  { label: "Latest private-market valuation mark (USD)", value: (p) => {
-      const mark = p.valuation?.latest_mark;
-      return mark ? `${money(mark.valuation_usd, "USD")} · ${mark.basis} · ${mark.announced}` : "Not available";
-    } },
-  { label: "Disclosed private-market capital raised (USD)", value: (p) => money(p.private_markets?.total_raised_usd, "USD") },
-  { label: "Private-market deal records", value: (p) => p.private_markets ? p.private_markets.deal_count.toLocaleString() : "Not available" },
-];
-
-function countercaseQuestion(profile: Profile): string {
-  return `Independently challenge the investment case for ${profile.name}${profile.ticker ? ` (${profile.ticker})` : ""}. Use current primary sources to check financial statement quality and freshness, debt and dilution, valuation assumptions, dividend or cash-flow sustainability, and country, currency, sector and regulatory risks. Separate confirmed facts, inference and unknowns; identify the strongest counterarguments and what evidence would change the conclusion. Do not just confirm the current narrative.`.slice(0, 500);
+/** The profile for a reference, and the directory's facts for it (found by name when not passed in). */
+async function load(ref: EntryRef, facts?: DirectoryFacts | null): Promise<Row> {
+  const params: Record<string, string> = { name: ref.name };
+  if (ref.exchange && ref.symbol) Object.assign(params, { exchange: ref.exchange, symbol: ref.symbol });
+  else if (ref.country) params.country = ref.country;
+  const [profile, found] = await Promise.all([
+    get<CompareProfile>("/api/companies/profile", params),
+    facts !== undefined ? Promise.resolve(null)
+      : get<Directory>("/api/companies/directory", { q: ref.name, limit: 10 }).catch(() => null),
+  ]);
+  const match = found?.rows.find((r) => sameRef(ref, refOf(r)));
+  return { ref, profile, facts: facts ?? (match ? factsOf(match) : null) };
 }
 
 export default function MarketsComparePage() {
-  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [rows, setRows] = useState<Row[]>([]);
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<DirectoryRow[]>([]);
+  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const restored = useRef(false);
 
-  async function addCompany(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setMessage(null);
-    if (!draft.name.trim()) {
-      setError("Enter a company or investment name.");
-      return;
-    }
-    if (profiles.length >= MAX_PROFILES) {
-      setError("Compare up to four companies at a time. Remove one before adding another.");
-      return;
-    }
-    const key = draft.name.trim().toLowerCase();
-    const ticker = draft.ticker.trim().toLowerCase();
-    if (profiles.some((profile) => profile.name.trim().toLowerCase() === key || (ticker && profile.ticker?.trim().toLowerCase() === ticker))) {
-      setError("That company or ticker is already in the comparison.");
-      return;
-    }
+  // A shared link (?c=...) restores its comparison once.
+  useEffect(() => {
+    if (restored.current) return;
+    restored.current = true;
+    const refs = decodeEntries(new URLSearchParams(window.location.search).get("c"));
+    if (!refs.length) return;
     setBusy(true);
+    Promise.allSettled(refs.map((r) => load(r)))
+      .then((results) => setRows(results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []))))
+      .finally(() => setBusy(false));
+  }, []);
+
+  // Keep the address in step, so the page can be bookmarked or shared.
+  useEffect(() => {
+    if (!restored.current) return;
+    const url = new URL(window.location.href);
+    if (rows.length) url.searchParams.set("c", encodeEntries(rows.map((r) => r.ref)));
+    else url.searchParams.delete("c");
+    window.history.replaceState(null, "", url.toString());
+  }, [rows]);
+
+  // Suggestions from every company on record, listed and private.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) { setSuggestions([]); return; }
+    let live = true;
+    const t = window.setTimeout(() => {
+      get<Directory>("/api/companies/directory", { q, limit: 8 })
+        .then((d) => { if (live) setSuggestions(d.rows); })
+        .catch(() => { if (live) setSuggestions([]); });
+    }, 200);
+    return () => { live = false; window.clearTimeout(t); };
+  }, [query]);
+
+  async function add(ref: EntryRef, facts: DirectoryFacts | null | undefined) {
+    setError(null);
+    if (rows.length >= MAX) { setError("Compare up to four at a time. Remove one first."); return; }
+    if (rows.some((r) => sameRef(r.ref, ref))) { setError(`${ref.name} is already in the comparison.`); return; }
+    setBusy(true);
+    setOpen(false);
     try {
-      const profile = await get<Profile>("/api/companies/profile", {
-        name: draft.name.trim(),
-        ticker: draft.ticker.trim(),
-        country: draft.country.trim(),
-      });
-      setProfiles((current) => [...current, profile].slice(0, MAX_PROFILES));
-      setDraft(EMPTY_DRAFT);
-      setMessage(`Added ${profile.name}. Missing fields remain unavailable rather than being estimated.`);
+      const row = await load(ref, facts);
+      setRows((cur) => [...cur, row].slice(0, MAX));
+      setQuery("");
+      setSuggestions([]);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not load this company profile.");
+      setError(err instanceof ApiError ? err.message : `Could not load ${ref.name}.`);
     } finally {
       setBusy(false);
     }
   }
 
-  function removeProfile(profile: Profile) {
-    setProfiles((current) => current.filter((item) => !(item.name === profile.name && item.ticker === profile.ticker)));
-    setMessage(`Removed ${profile.name} from the comparison.`);
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    const first = suggestions[0];
+    // Enter takes the top suggestion when it is plainly the company typed; otherwise the name as typed.
+    if (first && first.name.toLowerCase().startsWith(q.toLowerCase())) add(refOf(first), factsOf(first));
+    else add({ name: q }, undefined);
   }
 
-  const financialCurrencies = [...new Set(profiles
-    .map((profile) => profile.financials?.currency?.trim().toUpperCase())
-    .filter((currency): currency is string => Boolean(currency)))];
-  const statementTimes = profiles
-    .map((profile) => profile.financials?.period?.end ? Date.parse(profile.financials.period.end) : Number.NaN)
-    .filter((value) => Number.isFinite(value));
-  const statementPeriodSpreadDays = statementTimes.length > 1
-    ? Math.round((Math.max(...statementTimes) - Math.min(...statementTimes)) / 86400000)
-    : 0;
-  const hasListedMarketData = profiles.some((profile) => profile.market?.price != null);
-  const hasPrivateMarketData = profiles.some((profile) =>
-    (profile.private_markets?.deal_count ?? 0) > 0 || profile.valuation?.latest_mark != null,
-  );
-  const comparisonCaveats = [
-    financialCurrencies.length > 1
-      ? `Financial statement amounts use different currencies (${financialCurrencies.join(", ")}) and are not normalised.`
-      : null,
-    statementPeriodSpreadDays > 180
-      ? `Statement periods span ${statementPeriodSpreadDays} days. Refresh the sources or compare like-for-like reporting periods before drawing conclusions.`
-      : null,
-    hasListedMarketData && hasPrivateMarketData
-      ? "This comparison mixes listed-market quotes with private-market valuation marks. Those figures represent different bases and are not directly comparable prices."
-      : null,
-  ].filter((caveat): caveat is string => Boolean(caveat));
+  async function share() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard unavailable: the address bar still holds the link */ }
+  }
+
+  const entries: Entry[] = rows;
+  const metrics = visibleMetrics(entries);
+  const notes = caveats(entries);
+  const fxDate = rows.map((r) => r.profile.fx?.as_of).find(Boolean);
 
   return (
     <Container className="pb-10 pt-6 lg:pb-14">
-      <MarketsTitle title="Compare companies">Up to four side by side. Missing figures stay missing, and a lower multiple alone doesn&apos;t make a company cheaper.</MarketsTitle>
+      <MarketsTitle title="Compare companies">
+        Up to four listed or private companies side by side, every amount in US dollars and every ratio worked out from the company&apos;s own statements.
+      </MarketsTitle>
 
-      <div className="mb-6 flex flex-wrap gap-3">
-        <Link href="/companies" className="text-sm text-[color:var(--muted)] underline-offset-4 hover:underline">Explore company profiles →</Link>
-      </div>
-
-      <section className="panel p-5 sm:p-6" aria-labelledby="compare-add-title">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="eyebrow">Build a comparison</p>
-            <h2 id="compare-add-title" className="h3 mt-2 text-xl">Add an investment</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--muted)]">Use the company name first. Ticker and country help resolve ambiguous names. You can compare listed and private-market profiles, but their valuation fields are not directly equivalent.</p>
-          </div>
-          <p className="text-xs text-[color:var(--dim)]">{profiles.length} / {MAX_PROFILES} profiles</p>
+      <section className="panel p-5 sm:p-6" aria-labelledby="compare-add">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="compare-add" className="h3 text-lg">Add a company</h2>
+          <p className="text-xs text-[color:var(--dim)]">{rows.length} of {MAX}</p>
         </div>
-        {error && <div className="mt-4"><ErrorNote message={error} /></div>}
-        {message && <p className="mt-3 text-xs leading-relaxed text-[color:var(--muted)]" role="status">{message}</p>}
-        <form onSubmit={addCompany} className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div>
-            <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="compare-name">Company / investment name *</label>
-            <input id="compare-name" className="field" value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} required maxLength={120} placeholder="e.g. Safaricom" />
+        <form onSubmit={submit} className="relative mt-3 flex flex-col gap-2 sm:flex-row">
+          <div className="relative flex-1">
+            <label htmlFor="compare-q" className="sr-only">Company name or ticker</label>
+            <input id="compare-q" className="field w-full" value={query} autoComplete="off" maxLength={120}
+              placeholder="Search listed and private companies, e.g. Safaricom, Dangote Cement, Moniepoint"
+              role="combobox" aria-expanded={open && suggestions.length > 0} aria-controls="compare-suggestions"
+              onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+              onFocus={() => setOpen(true)} onBlur={() => window.setTimeout(() => setOpen(false), 150)} />
+            {open && suggestions.length > 0 && (
+              <ul id="compare-suggestions" role="listbox"
+                className="absolute z-20 mt-1 max-h-80 w-full overflow-auto rounded-xl border hairline bg-raised/[0.98] p-1 shadow-xl">
+                {suggestions.map((s) => (
+                  <li key={`${s.kind}:${s.exchange ?? ""}:${s.symbol ?? s.name}`} role="option" aria-selected="false">
+                    <button type="button" className="flex w-full items-baseline justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm hover:bg-white/[0.05]"
+                      onMouseDown={(e) => e.preventDefault()} onClick={() => add(refOf(s), factsOf(s))}>
+                      <span className="min-w-0 truncate">{s.name}</span>
+                      <span className="shrink-0 text-xs text-[color:var(--dim)]">
+                        {s.kind === "listed" ? `${s.symbol} · ${s.exchange_name ?? s.exchange?.toUpperCase()}` : `Private${s.country ? ` · ${s.country}` : ""}`}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          <div>
-            <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="compare-ticker">Ticker (optional)</label>
-            <input id="compare-ticker" className="field" value={draft.ticker} onChange={(event) => setDraft((current) => ({ ...current, ticker: event.target.value }))} maxLength={40} placeholder="e.g. SCOM" />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs text-[color:var(--muted)]" htmlFor="compare-country">Country (optional)</label>
-            <input id="compare-country" className="field" value={draft.country} onChange={(event) => setDraft((current) => ({ ...current, country: event.target.value }))} maxLength={80} placeholder="e.g. Kenya" />
-          </div>
-          <div className="flex items-end">
-            <button className="btn btn-primary w-full" type="submit" disabled={busy || profiles.length >= MAX_PROFILES}>{busy ? "Loading profile…" : "Add to comparison"}</button>
-          </div>
+          <button type="submit" className="btn btn-primary" disabled={busy || rows.length >= MAX || !query.trim()}>
+            {busy ? "Loading…" : "Add"}
+          </button>
         </form>
+        {error && <div className="mt-3"><ErrorNote message={error} /></div>}
       </section>
 
-      {profiles.length === 0 ? (
+      {rows.length === 0 ? (
         <section className="mt-6 rounded-xl border border-dashed hairline p-8 text-center">
-          <h2 className="text-base font-medium">Your comparison starts here.</h2>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[color:var(--muted)]">Add at least two companies to compare what the available data supports. One company is enough to inspect source and freshness metadata.</p>
+          <h2 className="text-base font-medium">{busy ? "Loading the comparison…" : "Pick two or more companies."}</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[color:var(--muted)]">
+            Listed shares show market value, returns and valuation multiples; any company with filed statements shows margins,
+            returns on capital and leverage; private companies show their rounds and valuations.
+          </p>
         </section>
       ) : (
         <>
-          <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Companies in comparison">
-            {profiles.map((profile) => (
-              <article key={`${profile.name}|${profile.ticker ?? ""}`} className="panel min-w-0 p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <h2 className="break-words text-base font-semibold">{profile.name}</h2>
-                    <p className="mt-1 text-xs text-[color:var(--muted)]">{[profile.ticker, profile.country_name || profile.country, profile.exchange].filter(Boolean).join(" · ") || "Market identity not fully reported"}</p>
-                  </div>
-                  <button type="button" className="shrink-0 text-xs text-[color:var(--muted)] underline-offset-4 hover:underline" onClick={() => removeProfile(profile)} aria-label={`Remove ${profile.name}`}>Remove</button>
-                </div>
-                <div className="mt-3 space-y-2 border-t hairline pt-3 text-xs">
-                  <p><span className="text-[color:var(--dim)]">Quote:</span> {money(profile.market?.price, profile.market?.currency ?? profile.financials?.currency)}</p>
-                  <p><span className="text-[color:var(--dim)]">Quote date:</span> {dateAgeLabel(profile.market?.as_at, 7)}</p>
-                  <p><span className="text-[color:var(--dim)]">Financials:</span> {financialQuality(profile)}</p>
-                  <p><span className="text-[color:var(--dim)]">Statement period:</span> {profile.financials?.period?.end || "Not available"}</p>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-xs">
-                  <Link href={`/companies?name=${encodeURIComponent(profile.name)}${profile.ticker ? `&ticker=${encodeURIComponent(profile.ticker)}` : ""}`} className="underline-offset-4 hover:underline">Profile</Link>
-                  <Link href={`/markets/valuation?company=${encodeURIComponent(profile.name)}${profile.ticker ? `&ticker=${encodeURIComponent(profile.ticker)}` : ""}`} className="underline-offset-4 hover:underline">Valuation</Link>
-                  <Link href={`/research?question=${encodeURIComponent(countercaseQuestion(profile))}`} className="underline-offset-4 hover:underline">Research countercase</Link>
-                  {profile.financials?.source_url && <a href={profile.financials.source_url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">Statement source ↗</a>}
-                </div>
-              </article>
-            ))}
-          </section>
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-[color:var(--dim)]">
+              Amounts in US dollars at the official rate{fxDate ? ` of ${String(fxDate).slice(5, 16)}` : ""}; as reported underneath. ▲ marks the leader on a measure where higher or lower is better.
+            </p>
+            <button type="button" className="btn btn-ghost h-9 text-sm" onClick={share}>{copied ? "Link copied" : "Copy link to this comparison"}</button>
+          </div>
 
-          {comparisonCaveats.length > 0 ? (
-            <aside className="mt-6 rounded-xl border hairline p-4" aria-label="Comparison limitations" role="status">
-              <h2 className="text-sm font-medium">Check comparability before drawing conclusions</h2>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-[color:var(--muted)]">
-                {comparisonCaveats.map((caveat) => <li key={caveat}>{caveat}</li>)}
+          {notes.length > 0 && (
+            <aside className="mt-3 rounded-xl border hairline p-4" aria-label="Read with care">
+              <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-[color:var(--muted)]">
+                {notes.map((n) => <li key={n}>{n}</li>)}
               </ul>
             </aside>
-          ) : null}
+          )}
 
-          <section className="mt-8" aria-labelledby="comparison-matrix-title">
-            <div className="mb-4">
-              <p className="eyebrow">Comparison matrix</p>
-              <h2 id="comparison-matrix-title" className="h3 mt-2 text-xl">What the available evidence says</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">Raw financial amounts use each company&apos;s reported currency and units; they are not normalised across currencies, fiscal periods or accounting bases. Ratios may still be unsuitable for cross-sector comparisons. Not available means the source profile did not provide a usable value.</p>
-            </div>
-            <div className="overflow-x-auto rounded-xl border hairline">
-              <table className="w-full min-w-[58rem] border-collapse text-left text-xs">
-                <thead>
-                  <tr className="border-b hairline text-[color:var(--dim)]">
-                    <th scope="col" className="sticky left-0 bg-[color:var(--panel)] px-3 py-3 font-normal">Metric</th>
-                    {profiles.map((profile) => <th scope="col" key={`${profile.name}|${profile.ticker ?? ""}`} className="min-w-44 px-3 py-3 font-normal">{profile.name}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {METRICS.map((metric) => (
-                    <tr key={metric.label} className="border-b hairline last:border-0">
-                      <th scope="row" className="sticky left-0 bg-[color:var(--panel)] px-3 py-3 font-normal text-[color:var(--muted)]">{metric.label}</th>
-                      {profiles.map((profile) => <td key={`${profile.name}|${profile.ticker ?? ""}`} className="px-3 py-3 align-top">{metric.value(profile)}</td>)}
-                    </tr>
+          <div className="mt-4 overflow-x-auto rounded-xl border hairline">
+            <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b hairline">
+                  <th scope="col" className="sticky left-0 z-10 w-48 bg-[color:var(--panel)] px-3 py-3 text-xs font-normal text-[color:var(--dim)]">Measure</th>
+                  {rows.map((r) => (
+                    <th scope="col" key={encodeEntries([r.ref])} className="min-w-44 px-3 py-3 align-top font-normal">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="break-words font-semibold">{r.profile.name}</p>
+                          <p className="text-xs text-[color:var(--dim)]">
+                            {r.facts?.kind === "private" || (!r.ref.symbol && !r.profile.market) ? "Private" : [r.ref.symbol ?? r.profile.ticker, r.facts?.exchange_name ?? r.profile.exchange].filter(Boolean).join(" · ")}
+                          </p>
+                        </div>
+                        <button type="button" className="text-xs text-[color:var(--muted)] hover:text-[color:var(--text)]" aria-label={`Remove ${r.profile.name}`}
+                          onClick={() => setRows((cur) => cur.filter((x) => x !== r))}>✕</button>
+                      </div>
+                    </th>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                </tr>
+              </thead>
+              {GROUPS.map((group) => {
+                const inGroup = metrics.filter((m) => m.group === group);
+                if (!inGroup.length) return null;
+                return (
+                  <tbody key={group}>
+                    <tr><th colSpan={rows.length + 1} scope="colgroup" className="bg-white/[0.02] px-3 pb-1.5 pt-4 text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-[color:var(--dim)]">{group}</th></tr>
+                    {inGroup.map((m) => {
+                      const lead = leaders(m, entries);
+                      return (
+                        <tr key={m.key} className="border-b hairline last:border-0">
+                          <th scope="row" className="sticky left-0 z-10 bg-[color:var(--panel)] px-3 py-2.5 text-xs font-normal text-[color:var(--muted)]" title={m.note}>
+                            {m.label}{m.note ? <span className="text-[color:var(--dim)]"> ⓘ</span> : null}
+                          </th>
+                          {rows.map((r, i) => {
+                            const v = m.value(r);
+                            const local = m.local?.(r);
+                            return (
+                              <td key={encodeEntries([r.ref])} className={`kbd px-3 py-2.5 align-top ${m.kind === "text" ? "font-sans text-xs" : ""} ${lead.has(i) ? "font-semibold text-verified" : ""}`}>
+                                {lead.has(i) ? "▲ " : ""}{show(m, v)}
+                                {local && v != null && <span className="block text-[0.6875rem] font-normal text-[color:var(--dim)]">{local}</span>}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                );
+              })}
+            </table>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs">
+            {rows.map((r) => (
+              <span key={encodeEntries([r.ref])} className="text-[color:var(--muted)]">
+                {r.profile.name}:{" "}
+                <Link href={`/companies?name=${encodeURIComponent(r.profile.name)}${r.ref.exchange && r.ref.symbol ? `&exchange=${r.ref.exchange}&symbol=${encodeURIComponent(r.ref.symbol)}` : ""}`} className="underline-offset-4 hover:underline">profile</Link>
+                {" · "}
+                <Link href={`/markets/valuation?company=${encodeURIComponent(r.profile.name)}${r.profile.ticker ? `&ticker=${encodeURIComponent(r.profile.ticker)}` : ""}`} className="underline-offset-4 hover:underline">value it</Link>
+                {r.profile.financials?.source_url && <>{" · "}<a href={r.profile.financials.source_url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">statements ↗</a></>}
+              </span>
+            ))}
+          </div>
         </>
       )}
 
-      <div className="mt-8 rounded-xl border hairline p-4 text-xs leading-relaxed text-[color:var(--dim)]">
-        This is a source-aware comparison aid, not a ranking engine or recommendation. Public-market prices, private-market transaction marks and disclosed capital raised represent different things. Do not compare raw amounts across currencies or units without normalising them first; missing, stale or inconsistent data should lower confidence rather than be silently filled in.
-      </div>
+      <p className="mt-8 text-xs leading-relaxed text-[color:var(--dim)]">
+        A side-by-side view, not a ranking or a recommendation. Ratios come from each company&apos;s latest reported statements and
+        are left blank where a figure is missing; a lower multiple alone doesn&apos;t make a company cheaper, and sectors differ
+        (bank margins and leverage don&apos;t compare with a cement maker&apos;s).
+      </p>
     </Container>
   );
 }
