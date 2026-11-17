@@ -13,7 +13,7 @@ import { ErrorNote, Field, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { SIGNAL_TYPES, post } from "../../../lib/market";
 import { DESTINATION_LABEL, webhookDestination } from "../../../lib/webhooks";
-import { uniqueNames, writeAlertsLink } from "../../../lib/portfolio-alerts";
+import { readAlertsLink, uniqueNames, writeAlertsLink } from "../../../lib/portfolio-alerts";
 
 const KEY = "deal-intel:watchlists";
 type Saved = { id: string; name: string; created_at: string };
@@ -71,6 +71,9 @@ export default function WatchlistsPage() {
   const [prefillNotice, setPrefillNotice] = useState<string | null>(null);
   // Holdings copied from Markets > Portfolio; once saved, Portfolio can keep this watchlist in step with them.
   const [portfolioNames, setPortfolioNames] = useState<string[] | null>(null);
+  // The watchlist Markets > Portfolio keeps in step with its holdings, if one was made.
+  const [portfolioWatchlist, setPortfolioWatchlist] = useState<string | null>(null);
+  useEffect(() => { setPortfolioWatchlist(readAlertsLink()?.watchlistId ?? null); }, []);
   const [tab, setTab] = useState<"watchlists" | "elections">("watchlists");
   const [formOpen, setFormOpen] = useState(false);
   // The tab follows the address (#elections), so links from the results pages open the right one.
@@ -167,7 +170,7 @@ export default function WatchlistsPage() {
     <Container className="max-w-5xl py-10 lg:py-14">
       <header className="mb-6">
         <h1 className="h2 text-[1.75rem] sm:text-[2rem]">Alerts</h1>
-        <p className="mt-2 text-[0.9375rem] text-[color:var(--muted)]">Hear about what you follow as it happens, by email or in your team&apos;s channel.</p>
+        <p className="mt-2 text-[0.9375rem] text-[color:var(--muted)]">Hear about the companies, countries, portfolio holdings and elections you follow as it happens, by email or in your team&apos;s channel.</p>
       </header>
 
       <div role="tablist" aria-label="Alert type" className="mb-8 flex gap-6 border-b hairline">
@@ -190,14 +193,19 @@ export default function WatchlistsPage() {
                 <p className="text-[0.875rem] text-[color:var(--muted)]">
                   {saved.length ? `${saved.length} watchlist${saved.length === 1 ? "" : "s"}` : "Follow companies and countries: every deal and corporate event that involves them."}
                 </p>
-                <button type="button" onClick={() => setFormOpen(true)} className="btn btn-primary shrink-0">New watchlist</button>
+                <div className="flex shrink-0 items-center gap-3">
+                  {!portfolioWatchlist && (
+                    <Link href="/markets/portfolio" className="text-[0.8125rem] text-[color:var(--muted)] underline-offset-4 hover:text-[color:var(--text)] hover:underline">Follow my portfolio holdings</Link>
+                  )}
+                  <button type="button" onClick={() => setFormOpen(true)} className="btn btn-primary">New watchlist</button>
+                </div>
               </div>
               {saved.length > 0 && (
                 <ul className="mt-4 divide-y divide-white/[0.07] border-y hairline">
                   {saved.map((w) => (
                     <li key={w.id}>
                       <Link href={`/watchlists/${w.id}`} className="flex items-center justify-between gap-3 py-3 text-[0.9375rem] hover:text-[color:var(--text)]">
-                        <span>{w.name}</span>
+                        <span>{w.name}{w.id === portfolioWatchlist && <span className="ml-2 rounded-full border hairline px-2 py-0.5 text-[0.6875rem] text-[color:var(--muted)]">Follows your portfolio</span>}</span>
                         <span className="kbd text-[0.75rem] text-[color:var(--dim)]">{w.created_at.slice(0, 10)} →</span>
                       </Link>
                     </li>
