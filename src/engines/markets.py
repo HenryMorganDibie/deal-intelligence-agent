@@ -991,6 +991,13 @@ def build_snapshot(client: Optional[httpx.Client] = None, today: Optional[date] 
             have = indices.get(i["exchange"])
             if not have or not have.get("date") or have["date"] < i["date"]:
                 indices[i["exchange"]] = i
+        # The exchanges' own index levels, since the listing site's index table stopped on 28 October; a level as
+        # recent as the one held is preferred, coming from the exchange itself.
+        from src.engines.index_sources import official_indices
+        for i in official_indices(c, today, (previous or {}).get("indices")):
+            have = indices.get(i["exchange"])
+            if not have or not have.get("date") or have["date"] <= i["date"]:
+                indices[i["exchange"]] = i
         # Which exchanges were priced from a second source this run (the rest came from their primary source).
         sources = {k: sorted({q["source"] for q in qs if q.get("source")}) for k, qs in quotes.items()
                    if any(q.get("source") for q in qs)}
