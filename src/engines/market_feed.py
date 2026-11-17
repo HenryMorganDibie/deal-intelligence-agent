@@ -347,6 +347,9 @@ def to_events(items: Iterable[dict], min_score: float = 0.7) -> list[dict]:
         countries = [c.iso2 for c in countries_in_text(text)]
         if not countries and it.get("country_hint") and not names_only_foreign_countries(text):
             countries.append(it["country_hint"])
+        if not countries:
+            from src.data.african_companies import countries_of_companies
+            countries = countries_of_companies(text)      # "KETRACO faces liquidation petition": Kenya's grid company
         if not countries and re.search(r"(?i)\bbusiness\s+rescue\b", text) and not names_only_foreign_countries(text):
             countries.append("ZA")                      # a South African insolvency procedure (Companies Act, chapter 6)
         out.append({

@@ -46,3 +46,17 @@ def test_business_rescue_is_placed_in_south_africa():
     ev = mf.to_events([{"title": "200-year-old retailer dumped by Woolworths enters business rescue", "snippet": "",
                         "publisher": "", "date": "2026-11-10"}])
     assert ev and ev[0]["signal_type"] == "distressed_asset" and "ZA" in (ev[0].get("countries") or [ev[0].get("country")])
+
+
+def test_political_disputes_over_an_insolvency_are_not_credit_events():
+    for title in ["Keyamo tackles Atiku over Nigeria Airways liquidation",
+                  "Keyamo Accuses Atiku Of Hypocrisy Over Nigeria Airways Liquidation, Unpaid Workers’ Entitlements",
+                  "Fani-Kayode Defends Obasanjo Over Nigeria Airways Liquidation",
+                  "FT Group Petitions Tinubu, NDIC Over 30-Year Bank Liquidation Surplus, Dividends"]:
+        assert credit_type(title) is None, title
+
+
+def test_state_companies_are_placed_in_their_country():
+    ev = mf.to_events([{"title": "KETRACO Faces Liquidation Petition Over Unpaid KSh 10b Award to Spanish Firm",
+                        "snippet": "", "publisher": "", "date": "2026-10-15"}])
+    assert ev and ev[0]["signal_type"] == "distressed_asset" and "KE" in (ev[0].get("countries") or [])

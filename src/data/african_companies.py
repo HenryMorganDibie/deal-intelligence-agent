@@ -31,6 +31,13 @@ AFRICAN_COMPANIES: dict[str, str] = {
     "Attijariwafa": "MA", "Maroc Telecom": "MA", "OCP Group": "MA",
     # Pan-African and other markets
     "Airtel Africa": "NG", "Ecobank": "TG", "Afreximbank": "EG", "Ethio Telecom": "ET",
+    # State-owned companies and utilities, often named without a country in credit and insolvency news
+    "KETRACO": "KE", "Ketraco": "KE", "Kenya Power": "KE", "KPLC": "KE", "KenGen": "KE", "Kenya Airways": "KE",
+    "Kenya Pipeline": "KE", "Eskom": "ZA", "Transnet": "ZA", "Denel": "ZA", "PRASA": "ZA", "South African Airways": "ZA",
+    "Concor": "ZA", "Tongaat Hulett": "ZA", "NNPC": "NG", "Arik Air": "NG", "Nigeria Airways": "NG", "COCOBOD": "GH",
+    "Ghana Cocoa Board": "GH", "TANESCO": "TZ", "Air Tanzania": "TZ", "ZESCO": "ZM", "Umeme": "UG", "UMEME": "UG",
+    "Uganda Airlines": "UG", "Sonatrach": "DZ", "Sonangol": "AO", "Gécamines": "CD", "Gecamines": "CD",
+    "Ethiopian Airlines": "ET", "ZIMRA": "ZW", "Air Zimbabwe": "ZW",
 }
 
 

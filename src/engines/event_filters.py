@@ -90,6 +90,9 @@ _CREDIT_TYPES = {"credit_risk", "distressed_asset", "debt_restructuring"}
 _RATING_ACTION = re.compile(
     r"(?i)\b(moody['’]?s|fitch|s\s?&\s?p|standard\s*&\s*poor['’]?s|gcr|global\s+credit\s+ratings?|agusto|datapro|bloomfield|"
     r"wara|scope\s+ratings)\b.{0,60}\b(downgrad\w*|upgrad\w*|cuts?|lowers?|affirm\w*|rating|outlook|watch|junk)\b")
+_DISPUTE = re.compile(
+    r"(?i)\b(accus\w*|tackles?|defends?|slams?|blames?|lambast\w*|berat\w*|knocks?|faults?|hits\s+back|"
+    r"hypocrisy|replies|responds|petitions?\s+(?:tinubu|president|presidency|senate|national\s+assembly|governor))\b")
 # A subject of up to six capitalised words leading straight into a credit trigger.
 _OBLIGOR_LEADS = re.compile(
     r"^(?:[A-Z][\w&'’.-]*|of|and|&)(?:\s+(?:[A-Z][\w&'’.-]*|of|and|&)){0,5}\s+(?:enters?|entered|is\s+placed|placed|goes|"
@@ -167,6 +170,10 @@ def is_corporate_event(headline: str, signal_type: Optional[str] = None) -> bool
         # state to buy, and a club takeover are not deals.
         return not (_ARMS.search(text) or _INVITATION.search(text) or _SPORTS.search(text))
     if _PUBLIC_FUNDS.search(text):
+        return False
+    if signal_type in _CREDIT_TYPES and _DISPUTE.search(text) and not _RATING_ACTION.search(text):
+        # People arguing about an insolvency ("Keyamo tackles Atiku over Nigeria Airways liquidation", a group
+        # petitioning the president over a 30-year-old bank liquidation) is politics, not a credit event.
         return False
     if signal_type in _CREDIT_TYPES and (_RATING_ACTION.search(text) or _OBLIGOR_LEADS.match(text.lstrip("\"'‘“ "))):
         # Credit events are about obligors: a rated issuer (a sovereign included: its rating moves every bank and
