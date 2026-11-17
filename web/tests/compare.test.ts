@@ -88,3 +88,14 @@ test("a comparison round-trips through its link, separators in names removed", (
   assert.deepEqual(decodeEntries(link), [{ exchange: "nse", symbol: "SCOM", name: "Safaricom PLC" }, { name: "Acme Ltd", country: "NG" }]);
   assert.deepEqual(decodeEntries("javascript:alert(1)"), []);
 });
+
+test("development-finance investments and merger decisions are summarised", () => {
+  const withRecords: Entry = { ...privateCo, profile: { ...privateCo.profile, official_records: [
+    { kind: "dfi_investment", authority: "British International Investment", date: "2022-01-21", amount_usd: null },
+    { kind: "dfi_investment", authority: "IFC", date: "2023-05-01", amount_usd: 50e6 },
+    { kind: "merger_filing", authority: "COMESA Competition Commission", date: "2024-02-01" },
+  ] } };
+  assert.equal(m("dfi").value(withRecords), "2 from 2 institutions, $50m disclosed");
+  assert.equal(m("mergers").value(withRecords), 1);
+  assert.equal(m("dfi").value(safaricom), null);
+});

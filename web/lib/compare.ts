@@ -21,6 +21,7 @@ export type CompareProfile = {
     debt_raised_usd?: number | null; last_round: string | null } | null;
   valuation?: { latest_mark: { valuation_usd: number; basis: string; announced: string } | null } | null;
   fx?: { per_usd: Record<string, number>; as_of?: string | null } | null;
+  official_records?: { kind: string; authority: string; date: string | null; amount_usd?: number | null }[];
   financials_note?: string | null;
 };
 
@@ -48,6 +49,10 @@ export function toUsd(p: CompareProfile, amount: number | null, currency?: strin
   const ccy = (currency ?? p.financials?.currency ?? "").toUpperCase();
   const rate = ccy ? p.fx?.per_usd?.[ccy] : undefined;
   return rate && rate > 0 ? amount / rate : null;
+}
+
+function usdShort(v: number): string {
+  return v >= 1e9 ? `$${(v / 1e9).toFixed(1)}bn` : v >= 1e6 ? `$${Math.round(v / 1e6)}m` : `$${Math.round(v / 1e3)}k`;
 }
 
 const ratio = (a: number | null, b: number | null) => (a != null && b != null && b !== 0 ? a / b : null);
@@ -161,6 +166,17 @@ export const METRICS: Metric[] = [
       const round = e.profile.private_markets?.last_round ?? e.facts?.last_round;
       return round ? `${round.replace(/_/g, " ")}${e.facts?.last_deal_date ? `, ${e.facts.last_deal_date.slice(0, 10)}` : ""}` : null;
     } },
+  { key: "dfi", label: "Development-finance investments", group: "Private markets", kind: "text", better: null,
+    note: "Investments disclosed by IFC, British International Investment, FMO, the EIB, the African Development Bank and the US DFC.",
+    value: (e) => {
+      const recs = (e.profile.official_records ?? []).filter((r) => r.kind === "dfi_investment");
+      if (!recs.length) return null;
+      const total = recs.reduce((a, r) => a + (r.amount_usd ?? 0), 0);
+      const backers = [...new Set(recs.map((r) => r.authority))];
+      return `${recs.length} from ${backers.length === 1 ? backers[0] : `${backers.length} institutions`}${total ? `, ${usdShort(total)} disclosed` : ""}`;
+    } },
+  { key: "mergers", label: "Merger decisions", group: "Private markets", kind: "count", better: null,
+    value: (e) => (e.profile.official_records ?? []).filter((r) => r.kind === "merger_filing").length || null },
   { key: "deals", label: "Deals on record", group: "Private markets", kind: "count", better: null,
     value: (e) => (e.profile.private_markets?.deal_count || e.facts?.deal_count || null) },
 

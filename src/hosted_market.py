@@ -936,6 +936,11 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
     profile = await run_in_threadpool(company_profile.build, name, ticker.upper() if ticker else None, country,
                                       deals(), cik, None, listing, None, False)
     profile["valuation"] = market_risk.valuation_view(profile.get("name") or name, deals(), profile)
+    # Official records naming the company: competition-authority merger decisions and development-finance
+    # investment disclosures (dated, linked to the publisher's own document).
+    from src.engines import official_records
+    profile["official_records"] = await run_in_threadpool(official_records.records_for, profile.get("name") or name,
+                                                          ticker.upper() if ticker else None)
     # The company's own website, read by the independent five-minute enrichment worker: queued here when known.
     from src import company_web
     site = (profile.get("identity") or {}).get("website")

@@ -8,6 +8,8 @@ import { ApiError } from "../../../lib/api";
 import { get, type Comparables, type Deal } from "../../../lib/market";
 import { CompanyGovernance, type Governance, type Identity, type Web } from "../../../components/app/CompanyGovernance";
 
+type OfficialRecord = { kind: string; authority: string; title: string; date: string | null; url: string | null;
+  amount_usd?: number | null; detail?: string | null; countries?: string[] };
 type Item = { current: number; prior?: number; line?: string };
 type Financials = {
   source: string;
@@ -41,6 +43,7 @@ type Profile = {
   financials_note?: string;
   filings?: { title: string; url: string; filed: string }[];
   sec_cross_check?: { period: string; field: string; yahoo: number; sec_filing: number; match: boolean }[];
+  official_records?: OfficialRecord[];
   private_markets: {
     deal_count: number;
     total_raised_usd: number | null;
@@ -94,6 +97,44 @@ function toneOf(v: unknown): string {
 // The words that find a company's news: its name without the corporate suffix.
 function newsName(name: string): string {
   return name.replace(/\b(plc|ltd|limited|holdings?|group|company|corporation|s\.?a\.?|inc)\.?$/i, "").trim();
+}
+
+const RECORD_KIND: Record<string, string> = { merger_filing: "Merger decision", dfi_investment: "Development-finance investment" };
+
+/** Dated records from the bodies that publish them: competition authorities and development-finance institutions. */
+function OfficialRecords({ records }: { records: OfficialRecord[] }) {
+  const [all, setAll] = useState(false);
+  if (!records.length) return null;
+  const shown = all ? records : records.slice(0, 6);
+  const dfi = records.filter((r) => r.kind === "dfi_investment");
+  const committed = dfi.reduce((a, r) => a + (r.amount_usd ?? 0), 0);
+  return (
+    <section>
+      <h3 className="eyebrow">Official records</h3>
+      <p className="mt-2 max-w-3xl text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
+        {records.length} record{records.length === 1 ? "" : "s"} published by competition authorities and development-finance institutions
+        {dfi.length ? `, including ${dfi.length} disclosed investment${dfi.length === 1 ? "" : "s"}${committed ? ` (${usd(committed)} where the amount is disclosed)` : ""}` : ""}.
+        Each links to the publisher&apos;s own record.
+      </p>
+      <ul className="mt-3 divide-y divide-[color:var(--line)] rounded-xl border hairline">
+        {shown.map((r) => (
+          <li key={`${r.kind}:${r.url ?? r.title}`} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3 text-sm">
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{r.url ? <a href={r.url} target="_blank" rel="noreferrer" className="hover:underline">{r.title}</a> : r.title}</p>
+              <p className="mt-0.5 text-xs text-[color:var(--dim)]">{RECORD_KIND[r.kind] ?? r.kind} · {r.authority}{r.date ? ` · ${r.date}` : ""}</p>
+              {r.detail && <p className="mt-1 line-clamp-2 text-xs text-[color:var(--muted)]">{r.detail}</p>}
+            </div>
+            {r.amount_usd ? <span className="kbd shrink-0 text-sm">{usd(r.amount_usd)}</span> : null}
+          </li>
+        ))}
+      </ul>
+      {records.length > 6 && (
+        <button type="button" className="mt-2 text-xs text-[color:var(--muted)] underline-offset-4 hover:underline" onClick={() => setAll((v) => !v)}>
+          {all ? "Show fewer" : `Show all ${records.length}`}
+        </button>
+      )}
+    </section>
+  );
 }
 
 export default function CompaniesPage() {
@@ -352,6 +393,8 @@ export default function CompaniesPage() {
               </div>
             )}
           </section>
+
+          {p.official_records?.length ? <OfficialRecords records={p.official_records} /> : null}
 
           {p.valuation.public_bridge && (() => {
             const b = p.valuation.public_bridge;
