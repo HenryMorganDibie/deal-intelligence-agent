@@ -247,7 +247,30 @@ SIGNAL_RULES: list[tuple[SignalType, list[str], float]] = [
         r"\b(missed|misses|skipped|failed\s+to\s+make)\b.{0,25}\b(debt|loan|bond|interest|coupon)\s+(payment|repayment|installments?|instalments?)\b",
         r"\b(liquidity|cash\s+flow|debt\s+service)\b.{0,30}\b(deteriorat\w*|weaken\w*|shortfall|pressure)\b",
     ], 0.88),
+    # Rating actions as African business news writes them: the agency first ("Moody's downgrades Senegal",
+    # "Fitch places Ecobank on Rating Watch Negative"), including Africa's own agencies.
+    (SignalType.CREDIT_RISK, [
+        r"\b(moody['’]?s|fitch|s\s?&\s?p|standard\s*&\s*poor['’]?s|gcr|global\s+credit\s+ratings?|agusto|datapro|"
+        r"bloomfield|wara|scope\s+ratings)\b.{0,60}\b(downgrad\w*|cuts?|lowers?|slash\w*|pushes\b.{0,30}\bjunk|"
+        r"deeper\s+into\s+junk|(rating\s+)?watch\s+negative|negative\s+watch|review\s+for\s+(a\s+)?downgrade)\b",
+        r"\b(defaults?|defaulted)\s+on\b.{0,30}\b(eurobond|bonds?|notes?|loans?|debt|coupon|interest|obligations?)\b",
+        r"\b(misses?|missed|skips?|skipped)\b.{0,30}\b(eurobond|coupon|bond|loan|interest)\b.{0,15}\b(payments?|repayments?)?\b",
+    ], 0.92),
+    (SignalType.CREDIT_RISK, [
+        r"\boutlook\b.{0,25}\b(to|revised\s+to|cut\s+to|lowered\s+to)\s+negative\b|\bnegative\s+outlook\b",
+        r"\b(rating\s+watch\s+negative|on\s+watch\s+negative|placed\s+on\s+(credit\s+)?watch)\b",
+        r"\b(non[-\s]performing\s+loans?|npl\s+ratio|bad\s+loans?|loan\s+losses|impairment\s+charges?)\b.{0,40}"
+        r"\b(ris\w*|jump\w*|surg\w*|climb\w*|soar\w*|spik\w*|double\w*|swell\w*|hits?|high)\b",
+        r"\b(arrears|unpaid\s+debts?|debt\s+overhang)\b.{0,30}\b(company|firm|bank|utility|airline|insurer|owed|mount\w*)\b",
+        r"\b(junk|speculative[-\s]grade)\s+(status|territory|rating)\b",
+    ], 0.82),
     # ── Distressed Asset ──
+    (SignalType.DISTRESSED_ASSET, [
+        # "Concor enters business rescue", "a company now in business rescue", "Arik Air receivership"
+        r"\b(enter\w*|placed?|put|goes|going|went|now|remains?|files?|filed)\b.{0,15}\b"
+        r"(business\s+rescue|receivership|judicial\s+management|administration\s+order)\b",
+        r"\b(business\s+rescue\s+plan|rescue\s+practitioners?|receiver\s+manager|liquidators?\s+appointed)\b",
+    ], 0.9),
     (SignalType.DISTRESSED_ASSET, [
         r"\b(chapter\s+11|chapter\s+7|bankruptcy)\s+(fil(ed?|ing)|petition|protect)\b",
         r"\bbusiness\s+rescue\s+(proceedings?|practitioner|commenced)\b",
@@ -1126,12 +1149,13 @@ _SUBJECT_ONLY_TYPES = {SignalType.EARNINGS_SURPRISE, SignalType.LEADERSHIP_CHANG
 # distress language ("downgraded by Moody's", "event of default") still fires.
 _POSITIVE_VETO = {
     SignalType.CREDIT_RISK: re.compile(
-        r"\b(upgrad\w*|affirm\w*|outlook\s+(raised|to\s+positive|revised\s+to\s+positive)"
+        r"\b(upgrad\w*|affirm\w*|spar(e|es|ed|ing)\b|avoid\w*\s+(a\s+)?downgrade|lifts?\b|raises?\b.{0,30}\boutlook"
+        r"|outlook\s+(raised|to\s+positive|revised\s+to\s+positive)"
         r"|rel[eè]ve\w*\s+(la\s+|sa\s+)?notation|rehauss\w*|perspective\s+positive)\b",
         re.IGNORECASE,
     ),
 }
-_VETO_MAX_SCORE = 0.9
+_VETO_MAX_SCORE = 0.93     # covers agency-first rating actions (0.92): "Moody's spares France downgrade" is not one
 
 
 def _vetoed(sig_type: SignalType, base_score: float, text: str) -> bool:

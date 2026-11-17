@@ -45,7 +45,7 @@ DEAL_TERMS = {
     "es": '(adquisición OR inversión OR financiación)',
 }
 EVENT_TERMS = {
-    "en": '(default OR downgrade OR resigns OR fine OR suspended OR restructuring OR "profit warning" OR probe)',
+    "en": '(default OR downgrade OR resigns OR fine OR suspended OR restructuring OR "profit warning" OR probe OR receivership OR liquidation OR "business rescue" OR "negative outlook")',
     "fr": '(défaut OR dégradation OR démission OR sanction OR restructuration OR "avertissement sur résultats")',
     "pt": '(incumprimento OR rebaixamento OR demissão OR multa OR reestruturação)',
 }
@@ -54,6 +54,11 @@ PAN_AFRICAN_QUERIES = (
     "Africa fund final close", "Africa fund first close", "IFC invests Africa", "British International Investment Africa",
     "Proparco Africa investment", "Afreximbank facility", "AfDB loan approves", "Africa acquisition completes",
     "Africa exits stake", "Africa venture debt", "Africa IPO listing", "Africa joint venture",
+    # Credit risk: rating actions (agencies and Africa's own), missed payments, insolvency and bad loans.
+    "Fitch downgrades Africa", "Moody's downgrades Africa", "S&P downgrades Africa", "GCR downgrades",
+    "Agusto downgrade", "\"rating watch negative\" Africa", "\"outlook to negative\" Africa",
+    "Eurobond default Africa", "missed coupon payment Africa", "\"business rescue\" South Africa",
+    "receivership Nigeria company", "liquidation company Kenya OR Ghana OR Nigeria", "non-performing loans Africa bank",
 )
 
 _ITEM = re.compile(r"<item>(.*?)</item>", re.S)
@@ -342,6 +347,8 @@ def to_events(items: Iterable[dict], min_score: float = 0.7) -> list[dict]:
         countries = [c.iso2 for c in countries_in_text(text)]
         if not countries and it.get("country_hint") and not names_only_foreign_countries(text):
             countries.append(it["country_hint"])
+        if not countries and re.search(r"(?i)\bbusiness\s+rescue\b", text) and not names_only_foreign_countries(text):
+            countries.append("ZA")                      # a South African insolvency procedure (Companies Act, chapter 6)
         out.append({
             "id": event_id(title),
             "day": it.get("date"),

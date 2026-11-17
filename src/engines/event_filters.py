@@ -86,6 +86,15 @@ _PERSON_CUE = re.compile(
 # Ownership changes are checked by the deal extractor; "Africa's richest man acquires 25% of Kenya Pipeline"
 # is a deal whatever its subject.
 _TRANSACTION_TYPES = {"m_and_a_activity", "insider_activity"}
+_CREDIT_TYPES = {"credit_risk", "distressed_asset", "debt_restructuring"}
+_RATING_ACTION = re.compile(
+    r"(?i)\b(moody['’]?s|fitch|s\s?&\s?p|standard\s*&\s*poor['’]?s|gcr|global\s+credit\s+ratings?|agusto|datapro|bloomfield|"
+    r"wara|scope\s+ratings)\b.{0,60}\b(downgrad\w*|upgrad\w*|cuts?|lowers?|affirm\w*|rating|outlook|watch|junk)\b")
+# A subject of up to six capitalised words leading straight into a credit trigger.
+_OBLIGOR_LEADS = re.compile(
+    r"^(?:[A-Z][\w&'’.-]*|of|and|&)(?:\s+(?:[A-Z][\w&'’.-]*|of|and|&)){0,5}\s+(?:enters?|entered|is\s+placed|placed|goes|"
+    r"files?|filed|misses?|missed|skips?|defaults?|defaulted|fails?\s+to\s+(?:pay|repay|meet)|seeks?\s+(?:debt|creditor)|"
+    r"faces?\s+(?:liquidation|insolvency|default|winding)|put\s+(?:in|into|under)|(?:is\s+)?now\s+in)\b")
 _ARMS = re.compile(r"(?i)\b(fighter\s+jets?|warplanes?|attack\s+helicopters?|helicopters?|weapons?|missiles?|drones?\s+for\s+"
                    r"(?:the\s+)?(?:army|military)|jf-17|tanks?\s+for|armou?red\s+vehicles?|bombs?|revolutionary\s+guard|"
                    r"military)\b")
@@ -159,6 +168,11 @@ def is_corporate_event(headline: str, signal_type: Optional[str] = None) -> bool
         return not (_ARMS.search(text) or _INVITATION.search(text) or _SPORTS.search(text))
     if _PUBLIC_FUNDS.search(text):
         return False
+    if signal_type in _CREDIT_TYPES and (_RATING_ACTION.search(text) or _OBLIGOR_LEADS.match(text.lstrip("\"'‘“ "))):
+        # Credit events are about obligors: a rated issuer (a sovereign included: its rating moves every bank and
+        # company in it), a state-owned borrower ("Ghana Cocoa Board misses coupon") or a company named only here
+        # ("Concor enters business rescue").
+        return not _NON_CORPORATE.search(text) or bool(_RATING_ACTION.search(text))
     name = named_company(text)
     if is_public_institution(name):
         # The World Bank, a central bank or the IMF acting is not a company's event, and "Bank" in its own name
