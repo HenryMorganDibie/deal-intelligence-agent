@@ -1515,6 +1515,38 @@
     "group": {
       "name": "Group",
       "kind": "organization"
+    },
+    "upl subsidiary advanta": {
+      "name": "UPL Subsidiary Advanta",
+      "kind": "organization"
+    },
+    "eaaif": {
+      "name": "EAAIF",
+      "kind": "organization"
+    },
+    "lmi holdings": {
+      "name": "LMI Holdings",
+      "kind": "organization"
+    },
+    "novo": {
+      "name": "Novo",
+      "kind": "organization"
+    },
+    "diabetes screening": {
+      "name": "Diabetes Screening",
+      "kind": "organization"
+    },
+    "nse": {
+      "name": "NSE",
+      "kind": "organization"
+    },
+    "asas": {
+      "name": "ASAS",
+      "kind": "organization"
+    },
+    "undisclosed gas business": {
+      "name": "Undisclosed gas business",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -4358,6 +4390,11 @@
           "title": "Proparco Invests $690,000 into Sudan’s Fintech Cashi",
           "publisher": "TechMoran",
           "url": "https://techmoran.com/2026/11/12/proparco-invests-690000-into-sudans-fintech-cashi/"
+        },
+        {
+          "title": "Sudanese fintech startup Cashi raises $660k from Proparco",
+          "publisher": "- Disrupt Africa",
+          "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQRHlfM1pvU2FFbTBLeGtHU2FlU21zWnhKLTFvVVlkd05PY000OXVlOVZ4UjlaeHVrMWtqaXdTYlZfck9FcmZ2SjVENXVNLUVKZ1JhS01kWE5ZaVRlVmo4dzZndVV1eFEzbnpnT2xQV0k4ZnM3ckhjNWFZMlpwdS1QVTdZSVZtS0t3VGcxcE9tRHJIR3doUkl3VE1B?oc=5"
         }
       ]
     },
@@ -4978,6 +5015,11 @@
           "title": "Advanta set to acquire Egypt’s Misr Hytech Seed in major push to expand Africa footprint",
           "publisher": "Indian Chemical News",
           "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxPOTF2d2JXTGhTNlhaMVE4aklRN19haWJXTk5wN19YT01fNWRLUUV5MGpFRFl0UExtcGo2b2hFZUhkTnZDczY3TzdTUmZWZ0hrQlJzVE9ZVFpsQlVLZU4tWmU5NzgtZWZZZV93U25oV2hjLTFFSXdFeXRnY1kzWmNhOXNwVmsxZDNRQU85SVo3V1J2LXp4cWEzT2FVcjZTVUVBM0NKazRQVkxPQTRuelJNQWtSNnVmRDFtVlZWS3Ywdk1HQk5taVNZV1A3YXdQY3VWM2fSAdgBQVVfeXFMTUlYQ1B3U0RMNE9qWW5lY28zdGI4d3FrcV9mMVZFY0pHUXh2b1E1ZXRTNXZLTGtNdElBcVRjUVQxZ1dMcUh2aWFJOTlwM25XVnlfQW5zU0pRSU1UUU0zNWpsOVJ6RTAxU1FOSHpnTE1iNmY0OUtYLVlwODI0TkFnNndFWEVkZW1hZVFCald4ZXFkcWlfZl9WNUJFQXJFYTZPU3BSeTEySWhXZlJkc0xESmF0ZWRhbkxKZVVxaFE4TlRVWEo5dU5vUnhuX1VDUmZjR096X0s4a3gz?oc=5"
+        },
+        {
+          "title": "Advanta Agrees To Acquire Misr Hytech In Egypt",
+          "publisher": "Pulse 2.0",
+          "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE11Y1gxekM1blZVdTZwUzgwXzdZZWJpUDFFTmgtVVVmeEo0eUtDRkVCRlpYeE1JUWNwLXNSWW5jeVVPa3lwNFVvNjBVZk1iT0x3eUE1MUZIOUVfLWhfLTF0MFdISTJFWmlCVWYyQ2ZXekpKX0k1?oc=5"
         }
       ]
     },
@@ -5079,6 +5121,21 @@
           "title": "NGX Group acquires 10% stake in Nairobi Securities Exchange, expands African footprint",
           "publisher": "Technext24.com",
           "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE5US2tCVFppSjltTndfTmhVd1VYY1R5bWpra2w1dVlnN3JVT1FaT19XazVOOVc0WkYyQjlacHNERVpsRXZKb3lIV1V6WVVXbk0ydHlMN1NjNjZEOFJ2R2V2OGp6ZWhVcFdGOTJ4M21oNGdSa1hxYW9hbWdjdWw?oc=5"
+        },
+        {
+          "title": "NGX Group acquires 10% strategic stake in Nairobi Securities Exchange",
+          "publisher": "Vanguard Nigeria",
+          "url": "https://www.vanguardngr.com/2026/11/ngx-group-acquires-10-strategic-stake-in-nairobi-securities-exchange-2/"
+        },
+        {
+          "title": "NGX Group Acquires 10% Stake in Nairobi Securities Exchange",
+          "publisher": "Opinion Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPSXhjUDlQZm42dXZYY005NXJaWmdleHh3c1l0NGlJanJNZlA2SlRFbUN6QWNmbWFOdDREMTQzb0ZhemtDaXNCUnd2ZVBmOWpBaGZpejluRVdyQlkweUUwcFdFS3ByOG93VHV4OEZpNU4xSlZiSkwzdnBncTIzeFR0V1lNM0lLZ1FPa0NkcVJsVmFyMEVx?oc=5"
+        },
+        {
+          "title": "Nigeria’s NGX Group buys 10 per cent stake in Nairobi Securities Exchange",
+          "publisher": "The Eastleigh Voice",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNd1MwbXo4Yk9XMy1jSkRWV0JNVFhUUlhLb2t4ekZFM3NIZ25MdDVaaGNvQzZoYUkzVk1INUMtR1R3bTg4ZTRnT0ZiYi1GTmxKbjdCR0ZaMDdMOVpsSi1FcGpwcmYzNXB0TDIwTzJzS09FMG1mX0hMS1hKX0JNNTVieXlpX2VWM3VrcUFXeUxUcGYzNU43ZGRqWHhNSjlmdmx3ellHZlJqaTdPc1k3bk1jdHFUNDdxR0Jo?oc=5"
         }
       ]
     },
@@ -5113,6 +5170,11 @@
           "title": "MTN in talks to acquire Telkom",
           "publisher": "MyBroadband",
           "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxOZncyQzRYYXgzMWNxR1A2bTllb2pQLXJsdDhnNlpzV2pscDFsYnZsZ2tXZXlKenMzaDZCQWJaYV9pYTdSM0RwSzRpbDl3ZDIzYzhGWThWNFA3QjJpX29kaUpjaENVVklId1oxajMyeVlxRFVUX3k2MklJMTZ1X0pMR1RTZXpRSHNSeHc?oc=5"
+        },
+        {
+          "title": "MTN in talks to acquire Telkom",
+          "publisher": "Moneyweb",
+          "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQcC03VEJEUkNqNjdCb1F0QUVFMmM5VVlmNTA1LW44NmVZTTVOM1VFNWpXMzh3a05aVWVzamR4WE5nSGhWQy1wTWtUelc4ZHd1OEs1MFJVNUsxY2NDSHRhR2NrX1UzWEEyT3lpVHNidUpydDZSdUN4Y19LLUo2ODVraVhOcGtyVml6VE5J?oc=5"
         }
       ]
     },
@@ -5274,7 +5336,119 @@
           "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPWTUxRlM4VVk1X1k2eGt3cm53YVJKcktTTzdHbkRLdFJhd2N6OU1wa0UzdXV5ajhyUkZkQ2ktalFiM1lfSEsyUnpyTE1Dd25pelhwb1VOWU5YTlowU09hUk1oQmtvSnNva0FmQXRBWnBvUTBaTTdSd0ljNTdOc0RnUmFiWTlyLVYwZlE?oc=5"
         }
       ]
+    },
+    "288856ac21c6865d4a9e": {
+      "id": "288856ac21c6865d4a9e",
+      "from": "upl subsidiary advanta",
+      "to": "misr hytech",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "UPL Subsidiary Advanta Agrees To Acquire Egypt's Misr Hytech Seed",
+          "publisher": "Sahi",
+          "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxNeEdGSGZDU1ZUNU40d25EZ3hMNWRpVHllMU1HN3NqbVZzU0ZXVUFoNFRkTExKWm1nLW13VERCSDNGWmdyd09oSVpMT2hLVVg0SHNBV2ZWNV8tM3h4aG44UGlTWEdDN0d2RWNlQ0lXWHpuSFdsS1B3SkVfUVJ5Q0hrdFl1T1BhWDZGZ2JnMTVkRDBNZVh1YlE?oc=5"
+        }
+      ]
+    },
+    "a2aec1570cc5e104d5ca": {
+      "id": "a2aec1570cc5e104d5ca",
+      "from": "eaaif",
+      "to": "lmi holdings",
+      "type": "equity_funding",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "LMI Holdings secures $18.15M funding from EAAIF and Ninety One for major solar power plant in Ghana",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOUUE1eGpuWS1QQWlEZkhJdlFZbXNlQkJtQURpTVAydlc4a2VaelQ4UUxhNVJadmplbmZoRnNkYUU3ZVFDM3FBRXJPTGpmbUp2RncwU21WcUlFX2VVWFEwUHczQnVLRm5OaFJHTVk0eEhzSXp2TlJySU5SbzFiTXJGcTVOVVVZQWVCVDhyZXUzc1A1LS1wX09XR2RPUEFacUxTQVoweFl1NmdvYVp6WS1SZGxBbHNnWXlxVUMxWVBMODhqQVpoSTlobVVB?oc=5"
+        }
+      ]
+    },
+    "ffe9e4566eccd132ae61": {
+      "id": "ffe9e4566eccd132ae61",
+      "from": "advanta",
+      "to": "misr hytech",
+      "type": "exit",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "Helios and EAEF sell Misr Hytech to UPL’s Advanta in landmark Egypt seed industry deal",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNTTFYdmlXNUxhY3loZ0VoUmVzU0F1Tm9tbU9iMTNLMEUwUDFEU29aT3U4UXNFNnVrRGpuTFJTTWJGdkNzVEl5TDgwTlRqbE04aTdhZkd0SzRTUkFPYlU3cFJldkpfa2g0WVRiWXpFb2g1YjhHeUVBUjJPNnlLaGhPUWtQdmhSdERCSmhpcDRGc1BZaFc4NUZNbTh3dUdBRFlJdVNLTTBEU0E0SmxqZFlFanZIT3VIcnpn?oc=5"
+        }
+      ]
+    },
+    "b48b3785a3447955ba8f": {
+      "id": "b48b3785a3447955ba8f",
+      "from": "nigerian exchange group",
+      "to": "kenyan exchange",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Nigerian Exchange Group acquires strategic stake in Kenyan Exchange",
+          "publisher": "The Nation Newspaper",
+          "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxNMHJhVFFMaGR0b2pBU24wZTNrRnBwdkxkaEMtVFcxdEFFdnEyUDBPdDYyOGZZOEVNQ0pKWGxWTW5mV2pmWExxWHJ0Tkc5cE5MUjNCZjJmSnVad3EwdnFSRXpvME1UZ25FS3djdUF3eW1GOEVKczhxNjItTlNybnVEckVYUmM1dFRiWWtFM1FVa3R3S0ZuOVV4QkV4VXNocE3SAaQBQVVfeXFMUDN5MzZYSTBET2xQS21nMVRWWXNjRnIxYS1JNmZxTTFQNk0tTXNJLW1iQnBsUmhGbjIxWU81d0NYUlpBV2xsR3F6eVZ6a3kxSXhvUEhqcmt3T1lGZTBYS1ViYXZBc1V1cTNibzgxbHpYa3ltUkpKNUJ2RzNHZU5QMWw0SEtXZ2VPVWFUQ1pwaU5FQmR6MmlYODh5MXVFOE4yOE0zU3M?oc=5"
+        }
+      ]
+    },
+    "138231461f1488f91e34": {
+      "id": "138231461f1488f91e34",
+      "from": "novo",
+      "to": "diabetes screening",
+      "type": "equity_funding",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Novo Invests in Diabetes Screening in Kenya Amid Late Diagnosis Concerns",
+          "publisher": "Science Africa",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNcUZ6VWJtSkt2UEwwWTA0d2FkNzJZeFZiWEFUT0NPNGp6WkdMXzJuZUdXTXJ5QzVaM0JUcVdidk56ajIyc1R5UnZfNDEwejV1UEMwZkFNaThsQVh6eTV0YnRGMGNsX1RRUEpnWXVZZlloSElJWFd6YkF5TVBZQ0h6U2VSVWdGa0RnMDM5U2YxbE9VRkFRTm0zTDZva2FOYVc3Y3NwbjI3YVpWZw?oc=5"
+        }
+      ]
+    },
+    "7e92784ecb447bf61cb0": {
+      "id": "7e92784ecb447bf61cb0",
+      "from": "ngx",
+      "to": "nse",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Nigeria’s NGX buys 10% stake in Kenya's NSE, broadening East Africa exchange portfolio",
+          "publisher": "IntelliNews",
+          "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxOVl8yNERlZ0YyXzRZTUJUZXdXRG1EYzJtY2V1OXA3ZlFZSmdhNUZacFN4UzZCT2JZVklHaDNiRS1vVk0wcHRrdzg4TjBZU2tYc1Q4c0hLUWFfVVE4SG1MSmlGZUxwcER4blo0TS1ySzNTN05vV2Fxb0RnMFZDVzdkRFpEYUhzNkt3STRlZUhhU1dkdzN5ajNpZ3A3U2w5TTNsMDB4akFiQlZYUXJ0VFBJMFRnWnpJWURpQmZuQTV6ejZmdFlhTWt6aHNlcUp6bTA5TGhzQU9yTlhrWGt4UVE?oc=5"
+        }
+      ]
+    },
+    "cd6eb225703f0bd602c8": {
+      "id": "cd6eb225703f0bd602c8",
+      "from": "ngx group",
+      "to": "nse",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "NGX Group acquires 10% stake in Kenya’s NSE",
+          "publisher": "Punch Newspapers",
+          "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5SelF5Vlo0WFFxZk9SZkFlNXJmTGZ0YVJMTmw5QXJ6SFhGWWw5YURGSFBrQUdjR3hkRy1RbnNHWlRyNTFNaTlZaXlBa3hUQnpwQnZPTmJKMVRBcFQ4X1lUdzdweTUzUWVkdWx0aHAxMA?oc=5"
+        }
+      ]
+    },
+    "36d16ea243e032d6247f": {
+      "id": "36d16ea243e032d6247f",
+      "from": "asas",
+      "to": "undisclosed gas business",
+      "type": "acquisition",
+      "first_seen": "2026-11-16",
+      "sources": [
+        {
+          "title": "ASAS to buy Oryx's Tanzania gas business, a third of the LPG market",
+          "publisher": "Dealroom",
+          "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNcXpJTnMyTG1hLVFZWmk2UXNKbFlqNE1UN1dScHk3X1N1S0lqYmdsdWxEU2lTV3ZCZm90V1JCTDlZd19PZUFfR1NwMkNMZmtPdUdMQ21GQlRwWENiYlpOdW9pekVNU2JOdTZsY2s0NUNxa1dCQ2NFV3RaSms0VGwxSEJJc29UTFQzQlFPWTJ1V2QxMXptbFJTMy1hSVdlbl9IS1E?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-16T23:29:37.384517+00:00"
+  "updated_at": "2026-11-17T10:18:46.352847+00:00"
 }

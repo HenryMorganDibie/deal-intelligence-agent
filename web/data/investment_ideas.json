@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-16T23:29:40.146478+00:00",
+  "updated_at": "2026-11-17T10:18:49.190165+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 62,
+      "new_review_items_today": 52,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 246,
-      "new_observations_today": 4,
+      "observations_collected": 249,
+      "new_observations_today": 3,
       "unreviewed_flagged_observations": 37,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 238,
-      "entities": 379,
+      "relationships": 246,
+      "entities": 387,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,24 +177,25 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 246,
-    "new_rows": 4,
+    "collected_tickers": 249,
+    "new_rows": 3,
     "failures": [
-      "MENA.CA",
-      "MEPA.CA",
-      "MFI.JO",
-      "MFINEG.CA",
-      "MFL.JO",
-      "MFSC.CA",
-      "MIC.CS",
-      "MILS.CA"
+      "MISR.CA",
+      "MIX.JO",
+      "MKIT.CA",
+      "MLC.GH",
+      "MLD.JO",
+      "MLE.CS",
+      "MLE.JO",
+      "MMAT.CA",
+      "MMHGH.GH"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 379,
-    "relationships": 238,
-    "source_links": 323,
+    "nodes": 387,
+    "relationships": 246,
+    "source_links": 337,
     "most_connected": [
       {
         "name": "Afreximbank",
@@ -225,15 +226,15 @@
         "degree": 4
       },
       {
+        "name": "NGX Group",
+        "degree": 4
+      },
+      {
         "name": "Nairobi Securities Exchange",
         "degree": 4
       },
       {
         "name": "Amsons Group",
-        "degree": 3
-      },
-      {
-        "name": "Proparco",
         "degree": 3
       }
     ]
