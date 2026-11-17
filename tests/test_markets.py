@@ -533,3 +533,46 @@ def test_screener_pages_with_offset():
     assert len(first["rows"]) == 2 and not {r["symbol"] for r in first["rows"]} & {r["symbol"] for r in second["rows"]}
     beyond = markets.screener(snap, include_stale=True, limit=2, offset=first["total"], today=date(2026, 10, 28))
     assert beyond["rows"] == [] and beyond["total"] == first["total"]
+
+
+def _overview_snapshot():
+    q = lambda name, sym, chg, **kw: {"name": name, "symbol": sym, "price": 100.0, "chg_1d": chg, "date": "2026-11-16",
+                                       "mcap": kw.pop("mcap", 1e11), **kw}
+    return {
+        "quotes": {
+            "ngx": [q("Dangote Cement", "DANGCEM", 0.05, volume=2_000_000), q("Zenith Bank", "ZENITHBANK", -0.01, volume=900_000)],
+            "jse": [q("Cables 4 Africa Holdings Limited", "C4A", 0.31, volume=57),
+                    q("Investec plc (rand) preference shares", "INPPR", -0.21, volume=560),
+                    q("Capitec Limited", "CPI", 0.02, volume=500_000),
+                    q("Capitec preference shares", "CPIP", 0.25, volume=50_000)],
+        },
+        "indices": [{"exchange": "ngx", "name": "NGX ASI", "level": 252882.78, "chg_1d": -0.0044, "date": "2026-10-28"},
+                    {"exchange": "jse", "name": "JSE ASI", "level": 110241.99, "chg_1d": -0.0115, "date": "2026-11-16"}],
+        "fx": {"rates": {"NGN": 1350.0, "ZAR": 17.0}, "jan1": {"NGN": 1500.0, "ZAR": 18.0}},
+    }
+
+
+def test_an_old_index_is_never_shown_as_today():
+    tiles = {t["exchange"]: t for t in markets.overview(_overview_snapshot(), today=date(2026, 11, 17))["exchanges"]}
+    assert tiles["ngx"]["index"]["stale"] is True                     # 28 Oct against prices of 16 Nov
+    assert tiles["jse"]["index"]["stale"] is False
+    # Nigeria's day comes from its own shares instead: cap-weighted, between Zenith's -1% and Dangote's +5%
+    assert tiles["ngx"]["market_chg_basis"] == "cap-weighted" and 0 < tiles["ngx"]["market_chg_1d"] < 0.05
+
+
+def test_movers_need_real_trading_and_ordinary_shares():
+    ov = markets.overview(_overview_snapshot(), today=date(2026, 11, 17))
+    gainers = [m["symbol"] for m in ov["gainers"]]
+    losers = [m["symbol"] for m in ov["losers"]]
+    assert "C4A" not in gainers and "INPPR" not in losers and "CPIP" not in gainers   # 57 shares; preference lines
+    assert gainers[:2] == ["DANGCEM", "CPI"] and losers == ["ZENITHBANK"]
+
+
+def test_yahoo_index_levels(monkeypatch):
+    from src.engines import yahoo
+    bars = {"^J203.JO": [{"date": date(2026, 11, 14), "close": 111520.0}, {"date": date(2026, 11, 17), "close": 110240.0}],
+            "^CASE30": [{"date": date(2026, 11, 16), "close": 52199.8}]}
+    monkeypatch.setattr(yahoo, "history", lambda s, range_=None, **kw: bars.get(s, []))
+    out = {i["exchange"]: i for i in markets.yahoo_indices(date(2026, 11, 17))}
+    assert out["jse"]["level"] == 110240.0 and round(out["jse"]["chg_1d"], 4) == round(110240 / 111520 - 1, 4)
+    assert out["egx"]["chg_1d"] is None                               # one bar: a level, no day change

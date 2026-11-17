@@ -879,6 +879,33 @@ def fetch_fx(client: httpx.Client, today: Optional[date] = None) -> dict:
 _CURRENCIES = {e.currency for e in EXCHANGES.values()} | {"USD", "EUR", "GBP", "CNY"}
 
 
+# Benchmark indices Yahoo Finance carries, used when the listing site's index table is missing or older.
+YAHOO_INDICES = {"jse": ("^J203.JO", "JSE ASI"), "egx": ("^CASE30", "EGX 30")}
+
+
+def yahoo_indices(today: Optional[date] = None) -> list[dict]:
+    """Latest close and one-day change of each index in YAHOO_INDICES; an index Yahoo has no recent bar for is
+    left out."""
+    from src.engines import yahoo
+    today = today or date.today()
+    out = []
+    for ex, (symbol, name) in YAHOO_INDICES.items():
+        try:
+            bars = yahoo.history(symbol, range_="10d")
+        except Exception as e:                          # noqa: BLE001
+            log.info("Yahoo index %s unavailable: %r", symbol, e)
+            continue
+        if not bars or (today - bars[-1]["date"]).days > 7:
+            continue
+        last = bars[-1]
+        prev = bars[-2] if len(bars) > 1 and (last["date"] - bars[-2]["date"]).days <= 5 else None
+        out.append({"exchange": ex, "name": name, "level": round(last["close"], 2),
+                    # a sparse series (EGX 30) gives a level but no reliable day change; "Today" then falls back
+                    "chg_1d": round(last["close"] / prev["close"] - 1, 6) if prev and prev["close"] else None,
+                    "date": last["date"].isoformat(), "source": "Yahoo Finance"})
+    return out
+
+
 def build_snapshot(client: Optional[httpx.Client] = None, today: Optional[date] = None,
                    exchanges: Optional[Iterable[str]] = None, previous: Optional[dict] = None) -> dict:
     """Fetch every exchange, the index table and FX. {"quotes": {exchange: [...]}, "indices": [...], "fx": {...},
@@ -908,6 +935,10 @@ def build_snapshot(client: Optional[httpx.Client] = None, today: Optional[date] 
             elif EXCHANGES[key].source != "index_only":
                 errors.append(key)
         _price_from_dual_listing(quotes, "nsx", "jse")
+        for i in yahoo_indices(today):
+            have = indices.get(i["exchange"])
+            if not have or not have.get("date") or have["date"] < i["date"]:
+                indices[i["exchange"]] = i
         # Which exchanges were priced from a second source this run (the rest came from their primary source).
         sources = {k: sorted({q["source"] for q in qs if q.get("source")}) for k, qs in quotes.items()
                    if any(q.get("source") for q in qs)}
@@ -1119,6 +1150,30 @@ def _cap_weighted(rows: list[dict], field: str) -> Optional[float]:
     return round(now / start - 1, 6) if start else None
 
 
+INDEX_STALE_DAYS = 3           # an index level older than the exchange's own prices by more than this is not "today"
+MOVER_MIN_VOLUME = 1_000       # shares traded for a day's move to count among top movers
+MOVER_MIN_VALUE_USD = 5_000    # or this much traded, where the exchange reports the value
+
+
+def _days_between(a: str, b: str) -> int:
+    try:
+        return abs((date.fromisoformat(b[:10]) - date.fromisoformat(a[:10])).days)
+    except ValueError:
+        return 0
+
+
+def _liquid(r: dict, rates: dict) -> bool:
+    """Traded enough for its move to mean something. A source that reports neither volume nor value is trusted."""
+    vol, value = r.get("volume"), r.get("value_traded")
+    if isinstance(value, (int, float)) and value > 0:
+        usd = _usd(value, r.get("currency") or "", rates)
+        if usd is not None:
+            return usd >= MOVER_MIN_VALUE_USD
+    if isinstance(vol, (int, float)):
+        return vol >= MOVER_MIN_VOLUME
+    return r.get("trades") != 0
+
+
 def _median(values: Iterable[Optional[float]]) -> Optional[float]:
     vals = [v for v in values if v is not None]
     return round(statistics.median(vals), 6) if vals else None
@@ -1142,9 +1197,19 @@ def overview(snapshot: dict, today: Optional[date] = None, movers: int = 8) -> d
             continue
         caps = [r["mcap_usd"] for r in own if r.get("mcap_usd") and not r.get("secondary_of") and not r.get("foreign_primary")]
         fx_ytd = (jan1[ex.currency] / rates[ex.currency] - 1) if rates.get(ex.currency) and jan1.get(ex.currency) else None
+        latest = _latest_date(own)
+        index_stale = bool(idx and (not idx.get("date") or (latest and _days_between(idx["date"], latest) > INDEX_STALE_DAYS)))
+        ordinary = [r for r in live if r.get("security") in (None, "ordinary", "share_class")]
+        day_cap = _cap_weighted(ordinary, "chg_1d")
+        day_move = day_cap if day_cap is not None else _median(r.get("chg_1d") for r in ordinary)
         tiles.append({
             "exchange": ex.key, "name": ex.name, "country": ex.country, "currency": ex.currency,
-            "index": idx and {"name": idx["name"], "level": idx["level"], "chg_1d": idx["chg_1d"], "date": idx["date"]},
+            "index": idx and {"name": idx["name"], "level": idx["level"], "chg_1d": idx["chg_1d"], "date": idx["date"],
+                              "stale": index_stale, "source": idx.get("source")},
+            # The day's move from the exchange's own share prices: shown when its index is missing or out of date.
+            "market_chg_1d": day_move,
+            "market_chg_basis": "cap-weighted" if day_cap is not None else ("median share" if day_move is not None else None),
+            "ytd_published": any(r.get("ytd") is not None for r in live),
             "listed": len(own), "priced_today": len(live),
             "advancers": sum(1 for r in live if (r.get("chg_1d") or 0) > 0),
             "decliners": sum(1 for r in live if (r.get("chg_1d") or 0) < 0),
@@ -1161,8 +1226,11 @@ def overview(snapshot: dict, today: Optional[date] = None, movers: int = 8) -> d
 
     # Movers among shares worth tracking: a known cap of at least $10m, or any NSE/JSE share (no cap column).
     # Primary listings only: a secondary line (Old Mutual in Blantyre) moves on thin trade.
+    # Ordinary shares only (no preference shares, notes or dollar lines), and real trading: a move on a few dozen
+    # shares is noise, not news (JSE lines that traded 38 or 57 shares had headed the lists).
     tradable = [r for r in fresh if r.get("chg_1d") is not None and not r.get("secondary_of")
-                and ((r.get("mcap_usd") or 0) >= 1e7 or r.get("mcap_usd") is None)]
+                and r.get("security") in (None, "ordinary", "share_class")
+                and ((r.get("mcap_usd") or 0) >= 1e7 or r.get("mcap_usd") is None) and _liquid(r, rates)]
 
     def slim(r: dict) -> dict:
         return {k: r.get(k) for k in ("exchange", "symbol", "name", "sector", "price", "currency", "chg_1d", "ytd",

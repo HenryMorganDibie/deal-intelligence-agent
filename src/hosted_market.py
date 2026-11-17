@@ -2678,6 +2678,16 @@ def _market_snapshot() -> dict:
         else:
             log.warning("intraday read failed, serving daily closes: %s %s", r.status_code, r.text[:300])
     markets.apply_intraday(snap, snap.get("intraday") or {})
+    # Index levels Yahoo carries replace an older stored level (the listing site that supplied them went offline
+    # on 29 October); reading them here, at most once per cache period, keeps them current between snapshots.
+    try:
+        stored = {i["exchange"]: i for i in snap.get("indices") or []}
+        for i in markets.yahoo_indices():
+            if not stored.get(i["exchange"]) or (stored[i["exchange"]].get("date") or "") < i["date"]:
+                stored[i["exchange"]] = i
+        snap["indices"] = sorted(stored.values(), key=lambda i: i["exchange"])
+    except Exception as e:                                # noqa: BLE001
+        log.warning("Yahoo index refresh skipped: %s", e)
     _markets_cache["snapshot"] = (time.monotonic(), snap)
     return snap
 

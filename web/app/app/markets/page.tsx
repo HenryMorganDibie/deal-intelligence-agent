@@ -87,10 +87,13 @@ type SortKey = "name" | "chg" | "ytd_local" | "ytd_usd" | "fx" | "mcap";
 /** Every exchange in one table, sortable by any column; those with no recent prices fold into one line. */
 function ExchangeTable({ exchanges }: { exchanges: Exchange[] }) {
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: "mcap", desc: true });
-  const live = exchanges.filter((t) => t.index && !t.stale);
-  const quiet = exchanges.filter((t) => !t.index || t.stale);
+  // Every exchange with current share prices gets a row; one with no recent prices folds into the footnote.
+  const live = exchanges.filter((t) => !t.stale);
+  const quiet = exchanges.filter((t) => t.stale);
+  const indexToday = (t: Exchange) => (t.index && !t.index.stale && t.index.chg_1d != null ? t.index.chg_1d : null);
+  const today = (t: Exchange) => indexToday(t) ?? t.market_chg_1d ?? null;
   const value = (t: Exchange, k: SortKey): number | string | null => ({
-    name: t.name, chg: t.index?.chg_1d ?? null, ytd_local: t.ytd_local ?? t.ytd_median_local ?? null,
+    name: t.name, chg: today(t), ytd_local: t.ytd_local ?? t.ytd_median_local ?? null,
     ytd_usd: t.ytd_usd ?? t.ytd_median_usd ?? null, fx: t.currency_ytd_vs_usd ?? null, mcap: t.mcap_usd ?? null,
   })[k];
   const rows = [...live].sort((a, b) => {
@@ -126,10 +129,24 @@ function ExchangeTable({ exchanges }: { exchanges: Exchange[] }) {
                     <Link href={`/markets/screener?exchange=${t.exchange}`} className="hover:underline">{t.name.replace(/ \(.*\)$/, "")}</Link>
                     <span className="ml-2 text-[0.75rem] text-[color:var(--dim)]">{t.currency}</span>
                   </td>
-                  <td className="kbd py-2 pr-4 text-right" title={t.index?.name}>{t.index ? t.index.level.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "–"}</td>
-                  <td className={`kbd py-2 pr-4 text-right ${tone(t.index?.chg_1d)}`}>{pct(t.index?.chg_1d, 2)}</td>
-                  <td className={`kbd py-2 pr-4 text-right ${tone(ytdLocal)}`} title={basis}>{pct(ytdLocal)}</td>
-                  <td className={`kbd py-2 pr-4 text-right ${tone(ytdUsd)}`} title={basis}>{pct(ytdUsd)}</td>
+                  <td className="kbd py-2 pr-4 text-right" title={t.index ? `${t.index.name}${t.index.date ? `, ${t.index.date}` : ""}${t.index.source ? ` (${t.index.source})` : ""}` : "No index published by a source we read"}>
+                    {t.index ? (
+                      <span className={t.index.stale ? "text-[color:var(--dim)]" : ""}>
+                        {t.index.level.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                        {t.index.stale && t.index.date && <span className="block text-[0.6875rem]">as of {asOf(t.index.date)}</span>}
+                      </span>
+                    ) : <span className="text-[color:var(--dim)]">–</span>}
+                  </td>
+                  <td className={`kbd py-2 pr-4 text-right ${tone(today(t))}`}
+                      title={indexToday(t) != null ? `${t.index?.name}, today` : t.market_chg_basis ? `From share prices (${t.market_chg_basis}), no current index` : undefined}>
+                    {pct(today(t), 2)}{indexToday(t) == null && today(t) != null && <span className="text-[color:var(--dim)]">*</span>}
+                  </td>
+                  <td className={`kbd py-2 pr-4 text-right ${tone(ytdLocal)}`} title={ytdLocal == null && !t.ytd_published ? "This exchange's price source publishes no year-to-date figure" : basis}>
+                    {ytdLocal == null && !t.ytd_published ? <span className="text-[0.6875rem] text-[color:var(--dim)]">not published</span> : pct(ytdLocal)}
+                  </td>
+                  <td className={`kbd py-2 pr-4 text-right ${tone(ytdUsd)}`} title={ytdUsd == null && !t.ytd_published ? "This exchange's price source publishes no year-to-date figure" : basis}>
+                    {ytdUsd == null && !t.ytd_published ? <span className="text-[0.6875rem] text-[color:var(--dim)]">not published</span> : pct(ytdUsd)}
+                  </td>
                   <td className={`kbd py-2 pr-4 text-right ${tone(t.currency_ytd_vs_usd)}`}>{pct(t.currency_ytd_vs_usd)}</td>
                   <td className="kbd py-2 pr-4 text-right">{t.mcap_usd ? usd(t.mcap_usd) : <span className="text-[color:var(--dim)]">–</span>}</td>
                   <td className="kbd py-2 text-right"><span className="text-verified">{t.advancers}</span><span className="text-[color:var(--dim)]"> / </span><span className="text-risk">{t.decliners}</span></td>
@@ -140,8 +157,8 @@ function ExchangeTable({ exchanges }: { exchanges: Exchange[] }) {
         </table>
       </div>
       <p className="mt-2 text-[0.75rem] text-[color:var(--dim)]">
-        Year-to-date returns are cap-weighted where market caps are published, otherwise the median share (hover a figure to see which).
-        {quiet.length > 0 && <> No recent index for: {quiet.map((t, k) => (
+        Today is the exchange&apos;s index; * marks a move worked out from the exchange&apos;s own share prices where no current index is available (cap-weighted where caps are published). Year-to-date returns are cap-weighted where market caps are published, otherwise the median share (hover a figure to see which).
+        {quiet.length > 0 && <> No recent prices for: {quiet.map((t, k) => (
           <span key={t.exchange}>{k ? ", " : ""}<Link href={`/markets/screener?exchange=${t.exchange}`} className="hover:underline">{t.name.replace(/ \(.*\)$/, "")}</Link></span>
         ))}.</>}
       </p>
