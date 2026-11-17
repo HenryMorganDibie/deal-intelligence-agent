@@ -2823,6 +2823,20 @@ async def markets_overview() -> dict:
     return markets.overview(await run_in_threadpool(_market_snapshot))
 
 
+@router.get("/api/markets/stablecoins")
+async def markets_stablecoins() -> dict:
+    """Local USDT rates against the official dollar rate, with the premium (cached ten minutes)."""
+    from src.engines import stablecoins
+    hit = _markets_cache.get("stablecoins")
+    if hit and time.monotonic() - hit[0] < 600:
+        return hit[1]
+    snap = await run_in_threadpool(_market_snapshot)
+    out = await run_in_threadpool(stablecoins.fetch, (snap.get("fx") or {}).get("rates") or {})
+    if out["rates"]:
+        _markets_cache["stablecoins"] = (time.monotonic(), out)
+    return out
+
+
 @router.get("/api/markets/screener")
 async def markets_screener(
     exchange: Optional[str] = Query(None, max_length=8), sector: Optional[str] = Query(None, max_length=60),

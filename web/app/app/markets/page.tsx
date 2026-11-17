@@ -10,6 +10,11 @@ import { ApiError } from "../../../lib/api";
 import { get } from "../../../lib/market";
 import { asOf, companyHref, quoteWhen, heat, pct, price, tone, type Mover, type Overview } from "../../../lib/markets-data";
 
+type Stablecoins = {
+  rates: { pair: string; currency: string; rate: number; official_per_usd: number | null; premium: number | null; volume_usdt_24h: number | null; source: string; source_url: string }[];
+  method: string;
+};
+
 type PulseEvent = {
   id: string;
   signal_type: string | null;
@@ -150,6 +155,7 @@ export default function MarketsPage() {
   const [error, setError] = useState<string | null>(null);
   const [heatBy, setHeatBy] = useState<"chg_1d" | "ytd_usd">("chg_1d");
   const [companies, setCompanies] = useState<{ listed: number; private: number } | null>(null);
+  const [stable, setStable] = useState<Stablecoins | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -157,6 +163,7 @@ export default function MarketsPage() {
       .then((d) => { if (active) setOverview(d); })
       .catch((e) => { if (active) setError(e instanceof ApiError ? e.message : "Market data could not be loaded."); });
     get<Pulse>("/api/pulse").then((d) => { if (active) setPulse(d); }).catch(() => undefined);
+    get<Stablecoins>("/api/markets/stablecoins").then((d) => { if (active) setStable(d); }).catch(() => undefined);
     get<{ counts: { listed: number; private: number } }>("/api/companies/directory", { limit: 1 })
       .then((d) => { if (active) setCompanies(d.counts); }).catch(() => undefined);
     return () => { active = false; };
@@ -244,6 +251,34 @@ export default function MarketsPage() {
             </div>
             <p className="mt-2 text-xs text-[color:var(--dim)]">{overview.method}</p>
           </section>
+
+          {stable && stable.rates.length > 0 && (
+            <section className="mt-8" aria-labelledby="stablecoin-title">
+              <h2 id="stablecoin-title" className="h3 mb-1 text-xl">Stablecoin dollar rates</h2>
+              <p className="mb-3 text-sm text-[color:var(--muted)]">What a dollar costs as USDT on a local exchange, against the official rate.</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {stable.rates.map((r) => (
+                  <div key={r.pair} className="rounded-lg border hairline p-4">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="text-sm font-medium">{r.pair}</p>
+                      {r.premium != null && (
+                        <p className={`kbd text-sm ${r.premium >= 0.02 ? "text-risk" : "text-[color:var(--muted)]"}`}>
+                          {r.premium >= 0 ? "+" : ""}{(r.premium * 100).toFixed(1)}% vs official
+                        </p>
+                      )}
+                    </div>
+                    <p className="kbd mt-1 text-2xl">{r.rate.toLocaleString("en-US", { maximumFractionDigits: 2 })} <span className="text-sm text-[color:var(--dim)]">{r.currency} per USDT</span></p>
+                    <p className="mt-1 text-[0.75rem] text-[color:var(--dim)]">
+                      Official {r.official_per_usd != null ? r.official_per_usd.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "n/a"}
+                      {r.volume_usdt_24h != null ? ` · ${Math.round(r.volume_usdt_24h).toLocaleString("en-US")} USDT traded in 24h` : ""}
+                      {" · "}<a href={r.source_url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">{r.source}</a>
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-[color:var(--dim)]">{stable.method}</p>
+            </section>
+          )}
         </>
       )}
 
