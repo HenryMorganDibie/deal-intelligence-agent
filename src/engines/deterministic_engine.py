@@ -69,6 +69,9 @@ SOURCE_CREDIBILITY: dict[str, float] = {
     "Benjamindada":          0.62,
     "TechMoran":             0.62,
     "Bayport Finance":       0.65,
+    # A press-release wire: the issuer's own words, distributed as written. Credible on what the issuer says it did,
+    # not independently reported, so below the business press.
+    "APO Group":             0.70,
     # Publisher names as Google News reports them (matched as substrings)
     "Businessday":           0.80,   # Businessday NG
     "Business Daily Africa": 0.80,

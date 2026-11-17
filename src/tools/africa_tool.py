@@ -127,6 +127,11 @@ AFRICAN_NEWS_FEEDS = {
     # ── Southern / Central Africa ─────────────────────────────────────────
     "Zimbabwe Independent":     "https://theindependent.co.zw/feed/",
     "Zambia Daily Mail":        "https://www.daily-mail.co.zm/feed/",
+    # ── Press-release wires: companies' own announcements, distributed so others republish them ─────
+    # (Business Wire's robots.txt refuses automated readers and PR Newswire has no African feed, so neither is read.)
+    "APO Group":                "https://www.africa-newsroom.com/rss.xml",
+    "APO Group (FR)":           "https://www.africa-newsroom.com/rss-fr.xml",
+    "APO Group (PT)":           "https://www.africa-newsroom.com/rss-pt.xml",
 }
 
 # ─── Private Capital & Institutional Sources (HTML scraping) ─────────────────
