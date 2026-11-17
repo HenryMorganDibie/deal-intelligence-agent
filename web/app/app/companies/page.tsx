@@ -101,7 +101,7 @@ function newsName(name: string): string {
 
 const RECORD_KIND: Record<string, string> = {
   merger_filing: "Merger decision", dfi_investment: "Development-finance investment", debt_issue: "Debt raised",
-  licence: "Licence",
+  licence: "Licence", portfolio: "Investor's portfolio page",
 };
 
 /** Dated records from the bodies that publish them: competition authorities and development-finance institutions. */
@@ -115,7 +115,7 @@ function OfficialRecords({ records }: { records: OfficialRecord[] }) {
     <section>
       <h3 className="eyebrow">Official records</h3>
       <p className="mt-2 max-w-3xl text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
-        {records.length} record{records.length === 1 ? "" : "s"} published by central banks, competition authorities, development-finance institutions and debt markets
+        {records.length} record{records.length === 1 ? "" : "s"} published by central banks, competition authorities, development-finance institutions, debt markets and investors
         {dfi.length ? `, including ${dfi.length} disclosed investment${dfi.length === 1 ? "" : "s"}${committed ? ` (${usd(committed)} where the amount is disclosed)` : ""}` : ""}.
         Each links to the publisher&apos;s own record.
       </p>

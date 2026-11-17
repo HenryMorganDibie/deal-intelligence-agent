@@ -42,7 +42,12 @@ def licence_records(company: str, ticker: Optional[str] = None) -> list[dict]:
     return licensed_institutions.records_for(company, ticker)
 
 
-SOURCES = (licence_records, merger_records, dfi_records, debt_records)
+def portfolio_records(company: str, ticker: Optional[str] = None) -> list[dict]:
+    from src.engines import investor_portfolios
+    return investor_portfolios.records_for(company, ticker)
+
+
+SOURCES = (licence_records, merger_records, dfi_records, debt_records, portfolio_records)
 
 
 def records_for(company: str, ticker: Optional[str] = None, limit: int = 20) -> list[dict]:
@@ -54,8 +59,9 @@ def records_for(company: str, ticker: Optional[str] = None, limit: int = 20) -> 
         except Exception as e:                          # one source's failure never empties the others
             log.info("official records source %s failed: %r", source.__name__, e)
     seen, unique = set(), []
-    # A licence (undated: it is current) first, then everything else newest first.
-    for r in sorted(out, key=lambda r: (r.get("kind") == "licence", r.get("date") or ""), reverse=True):
+    # A licence (undated: it is current) first, then dated records newest first, then portfolio listings.
+    rank = {"licence": 2, "portfolio": 0}
+    for r in sorted(out, key=lambda r: (rank.get(r.get("kind"), 1), r.get("date") or ""), reverse=True):
         key = (r.get("kind"), r.get("url") or r.get("title"))
         if key not in seen:
             seen.add(key)

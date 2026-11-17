@@ -189,6 +189,12 @@ export const METRICS: Metric[] = [
       const latest = recs.map((r) => r.date).filter(Boolean).sort().pop();
       return `${recs.length} issue${recs.length === 1 ? "" : "s"}${latest ? `, latest ${latest}` : ""}`;
     } },
+  { key: "backers", label: "In investors' portfolios", group: "Private markets", kind: "text", better: null,
+    note: "Firms that list the company on their own portfolio page.",
+    value: (e) => {
+      const firms = (e.profile.official_records ?? []).filter((r) => r.kind === "portfolio").map((r) => r.authority);
+      return firms.length ? firms.join(", ") : null;
+    } },
   { key: "mergers", label: "Merger decisions", group: "Private markets", kind: "count", better: null,
     value: (e) => (e.profile.official_records ?? []).filter((r) => r.kind === "merger_filing").length || null },
   { key: "deals", label: "Deals on record", group: "Private markets", kind: "count", better: null,

@@ -97,3 +97,15 @@ def test_licence_registers_parse_and_match():
     assert lic.lookup("Agricultural Development Bank", "GH", rows=rows)["website"] == "http://www.agricbank.com"
     assert lic.lookup("Agricultural Development Bank", "NG", rows=rows) is None
     assert lic.lookup("Moniepoint", rows=rows) is None
+
+
+def test_portfolio_pages_link_a_company_only_on_an_exact_name():
+    from src.engines import investor_portfolios as ip
+    page = ('<img alt="Chowdeck"><img alt="site logo"><h3>TradeDepot</h3><img alt="open in a new tab">'
+            '<h2>Our Portfolio</h2><img alt="hero-2021.jpg"><h4>Penda Health Ltd</h4>')
+    names = ip.candidates(page)
+    assert names == ["Chowdeck", "TradeDepot", "Penda Health Ltd"]
+    firms = {"Novastar Ventures": {"url": "https://example.com/portfolio", "companies": names}}
+    assert [r["authority"] for r in ip.records_for("Penda Health", firms=firms)] == ["Novastar Ventures"]
+    assert ip.records_for("Chowdeck Technologies", firms=firms) == []      # not the same name
+    assert ip.records_for("Logo", firms=firms) == []
