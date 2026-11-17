@@ -15,7 +15,7 @@ import {
 import { usePaged } from "../../../../lib/use-paged";
 
 const SECTIONS: [string, string][] = [["etfs", "ETFs"], ["tbills", "Treasury bills"], ["bonds", "Bonds"], ["property", "Listed property"],
-  ["rates", "Policy rates"], ["deposits", "Deposit rates"], ["funds", "Unlisted funds"], ["calculators", "Calculators"]];
+  ["rates", "Policy rates"], ["deposits", "Deposit rates"], ["calculators", "Calculators"]];
 
 function numberField(value: string, fallback = Number.NaN): number {
   const parsed = Number(value);
@@ -324,44 +324,6 @@ function Deposits({ rows }: { rows: NonNullable<Instruments["deposits"]> }) {
   );
 }
 
-function FundTable({ block: b }: { block: NonNullable<Instruments["funds"]>[number] }) {
-  const { page, pager } = usePaged(b.rows);
-  return (
-    <div className="mt-4">
-      <Table head={["Scheme", `Assets, ${monthLabel(b.period)}`, `Assets, ${monthLabel(b.prior_period)}`, "Change"]} minWidth="36rem">
-        {page.map((r) => (
-          <tr key={r.name}>
-            <Td>{r.name}</Td>
-            <Td>{r.aum != null ? `${compact(r.aum)} ${b.currency}` : "n/a"}</Td>
-            <Td className="text-[color:var(--muted)]">{r.aum_prior != null ? `${compact(r.aum_prior)} ${b.currency}` : "new"}</Td>
-            <Td className={tone(r.aum && r.aum_prior ? r.aum / r.aum_prior - 1 : null)}>{r.aum && r.aum_prior ? pct(r.aum / r.aum_prior - 1) : "n/a"}</Td>
-          </tr>
-        ))}
-      </Table>
-      <Pagination {...pager} />
-    </div>
-  );
-}
-
-function Funds({ blocks }: { blocks: NonNullable<Instruments["funds"]> }) {
-  if (blocks.length === 0) return null;
-  return (
-    <section id="funds" className="mt-6 scroll-mt-24" aria-labelledby="funds-h">
-      <h2 id="funds-h" className="h3 text-xl">Unlisted funds</h2>
-      {blocks.map((b) => (
-        <div key={`${b.country}-${b.kind}`} className="mt-1">
-          <p className="max-w-3xl text-sm text-[color:var(--muted)]">
-            {b.rows.length} {b.kind.toLowerCase()} in {b.country_name}: {b.measure.toLowerCase()} at the end of {monthLabel(b.period)},
-            from the <a href={b.source_url} target="_blank" rel="noreferrer" className="underline underline-offset-4">{b.source}</a>.
-            The regulator publishes fund size, not returns; a fund&apos;s yield is in its own factsheet.
-          </p>
-          <FundTable block={b} />
-        </div>
-      ))}
-    </section>
-  );
-}
-
 function Calculators({ prefill }: { prefill: BillPrefill | null }) {
   const [currency, setCurrency] = useState("NGN");
   const [faceValue, setFaceValue] = useState("1000000");
@@ -538,7 +500,6 @@ export default function InvestmentExplorerPage() {
           {section === "property" && <Property rows={data.property} />}
           {section === "rates" && <PolicyRates rows={data.policy_rates} />}
           {section === "deposits" && <Deposits rows={data.deposits ?? []} />}
-          {section === "funds" && <Funds blocks={data.funds ?? []} />}
         </>
       )}
 
