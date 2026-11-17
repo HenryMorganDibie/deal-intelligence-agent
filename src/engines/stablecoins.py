@@ -3,8 +3,10 @@ Dollar stablecoin rates in local currency, against the official exchange rate.
 
 Where dollars are scarce, the local price of USDT works as a live parallel-market rate, and its premium over the
 official rate is a figure investors watch. Only markets with a liquid local order book published through a
-documented public API are covered: Nigeria (Quidax, USDT/NGN) and South Africa (VALR, USDT/ZAR). Elsewhere the
-available prices are converted from the official rate and would show no premium, so none is shown.
+documented public API are covered: Nigeria (Quidax and Luno, USDT/NGN) and South Africa (VALR and Luno, USDT/ZAR).
+Each market has two exchanges, so one failing never drops it; the deeper book sets the rate and the other is shown
+beside it as a check. Elsewhere USDT trades mainly person to person (Binance P2P, whose terms forbid automated
+collection) or on local books that trade nothing (Luno's USDT/KES), so no reliable rate exists to show.
 """
 from __future__ import annotations
 
@@ -49,10 +51,44 @@ def parse_valr(data: dict) -> Optional[dict]:
             "source_url": "https://www.valr.com/", "at": data.get("created")}
 
 
+_LUNO_MARKETS = {"USDTNGN": ("NGN", "NG", "USDT/NGN"), "USDTZAR": ("ZAR", "ZA", "USDT/ZAR")}
+
+
+def parse_luno(data: dict) -> Optional[dict]:
+    """Luno's documented public ticker (api.luno.com/api/1/ticker)."""
+    market = _LUNO_MARKETS.get((data or {}).get("pair") or "")
+    last = _num((data or {}).get("last_trade"))
+    if not market or not last or data.get("status") not in (None, "ACTIVE"):
+        return None
+    ts = data.get("timestamp")
+    return {"currency": market[0], "country": market[1], "pair": market[2], "rate": last, "bid": _num(data.get("bid")),
+            "ask": _num(data.get("ask")), "volume_usdt_24h": _num(data.get("rolling_24_hour_volume")), "source": "Luno",
+            "source_url": "https://www.luno.com/",
+            "at": datetime.fromtimestamp(ts / 1000, tz=timezone.utc).isoformat() if isinstance(ts, (int, float)) else None}
+
+
 SOURCES: list[tuple[str, Callable[[dict], Optional[dict]]]] = [
     ("https://app.quidax.io/api/v1/markets/tickers/usdtngn", parse_quidax),
+    ("https://api.luno.com/api/1/ticker?pair=USDTNGN", parse_luno),
     ("https://api.valr.com/v1/public/USDTZAR/marketsummary", parse_valr),
+    ("https://api.luno.com/api/1/ticker?pair=USDTZAR", parse_luno),
 ]
+COVERED = {"NGN", "ZAR"}
+
+
+def combine(rows: list[dict]) -> list[dict]:
+    """One row per currency from the books that traded enough: the deepest sets the rate, the others are listed as
+    checks ({source, rate, volume_usdt_24h})."""
+    by_ccy: dict[str, list[dict]] = {}
+    for r in rows:
+        if (r.get("volume_usdt_24h") or 0) >= MIN_VOLUME_USDT:
+            by_ccy.setdefault(r["currency"], []).append(r)
+    out = []
+    for group in by_ccy.values():
+        group.sort(key=lambda r: r.get("volume_usdt_24h") or 0, reverse=True)
+        out.append({**group[0], "checks": [{"source": r["source"], "source_url": r["source_url"], "rate": r["rate"],
+                                            "volume_usdt_24h": r.get("volume_usdt_24h")} for r in group[1:]]})
+    return sorted(out, key=lambda r: r["pair"])
 
 
 def with_premium(row: dict, official_per_usd: dict) -> dict:
@@ -72,21 +108,27 @@ def fetch(official_per_usd: dict, client: Optional[httpx.Client] = None) -> dict
 
     def one(src):
         url, parse = src
-        try:
-            r = c.get(url)
-            return parse(r.json()) if r.status_code == 200 else None
-        except (httpx.HTTPError, ValueError) as e:
-            log.info("stablecoin rate %s unavailable: %r", url, e)
-            return None
+        for attempt in (1, 2):                          # one retry: these tickers occasionally time out
+            try:
+                r = c.get(url)
+                if r.status_code == 200:
+                    return parse(r.json())
+                log.info("stablecoin rate %s returned %s", url, r.status_code)
+                if r.status_code < 500:
+                    return None
+            except (httpx.HTTPError, ValueError) as e:
+                log.info("stablecoin rate %s attempt %d unavailable: %r", url, attempt, e)
+        return None
     try:
         with ThreadPoolExecutor(max_workers=len(SOURCES)) as pool:
             rows = [r for r in pool.map(one, SOURCES) if r]
     finally:
         if own:
             c.close()
-    rows = [with_premium(r, official_per_usd) for r in rows
-            if (r.get("volume_usdt_24h") or 0) >= MIN_VOLUME_USDT]
+    rows = [with_premium(r, official_per_usd) for r in combine(rows)]
     return {"rates": rows, "fetched_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "method": ("Last traded price of USDT, a dollar stablecoin, on a local exchange's public order book, "
                        "against the day's official rate. The premium is how much more local currency a dollar costs "
-                       "there. Covered where a liquid local book publishes its prices: Nigeria and South Africa.")}
+                       "there. Covered where liquid local books publish their prices: Nigeria and South Africa, two exchanges each. "
+                       "Elsewhere USDT trades mainly person to person, with no public price feed."),
+            "complete": {r["currency"] for r in rows} >= COVERED}

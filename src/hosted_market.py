@@ -2867,7 +2867,9 @@ async def markets_stablecoins() -> dict:
     """Local USDT rates against the official dollar rate, with the premium (cached ten minutes)."""
     from src.engines import stablecoins
     hit = _markets_cache.get("stablecoins")
-    if hit and time.monotonic() - hit[0] < 600:
+    # A result missing a covered market (every source for it failed) is kept one minute, not ten, so a passing
+    # outage is not served for long.
+    if hit and time.monotonic() - hit[0] < (600 if hit[1].get("complete") else 60):
         return hit[1]
     snap = await run_in_threadpool(_market_snapshot)
     out = await run_in_threadpool(stablecoins.fetch, (snap.get("fx") or {}).get("rates") or {})

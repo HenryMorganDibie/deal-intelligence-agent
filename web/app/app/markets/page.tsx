@@ -11,7 +11,8 @@ import { get } from "../../../lib/market";
 import { asOf, companyHref, quoteWhen, heat, pct, price, tone, type Mover, type Overview } from "../../../lib/markets-data";
 
 type Stablecoins = {
-  rates: { pair: string; currency: string; rate: number; official_per_usd: number | null; premium: number | null; volume_usdt_24h: number | null; source: string; source_url: string }[];
+  rates: { pair: string; currency: string; rate: number; official_per_usd: number | null; premium: number | null; volume_usdt_24h: number | null; source: string; source_url: string;
+    checks?: { source: string; source_url: string; rate: number }[] }[];
   method: string;
 };
 
@@ -293,6 +294,13 @@ export default function MarketsPage() {
                       {r.volume_usdt_24h != null ? ` · ${Math.round(r.volume_usdt_24h).toLocaleString("en-US")} USDT traded in 24h` : ""}
                       {" · "}<a href={r.source_url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">{r.source}</a>
                     </p>
+                    {r.checks?.length ? (
+                      <p className="mt-0.5 text-[0.75rem] text-[color:var(--dim)]">
+                        {r.checks.map((c, i) => (
+                          <span key={c.source}>{i ? " · " : "Also "}<a href={c.source_url} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">{c.source}</a> {c.rate.toLocaleString("en-US", { maximumFractionDigits: 2 })}</span>
+                        ))}
+                      </p>
+                    ) : null}
                   </div>
                 ))}
               </div>
