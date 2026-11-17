@@ -1,7 +1,5 @@
 # The scheduled backtest (.github/workflows/backtest.yml): the app's requirements plus table parsing
 # for rebuilding the universe. Kept out of requirements.txt so the API bundle stays small.
--r requirements.txt
+-r requirements-dev.txt
 pandas>=2.2
 lxml>=5.0
-# Price outcomes (Yahoo Finance) for US, Johannesburg and Cairo listings; without it every lookup is empty.
-yfinance>=0.2.0

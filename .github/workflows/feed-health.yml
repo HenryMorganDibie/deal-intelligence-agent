@@ -28,8 +28,10 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-          cache-dependency-path: requirements.txt
-      - run: pip install --disable-pip-version-check -r requirements.txt
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: pip install --disable-pip-version-check -r requirements-dev.txt
       - name: Check feeds and save replacements
         id: heal
         run: python scripts/check_feeds.py --heal

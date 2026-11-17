@@ -482,35 +482,22 @@ _YAHOO_INFO = ("longName", "sector", "industry", "country", "website", "fullTime
 def yahoo_financials(ticker: str, years: int = 4) -> Optional[dict]:
     """Annual statements and valuation multiples from Yahoo Finance, or None if Yahoo has no data."""
     try:
-        from src.engines.market_data import yahoo
-        yf = yahoo()
-        t = yf.Ticker(ticker)
-        info = t.info or {}
-        frames = [t.income_stmt, t.balance_sheet, t.cashflow]
+        from src.engines import yahoo
+        lines = [n for names in _YAHOO_ROWS.values() for n in names]
+        statements = yahoo.annual_statements(ticker, lines, years=years)
+        info = yahoo.summary(ticker) if statements else {}
     except Exception as e:
         log.warning("Yahoo financials unavailable for %s: %s", ticker, e)
         return None
-    if all(f is None or f.empty for f in frames):
+    if not statements:
         return None
     periods: dict[str, dict] = {}
-    for frame in frames:
-        if frame is None or frame.empty:
-            continue
-        for col in list(frame.columns)[:years]:
-            key = str(col)[:10]
-            row = periods.setdefault(key, {})
-            for field, names in _YAHOO_ROWS.items():
-                if field in row:
-                    continue
-                for n in names:
-                    if n in frame.index:
-                        v = frame.at[n, col]
-                        try:
-                            if v == v:                      # not NaN
-                                row[field] = float(v)
-                                break
-                        except (TypeError, ValueError):
-                            continue
+    for period, values in statements.items():
+        row = periods.setdefault(period, {})
+        for field, names in _YAHOO_ROWS.items():
+            v = next((values[n] for n in names if n in values), None)
+            if v is not None:
+                row[field] = v
     ordered = dict(sorted(periods.items(), reverse=True))
     latest = next(iter(ordered.values()), {})
     items = {f: {"current": v} for f, v in latest.items()}

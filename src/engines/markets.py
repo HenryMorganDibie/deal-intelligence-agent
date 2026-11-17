@@ -442,20 +442,15 @@ def _spark_all(client: httpx.Client, symbols: list[str]) -> dict[str, dict]:
 
 def yahoo_screen(exchange: str, attempts: int = 3) -> dict[str, dict]:
     """Every equity Yahoo lists on an exchange ("JNB", "CAI"), with shares outstanding, earnings, book value and
-    dividends. Yahoo's screener needs a session cookie and crumb, which yfinance manages; it is rate limited, so
-    an empty result is expected now and then and callers fall back."""
-    try:
-        import yfinance as yf
-        from yfinance import EquityQuery
-    except ImportError:
-        return {}
+    dividends. Yahoo's screener needs a session cookie and crumb; it is rate limited, so an empty result is
+    expected now and then and callers fall back."""
+    from src.engines import yahoo
     for attempt in range(attempts):
         out: dict[str, dict] = {}
         try:
             offset = 0
             while True:
-                r = yf.screen(EquityQuery("eq", ["exchange", exchange]), offset=offset, size=250,
-                              sortField="intradaymarketcap", sortAsc=False)
+                r = yahoo.screen(exchange, offset=offset, size=250)
                 rows = r.get("quotes") or []
                 out.update({q["symbol"]: q for q in rows if q.get("symbol")})
                 offset += len(rows)

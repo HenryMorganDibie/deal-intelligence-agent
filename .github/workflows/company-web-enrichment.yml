@@ -41,7 +41,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/deal-intel-venv
-          key: company-python-${{ runner.os }}-3.13-${{ hashFiles('requirements.txt') }}
+          key: company-python-${{ runner.os }}-3.13-${{ hashFiles('requirements.txt', 'requirements-dev.txt') }}
 
       - name: Install API dependencies when cache is cold
         shell: bash
@@ -49,7 +49,7 @@ jobs:
           set -euo pipefail
           if [ ! -x "$HOME/.cache/deal-intel-venv/bin/python" ]; then
             python -m venv "$HOME/.cache/deal-intel-venv"
-            "$HOME/.cache/deal-intel-venv/bin/python" -m pip install --disable-pip-version-check -r requirements.txt
+            "$HOME/.cache/deal-intel-venv/bin/python" -m pip install --disable-pip-version-check -r requirements-dev.txt
           else
             echo "Using cached Python environment"
           fi

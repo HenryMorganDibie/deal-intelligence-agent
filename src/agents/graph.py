@@ -13,11 +13,10 @@ Deal Intelligence Agent Graph — Full 8-Node Pipeline.
 """
 from __future__ import annotations
 
+import inspect
 import time
 import uuid
-from typing import Any
-
-from langgraph.graph import StateGraph, START, END
+from typing import Any, Awaitable, Callable, Union
 
 from src.schemas.models import AgentState, AnalysisRequest, AnalystBrief
 from src.agents.collection_agent import DataCollectionAgent
@@ -90,6 +89,8 @@ async def _node_post_process(d: dict[str, Any]) -> dict[str, Any]:
     try:
         from src.engines.warehouse import store_analysis_run
         store_analysis_run(run_id, state.brief)
+    except ImportError:
+        pass                                           # local store; the hosted API does not install it
     except Exception as e:
         state.errors.append(f"Warehouse storage failed (non-fatal): {e}")
 
@@ -104,6 +105,8 @@ async def _node_post_process(d: dict[str, Any]) -> dict[str, Any]:
     try:
         from src.engines.graph_intelligence import update_graph_from_brief
         update_graph_from_brief(state.brief, state.company_profile.insiders if state.company_profile else None)
+    except ImportError:
+        pass                                           # local graph; the hosted API does not install networkx
     except Exception as e:
         state.errors.append(f"Graph update failed (non-fatal): {e}")
 
@@ -111,25 +114,36 @@ async def _node_post_process(d: dict[str, Any]) -> dict[str, Any]:
     return _to_dict(state)
 
 
-def build_graph() -> Any:
-    g = StateGraph(dict)
-    g.add_node("data_collection",         _node_collect)
-    g.add_node("deterministic_detection", _node_deterministic)
-    g.add_node("llm_explanation",         _node_explain)
-    g.add_node("alpha_scoring",           _node_alpha)
-    g.add_node("signal_interaction",      _node_interaction)
-    g.add_node("brief_synthesis",         _node_synthesise)
-    g.add_node("post_processing",         _node_post_process)
+Node = Callable[[dict[str, Any]], Union[dict[str, Any], Awaitable[dict[str, Any]]]]
 
-    g.add_edge(START,                     "data_collection")
-    g.add_edge("data_collection",         "deterministic_detection")
-    g.add_edge("deterministic_detection", "llm_explanation")
-    g.add_edge("llm_explanation",         "alpha_scoring")
-    g.add_edge("alpha_scoring",           "signal_interaction")
-    g.add_edge("signal_interaction",      "brief_synthesis")
-    g.add_edge("brief_synthesis",         "post_processing")
-    g.add_edge("post_processing",         END)
-    return g.compile()
+# The pipeline is a straight line, so it runs as an ordered list of steps. A graph library added about 30 MB of
+# packages to every cold start of the hosted API for no branching it used.
+PIPELINE: tuple[tuple[str, Node], ...] = (
+    ("data_collection",         _node_collect),
+    ("deterministic_detection", _node_deterministic),
+    ("llm_explanation",         _node_explain),
+    ("alpha_scoring",           _node_alpha),
+    ("signal_interaction",      _node_interaction),
+    ("brief_synthesis",         _node_synthesise),
+    ("post_processing",         _node_post_process),
+)
+
+
+class _Pipeline:
+    def __init__(self, steps: tuple[tuple[str, Node], ...]):
+        self.steps = steps
+
+    async def ainvoke(self, state: dict[str, Any]) -> dict[str, Any]:
+        for _name, step in self.steps:
+            result = step(state)
+            if inspect.isawaitable(result):
+                result = await result
+            state = {**state, **(result or {})}
+        return state
+
+
+def build_graph() -> _Pipeline:
+    return _Pipeline(PIPELINE)
 
 
 async def run_analysis(request: AnalysisRequest, compliance_mode: bool = False) -> AnalystBrief:

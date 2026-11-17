@@ -1,15 +1,11 @@
-anthropic>=1.13.0
-langgraph>=0.2.0
+# Packages the hosted API installs. Keep this list small: Vercel installs these on every cold start once the
+# bundle passes its size limit, and that install was most of the API's CPU time. Local-only tools go in
+# requirements-dev.txt.
 httpx>=0.27.0
 pydantic>=2.7.0
 tenacity>=8.3.0
-rich>=13.7.0
-sqlalchemy>=2.0.0
-networkx>=3.4
 groq>=0.9.0
 fastapi>=0.115.0
 pypdf>=4.0
 pypdfium2>=4.30
 PyJWT[crypto]>=2.8.0
-# Prices, statements and multiples for US, Johannesburg and Cairo listings (imported only when used).
-yfinance>=0.2.0

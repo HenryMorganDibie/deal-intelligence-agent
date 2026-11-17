@@ -3545,16 +3545,12 @@ class TestLiquidityTier:
 
     def test_minor_unit_currency_converted(self, monkeypatch):
         """JSE quotes market cap in South African cents (ZAc)."""
-        import yfinance as yf
         from src.engines import alpha_scorer as al
-        class FakeTicker:
-            def __init__(self, sym): self.sym = sym
-            @property
-            def fast_info(self):
-                if self.sym == "ZARUSD=X":
-                    return {"lastPrice": 0.06}
-                return {"marketCap": 53_000_000_000_000.0, "currency": "ZAc"}
-        monkeypatch.setattr(yf, "Ticker", FakeTicker)
+        from src.engines import yahoo
+        rows = {"NPN.JO": {"currency": "ZAc", "regularMarketPrice": 53_000.0, "sharesOutstanding": 1_000_000_000.0,
+                           "marketCap": 53e10},
+                "ZARUSD=X": {"currency": "USD", "regularMarketPrice": 0.06}}
+        monkeypatch.setattr(yahoo, "quotes", lambda syms: {s: rows[s] for s in syms if s in rows})
         assert al._lookup_market_cap_usd("NPN.JO") == pytest.approx(53e12 / 100 * 0.06)
 
     def test_falls_back_without_market_data(self):

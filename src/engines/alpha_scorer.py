@@ -173,22 +173,29 @@ _MCAP_CACHE: dict[str, Optional[float]] = {}
 
 
 def _lookup_market_cap_usd(ticker: str) -> Optional[float]:
-    """Live market capitalisation in USD via yfinance, or None if unavailable."""
-    import logging
-    logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+    """Live market capitalisation in USD from Yahoo Finance, or None if unavailable."""
     try:
-        from src.engines.market_data import yahoo
-        yf = yahoo()
+        from src.engines import yahoo
         from src.engines.market_data import _resolve_ticker
-        info = yf.Ticker(_resolve_ticker(ticker)).fast_info
-        cap = float(info["marketCap"])
-        currency = info["currency"]
-        if not cap or cap <= 0 or not currency:
+        symbol = _resolve_ticker(ticker)
+        row = yahoo.quotes([symbol]).get(symbol) or {}
+        currency = row.get("currency")
+        if not currency:
             return None
-        currency, divisor = _MINOR_UNIT_CURRENCIES.get(currency, (currency, 1))
-        cap /= divisor
+        currency, divisor = _MINOR_UNIT_CURRENCIES.get(row["currency"], (currency, 1))
+        price, shares = row.get("regularMarketPrice"), row.get("sharesOutstanding")
+        if isinstance(price, (int, float)) and isinstance(shares, (int, float)) and price > 0 and shares > 0:
+            cap = price * shares / divisor                 # the price is quoted in minor units (JSE cents)
+        else:
+            cap = float(row.get("marketCap") or 0)         # Yahoo reports this field in major units already
+        if not cap or cap <= 0:
+            return None
         if currency != "USD":
-            cap *= float(yf.Ticker(f"{currency}USD=X").fast_info["lastPrice"])
+            pair = f"{currency}USD=X"
+            rate = (yahoo.quotes([pair]).get(pair) or {}).get("regularMarketPrice")
+            if not isinstance(rate, (int, float)) or rate <= 0:
+                return None
+            cap *= float(rate)
         return cap
     except Exception:
         return None

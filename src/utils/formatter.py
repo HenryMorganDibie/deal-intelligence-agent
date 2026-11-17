@@ -9,16 +9,20 @@ from __future__ import annotations
 
 from typing import Optional
 
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
-from rich import box
-from rich.markup import escape
-
 from src.schemas.models import AnalystBrief, Severity, SignalType
 
-console = Console()
+# The terminal view needs rich (requirements-dev.txt). The hosted API renders only Markdown and JSON, so it does
+# not install rich and these names stay unset there.
+try:
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.table import Table
+    from rich.text import Text
+    from rich import box
+    from rich.markup import escape
+    console = Console()
+except ImportError:                                    # pragma: no cover - the API bundle
+    console = None
 
 SEVERITY_COLORS = {
     Severity.LOW:      "green",

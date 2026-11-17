@@ -31,7 +31,10 @@ import time
 from typing import Any, Optional
 
 import os
-import anthropic
+try:
+    import anthropic                                   # optional: only when ANTHROPIC_API_KEY is configured
+except ImportError:                                    # pragma: no cover - the API bundle leaves it out
+    anthropic = None
 try:
     from groq import Groq as GroqClient
     _GROQ_AVAILABLE = True
@@ -103,6 +106,8 @@ _THINKING_HEADROOM = 12000
 def _anthropic_client():
     if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
         raise RuntimeError("no language model API key is configured.")
+    if anthropic is None:
+        raise RuntimeError("the anthropic package is not installed.")
     return anthropic.Anthropic()
 
 

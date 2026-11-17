@@ -1,6 +1,6 @@
 """
 Market Data Engine.
-Automated price reaction fetching using yfinance.
+Automated price reaction fetching from Yahoo Finance.
 Resolves tickers for US and African listed companies,
 fetches post-signal price moves, and records outcomes
 automatically — replacing the manual outcome tracking workflow.
@@ -45,7 +45,7 @@ AFRICAN_TICKER_MAP: dict[str, str] = {
 
 
 def _resolve_ticker(ticker: str) -> str:
-    """Resolve ticker to yfinance-compatible symbol."""
+    """Resolve ticker to a Yahoo Finance symbol."""
     upper = ticker.upper()
     if upper in AFRICAN_TICKER_MAP:
         return AFRICAN_TICKER_MAP[upper]
@@ -55,25 +55,9 @@ def _resolve_ticker(ticker: str) -> str:
     return ticker  # assume US listed
 
 
-_YAHOO_READY = False
-
-
-def yahoo():
-    """The Yahoo Finance client with its caches in the temporary directory: serverless hosts allow writes only
-    there, and the default cache under the home directory fails on them."""
-    global _YAHOO_READY
-    import yfinance as yf
-    if not _YAHOO_READY:
-        import os
-        import tempfile
-        try:
-            path = os.path.join(tempfile.gettempdir(), "yfinance-cache")
-            os.makedirs(path, exist_ok=True)
-            yf.set_tz_cache_location(path)
-        except Exception:                      # caching is an optimisation; fetching works without it
-            pass
-        _YAHOO_READY = True
-    return yf
+def _bars(resolved: str, start=None, end=None, range_=None) -> list[dict]:
+    from src.engines import yahoo
+    return yahoo.history(resolved, start=start, end=end, range_=range_)
 
 
 def _fetch_price_moves(
@@ -89,35 +73,24 @@ def _fetch_price_moves(
     results: dict[str, Optional[float]] = {f"{w}d": None for w in windows}
 
     try:
-        yf = yahoo()
         det_dt = datetime.strptime(detection_date, "%Y-%m-%d")
-        # Fetch 60 days of data from detection date
         end_dt = det_dt + timedelta(days=max(windows) + 10)
-        hist   = yf.Ticker(resolved).history(
-            start=det_dt.strftime("%Y-%m-%d"),
-            end=end_dt.strftime("%Y-%m-%d"),
-            auto_adjust=True,
-        )
-
-        if hist.empty or len(hist) < 2:
+        bars = _bars(resolved, start=det_dt, end=end_dt)
+        if len(bars) < 2:
             return results
 
         # Use first available close as baseline
-        baseline = float(hist["Close"].iloc[0])
+        baseline = bars[0]["close"]
         if baseline == 0:
             return results
 
-        dates = hist.index.tolist()
-
         for w in windows:
-            target_dt = det_dt + timedelta(days=w)
-            # Find closest trading day at or after target
-            future = [d for d in dates if d.date() >= target_dt.date()]
-            if not future:
+            target = (det_dt + timedelta(days=w)).date()
+            # Closest trading day at or after target
+            future = next((b for b in bars if b["date"] >= target), None)
+            if future is None:
                 continue
-            close_price = float(hist.loc[future[0], "Close"])
-            pct_change  = (close_price - baseline) / baseline * 100
-            results[f"{w}d"] = round(pct_change, 2)
+            results[f"{w}d"] = round((future["close"] - baseline) / baseline * 100, 2)
 
     except Exception:
         pass
@@ -129,22 +102,13 @@ def _fetch_volume_spike(ticker: str, detection_date: str, window_days: int = 5) 
     """Fetch average volume spike % in first window_days after detection vs prior 20d average."""
     resolved = _resolve_ticker(ticker)
     try:
-        yf = yahoo()
         det_dt   = datetime.strptime(detection_date, "%Y-%m-%d")
-        pre_start = det_dt - timedelta(days=30)
-        post_end  = det_dt + timedelta(days=window_days + 5)
-
-        hist = yf.Ticker(resolved).history(
-            start=pre_start.strftime("%Y-%m-%d"),
-            end=post_end.strftime("%Y-%m-%d"),
-            auto_adjust=True,
-        )
-        if hist.empty or "Volume" not in hist.columns:
+        bars = _bars(resolved, start=det_dt - timedelta(days=30), end=det_dt + timedelta(days=window_days + 5))
+        pre  = [b["volume"] for b in bars if b["volume"] is not None and b["date"] < det_dt.date()]
+        post = [b["volume"] for b in bars if b["volume"] is not None and b["date"] >= det_dt.date()]
+        if not pre or not post:
             return None
-
-        pre_vol  = hist[hist.index.date < det_dt.date()]["Volume"].mean()
-        post_vol = hist[hist.index.date >= det_dt.date()]["Volume"].mean()
-
+        pre_vol, post_vol = sum(pre) / len(pre), sum(post) / len(post)
         if pre_vol == 0:
             return None
         return round((post_vol - pre_vol) / pre_vol * 100, 1)
@@ -220,12 +184,8 @@ def auto_record_outcome(
 def get_current_price(ticker: str) -> Optional[float]:
     """Fetch latest closing price for a ticker."""
     try:
-        yf = yahoo()
-        resolved = _resolve_ticker(ticker)
-        hist = yf.Ticker(resolved).history(period="5d", auto_adjust=True)
-        if hist.empty:
-            return None
-        return round(float(hist["Close"].iloc[-1]), 2)
+        bars = _bars(_resolve_ticker(ticker), range_="5d")
+        return round(bars[-1]["close"], 2) if bars else None
     except Exception:
         return None
 
@@ -233,17 +193,16 @@ def get_current_price(ticker: str) -> Optional[float]:
 def get_volatility(ticker: str, days: int = 30) -> Optional[float]:
     """Annualised volatility estimate over `days` trading days."""
     try:
-        yf = yahoo()
-        resolved = _resolve_ticker(ticker)
-        hist = yf.Ticker(resolved).history(
-            start=(utcnow() - timedelta(days=days + 10)).strftime("%Y-%m-%d"),
-            auto_adjust=True,
-        )
-        if len(hist) < 5:
-            return None
         import math
-        returns = hist["Close"].pct_change().dropna()
-        daily_std = float(returns.std())
-        return round(daily_std * math.sqrt(252) * 100, 2)  # annualised %
+        import statistics
+        bars = _bars(_resolve_ticker(ticker), start=utcnow() - timedelta(days=days + 10))
+        if len(bars) < 5:
+            return None
+        closes = [b["close"] for b in bars]
+        returns = [b / a - 1 for a, b in zip(closes, closes[1:]) if a]
+        if len(returns) < 2:
+            return None
+        return round(statistics.stdev(returns) * math.sqrt(252) * 100, 2)  # annualised %
     except Exception:
         return None
+

@@ -37,9 +37,11 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
       - name: Install the API's dependencies
-        run: pip install --disable-pip-version-check -r requirements.txt
+        run: pip install --disable-pip-version-check -r requirements-dev.txt
       - name: Read round articles in batches
         run: |
           set -euo pipefail

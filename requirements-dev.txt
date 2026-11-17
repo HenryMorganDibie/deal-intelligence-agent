@@ -1,4 +1,10 @@
 -r requirements.txt
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
+# Local and CLI only; the hosted API runs without them.
+anthropic>=1.13.0
+rich>=13.7.0
+sqlalchemy>=2.0.0
+networkx>=3.4
+# Historical backtest universe (pandas); the API reads Yahoo through src/engines/yahoo.py instead.
 yfinance>=0.2.0
