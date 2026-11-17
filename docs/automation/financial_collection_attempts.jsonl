@@ -728,3 +728,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-17", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46939_MORISON_INDUSTRIES_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MAY_2026.pdf", "status": "collected", "ticker": "MORISON.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MOSC.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MOX.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MPCI.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MPCO.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MPRC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MPT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MRCO.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MRF.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MRI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MRP.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MRS.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MSA.CS"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MSC.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MSM.JO"}

@@ -1567,6 +1567,58 @@
     "world labs": {
       "name": "World Labs",
       "kind": "organization"
+    },
+    "south africa needs public": {
+      "name": "South Africa Needs Public",
+      "kind": "organization"
+    },
+    "distributed renewable energy": {
+      "name": "Distributed Renewable Energy",
+      "kind": "organization"
+    },
+    "levine leichtman capital partners": {
+      "name": "Levine Leichtman Capital Partners",
+      "kind": "organization"
+    },
+    "five star franchising": {
+      "name": "Five Star Franchising",
+      "kind": "organization"
+    },
+    "sterling bank": {
+      "name": "Sterling Bank",
+      "kind": "organization"
+    },
+    "elektron": {
+      "name": "Elektron",
+      "kind": "organization"
+    },
+    "daystar power": {
+      "name": "Daystar Power",
+      "kind": "organization"
+    },
+    "syngenta": {
+      "name": "Syngenta",
+      "kind": "organization"
+    },
+    "r d": {
+      "name": "R&D",
+      "kind": "organization"
+    },
+    "national bank of egypt": {
+      "name": "National Bank of Egypt",
+      "kind": "organization"
+    },
+    "undisclosed desalination platform": {
+      "name": "Undisclosed desalination platform",
+      "kind": "organization"
+    },
+    "livestock feeds plc": {
+      "name": "Livestock Feeds Plc",
+      "kind": "organization"
+    },
+    "elektron renewables": {
+      "name": "Elektron Renewables",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -5156,6 +5208,21 @@
           "title": "Nigeria’s NGX Group buys 10 per cent stake in Nairobi Securities Exchange",
           "publisher": "The Eastleigh Voice",
           "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNd1MwbXo4Yk9XMy1jSkRWV0JNVFhUUlhLb2t4ekZFM3NIZ25MdDVaaGNvQzZoYUkzVk1INUMtR1R3bTg4ZTRnT0ZiYi1GTmxKbjdCR0ZaMDdMOVpsSi1FcGpwcmYzNXB0TDIwTzJzS09FMG1mX0hMS1hKX0JNNTVieXlpX2VWM3VrcUFXeUxUcGYzNU43ZGRqWHhNSjlmdmx3ellHZlJqaTdPc1k3bk1jdHFUNDdxR0Jo?oc=5"
+        },
+        {
+          "title": "NGX Group acquires 10% stake in Nairobi Securities Exchange",
+          "publisher": "Daily Champion Newspaper",
+          "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOVkk3cnRzeVh2eWx3Nm9zQXNxVFU0US1FN2ZkazIxSjZjZnRWemtVd1dFVURWdXpldzA1aXg3N2J4Y09mNm50RFBGNnlmbDRscHF3aDJQd2FTZzE3VXB1dUZqdEtUU1JQYjFBTGhIUFFMNFlJYVl0dEZhc0FKdEFXMFlOZjFSelpQVlp6bTRZT2I?oc=5"
+        },
+        {
+          "title": "NGX Group Buys 10% Stake In Nairobi Securities Exchange",
+          "publisher": "Economic Confidential",
+          "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9WMDdtY0o4OUlMLThfRm5rQTYwTEZaMldGaDJTV3ZHOThFMHFjN2JrSmdBbVBUWjIyWFM1S3NXcm1CaVM2RjBpZ0F6QVE0WjVvakZpNGZXRHBGNzBwRDFBb05maWw5THVPV09GYms2Z1JJS3M?oc=5"
+        },
+        {
+          "title": "NGX Group acquires 10% strategic stake in Nairobi Securities Exchange",
+          "publisher": "Blueprint Newspapers",
+          "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPWG9PRkF0S25pY1hxWXpNc0xxTkZDcmp5WnRFM3lRRTNxSDd2aU1KRVNZNUpqVHBrSldLTHVrZG0zanMyOWJJbXBLNWRRQU15MXNVMFJLZll1UUFreFVraHZxbmdQMHl0M2NBT3k2N3BfendsRXA2SnV3eGdlY1BoRXlnZ1A3eFgzR0E3R19GQWdQeDJQ?oc=5"
         }
       ]
     },
@@ -5326,6 +5393,11 @@
           "title": "Sunbeth Completes Acquisition Of Controlling Stake In Livestock Feeds",
           "publisher": "The Whistler Newspaper",
           "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQVEpxUU9rTHR6SG5YQlRoMEdiWV9sNWtHUjN6NFpVOGJsdzVmMXZ4clAwR3JkNHlCWGlsWDR6Z01EM3ROYVplTktZWUFCVzIxQlU0SVdXUjBjNlpIMjF3endHOHVaeWYzV3FpUGFNc1ZEMFlady1yWGNVaE1tdFlLWThnT0prYm5VWDF1U0dhTVlOQlRDRmU1QQ?oc=5"
+        },
+        {
+          "title": "Sunbeth Acquires 73.29% Stake in Livestock Feeds as UAC Exits, Five New Directors Appointed",
+          "publisher": "Proshare",
+          "url": "https://news.google.com/rss/articles/CBMilwJBVV95cUxQcEF4SV9UdTVRZndGQzFCb09JdUt0UnpvYVItWENNYURKOGR0aGVkNURJZTFwRmY5V2xqVkhYYlBQR3hfdGxnMWp3eW9qYlhZdlVEcVVkVlA2VUl0MmNyUkpXeExNUmIzaGRYWFU3VklJVWdycHpZM09JT2lkbE9iS21WeFgtR2xyamt3bE5YaGRJb3lsSGJ2TXh0NDczYURzamVBSHI4ckVGSC13bldpOGJLeVBUcmFqTWhoZDFQd3lSTmZhaEphOVlSSnB5R0l3S2xjYXRTaklOLUxFaUNfMjNweExmY3RUcHA4NktqUjZjSENXaDFSbjZWNllCMFhxTEJVV01UOEREZUdmUUI1NTJzWmNLcHc?oc=5"
         }
       ]
     },
@@ -5490,6 +5562,11 @@
           "title": "A.P. Moller Capital acquires Mainstream Renewable Power South Africa",
           "publisher": "Engineering News",
           "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNd2xWdmlkNzRMS01SVFo0TWltQk1QT1RQc0xjSllGV0U2aXpBNkRYd3pRbXN6M3lOLTlJcXVKUlNiTTkxRVhSekZLaktkd0hacDJQMzR4WmF6bllqR3p2ZFpXcW93WDg0am4tbGNXRVRGN0pITmxzYW9tbFpOUk9peHZGYXlCRzFZQ2pPT1RpN1Uya29BNE42S3cxM2g2YWdtdnZxeURVNU1QNmNWQlhpRVhTN0xHdXZYT1NZ?oc=5"
+        },
+        {
+          "title": "A.P. Moller Capital completes acquisition of Mainstream Renewable Power South Africa",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNZTcxbDVXazBJNW1KSm5pbHdxc1ZvSHBnRTJWa1o1NFUyWEdrd29wb2oxZ1RwQ1RReWdyenpZVjd1bzJyMG1WYWR1N0lqbU11ZFAzMFg2aW9fQ3JHVTlGVnVURGt5Tk1PWU9ncmN6Y2xtWncyM3RCMEdJZFgzaWpDYW50LWRlMHdo?oc=5"
         }
       ]
     },
@@ -5520,7 +5597,138 @@
           "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPaUlCc2NVb2pPMEoxQ3dGSlFnUlNoNTJzR2FfSUNoN1A0X2k4VDg2V21rUHo0QVNkYXplNk1uLUlVZUUxc0tsU21vTVgwRTJ2VzRQVnZPcy1zaWNqU0F4bEdGUWxLeE1aREFfdlRuTmEyWVpaWF80OEE4RUdrSVJEaUpTb1lQeThMNmRCbnA0dU9rZWc4T3BHcWNPdnFlRV85OHlHcWdlbEl2S1Z2RTJIcGVYNk80OHlJZTVDbDFiSQ?oc=5"
         }
       ]
+    },
+    "1cfa3f17f04ced10169c": {
+      "id": "1cfa3f17f04ced10169c",
+      "from": "south africa needs public",
+      "to": "distributed renewable energy",
+      "type": "equity_funding",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Ending Energy Poverty: Why South Africa Needs Public Investment in Distributed Renewable Energy",
+          "publisher": "Mail & Guardian",
+          "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxOd19uSWc4c3k0b25ocVEySWR4ODRDcDdRTlIzMG1sWlFHbGVvMGE2dHhYSHIzQ2R1MTZ6elh3bVZIWDZ5T1NjTW5LRVl5SGNXUWhFdS1QNVZ0Qld0MWNsVG4tNWtIQmVha1paRW1Pc2F2Q3pYQnhyOU03VURFa2RUTGc0TVhHc3QwQlJpY2l2cXJzeW8xMFB2NTh4bENXQUtlZkZ2TUZETng2YXRHdjhNVjctOU04cHJiOW1rR2wyU1VJaFhMWUNReWd0TTFpN0MzNUNaNQ?oc=5"
+        }
+      ]
+    },
+    "b3a125b7ed119bd20afd": {
+      "id": "b3a125b7ed119bd20afd",
+      "from": "levine leichtman capital partners",
+      "to": "five star franchising",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Levine Leichtman Capital Partners Acquires Five Star Franchising from Princeton Equity Group",
+          "publisher": "L’Express Franchise",
+          "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxNcVN4Z2xETTBxVlpCcko1bHdFSG0zeFpYMS1wZFdZVWYyakpueWF0ZXpUbHJtSHVIQXlobXd4THlJVlhhb29IN2kzb2hJbWROQUNaYlkzdXJhQXRJN0xwODlkU19yUG5SRHNiT2tkV3J5QVVNVnJPa2F6Z201MkttVHJwUTdzOWNDSVQyUGtLZlpOWHpK?oc=5"
+        }
+      ]
+    },
+    "4cde623ee225fada443a": {
+      "id": "4cde623ee225fada443a",
+      "from": "afdb",
+      "to": "sterling bank",
+      "type": "equity_funding",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "AfDB backs Sterling Bank with $102M to fund Nigerian SMEs",
+          "publisher": "Dealroom",
+          "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxNV3pidVlxVVBfQjA1bDNKVkZWTVU5SWRGZUZLNXI3cmQyR25Jd3gwWnJVcm9WTlZQRUNsWE1BcTZXbkdPY1NraWY4Ujc3RDJoSzJHT2lpTU1faHNIeC1UOUI1UDRrX1FCZ3RMdHVfcHAzeFplRXhwN2hhdmQ4UDQya0xUUnBDZkhvcVNYQk5jdXk4aE15?oc=5"
+        }
+      ]
+    },
+    "8c62b71c75ba06196437": {
+      "id": "8c62b71c75ba06196437",
+      "from": "elektron",
+      "to": "daystar power",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Shell to exit solar business in Nigeria, Ghana as Elektron agrees to acquire Daystar Power",
+          "publisher": "TheCable",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQeUE3NHFlekRiODlUT0JwVzlvcF9KN2h5YTBlZGhfWmNzV0U0QjNWRjVvWFpyWVVBdkg2V0xPVWJGWEttaHVlTHh3dVhFUEFGWVVqUUJsdTJGREZZX1otM25tMHg3U1phZWd2YlVFUnpPQzFQWl84dlNxMnkyVkU2bGdjeWRadGpYRXVpeGVjTm0zQ3d0ZXJJaXhBZmF3RW91TGJsOXVRMDd0SkItc3ZtTFVqOTE?oc=5"
+        },
+        {
+          "title": "Shell exits Nigeria, Ghana solar markets as Elektron acquires Daystar Power",
+          "publisher": "Business Hallmark",
+          "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxOdmtoc3hjdktCTURVS0xlY3llNXV3UFNRY0xFVVNJUkd2Z3I2U2JYQjNwOHVDcW5fUlBxRUhfQWZldm9rbmpoX21MMDEtQTA4NmtrTkg2QVlQWUNySk44bEExdk5oVW0ydS0tNjF4NXoyUmJxd0Q4QlNBcjdRZDdRZXJOYTVzNjd3UmJpYWdOZ1ZEcE9VMHB2eWozNXJuLTc3YUHSAaIBQVVfeXFMTnZraHN4Y3ZLQk1EVUtMZWN5ZTV1d1BTUWNMRVVTSVJHdmdyNlNiWEIzcDh1Q3FuX1JQcUVIX0FmZXZva25qaF9tTDAxLUEwODZra05INkFZUFlDckpOOGxBMXZOaFVtMnUtLTYxeDV6MlJicXdEOEJTQXI3UWQ3UWVyTmE1czY3d1JiaWFnTmdWRHBPVTBwdnlqMzVybi03N2FB?oc=5"
+        }
+      ]
+    },
+    "c5200149075233957ce7": {
+      "id": "c5200149075233957ce7",
+      "from": "syngenta",
+      "to": "r d",
+      "type": "equity_funding",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Syngenta invests $1.5bn annually in R&D, identifies Egypt as key Middle East market",
+          "publisher": "Daily News Egypt",
+          "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxOTmx0QU04V1IzQVBxQ2YyVlpRV3U0eXR2ckFHZklMN0dkcmd2RlZQSGZsRmdwcE9Qc0Y2WWVhaXhlYnRlZ1E5TzYtSDlJV05WZnlvekJzUmFmNFZmOUhzMlMyanFNdEg3MnJHSGlad1VDZmlORWlIZmVobFJMTzJMMlMzcmE4MTB4UHdULWVNcHpIdHhCS2p5MWp2SGdNajZadGkzWDNBN2QyM2pfWWIwYmxIU1N3Nm9Id2JR?oc=5"
+        }
+      ]
+    },
+    "3765674354258cda2114": {
+      "id": "3765674354258cda2114",
+      "from": "ebrd",
+      "to": "national bank of egypt",
+      "type": "debt_financing",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "EBRD provides $100m loan to National Bank of Egypt",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOU2RJdkYxZzdHWkM1Tk4xOVVUaU1jYnhVdUdqZGdXdHdpYlhRckJvOVlDaVI3a2trYnZ1SEZjay1QbEpVeXk4U3FuRXdsdDVGRUxoaWNNT0ZqTFR2djE0U2dtZF9xSDVpZXdCdDVLYTRiYnVwQnM2VUNXYWd1dGFFVU5NbXJWdVhRTWdIZzdKa1dpMXRfVHktc3BUYmg?oc=5"
+        }
+      ]
+    },
+    "e315be24ea356a2453cd": {
+      "id": "e315be24ea356a2453cd",
+      "from": "ebrd",
+      "to": "undisclosed desalination platform",
+      "type": "equity_funding",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "EBRD invests up to U.S. $31 million in Egypt desalination platform",
+          "publisher": "Traders Union",
+          "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxNdWpwRkR5N1B3eDVYRUdDTHJBSEZLMHVDZkxSUTFGUkdvVWRva2lIaVRMSVNUTjlBU0xNeTRsSzVrOVg2TFVMSS1hekY3NGdkeFJ0YVhHanZXZVc0LV9Mb3gxMGl1SmFRRnJTeUNBZkhiX3o3dGQ4MEh1TkxQbW16emVSUDljeks4Y1hueXNzcWpqbXZqSnc?oc=5"
+        }
+      ]
+    },
+    "621709594b21005b4d84": {
+      "id": "621709594b21005b4d84",
+      "from": "sunbeth",
+      "to": "livestock feeds plc",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Sunbeth completes acquisition of controlling stake in Livestock Feeds Plc",
+          "publisher": "The Sun Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPWDh3SG5JVHhacXA2SzFjdmlkZHJWMHNzTTRTcXAxanJpal9oaGJMMG0xaTRnMU9YdlMwN19acXdHb2phM1VKQllDdG5teHZ5WHF5RUhLZkM4OTQ0bnpOTnltM1ZTajdXREMtMC1sR1d3TVJYZTg4OTBLbjBfMU84ejBwMm1fZGlJMUI1SWVwTmlmamRVS1U4?oc=5"
+        }
+      ]
+    },
+    "8222297b014c4d3c37a3": {
+      "id": "8222297b014c4d3c37a3",
+      "from": "elektron renewables",
+      "to": "daystar power",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Elektron Renewables to Acquire Daystar Power from Shell in West African Solar Bet",
+          "publisher": "Launch Base Africa",
+          "url": "https://launchbaseafrica.com/2026/11/17/elektron-renewables-to-acquire-daystar-power-from-shell-in-west-african-solar-bet/?utm_source=rss&utm_medium=rss&utm_campaign=elektron-renewables-to-acquire-daystar-power-from-shell-in-west-african-solar-bet"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-17T13:47:04.804251+00:00"
+  "updated_at": "2026-11-17T22:36:50.501069+00:00"
 }
