@@ -373,7 +373,10 @@ test("admin page lists accounts and who is using the app", async ({ page }) => {
   });
   await page.goto("/admin");
   await page.getByPlaceholder("Admin key").fill("owner-key");
-  await page.getByRole("button", { name: "Show" }).click();
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.getByRole("heading", { name: "Overview", exact: true })).toBeVisible();
+  await expect(page.getByText("Super admin")).toBeVisible();
+  await page.getByRole("navigation", { name: "Admin sections" }).first().getByRole("button", { name: "Accounts" }).click();
   await expect(page.getByRole("heading", { name: "Accounts", exact: true })).toBeVisible();
   await expect(page.getByText("@ada · ada@example.com")).toBeVisible();
   expect(accountsBody).toEqual({ key: "owner-key", days: 30 });
