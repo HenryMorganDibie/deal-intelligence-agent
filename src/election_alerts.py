@@ -146,7 +146,7 @@ def render_email(sub: dict, stories: list[dict]) -> tuple[str, str, str]:
                f"{'s' if n != 1 else ''} · {name}" + (f" ({high} high severity)" if high else ""))
     unsub = unsubscribe_link(str(sub["id"]))
     # White-label: no product header, footer or links back to the app, so the email can be forwarded to clients.
-    # The stop link stays (every alert email must carry one).
+    # The stop link and the sender's postal address stay (the law requires both in every alert email).
     white = bool((sub.get("filters") or {}).get("white_label"))
     app = __import__("os").environ.get("DEAL_INTEL_APP_URL", "https://deal-intelligence.app").rstrip("/")
     manage = f"{app}/watchlists"
@@ -162,19 +162,20 @@ def render_email(sub: dict, stories: list[dict]) -> tuple[str, str, str]:
     if n > 25:
         rows.append(f'<tr><td style="padding:10px 0;color:#64748b">and {n - 25} more</td></tr>')
         text.append(f"...and {n - 25} more.")
-    text += [""] + ([] if white else [f"Manage your election alerts: {manage}"]) + [f"Stop this alert: {unsub}"]
+    text += [""] + ([] if white else [f"Manage your election alerts: {manage}"]) + [f"Stop this alert: {unsub}"] + email_alerts.footer_address_text()
     body = ('<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:600px;'
             'margin:0 auto;color:#0f172a;line-height:1.5">' + ("" if white else email_alerts.brand_header()) +
             f'<p>Your election alert <strong>{_h.escape(name)}</strong> found {n} new item{"s" if n != 1 else ""}.</p>'
             f'<table role="presentation" style="width:100%;border-collapse:collapse">{"".join(rows)}</table>')
     if white:
         body += (f'<p style="color:#64748b;font-size:12px;margin-top:24px"><a href="{_h.escape(unsub)}" '
-                 'style="color:#64748b">Stop this alert</a>.</p></div>')
+                 'style="color:#64748b">Stop this alert</a>.</p>' + email_alerts.footer_address_html() + '</div>')
     else:
         body += (f'<p style="margin:24px 0"><a href="{_h.escape(manage)}" style="background:#0f172a;color:#ffffff;'
                  'padding:10px 16px;border-radius:6px;text-decoration:none;display:inline-block">Manage election alerts</a></p>'
                  '<p style="color:#64748b;font-size:12px">You receive this because you set up this election alert in Deal '
-                 f'Intelligence. <a href="{_h.escape(unsub)}" style="color:#64748b">Stop this alert</a>.</p></div>')
+                 f'Intelligence. <a href="{_h.escape(unsub)}" style="color:#64748b">Stop this alert</a>.</p>'
+                 + email_alerts.footer_address_html() + '</div>')
     return subject, body, "\n".join(text)
 
 

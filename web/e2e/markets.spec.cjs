@@ -345,7 +345,24 @@ test("sign-up enforces the password rules and the retyped password before it can
   await page.getByLabel("Retype password").fill("Kettle-Harbour-91!");
   await expect(page.getByText("✓ Passwords match")).toBeVisible();
   await expect(page.getByText("Very weak")).toHaveCount(0);
+  await expect(submit).toBeDisabled();                     // not until the age and terms box is ticked
+  await page.getByLabel(/I am 18 or older/).check();
   await expect(submit).toBeEnabled();
+});
+
+test("Google sign-up waits for the age confirmation; legal pages are public and linked", async ({ page }) => {
+  await page.goto("/account?mode=sign-up");
+  await expect(page.getByRole("link", { name: "Continue with Google" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Continue with Google" }).click();
+  await expect(page.getByText(/confirm you are 18 or older before continuing with Google/)).toBeVisible();
+  await page.getByLabel(/I am 18 or older/).check();
+  await expect(page.getByRole("link", { name: "Continue with Google" })).toHaveAttribute("href", "/api/portfolio/auth/google");
+  for (const [path, heading] of [["/terms", "Terms of Use"], ["/privacy", "Privacy notice"], ["/copyright", "Copyright and DMCA notices"]]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
+  }
+  await expect(page.getByRole("heading", { name: "Designated agent" })).toBeVisible();
+  await expect(page.locator("footer").getByRole("link", { name: "Copyright and DMCA" })).toBeVisible();
 });
 
 test("admin page lists accounts and who is using the app", async ({ page }) => {
@@ -421,4 +438,13 @@ test("the app header has an account menu that signs out", async ({ page }) => {
   await page.getByRole("menuitem", { name: "Sign out" }).click();
   await page.waitForURL("**/account");
   expect(signedOut).toBe(true);
+});
+
+test("each paid plan shows its renewal terms beside the subscribe button", async ({ page }) => {
+  await page.goto("/pricing");
+  const pro = page.getByTestId("renewal-pro");
+  await expect(pro).toContainText(/Renews automatically every month at .+ until you cancel/);
+  await expect(pro).toContainText("keep access until the end of the period you paid for");
+  await page.getByRole("button", { name: /Yearly/ }).click();
+  await expect(pro).toContainText("Renews automatically every year");
 });

@@ -65,3 +65,22 @@ def test_send_posts_one_click_unsubscribe_headers(monkeypatch):
     assert seen["body"]["headers"]["List-Unsubscribe"] == "<https://u>"
     assert seen["body"]["headers"]["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
     assert seen["body"]["idempotency_key"] == "k1" and seen["body"]["to"] == ["x@example.com"]
+
+
+def test_alert_email_carries_the_postal_address(monkeypatch):
+    monkeypatch.setenv("BUSINESS_POSTAL_ADDRESS", "  P.O. Box 1 <Ikeja>,\n Lagos ")
+    _, body, text = email_alerts.render({"name": "W"}, [ALERT], "https://app", "https://u")
+    assert "Deal Intelligence, P.O. Box 1 &lt;Ikeja&gt;, Lagos" in body
+    assert text.endswith("Deal Intelligence, P.O. Box 1 <Ikeja>, Lagos")
+    monkeypatch.delenv("BUSINESS_POSTAL_ADDRESS")
+    _, body, text = email_alerts.render({"name": "W"}, [ALERT], "https://app", "https://u")
+    assert "P.O. Box" not in body and text.endswith("Stop these emails: https://u")
+
+
+def test_white_label_election_email_keeps_stop_link_and_address(monkeypatch):
+    from src import election_alerts
+    monkeypatch.setenv("BUSINESS_POSTAL_ADDRESS", "P.O. Box 1, Lagos")
+    sub = {"id": "00000000-0000-0000-0000-000000000001", "name": "Client feed", "filters": {"white_label": True}}
+    _, body, text = election_alerts.render_email(sub, [{"id": "s1", "title": "Polling unit disrupted", "url": "https://x.test/a"}])
+    assert "Stop this alert" in body and "Deal Intelligence, P.O. Box 1, Lagos" in body
+    assert "Deal Intelligence, P.O. Box 1, Lagos" in text

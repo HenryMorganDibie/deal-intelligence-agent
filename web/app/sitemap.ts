@@ -6,7 +6,7 @@ import { SITE } from "../lib/site";
 export const revalidate = 86400;
 
 const PAGES = ["", "/deals", "/markets", "/platform", "/pricing", "/how-it-works", "/attribution", "/coverage", "/example", "/limits", "/methodology",
-  "/contact", "/developers"];
+  "/contact", "/developers", "/terms", "/privacy", "/copyright"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (SITE.url ?? "https://deal-intelligence.app").replace(/\/$/, "");

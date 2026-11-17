@@ -1,3 +1,4 @@
+import { BUSINESS } from "../lib/legal";
 import { CONTACT_EMAIL, LINKS } from "../lib/site";
 import { ArrowRight, Container, LogoMark, Reveal } from "./primitives";
 
@@ -107,7 +108,12 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="mx-auto mt-12 flex w-full max-w-page flex-wrap justify-between gap-3 px-4 text-[0.75rem] text-[color:var(--dim)] sm:px-6 lg:px-8">
-        <span>© {new Date().getFullYear()} Deal Intelligence</span>
+        <span>
+          © {new Date().getFullYear()} Deal Intelligence{BUSINESS.postalAddress ? `, ${BUSINESS.postalAddress}` : ""}
+          <span className="mx-2" aria-hidden>·</span><a href="/terms" className="hover:text-[color:var(--text)]">Terms</a>
+          <span className="mx-2" aria-hidden>·</span><a href="/privacy" className="hover:text-[color:var(--text)]">Privacy</a>
+          <span className="mx-2" aria-hidden>·</span><a href="/copyright" className="hover:text-[color:var(--text)]">Copyright and DMCA</a>
+        </span>
         <span className="kbd">Source-linked research. Evidence you can inspect. Uncertainty flagged.</span>
       </div>
     </footer>

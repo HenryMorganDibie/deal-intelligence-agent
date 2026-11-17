@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Container } from "../../components/primitives";
 import { AuthCard, MatchHint, Notice, PasswordInput, PasswordStrength, authAction, safeNext } from "../../components/auth/AuthUi";
+import { MINIMUM_AGE, TERMS_VERSION } from "../../lib/legal";
 import { displayNameProblem, normaliseUsername, passwordProblems, usernameProblem } from "../../lib/password-policy";
 
 type Session = {
@@ -27,6 +28,7 @@ export default function AccountPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [username, setUsername] = useState("");
+  const [adult, setAdult] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [usernameState, setUsernameState] = useState<{ checking: boolean; available: boolean | null; problem: string | null }>({ checking: false, available: null, problem: null });
   const [showRecovery, setShowRecovery] = useState(false);
@@ -76,16 +78,17 @@ export default function AccountPage() {
 
   const ctx = { email, username: normaliseUsername(username) };
   const passwordOk = passwordProblems(password, ctx).length === 0;
-  const canSignUp = passwordOk && password === confirm && !usernameProblem(username) && usernameState.available !== false
+  const canSignUp = adult && passwordOk && password === confirm && !usernameProblem(username) && usernameState.available !== false
     && !displayNameProblem(displayName) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   async function signUp(e: FormEvent) {
     e.preventDefault();
     setError(""); setMessage("");
+    if (!adult) { setError(`Confirm that you are ${MINIMUM_AGE} or older and agree to the Terms.`); return; }
     if (!canSignUp) { setError("Complete every field: the password must meet each rule and both passwords must match."); return; }
     setBusy(true);
     const { ok, data } = await authAction<{ needsEmailConfirmation?: boolean; message?: string }>({
-      action: "sign-up", email, password, confirmPassword: confirm, username: normaliseUsername(username), displayName: displayName.trim(),
+      action: "sign-up", email, password, confirmPassword: confirm, username: normaliseUsername(username), displayName: displayName.trim(), ageConfirmed: adult, termsVersion: TERMS_VERSION,
     });
     setBusy(false);
     if (!ok) { setError(data.error || "Account creation failed."); return; }
@@ -192,6 +195,7 @@ export default function AccountPage() {
               <PasswordInput id="signup-confirm" label="Retype password" value={confirm} onChange={setConfirm} autoComplete="new-password" invalid={Boolean(confirm) && confirm !== password} />
               <MatchHint password={password} confirm={confirm} />
             </div>
+            <AgeConfirm checked={adult} onChange={setAdult} />
             <button className="btn btn-primary w-full justify-center" type="submit" disabled={busy || !canSignUp}>{busy ? "Creating account…" : "Create account"}</button>
             <p className="text-xs text-[color:var(--dim)]">
               Passwords are checked against known data breaches without sending the password anywhere. We email a link to confirm your address before the account works.
@@ -202,7 +206,21 @@ export default function AccountPage() {
         {session === null ? null : (
           <>
             <div className="my-6 flex items-center gap-3 text-xs text-[color:var(--muted)]"><span className="h-px flex-1 bg-[color:var(--line)]" />or<span className="h-px flex-1 bg-[color:var(--line)]" /></div>
-            <a className="btn btn-ghost w-full justify-center" href="/api/portfolio/auth/google">Continue with Google</a>
+            {mode === "sign-up" && !adult ? (
+              <button type="button" className="btn btn-ghost w-full justify-center opacity-60" aria-describedby="signup-age"
+                onClick={() => setError(`Tick the box above to confirm you are ${MINIMUM_AGE} or older before continuing with Google.`)}>
+                Continue with Google
+              </button>
+            ) : (
+              <a className="btn btn-ghost w-full justify-center" href="/api/portfolio/auth/google">Continue with Google</a>
+            )}
+            {mode === "sign-in" && (
+              <p className="mt-3 text-xs text-[color:var(--dim)]">
+                New to Deal Intelligence? Continuing with Google creates an account; by doing so you confirm you are {MINIMUM_AGE} or
+                older and agree to the <a className="underline underline-offset-2" href="/terms">Terms</a> and{" "}
+                <a className="underline underline-offset-2" href="/privacy">Privacy notice</a>.
+              </p>
+            )}
           </>
         )}
 
@@ -217,5 +235,18 @@ export default function AccountPage() {
         <Notice error={error} message={message} />
       </AuthCard>
     </Container>
+  );
+}
+
+function AgeConfirm({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-start gap-2.5 text-sm" htmlFor="signup-age">
+      <input id="signup-age" type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-current" required checked={checked}
+        onChange={(e) => onChange(e.target.checked)} />
+      <span>
+        I am {MINIMUM_AGE} or older and agree to the <a className="underline underline-offset-2" href="/terms" target="_blank" rel="noreferrer">Terms of Use</a>{" "}
+        and <a className="underline underline-offset-2" href="/privacy" target="_blank" rel="noreferrer">Privacy notice</a>.
+      </span>
+    </label>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { NairaRate } from "../../lib/catalog";
+import { renewalTerms } from "../../lib/legal";
 import { PLAN_FEATURES, approxDollars, defaultCurrency, money, priceOf, type CatalogPlan, type Currency } from "../../lib/pricing";
 
 type Props = {
@@ -91,7 +92,14 @@ export function PricingTable({ catalog, current = null, onChoose, busy = null, r
                     <a href={`/account?mode=sign-up&next=${encodeURIComponent(`/account/billing?plan=${p.id}&interval=${interval}&currency=${currency}`)}`}
                       className={`btn w-full ${highlight ? "btn-primary" : "btn-ghost"}`}>Get {p.label}</a>
                   )
-                ) : p.id === "free" ? (
+                ) : null}
+                {!isCurrent && p.self_serve && (p.id === "pro" || p.id === "team") && price ? (
+                  <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]" data-testid={`renewal-${p.id}`}>
+                    {renewalTerms(money(price, currency), yearly)}{" "}
+                    <a href="/terms" className="underline underline-offset-2">Terms</a>
+                  </p>
+                ) : null}
+                {isCurrent || (p.self_serve && (p.id === "pro" || p.id === "team")) ? null : p.id === "free" ? (
                   onChoose ? null : <a href="/account?mode=sign-up" className="btn btn-ghost w-full">Start free</a>
                 ) : (
                   <a href="/contact?topic=institutional#form" className="btn btn-ghost w-full">Talk to us</a>

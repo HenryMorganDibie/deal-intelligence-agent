@@ -10,6 +10,7 @@ import {
 import { AUTH_STATE_COOKIE } from "../../../../lib/auth-state";
 import { displayNameProblem, normaliseUsername, passwordProblems, usernameProblem } from "../../../../lib/password-policy";
 import { passwordBreached } from "../../../../lib/pwned";
+import { MINIMUM_AGE, TERMS_VERSION } from "../../../../lib/legal";
 
 
 const VERIFY_TYPES = ["signup", "email", "invite", "recovery", "magiclink", "email_change"];
@@ -29,7 +30,7 @@ type AuthPayload = {
 type Body = {
   action?: string; email?: string; password?: string; confirmPassword?: string; currentPassword?: string;
   username?: string; displayName?: string; refreshToken?: unknown; tokenHash?: unknown; type?: unknown; code?: unknown;
-  factorId?: unknown;
+  factorId?: unknown; ageConfirmed?: unknown; termsVersion?: unknown;
 };
 
 const NO_STORE = { "Cache-Control": "no-store" };
@@ -304,6 +305,8 @@ export async function POST(request: NextRequest) {
       const username = normaliseUsername(typeof body.username === "string" ? body.username : "");
       const displayName = (typeof body.displayName === "string" ? body.displayName : "").trim();
       if (!EMAIL_RE.test(email) || email.length > 254) return fail("Enter a valid email address.");
+      if (body.ageConfirmed !== true) return fail(`You must be ${MINIMUM_AGE} or older to create an account.`);
+      const termsVersion = typeof body.termsVersion === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.termsVersion) ? body.termsVersion : TERMS_VERSION;
       const fieldProblem = usernameProblem(username) || displayNameProblem(displayName);
       if (fieldProblem) return fail(fieldProblem);
       const problem = await newPasswordProblem(password, typeof body.confirmPassword === "string" ? body.confirmPassword : "", { email, username });
@@ -312,7 +315,7 @@ export async function POST(request: NextRequest) {
       if (available.ok && (await available.json()) !== true) return fail("That username is taken or reserved. Choose another.", 409);
       const response = await supabase("/auth/v1/signup", {
         method: "POST",
-        body: JSON.stringify({ email, password, data: { username, display_name: displayName }, options: { emailRedirectTo: request.nextUrl.origin + "/auth/callback" } }),
+        body: JSON.stringify({ email, password, data: { username, display_name: displayName, age_confirmed_at: new Date().toISOString(), terms_version: termsVersion }, options: { emailRedirectTo: request.nextUrl.origin + "/auth/callback" } }),
       });
       const payload = (await response.json().catch(() => ({}))) as AuthPayload;
       if (!response.ok) {

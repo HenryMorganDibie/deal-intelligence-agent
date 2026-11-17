@@ -1,16 +1,20 @@
 """Watchlist alert emails, sent through SendByte to each subscriber's verified account address.
 
 Every message carries its subscriber's own unsubscribe link (also in the List-Unsubscribe headers, so mail clients
-show a one-click button) and an idempotency key, so a retried run never sends the same batch twice.
+show a one-click button), the sender's postal address (CAN-SPAM and similar laws require one in any email a person
+can opt out of) and an idempotency key, so a retried run never sends the same batch twice.
 """
 from __future__ import annotations
 
 import hashlib
 import html
+import logging
 import os
 from typing import Optional
 
 import httpx
+
+log = logging.getLogger(__name__)
 
 SENDBYTE_URL = "https://api.sendbyte.africa/v1/emails"
 MAX_ALERTS_IN_EMAIL = 25
@@ -30,6 +34,25 @@ def reply_to() -> str:
 
 def api_base() -> str:
     return os.environ.get("DEAL_INTEL_API_PUBLIC_URL", "https://api.deal-intelligence.app").rstrip("/")
+
+
+def postal_address() -> str:
+    """The business's postal address for email footers, from BUSINESS_POSTAL_ADDRESS (a P.O. box is acceptable)."""
+    return " ".join(os.environ.get("BUSINESS_POSTAL_ADDRESS", "").split())
+
+
+def footer_address_html() -> str:
+    """The sender line every opt-out email ends with: the business name and its postal address."""
+    address = postal_address()
+    if not address:
+        log.warning("BUSINESS_POSTAL_ADDRESS is not set: alert emails go out without a postal address")
+        return ""
+    return f'<p style="color:#64748b;font-size:12px;margin:4px 0 0">Deal Intelligence, {html.escape(address)}</p>'
+
+
+def footer_address_text() -> list[str]:
+    address = postal_address()
+    return [f"Deal Intelligence, {address}"] if address else []
 
 
 def unsubscribe_link(token: str) -> str:
@@ -92,7 +115,7 @@ def render(wl: dict, alerts: list[dict], watch_link: str, unsubscribe: str,
         rows.append(f'<tr><td style="padding:10px 0;color:#64748b">and {more} more</td></tr>')
     text_lines += ["", f"Open the watchlist: {watch_link}", "",
                    "You receive this because you turned on email alerts for this watchlist.",
-                   f"Stop these emails: {unsubscribe}"]
+                   f"Stop these emails: {unsubscribe}", *footer_address_text()]
 
     body = (
         '<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:600px;'
@@ -105,7 +128,7 @@ def render(wl: dict, alerts: list[dict], watch_link: str, unsubscribe: str,
         'padding:10px 16px;border-radius:6px;text-decoration:none;display:inline-block">Open the watchlist</a></p>'
         '<p style="color:#64748b;font-size:12px">You receive this because you turned on email alerts for this '
         f'watchlist in Deal Intelligence. <a href="{html.escape(unsubscribe)}" style="color:#64748b">Stop these '
-        'emails</a>.</p></div>')
+        f'emails</a>.</p>{footer_address_html()}</div>')
     return subject, body, "\n".join(text_lines)
 
 
