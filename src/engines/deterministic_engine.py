@@ -856,7 +856,10 @@ HEADLINE_RULES: list[tuple[SignalType, list[str], float]] = [
     (SignalType.CREDIT_RISK, [
         rf"\b{_AGENCY}\b.{{0,40}}\b(downgrades?|downgraded|cuts?|lowers?|lowered|slashes|slashed)\b",
         r"\b(downgrades?|downgraded|cuts?|lowers?|lowered)\b.{0,40}\b(rating|outlook\s+to\s+negative|to\s+(junk|ccc|cc|b-|b\+|bb-))",
-        r"\b(defaults?|defaulted)\s+on\b",
+        # A default on debt ("defaults on N40 billion bond", "defaulted on its Eurobond"), not on a target or pledge
+        # ("60% of firms default on gas flaring targets").
+        r"\b(defaults?|defaulted)\s+on\b.{0,40}\b(eurobonds?|bonds?|notes?|loans?|debts?|coupons?|interest|"
+        r"obligations?|payments?|repayments?|creditors?|billion|million|bn)\b",
         r"\b(misses?|missed|skips?|skipped)\s+(an?\s+|its\s+)?(coupon|interest|bond|debt|loan|eurobond)\s+(payments?|repayments?)\b",
         r"\b(fitch|moody'?s|s&p)\s+a\s+abaiss[eé]\b.{0,40}\bnote\b",
         r"\babaiss[eé]\w*\b.{0,30}\bla\s+note\b",

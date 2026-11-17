@@ -332,6 +332,10 @@ def names_only_foreign_countries(text: str) -> bool:
     return not countries_in_text(text.replace("-", " "))
 
 
+_CREDIT_SIGNALS = {"credit_risk", "distressed_asset", "debt_restructuring"}
+_GLOBAL_AGENCY = re.compile(r"(?i)\b(moody'?s|moody’s|s&p|standard\s+&\s+poor'?s|fitch)\b")
+
+
 def to_events(items: Iterable[dict], min_score: float = 0.7) -> list[dict]:
     """Corporate events: headlines that match a signal rule at min_score or above."""
     out = []
@@ -343,7 +347,12 @@ def to_events(items: Iterable[dict], min_score: float = 0.7) -> list[dict]:
         signal_type, score = max(hits, key=lambda h: h[1])
         if not is_corporate_event(title, signal_type.value):
             continue                                    # a fine, probe or resignation about people or politics
-        text = f"{title} {it.get('snippet', '')}"
+        # The publisher's own name says where it is published, not where the story is ("Investing.com South Africa"
+        # on a Polish outlook cut), so it is left out of the text a country is read from.
+        snippet = it.get("snippet", "") or ""
+        if it.get("publisher"):
+            snippet = snippet.replace(it["publisher"], " ")
+        text = f"{title} {snippet}"
         countries = [c.iso2 for c in countries_in_text(text)]
         if not countries and it.get("country_hint") and not names_only_foreign_countries(text):
             countries.append(it["country_hint"])
@@ -352,6 +361,11 @@ def to_events(items: Iterable[dict], min_score: float = 0.7) -> list[dict]:
             countries = countries_of_companies(text)      # "KETRACO faces liquidation petition": Kenya's grid company
         if not countries and re.search(r"(?i)\bbusiness\s+rescue\b", text) and not names_only_foreign_countries(text):
             countries.append("ZA")                      # a South African insolvency procedure (Companies Act, chapter 6)
+        if not countries and signal_type.value in _CREDIT_SIGNALS and (
+                names_only_foreign_countries(text) or _GLOBAL_AGENCY.search(title)):
+            # A rating action or default placed nowhere in Africa (Fitch on Paraguay, Moody's on Hertz): the pan-African
+            # credit searches return global coverage too. African agencies' actions (GCR, Agusto) are African by remit.
+            continue
         out.append({
             "id": event_id(title),
             "day": it.get("date"),
