@@ -56,12 +56,20 @@ export function MarketsToday({ data }: { data: { overview: Overview; companies: 
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {tiles.map((t, i) => {
             const ytd = t.ytd_usd ?? t.ytd_median_usd;
+            // The index's day move when it is current; otherwise the move in the exchange's own share prices
+            // (marked *), as on the Markets page, rather than n/a.
+            const indexMove = t.index && !t.index.stale && t.index.chg_1d != null ? t.index.chg_1d : null;
+            const today = indexMove ?? t.market_chg_1d ?? null;
+            const fromPrices = indexMove == null && today != null;
             return (
               <a key={t.exchange} href={`/markets/screener?exchange=${t.exchange}`} className={`panel p-4 transition hover:bg-white/[0.03] ${i >= 4 ? "hidden sm:block" : ""}`}>
                 <p className="truncate text-sm font-medium">{t.name}</p>
                 <div className="mt-2 flex items-baseline justify-between gap-2">
                   <span className="text-xs text-[color:var(--dim)]">{t.index?.name ?? t.exchange.toUpperCase()}</span>
-                  <span className={`kbd text-sm ${tone(t.index?.chg_1d)}`}>{pct(t.index?.chg_1d, 2)}</span>
+                  <span className={`kbd text-sm ${tone(today)}`}
+                    title={fromPrices ? `From share prices (${t.market_chg_basis ?? "today's closes"}); the index has no current daily move` : undefined}>
+                    {pct(today, 2)}{fromPrices ? "*" : ""}
+                  </span>
                 </div>
                 <div className="mt-1 flex items-baseline justify-between gap-2 text-xs">
                   <span className="text-[color:var(--dim)]">YTD in USD</span>
