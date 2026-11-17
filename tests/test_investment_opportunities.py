@@ -27,3 +27,15 @@ def test_actual_transactions_are_not_misclassified_as_opportunities(headline):
 def test_explicit_opportunity_record_type_is_authoritative():
     assert deals.is_investment_opportunity({"record_type": "investment_opportunity", "headline": "Uganda refinery project"})
     assert not deals.is_investment_opportunity({"record_type": "transaction", "headline": "Company raises $5m"})
+
+
+def test_opportunities_are_not_excluded_for_naming_a_sector_or_project():
+    from src.engines import deals
+    record = {"id": "b9158ff194469ccc", "record_type": "investment_opportunity", "deal_type": "investment_opportunity",
+              "headline": "Ugandan Govt Woos Dangote to Invest in Nation's Oil Refining, Fertiliser, Salt Production Sectors",
+              "target": "Nation's Oil Refining, Fertiliser, Salt Production Sectors", "announced": "2026-11-16"}
+    assert deals.reclassify(record) is None
+    # A completed deal with a non-company target is still excluded, as before
+    deal = {"id": "x", "deal_type": "equity_funding", "headline": "Lagos raises $50m for housing",
+            "target": "Lagos", "announced": "2026-11-16"}
+    assert deals.reclassify(deal) is not None

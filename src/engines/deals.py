@@ -696,6 +696,10 @@ def reclassify(deal: dict) -> Optional[dict]:
     """What the current rules change in a stored record: {"excluded": reason}, or a corrected deal type for a
     bond, loan, listing or fund close stored as an equity round. None when the record stands."""
     headline = deal.get("headline") or ""
+    # An investment opportunity is a solicitation, not a transaction: its subject is often a project, a sector or a
+    # country ("Uganda woos Dangote to invest in oil refining"), which the company-name rules below would exclude.
+    if is_investment_opportunity(deal):
+        return None
     # Prose caught by a deal verb ("Don't Sell Your Votes", "He Acquires Porsche") is not a transaction; a
     # question word in front of a real party ("Why TGI Sold Chivita") is dropped and the record kept.
     parties_fix: dict = {}
