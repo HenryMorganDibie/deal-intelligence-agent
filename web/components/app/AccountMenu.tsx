@@ -9,6 +9,33 @@ type Session = {
   profile?: { username: string; displayName: string } | null;
 };
 
+const CACHE_KEY = "di-account-name-v1";
+
+function readCachedAccount(): Session | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    return raw ? (JSON.parse(raw) as Session) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The signed-in account, from the server; the name is kept for this browser session, the email is not. */
+async function fetchAccount(): Promise<Session> {
+  let next: Session;
+  try {
+    const r = await fetch("/api/portfolio/auth", { cache: "no-store" });
+    next = r.ok ? ((await r.json()) as Session) : { authenticated: false };
+  } catch {
+    next = { authenticated: false };
+  }
+  try {
+    if (next.authenticated) sessionStorage.setItem(CACHE_KEY, JSON.stringify({ authenticated: true, profile: next.profile ?? null }));
+    else sessionStorage.removeItem(CACHE_KEY);
+  } catch { /* storage unavailable */ }
+  return next;
+}
+
 /** The signed-in account in the app header: who you are, profile and security settings, and sign out. */
 export function AccountMenu() {
   const [session, setSession] = useState<Session | null>(null);
@@ -16,21 +43,27 @@ export function AccountMenu() {
   const [busy, setBusy] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // App routes are already protected by middleware. Fetch account details only when
-  // someone opens the menu, rather than delaying the header on every app navigation.
+  // Who is signed in, for the header's initial and name: read once per browser session and kept (display name and
+  // username only), so other pages show it at once with no request. Opening the menu reads the full account
+  // (email included) if this page has not already.
+  const [loaded, setLoaded] = useState(false);
   useEffect(() => {
-    if (!open || session !== null) return;
+    const cached = readCachedAccount();
+    if (cached) {
+      setSession(cached);
+      return;
+    }
     let live = true;
-    fetch("/api/portfolio/auth", { cache: "no-store" })
-      .then(async (r) => {
-        const next = r.ok ? ((await r.json()) as Session) : { authenticated: false };
-        if (live) setSession(next);
-      })
-      .catch(() => {
-        if (live) setSession({ authenticated: false });
-      });
+    fetchAccount().then((next) => { if (live) { setSession(next); setLoaded(true); } });
     return () => { live = false; };
-  }, [open, session]);
+  }, []);
+
+  useEffect(() => {
+    if (!open || loaded) return;
+    let live = true;
+    fetchAccount().then((next) => { if (live) { setSession(next); setLoaded(true); } });
+    return () => { live = false; };
+  }, [open, loaded]);
 
   useEffect(() => {
     if (!open) return;
@@ -43,6 +76,7 @@ export function AccountMenu() {
 
   async function signOut() {
     setBusy(true);
+    try { sessionStorage.removeItem(CACHE_KEY); } catch { /* ignore */ }
     try {
       await fetch("/api/portfolio/auth", {
         method: "POST",
@@ -55,8 +89,10 @@ export function AccountMenu() {
     }
   }
 
-  const name = session?.profile?.displayName || session?.profile?.username || (session?.user?.email || "Account").split("@")[0];
-  const initial = name.trim().charAt(0).toUpperCase() || "A";
+  const known = session?.profile?.displayName || session?.profile?.username || session?.user?.email?.split("@")[0] || "";
+  const name = known || "Account";
+  // No letter until the account is known: a placeholder initial would name the wrong person.
+  const initial = known.trim().charAt(0).toUpperCase();
   const itemClass = "block w-full rounded-lg px-3 py-2 text-left text-sm text-[color:var(--muted)] transition-colors hover:bg-white/[0.04] hover:text-[color:var(--text)]";
 
   return (
@@ -69,7 +105,7 @@ export function AccountMenu() {
         aria-label="Open account menu"
         className="flex h-8 items-center gap-2 rounded-full border hairline pl-1 pr-1 text-[0.8125rem] transition-colors hover:bg-white/[0.04] sm:pr-3"
       >
-        <span aria-hidden="true" className="grid h-6 w-6 place-items-center rounded-full bg-white/90 text-xs font-semibold text-black">{initial}</span>
+        <span aria-hidden="true" className="grid h-6 w-6 place-items-center rounded-full bg-white/90 text-xs font-semibold text-black">{initial || <PersonIcon />}</span>
         <span className="hidden max-w-[9rem] truncate sm:inline">{name}</span>
       </button>
       {open && (
@@ -102,5 +138,14 @@ export function AccountMenu() {
         </div>
       )}
     </div>
+  );
+}
+
+function PersonIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+    </svg>
   );
 }

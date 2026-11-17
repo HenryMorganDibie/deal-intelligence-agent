@@ -392,7 +392,7 @@ test("the app header has an account menu that signs out", async ({ page }) => {
       sessionReads += 1;
       await route.fulfill({ status: signedOut ? 401 : 200, contentType: "application/json", body: JSON.stringify(signedOut
         ? { authenticated: false }
-        : { authenticated: true, user: { email: "ada@example.com" }, profile: { username: "ada_l", displayName: "Ada" }, mfa: { enrolled: false } }) });
+        : { authenticated: true, user: { email: "ada@example.com" }, profile: { username: "ada_l", displayName: "Bola Ade" }, mfa: { enrolled: false } }) });
       return;
     }
     expect(route.request().postDataJSON()).toEqual({ action: "sign-out" });
@@ -401,11 +401,15 @@ test("the app header has an account menu that signs out", async ({ page }) => {
   });
   await page.goto("/deals");
   const trigger = page.getByRole("button", { name: "Open account menu" });
-  await expect(trigger).toBeVisible();
-  expect(sessionReads).toBe(0);
+  // The header names the account (its initial), read once for the browser session.
+  await expect(trigger).toContainText("B");             // the display name's initial, not a placeholder
+  await expect.poll(() => sessionReads).toBe(1);
+  await page.goto("/companies");
+  await expect(trigger).toContainText("B");
+  expect(sessionReads).toBe(1);                        // later pages use the kept name, with no request
   await trigger.click();
   await expect(page.getByRole("menu", { name: "Account" })).toContainText("@ada_l");
-  expect(sessionReads).toBe(1);
+  expect(sessionReads).toBe(2);                        // opening the menu reads the full account once
   await expect(page.getByRole("menu", { name: "Account" })).toContainText("ada@example.com");
   await expect(page.getByRole("menuitem", { name: "Password and security" })).toHaveAttribute("href", "/account/security");
   await page.keyboard.press("Escape");
