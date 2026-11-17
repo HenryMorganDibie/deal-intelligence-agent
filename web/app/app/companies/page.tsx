@@ -99,7 +99,9 @@ function newsName(name: string): string {
   return name.replace(/\b(plc|ltd|limited|holdings?|group|company|corporation|s\.?a\.?|inc)\.?$/i, "").trim();
 }
 
-const RECORD_KIND: Record<string, string> = { merger_filing: "Merger decision", dfi_investment: "Development-finance investment" };
+const RECORD_KIND: Record<string, string> = {
+  merger_filing: "Merger decision", dfi_investment: "Development-finance investment", debt_issue: "Debt raised",
+};
 
 /** Dated records from the bodies that publish them: competition authorities and development-finance institutions. */
 function OfficialRecords({ records }: { records: OfficialRecord[] }) {
@@ -112,7 +114,7 @@ function OfficialRecords({ records }: { records: OfficialRecord[] }) {
     <section>
       <h3 className="eyebrow">Official records</h3>
       <p className="mt-2 max-w-3xl text-[0.875rem] leading-relaxed text-[color:var(--muted)]">
-        {records.length} record{records.length === 1 ? "" : "s"} published by competition authorities and development-finance institutions
+        {records.length} record{records.length === 1 ? "" : "s"} published by competition authorities, development-finance institutions and debt markets
         {dfi.length ? `, including ${dfi.length} disclosed investment${dfi.length === 1 ? "" : "s"}${committed ? ` (${usd(committed)} where the amount is disclosed)` : ""}` : ""}.
         Each links to the publisher&apos;s own record.
       </p>
@@ -124,7 +126,8 @@ function OfficialRecords({ records }: { records: OfficialRecord[] }) {
               <p className="mt-0.5 text-xs text-[color:var(--dim)]">{RECORD_KIND[r.kind] ?? r.kind} · {r.authority}{r.date ? ` · ${r.date}` : ""}</p>
               {r.detail && <p className="mt-1 line-clamp-2 text-xs text-[color:var(--muted)]">{r.detail}</p>}
             </div>
-            {r.amount_usd ? <span className="kbd shrink-0 text-sm">{usd(r.amount_usd)}</span> : null}
+            {r.amount_usd ? <span className="kbd shrink-0 text-sm">{usd(r.amount_usd)}</span>
+              : r.kind === "debt_issue" && r.detail?.includes("₦") ? <span className="kbd shrink-0 text-sm">{r.detail.replace(/^.* of /, "")}</span> : null}
           </li>
         ))}
       </ul>

@@ -175,6 +175,14 @@ export const METRICS: Metric[] = [
       const backers = [...new Set(recs.map((r) => r.authority))];
       return `${recs.length} from ${backers.length === 1 ? backers[0] : `${backers.length} institutions`}${total ? `, ${usdShort(total)} disclosed` : ""}`;
     } },
+  { key: "debt", label: "Debt raised on FMDQ", group: "Private markets", kind: "text", better: null,
+    note: "Commercial paper and bonds announced by FMDQ Exchange, Nigeria's debt market.",
+    value: (e) => {
+      const recs = (e.profile.official_records ?? []).filter((r) => r.kind === "debt_issue");
+      if (!recs.length) return null;
+      const latest = recs.map((r) => r.date).filter(Boolean).sort().pop();
+      return `${recs.length} issue${recs.length === 1 ? "" : "s"}${latest ? `, latest ${latest}` : ""}`;
+    } },
   { key: "mergers", label: "Merger decisions", group: "Private markets", kind: "count", better: null,
     value: (e) => (e.profile.official_records ?? []).filter((r) => r.kind === "merger_filing").length || null },
   { key: "deals", label: "Deals on record", group: "Private markets", kind: "count", better: null,

@@ -1,8 +1,8 @@
 """
 Official records about a company, from bodies that publish them for their own reasons: competition authorities
-clearing a merger, development-finance institutions disclosing an investment, debt markets publishing an issuer's
-offering documents. Each record is dated and links to the publisher's own document, so a private company with no
-press coverage still has verified facts.
+clearing a merger, development-finance institutions disclosing an investment, a debt market announcing the
+commercial paper or bonds a company has issued. Each record is dated and links to the publisher's own document,
+so a private company with no press coverage still has verified facts.
 
 records_for() merges every source into one newest-first list:
   {"kind", "authority", "title", "date", "url", "amount_usd"?, "instrument"?, "detail"?}
@@ -32,7 +32,12 @@ def dfi_records(company: str, ticker: Optional[str] = None) -> list[dict]:
     return dfi_disclosures.records_for(company, ticker)
 
 
-SOURCES = (merger_records, dfi_records)
+def debt_records(company: str, ticker: Optional[str] = None) -> list[dict]:
+    from src.engines import debt_filings
+    return debt_filings.records_for(company, ticker)
+
+
+SOURCES = (merger_records, dfi_records, debt_records)
 
 
 def records_for(company: str, ticker: Optional[str] = None, limit: int = 20) -> list[dict]:

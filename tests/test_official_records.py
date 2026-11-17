@@ -48,3 +48,36 @@ def test_official_records_merge_sources_newest_first(monkeypatch):
     ))
     out = official_records.records_for("Acme")
     assert [r["title"] for r in out] == ["B", "A"]                 # deduplicated, newest first, failure ignored
+
+
+def test_fmdq_announcements_name_the_issuer_and_amount():
+    from src.engines import debt_filings as debt
+    cases = {
+        "Ojaja Pan Africa Limited Quotes ₦25.53 Billion Commercial Paper on FMDQ Exchange": "Ojaja Pan Africa Limited",
+        "FMDQ Exchange Admits the Babban Gona Farmers Services Nigeria Limited Commercial Paper Programme on its Platform":
+            "Babban Gona Farmers Services",
+        "FMDQ Approves Registration of The Wema Bank ₦50.00 Billion Commercial Paper Programme": "Wema Bank",
+        "FMDQ Admits N3.15 Billion LAPO MFB SPV PLC Bond to its Platform": "LAPO MFB SPV",
+        "NBET Finance Company PLC Lists Landmark ₦728.98 Billion Series 2 Fixed Rate Bonds": "NBET Finance Company PLC",
+        "Nigerian Breweries PLC Registers ₦100.00 billion Commercial Paper Programme on FMDQ": "Nigerian Breweries PLC",
+        "Lagos State Champions Sustainability with ₦244.82 Billion Green and Fixed Rate Bonds": None,
+        "SEC Approves FMDQ Bond Listing and Quotation Rules": None,
+    }
+    for title, issuer in cases.items():
+        assert debt.issuer_of(title) == issuer, title
+    assert debt.amount_ngn("Quotes ₦25.53 Billion Commercial Paper") == 25.53e9
+    assert debt.instrument_of("Lists ₦26.70 Billion Bond") == "Bond"
+
+
+def test_fmdq_issues_match_the_company_not_a_namesake():
+    from src.engines import debt_filings as debt
+    recs = debt.parse_posts([
+        {"id": 1, "date": "2026-07-28T10:00:00", "link": "https://fmdqgroup.com/a",
+         "title": {"rendered": "FMDQ Exchange Lists LAPO MFB SPV PLC ₦4.46 Billion Bond for Microfinance Sector Expansion"}},
+        {"id": 2, "date": "2020-06-05T10:00:00", "link": "https://fmdqgroup.com/b",
+         "title": {"rendered": "Dangote Cement PLC Quotes ₦100.00 Billion Commercial Paper on FMDQ Exchange"}},
+    ])
+    lapo = debt.records_for("LAPO Microfinance Bank", records=recs)
+    assert [(r["kind"], r["detail"]) for r in lapo] == [("debt_issue", "Bond of ₦4.46bn")]
+    assert debt.records_for("Dangote Industries Limited", records=recs) == []     # Dangote Cement is a different issuer
+    assert len(debt.records_for("Dangote Cement Plc", records=recs)) == 1

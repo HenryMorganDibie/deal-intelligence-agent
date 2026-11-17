@@ -72,12 +72,13 @@ jobs:
             echo "Not Monday; merger filings refresh weekly."
           fi
 
-      - name: Refresh development-finance investment disclosures (IATI via d-portal) weekly
+      - name: Refresh development-finance disclosures (IATI via d-portal) and FMDQ debt issues weekly
         if: github.event_name == 'workflow_dispatch' || github.event.schedule == '37 4 * * *'
         continue-on-error: true            # d-portal being down never blocks the daily pipeline
         run: |
           if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(date -u +%u)" = "1" ]; then
             python scripts/refresh_dfi_disclosures.py
+            python scripts/refresh_debt_filings.py
           else
             echo "Not Monday; development-finance disclosures refresh weekly."
           fi
@@ -105,6 +106,7 @@ jobs:
               'src/data/current_macro_signals.json',
               'src/data/merger_filings.json',
               'src/data/dfi_disclosures.json',
+              'src/data/debt_filings.json',
               'docs/automation/entity_match_evaluation.json',
               'docs/automation/entity_matcher.json',
               'web/data/investment_ideas.json',
