@@ -404,6 +404,61 @@ test("admin page lists accounts and who is using the app", async ({ page }) => {
   await page.screenshot({ path: "test-results/admin-accounts.png", fullPage: true });
 });
 
+test("admin can suspend, reinstate and delete an account, with a typed confirmation for deletion", async ({ page }) => {
+  const now = new Date().toISOString();
+  const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+  await page.route("**/api/data/admin/stats", (route) => route.fulfill(json({ since: "2026-10-05", totals: {}, days: [], pages: [], actions: [], app_page_activity: [] })));
+  await page.route("**/api/data/admin/feedback", (route) => route.fulfill(json({ items: [] })));
+  await page.route("**/api/data/admin/accounts", (route) => route.fulfill(json({
+    since: "2026-10-05", days: 30, totals: { accounts: 1, active_in_period: 1, returning_in_period: 0, new_in_period: 1 }, daily: [],
+    accounts: [{ email: "ada@example.com", username: "ada", display_name: "Ada", created_at: now, confirmed: true, last_sign_in_at: now,
+      last_seen_at: now, active_days: 3, providers: ["email"], two_factor: false, email_alerts: 0, subscription_status: "active", suspended: false }],
+  })));
+  const log = [];
+  await page.route("**/api/data/admin/accounts/log", (route) => route.fulfill(json(log)));
+  const sent = [];
+  await page.route("**/api/data/admin/accounts/suspend", (route) => {
+    const body = route.request().postDataJSON();
+    sent.push(body);
+    log.unshift({ at: now, action: body.suspend ? "suspended" : "reinstated", account: "a***@example.com", reason: body.reason });
+    return route.fulfill(json({ email: body.email, suspended: body.suspend, renewal: body.suspend ? "cancelled" : null, warning: null }));
+  });
+  await page.route("**/api/data/admin/accounts/delete", (route) => {
+    sent.push(route.request().postDataJSON());
+    return route.fulfill(json({ email: "ada@example.com", result: "deleted", renewal: null }));
+  });
+
+  await page.goto("/admin#accounts");
+  await page.getByPlaceholder("Admin key").fill("owner-key");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByRole("navigation", { name: "Admin sections" }).first().getByRole("button", { name: "Accounts" }).click();
+
+  await page.getByRole("button", { name: "Suspend", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByText("stops renewing")).toBeVisible();
+  await dialog.getByLabel(/Reason/).fill("scraping");
+  await dialog.getByRole("button", { name: "Suspend account" }).click();
+  await expect(page.getByText("ada@example.com is suspended. Their Paystack renewal was cancelled.")).toBeVisible();
+  await expect(page.locator("table").getByText("Suspended", { exact: true })).toBeVisible();
+  await expect(page.getByText("a***@example.com")).toBeVisible();
+  expect(sent[0]).toEqual({ key: "owner-key", email: "ada@example.com", suspend: true, reason: "scraping" });
+
+  await page.getByRole("button", { name: "Reinstate", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Reinstate account" }).click();
+  await expect(page.getByText("ada@example.com is reinstated.")).toBeVisible();
+
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  const del = page.getByRole("dialog").getByRole("button", { name: "Delete permanently" });
+  await expect(del).toBeDisabled();
+  await page.getByLabel("Type the email to confirm").fill("ada@example.com");
+  await expect(del).toBeEnabled();
+  await page.screenshot({ path: "test-results/admin-delete-dialog.png" });
+  await del.click();
+  await expect(page.getByText("ada@example.com was deleted.")).toBeVisible();
+  await expect(page.getByText("No accounts match.")).toBeVisible();
+  expect(sent[2]).toEqual({ key: "owner-key", email: "ada@example.com", confirm: "ada@example.com", reason: "" });
+});
+
 test("the app header has an account menu that signs out", async ({ page }) => {
   let signedOut = false;
   let sessionReads = 0;

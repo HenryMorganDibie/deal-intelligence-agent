@@ -1745,6 +1745,102 @@ async def admin_plan(request: Request) -> Response:
     return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
 
 
+_EMAIL_RE = re.compile(r"[^@\s]{1,64}@[^@\s]{1,255}")
+_RENEWING = ("active", "attention")
+
+
+async def _admin_body(request: Request) -> dict:
+    try:
+        body = await request.json()
+    except ValueError:
+        body = {}
+    if not isinstance(body, dict) or not _admin_key_ok(body):
+        raise HTTPException(status_code=401, detail="Wrong key")
+    return body
+
+
+async def _account_lookup(client: httpx.AsyncClient, email: str) -> dict:
+    if not _EMAIL_RE.fullmatch(email):
+        raise HTTPException(status_code=422, detail="Give the account's email address.")
+    r = await _rpc(client, "admin_account_lookup", {"p_email": email})
+    if not r.is_success:
+        if "unknown_account" in r.text:
+            raise HTTPException(status_code=404, detail="No account with that email.")
+        log.error("admin_account_lookup failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(status_code=502, detail="The account could not be read.")
+    return r.json()
+
+
+async def _stop_paid_renewal(client: httpx.AsyncClient, account: dict) -> Optional[str]:
+    """Cancel the account's Paystack renewal if one is running: 'cancelled', or None when nothing was renewing."""
+    if account.get("subscription_status") not in _RENEWING or not account.get("subscription_code"):
+        return None
+    from src import billing
+    if not billing.secret_key():
+        raise HTTPException(status_code=503, detail="Paystack is not configured, so the paid subscription cannot be cancelled.")
+    await billing.stop_renewal(client, account["subscription_code"], account.get("email_token"))
+    return "cancelled"
+
+
+@router.post("/api/admin/accounts/suspend")
+async def admin_suspend_account(request: Request) -> Response:
+    """Suspend or reinstate an account; needs DEAL_INTEL_ADMIN_KEY. Suspending ends its sessions, blocks sign-in, its
+    API keys and alerts, and cancels a running Paystack renewal so a locked-out person is not charged again."""
+    body = await _admin_body(request)
+    email, suspend = str(body.get("email") or "").strip(), body.get("suspend")
+    reason = str(body.get("reason") or "").strip()[:300]
+    if not isinstance(suspend, bool):
+        raise HTTPException(status_code=422, detail="Say whether to suspend or reinstate.")
+    async with httpx.AsyncClient(timeout=20) as client:
+        account = await _account_lookup(client, email)
+        r = await _rpc(client, "admin_set_account_suspended", {"p_email": email, "p_suspend": suspend, "p_reason": reason})
+        if not r.is_success:
+            log.error("admin_set_account_suspended failed: %s %s", r.status_code, r.text[:300])
+            raise HTTPException(status_code=502, detail="The account could not be updated.")
+        renewal, warning = None, None
+        if suspend:
+            try:
+                renewal = await _stop_paid_renewal(client, account)
+            except HTTPException as e:       # the suspension stands; the owner is told to cancel in Paystack by hand
+                warning = f"Suspended, but the Paystack renewal could not be cancelled ({e.detail}). Cancel it in Paystack."
+    out = {"email": account["email"], "suspended": suspend, "renewal": renewal, "warning": warning}
+    return Response(json.dumps(out), media_type="application/json", headers={"Cache-Control": "no-store, private"})
+
+
+@router.post("/api/admin/accounts/delete")
+async def admin_delete_account(request: Request) -> Response:
+    """Delete an account for good; needs DEAL_INTEL_ADMIN_KEY and the account's email typed again as confirmation.
+    A running Paystack renewal is cancelled first, and nothing is deleted if that fails."""
+    body = await _admin_body(request)
+    email, confirm = str(body.get("email") or "").strip(), str(body.get("confirm") or "").strip()
+    reason = str(body.get("reason") or "").strip()[:300]
+    if confirm.lower() != email.lower():
+        raise HTTPException(status_code=422, detail="Type the account's email exactly to confirm.")
+    async with httpx.AsyncClient(timeout=20) as client:
+        account = await _account_lookup(client, email)
+        try:
+            renewal = await _stop_paid_renewal(client, account)
+        except HTTPException as e:
+            raise HTTPException(status_code=502, detail=f"Nothing was deleted: the Paystack renewal could not be cancelled ({e.detail}).")
+        r = await _rpc(client, "admin_delete_account", {"p_email": email, "p_confirm": confirm, "p_reason": reason})
+        if not r.is_success:
+            log.error("admin_delete_account failed: %s %s", r.status_code, r.text[:300])
+            raise HTTPException(status_code=502, detail="The account could not be deleted.")
+    out = {"email": account["email"], "result": r.json().get("result"), "renewal": renewal}
+    return Response(json.dumps(out), media_type="application/json", headers={"Cache-Control": "no-store, private"})
+
+
+@router.post("/api/admin/accounts/log")
+async def admin_moderation_log(request: Request) -> Response:
+    """The last 50 suspensions, reinstatements and deletions (masked emails); needs DEAL_INTEL_ADMIN_KEY."""
+    await _admin_body(request)
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_moderation_log", {})
+    if not r.is_success:
+        raise HTTPException(status_code=502, detail="The log is unavailable.")
+    return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
+
+
 @router.post("/api/admin/accounts")
 async def admin_accounts(request: Request) -> Response:
     """Who has an account and who uses the app, for the owner's page; needs DEAL_INTEL_ADMIN_KEY."""

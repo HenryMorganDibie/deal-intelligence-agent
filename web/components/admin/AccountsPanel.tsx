@@ -17,7 +17,12 @@ type Account = {
   plan?: string;
   api_used?: number;
   api_keys?: number;
+  suspended?: boolean;
+  suspension_reason?: string | null;
+  subscription_status?: string | null;
 };
+type LogEntry = { at: string; action: "suspended" | "reinstated" | "deleted" | "anonymised"; account: string; reason: string };
+type Pending = { kind: "suspend" | "reinstate" | "delete"; account: Account };
 type Plan = { id: string; label: string; monthly_requests: number };
 type AccountStats = {
   since: string;
@@ -45,7 +50,9 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
   const [data, setData] = useState<AccountStats | null>(null);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "active" | "never" | "unconfirmed">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "never" | "unconfirmed" | "suspended">("all");
+  const [pending, setPending] = useState<Pending | null>(null);
+  const [log, setLog] = useState<LogEntry[] | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [planNote, setPlanNote] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -71,6 +78,40 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
     }
   }
 
+  const loadLog = () => {
+    fetch(apiUrl("/api/admin/accounts/log"), {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: adminKey }), cache: "no-store",
+    }).then(async (r) => setLog(r.ok ? ((await r.json()) as LogEntry[]) : [])).catch(() => setLog([]));
+  };
+  useEffect(() => { if (adminKey) loadLog(); }, [adminKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** Apply a suspension, reinstatement or deletion confirmed in the dialog, and update the table in place. */
+  async function moderate(p: Pending, reason: string, confirm: string): Promise<string | null> {
+    const del = p.kind === "delete";
+    const r = await fetch(apiUrl(del ? "/api/admin/accounts/delete" : "/api/admin/accounts/suspend"), {
+      method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
+      body: JSON.stringify(del ? { key: adminKey, email: p.account.email, confirm, reason }
+        : { key: adminKey, email: p.account.email, suspend: p.kind === "suspend", reason }),
+    });
+    const body = (await r.json().catch(() => ({}))) as { detail?: string; warning?: string | null; renewal?: string | null; result?: string };
+    if (!r.ok) return body.detail || (r.status === 401 ? "Wrong key" : "That did not work. Nothing was changed.");
+    const email = p.account.email;
+    setData((d) => d && {
+      ...d,
+      accounts: del ? d.accounts.filter((a) => a.email !== email)
+        : d.accounts.map((a) => (a.email === email ? { ...a, suspended: p.kind === "suspend", suspension_reason: p.kind === "suspend" ? reason : null } : a)),
+    });
+    const renewal = body.renewal === "cancelled" ? " Their Paystack renewal was cancelled." : "";
+    setPlanNote({
+      ok: !body.warning,
+      text: body.warning ?? (del ? `${email} was ${body.result === "anonymised" ? "erased (kept as an anonymous record because it owns shared portfolio data)" : "deleted"}.${renewal}`
+        : p.kind === "suspend" ? `${email} is suspended.${renewal}` : `${email} is reinstated.`),
+    });
+    setPending(null);
+    loadLog();
+    return null;
+  }
+
   useEffect(() => {
     if (!adminKey) return;
     setError("");
@@ -93,6 +134,7 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
       if (filter === "active" && a.active_days === 0) return false;
       if (filter === "never" && a.last_seen_at) return false;
       if (filter === "unconfirmed" && a.confirmed) return false;
+      if (filter === "suspended" && !a.suspended) return false;
       return !q || [a.email, a.username, a.display_name].some((v) => (v ?? "").toLowerCase().includes(q));
     });
   }, [data, query, filter]);
@@ -121,7 +163,7 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
       </div>
       <p className="mt-2 text-[0.8125rem] text-[color:var(--muted)]">
         {t.active_7d} active in the last 7 days · {t.never_used} never opened the app · {t.unconfirmed} unconfirmed email ·{" "}
-        {t.with_username} chose a username · {t.google} use Google · {t.two_factor} use two-factor sign-in · {t.paid ?? 0} on a paid plan · {t.api_users ?? 0} with API keys. An account counts
+        {t.with_username} chose a username · {t.google} use Google · {t.two_factor} use two-factor sign-in · {t.paid ?? 0} on a paid plan · {t.api_users ?? 0} with API keys{t.suspended ? ` · ${t.suspended} suspended` : ""}. An account counts
         as active on a day when it opened the app that day.
       </p>
 
@@ -152,10 +194,11 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
           <option value="active">Used the app {period}</option>
           <option value="never">Never opened the app</option>
           <option value="unconfirmed">Email not confirmed</option>
+          <option value="suspended">Suspended</option>
         </select>
       </div>
       <div className="mt-2 overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
+        <table className="w-full min-w-[880px] text-left text-sm">
           <thead className="text-[color:var(--muted)]">
             <tr>
               <th className="py-2 pr-3 font-normal">Account</th>
@@ -163,14 +206,19 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
               <th className="py-2 pr-3 font-normal">Last used</th>
               <th className="py-2 pr-3 font-normal">Active days</th>
               <th className="py-2 pr-3 font-normal">Plan</th>
-              <th className="py-2 font-normal">Details</th>
+              <th className="py-2 pr-3 font-normal">Details</th>
+              <th className="py-2 font-normal"><span className="sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody>
             {rows.map((a) => (
-              <tr key={a.email} className="border-t hairline align-top">
+              <tr key={a.email} className={`border-t hairline align-top ${a.suspended ? "bg-risk/[0.04]" : ""}`}>
                 <td className="py-2 pr-3">
-                  <div className="font-medium">{a.display_name || a.username || a.email.split("@")[0]}</div>
+                  <div className="font-medium">
+                    {a.display_name || a.username || a.email.split("@")[0]}
+                    {a.suspended && <span className="ml-2 rounded-full border border-risk/40 px-2 py-0.5 text-[0.6875rem] font-normal text-risk">Suspended</span>}
+                  </div>
+                  {a.suspended && a.suspension_reason && <div className="text-[0.75rem] text-risk">{a.suspension_reason}</div>}
                   <div className="text-[0.8125rem] text-[color:var(--muted)]">{a.username ? `@${a.username} · ` : ""}{a.email}</div>
                 </td>
                 <td className="py-2 pr-3 whitespace-nowrap">{a.created_at.slice(0, 10)}</td>
@@ -192,7 +240,7 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
                     {(a.api_used ?? 0).toLocaleString("en-US")} API calls this month{a.api_keys ? ` · ${a.api_keys} key${a.api_keys === 1 ? "" : "s"}` : ""}
                   </div>
                 </td>
-                <td className="py-2 text-[0.8125rem] text-[color:var(--muted)]">
+                <td className="py-2 pr-3 text-[0.8125rem] text-[color:var(--muted)]">
                   {[a.providers.includes("google") ? "Google" : "Email & password",
                     a.confirmed ? null : "email not confirmed",
                     a.username ? null : "no username yet",
@@ -200,10 +248,20 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
                     a.email_alerts ? `${a.email_alerts} watchlist email${a.email_alerts === 1 ? "" : "s"}` : null,
                   ].filter(Boolean).join(" · ")}
                 </td>
+                <td className="py-2 whitespace-nowrap text-right">
+                  <button type="button" onClick={() => setPending({ kind: a.suspended ? "reinstate" : "suspend", account: a })}
+                    className="rounded-md border hairline px-2 py-1 text-[0.75rem] hover:bg-white/[0.06]">
+                    {a.suspended ? "Reinstate" : "Suspend"}
+                  </button>
+                  <button type="button" onClick={() => setPending({ kind: "delete", account: a })}
+                    className="ml-1.5 rounded-md border border-risk/40 px-2 py-1 text-[0.75rem] text-risk hover:bg-risk/[0.08]">
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={6} className="py-3 text-[color:var(--muted)]">No accounts match.</td></tr>
+              <tr><td colSpan={7} className="py-3 text-[color:var(--muted)]">No accounts match.</td></tr>
             )}
           </tbody>
         </table>
@@ -212,6 +270,99 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
         Activity is recorded from this release onward, so earlier use shows as &ldquo;never&rdquo;. Email addresses are shown
         only here, to you, and are never cached.
       </p>
+
+      <h3 className="mt-8 font-semibold">Suspensions and deletions</h3>
+      {log === null ? <p className="mt-2 text-sm text-[color:var(--muted)]">Loading…</p>
+        : log.length === 0 ? <p className="mt-2 text-sm text-[color:var(--muted)]">No account has been suspended or deleted.</p> : (
+          <ul className="mt-2 space-y-1 text-sm">
+            {log.map((e, i) => (
+              <li key={i} className="flex flex-wrap gap-x-2">
+                <span className="text-[color:var(--muted)]">{e.at.slice(0, 16).replace("T", " ")}</span>
+                <span className={e.action === "reinstated" ? "text-verified" : "text-risk"}>{e.action}</span>
+                <span>{e.account}</span>
+                {e.reason && <span className="text-[color:var(--muted)]">· {e.reason}</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+      {pending && <ModerationDialog pending={pending} onCancel={() => setPending(null)} onConfirm={moderate} />}
     </section>
+  );
+}
+
+const RENEWING = ["active", "attention"];
+
+/** The confirmation step for a suspension, reinstatement or deletion: what happens, an optional reason, and for a
+ * deletion the account's email typed again. */
+function ModerationDialog({ pending, onCancel, onConfirm }: {
+  pending: Pending; onCancel: () => void; onConfirm: (p: Pending, reason: string, confirm: string) => Promise<string | null>;
+}) {
+  const { kind, account } = pending;
+  const [reason, setReason] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState("");
+  const renewing = RENEWING.includes(account.subscription_status ?? "");
+  const canGo = kind !== "delete" || confirm.trim().toLowerCase() === account.email.toLowerCase();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !busy) onCancel(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [busy, onCancel]);
+
+  async function go() {
+    setBusy(true);
+    setProblem("");
+    const err = await onConfirm(pending, reason.trim(), confirm.trim());
+    if (err) { setProblem(err); setBusy(false); }
+  }
+
+  const title = kind === "suspend" ? "Suspend this account?" : kind === "reinstate" ? "Reinstate this account?" : "Delete this account permanently?";
+  const effects = kind === "suspend" ? [
+    "They are signed out everywhere and cannot sign in (within an hour on a page already open).",
+    "Their API keys stop working and their alert emails, webhooks and election alerts pause.",
+    renewing ? "Their Paystack subscription stops renewing, so they are not charged again." : null,
+    "Nothing is deleted: reinstating restores everything except a cancelled subscription.",
+  ] : kind === "reinstate" ? [
+    "They can sign in again; their API keys and alerts resume.",
+    "A subscription cancelled at suspension stays cancelled: they subscribe again from Plan and billing.",
+  ] : [
+    "Their profile, watchlists, alerts, API keys, saved data and company submissions are erased.",
+    renewing ? "Their Paystack subscription is cancelled first; nothing is deleted if that fails." : null,
+    "If they created a shared cloud portfolio or organisation, the account is anonymised instead so that shared data keeps working.",
+    "This cannot be undone. They can sign up again later as a new account.",
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onMouseDown={(e) => { if (e.target === e.currentTarget && !busy) onCancel(); }}>
+      <div role="dialog" aria-modal="true" aria-labelledby="moderation-title" className="w-full max-w-md rounded-2xl border hairline bg-[color:var(--bg)] p-6 shadow-2xl">
+        <h3 id="moderation-title" className="text-lg font-semibold">{title}</h3>
+        <p className="mt-1 break-all text-sm text-[color:var(--muted)]">{account.email}</p>
+        <ul className="mt-4 list-disc space-y-1.5 pl-5 text-sm text-[color:var(--muted)]">
+          {effects.filter(Boolean).map((e) => <li key={e as string}>{e}</li>)}
+        </ul>
+        {kind !== "reinstate" && (
+          <label className="mt-4 block text-sm">Reason (for your log; not sent to them)
+            <input value={reason} onChange={(e) => setReason(e.target.value)} maxLength={300} placeholder="e.g. scraping, chargeback, asked to be removed"
+              className="mt-1 w-full rounded-lg border hairline bg-transparent px-3 py-2" />
+          </label>
+        )}
+        {kind === "delete" && (
+          <label className="mt-3 block text-sm">Type <span className="font-medium">{account.email}</span> to confirm
+            <input value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" spellCheck={false} aria-label="Type the email to confirm"
+              className="mt-1 w-full rounded-lg border border-risk/40 bg-transparent px-3 py-2" />
+          </label>
+        )}
+        {problem && <p role="alert" className="mt-3 text-sm text-risk">{problem}</p>}
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={onCancel} disabled={busy} className="rounded-lg border hairline px-3 py-2 text-sm">Cancel</button>
+          <button type="button" onClick={go} disabled={busy || !canGo}
+            className={`rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-50 ${kind === "reinstate" ? "bg-verified text-black" : "bg-risk text-white"}`}>
+            {busy ? "Working…" : kind === "suspend" ? "Suspend account" : kind === "reinstate" ? "Reinstate account" : "Delete permanently"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

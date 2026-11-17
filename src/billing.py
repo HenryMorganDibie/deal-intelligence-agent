@@ -98,6 +98,16 @@ async def plan_code(client: httpx.AsyncClient, plan: str, interval: str, currenc
     return created["plan_code"], price["amount_minor"], price["label"]
 
 
+async def stop_renewal(client: httpx.AsyncClient, code: str, token: Optional[str]) -> None:
+    """Cancel a subscription's renewal at Paystack (the owner suspending or deleting the account). Paystack needs the
+    subscription's email token; it is fetched when the database does not hold it. Raises on failure."""
+    if not token:
+        token = (await _paystack(client, "GET", f"/subscription/{code}")).get("email_token")
+    if not token:
+        raise HTTPException(502, "Paystack did not return the subscription's token.")
+    await _paystack(client, "POST", "/subscription/disable", {"code": code, "token": token})
+
+
 class CheckoutBody(BaseModel):
     user_id: str = Field(..., min_length=36, max_length=36)
     plan: Literal["pro", "team"]
