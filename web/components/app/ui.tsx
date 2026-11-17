@@ -153,6 +153,37 @@ export function DealRows({ deals, showWhy = false }: { deals: Deal[]; showWhy?: 
 }
 
 
+/** Investment opportunities in the same table layout as deals: what is sought, by whom, where, and its sources. */
+export function OpportunityRows({ items }: { items: Deal[] }) {
+  return (
+    <Table head={["Reported", "Status", "Opportunity", "Seeking party", "Amount sought", "Country", "Sector", "Sources"]}>
+      {items.map((o) => (
+        <tr key={o.id}>
+          <Td className="whitespace-nowrap kbd text-[0.75rem] text-[color:var(--muted)]">{o.announced ?? ""}</Td>
+          <Td className="whitespace-nowrap">{o.opportunity_status ?? "Under discussion"}</Td>
+          <Td>
+            {o.opportunity_title ?? o.headline}
+            {o.prospective_investors?.length
+              ? <span className="mt-0.5 block text-[0.75rem] text-[color:var(--dim)]">Prospective investor: {o.prospective_investors.join(", ")}</span>
+              : null}
+          </Td>
+          <Td>{o.soliciting_party ?? ""}</Td>
+          <Td className="whitespace-nowrap">{o.amount_sought_usd ? usd(o.amount_sought_usd) : "Not stated"}</Td>
+          <Td>{o.countries?.length ? o.countries.join(", ") : (o.country ?? "Pan-African")}</Td>
+          <Td className="whitespace-nowrap">{o.sector ? words(o.sector) : ""}</Td>
+          <Td>
+            <span className="flex flex-wrap gap-x-2 gap-y-0.5 text-[0.75rem]">
+              {(o.sources ?? []).filter((s) => s.url).slice(0, 3).map((s, i) => (
+                <a key={i} href={s.url!} target="_blank" rel="noreferrer" className="text-verified hover:underline">{s.publisher ?? "Source"} ↗</a>
+              ))}
+            </span>
+          </Td>
+        </tr>
+      ))}
+    </Table>
+  );
+}
+
 export function Pagination({
   total,
   offset,

@@ -2373,6 +2373,26 @@ def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
                 absorbed.add(drop["id"])
 
 
+async def _collect_opportunities(items: list[dict], existing: dict[str, dict], merged: dict[str, dict]) -> dict[str, dict]:
+    """Investment opportunities from their own searches and from this run's headlines, combined with stored ones.
+    A headline the deal extractor also stored as a new transaction is dropped from the deals, so it is never shown
+    twice. Never fails the ingestion: a failed search only means fewer opportunities this run."""
+    from src.engines import opportunities as opp_mod
+    import asyncio
+    try:
+        searched = await asyncio.wait_for(opp_mod.collect("when:7d"), timeout=90)
+    except Exception as e:                                # noqa: BLE001
+        log.warning("opportunity searches failed: %s", e)
+        searched = []
+    records = opp_mod.merge_into(opp_mod.extract_all([*items, *searched]), existing.values())
+    titles = {r["headline"] for r in records}
+    for key in [k for k, d in merged.items() if k not in existing and d.get("headline") in titles
+                and d.get("record_type") != "investment_opportunity"]:
+        del merged[key]
+    log.info("opportunities: %d searched items, %d records written", len(searched), len(records))
+    return {r["id"]: r for r in records}
+
+
 @router.get("/api/cron/ingest")
 async def cron_ingest(
     request: Request,
@@ -2421,6 +2441,8 @@ async def cron_ingest(
     merged = deals_mod.merge_all(new_deals, into={k: existing[k] for k in {d["id"] for d in new_deals} if k in existing})
     reclassified = _reclassify_stored(existing, merged)
     merged.update(reclassified)
+    if not month:
+        merged.update(await _collect_opportunities(items, existing, merged))
     # Each publisher's wording of a story is one event: later reports point at the first.
     from src.engines import event_dedup
     stored_events = {e["id"]: e for e in await run_in_threadpool(_load, "events")}

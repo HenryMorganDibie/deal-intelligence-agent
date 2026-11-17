@@ -111,6 +111,7 @@ export type Deal = {
   opportunity_title?: string;
   opportunity_status?: string;
   soliciting_party?: string;
+  amount_sought_usd?: number | null;
   prospective_investors?: string[];
   sectors?: string[];
   commitment_confirmed?: boolean;

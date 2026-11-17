@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { Container } from "../../../components/primitives";
-import { DealRows, ErrorNote, Field, Loading, PageHeader, Pagination, Stat, usd, words } from "../../../components/app/ui";
+import { DealRows, ErrorNote, Field, Loading, OpportunityRows, PageHeader, Pagination, Stat, usd, words } from "../../../components/app/ui";
 import { ApiError } from "../../../lib/api";
 import { trackProductAction } from "../../../lib/tracking";
 import { DEAL_TYPES, SECTORS, get, type Deal } from "../../../lib/market";
@@ -158,15 +158,10 @@ export default function DealsPage() {
           </div>
           <div className="mt-6">
             {rows.length ? <>{view === "deals" ? <DealRows deals={rows} /> :
-              <div className="divide-y divide-[color:var(--line)] border-y hairline">{rows.map((item) => <article key={item.id} className="py-5">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-[color:var(--muted)]">
-                  <span className="rounded-full border hairline px-2 py-1">Proposed investment</span>
-                  <span>{item.opportunity_status ?? "Under discussion"}</span><span>{item.country ?? "Pan-African"}</span><span>{item.announced ?? ""}</span>
-                </div>
-                <h2 className="mt-2 font-medium">{item.opportunity_title ?? item.headline}</h2>
-                <p className="mt-1 text-sm text-[color:var(--muted)]">{item.soliciting_party ? `Soliciting party: ${item.soliciting_party}. ` : ""}{item.prospective_investors?.length ? `Prospective investor: ${item.prospective_investors.join(", ")}. ` : ""}No completed investment or committed amount confirmed.</p>
-                <div className="mt-2 flex flex-wrap gap-3 text-xs">{(item.sources ?? []).map((source, i) => source.url ? <a key={i} href={source.url} target="_blank" rel="noreferrer" className="text-verified hover:underline">{source.publisher ?? "Source"} ↗</a> : null)}</div>
-              </article>)}</div>}
+              <>
+                <OpportunityRows items={rows} />
+                <p className="mt-2 text-xs text-[color:var(--dim)]">Proposals reported in the news: no completed investment or committed amount is confirmed. They never count in deal totals.</p>
+              </>}
               <Pagination total={totalMatching} offset={offset} limit={limit} onPageChange={(next) => load(filters, next, limit)} onPageSizeChange={(next) => load(filters, 0, next)} /></> : <p className="py-6 text-sm text-[color:var(--muted)]">No {view === "deals" ? "deals" : "investment opportunities"} match these filters.</p>}
           </div>
         </>
