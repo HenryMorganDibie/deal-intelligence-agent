@@ -33,6 +33,9 @@ REQUEST_INTERVAL_SECONDS = 12.5
 
 # Figures kept from an earlier refresh are dropped once they are this old, rather than shown indefinitely.
 MAX_RETAINED_DAYS = 30
+# The plan allows 1,000 requests a month. The figures are monthly or quarterly, so each country is asked at most once
+# a week (54 countries: about 230 requests a month) instead of on every run (two a day: about 3,200).
+REFRESH_EVERY_DAYS = 7
 
 
 def _age_days(stamp: str) -> float:
@@ -58,18 +61,37 @@ def main() -> int:
     countries: dict[str, dict] = {}
     failures = 0
     success_count = 0
+    skipped = 0
     headers = {"Authorization": f"Bearer {api_key}", "Accept": "application/json"}
     with httpx.Client(timeout=20, follow_redirects=True, headers=headers) as client:
-        for index, country in enumerate(COUNTRIES):
-            if index:
+        requested = 0
+        quota_hit = False
+        for country in COUNTRIES:
+            code = country.iso2.upper()
+            previous = old_countries.get(code)
+            # Entries from before fetch times were recorded count as fetched when that snapshot was written.
+            fetched = (previous or {}).get("fetched_at") or old_snapshot.get("generated_at") or ""
+            if isinstance(previous, dict) and not previous.get("retained") \
+                    and fetched and _age_days(fetched) < REFRESH_EVERY_DAYS:
+                countries[code] = {**previous, "fetched_at": fetched}     # asked this week: not asked again
+                skipped += 1
+                continue
+            if requested and not quota_hit:
                 time.sleep(REQUEST_INTERVAL_SECONDS)
             try:
+                if quota_hit:
+                    raise httpx.HTTPError("monthly request quota reached earlier in this run")
+                requested += 1
                 response = client.get(API_URL.format(code=country.iso2.lower()))
+                if response.status_code == 429:
+                    quota_hit = True
+                    log.warning("Africa API quota reached; keeping earlier figures for the remaining countries")
                 response.raise_for_status()
                 payload = response.json()
                 result = country_risk._normalize_current_macro_payload(country, payload)
                 result["country_code"] = country.iso2.upper()
                 result["country_name"] = country.name
+                result["fetched_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
                 countries[country.iso2.upper()] = result
                 success_count += 1
                 log.info("%s: %s (%d higher-frequency observations)", country.iso2, result["status"],
@@ -79,7 +101,8 @@ def main() -> int:
                 # Keep the last successful country's snapshot if one exists. Never
                 # replace good published data with a transient provider failure.
                 previous = old_countries.get(country.iso2.upper())
-                since = (previous or {}).get("retained_since") or (previous or {}).get("generated_at")
+                since = (previous or {}).get("retained_since") or (previous or {}).get("fetched_at") \
+                    or (previous or {}).get("generated_at")
                 if isinstance(previous, dict) and previous.get("observations") and since \
                         and _age_days(since) <= MAX_RETAINED_DAYS:
                     # Marked so the page can say these figures are from an earlier refresh.
@@ -98,7 +121,7 @@ def main() -> int:
                 log.warning("%s refresh failed (%s); retained previous data where available",
                             country.iso2, type(exc).__name__)
 
-    if success_count == 0:
+    if success_count == 0 and skipped == 0:
         raise RuntimeError("No country signal requests succeeded; existing snapshot was left unchanged.")
 
     snapshot = {
@@ -107,6 +130,7 @@ def main() -> int:
         "source_url": "https://africa-api.com/docs/signals",
         "countries_requested": len(COUNTRIES),
         "countries_refreshed": success_count,
+        "countries_kept_from_this_week": skipped,
         "countries_failed": failures,
         "countries": countries,
     }

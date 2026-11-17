@@ -46,7 +46,7 @@ BOZ_PAGE = "https://www.boz.zm/markets-securities/treasury-bills"
 UMOA_LIST = "https://www.umoatitres.org/fr/emissions/"
 UMOA_COUNTRIES = {"Bénin": "BJ", "Burkina": "BF", "Burkina Faso": "BF", "Côte d’Ivoire": "CI", "Côte d'Ivoire": "CI",
                   "Guinée-Bissau": "GW", "Guinée Bissau": "GW", "Mali": "ML", "Niger": "NE", "Sénégal": "SN", "Togo": "TG"}
-COUNTRY_NAMES = {"UG": "Uganda", "CM": "Cameroon", "CG": "Republic of the Congo", "GA": "Gabon", "TD": "Chad", "CF": "Central African Republic", "GQ": "Equatorial Guinea", "BW": "Botswana", "MW": "Malawi", "NA": "Namibia", "NG": "Nigeria", "KE": "Kenya", "ZA": "South Africa", "GH": "Ghana", "MA": "Morocco", "GM": "Gambia",
+COUNTRY_NAMES = {"TN": "Tunisia", "UG": "Uganda", "CM": "Cameroon", "CG": "Republic of the Congo", "GA": "Gabon", "TD": "Chad", "CF": "Central African Republic", "GQ": "Equatorial Guinea", "BW": "Botswana", "MW": "Malawi", "NA": "Namibia", "NG": "Nigeria", "KE": "Kenya", "ZA": "South Africa", "GH": "Ghana", "MA": "Morocco", "GM": "Gambia",
                  "SC": "Seychelles", "TZ": "Tanzania", "ZM": "Zambia", "BJ": "Benin", "BF": "Burkina Faso",
                  "CI": "Côte d'Ivoire", "GW": "Guinea-Bissau", "ML": "Mali", "NE": "Niger", "SN": "Senegal", "TG": "Togo"}
 _UA = {"User-Agent": "Mozilla/5.0"}
@@ -56,6 +56,12 @@ BOG_HOME = "https://www.bog.gov.gh/"
 BOB_HOME = "https://www.bankofbotswana.bw/"
 RBM_HOME = "https://www.rbm.mw/"
 BON_HOME = "https://www.bon.com.na/"
+BCEAO_HOME = "https://www.bceao.int/"
+BEAC_HOME = "https://www.beac.int/"
+BAM_HOME = "https://www.bkam.ma/"
+BCT_HOME = "https://www.bct.gov.tn/bct/siteprod/index.jsp"
+WAEMU = ("BJ", "BF", "CI", "GW", "ML", "NE", "SN", "TG")      # one policy rate, set by the BCEAO
+CEMAC = ("CM", "CF", "CG", "GA", "GQ", "TD")                  # one policy rate, set by the BEAC
 CBK_BONDS = "https://www.centralbank.go.ke/bills-bonds/treasury-bonds/"
 CBK_DEPOSITS = "https://www.centralbank.go.ke/rates/commercial-banks-weighted-average-rates/"
 BAM_DEPOSITS = "https://www.bkam.ma/Marches/Taux-d-interet/Taux-des-depots-a-terme"
@@ -1046,6 +1052,63 @@ def parse_bon_repo(page: str) -> Optional[dict]:
     return _rate("NA", _num(m.group(1)), when, "decision", "Bank of Namibia", BON_HOME)
 
 
+def _fr_date(day: str, month: str, year: str) -> Optional[str]:
+    num = _FR_MONTH_NAMES.get(month.lower())
+    try:
+        return date(int(year), num, int(day)).isoformat() if num else None
+    except ValueError:
+        return None
+
+
+def parse_bceao_policy(page: str) -> list[dict]:
+    """WAEMU's eight states: the BCEAO home page's minimum bid rate (its main policy rate) and the date it took
+    effect ("Taux minimum de soumission : 3,00 % ... Effectifs depuis le 16 mars 2026")."""
+    m = re.search(r"Taux minimum de soumission\s*:\s*([\d,.]+)\s*%.{0,120}?Effectifs depuis le (\d{1,2})\s+(\w+)\s+(\d{4})",
+                  _page_text(page))
+    if not m:
+        return []
+    when = _fr_date(m.group(2), m.group(3), m.group(4))
+    rate = _num(m.group(1).replace(",", "."))
+    rows = [_rate(c, rate, when[:7] if when else None, "effective", "BCEAO", BCEAO_HOME) for c in WAEMU]
+    return [r for r in rows if r]
+
+
+def parse_beac_policy(page: str) -> list[dict]:
+    """CEMAC's six states: the BEAC home page's tender rate (TIAO, its policy rate), dated by the latest Monetary
+    Policy Committee decision setting its rates ("Décision N°01/CPM/2026 du 29 juin 2026 portant fixation des taux
+    directeurs")."""
+    text = _page_text(page)
+    m = re.search(r"Taux d'int[ée]r[êe]t des appels d'offres\s*([\d.,]+)\s*%", text)
+    if not m:
+        return []
+    decisions = [_fr_date(d, mo, y) for d, mo, y in
+                 re.findall(r"D[ée]cision N°\s*\d+/CPM/\d{4} du (\d{1,2}) (\w+) (\d{4}) portant fixation des taux", text)]
+    when = max((d for d in decisions if d), default=None)
+    rate = _num(m.group(1).replace(",", "."))
+    rows = [_rate(c, rate, when, "decision" if when else "confirmed", "BEAC", BEAC_HOME) for c in CEMAC]
+    return [r for r in rows if r]
+
+
+def parse_bam_policy(page: str) -> Optional[dict]:
+    """Morocco: the latest point of the policy-rate series Bank Al-Maghrib's home page charts."""
+    m = re.search(r"policy_rate_json_data\s*=\s*eval\('(\[.*?\])'\)", page or "", re.S)
+    points = re.findall(r"\{x:(\d+),y:([\d.]+)\}", m.group(1)) if m else []
+    if not points:
+        return None
+    stamp, value = max(points, key=lambda p: int(p[0]))
+    when = datetime.fromtimestamp(int(stamp) / 1000 + 12 * 3600, tz=timezone.utc).date().isoformat()
+    return _rate("MA", _num(value), when, "published", "Bank Al-Maghrib", BAM_HOME)
+
+
+def parse_bct_policy(page: str) -> Optional[dict]:
+    """Tunisia: 'Taux d'intérêt directeur au 16/11/2026: 7,00000 %' on the Central Bank of Tunisia's home page."""
+    m = re.search(r"Taux d'int[ée]r[êe]t directeur au (\d{2})/(\d{2})/(\d{4})\s*:\s*([\d,.]+)\s*%", _page_text(page))
+    if not m:
+        return None
+    return _rate("TN", _num(m.group(4).replace(",", ".")), f"{m.group(3)}-{m.group(2)}-{m.group(1)}", "published",
+                 "Central Bank of Tunisia", BCT_HOME)
+
+
 def build_policy_rates(client: httpx.Client, now: Optional[datetime] = None) -> dict:
     """Policy rates read from each central bank that publishes one in a readable form."""
     from src.engines import markets
@@ -1060,8 +1123,13 @@ def build_policy_rates(client: httpx.Client, now: Optional[datetime] = None) -> 
         _safe("bob-mopr", lambda: parse_bob_mopr(get(BOB_HOME).text)),
         _safe("rbm-policy", lambda: parse_rbm_policy(get(RBM_HOME).text)),
         _safe("bon-repo", lambda: parse_bon_repo(get(BON_HOME).text)),
+        _safe("bceao-policy", lambda: parse_bceao_policy(get(BCEAO_HOME).text)),
+        _safe("beac-policy", lambda: parse_beac_policy(get(BEAC_HOME).text)),
+        _safe("bam-policy", lambda: parse_bam_policy(get(BAM_HOME).text)),
+        _safe("bct-policy", lambda: parse_bct_policy(get(BCT_HOME).text)),
     ]
-    return {"captured_at": now.isoformat(), "rows": [r for r in found if r]}
+    rows = [r for f in found for r in (f if isinstance(f, list) else [f]) if r]
+    return {"captured_at": now.isoformat(), "rows": rows}
 
 
 def policy_rates(signals: dict, confirmed: Optional[dict] = None) -> list[dict]:

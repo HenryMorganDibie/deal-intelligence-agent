@@ -401,3 +401,76 @@ def test_instruments_cron_requires_authorisation():
 
     import api.market_snapshot as paris
     assert TestClient(paris.app).get("/api/cron/market-instruments").status_code == 401
+
+
+def test_union_and_north_african_policy_rates_from_their_central_banks():
+    bceao = ("<p>Taux minimum de soumission : 3,00 %</p> <p>Taux du guichet de prêt marginal: 5,00 %</p> "
+             "<p>Effectifs depuis le 16 mars 2026</p>")
+    rows = instruments.parse_bceao_policy(bceao)
+    assert sorted(r["country"] for r in rows) == sorted(instruments.WAEMU)
+    assert {(r["rate"], r["date"], r["date_kind"], r["source"]) for r in rows} == {(3.0, "2026-03", "effective", "BCEAO")}
+
+    beac = ("<li>Décision N°01/CPM/2026 du 29 juin 2026 portant fixation des taux directeurs de la BEAC</li>"
+            "<li>Décision N°02/CPM/2025 du 15 décembre 2025 portant fixation des taux directeurs de la BEAC</li>"
+            "<div>Taux d'intérêt des appels d'offres <b>4.50 %</b></div><div>Taux de facilité de prêt marginal 5.75 %</div>")
+    rows = instruments.parse_beac_policy(beac)
+    assert len(rows) == 6 and rows[0]["rate"] == 4.5
+    assert rows[0]["date"] == "2026-06-29" and rows[0]["date_kind"] == "decision"   # the latest decision
+
+    bam = "var policy_rate_json_data = eval('[{x:1794783600000,y:2.250},{x:1794870000000,y:2.250}]');"
+    ma = instruments.parse_bam_policy(bam)
+    assert (ma["country"], ma["rate"], ma["date"], ma["confirmed_by"]) == ("MA", 2.25, "2026-11-17", "central bank")
+
+    bct = "<p>Taux d'intérêt directeur au 16/11/2026: 7,00000 %</p><p>Taux moyen du marché monétaire (TMM)</p>"
+    tn = instruments.parse_bct_policy(bct)
+    assert (tn["country"], tn["country_name"], tn["rate"], tn["date"]) == ("TN", "Tunisia", 7.0, "2026-11-16")
+
+    assert instruments.parse_bceao_policy("<p>nothing here</p>") == []
+    assert instruments.parse_bct_policy("") is None
+
+
+def test_a_union_rate_counts_as_confirmed_for_every_member():
+    confirmed = {"rows": instruments.parse_bceao_policy(
+        "Taux minimum de soumission : 3,00 % ... Effectifs depuis le 16 mars 2026")}
+    signals = {"countries": {"SN": {"country_name": "Senegal", "observations": [
+        {"metric_key": "policy_rate_pct", "value": 3.0, "as_of_period": "2026-03-16"}]}}}
+    sn = next(r for r in instruments.policy_rates(signals, confirmed) if r["country"] == "SN")
+    assert sn["confirmed_by"] == "central bank" and sn["source"] == "BCEAO" and "feed_disagreed" not in sn
+
+
+def test_africa_api_is_asked_about_each_country_at_most_weekly(tmp_path, monkeypatch):
+    import json
+    import sys
+    from datetime import datetime, timedelta, timezone
+
+    import httpx
+    sys.path.insert(0, "scripts")
+    import refresh_current_macro_signals as r
+
+    now = datetime.now(timezone.utc)
+    stamp = lambda days: (now - timedelta(days=days)).isoformat().replace("+00:00", "Z")   # noqa: E731
+    countries = {c.iso2.upper(): {"observations": [{"metric_key": "x", "value": 1}], "fetched_at": stamp(2)}
+                 for c in r.COUNTRIES}
+    stale = r.COUNTRIES[0].iso2.upper()
+    countries[stale]["fetched_at"] = stamp(9)
+    out = tmp_path / "signals.json"
+    out.write_text(json.dumps({"generated_at": stamp(2), "countries": countries}))
+    monkeypatch.setattr(r, "OUTPUT", out)
+    monkeypatch.setattr(r, "REQUEST_INTERVAL_SECONDS", 0)
+    monkeypatch.setenv("AFRICA_API_KEY", "test")
+    calls = []
+
+    class Client:
+        def __init__(self, *a, **k): pass
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+        def get(self, url):
+            calls.append(url)
+            return httpx.Response(429, request=httpx.Request("GET", url))      # the month's quota is spent
+
+    monkeypatch.setattr(r.httpx, "Client", Client)
+    assert r.main() == 0
+    assert len(calls) == 1                                  # only the country last asked nine days ago
+    saved = json.loads(out.read_text())
+    assert saved["countries_kept_from_this_week"] == len(r.COUNTRIES) - 1
+    assert saved["countries"][stale]["observations"]       # quota refusal keeps its earlier figures
