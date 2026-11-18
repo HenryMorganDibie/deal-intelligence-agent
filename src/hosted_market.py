@@ -64,9 +64,11 @@ from src.engines import research as research_mod, watch, official_sources, email
 log = logging.getLogger("deal_intel.market")
 router = APIRouter()
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
-SUPABASE_KEY = os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")
-API_SECRET = os.environ.get("DEAL_INTEL_API_SECRET", "")
+# Stored secrets sometimes carry a trailing newline or space (pasted into GitHub or Vercel); the database compares the
+# secret exactly, so every reader trims them here rather than each script on its own.
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
+SUPABASE_KEY = os.environ.get("SUPABASE_PUBLISHABLE_KEY", "").strip()
+API_SECRET = os.environ.get("DEAL_INTEL_API_SECRET", "").strip()
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 # Briefs, research answers and reports each run for up to a few minutes and call the language model, so their
 # daily caps keep the hosting within its free allowance even if someone scripts requests: 15 per visitor and
