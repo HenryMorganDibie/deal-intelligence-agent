@@ -1,0 +1,46 @@
+name: Weekly investor countries and private company accounts
+
+# Two weekly readers with their own time budget, kept out of the daily pipeline's 30 minutes:
+# - investor home countries from source articles (scripts/refresh_investor_homes.py);
+# - UK Companies House accounts for private companies (scripts/refresh_uk_accounts.py).
+# Each step is independent: one failing never stops the other.
+on:
+  schedule:
+    - cron: "23 6 * * 1"             # Mondays, after the daily pipeline
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-company-financials
+  cancel-in-progress: false
+
+env:
+  SUPABASE_URL: https://ygvpormskihofvgntldo.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_oEqYxYLm60MdGk5JA-QfgQ_6z7uSozn
+  DEAL_INTEL_APP_URL: https://deal-intelligence.app
+  DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
+  COMPANIES_HOUSE_API_KEY: ${{ secrets.COMPANIES_HOUSE_API_KEY }}
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - name: Install the API's dependencies
+        run: pip install --disable-pip-version-check -r requirements-dev.txt
+      - name: UK Companies House accounts for private companies
+        continue-on-error: true
+        run: python scripts/refresh_uk_accounts.py
+      - name: Investor home countries from source articles
+        continue-on-error: true
+        run: python scripts/refresh_investor_homes.py
