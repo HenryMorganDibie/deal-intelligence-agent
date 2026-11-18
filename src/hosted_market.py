@@ -480,7 +480,7 @@ def _country_or_404(code: str) -> ac.Country:
     value = (code or "").strip()
     c = ac.get(value) or (next(iter(ac.countries_in_text(value)), None) if len(value) > 3 else None)
     if c is None:
-        raise HTTPException(404, "Unknown country. Use a name such as Nigeria or an ISO code such as NG.")
+        raise HTTPException(404, "Deal Intelligence covers the 54 African countries. Use one of them, by name (Nigeria) or code (NG).")
     return c
 
 

@@ -6,9 +6,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ApiError } from "../../../../lib/api";
+import { AFRICAN_COUNTRIES } from "../../../../lib/countries";
 import { DEAL_TYPES, SECTORS, post } from "../../../../lib/market";
 
 type Created = { id: string; title: string; transaction_count: number; period_start: string; period_end: string };
+/** A country from a link's ?country= (an ISO code or a name) as its ISO code, or "" for all of Africa. */
+function countryCode(value: string | null): string {
+  const v = (value || "").trim().toLowerCase();
+  const hit = AFRICAN_COUNTRIES.find(([code, name]) => code.toLowerCase() === v || name.toLowerCase() === v);
+  return hit ? hit[0] : "";
+}
 const label = (value: string) => value.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 
 export default function NewMarketBriefPage() {
@@ -26,7 +33,7 @@ export default function NewMarketBriefPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has("lookback_days")) setLookback(params.get("lookback_days") || "30");
-    if (params.has("country")) setCountry(params.get("country") || "");
+    if (params.has("country")) setCountry(countryCode(params.get("country")));
     if (params.has("sector")) setSector(params.get("sector") || "");
     if (params.has("deal_type")) setDealType(params.get("deal_type") || "");
     if (params.has("audience")) setAudience(params.get("audience") || "Investment banking analyst");
@@ -42,7 +49,7 @@ export default function NewMarketBriefPage() {
     try {
       const result = await post<Created>("/api/market-briefs", {
         lookback_days: Number(lookback),
-        ...(country.trim() ? { country: country.trim().toUpperCase() } : {}),
+        ...(country ? { country } : {}),
         ...(sector ? { sector } : {}),
         ...(dealType ? { deal_type: dealType } : {}),
         audience,
@@ -60,7 +67,7 @@ export default function NewMarketBriefPage() {
     <Container className="max-w-3xl py-10 lg:py-14">
       <Link href="/briefs" className="text-sm text-[color:var(--muted)] hover:text-[color:var(--text)]">← All briefs</Link>
       <p className="eyebrow mt-8">New market brief</p>
-      <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">{parentBriefId ? "Update market intelligence" : "Deals &amp; M&amp;A intelligence"}</h1>
+      <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">{parentBriefId ? "Update market intelligence" : "Deals & M&A intelligence"}</h1>
       {parentBriefId && <p className="mt-2 text-sm text-[color:var(--muted)]">A new version will be saved and linked to the previous brief. The original report will remain unchanged.</p>}
       <p className="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
         Build an analyst-ready brief from Deal Intelligence records plus live web research. The LLM synthesizes numbered evidence,
@@ -76,8 +83,11 @@ export default function NewMarketBriefPage() {
         <form onSubmit={submit} className="panel mt-8 space-y-5 p-5 sm:p-6">
           <label className="block">
             <span className="mb-1.5 block text-sm text-[color:var(--muted)]">Geography</span>
-            <input value={country} onChange={(e) => setCountry(e.target.value.toUpperCase())} maxLength={3} placeholder="Africa (all countries) · or ISO code, e.g. NG" className="field" />
-            <span className="mt-1.5 block text-xs text-[color:var(--dim)]">Leave blank for Africa-wide coverage. Enter a country ISO code to narrow the brief.</span>
+            <select value={country} onChange={(e) => setCountry(e.target.value)} className="field" aria-label="Geography">
+              <option value="">All of Africa</option>
+              {AFRICAN_COUNTRIES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
+            </select>
+            <span className="mt-1.5 block text-xs text-[color:var(--dim)]">All 54 African countries are covered. Pick one to narrow the brief, or keep All of Africa.</span>
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
