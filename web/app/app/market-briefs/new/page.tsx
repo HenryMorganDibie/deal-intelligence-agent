@@ -70,8 +70,9 @@ export default function NewMarketBriefPage() {
       <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">{parentBriefId ? "Update market intelligence" : "Deals & M&A intelligence"}</h1>
       {parentBriefId && <p className="mt-2 text-sm text-[color:var(--muted)]">A new version will be saved and linked to the previous brief. The original report will remain unchanged.</p>}
       <p className="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
-        Build an analyst-ready brief from Deal Intelligence records plus live web research. The LLM synthesizes numbered evidence,
-        links sources, and separates reported facts from interpretation. Company analysis remains available separately.
+        Get a sourced report on deal activity in any African country or sector, ready for a pitch, an investment committee or a
+        client newsletter, in minutes. It combines our deal records with live web research, cites every fact, and keeps what was
+        reported apart from what it means. For a single company, use a company brief.
       </p>
 
       {loading ? (

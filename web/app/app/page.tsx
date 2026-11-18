@@ -262,7 +262,8 @@ export default function Dashboard() {
         <p className="eyebrow">Market intelligence</p>
         <h2 id="market-intelligence-title" className="h2 mt-3 text-xl">Deals &amp; M&amp;A across Africa</h2>
         <p className="mt-3 text-sm leading-relaxed text-[color:var(--muted)]">
-          Create an analyst-ready market report with dated transactions, disclosed-value metrics, comparable activity and linked source evidence.
+          A sourced report on deal activity in any African country or sector, ready for a pitch, an investment committee or a client
+          newsletter, in minutes: key deals, values, comparables and who is investing, each fact linked to its source.
         </p>
         <Link href="/market-briefs/new" className="btn btn-primary mt-4 inline-flex">
           Create market brief
