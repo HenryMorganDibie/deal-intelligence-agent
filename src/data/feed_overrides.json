@@ -1,4 +1,14 @@
 {
+  "Agence Ecofin": {
+    "url": "https://agenceecofin.com/component/obrss/agence-ecofin-full",
+    "since": "2026-11-18",
+    "reason": "preferred feed: HTTPStatusError 429"
+  },
+  "Launch Base Africa": {
+    "url": "https://news.google.com/rss/search?q=site%3Alaunchbaseafrica.com%20when%3A2d&hl=en-GB&gl=GB&ceid=GB:en",
+    "since": "2026-11-18",
+    "reason": "preferred feed: ConnectError"
+  },
   "The Big Deal": {
     "url": "https://news.google.com/rss/search?q=site%3Athebigdeal.substack.com%20when%3A2d&hl=en-GB&gl=GB&ceid=GB:en",
     "since": "2026-11-14",
