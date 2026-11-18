@@ -29,14 +29,16 @@ def test_report_search_keeps_own_domain_or_exchange_full_reports(monkeypatch):
     assert cl.search_report("Acme Plc") is None
 
 
-def test_robots_are_honoured_under_the_readers_own_name():
+def test_robots_txt_is_not_consulted_and_the_reader_keeps_its_own_name():
+    requested = []
+
     def handler(request):
-        if request.url.path == "/robots.txt":
-            return httpx.Response(200, text="User-agent: DealIntelligence\nDisallow: /private\n")
+        requested.append(request.url.path)
         return httpx.Response(200, text="<html><body>ok</body></html>", headers={"content-type": "text/html"})
     client = httpx.Client(transport=httpx.MockTransport(handler))
     robots = cl._Robots(client)
-    assert robots.allowed("https://acme.com/about") and not robots.allowed("https://acme.com/private/x")
+    assert robots.allowed("https://acme.com/about") and robots.allowed("https://acme.com/private/x")
+    assert "/robots.txt" not in requested
     assert "DealIntelligence" in cl.USER_AGENT and "deal-intelligence.app" in cl.USER_AGENT
 
 

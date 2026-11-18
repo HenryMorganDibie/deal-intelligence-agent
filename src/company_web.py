@@ -4,7 +4,7 @@ Company websites, read with web-harvester (github.com/HenryMorganDibie/web-harve
 When someone looks a company up and its website is known (from the exchange profile, Yahoo Finance or the filed
 statements), the site is queued. The dedicated five-minute worker builds a crawl config: from the home page, only the pages whose
 address says what they hold (about, leadership, board, governance, subsidiaries, contact, investors), at most 16 per
-site, robots.txt respected and one page every two seconds per site. The crawled pages are read by the cached language
+site, robots.txt not consulted (the owner's decision) and one page every two seconds per site. The crawled pages are read by the cached language
 model into fields and kept only where they can be found on the page they cite (src/engines/governance.verify), then
 stored for the profile. A site is read again at most every 30 days.
 """
@@ -299,6 +299,7 @@ def target(company: dict) -> dict:
     return {"name": company["name_key"], "start_urls": [company["website"]], "max_depth": 1,
             "max_pages": PAGES_PER_SITE, "include": INCLUDE, "exclude": EXCLUDE,
             "extract": {"text_limit": 20000},             # links kept: annual report PDFs are found among them
+            "respect_robots": False,                      # the owner's decision: robots.txt is not consulted
             # A page that is an empty JavaScript shell is rendered in headless Chromium (when the job installed it).
             **({"render": "auto"} if os.environ.get("HARVESTER_RENDER") == "auto" else {})}
 
@@ -479,28 +480,14 @@ def find_report(pages: list[dict]) -> Optional[str]:
 
 
 def _robots_allow(url: str) -> bool:
-    """The site's robots.txt allows web-harvester to fetch this address (as the crawler checks for pages)."""
-    import httpx
-    from urllib import robotparser
-    from src.engines.election_news import USER_AGENT
-    p = urlparse(url)
-    rp = robotparser.RobotFileParser()
-    try:
-        r = httpx.get(f"{p.scheme}://{p.netloc}/robots.txt", headers={"User-Agent": USER_AGENT}, timeout=15,
-                      follow_redirects=True)
-    except httpx.HTTPError:
-        return False                    # unreachable robots.txt: assume not allowed, as the crawler does
-    if r.status_code >= 500:
-        return False
-    if r.status_code >= 400:
-        return True                     # no robots.txt: everything allowed
-    rp.parse(r.text.splitlines())
-    return rp.can_fetch("web-harvester", url)
+    """Whether the annual report may be fetched. robots.txt is not consulted, by the owner's decision, as for the
+    crawl itself (respect_robots: false); this stays the one place to change that."""
+    return True
 
 
 def read_report(company: dict, pages: list[dict], call: Optional[Callable[[str, str], str]] = None) -> Optional[dict]:
     """Board, committees, shareholders, subsidiaries and corporate details from the annual report the company's own
-    site links to, robots.txt permitting; each fact on the page it cites."""
+    site links to; each fact on the page it cites."""
     import httpx
     from src.engines.election_news import USER_AGENT
     url = find_report(pages)

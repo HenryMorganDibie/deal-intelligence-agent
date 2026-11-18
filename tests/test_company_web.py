@@ -102,21 +102,11 @@ def test_the_newest_full_annual_report_is_found_among_the_site_links():
     assert cw.find_report([{"links": ["https://x.com/brochure.pdf"]}]) is None
 
 
-def test_a_report_is_fetched_only_when_robots_allows_it(monkeypatch):
+def test_robots_txt_is_not_consulted_for_reports_or_the_crawl(monkeypatch):
     import httpx
-
-    class R:
-        def __init__(self, status, text=""):
-            self.status_code, self.text = status, text
-    monkeypatch.setattr(httpx, "get", lambda url, **k: R(200, "User-agent: *\nDisallow: /files/"))
-    assert cw._robots_allow("https://x.com/files/annual-report-2025.pdf") is False
-    assert cw._robots_allow("https://x.com/reports/annual-report-2025.pdf") is True
-    monkeypatch.setattr(httpx, "get", lambda url, **k: R(404))
-    assert cw._robots_allow("https://x.com/files/a.pdf") is True                 # no robots.txt
-    monkeypatch.setattr(httpx, "get", lambda url, **k: R(503))
-    assert cw._robots_allow("https://x.com/files/a.pdf") is False                # unreachable: not allowed
-    monkeypatch.setattr(cw, "_robots_allow", lambda url: False)
-    assert cw.read_report({"name": "X"}, [{"links": ["https://x.com/annual-report-2025.pdf"]}], call=lambda s, u: "{}") is None
+    monkeypatch.setattr(httpx, "get", lambda url, **k: (_ for _ in ()).throw(AssertionError("robots.txt fetched")))
+    assert cw._robots_allow("https://x.com/files/annual-report-2025.pdf") is True
+    assert cw.target({"name_key": "acme", "website": "https://acme.com"})["respect_robots"] is False
 
 
 def test_a_company_with_only_a_scanned_filing_is_queued_and_read(monkeypatch):

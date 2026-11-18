@@ -1,7 +1,7 @@
 """Company facts read on the spot, while the user waits: no queue and no scheduled job.
 
 A profile without stored governance asks for it once. The company's own site is read in-process (the home page and
-its about, leadership, governance and investor pages, fetched together, robots.txt respected), and its newest annual
+its about, leadership, governance and investor pages, fetched together; robots.txt is not consulted), and its newest annual
 report is found there or, failing that, by one licensed web search (Tavily) restricted to the company's own domain or
 an exchange's document library. The report is read like an exchange filing (src/engines/governance: every fact on
 the page it cites) and the result is stored, so later views are instant.
@@ -91,30 +91,14 @@ class _Page(HTMLParser):
 
 
 class _Robots:
-    """robots.txt per host, fetched once per read."""
+    """Whether a page may be fetched. robots.txt is not consulted, by the owner's decision (as for news articles and
+    round investors); this class stays the one place to change that."""
 
     def __init__(self, client: httpx.Client):
-        self.client, self.cache = client, {}
+        self.client = client
 
     def allowed(self, url: str) -> bool:
-        from urllib import robotparser
-        p = urlparse(url)
-        host = f"{p.scheme}://{p.netloc}"
-        if host not in self.cache:
-            rp = robotparser.RobotFileParser()
-            try:
-                r = self.client.get(f"{host}/robots.txt", timeout=PAGE_TIMEOUT)
-                if r.status_code >= 500:
-                    rp = None                       # unreachable: not allowed, as the crawler treats it
-                elif r.status_code >= 400:
-                    rp.parse([])                    # no robots.txt: everything allowed
-                else:
-                    rp.parse(r.text.splitlines())
-            except httpx.HTTPError:
-                rp = None
-            self.cache[host] = rp
-        rp = self.cache[host]
-        return bool(rp) and rp.can_fetch(AGENT, url)
+        return True
 
 
 def _fetch_page(client: httpx.Client, robots: _Robots, url: str, depth: int) -> Optional[dict]:
@@ -277,15 +261,9 @@ def _download(url: str, client: httpx.Client) -> Optional[bytes]:
 
 
 def _archived(site: str) -> list[dict]:
-    """The site's own pages from the Common Crawl archive, with its robots.txt read first (None if unreadable)."""
+    """The site's own pages from the Common Crawl archive (robots.txt not consulted, as for the live site)."""
     from src import company_archive
-    try:
-        r = httpx.get(f"{site.rstrip('/')}/robots.txt", headers={"User-Agent": _ua()}, timeout=PAGE_TIMEOUT,
-                      follow_redirects=True)
-        robots = r.text if r.status_code == 200 and "<html" not in r.text[:200].lower() else None
-    except httpx.HTTPError:
-        robots = None
-    return company_archive.archived_pages(site, robots)
+    return company_archive.archived_pages(site, None)
 
 
 def read_now(name: str, website: Optional[str] = None, country_name: Optional[str] = None,
@@ -320,7 +298,7 @@ def read_now(name: str, website: Optional[str] = None, country_name: Optional[st
             if facts:
                 return facts
             # The site refused us (a bot challenge) or holds nothing readable. Its own pages from the public web
-            # archive come first (robots.txt permitting), searched at the same time as public sources, so a slow or
+            # archive come first, searched at the same time as public sources, so a slow or
             # unavailable archive costs no extra time.
             with ThreadPoolExecutor(max_workers=2) as both:
                 f_archive = both.submit(_archived, site) if site else None
