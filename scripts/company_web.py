@@ -1,7 +1,8 @@
 """Company websites read with web-harvester, for company profiles.
 
+    python scripts/company_web.py seed 10                                          # queue unread companies, most important first
     python scripts/company_web.py prepare crawl.json pages.jsonl companies.json   # which sites to read
-    <web-harvester>/crawl -config crawl.json -i-have-reviewed-tos                # fetch them (robots.txt, rate limits)
+    <web-harvester>/crawl -config crawl.json -i-have-reviewed-tos                # fetch them (rate limits)
     python scripts/company_web.py apply pages.jsonl companies.json               # read and store the facts
 
 Runs in the dedicated five-minute company enrichment workflow (.github/workflows/company-web-enrichment.yml), independently of election ingestion. The database is
@@ -27,6 +28,11 @@ def main(argv: list[str]) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     from src import company_web
 
+    if len(argv) >= 1 and argv[0] == "seed":
+        from src import hosted_market as hm
+        limit = int(argv[1]) if len(argv) > 1 else 10
+        print(json.dumps(company_web.seed(hm._directory(), limit=limit)))
+        return 0
     if len(argv) >= 4 and argv[0] == "prepare":
         cfg, companies = company_web.crawl_config(argv[2])
         Path(argv[1]).write_text(json.dumps(cfg, indent=2))      # JSON is valid YAML for web-harvester

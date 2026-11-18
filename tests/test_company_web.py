@@ -306,3 +306,30 @@ def test_official_website_discovery_uses_the_shared_hourly_search_budget(monkeyp
     assert companies[0]["website_source"] == "Tavily web search"
     assert calls[0] == ("company_web_take", {"p_limit": cw.SITES_PER_RUN, "p_search_enabled": True})
     assert any(fn == "company_web_request" for fn, _ in calls)
+
+
+def test_seed_order_listed_by_value_then_licensed_with_site_then_busiest_private():
+    rows = [
+        {"kind": "private", "name": "Busy Startup", "country": "NG", "deal_count": 5},
+        {"kind": "listed", "name": "Small Plc", "country": "NG", "mcap_usd": 1e7},
+        {"kind": "listed", "name": "Big Plc", "country": "NG", "mcap_usd": 9e9},
+        {"kind": "listed", "name": "Big Plc Secondary", "country": "KE", "mcap_usd": 9e9, "secondary_of": "Big Plc"},
+        {"kind": "private", "name": "Quiet Startup", "country": "NG", "deal_count": 1},
+    ]
+    names = [n for n, _, _ in cw.seed_candidates(rows)]
+    assert names == ["Big Plc", "Small Plc", "Busy Startup"]       # no secondary lines, no one-deal companies
+
+
+def test_seed_skips_companies_already_read_or_queued(monkeypatch):
+    from unittest.mock import MagicMock
+    from src import hosted_market as hm
+    monkeypatch.setattr(hm, "_configured", lambda: True)
+    known = {cw.name_key("Big Plc")}
+    monkeypatch.setattr(hm, "_rpc_sync", lambda fn, args, t=10: MagicMock(
+        status_code=200, json=lambda: ({"status": "done"} if args["p_name_key"] in known else None)))
+    asked = []
+    monkeypatch.setattr(cw, "request", lambda name, site, country=None: asked.append(name) or {"status": "queued"})
+    rows = [{"kind": "listed", "name": n, "country": "NG", "mcap_usd": v} for n, v in
+            (("Big Plc", 9e9), ("Mid Plc", 5e8), ("Small Plc", 1e7))]
+    assert cw.seed(rows, limit=1) == {"queued": ["Mid Plc"], "checked": 2}
+    assert asked == ["Mid Plc"]

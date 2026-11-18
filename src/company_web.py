@@ -522,3 +522,56 @@ def read_filing(company: dict, call: Optional[Callable[[str, str], str]] = None)
         return None
     name = urlparse(url).path.rsplit("/", 1)[-1]
     return governance.extract(data, company["name"], name, url, None, call, allow_ocr=True)
+
+
+# ── Seeding the queue (so profiles are read before anyone opens them) ──────
+
+def seed_candidates(directory: list[dict]) -> list[tuple[str, Optional[str], Optional[str]]]:
+    """(name, country, website or None), most important first: listed companies by market value (primary lines
+    only), then licensed institutions whose register gives a website, then private companies by number of deals."""
+    import json as _json
+    from pathlib import Path as _Path
+    sites: dict[str, str] = {}
+    try:
+        data = _json.loads((_Path(__file__).resolve().parent / "data" / "licensed_institutions.json").read_text())
+        for r in (data.get("institutions") if isinstance(data, dict) else data) or []:
+            if r.get("website"):
+                sites[name_key(r["name"])] = r["website"]
+    except (OSError, ValueError):
+        pass
+    listed = sorted((r for r in directory if r.get("kind") == "listed" and not r.get("secondary_of")),
+                    key=lambda r: -(r.get("mcap_usd") or 0))
+    licensed = [r for r in directory if r.get("kind") != "listed" and name_key(r["name"]) in sites]
+    private = sorted((r for r in directory if r.get("kind") == "private" and (r.get("deal_count") or 0) >= 2),
+                     key=lambda r: -(r.get("deal_count") or 0))
+    out, seen = [], set()
+    for r in [*listed, *licensed, *private]:
+        key = name_key(r["name"])
+        if len(key) < 2 or key in seen:
+            continue
+        seen.add(key)
+        out.append((r["name"], r.get("country"), sites.get(key)))
+    return out
+
+
+def seed(directory: list[dict], limit: int = 10, max_checks: int = 300) -> dict:
+    """Queue up to `limit` companies that have never been read, in seed_candidates order. A company already in the
+    table (read, queued or failed) is skipped; the 30-day re-read is the worker's job."""
+    from src import hosted_market as hm
+    if not hm._configured():
+        return {"skipped": "database not configured"}
+    queued, checked = [], 0
+    for name, country, website in seed_candidates(directory):
+        if len(queued) >= limit or checked >= max_checks:
+            break
+        checked += 1
+        try:
+            r = hm._rpc_sync("company_web_get", {"p_name_key": name_key(name)}, 10)
+        except Exception as e:                       # noqa: BLE001 - try again next run
+            log.warning("seed: lookup failed for %s: %s", name, e)
+            continue
+        if r.status_code == 200 and r.json():
+            continue
+        if request(name, website, country) is not None:
+            queued.append(name)
+    return {"queued": queued, "checked": checked}

@@ -1,8 +1,12 @@
 name: company-web-enrichment
 
-# Company profiles are read on the spot by the API (src/company_live.py), so this worker no longer runs on a
-# schedule; it remains for a manual run over anything still queued.
+# Company profiles are also read on the spot by the API (src/company_live.py) when someone opens one. Every three
+# hours this worker queues about ten companies nobody has read yet (listed companies by market value first, then
+# licensed institutions with a known website, then the private companies with most deals) and reads the queue, so
+# profiles are filled in before anyone opens them.
 on:
+  schedule:
+    - cron: "41 */3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -53,6 +57,13 @@ jobs:
           else
             echo "Using cached Python environment"
           fi
+
+      - name: Queue companies nobody has read yet
+        continue-on-error: true            # the queue is still read if seeding fails
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$HOME/.cache/deal-intel-venv/bin/python" scripts/company_web.py seed 10
 
       - name: Prepare queued company sites
         id: prepare
