@@ -285,7 +285,6 @@ def unplaced_investors(deals: Iterable[dict], limit: int = 100) -> list[dict]:
 
 # ── Reading source articles (weekly job) ─────────────────────────────────────
 
-USER_AGENT = "DealIntelligence/1.0 (+https://deal-intelligence.app)"
 
 
 def article_sentences(html: str, party: str) -> list[str]:
@@ -313,8 +312,8 @@ def home_from_article(html: str, party: str) -> Optional[tuple[str, str]]:
 
 
 def read_articles(deals: Iterable[dict], fetch, record, max_fetches: int = 200) -> dict:
-    """For investors with no known home, read their deals' source articles (fetch(url) -> html or None; the caller
-    resolves news links and applies the publisher's robots rules) and record unambiguous descriptions with record(...)."""
+    """For investors with no known home, read their deals' source articles (fetch(url) -> the page's HTML or text, or
+    None; the caller resolves news links) and record unambiguous descriptions with record(...)."""
     fetched = recorded = 0
     done: set[str] = set()
     for d in deals:
