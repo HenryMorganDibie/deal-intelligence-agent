@@ -85,6 +85,20 @@ jobs:
             echo "Not Monday; development-finance disclosures refresh weekly."
           fi
 
+      - name: Read source articles for investors' home countries weekly
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '37 4 * * *'
+        continue-on-error: true            # a publisher being slow never blocks the daily pipeline
+        env:
+          SUPABASE_URL: https://ygvpormskihofvgntldo.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_oEqYxYLm60MdGk5JA-QfgQ_6z7uSozn
+          DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(date -u +%u)" = "1" ]; then
+            python scripts/refresh_investor_homes.py
+          else
+            echo "Not Monday; investor home countries refresh weekly."
+          fi
+
       - name: Collect review data, gather financials, build graph and evaluate models
         run: python scripts/daily_pipeline.py
 

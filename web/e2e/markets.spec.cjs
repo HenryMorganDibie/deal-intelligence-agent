@@ -515,3 +515,30 @@ test("a market brief can be limited to investors from one country", async ({ pag
   await page.goto("/market-briefs/new?investor_country=ZZ");
   await expect(page.getByLabel("Investors from")).toHaveValue("");   // an unknown code is ignored
 });
+
+test("admin can set an investor's home country from the review list", async ({ page }) => {
+  const json = (body) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+  await page.route("**/api/data/admin/stats", (route) => route.fulfill(json({ since: "2026-10-05", totals: {}, days: [], pages: [], actions: [], app_page_activity: [] })));
+  await page.route("**/api/data/admin/feedback", (route) => route.fulfill(json({ items: [] })));
+  let saved;
+  const state = { unplaced: [{ name_key: "madica", name: "Madica", deals: 4, example: "Acme raises $2m" }],
+    set: [{ name_key: "futureview", name: "Futureview", country: "NG", source: "article", evidence: "Futureview, a Lagos-based asset manager, led.", evidence_url: "https://example.com/a", updated_at: "2026-11-18" }],
+    countries: { US: "United States", GB: "United Kingdom" } };
+  await page.route("**/api/data/admin/investor-homes", (route) => route.fulfill(json(state)));
+  await page.route("**/api/data/admin/investor-homes/set", (route) => {
+    saved = route.request().postDataJSON();
+    state.unplaced = [];
+    state.set.push({ name_key: "madica", name: "Madica", country: "KE", source: "owner", updated_at: "2026-11-18" });
+    return route.fulfill(json({ name: "Madica", country: "KE" }));
+  });
+  await page.goto("/admin");
+  await page.getByPlaceholder("Admin key").fill("owner-key");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByRole("navigation", { name: "Admin sections" }).first().getByRole("button", { name: "Data review" }).click();
+  await expect(page.getByText("Madica")).toBeVisible();
+  await page.getByLabel("Home country of Madica").selectOption("KE");
+  await expect(page.getByText("Madica: Kenya.")).toBeVisible();
+  expect(saved).toEqual({ key: "owner-key", name: "Madica", country: "KE", clear: false });
+  await page.getByRole("tab", { name: /Found in articles/ }).click();
+  await expect(page.getByText("Futureview, a Lagos-based asset manager, led.", { exact: false })).toBeVisible();
+});

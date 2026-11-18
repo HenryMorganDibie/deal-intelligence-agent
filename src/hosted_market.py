@@ -1782,6 +1782,64 @@ async def _stop_paid_renewal(client: httpx.AsyncClient, account: dict) -> Option
     return "cancelled"
 
 
+_homes_cache: dict = {"at": 0.0, "rows": []}
+
+
+async def investor_homes(fresh: bool = False) -> list[dict]:
+    """The investor_homes rows (owner-set and article-found countries), cached five minutes; [] if unavailable."""
+    import time
+    if not fresh and time.monotonic() - _homes_cache["at"] < 300:
+        return _homes_cache["rows"]
+    rows: list[dict] = []
+    if _configured():
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                r = await _rpc(client, "investor_homes_all", {})
+            if r.status_code == 200 and isinstance(r.json(), list):
+                rows = r.json()
+        except (httpx.HTTPError, ValueError):
+            rows = _homes_cache["rows"]
+    _homes_cache.update(at=time.monotonic(), rows=rows)
+    return rows
+
+
+@router.post("/api/admin/investor-homes")
+async def admin_investor_homes(request: Request) -> Response:
+    """The review list: investors with no known home country (most frequent first) and the countries already set."""
+    await _admin_body(request)
+    from src.engines import investor_origin
+    rows = await investor_homes(fresh=True)
+    investor_origin.use_homes(rows)
+    since = (datetime.now(timezone.utc).date() - timedelta(days=365)).isoformat()
+    recent = [d for d in deals() if (d.get("announced") or "") >= since]
+    out = {"unplaced": investor_origin.unplaced_investors(recent, limit=100),
+           "set": sorted(rows, key=lambda r: (r.get("source") != "article", r.get("name", "").lower())),
+           "countries": {code: name for code, (name, _) in investor_origin.FOREIGN.items()}}
+    return Response(json.dumps(out), media_type="application/json", headers={"Cache-Control": "no-store, private"})
+
+
+@router.post("/api/admin/investor-homes/set")
+async def admin_set_investor_home(request: Request) -> dict:
+    """Set, change or clear one investor's home country; country "none" marks it as belonging to no single country."""
+    body = await _admin_body(request)
+    from src.engines import investor_origin
+    name = str(body.get("name") or "").strip()[:160]
+    clear = bool(body.get("clear"))
+    raw = str(body.get("country") or "").strip()
+    country = None if raw.lower() == "none" else investor_origin.country_code(raw)
+    if not name or (not clear and raw.lower() != "none" and not country):
+        raise HTTPException(status_code=422, detail="Give the investor's name and a country from the list.")
+    key = investor_origin.name_key(name)
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_set_investor_home",
+                       {"p_name_key": key, "p_name": name, "p_country": country or "", "p_clear": clear})
+    if not r.is_success:
+        log.error("admin_set_investor_home failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(status_code=502, detail="The country could not be saved.")
+    await investor_homes(fresh=True)
+    return {"name": name, "name_key": key, "country": None if clear else country, "cleared": clear}
+
+
 @router.post("/api/admin/accounts/suspend")
 async def admin_suspend_account(request: Request) -> Response:
     """Suspend or reinstate an account; needs DEAL_INTEL_ADMIN_KEY. Suspending ends its sessions, blocks sign-in, its

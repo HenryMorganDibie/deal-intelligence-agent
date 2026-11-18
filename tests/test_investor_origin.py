@@ -82,3 +82,40 @@ def test_companies_that_invest_are_placed_without_joining_the_investor_registry(
     assert io.deal_investor_countries(d) == {"QA"}
     assert investors.registry_entry("MTN Group") is None          # research still reads MTN as a company
     assert io.deal_investor_countries(deal("MTN Group invests in Ayoba", buyer="MTN Group", target="Ayoba")) == {"ZA"}
+
+
+def test_descriptions_in_sentences_place_investors():
+    assert io._described_countries("led by Lagos-based Future Africa", "Future Africa") == {"NG"}
+    assert io._described_countries("Futureview, a Lagos-based asset manager, invested", "Futureview") == {"NG"}
+    assert io._described_countries("San Francisco-based VC Hustle Fund joined", "Hustle Fund") == {"US"}
+    assert io._described_countries("Oxano Capital, based in Amsterdam, led", "Oxano Capital") == {"NL"}
+    assert io._described_countries("Acme raised money in Lagos", "Acme") == set()
+    d = deal("Zrosk backs Acme", investors=["Zrosk"])
+    d["investor_evidence"] = [{"name": "Zrosk", "sentence": "The round was led by Kigali-based VC Zrosk."}]
+    assert io.deal_investor_countries(d) == {"RW"}
+
+
+def test_stored_countries_win_and_none_means_no_single_country():
+    try:
+        io.use_homes([{"name_key": io.name_key("Madica"), "country": "KE"},
+                      {"name_key": io.name_key("British International Investment"), "country": None}])
+        assert io.deal_investor_countries(deal("Madica backs Acme", investors=["Madica"])) == {"KE"}
+        bii = deal("BII backs Acme", buyer="British International Investment")
+        assert io.deal_investor_countries(bii) == set()
+        assert all(r["name"] != "Madica" for r in io.unplaced_investors([deal("Madica backs Beta", investors=["Madica"])]))
+    finally:
+        io.use_homes([])
+
+
+def test_article_reader_records_only_unambiguous_descriptions():
+    page = "<html><body><p>The round was led by Madica, a Nairobi-based investment programme. Acme will expand.</p></body></html>"
+    mixed = "<p>Saviu, a Paris-based fund, led. Saviu, an Abidjan-based fund, joined.</p>"
+    deals = [{**deal("Acme raises $2m", investors=["Madica"]), "sources": [{"url": "https://news.google.com/rss/articles/x"},
+                                                                          {"url": "https://example.com/a"}]},
+             {**deal("Beta raises $1m", investors=["Saviu"], target="Beta"), "sources": [{"url": "https://example.com/b"}]}]
+    fetched, recorded = [], []
+    pages = {"https://example.com/a": page, "https://example.com/b": mixed}
+    result = io.read_articles(deals, lambda u: fetched.append(u) or pages.get(u), lambda *a: recorded.append(a))
+    assert fetched == ["https://example.com/a", "https://example.com/b"]          # Google News links are never followed
+    assert [(r[1], r[2]) for r in recorded] == [("Madica", "KE")]                  # conflicting Saviu left to the owner
+    assert "Nairobi-based" in recorded[0][3] and result == {"fetched": 2, "recorded": 1}

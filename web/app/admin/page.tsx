@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { browserVisitorId } from "../../lib/tracking";
 import { AccountsPanel } from "../../components/admin/AccountsPanel";
 import { ClaimsPanel } from "../../components/admin/ClaimsPanel";
+import { InvestorHomesPanel } from "../../components/admin/InvestorHomesPanel";
 
 type Row = { views: number; visitors: number; users: number };
 type ActionRow = { action: string; completions: number; clients: number };
@@ -370,6 +371,9 @@ function Review({ adminKey, onError }: { adminKey: string; onError: (e: string) 
             ))}
           </ul>
         )}
+      </Card>
+      <Card title="Investor home countries" className="mt-6">
+        <InvestorHomesPanel adminKey={adminKey} />
       </Card>
     </>
   );

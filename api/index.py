@@ -675,6 +675,8 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
         country_obj = _country_or_404(body.country.upper())
         country_code, country_name = country_obj.iso2, country_obj.name
     from src.engines import investor_origin
+    from src.hosted_market import investor_homes
+    investor_origin.use_homes(await investor_homes())
     investor_code = investor_origin.country_code(body.investor_country) if body.investor_country else None
     if body.investor_country and not investor_code:
         raise HTTPException(422, "Choose an investor home country from the list.")
