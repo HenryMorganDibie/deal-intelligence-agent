@@ -25,3 +25,12 @@ def test_real_deals_still_extracted_and_talks_stay_rumoured():
     block = extract_deal("Block deal alert: FIH Mauritius to sell up to 13.25% stake in IIFL Finance for $370 mn",
                          published="2026-11-17", publisher="Test")
     assert block is None                          # Indian market jargon: a Mauritius vehicle selling an Indian company
+
+
+def test_french_names_built_on_a_nationality_keep_their_article():
+    from src.engines.deals import _clean_name, extract_deal
+    assert _clean_name("La Marocaine Vie") == "La Marocaine Vie"
+    assert _clean_name("La Tunisienne des Assurances") == "La Tunisienne des Assurances"
+    assert _clean_name("Le Maroc") is None and _clean_name("La BAD") == "BAD"
+    deal = extract_deal("Wafa Assurance Acquires 99.98% of La Marocaine Vie", published="2026-11-17", publisher="Test")
+    assert (deal["target"], deal["buyer"]) == ("La Marocaine Vie", "Wafa Assurance")

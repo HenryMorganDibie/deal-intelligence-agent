@@ -335,6 +335,12 @@ def _is_filler(word: str) -> bool:
             or (word.isupper() and len(word) <= 4))
 
 
+_FRENCH_NATIONAL_NAME = re.compile(
+    r"^(?:La|Le|Les)\s+(?:Marocaine?s?|Tunisienne?s?|Ivoirienne?s?|S[ée]n[ée]galaise?s?|Africaine?s?|Camerounaise?s?|"
+    r"Gabonaise?s?|Malienne?s?|Alg[ée]rienne?s?|Congolaise?s?|B[ée]ninoise?s?|Nig[ée]rienne?s?|Togolaise?s?|"
+    r"Mauritanienne?s?|Guin[ée]enne?s?|Burkinab[èe]|Fran[çc]aise?s?)\s+\S")
+
+
 def _clean_name(name: Optional[str]) -> Optional[str]:
     if not name:
         return None
@@ -345,7 +351,10 @@ def _clean_name(name: Optional[str]) -> Optional[str]:
     n = re.split(r"\s+(?:That|Which|Who|Behind|After|Before|As|With)\b", n)[0]
     n = n.strip("'\"‘’“” ")
     n = re.sub(r"^(?:Why|How|When|Where)\s+(?=[A-Z])", "", n)       # "Why TGI Sold Chivita": the seller is TGI
-    n = re.sub(r"^(?:Le|La|Les|L['’]|O|A|Os|As)\s+(?=[A-Z])", "", n)
+    # The article belongs to French names built on a nationality ("La Marocaine Vie", "La Tunisienne des
+    # Assurances"); elsewhere it is grammar ("Le Maroc", "La BAD").
+    if not _FRENCH_NATIONAL_NAME.match(n):
+        n = re.sub(r"^(?:Le|La|Les|L['’]|O|A|Os|As)\s+(?=[A-Z])", "", n)
     n = re.sub(r"^L['’][a-zéèêàç]+\s+", "", n)                       # "L'indien A2MP"
     n = re.sub(r"^[LD]['’](?=[A-ZÀ-Ý])", "", n)                       # "L’Égypte" is Égypte
     n = re.sub(r"^(.+?)-led\s+(?:consortium|group|syndicate|investors)$", r"\1", n, flags=re.IGNORECASE)
