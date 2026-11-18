@@ -432,6 +432,11 @@ def apply_crawl(companies: list[dict], pages: list[dict], call: Optional[Callabl
         report = governance.merge_reads(read_report(c, site_pages, call) if site_pages else None, before.get("report"))
         if report:
             facts = {**(facts or {}), "report": report}
+        statements = read_statements(site_pages) if site_pages else None
+        if statements:
+            from src.company_live import _newer_statement
+            if _newer_statement(statements, before.get("financials")):
+                facts = {**(facts or {}), "financials": statements}
         filing = governance.merge_reads(read_filing(c, call) if c.get("filing_url") else None, before.get("filing"))
         if filing:
             facts = {**(facts or {}), "filing": filing}
@@ -463,6 +468,37 @@ def apply_crawl(companies: list[dict], pages: list[dict], call: Optional[Callabl
 
 _REPORT = re.compile(r"(?i)(annual|integrated)[\W_]*(report|financial[\W_]*statements?|results)")
 MAX_REPORT_BYTES = 40 * 1024 * 1024
+
+
+_STATEMENTS = re.compile(r"(?i)financial[-_ ]?statements?|audited|\bafs\b|annual[-_ ]?financial|results")
+
+
+def find_statements(pages: list[dict]) -> Optional[str]:
+    """The newest PDF of financial statements linked from the crawled pages (audited accounts, financial statements,
+    results), else the annual report, which carries them."""
+    links = {u for p in pages for u in (p.get("links") or []) if isinstance(u, str)}
+    found = [u for u in links if urlparse(u).path.lower().endswith(".pdf") and _STATEMENTS.search(urlparse(u).path)
+             and not re.search(r"(?i)notice|proxy|agm|presentation|summar", urlparse(u).path)]
+    if not found:
+        return find_report(pages)
+
+    def year(u: str) -> int:
+        years = [int(y) for y in re.findall(r"(?<!\d)(20[0-3]\d)(?!\d)", u)]
+        return max(years) if years else 0
+    return max(found, key=lambda u: (year(u), u))
+
+
+def read_statements(pages: list[dict]) -> Optional[dict]:
+    """Revenue, profit, assets and the rest from the company's own published statements, each checked arithmetically."""
+    from src.engines import financials
+    url = find_statements(pages)
+    if not url:
+        return None
+    try:
+        return financials.statement_from_pdf(url)
+    except Exception as e:                           # noqa: BLE001 - a bad PDF never stops the profile
+        log.info("statements %s unreadable: %s", url, e)
+        return None
 
 
 def find_report(pages: list[dict]) -> Optional[str]:

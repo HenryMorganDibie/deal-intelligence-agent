@@ -967,6 +967,13 @@ async def company(name: str = Query(..., min_length=1, max_length=120), ticker: 
             elif facts.get("report") and not filing_src:  # no exchange filing: the annual report on the company's site
                 profile["governance"] = facts["report"]
                 profile["sources"].append("Annual report (company website)")
+        # A private company's own published statements (or its UK holding company's filed accounts), when no
+        # exchange or Yahoo statements exist: shown in the same financials section, labelled with their source.
+        if not profile.get("financials"):
+            own = private_financials(facts)
+            if own:
+                profile["financials"] = own
+                profile["sources"].append(own["source"])
     if filing_src and not profile.get("governance"):
         known = _governance_cache.get(filing_src["url"])
         if known:
@@ -1062,8 +1069,9 @@ async def company_governance(name: str = Query(..., min_length=1, max_length=120
             profile["web"] = {**(profile.get("web") or {}), "website": result.get("website"),
                               "facts": {**((profile.get("web") or {}).get("facts") or {}), **(result.get("facts") or {})}}
         log.info("company live read %s: %s", profile["name"], result.get("timings"))
+        own = private_financials({"financials": result.get("statements")}) if result.get("statements") else None
         return {"governance": gov, "pending_ocr": bool(result.get("report_scanned")), "web": profile.get("web"),
-                "source": (gov or {}).get("source")}
+                "source": (gov or {}).get("source"), "financials": own}
     src = profile["governance_source"]
     gov = _governance_cache.get(src["url"])
     if gov is None:
@@ -1780,6 +1788,19 @@ async def _stop_paid_renewal(client: httpx.AsyncClient, account: dict) -> Option
         raise HTTPException(status_code=503, detail="Paystack is not configured, so the paid subscription cannot be cancelled.")
     await billing.stop_renewal(client, account["subscription_code"], account.get("email_token"))
     return "cancelled"
+
+
+def private_financials(facts: dict) -> Optional[dict]:
+    """The financials a profile shows for a company with no exchange statements: its own published statements, else
+    its UK holding company's accounts filed at Companies House."""
+    stmt = facts.get("financials")
+    if stmt and stmt.get("items"):
+        return {**stmt, "source": "Statements published on the company's website",
+                "filed": (stmt.get("period") or {}).get("end")}
+    uk = facts.get("uk_accounts")
+    if uk and uk.get("items"):
+        return {**uk, "source": f"Accounts filed at UK Companies House ({uk.get('company_name')}, {uk.get('company_number')})"}
+    return None
 
 
 _homes_cache: dict = {"at": 0.0, "rows": []}

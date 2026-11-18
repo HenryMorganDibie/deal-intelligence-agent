@@ -1,5 +1,6 @@
 "use client";
 
+import { AFRICAN_COUNTRIES } from "../../../lib/countries";
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { CompanySubmittedSection, type CompanySubmitted } from "../../../components/app/CompanySubmitted";
@@ -169,12 +170,13 @@ export default function CompaniesPage() {
       if (profile.governance_pending) {
         // The board and shareholders are read from the filed annual report after the profile is shown.
         setReading(true);
-        get<{ governance: Governance | null; web?: Web | null }>("/api/companies/governance", {
+        get<{ governance: Governance | null; web?: Web | null; financials?: Financials | null }>("/api/companies/governance", {
           name: f.name.trim(), ticker: f.ticker.trim(), country: f.country.trim(), cik: f.cik.trim(),
           exchange: exact?.exchange, symbol: exact?.symbol,
         })
           .then((r) => setP((cur) => (cur && cur.name === profile.name
-            ? { ...cur, governance: r.governance ?? cur.governance, web: r.web ?? cur.web }
+            ? { ...cur, governance: r.governance ?? cur.governance, web: r.web ?? cur.web,
+                financials: cur.financials ?? r.financials ?? undefined }
             : cur)))
           .catch(() => undefined)
           .finally(() => setReading(false));
@@ -222,7 +224,7 @@ export default function CompaniesPage() {
       <header className="mb-6">
         <h1 className="h2 text-[1.75rem] sm:text-[2rem]">Companies</h1>
         <p className="mt-1.5 max-w-3xl text-[0.875rem] text-[color:var(--muted)]">
-          Any company listed on the NGX, NSE, JSE, EGX or Casablanca, or that has appeared in a deal, with statements checked line by line where the exchange publishes them.
+          Any company listed on the NGX, NSE, JSE, EGX or Casablanca, or that has appeared in a deal. Statements are checked line by line: from the exchange for listed companies, and for private companies from their own published accounts or their UK holding company&apos;s filings.
         </p>
       </header>
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_auto]">
@@ -233,7 +235,10 @@ export default function CompaniesPage() {
           <input value={form.ticker} onChange={(e) => setForm({ ...form, ticker: e.target.value.toUpperCase() })} placeholder="DANGCEM.LG" className="field kbd" />
         </Field>
         <Field label="Country (optional)">
-          <input value={form.country} onChange={set("country")} maxLength={3} placeholder="NG" className="field kbd uppercase" />
+          <select value={form.country.toUpperCase()} onChange={set("country")} className="field" aria-label="Country">
+            <option value="">Any</option>
+            {AFRICAN_COUNTRIES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
+          </select>
         </Field>
         <Field label="SEC CIK (optional)">
           <input value={form.cik} onChange={set("cik")} inputMode="numeric" placeholder="1756708" className="field kbd" />

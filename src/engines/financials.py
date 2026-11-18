@@ -231,6 +231,32 @@ def statement_from_pdf(url: str, fetch: Optional[Callable[[str], bytes]] = None)
     """Parse one statement PDF; None when it cannot be read or holds no statement lines."""
     try:
         data = fetch(url) if fetch else pdf_bytes(url)
+    except Exception as e:
+        log.warning("statement %s unreadable: %s", url, e)
+        return None
+    return statement_from_bytes(data, url)
+
+
+# The reporting currency from a statement's unit line ("N'million", "KShs'000", "R'm", "£000").
+_CURRENCY_HINTS: tuple[tuple[str, str], ...] = (
+    (r"₦|\bN['’]|\bNGN\b|naira", "NGN"), (r"\bKShs?\b|\bKES\b|kenya shilling", "KES"), (r"GH[₵¢]|\bGHS\b|cedi", "GHS"),
+    (r"\bZAR\b|\bR\s?['’]?\s?(?:m|000|million|bn)\b|\brand\b", "ZAR"), (r"\bEGP\b|E£|egyptian pound", "EGP"),
+    (r"\bMAD\b|dirham", "MAD"), (r"\bUGX\b|uganda shilling", "UGX"), (r"\bTZS\b|tanzania shilling", "TZS"),
+    (r"\bRWF\b|rwanda franc", "RWF"), (r"\bZMW\b|kwacha", "ZMW"), (r"£|\bGBP\b|sterling", "GBP"),
+    (r"US\$|\bUSD\b|dollar", "USD"), (r"€|\bEUR\b|euro", "EUR"),
+)
+
+
+def currency_from_unit(unit: Optional[str]) -> Optional[str]:
+    for pattern, code in _CURRENCY_HINTS:
+        if unit and re.search(pattern, unit, re.IGNORECASE):
+            return code
+    return None
+
+
+def statement_from_bytes(data: bytes, url: str) -> Optional[dict]:
+    """Parse statements from an already downloaded PDF (an annual report read for its governance pages too)."""
+    try:
         text = _pdf_text(data)
     except Exception as e:
         log.warning("statement %s unreadable: %s", url, e)
@@ -243,6 +269,7 @@ def statement_from_pdf(url: str, fetch: Optional[Callable[[str], bytes]] = None)
     parsed["status"] = item_status(parsed["items"], parsed["checks"])
     parsed["source_url"] = url
     parsed["basis"] = "Group (consolidated), first two figure columns: current and prior period"
+    parsed["currency"] = currency_from_unit(parsed.get("unit"))
     return parsed
 
 

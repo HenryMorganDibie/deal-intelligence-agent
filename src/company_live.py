@@ -326,6 +326,15 @@ def read_now(name: str, website: Optional[str] = None, country_name: Optional[st
             out["timings"]["download"] = round(time.monotonic() - t0, 1)
             if not data:
                 return None, None
+            # The same download gives the financial statements: revenue, profit, assets, each checked arithmetically.
+            from src.engines import financials
+            try:
+                stmt = financials.statement_from_bytes(data, report_url)
+            except Exception as e:                  # noqa: BLE001 - statements are a bonus to the governance read
+                log.info("statements in %s unreadable: %s", report_url, e)
+                stmt = None
+            if stmt:
+                out["statements"] = stmt
             doc = urlparse(report_url).path.rsplit("/", 1)[-1]
             label = ("Annual statements filed with the exchange" if any(
                 (urlparse(report_url).hostname or "").endswith(d) for d in EXCHANGE_DOCS)
@@ -350,6 +359,15 @@ def read_now(name: str, website: Optional[str] = None, country_name: Optional[st
     return out
 
 
+def _newer_statement(new: dict, old: Optional[dict]) -> bool:
+    """Keep the statement for the latest period; on a tie, the one that passes more arithmetic checks."""
+    if not old:
+        return True
+    end = lambda s: ((s or {}).get("period") or {}).get("end") or ""            # noqa: E731
+    passed = lambda s: sum(1 for c in (s or {}).get("checks") or [] if c.get("passed"))   # noqa: E731
+    return (end(new), passed(new)) >= (end(old), passed(old))
+
+
 def store(name: str, result: dict) -> bool:
     """Keep what was read with the company's stored facts (an earlier read of the same report is merged, so a
     weaker read loses nothing), so the next view shows it without reading again."""
@@ -369,6 +387,8 @@ def store(name: str, result: dict) -> bool:
             facts.update(result["facts"])
         if result.get("report"):
             facts["report"] = governance.merge_reads(result["report"], facts.get("report"))
+        if result.get("statements") and _newer_statement(result["statements"], facts.get("financials")):
+            facts["financials"] = result["statements"]
         if result.get("website"):
             facts["website"] = result["website"]
         facts["read_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
