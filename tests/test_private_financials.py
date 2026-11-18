@@ -17,6 +17,7 @@ IXBRL = """<html><body>
 <td><ix:nonFraction name="uk-core:Equity" contextRef="cy_i" unitRef="GBP" scale="3">3,400</ix:nonFraction></td>
 <td><ix:nonFraction name="uk-core:Equity" contextRef="seg" unitRef="GBP" scale="3">99</ix:nonFraction></td>
 <td><ix:nonFraction name="uk-core:CashBankOnHand" contextRef="cy_i" unitRef="GBP">-</ix:nonFraction></td>
+<p>The group operates a digital bank in Nigeria.</p>
 </body></html>"""
 
 
@@ -48,6 +49,22 @@ def _api(search_items, filings=None, doc=IXBRL):
     return httpx.Client(transport=httpx.MockTransport(handler))
 
 
+def test_accounts_without_an_african_link_are_rejected():
+    one = [{"title": "NAKED LTD", "company_number": "13690510", "company_status": "active"}]
+    unrelated = IXBRL.replace("The group operates a digital bank in Nigeria.", "A clothing retailer in Leeds.")
+    assert ch.accounts_for("Naked", client=_api(one, doc=unrelated), country="ZA") is None
+    assert ch.accounts_for("Naked", client=_api(one), country="NG") is not None
+
+
+def test_a_uk_named_company_is_labelled_a_subsidiary_and_exact_names_win():
+    sub = [{"title": "FLUTTERWAVE UK LIMITED", "company_number": "10593971", "company_status": "active"}]
+    acc = ch.accounts_for("Flutterwave", client=_api(sub), country="NG")
+    assert acc["relation"] == "UK subsidiary"
+    both = [{"title": "ACME UK LTD", "company_number": "1", "company_status": "active"},
+            {"title": "ACME LTD", "company_number": "2", "company_status": "active"}]
+    assert ch.find_company("Acme", _api(both))["company_number"] == "2"
+
+
 def test_exact_unique_active_match_only():
     one = [{"title": "KUDA TECHNOLOGIES LTD", "company_number": "11223344", "company_status": "active"}]
     assert ch.find_company("Kuda Technologies", _api(one))["company_number"] == "11223344"
@@ -62,7 +79,7 @@ def test_exact_unique_active_match_only():
 
 def test_accounts_for_returns_the_profile_shape():
     one = [{"title": "KUDA TECHNOLOGIES LTD", "company_number": "11223344", "company_status": "active"}]
-    acc = ch.accounts_for("Kuda Technologies", client=_api(one))
+    acc = ch.accounts_for("Kuda Technologies", client=_api(one), country="NG")
     assert acc["company_number"] == "11223344" and acc["currency"] == "GBP" and acc["filed"] == "2025-09-30"
     assert acc["items"]["revenue"]["current"] == 12_500_000
     assert "company/11223344/filing-history" in acc["source_url"]
@@ -83,7 +100,7 @@ def test_profile_prefers_the_company_s_own_statements_then_uk_accounts():
     own = {"items": {"revenue": {"current": 5.0}, "total_assets": {"current": 9.0}}, "period": {"end": "2024-12-31"}}
     uk = {"items": {"revenue": {"current": 1.0}, "cash": {"current": 2.0}}, "company_name": "ACME LTD", "company_number": "9"}
     assert private_financials({"financials": own, "uk_accounts": uk})["source"].startswith("Statements published")
-    assert "UK Companies House (ACME LTD, 9)" in private_financials({"uk_accounts": uk})["source"]
+    assert "Companies House (ACME LTD, 9)" in private_financials({"uk_accounts": uk})["source"]
     assert private_financials({}) is None
 
 

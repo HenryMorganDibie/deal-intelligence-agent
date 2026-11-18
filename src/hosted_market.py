@@ -1801,7 +1801,8 @@ def private_financials(facts: dict) -> Optional[dict]:
                 "filed": (stmt.get("period") or {}).get("end")}
     uk = facts.get("uk_accounts")
     if uk and uk.get("items"):
-        return {**uk, "source": f"Accounts filed at UK Companies House ({uk.get('company_name')}, {uk.get('company_number')})"}
+        return {**uk, "source": f"Accounts of its {uk.get('relation') or 'UK company'} filed at Companies House "
+                                f"({uk.get('company_name')}, {uk.get('company_number')})"}
     return None
 
 

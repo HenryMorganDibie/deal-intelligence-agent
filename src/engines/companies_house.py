@@ -40,7 +40,8 @@ CONCEPTS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("total_equity", ("Equity", "NetAssetsLiabilities", "ShareholderFunds")),
     ("cash", ("CashBankOnHand", "CashCashEquivalents", "CashAtBankAndInHand")),
 )
-_SUFFIX = re.compile(r"(?i)\b(?:limited|ltd|plc|holdings?|group|inc|incorporated|llc|uk|co)\b\.?")
+_SUFFIX = re.compile(r"(?i)\b(?:limited|ltd|plc|holdings?|group|inc|incorporated|llc|co)\b\.?")
+_UK = re.compile(r"(?i)\b(?:uk|united kingdom|europe)\b")
 
 
 def _key(name: str) -> str:
@@ -64,7 +65,10 @@ def find_company(name: str, client: httpx.Client) -> Optional[dict]:
     if r.status_code != 200:
         return None
     hits = [i for i in r.json().get("items") or []
-            if _key(i.get("title", "")) == want and (i.get("company_status") or "") == "active"]
+            if (i.get("company_status") or "") == "active"
+            and (_key(i.get("title", "")) == want or _key(_UK.sub(" ", i.get("title", ""))) == want)]
+    exact = [i for i in hits if _key(i.get("title", "")) == want]
+    hits = exact or hits                              # "Acme Ltd" before "Acme UK Ltd"
     return hits[0] if len(hits) == 1 else None
 
 
@@ -148,9 +152,22 @@ def parse_ixbrl(doc: str) -> dict:
     return {"period": {"end": current, "months": None, "label": f"Period ended {current}"}, "items": items}
 
 
-def accounts_for(name: str, api_key: Optional[str] = None, client: Optional[httpx.Client] = None) -> Optional[dict]:
+def african_link(doc: str, country: Optional[str]) -> bool:
+    """The filed accounts mention Africa or the company's African country: evidence the UK company is the African
+    business and not an unrelated company with the same name (\"Naked Ltd\", \"Caledonia Ltd\")."""
+    from src.data import africa_countries as ac
+    text = unescape(re.sub(r"<[^>]+>", " ", doc))
+    if re.search(r"(?i)\bafric", text):
+        return True
+    c = ac.get(country) if country else None
+    names = [c.name] if c else []
+    return any(re.search(rf"(?i)\b{re.escape(n)}\b", text) for n in names)
+
+
+def accounts_for(name: str, api_key: Optional[str] = None, client: Optional[httpx.Client] = None,
+                 country: Optional[str] = None) -> Optional[dict]:
     """The latest filed accounts of the UK company matching `name`, in the profile's financials shape; None if no
-    unambiguous match, no machine-readable filing, or fewer than two line items."""
+    unambiguous match, no machine-readable filing, no mention of Africa in the accounts, or fewer than two items."""
     from src.engines import financials
     own = client is None
     c = client or _client(api_key)
@@ -166,6 +183,9 @@ def accounts_for(name: str, api_key: Optional[str] = None, client: Optional[http
         doc = c.get(filing["content_url"], headers={"Accept": "application/xhtml+xml"})
         if doc.status_code != 200:
             return None
+        if not african_link(doc.text, country):
+            log.info("companies house: %s matched %s but its accounts never mention Africa", name, company.get("title"))
+            return None
         parsed = parse_ixbrl(doc.text)
     except (httpx.HTTPError, ValueError, KeyError) as e:
         log.info("companies house: %s unavailable: %s", name, e)
@@ -177,8 +197,10 @@ def accounts_for(name: str, api_key: Optional[str] = None, client: Optional[http
     if len(items) < 2:
         return None
     checks = financials.verify(items)
+    subsidiary = bool(_UK.search(company.get("title") or "")) and not _UK.search(name)
     return {
         "company_name": company.get("title"), "company_number": company["company_number"],
+        "relation": "UK subsidiary" if subsidiary else "UK company",
         "period": parsed["period"], "currency": "GBP", "unit": "£", "multiplier": 1,
         "items": items, "checks": checks, "verified": bool(checks) and all(x["passed"] for x in checks),
         "status": financials.item_status(items, checks),
@@ -219,7 +241,7 @@ def refresh(directory: list[dict], limit: int = 150, pause: float = 0.6) -> dict
             if (facts.get("uk_checked_at") or "") >= cutoff:
                 continue
             checked += 1
-            accounts = accounts_for(r["name"], client=c)
+            accounts = accounts_for(r["name"], client=c, country=r.get("country"))
             time.sleep(pause)                         # well inside the API's 600 requests per five minutes
             facts["uk_checked_at"] = date.today().isoformat()
             if accounts:
