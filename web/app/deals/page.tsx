@@ -4,6 +4,7 @@ import { PublicPage } from "../../components/PublicPage";
 import { Container } from "../../components/primitives";
 import { usd, words } from "../../components/app/ui";
 import { apiHeaders, apiUrl } from "../../lib/api-base";
+import { dealLine } from "../../lib/deal-line";
 import type { Deal } from "../../lib/market";
 
 /**
@@ -42,27 +43,6 @@ function country(code: string | null): string | null {
   }
 }
 
-function line(d: Deal): string {
-  const amount = d.amount_usd ? usd(d.amount_usd) : null;
-  const who = d.investors.slice(0, 2).join(", ");
-  switch (d.deal_type) {
-    case "equity_funding":
-      return `raised ${amount ?? "new funding"}${who ? ` from ${who}` : ""}`;
-    case "debt_financing":
-      return `secured ${amount ? `${amount} in ` : ""}debt financing${who ? ` from ${who}` : ""}`;
-    case "acquisition":
-      return `acquired${d.buyer ? ` by ${d.buyer}` : ""}${amount ? ` for ${amount}` : ""}`;
-    case "exit":
-      return `sold${d.seller ? ` by ${d.seller}` : ""}${amount ? ` for ${amount}` : ""}`;
-    case "fund_raise":
-      return `closed ${amount ? `${amount} ` : ""}in commitments`;
-    case "ipo":
-      return `listing${amount ? `, raising ${amount}` : ""}`;
-    default:
-      return words(d.deal_type).toLowerCase();
-  }
-}
-
 export default async function LatestDeals() {
   const deals = (await latest()).filter((d) => d.target);
   return (
@@ -79,7 +59,7 @@ export default async function LatestDeals() {
               <Link href={`/deals/${d.id}`} className="flex items-baseline justify-between gap-4 py-4 hover:bg-white/[0.02]">
                 <span>
                   <span className="font-medium">{d.target}</span>{" "}
-                  <span className="text-[color:var(--muted)]">{line(d)}</span>
+                  <span className="text-[color:var(--muted)]">{dealLine(d, usd)}</span>
                   <span className="block text-xs text-[color:var(--dim)]">
                     {[words(d.deal_type), country(d.country), d.announced].filter(Boolean).join(" · ")}
                   </span>

@@ -1224,6 +1224,17 @@ def _days_between(a: str, b: str) -> int:
 _COMPANY_SUFFIX = re.compile(r"(?i)[\s,]+(plc|ltd\.?|limited|inc\.?|corporation|corp\.?|group|holdings?|s\.?a\.?)\b\.?")
 
 
+# A day's move beyond this is almost always a bad print (a price in the wrong unit, a stale previous close, a
+# rights issue not adjusted), not news: the regulated African exchanges cap a day's move at 7.5 to 25%, and a real
+# doubling on Johannesburg is rare enough to check by hand. Such a share stays priced but never heads the movers.
+MAX_PLAUSIBLE_DAY_MOVE = 0.5
+
+
+def plausible_day_move(row: dict) -> bool:
+    chg = row.get("chg_1d")
+    return chg is None or abs(chg) <= MAX_PLAUSIBLE_DAY_MOVE
+
+
 def _one_per_company(rows: list[dict]) -> list[dict]:
     """A company listed on two lines of one exchange (Ninety One plc and Ninety One Ltd) appears once."""
     seen, out = set(), []
@@ -1302,7 +1313,7 @@ def overview(snapshot: dict, today: Optional[date] = None, movers: int = 8) -> d
     # Primary listings only: a secondary line (Old Mutual in Blantyre) moves on thin trade.
     # Ordinary shares only (no preference shares, notes or dollar lines), and real trading: a move on a few dozen
     # shares is noise, not news (JSE lines that traded 38 or 57 shares had headed the lists).
-    tradable = [r for r in fresh if r.get("chg_1d") is not None and not r.get("secondary_of")
+    tradable = [r for r in fresh if r.get("chg_1d") is not None and plausible_day_move(r) and not r.get("secondary_of")
                 and r.get("security") in (None, "ordinary", "share_class")
                 and ((r.get("mcap_usd") or 0) >= 1e7 or r.get("mcap_usd") is None) and _liquid(r, rates)]
 

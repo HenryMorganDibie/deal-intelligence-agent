@@ -474,3 +474,11 @@ def test_africa_api_is_asked_about_each_country_at_most_weekly(tmp_path, monkeyp
     saved = json.loads(out.read_text())
     assert saved["countries_kept_from_this_week"] == len(r.COUNTRIES) - 1
     assert saved["countries"][stale]["observations"]       # quota refusal keeps its earlier figures
+
+
+def test_zambia_tenor_comes_from_the_field_name_not_the_typed_value():
+    payload = {"data": [{"attributes": {"field_tbills_auction_date": "2026-11-12"}}],
+               "included": [{"attributes": {"field_182_days_tenor": "273_days", "field_182_days_yield_rate": "9.1000"}},
+                            {"attributes": {"field_273_days_tenor": "273_days", "field_273_days_yield_rate": "9.5000"}}]}
+    zm = instruments.parse_boz_tbills(payload)
+    assert [(r["tenor_days"], r["rate"]) for r in zm["rows"]] == [(182, 9.1), (273, 9.5)]

@@ -608,3 +608,10 @@ def test_a_company_on_two_lines_appears_once_among_movers():
     rows = [{"exchange": "jse", "name": "Ninety One plc", "chg_1d": -0.085}, {"exchange": "jse", "name": "Ninety One Ltd", "chg_1d": -0.082},
             {"exchange": "jse", "name": "Aveng Limited", "chg_1d": -0.10}]
     assert [r["name"] for r in markets._one_per_company(rows)] == ["Ninety One plc", "Aveng Limited"]
+
+
+def test_implausible_day_move_never_heads_the_movers():
+    from src.engines.markets import plausible_day_move
+    assert plausible_day_move({"chg_1d": 0.1452}) and plausible_day_move({"chg_1d": -0.2}) and plausible_day_move({"chg_1d": None})
+    assert not plausible_day_move({"chg_1d": 5.45})          # BGFI Holding on BVMAC: +545% in a day, a bad print
+    assert not plausible_day_move({"chg_1d": -0.8})

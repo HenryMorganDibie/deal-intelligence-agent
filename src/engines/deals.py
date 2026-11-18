@@ -294,7 +294,7 @@ _GENERIC_TAIL = re.compile(r"\b(firms?|company|companies|startups?|producer|agen
 _ALWAYS_GENERIC_TAIL = re.compile(r"\b(plan|machinery|youths|maserati|schools?|communities|students|scholarships?|scheme|programmes?|programs?|youth|farming|agriculture|agribusiness|economy|"
                                   r"farmers|women|summit|conference|forum|awards?|event|week|plant|factory|now|today|campus|hostel|game|"
                                   r"etfs?|etns?|aircraft|jets?|king|giant|leader|champion|rights?|licen[cs]es?|title|tour|datacent(?:er|re)s?|data\s+cent(?:er|re)s?|"
-                                  r"facilities|infrastructure|hospitals|roads?|devices)$",
+                                  r"facilities|infrastructure|hospitals|roads?|devices|r&d|research|screening|testing)$",
                                   re.IGNORECASE)
 _GENERIC_RE = re.compile(r"^(?:(?:east|west|north|south|southern|central|sub-saharan)\s+)?africa(n)?$|"
                          r"^(?:north|south|latin|central)\s+americ(a|an)$|"
@@ -941,6 +941,22 @@ _GENERIC_PARTY = re.compile(
     r"(?i)^(?:the\s+)?(?:group|firm|company|startup|start-up|consortium|investors?|lenders?|banks?|government|govt|"
     r"agency|ngo|charity|foundation|coalition|operator|tycoon|billionaire|businessman|entrepreneur)s?$")
 # State expropriation, court cases, renamings and football transfers use deal verbs but are not deals.
+# Headlines that carry a money figure but report no company transaction: an Indian market trade (rupees, crore;
+# often booked through a Mauritius holding vehicle), a company's yearly spending, an aggregate investment
+# statistic, or a payout to people.
+_INDIAN_MARKET = re.compile(r"(?i)\b(?:crores?|lakhs?|block\s+deals?|bulk\s+deals?|sensex|nifty)\b|\bRs\.?\s?\d")
+_YEARLY_SPEND = re.compile(r"(?i)\binvests?\s+(?:\S+\s+){0,3}?(?:annually|a\s+year|per\s+year|each\s+year|every\s+year|yearly)\b")
+_AGGREGATE_STAT = re.compile(r"(?i)\binvestments?\s+in(?:to)?\s+(?:\S+\s+){0,3}?(?:exceeds?|tops?|hits?|reach(?:es)?|"
+                             r"surpass(?:es)?|rises?|grows?|falls?|declines?|doubles?)\b")
+_PAYOUT = re.compile(r"(?i)\bbonus(?:es)?\b|\bprize\s+money\b|\ballowances?\b|\bsalar(?:y|ies)\b")
+# "Ending Energy Poverty: Why South Africa Needs ...": an essay title, whatever words follow the colon.
+_COLON_COMMENTARY = re.compile(r"(?i):\s*(?:why|how|what|when|where)\b")
+# "Kenyan Exchange", "Nigerian Bank": a nationality and an institution type is a description, not a name; the same
+# transaction is reported elsewhere under the real name.
+_DESCRIPTIVE_TARGET = re.compile(r"(?i)^(?:the\s+)?(?:kenyan|nigerian|ghanaian|south\s+african|egyptian|moroccan|ugandan|"
+                                 r"tanzanian|rwandan|zambian|ethiopian|senegalese|ivorian|tunisian|algerian|angolan)\s+"
+                                 r"(?:stock\s+)?(?:exchange|bourse|bank|lender|firm|company|startup|fintech|insurer|telco)$")
+
 _NON_TRANSACTION = re.compile(
     r"(?i)\bcompulsory\s+(?:land\s+)?acquisition|\bin\s+court\b|\bby\s+mistake\b|\bacquires?\s+(?:a\s+)?new\s+name\b"
     r"|\bsnap(?:s|ped)?\s+up\b.{0,60}\bfrom\b|\bsigns?\s+(?:striker|midfielder|defender|goalkeeper|winger)\b"
@@ -1300,6 +1316,9 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
     ):
         return None
     if _NOT_A_DEAL.search(title) or _NON_TRANSACTION.search(title) or _CHARITABLE.search(title):
+        return None
+    if (_INDIAN_MARKET.search(title) or _YEARLY_SPEND.search(title) or _AGGREGATE_STAT.search(title)
+            or _PAYOUT.search(title) or _COLON_COMMENTARY.search(title)):
         return None
     if title.rstrip().endswith("?") or re.match(r"(?i)(why|how|what|should|could|can|will|is|are|does|do|opinion|analysis|explainer)\b", title):
         return None
@@ -1735,6 +1754,8 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
             deal["id"] = deal_id(deal)
         else:
             return None
+    if _DESCRIPTIVE_TARGET.match(str(deal.get("target") or "").strip()):
+        return None
     return deal
 
 
