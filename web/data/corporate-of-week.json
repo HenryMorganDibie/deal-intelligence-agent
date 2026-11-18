@@ -1,40 +1,108 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-17T17:00:01.970077+00:00",
+  "updated_at": "2026-11-18T00:58:45.138100+00:00",
   "current": {
-    "company": "Coca-Cola HBC",
-    "company_url": "/companies?name=Coca-Cola%20HBC",
-    "headline": "Coca-Cola HBC secures approval for secondary listing in South Africa",
-    "deal_type": "regulatory_action",
+    "company": "Family Bank",
+    "company_url": "/companies?name=Family%20Bank",
+    "headline": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+    "deal_type": "credit_risk",
     "amount_usd": null,
-    "country": "ZA",
-    "sector": null,
-    "announced": "2026-11-16",
-    "score": 53.9,
+    "country": "KE",
+    "sector": "banking",
+    "announced": "2026-11-17",
+    "score": 50.6,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
     "reasons": [
-      "Corporate signal: regulatory action",
-      "Event rule confidence: 0.93",
+      "Corporate signal: credit risk",
+      "Event rule confidence: 0.82",
       "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "Sharecast.com",
-        "title": "Coca-Cola HBC secures approval for secondary listing in South Africa",
-        "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPQS1CQ0hzbFZyLXc2OVlYeUdyNlB0T3lFcVF1aXRfdlYxdW5QTWNRR0kwYllaM2s5Z3Fkb1JsNUpKZ2xMT01XbXgtMGFIU3hqSmVwN2FtNkpjZ3V6aXZCT0JIX1FHeWlJendVY0R3QVlmZXJZcjN3alB0cmhURVdHQVpyZTV3a2hVZE1LYVF3UXBkYjF5TWhYSU1tcWxhMHhlZDU3RGhyR1BPeGxBOWRaQXRRRUZqZXEyclhGd3VqTFRkY0V6OTlKRmZHaGZSZkZZUUNaSE9TY1lmbHFIM3ZWYzFUTXE?oc=5",
-        "date": "2026-11-16",
+        "publisher": "TechTrendsKE",
+        "title": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+        "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNWjhrbldsSlMxdFBjME5wY2lzT0hhZm9sMzZhczNLcFpuYXFwaVJ6ZUxORjkyenM5MjRnazdqRHJNQlBUZUk4c2pJUVJpTDZuRlpBOTdKZFpKOGJ2aXl4ZEpDNGxwSkhMSnNLaEVYc0d5X0xjQnVZMjFuUVpjd1NzY2ltU2NUUQ?oc=5",
+        "date": "2026-11-17",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-11-10",
-    "period_end": "2026-11-16",
-    "selected_at": "2026-11-17T17:00:01.968288+00:00",
+    "period_start": "2026-11-11",
+    "period_end": "2026-11-17",
+    "selected_at": "2026-11-18T00:58:45.136185+00:00",
     "selection_version": 5,
     "companies": [
+      {
+        "company": "Family Bank",
+        "company_url": "/companies?name=Family%20Bank",
+        "headline": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+        "deal_type": "credit_risk",
+        "amount_usd": null,
+        "country": "KE",
+        "sector": "banking",
+        "announced": "2026-11-17",
+        "score": 50.6,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: credit risk",
+          "Event rule confidence: 0.82",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "TechTrendsKE",
+            "title": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+            "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNWjhrbldsSlMxdFBjME5wY2lzT0hhZm9sMzZhczNLcFpuYXFwaVJ6ZUxORjkyenM5MjRnazdqRHJNQlBUZUk4c2pJUVJpTDZuRlpBOTdKZFpKOGJ2aXl4ZEpDNGxwSkhMSnNLaEVYc0d5X0xjQnVZMjFuUVpjd1NzY2ltU2NUUQ?oc=5",
+            "date": "2026-11-17",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-11",
+        "period_end": "2026-11-17",
+        "selected_at": "2026-11-18T00:58:45.136185+00:00",
+        "selection_version": 5
+      },
+      {
+        "company": "AV Group",
+        "company_url": "/companies?name=AV%20Group",
+        "headline": "AV Group adquire participação do Lulo",
+        "deal_type": "insider_activity",
+        "amount_usd": null,
+        "country": "AO",
+        "sector": null,
+        "announced": "2026-11-17",
+        "score": 48.5,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: insider activity",
+          "Event rule confidence: 0.75",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Jornal de Angola",
+            "title": "AV Group adquire participação do Lulo",
+            "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQUFptRVVERlF3N0cwMEFNMEtwMUxXX2oyWmIxdVVRNmh2SUlkY3g1ZGZzeGNXVWF6NFY3dzJ5ejIxZjYxM2E1Ri1sVnp4ZjRxQ3M4a2RpbHVNek1WaHJXMWgyZ1lzaUV3MWp3T2dla2xhUTZuOWlQTmlQZGdIXzkyMXZFdEZ2WHpoOEg1eUIwUUF6dWJsWkljN3pZVUVGMmRKS25ocm0xYWY?oc=5",
+            "date": "2026-11-17",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-11",
+        "period_end": "2026-11-17",
+        "selected_at": "2026-11-18T00:58:45.136185+00:00",
+        "selection_version": 5
+      },
       {
         "company": "Coca-Cola HBC",
         "company_url": "/companies?name=Coca-Cola%20HBC",
@@ -44,7 +112,7 @@
         "country": "ZA",
         "sector": null,
         "announced": "2026-11-16",
-        "score": 53.9,
+        "score": 52.47,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-10",
-        "period_end": "2026-11-16",
-        "selected_at": "2026-11-17T17:00:01.968288+00:00",
+        "period_start": "2026-11-11",
+        "period_end": "2026-11-17",
+        "selected_at": "2026-11-18T00:58:45.136185+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +146,7 @@
         "country": "NG",
         "sector": "insurance",
         "announced": "2026-11-16",
-        "score": 52.4,
+        "score": 50.97,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,121 +166,71 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-10",
-        "period_end": "2026-11-16",
-        "selected_at": "2026-11-17T17:00:01.968288+00:00",
+        "period_start": "2026-11-11",
+        "period_end": "2026-11-17",
+        "selected_at": "2026-11-18T00:58:45.136185+00:00",
         "selection_version": 5
       },
       {
-        "company": "Standard Bank",
-        "company_url": "/companies?name=Standard%20Bank",
-        "headline": "Standard Bank hit with a R17 million fine and administrative sanctions",
-        "deal_type": "regulatory_action",
+        "company": "Zambia Airways",
+        "company_url": "/companies?name=Zambia%20Airways",
+        "headline": "Ethiopian Aviation Executive Aman Wole Gurmu Appointed CEO of Zambia Airways,Third Ethiopian to Lead the National Carrier",
+        "deal_type": "leadership_change",
         "amount_usd": null,
-        "country": "ZA",
-        "sector": "banking",
-        "announced": "2026-11-13",
-        "score": 49.61,
+        "country": "ET",
+        "sector": null,
+        "announced": "2026-11-15",
+        "score": 50.14,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
         "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Daily Investor",
-            "title": "Standard Bank hit with a R17 million fine and administrative sanctions",
-            "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPSkFSbDdFVGxpOV9mRGdLOE0xanNLb1otMzRMOXlpdS1Qc2RvQW83NEEwUFNhUnR5N3BTVkhOMWl1UC1tTE5YUEE3N0N4a2s0SzFhR1psMXNjRExuVjhKTGJxbk5qNmx5Um8xb0hMeDctY0w3bUZHbmZoMmJFYTBJWWJveVgyenpaT0xjSmlvSDJlekwxZl96Ujg2U1RBZHVtaGxFWkc4ZVNpcWF2V3h0UDR3?oc=5",
-            "date": "2026-11-13",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-10",
-        "period_end": "2026-11-16",
-        "selected_at": "2026-11-17T17:00:01.968288+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "Concor",
-        "company_url": "/companies?name=Concor",
-        "headline": "Msikaba bridge set for 2029 completion, despite Concor entering business rescue – Sanral",
-        "deal_type": "distressed_asset",
-        "amount_usd": null,
-        "country": "ZA",
-        "sector": "infrastructure",
-        "announced": "2026-11-13",
-        "score": 48.71,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: distressed asset",
+          "Corporate signal: leadership change",
           "Event rule confidence: 0.90",
           "1 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "Engineering News",
-            "title": "Msikaba bridge set for 2029 completion, despite Concor entering business rescue – Sanral",
-            "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxNN2dLdEpjOVFQMU5QaHN4aGl1b1RlZ3R3ZEtod3p2SjllMlJWb2JhczRJTVViNmN1NENqNU9pVmFSdXdUb19jWXR6bHlobmxLU2RDaXhSRVk1cFBlVTRHQkd3Z0NiMUVqY1dVNVhyNjFkSlhzU1pld3doaHhhc2haMEVLZ3FjNEtZQTB0R0FCY0QxeU9fU2dPVkVkeDdMUUN4QUJRWlZyVy1zY3lld2EwLURvbTZ1RDJZaFRKMXcwOENCTkhPb285dTJYSUxnbVo4OXRQeA?oc=5",
-            "date": "2026-11-13",
+            "publisher": "Ethiopian Business Review",
+            "title": "Ethiopian Aviation Executive Aman Wole Gurmu Appointed CEO of Zambia Airways,Third Ethiopian to Lead the National Carrier",
+            "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxPTGRVZW1fVjIyUDZ1MkJER1E4X0dWSVU2bFpqYVRSLUFwbnZjMGdPNHRiV0JTVEdCdGdMY1dIaVRSbG1mYU5wU0N2YU1jbHQ5dVhLWUEzaU9wam16WEo5emRvSEo0bDR2aHZDWWl4eVlzLVpVT2Y4bUxOc2JjMHdWZlNBN3dldV9aY0dwWW1OdVFLcHFLMEd3My1ienU0TWRWdXdWWVU5TjhIQjJ2aHh0NVJzYTg4YWZBRmx3Wl83VjVNSlhiZ0hYbDBkUnZYOW5IWmJGNTNOZ24tWmFxT1ZkMXc5aHllcHhBRWR1V1FR?oc=5",
+            "date": "2026-11-15",
             "kind": "corporate_event"
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-10",
-        "period_end": "2026-11-16",
-        "selected_at": "2026-11-17T17:00:01.968288+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "Alternative Bank",
-        "company_url": "/companies?name=Alternative%20Bank",
-        "headline": "Sterling HoldCo Subsidiary, Alternative Bank appoints Gul Khan as MD/CEO",
-        "deal_type": "leadership_change",
-        "amount_usd": null,
-        "country": "NG",
-        "sector": "banking",
-        "announced": "2026-11-11",
-        "score": 46.31,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.75",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Nairametrics",
-            "title": "Sterling HoldCo Subsidiary, Alternative Bank appoints Gul Khan as MD/CEO",
-            "url": "https://nairametrics.com/2026/11/11/sterling-holdco-subsidiary-alt-bank-appoints-gul-khan-as-md-ceo/",
-            "date": "2026-11-11",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-10",
-        "period_end": "2026-11-16",
-        "selected_at": "2026-11-17T17:00:01.968288+00:00",
+        "period_start": "2026-11-11",
+        "period_end": "2026-11-17",
+        "selected_at": "2026-11-18T00:58:45.136185+00:00",
         "selection_version": 5
       }
     ],
     "runner_ups": [
       {
-        "company": "OSP",
-        "score": 45.33,
+        "company": "Standard Bank",
+        "score": 48.19,
         "reasons": [
           "Corporate signal: regulatory action",
           "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "Concor",
+        "score": 47.29,
+        "reasons": [
+          "Corporate signal: distressed asset",
+          "Event rule confidence: 0.90",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "Alternative Bank",
+        "score": 44.88,
+        "reasons": [
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.75",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -5042,6 +5060,241 @@
           "reasons": [
             "Corporate signal: regulatory action",
             "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
+    },
+    {
+      "company": "Family Bank",
+      "company_url": "/companies?name=Family%20Bank",
+      "headline": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+      "deal_type": "credit_risk",
+      "amount_usd": null,
+      "country": "KE",
+      "sector": "banking",
+      "announced": "2026-11-17",
+      "score": 50.6,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: credit risk",
+        "Event rule confidence: 0.82",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "TechTrendsKE",
+          "title": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNWjhrbldsSlMxdFBjME5wY2lzT0hhZm9sMzZhczNLcFpuYXFwaVJ6ZUxORjkyenM5MjRnazdqRHJNQlBUZUk4c2pJUVJpTDZuRlpBOTdKZFpKOGJ2aXl4ZEpDNGxwSkhMSnNLaEVYc0d5X0xjQnVZMjFuUVpjd1NzY2ltU2NUUQ?oc=5",
+          "date": "2026-11-17",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-11",
+      "period_end": "2026-11-17",
+      "selected_at": "2026-11-18T00:58:45.136185+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "Family Bank",
+          "company_url": "/companies?name=Family%20Bank",
+          "headline": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+          "deal_type": "credit_risk",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": "banking",
+          "announced": "2026-11-17",
+          "score": 50.6,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: credit risk",
+            "Event rule confidence: 0.82",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "TechTrendsKE",
+              "title": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+              "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNWjhrbldsSlMxdFBjME5wY2lzT0hhZm9sMzZhczNLcFpuYXFwaVJ6ZUxORjkyenM5MjRnazdqRHJNQlBUZUk4c2pJUVJpTDZuRlpBOTdKZFpKOGJ2aXl4ZEpDNGxwSkhMSnNLaEVYc0d5X0xjQnVZMjFuUVpjd1NzY2ltU2NUUQ?oc=5",
+              "date": "2026-11-17",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-11",
+          "period_end": "2026-11-17",
+          "selected_at": "2026-11-18T00:58:45.136185+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "AV Group",
+          "company_url": "/companies?name=AV%20Group",
+          "headline": "AV Group adquire participação do Lulo",
+          "deal_type": "insider_activity",
+          "amount_usd": null,
+          "country": "AO",
+          "sector": null,
+          "announced": "2026-11-17",
+          "score": 48.5,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Jornal de Angola",
+              "title": "AV Group adquire participação do Lulo",
+              "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQUFptRVVERlF3N0cwMEFNMEtwMUxXX2oyWmIxdVVRNmh2SUlkY3g1ZGZzeGNXVWF6NFY3dzJ5ejIxZjYxM2E1Ri1sVnp4ZjRxQ3M4a2RpbHVNek1WaHJXMWgyZ1lzaUV3MWp3T2dla2xhUTZuOWlQTmlQZGdIXzkyMXZFdEZ2WHpoOEg1eUIwUUF6dWJsWkljN3pZVUVGMmRKS25ocm0xYWY?oc=5",
+              "date": "2026-11-17",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-11",
+          "period_end": "2026-11-17",
+          "selected_at": "2026-11-18T00:58:45.136185+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Coca-Cola HBC",
+          "company_url": "/companies?name=Coca-Cola%20HBC",
+          "headline": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ZA",
+          "sector": null,
+          "announced": "2026-11-16",
+          "score": 52.47,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Sharecast.com",
+              "title": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+              "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPQS1CQ0hzbFZyLXc2OVlYeUdyNlB0T3lFcVF1aXRfdlYxdW5QTWNRR0kwYllaM2s5Z3Fkb1JsNUpKZ2xMT01XbXgtMGFIU3hqSmVwN2FtNkpjZ3V6aXZCT0JIX1FHeWlJendVY0R3QVlmZXJZcjN3alB0cmhURVdHQVpyZTV3a2hVZE1LYVF3UXBkYjF5TWhYSU1tcWxhMHhlZDU3RGhyR1BPeGxBOWRaQXRRRUZqZXEyclhGd3VqTFRkY0V6OTlKRmZHaGZSZkZZUUNaSE9TY1lmbHFIM3ZWYzFUTXE?oc=5",
+              "date": "2026-11-16",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-11",
+          "period_end": "2026-11-17",
+          "selected_at": "2026-11-18T00:58:45.136185+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Fortis Global Insurance",
+          "company_url": "/companies?name=Fortis%20Global%20Insurance",
+          "headline": "Nigeria : Fortis Global Insurance réduit sa perte nette de 35,5 %, à 1,03 million de dollars à fin septembre 2026",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "insurance",
+          "announced": "2026-11-16",
+          "score": 50.97,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.72",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Financial Afrik",
+              "title": "Nigeria : Fortis Global Insurance réduit sa perte nette de 35,5 %, à 1,03 million de dollars à fin septembre 2026",
+              "url": "https://www.financialafrik.com/2026/11/16/nigeria-fortis-global-insurance-reduit-sa-perte-nette-de-355-a-103-million-de-dollars-a-fin-septembre-2026/",
+              "date": "2026-11-16",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-11",
+          "period_end": "2026-11-17",
+          "selected_at": "2026-11-18T00:58:45.136185+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Zambia Airways",
+          "company_url": "/companies?name=Zambia%20Airways",
+          "headline": "Ethiopian Aviation Executive Aman Wole Gurmu Appointed CEO of Zambia Airways,Third Ethiopian to Lead the National Carrier",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "ET",
+          "sector": null,
+          "announced": "2026-11-15",
+          "score": 50.14,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Ethiopian Business Review",
+              "title": "Ethiopian Aviation Executive Aman Wole Gurmu Appointed CEO of Zambia Airways,Third Ethiopian to Lead the National Carrier",
+              "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxPTGRVZW1fVjIyUDZ1MkJER1E4X0dWSVU2bFpqYVRSLUFwbnZjMGdPNHRiV0JTVEdCdGdMY1dIaVRSbG1mYU5wU0N2YU1jbHQ5dVhLWUEzaU9wam16WEo5emRvSEo0bDR2aHZDWWl4eVlzLVpVT2Y4bUxOc2JjMHdWZlNBN3dldV9aY0dwWW1OdVFLcHFLMEd3My1ienU0TWRWdXdWWVU5TjhIQjJ2aHh0NVJzYTg4YWZBRmx3Wl83VjVNSlhiZ0hYbDBkUnZYOW5IWmJGNTNOZ24tWmFxT1ZkMXc5aHllcHhBRWR1V1FR?oc=5",
+              "date": "2026-11-15",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-11",
+          "period_end": "2026-11-17",
+          "selected_at": "2026-11-18T00:58:45.136185+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": [
+        {
+          "company": "Standard Bank",
+          "score": 48.19,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Concor",
+          "score": 47.29,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Alternative Bank",
+          "score": 44.88,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
         }
