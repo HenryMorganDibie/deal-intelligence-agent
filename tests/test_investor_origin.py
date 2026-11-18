@@ -116,6 +116,6 @@ def test_article_reader_records_only_unambiguous_descriptions():
     fetched, recorded = [], []
     pages = {"https://example.com/a": page, "https://example.com/b": mixed}
     result = io.read_articles(deals, lambda u: fetched.append(u) or pages.get(u), lambda *a: recorded.append(a))
-    assert fetched == ["https://example.com/a", "https://example.com/b"]          # Google News links are never followed
+    assert fetched == ["https://news.google.com/rss/articles/x", "https://example.com/a", "https://example.com/b"]
     assert [(r[1], r[2]) for r in recorded] == [("Madica", "KE")]                  # conflicting Saviu left to the owner
-    assert "Nairobi-based" in recorded[0][3] and result == {"fetched": 2, "recorded": 1}
+    assert "Nairobi-based" in recorded[0][3] and result == {"fetched": 3, "recorded": 1}
