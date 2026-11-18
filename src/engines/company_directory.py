@@ -103,7 +103,7 @@ def _listed_row(q: dict) -> dict:
             "price": q.get("price"), "currency": q["currency"], "chg_1d": q.get("chg_1d"), "ytd_usd": q.get("ytd_usd"),
             "mcap_usd": q.get("mcap_usd"), "pe": q.get("pe"), "date": q.get("date"), "stale": q["stale"],
             "delayed": q.get("delayed", False), "quote_time": q.get("quote_time"),
-            "secondary_of": q.get("secondary_of")}
+            "secondary_of": q.get("secondary_of"), "foreign_primary": bool(q.get("foreign_primary"))}
 
 
 def event_companies(events: Iterable[dict]) -> list[dict]:

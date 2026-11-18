@@ -315,9 +315,10 @@ def test_seed_order_listed_by_value_then_licensed_with_site_then_busiest_private
         {"kind": "listed", "name": "Big Plc", "country": "NG", "mcap_usd": 9e9},
         {"kind": "listed", "name": "Big Plc Secondary", "country": "KE", "mcap_usd": 9e9, "secondary_of": "Big Plc"},
         {"kind": "private", "name": "Quiet Startup", "country": "NG", "deal_count": 1},
+        {"kind": "listed", "name": "Global Mining Group", "country": "ZA", "mcap_usd": 9e11, "foreign_primary": True},
     ]
     names = [n for n, _, _ in cw.seed_candidates(rows)]
-    assert names == ["Big Plc", "Small Plc", "Busy Startup"]       # no secondary lines, no one-deal companies
+    assert names == ["Big Plc", "Small Plc", "Global Mining Group", "Busy Startup"]  # foreign primaries after African listings
 
 
 def test_seed_skips_companies_already_read_or_queued(monkeypatch):

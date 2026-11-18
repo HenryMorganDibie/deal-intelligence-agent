@@ -575,8 +575,10 @@ def seed_candidates(directory: list[dict]) -> list[tuple[str, Optional[str], Opt
                 sites[name_key(r["name"])] = r["website"]
     except (OSError, ValueError):
         pass
+    # Groups listed primarily abroad (BHP, AB InBev, Richemont on Johannesburg) go last: their worldwide caps would
+    # otherwise put them ahead of every African company.
     listed = sorted((r for r in directory if r.get("kind") == "listed" and not r.get("secondary_of")),
-                    key=lambda r: -(r.get("mcap_usd") or 0))
+                    key=lambda r: (bool(r.get("foreign_primary")), -(r.get("mcap_usd") or 0)))
     licensed = [r for r in directory if r.get("kind") != "listed" and name_key(r["name"]) in sites]
     private = sorted((r for r in directory if r.get("kind") == "private" and (r.get("deal_count") or 0) >= 2),
                      key=lambda r: -(r.get("deal_count") or 0))
