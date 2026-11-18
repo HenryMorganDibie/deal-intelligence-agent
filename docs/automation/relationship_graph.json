@@ -1655,6 +1655,14 @@
     "zanaco": {
       "name": "Zanaco",
       "kind": "organization"
+    },
+    "daystar": {
+      "name": "Daystar",
+      "kind": "organization"
+    },
+    "naira": {
+      "name": "Naira",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -5608,6 +5616,11 @@
           "title": "A.P. Moller Capital acquires Mainstream Renewable Power South Africa in major clean energy deal",
           "publisher": "Innovation Village",
           "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNSENOd0dTRTlMVHhqYXB4VXhSeXMwYy1WNExZWkZUVVRDUVZURXRRdnZhMk9lWEF6d0V3NnNBdXhtTU1QMndnakJ5VWgtZDdPdHJaaVRIZnk1SDdJMEFJcjJlY09oS0xwbng1OGhYeEtpUFYzY3lkR3R5MFpKSDBJaC1VNGxMNTNFU2NBd1dUcXJQMldwN0NCaGhkdUd0aTczcXdjWFFVWktzcWR6OTVXR293NEZWTlJ4V0JsbzZBNmVrNHIz?oc=5"
+        },
+        {
+          "title": "A. P. Moller Capital completes acquisition of Mainstream Renewable Power South Africa",
+          "publisher": "thenational.co.za",
+          "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPbEprR2NFbzNaYlBTOXhHZ2VWZ2dKY2ZlNldGdlVDdWhRc2habWVuV3FRUjRjT1Foby10TDl2eDg3UVNFd20zUWswTzIzS2hUbFNxMGM5OWhnLWEyeFlYXzM0bGplM0dYcnFQVldGSFJBb01KU0tKc1RZek1IaFQtV2tRSDdtYnVqVHRoa01Lalk1eXlGRGlaQlcxSFZrdXBIRW1GVkUzSFdmcnB0allHNktUS2ZHbWJ1SzcwSFl1Q3Fpb2xw?oc=5"
         }
       ]
     },
@@ -5702,6 +5715,11 @@
           "title": "Shell Exits Nigeria, Ghana Solar Business as Elektron Acquires Daystar Power",
           "publisher": "THISDAYLIVE",
           "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOeHRJSW1LRVVIckRBSU9FeU1MemxQTlc2WlpKWmFjZDNRQllMUDgwb1NmN3JnR0tOemxKUnlUS3hFSTQzeWZkb2xsdjIxMWFxVUtJb0ZCc21GYzlnMTcxM2VJYUZ2R0hzUXRrbVcwWTNGSmVEZ3NMaUw1QWlxbG1seHdkQTdDTmIzUFNQdzRwWENLZGY0aXhHdWxQSHdGYlN2WnBCclFxdExvTnJybGdHWGxXckZiUQ?oc=5"
+        },
+        {
+          "title": "Elektron To Acquire Daystar Power From Shell In West Africa",
+          "publisher": "Brand Spur",
+          "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE5VaS1uMDJtT045TWtuenlVWm9hWGtYYUNqTGJWU3o5NWJpT1dTbF9tS3Rpak1LR0FTVUNIUTY2QlAtclllbkNLbDlRdmtxbUtCRzYweW5KNTFrNkdUOUNsRzZuNGVmQzdWZGRiaGtvVHlCNVpMWFNxREdjQnDSAYIBQVVfeXFMTWtlM0diY25TY2F4MlFLZUpYb3BnOTlsNm93R2NuUVBpcHZhVnV6djRRTU1XZm9hR0Z2Qm43ejJhQ2oyS3pDS2xkQkV4MFlxUGt6d284dzQ4U2VNbVdTVGwtLUhJLU40Nk1ubm5aNFR5M3RDSl9jZnFaX2k3VTMyRVhsZw?oc=5"
         }
       ]
     },
@@ -5730,6 +5748,11 @@
           "title": "EBRD provides $100m loan to National Bank of Egypt",
           "publisher": "Africa Business Communities",
           "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOU2RJdkYxZzdHWkM1Tk4xOVVUaU1jYnhVdUdqZGdXdHdpYlhRckJvOVlDaVI3a2trYnZ1SEZjay1QbEpVeXk4U3FuRXdsdDVGRUxoaWNNT0ZqTFR2djE0U2dtZF9xSDVpZXdCdDVLYTRiYnVwQnM2VUNXYWd1dGFFVU5NbXJWdVhRTWdIZzdKa1dpMXRfVHktc3BUYmg?oc=5"
+        },
+        {
+          "title": "EBRD provides $100m financing to National Bank of Egypt",
+          "publisher": "Daily News Egypt",
+          "url": "https://dailynewsegypt.com/2026/11/18/ebrd-provides-100m-financing-to-national-bank-of-egypt/"
         }
       ]
     },
@@ -5773,6 +5796,11 @@
           "title": "Sunbeth completes acquisition of 73.29% stake in Livestock Feeds Plc",
           "publisher": "Head Topics",
           "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxOOW5RV3dhZ1kzR2I3QnEyUlF3emI0WFB5ZnBtUDZ4UllTQVBXNzVVSDFvZGpqMFdWR0VESjIzdzlWZEVsTGF4X0dkVXp5c3RiRW9UYWJHc3IxNUZrMWloeE02cG9Oa2Z6NGVheDNfXzdsQTJJTGl4RDNWNmNLRGhTbzVkV2wxRnFwMG9zWkV2MVJ5aU9IOUQwUEktcUp0QQ?oc=5"
+        },
+        {
+          "title": "Sunbeth completes acquisition of controlling stake in Livestock Feeds Plc",
+          "publisher": "Premium Times Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPaExYdm5iMXp2dFNBX05CSWtHQXNxbUx3bXhvWEI1UE1JeHFDenhhZWxIdm9lMF9lMWZ6TlA5MnpCTUwyYmxpeVBleDdSUDAybFpRYW5xYXpPWk9md29kLXdVcnd5S0xtc1RHNkxLRU5YcV9BZk5sUkJDMzFSZzl1SGIxeVpfd1BhMldSbGlwYzkzS090SU90Zks1Q3FOMXpDeEY2a0VSSy10SlZKNzg0YjFBUU9nM242aVFBNklyV3B5ZGs?oc=5"
         }
       ]
     },
@@ -5885,9 +5913,42 @@
           "title": "Swedfund invests USD 35 million in Zanaco to support MSMEs and advance financial inclusion in Zambia",
           "publisher": "Mynewsdesk",
           "url": "https://news.google.com/rss/articles/CBMi0gJBVV95cUxOZFBrYWk0eEk0Z1lEOGdLeTRtXzJib3YxR3huN1lBOTJVeG5yYVNMRHQ3NE9kNTdJcEQ2enNPMWE1OGhzenllQ3ZqSUFHTjk3WHdfVFhZZVBzREpVM2FyeVYwTVJ0Wm9Gc1h6NnZ1a0JkQkEtcWxZdW02UndRODFUTXZvMWo2dk9lU0Y0Qi1EU1UxNURIdC1VT1BaRFQzcUtLcVZBaGdyYzc1cmFBY0dzbkJHWUR2ZnViTDl2T0I4N0xqYmtsR2lGY1BKNTkzVjdrcU9yWFFJekVXUlQ1OVViTGhQVkNpcExCTFRBcF9Mb1NVbHdfakpxMl9tY2tsNzNrYjA1YWVKNktZWVo5MF9CejV5T0tiTWx2NDRPNi1qdGlLZ2l3bWptbTZ2RHdyQU9tNGRMd1p6bVhRV1VmRVY4MjRWc1pBaHphbGI4Z292XzVnUQ?oc=5"
+        },
+        {
+          "title": "Swedfund invests USD 35 million in Zanaco to support MSMEs and advance financial inclusion in Zambia",
+          "publisher": "Mynewsdesk",
+          "url": "https://news.google.com/rss/articles/CBMi7wFBVV95cUxPN05CcEpTSTAtNm42a0N3Y25UYzEtU2lvSGphVVhGb003SWhoM3RveHhiTjZSeW5qcHg5TmFvdVdySV95RUNwR3pMWWs2WnNzdW1EN3laalo2d0JqZF80eW9oRWlSRnBfQ3B6RFhmMWtRMmh1NWxUZ1dsTmtGZFN0dHlqd3ZwMnhYNEpOTmtBWnF1QzZLUkZMVmpycTFNQlZjaWZPekgxQWRFaWM3ZW83VWR4TEpnWDlPUWJlOHVOdTJaX1o2QkRHa0J1Rzl0dXQzdVJVbkc4a2l3N0M2N1lqVHcyTFd4SlFVaHdnN2M3dw?oc=5"
+        }
+      ]
+    },
+    "e3f386cb3503068ed775": {
+      "id": "e3f386cb3503068ed775",
+      "from": "elektron",
+      "to": "daystar",
+      "type": "exit",
+      "first_seen": "2026-11-18",
+      "sources": [
+        {
+          "title": "Shell agrees to sell 100% of Daystar to Nigeria’s Elektron, transferring a 150MW solar platform serving five West African markets",
+          "publisher": "Business Insider Africa",
+          "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxNeEYzTXowWjJFQ0k4V3JYVGd5c2k2UVFsWFlJZ25aaXJnV3U4N2owZmh5R25VWGZUM082MHFCRmlTNkNqMDFkcWVIa3RsRFBZREdWNnBJUkVJYTNoU0pvdkdROFU1b19PYVdISXEzbzdhM2JOUE1FY3ZjWDl2NjBnNkdHNzFJM2pHSVF1YU54djhlZU01ckRfM1dNRGRfY0lSME1IUUdWZlNXcm1Tdm1hdndTU1JDcXlSa1hrUWtiX21GS2lUbGMxTVhIRkVxZkpPOHhNTFZn?oc=5"
+        }
+      ]
+    },
+    "3228e79ad939b8a59f4f": {
+      "id": "3228e79ad939b8a59f4f",
+      "from": "sunbeth",
+      "to": "naira",
+      "type": "acquisition",
+      "first_seen": "2026-11-18",
+      "sources": [
+        {
+          "title": "Seyi Ebenezer Joins Livestock Feeds Board After Sunbeth's 19.5 Billion Naira Acquisition of UAC Stake",
+          "publisher": "Head Topics",
+          "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxOR0EtckdJQUFqWjBCWGdUUEotMVg1N3NoejV5Rnd4aWZyS1FzVjRSY3ZucFVYQ1FuTXNaVnhQVU1wWkVDZWxYTDd1X252S1VramlKN3dOYk1TZDNMR1NhY0dzOEgzYUFZT3lFZ0dhX1J5eVNlaGdXd2YzRVl4M2ZlZ1o3VkdvME1FaWwtLW9DWEhwTXdEWnlLcmtpdnU3bEE?oc=5"
         }
       ]
     }
   },
-  "updated_at": "2026-11-18T13:22:35.265917+00:00"
+  "updated_at": "2026-11-18T22:16:59.753330+00:00"
 }

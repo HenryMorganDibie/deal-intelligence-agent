@@ -752,3 +752,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MTNGH.GH"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/MTN_Nigeria_-_2025_AFS.pdf", "status": "collected", "ticker": "MTNN.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MTNZF.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MULTITREX.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MULTIVERSE.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MURZA.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MUT.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MZR.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46503_NIGERIAN_AVIATION_HANDLING_COMPANY_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "NAHCO.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NAHO.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "NAKL.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "NAPR.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/43263_NASCON_ALLIED_INDUSTRIES_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2024_FINANCIAL_STATEMENTS_MARCH_2025.pdf", "status": "collected", "ticker": "NASCON.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "NASR.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/43146_NIGERIAN_BREWERIES_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2024_FINANCIAL_STATEMENTS_FEBRUARY_2025.pdf", "status": "collected", "ticker": "NB.LG"}
