@@ -740,3 +740,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MSA.CS"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MSC.NR"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-17", "market": "africa", "status": "no_annual_data_returned", "ticker": "MSM.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MSP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MST.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MTA.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MTECH.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MTH.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MTI.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MTIE.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MTM.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "MTN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MTNGH.GH"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/MTN_Nigeria_-_2025_AFS.pdf", "status": "collected", "ticker": "MTNN.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "MTNZF.JO"}

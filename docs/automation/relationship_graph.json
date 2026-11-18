@@ -1619,6 +1619,42 @@
     "elektron renewables": {
       "name": "Elektron Renewables",
       "kind": "organization"
+    },
+    "finance smes": {
+      "name": "Finance SMEs",
+      "kind": "organization"
+    },
+    "securitize": {
+      "name": "Securitize",
+      "kind": "organization"
+    },
+    "river one": {
+      "name": "River One",
+      "kind": "organization"
+    },
+    "flsmidth": {
+      "name": "FLSmidth",
+      "kind": "organization"
+    },
+    "ce africa": {
+      "name": "CE Africa",
+      "kind": "organization"
+    },
+    "rwd investments": {
+      "name": "RWD Investments",
+      "kind": "organization"
+    },
+    "equity bank": {
+      "name": "Equity Bank",
+      "kind": "organization"
+    },
+    "swedfund": {
+      "name": "Swedfund",
+      "kind": "organization"
+    },
+    "zanaco": {
+      "name": "Zanaco",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -5567,6 +5603,11 @@
           "title": "A.P. Moller Capital completes acquisition of Mainstream Renewable Power South Africa",
           "publisher": "Africa Private Equity News",
           "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNZTcxbDVXazBJNW1KSm5pbHdxc1ZvSHBnRTJWa1o1NFUyWEdrd29wb2oxZ1RwQ1RReWdyenpZVjd1bzJyMG1WYWR1N0lqbU11ZFAzMFg2aW9fQ3JHVTlGVnVURGt5Tk1PWU9ncmN6Y2xtWncyM3RCMEdJZFgzaWpDYW50LWRlMHdo?oc=5"
+        },
+        {
+          "title": "A.P. Moller Capital acquires Mainstream Renewable Power South Africa in major clean energy deal",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNSENOd0dTRTlMVHhqYXB4VXhSeXMwYy1WNExZWkZUVVRDUVZURXRRdnZhMk9lWEF6d0V3NnNBdXhtTU1QMndnakJ5VWgtZDdPdHJaaVRIZnk1SDdJMEFJcjJlY09oS0xwbng1OGhYeEtpUFYzY3lkR3R5MFpKSDBJaC1VNGxMNTNFU2NBd1dUcXJQMldwN0NCaGhkdUd0aTczcXdjWFFVWktzcWR6OTVXR293NEZWTlJ4V0JsbzZBNmVrNHIz?oc=5"
         }
       ]
     },
@@ -5656,6 +5697,11 @@
           "title": "Shell exits Nigeria, Ghana solar markets as Elektron acquires Daystar Power",
           "publisher": "Business Hallmark",
           "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxOdmtoc3hjdktCTURVS0xlY3llNXV3UFNRY0xFVVNJUkd2Z3I2U2JYQjNwOHVDcW5fUlBxRUhfQWZldm9rbmpoX21MMDEtQTA4NmtrTkg2QVlQWUNySk44bEExdk5oVW0ydS0tNjF4NXoyUmJxd0Q4QlNBcjdRZDdRZXJOYTVzNjd3UmJpYWdOZ1ZEcE9VMHB2eWozNXJuLTc3YUHSAaIBQVVfeXFMTnZraHN4Y3ZLQk1EVUtMZWN5ZTV1d1BTUWNMRVVTSVJHdmdyNlNiWEIzcDh1Q3FuX1JQcUVIX0FmZXZva25qaF9tTDAxLUEwODZra05INkFZUFlDckpOOGxBMXZOaFVtMnUtLTYxeDV6MlJicXdEOEJTQXI3UWQ3UWVyTmE1czY3d1JiaWFnTmdWRHBPVTBwdnlqMzVybi03N2FB?oc=5"
+        },
+        {
+          "title": "Shell Exits Nigeria, Ghana Solar Business as Elektron Acquires Daystar Power",
+          "publisher": "THISDAYLIVE",
+          "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOeHRJSW1LRVVIckRBSU9FeU1MemxQTlc2WlpKWmFjZDNRQllMUDgwb1NmN3JnR0tOemxKUnlUS3hFSTQzeWZkb2xsdjIxMWFxVUtJb0ZCc21GYzlnMTcxM2VJYUZ2R0hzUXRrbVcwWTNGSmVEZ3NMaUw1QWlxbG1seHdkQTdDTmIzUFNQdzRwWENLZGY0aXhHdWxQSHdGYlN2WnBCclFxdExvTnJybGdHWGxXckZiUQ?oc=5"
         }
       ]
     },
@@ -5712,6 +5758,21 @@
           "title": "Sunbeth completes acquisition of controlling stake in Livestock Feeds Plc",
           "publisher": "The Sun Nigeria",
           "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPWDh3SG5JVHhacXA2SzFjdmlkZHJWMHNzTTRTcXAxanJpal9oaGJMMG0xaTRnMU9YdlMwN19acXdHb2phM1VKQllDdG5teHZ5WHF5RUhLZkM4OTQ0bnpOTnltM1ZTajdXREMtMC1sR1d3TVJYZTg4OTBLbjBfMU84ejBwMm1fZGlJMUI1SWVwTmlmamRVS1U4?oc=5"
+        },
+        {
+          "title": "Sunbeth acquires controlling stake in Livestock Feeds Plc",
+          "publisher": "The Guardian Nigeria News",
+          "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxObWIzdzhtUDlCdW9pWTZpWmZIN2JXbTJnazhqSjg2dGNXbzQwTjFoQVZ5alBuSGtPcjliLU5RVWtqNFRDRlREQjRMZlZwc25xenRmOUIwQ0FDT0FTZWZ1WlhXdFoyNkFHcTdYWlUtakswV3ZtZF9wQ2h2LWRIWkttV3RxeVRpYlVsWl80?oc=5"
+        },
+        {
+          "title": "Sunbeth completes acquisition of controlling stake in Livestock Feeds Plc",
+          "publisher": "The Nation Newspaper",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOb1N1Y3REQkJjT25uODY5NkFVbXlCQU1lTE55OVlTeGdqU2RjdWNwWG1zaVhQM29uNWxibDU4T1ZyX1RPeFFVYkJnenNLOWs5OVJQbWRGTDRkMWloeTBmX21QX1J6cmJEelNhaG5mUGJlM1NNaWt0Ul9HcEhzaWlFQlJkTl9rcXZfbExHSWgzaFBvS252ZlZHVnlCX3BJOU5zcXdINFVtSdIBrAFBVV95cUxPdG94bWZGbS1oTGNJd0tQN291dTB4Rzhpazlqek45ZHF1dDJaRElYbUNUb3l2bnVTeTBPNHZiUTgwYTBJSG1RNnhXLTdCOFBlYjdrcWR6b1RlMy1jZmdCcFpCaXZZTjdCckFYN0ZTSXctMlNYdmZOZWRUdFN6b0FKUmRqbVE4RW5vS0J4WXhfZVBTalJmVFhIbl9GYXY4dnhGV1Qzcno0NjdXTlA5?oc=5"
+        },
+        {
+          "title": "Sunbeth completes acquisition of 73.29% stake in Livestock Feeds Plc",
+          "publisher": "Head Topics",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxOOW5RV3dhZ1kzR2I3QnEyUlF3emI0WFB5ZnBtUDZ4UllTQVBXNzVVSDFvZGpqMFdWR0VESjIzdzlWZEVsTGF4X0dkVXp5c3RiRW9UYWJHc3IxNUZrMWloeE02cG9Oa2Z6NGVheDNfXzdsQTJJTGl4RDNWNmNLRGhTbzVkV2wxRnFwMG9zWkV2MVJ5aU9IOUQwUEktcUp0QQ?oc=5"
         }
       ]
     },
@@ -5728,7 +5789,105 @@
           "url": "https://launchbaseafrica.com/2026/11/17/elektron-renewables-to-acquire-daystar-power-from-shell-in-west-african-solar-bet/?utm_source=rss&utm_medium=rss&utm_campaign=elektron-renewables-to-acquire-daystar-power-from-shell-in-west-african-solar-bet"
         }
       ]
+    },
+    "3d42b06a3ad72e977f62": {
+      "id": "3d42b06a3ad72e977f62",
+      "from": "afdb",
+      "to": "finance smes",
+      "type": "debt_financing",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "AfDB Approves $102m Facility To Finance SMEs, Create 6,000 Jobs In Nigeria",
+          "publisher": "News Agency of Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxQQmZocXQwR3lRbjlmdFVicGpGYXJRTU4wd3UtTkRjVXlKSGUxRzZqdUprZDNoVGRLLWlXbmlYNTYxRTlNekhvZ1JDUU1LRHZCNG56YVpSVllUVUJ0TTl6OEVzU09XLVdYN2hCWng5UHQyY0ZhcVFILWlJOFU0aG55bjVyaGRRcGcwUTVFU0JSUTFYOFFqN1E?oc=5"
+        }
+      ]
+    },
+    "70e8f9f89bd0b18b9af5": {
+      "id": "70e8f9f89bd0b18b9af5",
+      "from": "securitize",
+      "to": "river one",
+      "type": "acquisition",
+      "first_seen": "2026-11-17",
+      "sources": [
+        {
+          "title": "Securitize completes acquisition of River One credit platform By Investing.com",
+          "publisher": "Investing.com South Africa",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNbE5adkgtTjZyZkpDTzhYMGNXcEhiLTh5RUlIVEE0dXdJWHR1WkE2bEVVR3piLUg5ZWpZbDlYTm92NnEzODkzSTlJY21DZGtSZm50ZDNHUGZCZWlhLV9KT2lFdzhIV1BScUFYaWQ2S1J6LU5KSk5BeGdMa1FhUFJ1UXE5VzlqTmNWS2dadmZNZ3lpTlc2Q1VkQ3Vua2pjQ2hRYjNDZWZCWUxxVDBzWUxTaTJfaER3cXlhcVAweElLaw?oc=5"
+        }
+      ]
+    },
+    "b19796d5daacd8cef9bd": {
+      "id": "b19796d5daacd8cef9bd",
+      "from": "flsmidth",
+      "to": "ce africa",
+      "type": "acquisition",
+      "first_seen": "2026-11-18",
+      "sources": [
+        {
+          "title": "Danish mining giant FLSmidth acquires CE Africa in strategic Southern Africa expansion",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOZVRzdnMzWG1kUkhiZWVLaWd0b0hnd3k4T3prY0k4bVhNX1dISUlWTXJMVXpSQTlXNHpJdEtWbFRnZGU1Vnk1YXVXaVZSY29fREplT2VEYmxEdXMwVEVKeVZKRHhCWkhXR25qUTFhM1FhaGE4d2FUOWNrM0Z3VmEzWjYzYTY5eEFUV3hBbHFRREJxRXhRV2pTSnhaN2Y5R3NYemplMUwydThWWkQ1akhlZmdQZGRWVkY5akE?oc=5"
+        }
+      ]
+    },
+    "5594992b2cab8fe72336": {
+      "id": "5594992b2cab8fe72336",
+      "from": "ebrd",
+      "to": "rwd investments",
+      "type": "acquisition",
+      "first_seen": "2026-11-18",
+      "sources": [
+        {
+          "title": "EBRD acquires 30% stake in Egypt’s RWD Investments for $31mln",
+          "publisher": "Zawya",
+          "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOMkMydFc0ejYxN3B3ZzNVQ2NDMUI0UlR4R043QUtEa3dXcFl3REFrSGZhSjJfM2ZaU1dtTHZOWnNyOUhuMkZ1Mjduam5pS0lYb0paemE0Tk9TR1hBVVlYeGpoLThQbldkWE1FbFhpUjlkTkk5RUZlUVJhdUtJal91U0NCUmtHaUpDWXBONHk2Q3YxcE1vUHN3aVR4bDF5NlhfMDI4bk96ZS1zaHM?oc=5"
+        }
+      ]
+    },
+    "46e9f63a1a45795a7415": {
+      "id": "46e9f63a1a45795a7415",
+      "from": "ebrd",
+      "to": "undisclosed desalination platform",
+      "type": "acquisition",
+      "first_seen": "2026-11-18",
+      "sources": [
+        {
+          "title": "EBRD takes stake in Egypt desalination platform",
+          "publisher": "MEED",
+          "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTFAzS0hlUU1oRUlEclk1c0UxdGp0Zm52UEhBTDUzZjdoU2ZyRWpUeVR2RGR6bW9VaS1hakd1OG5lX2V0WkQ5SDdWbnBDQ2NscThLV2diZHc3ZktrUW9sMkhyU2VDa1VOZnJGS3pCam1yN2tuZ09CUmww?oc=5"
+        }
+      ]
+    },
+    "139645faa10f9e8e82cd": {
+      "id": "139645faa10f9e8e82cd",
+      "from": "afdb",
+      "to": "equity bank",
+      "type": "equity_funding",
+      "first_seen": "2026-11-18",
+      "sources": [
+        {
+          "title": "AfDB backs Equity Bank with $150m to lend to Kenyan SMEs",
+          "publisher": "Sacco Review",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxOaTcxR0t2VndObzJNd3lRcjFtajd1TE94Z0c1WTV1akRGd3JNLXRWeTZhSkpHbGFuclJpV1lONU9SMGZwdGF0X1FKNlZiREJ5c2pKVjVNcFp3T2JLVW5VTnJDaXRoazFfRGNPZVJBOE1QLU5kS3I0X3UtRzdoa0xOQ0UtNFIwY2doSHc?oc=5"
+        }
+      ]
+    },
+    "080424bd824076c65e26": {
+      "id": "080424bd824076c65e26",
+      "from": "swedfund",
+      "to": "zanaco",
+      "type": "equity_funding",
+      "first_seen": "2026-11-18",
+      "sources": [
+        {
+          "title": "Swedfund invests USD 35 million in Zanaco to support MSMEs and advance financial inclusion in Zambia",
+          "publisher": "Mynewsdesk",
+          "url": "https://news.google.com/rss/articles/CBMi0gJBVV95cUxOZFBrYWk0eEk0Z1lEOGdLeTRtXzJib3YxR3huN1lBOTJVeG5yYVNMRHQ3NE9kNTdJcEQ2enNPMWE1OGhzenllQ3ZqSUFHTjk3WHdfVFhZZVBzREpVM2FyeVYwTVJ0Wm9Gc1h6NnZ1a0JkQkEtcWxZdW02UndRODFUTXZvMWo2dk9lU0Y0Qi1EU1UxNURIdC1VT1BaRFQzcUtLcVZBaGdyYzc1cmFBY0dzbkJHWUR2ZnViTDl2T0I4N0xqYmtsR2lGY1BKNTkzVjdrcU9yWFFJekVXUlQ1OVViTGhQVkNpcExCTFRBcF9Mb1NVbHdfakpxMl9tY2tsNzNrYjA1YWVKNktZWVo5MF9CejV5T0tiTWx2NDRPNi1qdGlLZ2l3bWptbTZ2RHdyQU9tNGRMd1p6bVhRV1VmRVY4MjRWc1pBaHphbGI4Z292XzVnUQ?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-17T22:36:50.501069+00:00"
+  "updated_at": "2026-11-18T13:22:35.265917+00:00"
 }

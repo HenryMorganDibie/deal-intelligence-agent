@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-17T22:36:54.186960+00:00",
+  "updated_at": "2026-11-18T13:22:38.995914+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 58,
+      "new_review_items_today": 61,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 255,
-      "new_observations_today": 4,
-      "unreviewed_flagged_observations": 38,
+      "observations_collected": 263,
+      "new_observations_today": 8,
+      "unreviewed_flagged_observations": 40,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 258,
-      "entities": 405,
+      "relationships": 265,
+      "entities": 414,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,36 +177,32 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 255,
-    "new_rows": 4,
+    "collected_tickers": 263,
+    "new_rows": 8,
     "failures": [
-      "MPCI.CA",
-      "MPCO.CA",
-      "MRCO.CA",
-      "MRI.JO",
-      "MRS.LG",
-      "MSA.CS",
-      "MSC.NR",
-      "MSM.JO"
+      "MTECH.LG",
+      "MTI.LG",
+      "MTNGH.GH",
+      "MTNZF.JO"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 405,
-    "relationships": 258,
-    "source_links": 357,
+    "nodes": 414,
+    "relationships": 265,
+    "source_links": 369,
     "most_connected": [
       {
         "name": "Afreximbank",
         "degree": 17
       },
       {
-        "name": "QatarEnergy",
+        "name": "EBRD",
         "degree": 12
       },
       {
-        "name": "EBRD",
-        "degree": 10
+        "name": "QatarEnergy",
+        "degree": 12
       },
       {
         "name": "IFC",
@@ -225,16 +221,16 @@
         "degree": 4
       },
       {
+        "name": "AfDB",
+        "degree": 4
+      },
+      {
         "name": "NGX Group",
         "degree": 4
       },
       {
         "name": "Nairobi Securities Exchange",
         "degree": 4
-      },
-      {
-        "name": "Amsons Group",
-        "degree": 3
       }
     ]
   },
