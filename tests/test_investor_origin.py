@@ -74,3 +74,11 @@ def test_market_brief_on_investors_from_one_country(monkeypatch):
     assert [t["id"] for t in report["key_transactions"]] == ["d1"]
     assert report["investor_coverage"] == {"period_records": 2, "investor_country_known": 1}
     assert "identified for 1 of 2 records" in report["coverage_note"]
+
+
+def test_companies_that_invest_are_placed_without_joining_the_investor_registry():
+    from src.engines import investors
+    d = deal("QatarEnergy acquires 25% stake in Namibia exploration block", "acquisition", buyer="QatarEnergy", target="PEL 82")
+    assert io.deal_investor_countries(d) == {"QA"}
+    assert investors.registry_entry("MTN Group") is None          # research still reads MTN as a company
+    assert io.deal_investor_countries(deal("MTN Group invests in Ayoba", buyer="MTN Group", target="Ayoba")) == {"ZA"}

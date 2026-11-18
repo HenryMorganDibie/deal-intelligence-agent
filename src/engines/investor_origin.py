@@ -44,6 +44,54 @@ FOREIGN: dict[str, tuple[str, tuple[str, ...]]] = {
     "TR": ("Turkey", ("Turkish", "Turkey", "Türkiye")),
 }
 _BY_NAME = {name.lower(): code for code, (name, _) in FOREIGN.items()}
+# Head offices of companies and groups that invest but are companies first (MTN, Old Mutual, Naspers). They stay out of
+# the investor registry, which other features read as "this name is an investor, not a company".
+COMPANY_HOMES: dict[str, str] = {
+    "Goldman Sachs": "New York, United States",
+    "Harith General Partners": "Johannesburg, South Africa",
+    "Harith": "Johannesburg, South Africa",
+    "Stanlib": "Johannesburg, South Africa",
+    "Old Mutual": "Johannesburg, South Africa",
+    "Old Mutual Limited": "Johannesburg, South Africa",
+    "Sanlam": "Cape Town, South Africa",
+    "Sanlam Group": "Cape Town, South Africa",
+    "Google": "Mountain View, United States",
+    "Alphabet": "Mountain View, United States",
+    "Microsoft": "Redmond, United States",
+    "Visa": "San Francisco, United States",
+    "Visa Inc": "San Francisco, United States",
+    "Mastercard": "Purchase, New York, United States",
+    "Uber": "San Francisco, United States",
+    "Robinhood Ventures": "Menlo Park, United States",
+    "Naspers": "Cape Town, South Africa",
+    "Prosus": "Amsterdam, Netherlands",
+    "Danone": "Paris, France",
+    "Orange": "Paris, France",
+    "Orange Group": "Paris, France",
+    "Orange SA": "Paris, France",
+    "QatarEnergy": "Doha, Qatar",
+    "Sumitomo Corporation": "Tokyo, Japan",
+    "Sumitomo": "Tokyo, Japan",
+    "Mitsui & Co": "Tokyo, Japan",
+    "Mitsui": "Tokyo, Japan",
+    "Toyota Tsusho": "Nagoya, Japan",
+    "Asahi Group": "Tokyo, Japan",
+    "Asahi": "Tokyo, Japan",
+    "Epiroc": "Stockholm, Sweden",
+    "FLSmidth": "Copenhagen, Denmark",
+    "MTN Group": "Johannesburg, South Africa",
+    "Vodacom": "Johannesburg, South Africa",
+    "Vodacom Group": "Johannesburg, South Africa",
+    "Dangote Group": "Lagos, Nigeria",
+    "Dangote": "Lagos, Nigeria",
+    "Dangote Industries": "Lagos, Nigeria",
+    "Amsons Group": "Dar es Salaam, Tanzania",
+    "Amsons": "Dar es Salaam, Tanzania",
+    "Wafa Assurance": "Casablanca, Morocco",
+    "Al Mada": "Casablanca, Morocco",
+    "Al Mada Ventures": "Casablanca, Morocco",
+}
+
 # International institutions belong to no one country: IFC sits in Washington and the EBRD in London, but neither
 # is an American or British investor. National development banks (BII, Proparco, DFC) do count for their country.
 _INTERNATIONAL = {"International Finance Corporation", "MIGA", "World Bank"}
@@ -84,6 +132,12 @@ def _hq_country(hq: Optional[str]) -> Optional[str]:
     return country_code(hq.split(",")[-1].strip())
 
 
+def _company_home(name: str) -> Optional[str]:
+    from src.engines.deals import normalise_name
+    key = normalise_name(name)
+    return next((hq for n, hq in COMPANY_HOMES.items() if normalise_name(n) == key), None)
+
+
 def _headline_countries(headline: str, party: str) -> set[str]:
     """Countries a headline attaches to one party: "US-based X", "UAE's X", "French investor X"."""
     out: set[str] = set()
@@ -112,7 +166,7 @@ def deal_investor_countries(deal: dict) -> set[str]:
         entry = investors.registry_entry(name)
         if entry and (entry.kind == "multilateral" or entry.name in _INTERNATIONAL):
             continue
-        code = _hq_country(entry.hq) if entry else None
+        code = _hq_country(entry.hq) if entry else _hq_country(_company_home(name))
         if code:
             out.add(code)
         if headline:
