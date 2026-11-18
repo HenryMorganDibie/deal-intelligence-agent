@@ -55,3 +55,11 @@ export const AFRICAN_COUNTRIES: [string, string][] = [
   ["ZM", "Zambia"],
   ["ZW", "Zimbabwe"],
 ];
+
+/** Investor home countries outside Africa, for "investors from" filters. Mirrors src/engines/investor_origin.FOREIGN. */
+export const INVESTOR_HOME_COUNTRIES: [string, string][] = [
+  ["US", "United States"], ["GB", "United Kingdom"], ["FR", "France"], ["DE", "Germany"], ["NL", "Netherlands"],
+  ["CH", "Switzerland"], ["SE", "Sweden"], ["NO", "Norway"], ["DK", "Denmark"], ["BE", "Belgium"], ["LU", "Luxembourg"],
+  ["ES", "Spain"], ["IT", "Italy"], ["CA", "Canada"], ["AE", "United Arab Emirates"], ["SA", "Saudi Arabia"], ["QA", "Qatar"],
+  ["CN", "China"], ["JP", "Japan"], ["IN", "India"], ["SG", "Singapore"], ["KR", "South Korea"], ["TR", "Turkey"],
+];

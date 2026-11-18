@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Container } from "../../../../components/primitives";
 import { ApiError } from "../../../../lib/api";
-import { AFRICAN_COUNTRIES } from "../../../../lib/countries";
+import { AFRICAN_COUNTRIES, INVESTOR_HOME_COUNTRIES } from "../../../../lib/countries";
 import { DEAL_TYPES, SECTORS, post } from "../../../../lib/market";
 
 type Created = { id: string; title: string; transaction_count: number; period_start: string; period_end: string };
@@ -23,6 +23,7 @@ export default function NewMarketBriefPage() {
   const [lookback, setLookback] = useState("30");
   const [country, setCountry] = useState("");
   const [sector, setSector] = useState("");
+  const [investorCountry, setInvestorCountry] = useState("");
   const [dealType, setDealType] = useState("");
   const [audience, setAudience] = useState("Investment banking analyst");
   const [researchQuestion, setResearchQuestion] = useState("");
@@ -35,6 +36,10 @@ export default function NewMarketBriefPage() {
     if (params.has("lookback_days")) setLookback(params.get("lookback_days") || "30");
     if (params.has("country")) setCountry(countryCode(params.get("country")));
     if (params.has("sector")) setSector(params.get("sector") || "");
+    if (params.has("investor_country")) {
+      const v = (params.get("investor_country") || "").toUpperCase();
+      if ([...INVESTOR_HOME_COUNTRIES, ...AFRICAN_COUNTRIES].some(([code]) => code === v)) setInvestorCountry(v);
+    }
     if (params.has("deal_type")) setDealType(params.get("deal_type") || "");
     if (params.has("audience")) setAudience(params.get("audience") || "Investment banking analyst");
     if (params.has("question")) setResearchQuestion(params.get("question") || "");
@@ -51,6 +56,7 @@ export default function NewMarketBriefPage() {
         lookback_days: Number(lookback),
         ...(country ? { country } : {}),
         ...(sector ? { sector } : {}),
+        ...(investorCountry ? { investor_country: investorCountry } : {}),
         ...(dealType ? { deal_type: dealType } : {}),
         audience,
         ...(researchQuestion.trim() ? { research_question: researchQuestion.trim() } : {}),
@@ -70,8 +76,8 @@ export default function NewMarketBriefPage() {
       <h1 className="h2 mt-3 text-[2rem] sm:text-[2.5rem]">{parentBriefId ? "Update market intelligence" : "Deals & M&A intelligence"}</h1>
       {parentBriefId && <p className="mt-2 text-sm text-[color:var(--muted)]">A new version will be saved and linked to the previous brief. The original report will remain unchanged.</p>}
       <p className="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-[color:var(--muted)]">
-        Get a sourced report on deal activity in any African country or sector, ready for a pitch, an investment committee or a
-        client newsletter, in minutes. It combines our deal records with live web research, cites every fact, and keeps what was
+        Get a sourced report on deal activity in any African country or sector, or by investors from a given country, ready for a
+        pitch, an investment committee or a client newsletter, in minutes. It combines our deal records with live web research, cites every fact, and keeps what was
         reported apart from what it means. For a single company, use a company brief.
       </p>
 
@@ -116,6 +122,19 @@ export default function NewMarketBriefPage() {
                 <option value="">All sectors</option>
                 {SECTORS.map((s) => <option key={s} value={s}>{label(s)}</option>)}
               </select>
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-sm text-[color:var(--muted)]">Investors from</span>
+              <select value={investorCountry} onChange={(e) => setInvestorCountry(e.target.value)} className="field" aria-label="Investors from">
+                <option value="">Anywhere</option>
+                <optgroup label="Outside Africa">
+                  {INVESTOR_HOME_COUNTRIES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
+                </optgroup>
+                <optgroup label="In Africa">
+                  {AFRICAN_COUNTRIES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
+                </optgroup>
+              </select>
+              <span className="mt-1.5 block text-xs text-[color:var(--dim)]">Only deals with an investor, lender or buyer based there, such as US funds in Kenya.</span>
             </label>
             <label className="block">
               <span className="mb-1.5 block text-sm text-[color:var(--muted)]">Transaction type</span>

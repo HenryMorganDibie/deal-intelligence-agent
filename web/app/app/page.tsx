@@ -24,6 +24,7 @@ const MARKET_STARTS = [
   { label: "Nigeria, last 90 days", query: "country=NG&lookback_days=90" },
   { label: "Kenya fintech", query: "country=KE&sector=fintech&lookback_days=90" },
   { label: "Egypt, last 30 days", query: "country=EG&lookback_days=30" },
+  { label: "US investors in Africa", query: "investor_country=US&lookback_days=180" },
   { label: "Africa energy deals", query: "sector=energy&lookback_days=90" },
 ];
 

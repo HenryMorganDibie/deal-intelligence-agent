@@ -503,3 +503,15 @@ test("each paid plan shows its renewal terms beside the subscribe button", async
   await page.getByRole("button", { name: /Yearly/ }).click();
   await expect(pro).toContainText("Renews automatically every year");
 });
+
+test("a market brief can be limited to investors from one country", async ({ page }) => {
+  await page.goto("/market-briefs/new?investor_country=US&lookback_days=180");
+  const from = page.getByLabel("Investors from");
+  await expect(from).toHaveValue("US");                     // a link can open the form already set
+  await from.selectOption("GB");
+  await expect(from).toHaveValue("GB");
+  await from.selectOption("KE");                            // African home countries are offered too
+  await expect(from).toHaveValue("KE");
+  await page.goto("/market-briefs/new?investor_country=ZZ");
+  await expect(page.getByLabel("Investors from")).toHaveValue("");   // an unknown code is ignored
+});

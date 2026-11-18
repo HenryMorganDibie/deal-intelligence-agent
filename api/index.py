@@ -531,8 +531,10 @@ class MarketBriefBody(BaseModel):
     audience: str = Field("Investment banking analyst", min_length=1, max_length=100)
     research_question: str | None = Field(None, max_length=500)
     parent_brief_id: str | None = Field(None, max_length=64)
+    # Where the money comes from: deals with at least one investor, lender or buyer based in this country.
+    investor_country: str | None = Field(None, max_length=40)
 
-    @field_validator("country", "sector", "deal_type", "audience", "research_question", "parent_brief_id")
+    @field_validator("country", "sector", "deal_type", "audience", "research_question", "parent_brief_id", "investor_country")
     @classmethod
     def market_brief_strip(cls, value: str | None) -> str | None:
         value = value.strip() if value else value
@@ -672,6 +674,11 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
     if body.country:
         country_obj = _country_or_404(body.country.upper())
         country_code, country_name = country_obj.iso2, country_obj.name
+    from src.engines import investor_origin
+    investor_code = investor_origin.country_code(body.investor_country) if body.investor_country else None
+    if body.investor_country and not investor_code:
+        raise HTTPException(422, "Choose an investor home country from the list.")
+    investor_name = investor_origin.country_name(investor_code)
     # A brief runs live research and the language model, so it counts against the same daily allowance
     # as the Research page.
     run_id = await _reserve(request, f"[brief] {country_code or 'Africa'} {body.sector or ''} {body.deal_type or ''}")
@@ -684,6 +691,11 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
     # Compare ISO date prefixes so same-day timestamps are not accidentally excluded
     # by a lexical comparison against a date-only upper bound.
     selected = [d for d in selected if d.get("announced") and start.isoformat() <= str(d["announced"])[:10] <= today.isoformat()]
+    investor_coverage = None
+    if investor_code:
+        placed = [d for d in selected if investor_origin.deal_investor_countries(d)]
+        investor_coverage = {"period_records": len(selected), "investor_country_known": len(placed)}
+        selected = investor_origin.from_country(placed, investor_code)
     selected.sort(key=lambda d: d.get("announced") or "", reverse=True)
     disclosed = [float(d.get("amount_usd")) for d in selected if d.get("amount_usd") is not None and float(d.get("amount_usd") or 0) > 0]
     country_codes = set()
@@ -776,6 +788,8 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
         body.sector.replace("_", " ") if body.sector else "all sectors",
         body.deal_type.replace("_", " ") if body.deal_type else "all transaction types",
     ]
+    if investor_name:
+        scope_parts.append(f"investors, lenders or buyers based in {investor_name}")
     focus = body.research_question or (
         "Summarize the latest material transactions, capital flows, notable market shifts, "
         "and implications for the selected audience."
@@ -871,14 +885,16 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
         "brief_type": "market_deals",
         "parent_brief_id": body.parent_brief_id,
         "update_comparison": update_comparison,
-        "title": f"{country_name or 'Africa'} Deals & M&A Intelligence Brief",
+        "title": f"{country_name or 'Africa'} Deals & M&A Intelligence Brief" + (f": investors from {investor_name}" if investor_name else ""),
         "audience": body.audience,
         "research_question": focus,
         "period_start": start.isoformat(),
         "period_end": today.isoformat(),
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "scope_label": f"{country_name or 'Africa'} · {body.sector.replace('_', ' ') if body.sector else 'All sectors'} · {body.deal_type.replace('_', ' ') if body.deal_type else 'All transaction types'} · {body.lookback_days} days",
-        "filters": {"lookback_days": body.lookback_days, "country": country_code, "sector": body.sector, "deal_type": body.deal_type},
+        "scope_label": f"{country_name or 'Africa'} · {body.sector.replace('_', ' ') if body.sector else 'All sectors'} · {body.deal_type.replace('_', ' ') if body.deal_type else 'All transaction types'}" + (f" · investors from {investor_name}" if investor_name else "") + f" · {body.lookback_days} days",
+        "filters": {"lookback_days": body.lookback_days, "country": country_code, "sector": body.sector, "deal_type": body.deal_type,
+                    "investor_country": investor_code},
+        "investor_coverage": investor_coverage,
         "metrics": {
             "transaction_count": len(selected),
             "disclosed_value_count": len(disclosed),
@@ -896,7 +912,11 @@ async def create_market_brief(body: MarketBriefBody, request: Request) -> dict:
         "advisory_signals": advisory_signals,
         "web_research": web_research,
         "methodology": "Transactions are selected by the record's announcement date within the stated window, then filtered by country, sector and type. Amount totals include only positive disclosed/normalized USD amounts in the selected records. Comparable records are selected using the existing transparent sector/country/type/size similarity logic and then constrained to the same date window. Reported publication dates and transaction announcement dates are not interchangeable.",
-        "coverage_note": "Coverage is limited to transactions discovered and retained by this product's sources and extraction pipeline. A missing record does not mean no transaction occurred. Syndicated copies are not treated as independent corroboration. Source counts indicate independent story groups where the provenance engine can resolve them; they do not certify every transaction field. This brief is a research aid, not a confirmation of mandates or investment advice.",
+        "coverage_note": "Coverage is limited to transactions discovered and retained by this product's sources and extraction pipeline. A missing record does not mean no transaction occurred. Syndicated copies are not treated as independent corroboration. Source counts indicate independent story groups where the provenance engine can resolve them; they do not certify every transaction field. This brief is a research aid, not a confirmation of mandates or investment advice."
+        + (f" Investor home country: identified for {investor_coverage['investor_country_known']} of {investor_coverage['period_records']} "
+           "records in the period, from the investor registry's head offices and how the headlines describe each party; "
+           "international institutions such as IFC and the AfDB count for no country. Records whose investors could not be "
+           "placed are left out, so the figures here are a floor." if investor_coverage else ""),
     }
     report["markdown"] = _market_brief_markdown(report)
     async with httpx.AsyncClient(timeout=20) as client:
