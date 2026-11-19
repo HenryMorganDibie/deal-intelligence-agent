@@ -34,3 +34,26 @@ def test_french_names_built_on_a_nationality_keep_their_article():
     assert _clean_name("Le Maroc") is None and _clean_name("La BAD") == "BAD"
     deal = extract_deal("Wafa Assurance Acquires 99.98% of La Marocaine Vie", published="2026-11-17", publisher="Test")
     assert (deal["target"], deal["buyer"]) == ("La Marocaine Vie", "Wafa Assurance")
+
+def test_comparison_country_does_not_assign_an_african_deal_location_to_global_company():
+    from src.engines.deals import extract_deal
+
+    headline = "Anthropic raises $81.3 billion, more than Zimbabwe's whole economy produces in a year"
+    assert extract_deal(
+        headline,
+        published="2026-11-19",
+        publisher="Disrupt Africa",
+        africa_source=True,
+    ) is None
+
+
+def test_real_african_target_country_before_comparison_is_preserved():
+    from src.engines.deals import extract_deal
+
+    deal = extract_deal(
+        "Nigerian fintech Kuda raises $20m, more than the sector's previous record",
+        published="2026-11-19",
+        publisher="Test",
+    )
+    assert deal is not None
+    assert deal["country"] == "NG"

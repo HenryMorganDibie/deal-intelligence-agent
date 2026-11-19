@@ -1254,6 +1254,24 @@ def extract_deal(title: str, snippet: str = "", *, published: Optional[str] = No
         return None
     text = f"{title}. {snippet or ''}"
 
+    # A country used only as a GDP/economy comparison is not the deal's location.
+    # This matters for global companies appearing in African publishers' feeds:
+    # e.g. "Anthropic raises ... more than Zimbabwe's whole economy".
+    comparison = re.search(
+        r"(?i)\b(?:more than|larger than|bigger than|greater than|exceeds?|surpasses?|"
+        r"compared with|compared to|equivalent to|the size of)\b",
+        title,
+    )
+    if comparison and countries_in_text(title[comparison.end():]) and not countries_in_text(title[:comparison.start()]):
+        from src.data.african_companies import countries_of_companies
+        prefix_countries = countries_of_companies(title[:comparison.start()])
+        prefix_mentions_africa = re.search(
+            r"(?i)\b(?:africa|african|afrique|africain|africaine|áfrica|africano|africana)\b",
+            title[:comparison.start()],
+        )
+        if not prefix_countries and not prefix_mentions_africa:
+            return None
+
     # A headline may say only that an investor "backs" a company while the source
     # description confirms a completed minority/majority equity investment. In
     # that case, normalize the wording for extraction but preserve the real title
