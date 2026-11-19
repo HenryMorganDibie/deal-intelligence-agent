@@ -333,6 +333,9 @@ def test_cold_instances_read_visible_pages_through_the_cdn_and_fall_back_to_the_
     monkeypatch.setattr(hm, "API_SECRET", "api-secret")
     hm._cache.pop("deals", None)
     hm._cache.pop("deals:visible", None)
+    # Model a genuinely cold process: no prior visible-store version metadata.
+    monkeypatch.delitem(hm._versions, "deals:visible", raising=False)
+    monkeypatch.delitem(hm._full_loaded_at, "deals:visible", raising=False)
     assert [r["id"] for r in hm._load_visible("deals")] == ["a", "b"]
     assert "list_visible_page" not in db_calls                     # the database was not read by the instance
     # Keyed by day, not by version: a write during the day does not send every reader back to the database.
