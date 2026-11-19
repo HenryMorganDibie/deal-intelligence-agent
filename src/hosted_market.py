@@ -297,6 +297,10 @@ def _refresh_changed(kind: str, rows: list[dict], key: Optional[str] = None, vis
     if not before or time.monotonic() - _full_loaded_at.get(key, 0) > _FULL_RELOAD_AFTER:
         return None
     now = (_store_version().get(kind) or {})
+    # Incremental row feeds cannot represent hard deletions: the deleted ID is no longer returned.
+    # A count change therefore requires a fresh page set rather than patching the cached visible rows.
+    if visible and now.get("count") != before.get("count"):
+        return None
     if now.get("count") == before.get("count") and now.get("changed") == before.get("changed"):
         return rows                                     # nothing changed: no download at all
     if not before.get("changed"):
@@ -417,15 +421,24 @@ def _load_visible(kind: str) -> list[dict]:
         rows = None
         if visible_cdn.version_key(version) and visible_cdn.available() and API_SECRET:
             try:
-                # Today's pages from the CDN, patched with the rows changed since midnight: the database is read
-                # in full about once a day, not after every write.
-                now = time.time()                       # one instant for the key and the watermark
-                rows = _patch_day_pages(kind, _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True,
-                                                              version=visible_cdn.day_key(now)),
-                                        visible_cdn.day_start_iso(now))
-                if rows is None:                        # too many changes today to patch: this version's pages
+                previous_version = _versions.get(key)
+                count_changed = bool(previous_version and version
+                                     and version.get("count") != previous_version.get("count"))
+                if count_changed:
+                    # A hard deletion has no row in list_changed_rows to act as a tombstone. Use a new
+                    # version-keyed CDN namespace so a prior day's cached page cannot resurrect the deleted row.
                     rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True,
                                            version=visible_cdn.version_key(version))
+                else:
+                    # Today's pages from the CDN, patched with the rows changed since midnight: the database is read
+                    # in full about once a day, not after every write.
+                    now = time.time()                       # one instant for the key and the watermark
+                    rows = _patch_day_pages(kind, _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True,
+                                                                  version=visible_cdn.day_key(now)),
+                                            visible_cdn.day_start_iso(now))
+                    if rows is None:                        # too many changes today to patch: this version's pages
+                        rows = _load_rpc_pages(kind, HISTORY_START.isoformat(), visible=True,
+                                               version=visible_cdn.version_key(version))
             except (httpx.HTTPError, ValueError, RuntimeError) as e:
                 visible_cdn.failed()
                 rows = None

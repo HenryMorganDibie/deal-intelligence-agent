@@ -237,6 +237,48 @@ def test_serving_instances_download_visible_rows_only_and_drop_rows_that_become_
     assert calls[-1][0] == "list_changed_rows"
 
 
+def test_visible_feed_uses_new_versioned_cdn_pages_after_a_hard_delete(env, monkeypatch):
+    from src import visible_cdn
+
+    key = "deals:visible"
+    hm._cache.pop("deals", None)
+    hm._cache.pop(key, None)
+    monkeypatch.setitem(hm._versions, key, {"count": 2, "changed": "2026-11-19T10:00:00Z"})
+    monkeypatch.setitem(hm._full_loaded_at, key, __import__("time").monotonic())
+    monkeypatch.setattr(hm, "API_SECRET", "api-secret")
+    monkeypatch.setattr(visible_cdn, "base", lambda: "https://api.example")
+    monkeypatch.setattr(visible_cdn, "available", lambda: True)
+
+    calls = []
+
+    class R:
+        status_code = 200
+
+        def __init__(self, payload):
+            self.payload = payload
+
+        def json(self):
+            return self.payload
+
+        def raise_for_status(self):
+            return None
+
+    def fake_sync(fn, args, timeout=30):
+        assert fn == "store_version"
+        return R({"deals": {"count": 1, "changed": "2026-11-20T10:00:00Z"}})
+
+    def fake_pages(kind, since, visible=False, version=None):
+        calls.append((kind, visible, version))
+        return [{"id": "remaining-deal"}]
+
+    monkeypatch.setattr(hm, "_rpc_sync", fake_sync)
+    monkeypatch.setattr(hm, "_load_rpc_pages", fake_pages)
+
+    assert [row["id"] for row in hm._load_visible("deals")] == ["remaining-deal"]
+    assert calls == [("deals", True, "1-2026-11-20T10:00:00Z")]
+    assert calls[0][2] != visible_cdn.day_key()
+
+
 def test_cold_instances_read_visible_pages_through_the_cdn_and_fall_back_to_the_database(env, monkeypatch):
     """With a store version, visible pages come from a signed, edge-cached URL served by its own function
     (api/visible_page.py), which answers only its own signature; a CDN failure falls back to the database."""
@@ -291,6 +333,9 @@ def test_cold_instances_read_visible_pages_through_the_cdn_and_fall_back_to_the_
     monkeypatch.setattr(hm, "API_SECRET", "api-secret")
     hm._cache.pop("deals", None)
     hm._cache.pop("deals:visible", None)
+    # Model a genuinely cold process: no prior visible-store version metadata.
+    monkeypatch.delitem(hm._versions, "deals:visible", raising=False)
+    monkeypatch.delitem(hm._full_loaded_at, "deals:visible", raising=False)
     assert [r["id"] for r in hm._load_visible("deals")] == ["a", "b"]
     assert "list_visible_page" not in db_calls                     # the database was not read by the instance
     # Keyed by day, not by version: a write during the day does not send every reader back to the database.
