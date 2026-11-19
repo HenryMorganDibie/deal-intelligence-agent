@@ -1691,6 +1691,46 @@
     "future": {
       "name": "Future",
       "kind": "organization"
+    },
+    "terra": {
+      "name": "Terra",
+      "kind": "organization"
+    },
+    "mainstream renewables": {
+      "name": "Mainstream Renewables",
+      "kind": "organization"
+    },
+    "best trading platforms": {
+      "name": "Best Trading Platforms",
+      "kind": "organization"
+    },
+    "anthropic stock": {
+      "name": "Anthropic Stock",
+      "kind": "organization"
+    },
+    "meet ipo demand": {
+      "name": "Meet IPO Demand",
+      "kind": "organization"
+    },
+    "refinery": {
+      "name": "Refinery",
+      "kind": "organization"
+    },
+    "equity": {
+      "name": "Equity",
+      "kind": "organization"
+    },
+    "kcb": {
+      "name": "KCB",
+      "kind": "organization"
+    },
+    "fih mauritius": {
+      "name": "FIH Mauritius",
+      "kind": "organization"
+    },
+    "control": {
+      "name": "Control",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -4142,6 +4182,11 @@
           "title": "Afreximbank Grants $30M NEXIM Facility To Boost Nigeria’s Non-oil Exports",
           "publisher": "Arise News",
           "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPNU9nOEtvdjNhM2YyT1NfTmFFUnBhTTZDM1F3cjZRMHA0S3BzZXRVVlJrazEwSFQwUFpZT2RJZWRxZWpXZGdvV3o4OGRWMWpGUEFJbjlZTmd6TmJjVTVSN0ttbDZxQ2pXRkM0M0tDZGdKTGRCVXI1ME02YkhkcTcxVjY1NGx5ZHByZnF2WHdjNU8zQ1JUekI4Uw?oc=5"
+        },
+        {
+          "title": "Afreximbank extends $30m facility to NEXIM to boost SMEs exports",
+          "publisher": "The Nation Newspaper",
+          "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQUEtESHZlOHhSb3VueHdISVVxTllLU0RJMDdKdVlGejd4WDByb0YzLUQtTHk5eUR2clFNcTFGNWZmSmQ1YWNCNzkzQ3IwTG5Bdng5UEhFUFIxeUVxZTRTSElvc0g3R2p0Njhnb2I4enhSMlg5dFZpWjJnYV9TMVVuQlI1V3ktMlM5RVYxYS1GcmJmY2w3a3M1YXhB0gGfAUFVX3lxTE9rQ1Q4enQzWmtkRHYyVnViNUs4TE83NVFTQUh4MGEtZE1KTmcxQjVTQVgtZXY4eDM4OWpUWk1lRlc5WGNSdlZvZEtONjhSUml2bk5OUk9nUi0xYzdnTm9zczIwU2puY1FmQTNpUjR5c0Q5U3pDSWZYNTYwSEoxRUY3NG96a0JXUWt3VmRHN3ZibzdsRVh3X24xZUpFNW1qbw?oc=5"
         }
       ]
     },
@@ -4539,6 +4584,11 @@
           "title": "Sudanese fintech startup Cashi raises $660k from Proparco",
           "publisher": "- Disrupt Africa",
           "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQRHlfM1pvU2FFbTBLeGtHU2FlU21zWnhKLTFvVVlkd05PY000OXVlOVZ4UjlaeHVrMWtqaXdTYlZfck9FcmZ2SjVENXVNLUVKZ1JhS01kWE5ZaVRlVmo4dzZndVV1eFEzbnpnT2xQV0k4ZnM3ckhjNWFZMlpwdS1QVTdZSVZtS0t3VGcxcE9tRHJIR3doUkl3VE1B?oc=5"
+        },
+        {
+          "title": "Sudan's Cashi secures $660,000 investment from France's Proparco",
+          "publisher": "Wamda",
+          "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxOaVFRdE15QmxXN3BNS1FVMGc1bklLQUREc2xjazdRSmhEcU50YUxLSm42WEJ4Q2lmQ01VQXR0Y1FBY1IyQkhNb1BLX2ZGa2JVbUZJYTNQMlVSYmY5dlkwNzNtZnlIRlNEYmF1UzA0ckJhajdnRks0dGo1bzJ4ZS12dVBJM2ZBa18tNW9CZzJB?oc=5"
         }
       ]
     },
@@ -5300,6 +5350,11 @@
           "title": "NGX Group Acquires 10% Stake in Nairobi Securities Exchange",
           "publisher": "Dabafinance",
           "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxNVFhFZl9GSW9RT0xHT2l5ZlplYTE0bmhhWXdWM2lMakJyOXR2TjczMWtyN3RUN2pXMlozNEFiNVdNQ2I4UTNXZGVzd3hNZmZHMXloQUU0OW84dWRtbS03SUVxWXNGYzIzZVptUUczak50dDQtTjE1REJCX1VDM0JoM0NMYUN6clNXbE5YY29MVkRwaUVmWGlN?oc=5"
+        },
+        {
+          "title": "NGX Group Acquires 10% Stake in Nairobi Securities Exchange",
+          "publisher": "Dabafinance",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxObUVTZFRQeVpUWC1ncmFBOGlnMGstanJFWm9ZeDZDYmc2WmZ1Zno4X0hrdXAwM3RYT2FmZFVxWFdWYnZuc2VzSGtBRGVwY2JFZkZYeW5odG1iVjY5MFY0cE9SdGNiV2Q0NmgyanR4aDAzWFEwdlhhLWoxdTdxZ3ZlbkRBSVR3bTNEdGpOelQ2YVB0ZGdLSW1kWXVXLUtEdw?oc=5"
         }
       ]
     },
@@ -5839,6 +5894,11 @@
           "title": "Sunbeth completes acquisition of controlling stake in Livestock Feeds Plc",
           "publisher": "Premium Times Nigeria",
           "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPaExYdm5iMXp2dFNBX05CSWtHQXNxbUx3bXhvWEI1UE1JeHFDenhhZWxIdm9lMF9lMWZ6TlA5MnpCTUwyYmxpeVBleDdSUDAybFpRYW5xYXpPWk9md29kLXdVcnd5S0xtc1RHNkxLRU5YcV9BZk5sUkJDMzFSZzl1SGIxeVpfd1BhMldSbGlwYzkzS090SU90Zks1Q3FOMXpDeEY2a0VSSy10SlZKNzg0YjFBUU9nM242aVFBNklyV3B5ZGs?oc=5"
+        },
+        {
+          "title": "Sunbeth completes acquisition of controlling stake in Livestock Feeds Plc, advancing its ambition to build an integrated protein business",
+          "publisher": "Business Insider Africa",
+          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPTDJsNGVta05sTUZXRmRUWnQ3VVRwY0pUZnZFbWI4MzBueFFXNC1YN0FuWEIyM0Ixb2cwOC05bGg0OVRxd0lJVVlCTm8zN2IwdnR4OThfMEFNczRlZVdVeUVXTG42TlZRMkFQX1ZZSWlSMC1YcHlOU2pFcTRNaFVBRUZKRHpHNkp3VTdWSEZQUjl0ckczRHlqd2F5cS0wMHc2MDFRaHZiX05BWExXWlRJQmEzRXJFcEcwVnZUTERhVllQM2syRzAwZ05MU0w?oc=5"
         }
       ]
     },
@@ -6070,7 +6130,91 @@
           "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPTnZjOXBaRUNoQ1ZPRlQ3ckJ5d0hveWc2MFVsSlIzYmhRbUZqSVZnMG5PaUVJY0tLUXFhcUxGbDNZOXlKWmdCM2FpaklLRTNWUHQ2bUxlbzUxVmtUcmgxa0NhdzFaY0tfQmJFdEEyRG5fZHVSWXlaZVhOc2tmUElkU3BZdldhWDFRUm80N1Njc044SndCU2puNlA0Vmc1N2NmQzlBQi1ldEs0bm8wQ1BKNDFzN2xsYXlGYk9RZHcyZXFYYUVQ?oc=5"
         }
       ]
+    },
+    "26e54ebd007610d18dca": {
+      "id": "26e54ebd007610d18dca",
+      "from": "terra",
+      "to": "community wolf",
+      "type": "equity_funding",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "Terra Invests in South Africa’s Community Wolf to Expand Security Operations",
+          "publisher": "Business Post Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPTVpGRnVRa0p5M1VZSTFHWjdjeElqLTdWYkVBbHFMc29Xd1B2WXRRZkpJMm0wVGpTSVBFdVRpcnJ3WWxuU25GU2daUkY0cnNCcjRndkQ1RHkzblp5RkZ3czRMN0pmYzVJZDZTN2ZKYjFhaWQtbWdzRXdqODdEZ2VycjdPeEt5MWRmcUx2NTJHQjhqMGlaZDBxeW1SQU01TzlMbDlrX2x5ZkI5NGQ3?oc=5"
+        }
+      ]
+    },
+    "ad3e05f6ba43cd965675": {
+      "id": "ad3e05f6ba43cd965675",
+      "from": "a p moller capital",
+      "to": "mainstream renewables",
+      "type": "acquisition",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "Denmark’s A.P. Moller Capital takes 100% of South Africa’s Mainstream Renewables, gaining an 11.9GW project pipeline",
+          "publisher": "Business Insider Africa",
+          "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxPMWNDRDFqRUh5aUJteV9ZcnlQenRuYi1ROFk2ZDFRRW9RSjdvQXV1YlFONUhzU190Mkp1VVQ3THN5ekNQZnR0U3h4dk9iZGtGRUpTUGdPaGJYQVh3M0RHdEVrZENuZ2lmR0NFUURlWHRYSG4zdlZSNGZvTzRtcFcyeWpIaEJqaFFMd0o4WVNad21mLXViYUsteVZtRVY3LUplN2pMa3lybmJ4ZGppSEFTb1loOGg4dGlIT1EyMm8tS3NIN0wzeHBNaDlNNnpPRUNVck1aVGdfZw?oc=5"
+        }
+      ]
+    },
+    "8ddae202cad60f59dbac": {
+      "id": "8ddae202cad60f59dbac",
+      "from": "best trading platforms",
+      "to": "anthropic stock",
+      "type": "acquisition",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "Best Trading Platforms to Buy Anthropic Stock (ANT) in South Africa",
+          "publisher": "Invezz",
+          "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxONk1RUHRmVkg0TFgzaWxCUlpySnVxcklYeFFXdTRqcXRmdGpoSjViUkRVa3B0TEhIclVucnlKY0lzTnpUMERhZ2tHNklEX3B6YzdyaTEtSzdUSHR1ZjFnYXoxdXNfZWNzSDQ1ZHZWMGVlYUZ5TnFBQXNVVFNBX0FmZUEtREdaOEdLMWVPa1FkaXVvQQ?oc=5"
+        }
+      ]
+    },
+    "0b451a4d334d06da5e19": {
+      "id": "0b451a4d334d06da5e19",
+      "from": "meet ipo demand",
+      "to": "refinery",
+      "type": "exit",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "Dangote In Talks To Sell Personal Stake In Refinery To Meet IPO Demand",
+          "publisher": "New Telegraph",
+          "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxPQkRhRFBWTHozMllPQ0xLaGV3YkIyWFdWMndvNWdIZjJyX1VDeDRIU2Q3N3JiY3RfZE52MWlHWnAwUXFjdlFVU0pESjBZNXAtWkREZjFKdEdJaXl0dC1jNlA1Y0tuNnNRU1hVS0FHVXE4R0pkMDFsckZPcWxLSENhN0ZhbUZtY3d1dm45WTd0VzJrODNya1BBa2lkcGViOGs?oc=5"
+        }
+      ]
+    },
+    "4cc687a66454f6b39bf3": {
+      "id": "4cc687a66454f6b39bf3",
+      "from": "equity",
+      "to": "kcb",
+      "type": "merger",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "Ndindi Nyoro proposes merger between Equity and KCB banks",
+          "publisher": "People Daily",
+          "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPQmtKVjYxa2V3NmRoWHJqM18tYmwxZEpTaUtoazRkOVlBeC1hZ2ZXMnpYeldmQlRNeXh6a090LXJmb2NEOWdQZmREUDRfbTJtMFFZVnhkQVR2cEhwbTZyMFU5b2tKSlY4WS14a1NKbTJBdUJhcHM0cHR5d0dFbmphZ0xaVDc0dHlWU1dJdkp6Z2lmc3M1Sk1vUXVn?oc=5"
+        }
+      ]
+    },
+    "43ab93051f4372d50040": {
+      "id": "43ab93051f4372d50040",
+      "from": "fih mauritius",
+      "to": "control",
+      "type": "acquisition",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "IIFL Capital Services IIFLCAPS: FIH Mauritius Acquires Control",
+          "publisher": "Kalkine India",
+          "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxPVUlCbEtwQmFpZXJaNkZEU09sN1hCUU02Q0s0RE42RDZ4VEYyOWFObzUtaDJjdHVGaWxaRmpRWTRIcUx6cVVBYkhkZm5TT21XRHotWjVuNF9xLWstWHAtemY5Slhpc1hVcFIzRUhwWkxnSzcySGJ1NGkwMS1BT05ERS1sa3Exd2RXbWItZ3JyU18wR3R6MF9keHh6NjAzQ3R3aUl4dDFhMEROMTVValJtaWZMUWpDdnNMQTJpVUtBWG5jZjBub2ZNbjNhaDlPTzNiRjhvVXh4cmh1Uld3dGc?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-19T13:46:42.888263+00:00"
+  "updated_at": "2026-11-19T22:24:54.282111+00:00"
 }

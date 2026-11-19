@@ -776,3 +776,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NCIS.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NCMP.CA"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-19", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47113_NCR_(NIGERIA)_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_JUNE_2026.pdf", "status": "collected", "ticker": "NCR.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NCS.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NDRL.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NED.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NEDA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NEIC.BV"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-19", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46374_NEIMETH_INTERNATIONAL_PHARMACEUTICALS_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "NEIMETH.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NEJ.CS"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-19", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46513_NEM_INSURANCE_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "NEM.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NESF.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-19", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/Nestle_Nigeria_Plc_Audited_Financial_Statement_for_the_Year_ended_31_Dec_2025.pdf", "status": "collected", "ticker": "NESTLE.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NEX.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NFP.JO"}
