@@ -764,3 +764,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/43263_NASCON_ALLIED_INDUSTRIES_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2024_FINANCIAL_STATEMENTS_MARCH_2025.pdf", "status": "collected", "ticker": "NASCON.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-18", "market": "africa", "status": "no_annual_data_returned", "ticker": "NASR.CA"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-18", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/43146_NIGERIAN_BREWERIES_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2024_FINANCIAL_STATEMENTS_FEBRUARY_2025.pdf", "status": "collected", "ticker": "NB.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NBK.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NBKE.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NBKP.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-19", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Nairobi-Business-Ventures-Plc-2024-Full-Year-Results-.pdf", "status": "collected", "ticker": "NBV.NR"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NCBA.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NCCW.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NCEM.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NCGC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NCIN.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NCIS.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NCMP.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-19", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47113_NCR_(NIGERIA)_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_JUNE_2026.pdf", "status": "collected", "ticker": "NCR.LG"}

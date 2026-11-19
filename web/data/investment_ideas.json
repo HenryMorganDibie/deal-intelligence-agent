@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-18T22:17:04.393859+00:00",
+  "updated_at": "2026-11-19T13:46:46.659154+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 64,
+      "new_review_items_today": 73,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 0,
+      "new_review_items_today": 1,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 267,
-      "new_observations_today": 4,
+      "observations_collected": 269,
+      "new_observations_today": 2,
       "unreviewed_flagged_observations": 41,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 267,
-      "entities": 416,
+      "relationships": 273,
+      "entities": 423,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,24 +177,26 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 267,
-    "new_rows": 4,
+    "collected_tickers": 269,
+    "new_rows": 2,
     "failures": [
-      "MULTITREX.LG",
-      "MULTIVERSE.LG",
-      "MURZA.JO",
-      "MUT.CS",
-      "MZR.JO",
-      "NAKL.CS",
-      "NAPR.CA",
-      "NASR.CA"
+      "NBK.NR",
+      "NBKE.CA",
+      "NBKP.JO",
+      "NCBA.NR",
+      "NCCW.CA",
+      "NCEM.CA",
+      "NCGC.CA",
+      "NCIN.CA",
+      "NCIS.CA",
+      "NCMP.CA"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 416,
-    "relationships": 267,
-    "source_links": 376,
+    "nodes": 423,
+    "relationships": 273,
+    "source_links": 384,
     "most_connected": [
       {
         "name": "Afreximbank",
@@ -202,7 +204,7 @@
       },
       {
         "name": "EBRD",
-        "degree": 12
+        "degree": 13
       },
       {
         "name": "QatarEnergy",
@@ -217,15 +219,15 @@
         "degree": 5
       },
       {
+        "name": "AfDB",
+        "degree": 5
+      },
+      {
         "name": "Dangote",
         "degree": 4
       },
       {
         "name": "BII",
-        "degree": 4
-      },
-      {
-        "name": "AfDB",
         "degree": 4
       },
       {

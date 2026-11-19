@@ -1663,6 +1663,34 @@
     "naira": {
       "name": "Naira",
       "kind": "organization"
+    },
+    "terra industries": {
+      "name": "Terra Industries",
+      "kind": "organization"
+    },
+    "community wolf": {
+      "name": "Community Wolf",
+      "kind": "organization"
+    },
+    "rwd": {
+      "name": "RWD",
+      "kind": "organization"
+    },
+    "mn": {
+      "name": "Mn",
+      "kind": "organization"
+    },
+    "newbuild offshore support vessel": {
+      "name": "Newbuild Offshore Support Vessel",
+      "kind": "organization"
+    },
+    "arcelormittal liberia": {
+      "name": "ArcelorMittal Liberia",
+      "kind": "organization"
+    },
+    "future": {
+      "name": "Future",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -5267,6 +5295,11 @@
           "title": "NGX Group acquires 10% strategic stake in Nairobi Securities Exchange",
           "publisher": "Blueprint Newspapers",
           "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPWG9PRkF0S25pY1hxWXpNc0xxTkZDcmp5WnRFM3lRRTNxSDd2aU1KRVNZNUpqVHBrSldLTHVrZG0zanMyOWJJbXBLNWRRQU15MXNVMFJLZll1UUFreFVraHZxbmdQMHl0M2NBT3k2N3BfendsRXA2SnV3eGdlY1BoRXlnZ1A3eFgzR0E3R19GQWdQeDJQ?oc=5"
+        },
+        {
+          "title": "NGX Group Acquires 10% Stake in Nairobi Securities Exchange",
+          "publisher": "Dabafinance",
+          "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxNVFhFZl9GSW9RT0xHT2l5ZlplYTE0bmhhWXdWM2lMakJyOXR2TjczMWtyN3RUN2pXMlozNEFiNVdNQ2I4UTNXZGVzd3hNZmZHMXloQUU0OW84dWRtbS03SUVxWXNGYzIzZVptUUczak50dDQtTjE1REJCX1VDM0JoM0NMYUN6clNXbE5YY29MVkRwaUVmWGlN?oc=5"
         }
       ]
     },
@@ -5442,6 +5475,11 @@
           "title": "Sunbeth Acquires 73.29% Stake in Livestock Feeds as UAC Exits, Five New Directors Appointed",
           "publisher": "Proshare",
           "url": "https://news.google.com/rss/articles/CBMilwJBVV95cUxQcEF4SV9UdTVRZndGQzFCb09JdUt0UnpvYVItWENNYURKOGR0aGVkNURJZTFwRmY5V2xqVkhYYlBQR3hfdGxnMWp3eW9qYlhZdlVEcVVkVlA2VUl0MmNyUkpXeExNUmIzaGRYWFU3VklJVWdycHpZM09JT2lkbE9iS21WeFgtR2xyamt3bE5YaGRJb3lsSGJ2TXh0NDczYURzamVBSHI4ckVGSC13bldpOGJLeVBUcmFqTWhoZDFQd3lSTmZhaEphOVlSSnB5R0l3S2xjYXRTaklOLUxFaUNfMjNweExmY3RUcHA4NktqUjZjSENXaDFSbjZWNllCMFhxTEJVV01UOEREZUdmUUI1NTJzWmNLcHc?oc=5"
+        },
+        {
+          "title": "Sunbeth Completes Acquisition of 73.29% Stake in Livestock Feeds",
+          "publisher": "Brand Icon Image",
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQeEVCYUVlZjVxRXZpNWpxMlAtMUpjaUxYbV9JVjN0ZXJjclJCaUlpQlk3eVlSMDdpMDhaY2lBLTR2aWZwSW0tdHZtam8yYXJyR24xOHpSVkxrMUZlakl3eFNDejBwandtZlJKUFJNdi1VbHJHcDU2MTNEb180Y3N1aWFqejQ3NlhM?oc=5"
         }
       ]
     },
@@ -5948,7 +5986,91 @@
           "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxOR0EtckdJQUFqWjBCWGdUUEotMVg1N3NoejV5Rnd4aWZyS1FzVjRSY3ZucFVYQ1FuTXNaVnhQVU1wWkVDZWxYTDd1X252S1VramlKN3dOYk1TZDNMR1NhY0dzOEgzYUFZT3lFZ0dhX1J5eVNlaGdXd2YzRVl4M2ZlZ1o3VkdvME1FaWwtLW9DWEhwTXdEWnlLcmtpdnU3bEE?oc=5"
         }
       ]
+    },
+    "edb031e10fe06e410b41": {
+      "id": "edb031e10fe06e410b41",
+      "from": "terra industries",
+      "to": "community wolf",
+      "type": "acquisition",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "Terra Industries Takes Stake in Community Wolf as Nigerian Defence-Tech Group Builds Startup Portfolio",
+          "publisher": "Launch Base Africa",
+          "url": "https://launchbaseafrica.com/2026/11/19/terra-industries-community-wolf/?utm_source=rss&utm_medium=rss&utm_campaign=terra-industries-community-wolf"
+        }
+      ]
+    },
+    "5e0d2a8af7d850d6e322": {
+      "id": "5e0d2a8af7d850d6e322",
+      "from": "terra industries",
+      "to": "community wolf",
+      "type": "equity_funding",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "Terra Industries backs Community Wolf in second startup investment",
+          "publisher": "Benjamindada",
+          "url": "https://thecondia.com/terra-industries-backs-community-wolf/"
+        }
+      ]
+    },
+    "8c824d05e75984b212be": {
+      "id": "8c824d05e75984b212be",
+      "from": "afdb",
+      "to": "sterling bank",
+      "type": "debt_financing",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "AfDB Approves $102m Sterling Bank Facility to Support Nigerian Businesses",
+          "publisher": "naijapreneur",
+          "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxON1FrNWcxMDZ5ZWw3cmdFa1pWN2xZeXB2X1VoU1dtMWY2WWFSS2J2Unk3c3BjLVJkTlE2TlNYeF8xM1l3TkwyMkdnOVBxdmZEVlBUa2ltMXdjODJSWFJvbW9jVm9wUDFQYTJObC14LWZLd3FyQVJHNjZLc0l6YmFpUDNSQTJEZkFvZGo0elF6MzhkUGRKY2ZpS2d3RHdsNC1kcFc0eg?oc=5"
+        }
+      ]
+    },
+    "2dea0537cf13b9d9ddb1": {
+      "id": "2dea0537cf13b9d9ddb1",
+      "from": "ebrd",
+      "to": "rwd",
+      "type": "acquisition",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "EBRD takes 30% stake in Egypt desalination platform RWD",
+          "publisher": "Utilities Middle East",
+          "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPTE42QkpnVllYUHNTa3U3OHlxZHdZUDlMeml5ZXM2NklRSDZJMnJYdkhZY3Z6WFp2X21uN2l0aF9ILVh3NER2alh2b0JNam01MHFzeG84Vnp3aHlPUnZrdzJCSklOQ0NsaDg0WUM0S1MybkFscy0yV01LMzJQMXZBX0pTMA?oc=5"
+        }
+      ]
+    },
+    "b8c7e4b3ec53c963be28": {
+      "id": "b8c7e4b3ec53c963be28",
+      "from": "mn",
+      "to": "newbuild offshore support vessel",
+      "type": "equity_funding",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "Maridive Approves $16 Mn Investment in Newbuild Offshore Support Vessel",
+          "publisher": "Egypt Oil & Gas",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNcHZUQjlNN3pnTlYzXy1DbnlSeW45RG8wMnJRNmNsalA1YVlmREtvUkxDRGZPUXRfZDBDOFJfU1UtWV8wTExfakNOY29hSXdOSU1IUDFGQ3ZpZGVlZ1Ytd2tzMU9hbzFQQ0xIaHpVMm5WbmMzdTRMc3B1OUdyNGVxbHBXazZXSWVSTFpwMTIwQ0lqbVAtc1JxM0xqMnhDQ0dHc0hN?oc=5"
+        }
+      ]
+    },
+    "4040a628a702800c24e3": {
+      "id": "4040a628a702800c24e3",
+      "from": "arcelormittal liberia",
+      "to": "future",
+      "type": "equity_funding",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "ArcelorMittal Liberia Invests in Liberia’s Future as 40 Railway Personnel Earn Certification",
+          "publisher": "The New Dawn Liberia",
+          "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPTnZjOXBaRUNoQ1ZPRlQ3ckJ5d0hveWc2MFVsSlIzYmhRbUZqSVZnMG5PaUVJY0tLUXFhcUxGbDNZOXlKWmdCM2FpaklLRTNWUHQ2bUxlbzUxVmtUcmgxa0NhdzFaY0tfQmJFdEEyRG5fZHVSWXlaZVhOc2tmUElkU3BZdldhWDFRUm80N1Njc044SndCU2puNlA0Vmc1N2NmQzlBQi1ldEs0bm8wQ1BKNDFzN2xsYXlGYk9RZHcyZXFYYUVQ?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-18T22:16:59.753330+00:00"
+  "updated_at": "2026-11-19T13:46:42.888263+00:00"
 }
