@@ -243,8 +243,8 @@ def test_visible_feed_uses_new_versioned_cdn_pages_after_a_hard_delete(env, monk
     key = "deals:visible"
     hm._cache.pop("deals", None)
     hm._cache.pop(key, None)
-    hm._versions[key] = {"count": 2, "changed": "2026-11-19T10:00:00Z"}
-    hm._full_loaded_at[key] = __import__("time").monotonic()
+    monkeypatch.setitem(hm._versions, key, {"count": 2, "changed": "2026-11-19T10:00:00Z"})
+    monkeypatch.setitem(hm._full_loaded_at, key, __import__("time").monotonic())
     monkeypatch.setattr(hm, "API_SECRET", "api-secret")
     monkeypatch.setattr(visible_cdn, "base", lambda: "https://api.example")
     monkeypatch.setattr(visible_cdn, "available", lambda: True)
