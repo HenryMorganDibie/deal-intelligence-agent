@@ -1771,6 +1771,50 @@
     "anglo american": {
       "name": "Anglo American",
       "kind": "organization"
+    },
+    "exim bank": {
+      "name": "Exim Bank",
+      "kind": "organization"
+    },
+    "value chain": {
+      "name": "value chain",
+      "kind": "organization"
+    },
+    "canex creations inc": {
+      "name": "CANEX Creations Inc",
+      "kind": "organization"
+    },
+    "afrobeats": {
+      "name": "Afrobeats",
+      "kind": "organization"
+    },
+    "africinvest backed": {
+      "name": "AfricInvest-backed",
+      "kind": "organization"
+    },
+    "tropha estates": {
+      "name": "Tropha Estates",
+      "kind": "organization"
+    },
+    "pi holding": {
+      "name": "PI Holding",
+      "kind": "organization"
+    },
+    "point s": {
+      "name": "POINT S",
+      "kind": "organization"
+    },
+    "lydia forson": {
+      "name": "Lydia Forson",
+      "kind": "organization"
+    },
+    "call for investment in ghana s film industry": {
+      "name": "call for investment in Ghana’s film industry",
+      "kind": "organization"
+    },
+    "canex creations makes equity": {
+      "name": "CANEX Creations Makes Equity",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -6367,7 +6411,119 @@
           "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTFBXcDB4UGFCakwwYkQyNVprZmZxMGdUbTBUQnM1cFNjbG5nU2JkY25LUkpoWmR0RkNVdlk0YnE3VFE3QmRDQUU0MkRKazJGUXBlQ0EwTUxMUDdrWVBHUGprdF9EVDd2QWpJb1E5bmttTU9FSmxpcUE1YWhn?oc=5"
         }
       ]
+    },
+    "8bc6a8913215871a1d23": {
+      "id": "8bc6a8913215871a1d23",
+      "from": "exim bank",
+      "to": "value chain",
+      "type": "equity_funding",
+      "first_seen": "2026-11-19",
+      "sources": [
+        {
+          "title": "Exim Bank backs investment across Tanzania’s mining value chain",
+          "publisher": "www.thecitizen.co.tz",
+          "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQWXl1NnlCb2tEdU9jVUxFdEhsNUo4NUhaX3lEX3Y5NEtZQXZzeE8zT3hVNVUxTUpERDZWV3hDdWdVR3N3RTY0cWZpWTZWbjdzRXZidUloYjdoVHgzVkMzZEktamMyb2licEtUa1pyVnhaclVqNDJHM3pWUEVTWkN5czR3dHRjSXRBdTQwckhBUVF0TVNDM3JEN0ltVHk3a3RZdlZibmdUdGJLdUh1MS1ReGVBTXNFV3A4cU9CcF94T28?oc=5"
+        }
+      ]
+    },
+    "ce0a4a176ed5f811f360": {
+      "id": "ce0a4a176ed5f811f360",
+      "from": "canex creations inc",
+      "to": "afrobeats",
+      "type": "equity_funding",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "Afreximbank’s CANEX Creations Inc. completes a strategic equity investment in Afrobeats star D’Banj’s C.R.E.A.M. Platform",
+          "publisher": "Afreximbank",
+          "url": "https://afreximbank.africa-newsroom.com/press/afreximbanks-creative-africa-nexus-canex-creations-incorporated-inc-completes-a-strategic-equity-investment-in-afrobeats-star-dbanjs-creative-reality-entertainment-arts-and-music-cream-platform?lang=en"
+        }
+      ]
+    },
+    "e1f1b295eb50be6d3971": {
+      "id": "e1f1b295eb50be6d3971",
+      "from": "ifc",
+      "to": "africinvest backed",
+      "type": "equity_funding",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "IFC discloses proposed investment in AfricInvest-backed private credit fund",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPMk8wZWUzZGpxa1ZwYjBJMDdvWjREMTNQek5aMXNzM1FQSlh2SWd2emtmQ01DVUNaZERRSVRKRkxPMFpLbUszeDUwMXItRlBwZXhVVVdPT2RndDJwaEFuVVdqTWtJV1dMaFUybWhFM0Z1VEhvTmowQUhKRUJBdDBGOW5ranRQQQ?oc=5"
+        }
+      ]
+    },
+    "fce6daf981423b132fd6": {
+      "id": "fce6daf981423b132fd6",
+      "from": "bii",
+      "to": "tropha estates",
+      "type": "equity_funding",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "Report: BII investment in Tropha Estates supports agricultural expansion in Malawi",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxQRW5CQnM0OUxPUm5PSlYwYUFnZ0ItaDVNeDFyR05wUEhjeWpyVXB5ZlJET0JRZXhURmw5MnhxaW5mbExPamR1WjBCelBqTXVjTnhBX25KWHFQYUhaWWtBT0RqV1lLRkpTZE1aaGtUS19RUUVXamllQVVpT0w3bWJlUHAzNi0yQ0c4WVZTX3BKNWhKYW1BdlJ4cFdsTTladjJOaE5tVHgxblhLNkZjTnJnVFhqV1NrVkdRUmJFZkJ4clJMQzNXWFU1OWpXWGtudw?oc=5"
+        }
+      ]
+    },
+    "c0e6d9167a4b1efbf0b3": {
+      "id": "c0e6d9167a4b1efbf0b3",
+      "from": "pi holding",
+      "to": "point s",
+      "type": "acquisition",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "Côte d’Ivoire/maintenance auto: PI Holding rachète POINT S",
+          "publisher": "APAnews - Agence de Presse Africaine",
+          "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxOb0IySS1DT2VUbWQxWG1DUnJvN0NyWXBLSVdEVjlFNTlOU1V1WTBoZUM1eVVyWGowNm5yeUZ0OUNIcVFtNjZnWllPVlhHTDNvRWRLV190OUVnbV8tWjBTaUtJMXExOGZHcDZuVkQ2VDBheUFOT21tY0taV2pYMThwT0F4WEZUUThnQ0EtYm1B?oc=5"
+        }
+      ]
+    },
+    "5c2715cc0af0a907536a": {
+      "id": "5c2715cc0af0a907536a",
+      "from": "lydia forson",
+      "to": "call for investment in ghana s film industry",
+      "type": "equity_funding",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "Lydia Forson backs Sarkodie’s call for investment in Ghana’s film industry",
+          "publisher": "MyJoyOnline",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQZUdIR0llLXowaUcwekRWQkZHa2VlYlFhZzZLeGZ6LUZnSzFnZTNEdlh1SVRjVHhHNTBYSkREdjBzdFpuaFlFS094d3pjYnhlNE9VYWN1S2I4S1BucWg1MkdBZ3c5M0V3WV9Fek9ySHhfNGtBaXhUQ1Y2RVc1QmlVbkl1T2tGQVM2cEdSTC0xMjdZYWVMd0tuVHlBT1g1Y2xDMXVV?oc=5"
+        }
+      ]
+    },
+    "f1d4e1d3a8eee01464e7": {
+      "id": "f1d4e1d3a8eee01464e7",
+      "from": "canex creations makes equity",
+      "to": "c r e a m",
+      "type": "equity_funding",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "CANEX Creations Makes Equity Investment in D’Banj’s C.R.E.A.M",
+          "publisher": "Business Post Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxNTlNqekdTYzR6MVBFeG9DYmtOSVJQaUJ3VUFJQ3djand1SmpMUjZqemZ2d2VEOXFOd2NYcmhWa0UyVmRKV01HQV9CcUlJdnowSEg4VEY4S1FWWmNZVjVpYjBIZnZ5VkEwd1RsNmhQVGRlSGVHMl9sclpVajdRY2NfU195TWhQaS1jSndZeHpmRlZ3Wkd2SVhN?oc=5"
+        }
+      ]
+    },
+    "109e768f773bebb600f4": {
+      "id": "109e768f773bebb600f4",
+      "from": "afreximbank",
+      "to": "afrobeats",
+      "type": "equity_funding",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "Afreximbank invests in Afrobeats star D’Banj’s C.R.E.A.M. platform",
+          "publisher": "Peoples Gazette Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQelRZMXJLYnZRdDZCMjBzWkFHUjZvTDVtcnBwVEtraDItMmtXVjhPSUwxdHE4X0ZkVEhNd0t5MWtTZVFlbS1tNVJ3Tk1JM1A1b0lZRG1zaUF5ZXRZMzNLekExamJzdmhpZHNxbUM1OFBHUUxheUprc2Y3dXMyOWdiVzViY3N0UUJiM1l4SUo2TWE?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-20T13:30:34.784967+00:00"
+  "updated_at": "2026-11-20T21:56:55.622125+00:00"
 }
