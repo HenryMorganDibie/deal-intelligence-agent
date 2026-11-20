@@ -1731,6 +1731,46 @@
     "control": {
       "name": "Control",
       "kind": "organization"
+    },
+    "orange": {
+      "name": "Orange",
+      "kind": "organization"
+    },
+    "additional": {
+      "name": "Additional",
+      "kind": "organization"
+    },
+    "development": {
+      "name": "Development",
+      "kind": "organization"
+    },
+    "finance nigerian smes and exporters": {
+      "name": "Finance Nigerian SMEs and Exporters",
+      "kind": "organization"
+    },
+    "kbl and kepl": {
+      "name": "KBL and KEPL",
+      "kind": "organization"
+    },
+    "ratio": {
+      "name": "Ratio",
+      "kind": "organization"
+    },
+    "pharos": {
+      "name": "Pharos",
+      "kind": "organization"
+    },
+    "metier": {
+      "name": "Metier",
+      "kind": "organization"
+    },
+    "de beers ceo": {
+      "name": "De Beers CEO",
+      "kind": "organization"
+    },
+    "anglo american": {
+      "name": "Anglo American",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -4589,6 +4629,11 @@
           "title": "Sudan's Cashi secures $660,000 investment from France's Proparco",
           "publisher": "Wamda",
           "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxOaVFRdE15QmxXN3BNS1FVMGc1bklLQUREc2xjazdRSmhEcU50YUxLSm42WEJ4Q2lmQ01VQXR0Y1FBY1IyQkhNb1BLX2ZGa2JVbUZJYTNQMlVSYmY5dlkwNzNtZnlIRlNEYmF1UzA0ckJhajdnRks0dGo1bzJ4ZS12dVBJM2ZBa18tNW9CZzJB?oc=5"
+        },
+        {
+          "title": "Sudanese Fintech Cashi Secures USD 600 K Investment From Proparco",
+          "publisher": "WeeTracker",
+          "url": "https://weetracker.com/2026/11/20/sudanese-fintech-cashi-secures-600k-proparco-investment/"
         }
       ]
     },
@@ -5927,6 +5972,11 @@
           "title": "AfDB Approves $102m Facility To Finance SMEs, Create 6,000 Jobs In Nigeria",
           "publisher": "News Agency of Nigeria",
           "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxQQmZocXQwR3lRbjlmdFVicGpGYXJRTU4wd3UtTkRjVXlKSGUxRzZqdUprZDNoVGRLLWlXbmlYNTYxRTlNekhvZ1JDUU1LRHZCNG56YVpSVllUVUJ0TTl6OEVzU09XLVdYN2hCWng5UHQyY0ZhcVFILWlJOFU0aG55bjVyaGRRcGcwUTVFU0JSUTFYOFFqN1E?oc=5"
+        },
+        {
+          "title": "AfDB Approves $102m Facility To Finance Smes, Create 6,000 Jobs In Nigeria",
+          "publisher": "New Telegraph",
+          "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPS1M4cWtnM1l4cEE1Tmx6dmJYRmtGOHNBdlVWeFdSUWZJZ2x5SEZMN3psdTE1X19od2l3YnJHUHVEcDZHaWZSUVBCMUtFQTUtQ0hNRmRnTnNEWTNFMXVqX1pnUVctSGZfVUVkQ2x4Z0J3bnAwcURZbFo4STdHWlU0S2VyVXpMc0k2X0ZiZUY4OGVSZ19Dc1VCZFIzWGlYNEtf?oc=5"
         }
       ]
     },
@@ -6058,6 +6108,11 @@
           "title": "Terra Industries Takes Stake in Community Wolf as Nigerian Defence-Tech Group Builds Startup Portfolio",
           "publisher": "Launch Base Africa",
           "url": "https://launchbaseafrica.com/2026/11/19/terra-industries-community-wolf/?utm_source=rss&utm_medium=rss&utm_campaign=terra-industries-community-wolf"
+        },
+        {
+          "title": "Terra Industries Takes Stake in Community Wolf as Nigerian Defence-Tech Group Builds Startup Portfolio",
+          "publisher": "Launch Base Africa",
+          "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE1MYzFvNEk2WnZ3ZWlmZHF5QVMzbGNFODlhcmRxXzluQmtMV2syWXF0UlRmQWRIUmJfMnMzQXk2ZXJvZlpUclZnU3g3eGVDanQ2NHg4MTRGM244OXVyRTZzTUR5UFV3cEZHOHBXZmthcEpIZGVrVlNqRnByMjA?oc=5"
         }
       ]
     },
@@ -6214,7 +6269,105 @@
           "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxPVUlCbEtwQmFpZXJaNkZEU09sN1hCUU02Q0s0RE42RDZ4VEYyOWFObzUtaDJjdHVGaWxaRmpRWTRIcUx6cVVBYkhkZm5TT21XRHotWjVuNF9xLWstWHAtemY5Slhpc1hVcFIzRUhwWkxnSzcySGJ1NGkwMS1BT05ERS1sa3Exd2RXbWItZ3JyU18wR3R6MF9keHh6NjAzQ3R3aUl4dDFhMEROMTVValJtaWZMUWpDdnNMQTJpVUtBWG5jZjBub2ZNbjNhaDlPTzNiRjhvVXh4cmh1Uld3dGc?oc=5"
         }
       ]
+    },
+    "3e91fe1f0ad7790f80b1": {
+      "id": "3e91fe1f0ad7790f80b1",
+      "from": "orange",
+      "to": "additional",
+      "type": "equity_funding",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "Orange Commits Additional €250 Million to Support Tech Startups in Europe, Africa and Middle East",
+          "publisher": "Tech In Africa",
+          "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxQUHdmRDE1NEMyUUs1bW1HVXhRRmZ6ZExNY3BUS2VZS1FjSkRXWDZHODlrb1hkSGZyWHVlQVd3RnBjakpDNFV6emxQR3R5WG15MnZpd0twSnAwM3VBc01DY1J4ZkNXeWVGbWxLUC1BV2J3YkppSXRLcUlHc054RGthRElOX0hVMC1xOFplb1V2NVpiV3dONzBLYVk2OGhWbFdzbmtVcXpQd0lIT0o2QWN6NXRMbHNxVVpoMXNCd01sWE5VRHB4?oc=5"
+        }
+      ]
+    },
+    "8c4307a3305afaa244a2": {
+      "id": "8c4307a3305afaa244a2",
+      "from": "japan",
+      "to": "development",
+      "type": "debt_financing",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "Japan Backs Africa’s Development With $583M Loan and Broader Investment Talks",
+          "publisher": "Devdiscourse",
+          "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxNbks4alRBVnZJZ3JTQ1dfYmdCcjZwM2k3YW5IcWNPT1FfODJ3NXNpa0hDT041cExhTEhpYW9LdlNuTUtPNXBKVExZWnZvdlo4QmcwUHU2T0xURE1sNkh0dmFGaW5kMmF2dmJBTjI5a192Sy1tMXYyQzZLZWJ3Q2xZSU55ZGh0WGJuZlNnNmlwaVI5Q0pkYUtHNEJxU1RnS0pjRXg0ZW9URmdfckg4RENDNjA5TEpNZ1p2TEExQ0Q2TUxWZTdpLXZwNlhOdVplQdIBzgFBVV95cUxNbks4alRBVnZJZ3JTQ1dfYmdCcjZwM2k3YW5IcWNPT1FfODJ3NXNpa0hDT041cExhTEhpYW9LdlNuTUtPNXBKVExZWnZvdlo4QmcwUHU2T0xURE1sNkh0dmFGaW5kMmF2dmJBTjI5a192Sy1tMXYyQzZLZWJ3Q2xZSU55ZGh0WGJuZlNnNmlwaVI5Q0pkYUtHNEJxU1RnS0pjRXg0ZW9URmdfckg4RENDNjA5TEpNZ1p2TEExQ0Q2TUxWZTdpLXZwNlhOdVplQQ?oc=5"
+        }
+      ]
+    },
+    "5cf2383c2a70c889a8cd": {
+      "id": "5cf2383c2a70c889a8cd",
+      "from": "nexim",
+      "to": "finance nigerian smes and exporters",
+      "type": "debt_financing",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "Afreximbank, NEXIM Sign $30m Facility to Finance Nigerian SMEs and Exporters",
+          "publisher": "naijapreneur",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNMW5NZ053VGFpTGJ1VzI5bWtMOU1qTHpxc2dveGo1bHpnQlpDanF0bFVQY2dXb3JiVWJWc1BpRWFtc1liWklwa1cwQ3VKNjBPNHdhTWJhUm1rNWFOeWlOZzYwVllyVV9yaDg4Wjl3d1MyZ3ZFcy1uZ1NHVFB3NmNKYWJYTFViSTRiVU51V1BvRkxfQlZqaWZJc2luaVkyZUV6LWFvMXRhcw?oc=5"
+        }
+      ]
+    },
+    "1a1fbb836d63de22b6a9": {
+      "id": "1a1fbb836d63de22b6a9",
+      "from": "dangote",
+      "to": "kbl and kepl",
+      "type": "equity_funding",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "KBL and KEPL secure US$ 38.94m orders from Dangote refinery",
+          "publisher": "Manufacturing Today India",
+          "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTE4wTklnQS1VV0pOeXJqWHdVZXZKZzhTc2RkTHYwYmlzRnhVWkZZU04zNUR4ZDdtRkVFbDZnU3dhOFFleGc4MFlmVDBFRW1jZGVNVXloUUZlYjlxTGgzR0lwVjM0dFRWaENXaDY5MElpdVo0THg3aFFSaA?oc=5"
+        }
+      ]
+    },
+    "7451116b718215f4bceb": {
+      "id": "7451116b718215f4bceb",
+      "from": "ratio",
+      "to": "pharos",
+      "type": "acquisition",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "Egypt blow for Ratio's Pharos takeover bid",
+          "publisher": "Upstream Online",
+          "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQWUFhRGxfVERTckpjbWFQV29MV3RaUXQySjhMSmlPV0RGR3ZJWWJRSmk0NFVuYnlEcVR5UGZxd2xOVTBjbHlwSElwaGVpbHEzT213RjFtSTZWUktzUVh5VHRES3RMcVdTUEVxMWhJcHg4LTliQVFndWdLcHpyejBMUWw0ZGt5MzM2cXprQ0gwOVRjRFdoczM0?oc=5"
+        }
+      ]
+    },
+    "fefe89a216595f0b63af": {
+      "id": "fefe89a216595f0b63af",
+      "from": "metier",
+      "to": "bisedge",
+      "type": "equity_funding",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "Metier completes $20m investment in Bisedge",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNdEtTQ2J2UDgycjNFNjB4VVAwNEg3XzhiYjVZTS1ZV2l1V3FBNVprM01CM3IycThLcVlOVkVHcHQwNU1YSk9HYnY0LXFvbmZfNGFFY2pscnRWdnpBVVVqZVRTa1J4dS1La3p5aWc4eHc3Uy0zSm1SVTNheWhyNk16Rk9n?oc=5"
+        }
+      ]
+    },
+    "6520683f626cd8192f2a": {
+      "id": "6520683f626cd8192f2a",
+      "from": "de beers ceo",
+      "to": "anglo american",
+      "type": "acquisition",
+      "first_seen": "2026-11-20",
+      "sources": [
+        {
+          "title": "De Beers CEO acquires Anglo American shares",
+          "publisher": "Windhoek Observer",
+          "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTFBXcDB4UGFCakwwYkQyNVprZmZxMGdUbTBUQnM1cFNjbG5nU2JkY25LUkpoWmR0RkNVdlk0YnE3VFE3QmRDQUU0MkRKazJGUXBlQ0EwTUxMUDdrWVBHUGprdF9EVDd2QWpJb1E5bmttTU9FSmxpcUE1YWhn?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-19T22:24:54.282111+00:00"
+  "updated_at": "2026-11-20T13:30:34.784967+00:00"
 }

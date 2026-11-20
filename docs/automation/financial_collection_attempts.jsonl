@@ -788,3 +788,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-19", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/Nestle_Nigeria_Plc_Audited_Financial_Statement_for_the_Year_ended_31_Dec_2025.pdf", "status": "collected", "ticker": "NESTLE.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NEX.CS"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-19", "market": "africa", "status": "no_annual_data_returned", "ticker": "NFP.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-20", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/NGX_Group_-_2025_AFS.pdf", "status": "collected", "ticker": "NGXGROUP.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "NHM.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "NHPS.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-20", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46568_NIGERIA_INFRASTRUCTURE_DEBT_FUND-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_APRIL_2026.pdf", "status": "collected", "ticker": "NIDF.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "NIGERINS.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "NIGGERMAN.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "NIGROPES.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "NINH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-20", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NIPH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "NIV.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-20", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Nation-Media-Group-Plc-Audited-Group-Financial-Results-for-the-Year-Ended-31-Dec-2025.pdf", "status": "collected", "ticker": "NMG.NR"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-20", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47067_N_NIG._FLOUR_MILLS_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2026_FINANCIAL_STATEMENTS_MAY_2026.pdf", "status": "collected", "ticker": "NNFM.LG"}

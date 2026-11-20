@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-19T22:24:57.903447+00:00",
+  "updated_at": "2026-11-20T13:30:37.572959+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 67,
+      "new_review_items_today": 66,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 274,
+      "observations_collected": 279,
       "new_observations_today": 5,
-      "unreviewed_flagged_observations": 43,
+      "unreviewed_flagged_observations": 44,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 279,
-      "entities": 433,
+      "relationships": 286,
+      "entities": 443,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,23 +177,23 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 274,
+    "collected_tickers": 279,
     "new_rows": 5,
     "failures": [
-      "NDRL.CA",
-      "NEDA.CA",
-      "NEIC.BV",
-      "NEJ.CS",
-      "NESF.LG",
-      "NEX.CS",
-      "NFP.JO"
+      "NHM.JO",
+      "NHPS.CA",
+      "NIGERINS.LG",
+      "NIGGERMAN.LG",
+      "NIGROPES.LG",
+      "NINH.CA",
+      "NIV.JO"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 433,
-    "relationships": 279,
-    "source_links": 394,
+    "nodes": 443,
+    "relationships": 286,
+    "source_links": 404,
     "most_connected": [
       {
         "name": "Afreximbank",
@@ -208,6 +208,10 @@
         "degree": 12
       },
       {
+        "name": "Dangote",
+        "degree": 5
+      },
+      {
         "name": "IFC",
         "degree": 5
       },
@@ -218,10 +222,6 @@
       {
         "name": "AfDB",
         "degree": 5
-      },
-      {
-        "name": "Dangote",
-        "degree": 4
       },
       {
         "name": "BII",

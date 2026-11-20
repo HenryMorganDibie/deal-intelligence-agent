@@ -2405,7 +2405,7 @@
   "countries_kept_from_this_week": 54,
   "countries_refreshed": 0,
   "countries_requested": 54,
-  "generated_at": "2026-11-19T13:46:05Z",
+  "generated_at": "2026-11-20T13:29:32Z",
   "source": "Africa API country signals endpoint",
   "source_url": "https://africa-api.com/docs/signals"
 }
