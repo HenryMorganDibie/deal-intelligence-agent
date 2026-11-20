@@ -1,40 +1,108 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-19T16:44:12.731628+00:00",
+  "updated_at": "2026-11-20T00:39:31.297218+00:00",
   "current": {
-    "company": "Family Bank",
-    "company_url": "/companies?name=Family%20Bank",
-    "headline": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
-    "deal_type": "credit_risk",
+    "company": "Kogi Group",
+    "company_url": "/companies?name=Kogi%20Group",
+    "headline": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+    "deal_type": "regulatory_action",
     "amount_usd": null,
-    "country": "KE",
-    "sector": "banking",
-    "announced": "2026-11-17",
-    "score": 49.17,
+    "country": "NG",
+    "sector": "energy",
+    "announced": "2026-11-19",
+    "score": 58.1,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
     "reasons": [
-      "Corporate signal: credit risk",
-      "Event rule confidence: 0.82",
+      "Corporate signal: regulatory action",
+      "Event rule confidence: 0.93",
       "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "TechTrendsKE",
-        "title": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
-        "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNWjhrbldsSlMxdFBjME5wY2lzT0hhZm9sMzZhczNLcFpuYXFwaVJ6ZUxORjkyenM5MjRnazdqRHJNQlBUZUk4c2pJUVJpTDZuRlpBOTdKZFpKOGJ2aXl4ZEpDNGxwSkhMSnNLaEVYc0d5X0xjQnVZMjFuUVpjd1NzY2ltU2NUUQ?oc=5",
-        "date": "2026-11-17",
+        "publisher": "ThisDay Nigeria",
+        "title": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+        "url": "https://www.thisdaylive.com/2026/11/19/kogi-group-rejects-16-year-power-retention-agenda-demands-rotation-efcc-probe-of-ex-lg-chairmen/",
+        "date": "2026-11-19",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-11-12",
-    "period_end": "2026-11-18",
-    "selected_at": "2026-11-19T16:44:12.729555+00:00",
+    "period_start": "2026-11-13",
+    "period_end": "2026-11-19",
+    "selected_at": "2026-11-20T00:39:31.295436+00:00",
     "selection_version": 5,
     "companies": [
+      {
+        "company": "Kogi Group",
+        "company_url": "/companies?name=Kogi%20Group",
+        "headline": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "NG",
+        "sector": "energy",
+        "announced": "2026-11-19",
+        "score": 58.1,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "ThisDay Nigeria",
+            "title": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+            "url": "https://www.thisdaylive.com/2026/11/19/kogi-group-rejects-16-year-power-retention-agenda-demands-rotation-efcc-probe-of-ex-lg-chairmen/",
+            "date": "2026-11-19",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-13",
+        "period_end": "2026-11-19",
+        "selected_at": "2026-11-20T00:39:31.295436+00:00",
+        "selection_version": 5
+      },
+      {
+        "company": "Fidelity Bank",
+        "company_url": "/companies?name=Fidelity%20Bank",
+        "headline": "BREAKING: Fidelity Bank appoints Stanley Amuchie CEO, as Nneka Onyeali-Ikpe retires December 31",
+        "deal_type": "leadership_change",
+        "amount_usd": null,
+        "country": "NG",
+        "sector": "banking",
+        "announced": "2026-11-19",
+        "score": 57.95,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.90",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Nairametrics",
+            "title": "BREAKING: Fidelity Bank appoints Stanley Amuchie CEO, as Nneka Onyeali-Ikpe retires December 31",
+            "url": "https://nairametrics.com/2026/11/19/fidelity-bank-appoints-stanley-amuchie-ceo-as-nneka-onyeali-ikpe-retires-december-31/",
+            "date": "2026-11-19",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-13",
+        "period_end": "2026-11-19",
+        "selected_at": "2026-11-20T00:39:31.295436+00:00",
+        "selection_version": 5
+      },
       {
         "company": "Family Bank",
         "company_url": "/companies?name=Family%20Bank",
@@ -44,7 +112,7 @@
         "country": "KE",
         "sector": "banking",
         "announced": "2026-11-17",
-        "score": 49.17,
+        "score": 47.74,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-12",
-        "period_end": "2026-11-18",
-        "selected_at": "2026-11-19T16:44:12.729555+00:00",
+        "period_start": "2026-11-13",
+        "period_end": "2026-11-19",
+        "selected_at": "2026-11-20T00:39:31.295436+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +146,7 @@
         "country": "AO",
         "sector": null,
         "announced": "2026-11-17",
-        "score": 47.07,
+        "score": 45.64,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +166,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-12",
-        "period_end": "2026-11-18",
-        "selected_at": "2026-11-19T16:44:12.729555+00:00",
+        "period_start": "2026-11-13",
+        "period_end": "2026-11-19",
+        "selected_at": "2026-11-20T00:39:31.295436+00:00",
         "selection_version": 5
       },
       {
@@ -112,7 +180,7 @@
         "country": "ZA",
         "sector": null,
         "announced": "2026-11-16",
-        "score": 51.04,
+        "score": 49.61,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,96 +200,37 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-12",
-        "period_end": "2026-11-18",
-        "selected_at": "2026-11-19T16:44:12.729555+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "Fortis Global Insurance",
-        "company_url": "/companies?name=Fortis%20Global%20Insurance",
-        "headline": "Nigeria : Fortis Global Insurance réduit sa perte nette de 35,5 %, à 1,03 million de dollars à fin septembre 2026",
-        "deal_type": "earnings_surprise",
-        "amount_usd": null,
-        "country": "NG",
-        "sector": "insurance",
-        "announced": "2026-11-16",
-        "score": 49.54,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: earnings surprise",
-          "Event rule confidence: 0.72",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Financial Afrik",
-            "title": "Nigeria : Fortis Global Insurance réduit sa perte nette de 35,5 %, à 1,03 million de dollars à fin septembre 2026",
-            "url": "https://www.financialafrik.com/2026/11/16/nigeria-fortis-global-insurance-reduit-sa-perte-nette-de-355-a-103-million-de-dollars-a-fin-septembre-2026/",
-            "date": "2026-11-16",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-12",
-        "period_end": "2026-11-18",
-        "selected_at": "2026-11-19T16:44:12.729555+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "Zambia Airways",
-        "company_url": "/companies?name=Zambia%20Airways",
-        "headline": "Ethiopian Aviation Executive Aman Wole Gurmu Appointed CEO of Zambia Airways,Third Ethiopian to Lead the National Carrier",
-        "deal_type": "leadership_change",
-        "amount_usd": null,
-        "country": "ET",
-        "sector": null,
-        "announced": "2026-11-15",
-        "score": 48.71,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.90",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Ethiopian Business Review",
-            "title": "Ethiopian Aviation Executive Aman Wole Gurmu Appointed CEO of Zambia Airways,Third Ethiopian to Lead the National Carrier",
-            "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxPTGRVZW1fVjIyUDZ1MkJER1E4X0dWSVU2bFpqYVRSLUFwbnZjMGdPNHRiV0JTVEdCdGdMY1dIaVRSbG1mYU5wU0N2YU1jbHQ5dVhLWUEzaU9wam16WEo5emRvSEo0bDR2aHZDWWl4eVlzLVpVT2Y4bUxOc2JjMHdWZlNBN3dldV9aY0dwWW1OdVFLcHFLMEd3My1ienU0TWRWdXdWWVU5TjhIQjJ2aHh0NVJzYTg4YWZBRmx3Wl83VjVNSlhiZ0hYbDBkUnZYOW5IWmJGNTNOZ24tWmFxT1ZkMXc5aHllcHhBRWR1V1FR?oc=5",
-            "date": "2026-11-15",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-12",
-        "period_end": "2026-11-18",
-        "selected_at": "2026-11-19T16:44:12.729555+00:00",
+        "period_start": "2026-11-13",
+        "period_end": "2026-11-19",
+        "selected_at": "2026-11-20T00:39:31.295436+00:00",
         "selection_version": 5
       }
     ],
     "runner_ups": [
       {
-        "company": "Standard Bank",
-        "score": 46.76,
+        "company": "Fortis Global Insurance",
+        "score": 48.11,
         "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
+          "Corporate signal: earnings surprise",
+          "Event rule confidence: 0.72",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       },
       {
-        "company": "Concor",
-        "score": 45.86,
+        "company": "Zambia Airways",
+        "score": 47.29,
         "reasons": [
-          "Corporate signal: distressed asset",
+          "Corporate signal: leadership change",
           "Event rule confidence: 0.90",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "Standard Bank",
+        "score": 45.33,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -5512,6 +5521,241 @@
           "reasons": [
             "Corporate signal: distressed asset",
             "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
+    },
+    {
+      "company": "Kogi Group",
+      "company_url": "/companies?name=Kogi%20Group",
+      "headline": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+      "deal_type": "regulatory_action",
+      "amount_usd": null,
+      "country": "NG",
+      "sector": "energy",
+      "announced": "2026-11-19",
+      "score": 58.1,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: regulatory action",
+        "Event rule confidence: 0.93",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "ThisDay Nigeria",
+          "title": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+          "url": "https://www.thisdaylive.com/2026/11/19/kogi-group-rejects-16-year-power-retention-agenda-demands-rotation-efcc-probe-of-ex-lg-chairmen/",
+          "date": "2026-11-19",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-13",
+      "period_end": "2026-11-19",
+      "selected_at": "2026-11-20T00:39:31.295436+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "Kogi Group",
+          "company_url": "/companies?name=Kogi%20Group",
+          "headline": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "energy",
+          "announced": "2026-11-19",
+          "score": 58.1,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "ThisDay Nigeria",
+              "title": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+              "url": "https://www.thisdaylive.com/2026/11/19/kogi-group-rejects-16-year-power-retention-agenda-demands-rotation-efcc-probe-of-ex-lg-chairmen/",
+              "date": "2026-11-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-13",
+          "period_end": "2026-11-19",
+          "selected_at": "2026-11-20T00:39:31.295436+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Fidelity Bank",
+          "company_url": "/companies?name=Fidelity%20Bank",
+          "headline": "BREAKING: Fidelity Bank appoints Stanley Amuchie CEO, as Nneka Onyeali-Ikpe retires December 31",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "banking",
+          "announced": "2026-11-19",
+          "score": 57.95,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "BREAKING: Fidelity Bank appoints Stanley Amuchie CEO, as Nneka Onyeali-Ikpe retires December 31",
+              "url": "https://nairametrics.com/2026/11/19/fidelity-bank-appoints-stanley-amuchie-ceo-as-nneka-onyeali-ikpe-retires-december-31/",
+              "date": "2026-11-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-13",
+          "period_end": "2026-11-19",
+          "selected_at": "2026-11-20T00:39:31.295436+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Family Bank",
+          "company_url": "/companies?name=Family%20Bank",
+          "headline": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+          "deal_type": "credit_risk",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": "banking",
+          "announced": "2026-11-17",
+          "score": 47.74,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: credit risk",
+            "Event rule confidence: 0.82",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "TechTrendsKE",
+              "title": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+              "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNWjhrbldsSlMxdFBjME5wY2lzT0hhZm9sMzZhczNLcFpuYXFwaVJ6ZUxORjkyenM5MjRnazdqRHJNQlBUZUk4c2pJUVJpTDZuRlpBOTdKZFpKOGJ2aXl4ZEpDNGxwSkhMSnNLaEVYc0d5X0xjQnVZMjFuUVpjd1NzY2ltU2NUUQ?oc=5",
+              "date": "2026-11-17",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-13",
+          "period_end": "2026-11-19",
+          "selected_at": "2026-11-20T00:39:31.295436+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "AV Group",
+          "company_url": "/companies?name=AV%20Group",
+          "headline": "AV Group adquire participação do Lulo",
+          "deal_type": "insider_activity",
+          "amount_usd": null,
+          "country": "AO",
+          "sector": null,
+          "announced": "2026-11-17",
+          "score": 45.64,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Jornal de Angola",
+              "title": "AV Group adquire participação do Lulo",
+              "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQUFptRVVERlF3N0cwMEFNMEtwMUxXX2oyWmIxdVVRNmh2SUlkY3g1ZGZzeGNXVWF6NFY3dzJ5ejIxZjYxM2E1Ri1sVnp4ZjRxQ3M4a2RpbHVNek1WaHJXMWgyZ1lzaUV3MWp3T2dla2xhUTZuOWlQTmlQZGdIXzkyMXZFdEZ2WHpoOEg1eUIwUUF6dWJsWkljN3pZVUVGMmRKS25ocm0xYWY?oc=5",
+              "date": "2026-11-17",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-13",
+          "period_end": "2026-11-19",
+          "selected_at": "2026-11-20T00:39:31.295436+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Coca-Cola HBC",
+          "company_url": "/companies?name=Coca-Cola%20HBC",
+          "headline": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ZA",
+          "sector": null,
+          "announced": "2026-11-16",
+          "score": 49.61,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Sharecast.com",
+              "title": "Coca-Cola HBC secures approval for secondary listing in South Africa",
+              "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPQS1CQ0hzbFZyLXc2OVlYeUdyNlB0T3lFcVF1aXRfdlYxdW5QTWNRR0kwYllaM2s5Z3Fkb1JsNUpKZ2xMT01XbXgtMGFIU3hqSmVwN2FtNkpjZ3V6aXZCT0JIX1FHeWlJendVY0R3QVlmZXJZcjN3alB0cmhURVdHQVpyZTV3a2hVZE1LYVF3UXBkYjF5TWhYSU1tcWxhMHhlZDU3RGhyR1BPeGxBOWRaQXRRRUZqZXEyclhGd3VqTFRkY0V6OTlKRmZHaGZSZkZZUUNaSE9TY1lmbHFIM3ZWYzFUTXE?oc=5",
+              "date": "2026-11-16",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-13",
+          "period_end": "2026-11-19",
+          "selected_at": "2026-11-20T00:39:31.295436+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": [
+        {
+          "company": "Fortis Global Insurance",
+          "score": 48.11,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.72",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Zambia Airways",
+          "score": 47.29,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Standard Bank",
+          "score": 45.33,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
         }
