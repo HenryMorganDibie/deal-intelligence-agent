@@ -824,3 +824,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NY1.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OAO.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OAS.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "OBRI.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OCDI.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OCE.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "OCH.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "OCIC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "OCPH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OCT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "ODHN.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "ODID.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "ODIN.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OFH.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OIH.CA"}
