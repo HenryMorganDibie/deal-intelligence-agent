@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-21T15:31:54.125568+00:00",
+  "updated_at": "2026-11-21T23:16:54.139873+00:00",
   "current": {
     "company": "Unauthorised Bank",
     "company_url": "/companies?name=Unauthorised%20Bank",
@@ -32,7 +32,7 @@
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
     "period_start": "2026-11-14",
     "period_end": "2026-11-20",
-    "selected_at": "2026-11-21T15:31:54.123127+00:00",
+    "selected_at": "2026-11-21T23:16:54.138691+00:00",
     "selection_version": 5,
     "companies": [
       {
@@ -66,7 +66,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-11-14",
         "period_end": "2026-11-20",
-        "selected_at": "2026-11-21T15:31:54.123127+00:00",
+        "selected_at": "2026-11-21T23:16:54.138691+00:00",
         "selection_version": 5
       },
       {
@@ -100,7 +100,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-11-14",
         "period_end": "2026-11-20",
-        "selected_at": "2026-11-21T15:31:54.123127+00:00",
+        "selected_at": "2026-11-21T23:16:54.138691+00:00",
         "selection_version": 5
       },
       {
@@ -134,7 +134,7 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-11-14",
         "period_end": "2026-11-20",
-        "selected_at": "2026-11-21T15:31:54.123127+00:00",
+        "selected_at": "2026-11-21T23:16:54.138691+00:00",
         "selection_version": 5
       },
       {
@@ -168,33 +168,33 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-11-14",
         "period_end": "2026-11-20",
-        "selected_at": "2026-11-21T15:31:54.123127+00:00",
+        "selected_at": "2026-11-21T23:16:54.138691+00:00",
         "selection_version": 5
       },
       {
-        "company": "AV Group",
-        "company_url": "/companies?name=AV%20Group",
-        "headline": "AV Group adquire participação do Lulo",
-        "deal_type": "insider_activity",
+        "company": "Agusto & Co",
+        "company_url": "/companies?name=Agusto%20%26%20Co",
+        "headline": "Agusto & Co: Nigerian banks’ bad loans would have hit 11.5% without N2.9trn write-off in 2025",
+        "deal_type": "credit_risk",
         "amount_usd": null,
-        "country": "AO",
+        "country": "NG",
         "sector": null,
         "announced": "2026-11-17",
-        "score": 44.21,
+        "score": 46.31,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
         "reasons": [
-          "Corporate signal: insider activity",
-          "Event rule confidence: 0.75",
+          "Corporate signal: credit risk",
+          "Event rule confidence: 0.82",
           "1 distinct source-linked corporate event(s) found in the period",
           "Selected from corporate-event monitoring, not the transaction headline feed"
         ],
         "sources": [
           {
-            "publisher": "Jornal de Angola",
-            "title": "AV Group adquire participação do Lulo",
-            "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQUFptRVVERlF3N0cwMEFNMEtwMUxXX2oyWmIxdVVRNmh2SUlkY3g1ZGZzeGNXVWF6NFY3dzJ5ejIxZjYxM2E1Ri1sVnp4ZjRxQ3M4a2RpbHVNek1WaHJXMWgyZ1lzaUV3MWp3T2dla2xhUTZuOWlQTmlQZGdIXzkyMXZFdEZ2WHpoOEg1eUIwUUF6dWJsWkljN3pZVUVGMmRKS25ocm0xYWY?oc=5",
+            "publisher": "TheCable",
+            "title": "Agusto & Co: Nigerian banks’ bad loans would have hit 11.5% without N2.9trn write-off in 2025",
+            "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQRXJUc1czQ0o4ZnpoYWZUbE9XcERfaG5jeWNFYUtCZmNQWmVvRXowX2F2ZEdjS2Nvc1RseVZnRVQ4RXYtQ3NVdWV0cTZPR1I5OU1KeTdzeER1NHlJeDIzVkNncC1iOThQLXVVTzVBcXYxMV9tWHJWNkc3OU53SkFiSC1RQzg3ZmVmMW5wQ3BGdU8xZmtiMXBTMEJlMExpSTZlYkJTN2NZU3J0NURNRWZ6UXM3OA?oc=5",
             "date": "2026-11-17",
             "kind": "corporate_event"
           }
@@ -202,35 +202,35 @@
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
         "period_start": "2026-11-14",
         "period_end": "2026-11-20",
-        "selected_at": "2026-11-21T15:31:54.123127+00:00",
+        "selected_at": "2026-11-21T23:16:54.138691+00:00",
         "selection_version": 5
       }
     ],
     "runner_ups": [
+      {
+        "company": "Rössing Uranium",
+        "score": 44.21,
+        "reasons": [
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.75",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "AV Group",
+        "score": 44.21,
+        "reasons": [
+          "Corporate signal: insider activity",
+          "Event rule confidence: 0.75",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
       {
         "company": "Coca-Cola HBC",
         "score": 48.19,
         "reasons": [
           "Corporate signal: regulatory action",
           "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Fortis Global Insurance",
-        "score": 46.69,
-        "reasons": [
-          "Corporate signal: earnings surprise",
-          "Event rule confidence: 0.72",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Zambia Airways",
-        "score": 45.86,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.90",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -5792,7 +5792,7 @@
       "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
       "period_start": "2026-11-14",
       "period_end": "2026-11-20",
-      "selected_at": "2026-11-21T15:31:54.123127+00:00",
+      "selected_at": "2026-11-21T23:16:54.138691+00:00",
       "selection_version": 5,
       "companies": [
         {
@@ -5826,7 +5826,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-11-14",
           "period_end": "2026-11-20",
-          "selected_at": "2026-11-21T15:31:54.123127+00:00",
+          "selected_at": "2026-11-21T23:16:54.138691+00:00",
           "selection_version": 5
         },
         {
@@ -5860,7 +5860,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-11-14",
           "period_end": "2026-11-20",
-          "selected_at": "2026-11-21T15:31:54.123127+00:00",
+          "selected_at": "2026-11-21T23:16:54.138691+00:00",
           "selection_version": 5
         },
         {
@@ -5894,7 +5894,7 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-11-14",
           "period_end": "2026-11-20",
-          "selected_at": "2026-11-21T15:31:54.123127+00:00",
+          "selected_at": "2026-11-21T23:16:54.138691+00:00",
           "selection_version": 5
         },
         {
@@ -5928,33 +5928,33 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-11-14",
           "period_end": "2026-11-20",
-          "selected_at": "2026-11-21T15:31:54.123127+00:00",
+          "selected_at": "2026-11-21T23:16:54.138691+00:00",
           "selection_version": 5
         },
         {
-          "company": "AV Group",
-          "company_url": "/companies?name=AV%20Group",
-          "headline": "AV Group adquire participação do Lulo",
-          "deal_type": "insider_activity",
+          "company": "Agusto & Co",
+          "company_url": "/companies?name=Agusto%20%26%20Co",
+          "headline": "Agusto & Co: Nigerian banks’ bad loans would have hit 11.5% without N2.9trn write-off in 2025",
+          "deal_type": "credit_risk",
           "amount_usd": null,
-          "country": "AO",
+          "country": "NG",
           "sector": null,
           "announced": "2026-11-17",
-          "score": 44.21,
+          "score": 46.31,
           "independent_stories": 1,
           "transaction_records": 0,
           "related_events": 1,
           "reasons": [
-            "Corporate signal: insider activity",
-            "Event rule confidence: 0.75",
+            "Corporate signal: credit risk",
+            "Event rule confidence: 0.82",
             "1 distinct source-linked corporate event(s) found in the period",
             "Selected from corporate-event monitoring, not the transaction headline feed"
           ],
           "sources": [
             {
-              "publisher": "Jornal de Angola",
-              "title": "AV Group adquire participação do Lulo",
-              "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQUFptRVVERlF3N0cwMEFNMEtwMUxXX2oyWmIxdVVRNmh2SUlkY3g1ZGZzeGNXVWF6NFY3dzJ5ejIxZjYxM2E1Ri1sVnp4ZjRxQ3M4a2RpbHVNek1WaHJXMWgyZ1lzaUV3MWp3T2dla2xhUTZuOWlQTmlQZGdIXzkyMXZFdEZ2WHpoOEg1eUIwUUF6dWJsWkljN3pZVUVGMmRKS25ocm0xYWY?oc=5",
+              "publisher": "TheCable",
+              "title": "Agusto & Co: Nigerian banks’ bad loans would have hit 11.5% without N2.9trn write-off in 2025",
+              "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQRXJUc1czQ0o4ZnpoYWZUbE9XcERfaG5jeWNFYUtCZmNQWmVvRXowX2F2ZEdjS2Nvc1RseVZnRVQ4RXYtQ3NVdWV0cTZPR1I5OU1KeTdzeER1NHlJeDIzVkNncC1iOThQLXVVTzVBcXYxMV9tWHJWNkc3OU53SkFiSC1RQzg3ZmVmMW5wQ3BGdU8xZmtiMXBTMEJlMExpSTZlYkJTN2NZU3J0NURNRWZ6UXM3OA?oc=5",
               "date": "2026-11-17",
               "kind": "corporate_event"
             }
@@ -5962,35 +5962,35 @@
           "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
           "period_start": "2026-11-14",
           "period_end": "2026-11-20",
-          "selected_at": "2026-11-21T15:31:54.123127+00:00",
+          "selected_at": "2026-11-21T23:16:54.138691+00:00",
           "selection_version": 5
         }
       ],
       "runner_ups": [
+        {
+          "company": "Rössing Uranium",
+          "score": 44.21,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "AV Group",
+          "score": 44.21,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
         {
           "company": "Coca-Cola HBC",
           "score": 48.19,
           "reasons": [
             "Corporate signal: regulatory action",
             "Event rule confidence: 0.93",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Fortis Global Insurance",
-          "score": 46.69,
-          "reasons": [
-            "Corporate signal: earnings surprise",
-            "Event rule confidence: 0.72",
-            "1 distinct source-linked corporate event(s) found in the period"
-          ]
-        },
-        {
-          "company": "Zambia Airways",
-          "score": 45.86,
-          "reasons": [
-            "Corporate signal: leadership change",
-            "Event rule confidence: 0.90",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
         }
