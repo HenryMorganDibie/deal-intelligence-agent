@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-21T00:00:06.315948+00:00",
+  "updated_at": "2026-11-21T15:31:54.125568+00:00",
   "current": {
-    "company": "Kogi Group",
-    "company_url": "/companies?name=Kogi%20Group",
-    "headline": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+    "company": "Unauthorised Bank",
+    "company_url": "/companies?name=Unauthorised%20Bank",
+    "headline": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
     "deal_type": "regulatory_action",
     "amount_usd": null,
-    "country": "NG",
-    "sector": "energy",
-    "announced": "2026-11-19",
-    "score": 58.1,
+    "country": "ET",
+    "sector": "banking",
+    "announced": "2026-11-20",
+    "score": 53.9,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
@@ -22,19 +22,53 @@
     ],
     "sources": [
       {
-        "publisher": "ThisDay Nigeria",
-        "title": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
-        "url": "https://www.thisdaylive.com/2026/11/19/kogi-group-rejects-16-year-power-retention-agenda-demands-rotation-efcc-probe-of-ex-lg-chairmen/",
-        "date": "2026-11-19",
+        "publisher": "Birr Metrics",
+        "title": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+        "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5CZzlqZEhLTGN3d3BrcjNRYlNyQmNHVnRPOE9RZEYwQTh6UVpfX3Z1NTNZRG0wSWdZUU5KNC1jRDBJamdaR093UjdDXzdlMUNRdmpVRWZzUE53SjZRSHo1Nm5HOFpKVldGRkRDZFlaMnM?oc=5",
+        "date": "2026-11-20",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-11-13",
-    "period_end": "2026-11-19",
-    "selected_at": "2026-11-21T00:00:06.313033+00:00",
+    "period_start": "2026-11-14",
+    "period_end": "2026-11-20",
+    "selected_at": "2026-11-21T15:31:54.123127+00:00",
     "selection_version": 5,
     "companies": [
+      {
+        "company": "Unauthorised Bank",
+        "company_url": "/companies?name=Unauthorised%20Bank",
+        "headline": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+        "deal_type": "regulatory_action",
+        "amount_usd": null,
+        "country": "ET",
+        "sector": "banking",
+        "announced": "2026-11-20",
+        "score": 53.9,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Birr Metrics",
+            "title": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+            "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5CZzlqZEhLTGN3d3BrcjNRYlNyQmNHVnRPOE9RZEYwQTh6UVpfX3Z1NTNZRG0wSWdZUU5KNC1jRDBJamdaR093UjdDXzdlMUNRdmpVRWZzUE53SjZRSHo1Nm5HOFpKVldGRkRDZFlaMnM?oc=5",
+            "date": "2026-11-20",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-14",
+        "period_end": "2026-11-20",
+        "selected_at": "2026-11-21T15:31:54.123127+00:00",
+        "selection_version": 5
+      },
       {
         "company": "Kogi Group",
         "company_url": "/companies?name=Kogi%20Group",
@@ -44,7 +78,7 @@
         "country": "NG",
         "sector": "energy",
         "announced": "2026-11-19",
-        "score": 58.1,
+        "score": 56.67,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +98,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-13",
-        "period_end": "2026-11-19",
-        "selected_at": "2026-11-21T00:00:06.313033+00:00",
+        "period_start": "2026-11-14",
+        "period_end": "2026-11-20",
+        "selected_at": "2026-11-21T15:31:54.123127+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +112,7 @@
         "country": "NG",
         "sector": "banking",
         "announced": "2026-11-19",
-        "score": 57.95,
+        "score": 56.52,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-13",
-        "period_end": "2026-11-19",
-        "selected_at": "2026-11-21T00:00:06.313033+00:00",
+        "period_start": "2026-11-14",
+        "period_end": "2026-11-20",
+        "selected_at": "2026-11-21T15:31:54.123127+00:00",
         "selection_version": 5
       },
       {
@@ -112,7 +146,7 @@
         "country": "KE",
         "sector": "banking",
         "announced": "2026-11-17",
-        "score": 47.74,
+        "score": 46.31,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,9 +166,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-13",
-        "period_end": "2026-11-19",
-        "selected_at": "2026-11-21T00:00:06.313033+00:00",
+        "period_start": "2026-11-14",
+        "period_end": "2026-11-20",
+        "selected_at": "2026-11-21T15:31:54.123127+00:00",
         "selection_version": 5
       },
       {
@@ -146,7 +180,7 @@
         "country": "AO",
         "sector": null,
         "announced": "2026-11-17",
-        "score": 45.64,
+        "score": 44.21,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -166,50 +200,25 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-13",
-        "period_end": "2026-11-19",
-        "selected_at": "2026-11-21T00:00:06.313033+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "Coca-Cola HBC",
-        "company_url": "/companies?name=Coca-Cola%20HBC",
-        "headline": "Coca-Cola HBC secures approval for secondary listing in South Africa",
-        "deal_type": "regulatory_action",
-        "amount_usd": null,
-        "country": "ZA",
-        "sector": null,
-        "announced": "2026-11-16",
-        "score": 49.61,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Sharecast.com",
-            "title": "Coca-Cola HBC secures approval for secondary listing in South Africa",
-            "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPQS1CQ0hzbFZyLXc2OVlYeUdyNlB0T3lFcVF1aXRfdlYxdW5QTWNRR0kwYllaM2s5Z3Fkb1JsNUpKZ2xMT01XbXgtMGFIU3hqSmVwN2FtNkpjZ3V6aXZCT0JIX1FHeWlJendVY0R3QVlmZXJZcjN3alB0cmhURVdHQVpyZTV3a2hVZE1LYVF3UXBkYjF5TWhYSU1tcWxhMHhlZDU3RGhyR1BPeGxBOWRaQXRRRUZqZXEyclhGd3VqTFRkY0V6OTlKRmZHaGZSZkZZUUNaSE9TY1lmbHFIM3ZWYzFUTXE?oc=5",
-            "date": "2026-11-16",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-13",
-        "period_end": "2026-11-19",
-        "selected_at": "2026-11-21T00:00:06.313033+00:00",
+        "period_start": "2026-11-14",
+        "period_end": "2026-11-20",
+        "selected_at": "2026-11-21T15:31:54.123127+00:00",
         "selection_version": 5
       }
     ],
     "runner_ups": [
       {
+        "company": "Coca-Cola HBC",
+        "score": 48.19,
+        "reasons": [
+          "Corporate signal: regulatory action",
+          "Event rule confidence: 0.93",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
         "company": "Fortis Global Insurance",
-        "score": 48.11,
+        "score": 46.69,
         "reasons": [
           "Corporate signal: earnings surprise",
           "Event rule confidence: 0.72",
@@ -218,19 +227,10 @@
       },
       {
         "company": "Zambia Airways",
-        "score": 47.29,
+        "score": 45.86,
         "reasons": [
           "Corporate signal: leadership change",
           "Event rule confidence: 0.90",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Standard Bank",
-        "score": 45.33,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -5756,6 +5756,241 @@
           "reasons": [
             "Corporate signal: regulatory action",
             "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
+    },
+    {
+      "company": "Unauthorised Bank",
+      "company_url": "/companies?name=Unauthorised%20Bank",
+      "headline": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+      "deal_type": "regulatory_action",
+      "amount_usd": null,
+      "country": "ET",
+      "sector": "banking",
+      "announced": "2026-11-20",
+      "score": 53.9,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: regulatory action",
+        "Event rule confidence: 0.93",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Birr Metrics",
+          "title": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+          "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5CZzlqZEhLTGN3d3BrcjNRYlNyQmNHVnRPOE9RZEYwQTh6UVpfX3Z1NTNZRG0wSWdZUU5KNC1jRDBJamdaR093UjdDXzdlMUNRdmpVRWZzUE53SjZRSHo1Nm5HOFpKVldGRkRDZFlaMnM?oc=5",
+          "date": "2026-11-20",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-14",
+      "period_end": "2026-11-20",
+      "selected_at": "2026-11-21T15:31:54.123127+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "Unauthorised Bank",
+          "company_url": "/companies?name=Unauthorised%20Bank",
+          "headline": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ET",
+          "sector": "banking",
+          "announced": "2026-11-20",
+          "score": 53.9,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Birr Metrics",
+              "title": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+              "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5CZzlqZEhLTGN3d3BrcjNRYlNyQmNHVnRPOE9RZEYwQTh6UVpfX3Z1NTNZRG0wSWdZUU5KNC1jRDBJamdaR093UjdDXzdlMUNRdmpVRWZzUE53SjZRSHo1Nm5HOFpKVldGRkRDZFlaMnM?oc=5",
+              "date": "2026-11-20",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-14",
+          "period_end": "2026-11-20",
+          "selected_at": "2026-11-21T15:31:54.123127+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Kogi Group",
+          "company_url": "/companies?name=Kogi%20Group",
+          "headline": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "energy",
+          "announced": "2026-11-19",
+          "score": 56.67,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "ThisDay Nigeria",
+              "title": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+              "url": "https://www.thisdaylive.com/2026/11/19/kogi-group-rejects-16-year-power-retention-agenda-demands-rotation-efcc-probe-of-ex-lg-chairmen/",
+              "date": "2026-11-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-14",
+          "period_end": "2026-11-20",
+          "selected_at": "2026-11-21T15:31:54.123127+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Fidelity Bank",
+          "company_url": "/companies?name=Fidelity%20Bank",
+          "headline": "BREAKING: Fidelity Bank appoints Stanley Amuchie CEO, as Nneka Onyeali-Ikpe retires December 31",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "banking",
+          "announced": "2026-11-19",
+          "score": 56.52,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "BREAKING: Fidelity Bank appoints Stanley Amuchie CEO, as Nneka Onyeali-Ikpe retires December 31",
+              "url": "https://nairametrics.com/2026/11/19/fidelity-bank-appoints-stanley-amuchie-ceo-as-nneka-onyeali-ikpe-retires-december-31/",
+              "date": "2026-11-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-14",
+          "period_end": "2026-11-20",
+          "selected_at": "2026-11-21T15:31:54.123127+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Family Bank",
+          "company_url": "/companies?name=Family%20Bank",
+          "headline": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+          "deal_type": "credit_risk",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": "banking",
+          "announced": "2026-11-17",
+          "score": 46.31,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: credit risk",
+            "Event rule confidence: 0.82",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "TechTrendsKE",
+              "title": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+              "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNWjhrbldsSlMxdFBjME5wY2lzT0hhZm9sMzZhczNLcFpuYXFwaVJ6ZUxORjkyenM5MjRnazdqRHJNQlBUZUk4c2pJUVJpTDZuRlpBOTdKZFpKOGJ2aXl4ZEpDNGxwSkhMSnNLaEVYc0d5X0xjQnVZMjFuUVpjd1NzY2ltU2NUUQ?oc=5",
+              "date": "2026-11-17",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-14",
+          "period_end": "2026-11-20",
+          "selected_at": "2026-11-21T15:31:54.123127+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "AV Group",
+          "company_url": "/companies?name=AV%20Group",
+          "headline": "AV Group adquire participação do Lulo",
+          "deal_type": "insider_activity",
+          "amount_usd": null,
+          "country": "AO",
+          "sector": null,
+          "announced": "2026-11-17",
+          "score": 44.21,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Jornal de Angola",
+              "title": "AV Group adquire participação do Lulo",
+              "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQUFptRVVERlF3N0cwMEFNMEtwMUxXX2oyWmIxdVVRNmh2SUlkY3g1ZGZzeGNXVWF6NFY3dzJ5ejIxZjYxM2E1Ri1sVnp4ZjRxQ3M4a2RpbHVNek1WaHJXMWgyZ1lzaUV3MWp3T2dla2xhUTZuOWlQTmlQZGdIXzkyMXZFdEZ2WHpoOEg1eUIwUUF6dWJsWkljN3pZVUVGMmRKS25ocm0xYWY?oc=5",
+              "date": "2026-11-17",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-14",
+          "period_end": "2026-11-20",
+          "selected_at": "2026-11-21T15:31:54.123127+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": [
+        {
+          "company": "Coca-Cola HBC",
+          "score": 48.19,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Fortis Global Insurance",
+          "score": 46.69,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.72",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Zambia Airways",
+          "score": 45.86,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
         }
