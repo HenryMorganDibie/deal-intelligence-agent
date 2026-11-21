@@ -9,11 +9,6 @@
     "since": "2026-11-14",
     "reason": "preferred feed: HTTPStatusError 403"
   },
-  "The Reporter Ethiopia": {
-    "url": "https://news.google.com/rss/search?q=site%3Athereporterethiopia.com%20when%3A2d&hl=en-ET&gl=ET&ceid=ET:en",
-    "since": "2026-11-19",
-    "reason": "preferred feed: HTTPStatusError 304"
-  },
   "Zambia Daily Mail": {
     "url": "https://news.google.com/rss/search?q=site%3Adaily-mail.co.zm%20when%3A2d&hl=en-ZM&gl=ZM&ceid=ZM:en",
     "since": "2026-11-10",
