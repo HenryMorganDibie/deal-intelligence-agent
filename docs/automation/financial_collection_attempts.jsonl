@@ -812,3 +812,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-20", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NRP.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-20", "market": "africa", "status": "no_annual_data_returned", "ticker": "NSBC.BV"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-20", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/NAIROBI-SECURITIES-EXCHANGE-PLC-ANNUAL-REPORT-AND-CONSOLIDATED-FINANCIAL-STATEMENTS-FOR-THE-YEAR-ENDED-31-DECEMBER-2025.pdf", "status": "collected", "ticker": "NSE.NR"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "NSLTECH.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "NT1.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NTC.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NTCP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "NTLC.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "NUT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "NVE.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NVS.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NWL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "NY1.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OAO.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OAS.JO"}

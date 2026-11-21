@@ -1815,6 +1815,26 @@
     "canex creations makes equity": {
       "name": "CANEX Creations Makes Equity",
       "kind": "organization"
+    },
+    "botswana seeks more jobs beyond mining as afdb": {
+      "name": "Botswana Seeks More Jobs Beyond Mining as AfDB",
+      "kind": "organization"
+    },
+    "reforms to expand trade and investment": {
+      "name": "Reforms to Expand Trade and Investment",
+      "kind": "organization"
+    },
+    "canex creations": {
+      "name": "CANEX Creations",
+      "kind": "organization"
+    },
+    "lrb": {
+      "name": "LRB",
+      "kind": "organization"
+    },
+    "kenyan volleyball": {
+      "name": "Kenyan Volleyball",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -6523,7 +6543,49 @@
           "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQelRZMXJLYnZRdDZCMjBzWkFHUjZvTDVtcnBwVEtraDItMmtXVjhPSUwxdHE4X0ZkVEhNd0t5MWtTZVFlbS1tNVJ3Tk1JM1A1b0lZRG1zaUF5ZXRZMzNLekExamJzdmhpZHNxbUM1OFBHUUxheUprc2Y3dXMyOWdiVzViY3N0UUJiM1l4SUo2TWE?oc=5"
         }
       ]
+    },
+    "0d59ee42abcb46c9c960": {
+      "id": "0d59ee42abcb46c9c960",
+      "from": "botswana seeks more jobs beyond mining as afdb",
+      "to": "reforms to expand trade and investment",
+      "type": "equity_funding",
+      "first_seen": "2026-11-21",
+      "sources": [
+        {
+          "title": "Botswana Seeks More Jobs Beyond Mining as AfDB Backs Reforms to Expand Trade and Investment",
+          "publisher": "Devdiscourse",
+          "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOSzVBTlNkMGpuaFFvYnZnb0dYZmI1X3ZVekVIS0NJS2VDaXlwVVpWUlVOd1JISmtGWG92M1hmLThfWjFrOEl0WGJSTTY2YklWQnNaU25LLVB1SlN4TjNzd0ptbXprUkhlOEh2QnFTTTU1VGFYQTVaMzk5b3pHYTlPblkzVUR1Zk5YUzdYSWRNYUdOcUh6eFZxYW1DbG1uZzN0bmozUlE0M21PNW9yb3FLZFhISjJ5WGFCN1I2dXhQLXY3Zm1KQVZ1RFJIT05FdzBocmRnZ0k1eS1jQdIB3wFBVV95cUxQOWJaOWFrUDh5c1FqWVJEdmFDZXAxMmZTVjdyYUMwZG9MSmNNMmh4NzZGTV9jaEtucTJ1UndxWkpOYzZTN2ZocWdXc1lDMWZ5UW1vRzQ4a2w1OGJYakF2Ul9FRy1wcWZtSFMwamxvV04zVWhBSDVXTGlEUnRZTUUwVGRCRDQxVHVSRnhZNnJOanFTTFlKUGZVdDQ4YjJQZExRc0JSbnZmYmVkMWliMThkY2gzR2FFMF9qZk1yV2tRYm5haDF6ZVFvTGI2WERvY2VweVN6c3I4RVhfeEhOTndN?oc=5"
+        }
+      ]
+    },
+    "7d912b577acef2576ca4": {
+      "id": "7d912b577acef2576ca4",
+      "from": "canex creations",
+      "to": "c r e a m platform",
+      "type": "equity_funding",
+      "first_seen": "2026-11-21",
+      "sources": [
+        {
+          "title": "CANEX Creations Invests In D’Banj’s C.R.E.A.M Platform",
+          "publisher": "News Agency of Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBXSjNXYVZsQ2E5U3gxUGVtcXh1YXFYdzY4ZDJTRDRYU2JLUzlycE9QX0hZSHRzT29iNmZZaC1VUGF0aEpidzlfZWh1RGhjMmVsSGJVOGVXUDlMZ3BkRmFQanppaUZpVDFIXzV0TlItb1daSF9WcWRlejVZNU8?oc=5"
+        }
+      ]
+    },
+    "030ca661b517ecdd0be2": {
+      "id": "030ca661b517ecdd0be2",
+      "from": "lrb",
+      "to": "kenyan volleyball",
+      "type": "equity_funding",
+      "first_seen": "2026-11-21",
+      "sources": [
+        {
+          "title": "LRB Invests KSh17.3 Million in Kenyan Volleyball, Boosting Women's Sport",
+          "publisher": "Mpasho",
+          "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPV3N5RFRsZVoySWRDT2J1UnRpTDZlakxHYnpzRzBKZG1MMXB4ZTRVY1ZSRUxfTHFZS0ZDV2t6VVFURUl4enc1VlFWd3JsNXV0bTdCVHVHSUExU21YZXQtSGhBUnFMZUNqX0NtMlhDejR0Y2pGME56YXVhSC1uX2pyVFNXMmRZbFNmdjhzYzU0YmFhZFZBQUNUYTNhbEM1dlJvSzlwUUozUERMdGNqV0Z0TGtPM2hidDB3YTF3?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-20T21:56:55.622125+00:00"
+  "updated_at": "2026-11-21T12:56:34.491525+00:00"
 }
