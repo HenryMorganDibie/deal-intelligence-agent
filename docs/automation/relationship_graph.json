@@ -1851,6 +1851,26 @@
     "agric": {
       "name": "Agric",
       "kind": "organization"
+    },
+    "c r e a m platform with equity investment": {
+      "name": "C.R.E.A.M. platform with equity investment",
+      "kind": "organization"
+    },
+    "sweden": {
+      "name": "Sweden",
+      "kind": "organization"
+    },
+    "sadc parliamentary forum calls for gender equality investment": {
+      "name": "SADC Parliamentary Forum, calls for gender equality investment",
+      "kind": "organization"
+    },
+    "mr price": {
+      "name": "Mr Price",
+      "kind": "organization"
+    },
+    "nkd": {
+      "name": "NKD",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -6634,7 +6654,49 @@
           "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOaVY4NjdNbDNqOE9CUXduU3N5alNtbzRnYXp4RW5PT1dJZ2Q0Ymd2RU83MFhSa29jRVlCWnY4cVZCbmwtRkg0ME9Zb1BOWmo3dzJUalhVa2ZleWlfV3BJVHVWd2c5aUd1MnJRbjUxMWRiM1dKR3E3NS15dkN2N3VWVEJpc2pienBnem5UZmZJRGt3Mkl2ZFVmbUlhRmM1ZHhZNU93?oc=5"
         }
       ]
+    },
+    "aceb4845c680c3f00de4": {
+      "id": "aceb4845c680c3f00de4",
+      "from": "afreximbank",
+      "to": "c r e a m platform with equity investment",
+      "type": "equity_funding",
+      "first_seen": "2026-11-22",
+      "sources": [
+        {
+          "title": "Afreximbank backs D’Banj’s C.R.E.A.M. platform with equity investment",
+          "publisher": "Business News Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOUTR6WGRWUThmWDFCcEtIYXYwd1ROTmw2UW56MlQ0NDZBWHRnbzNQNkJxZFVOb1JST183SEc0cjRaQ0V3NDh4TGlkUXRMMUhRUTdTRE9ub2pOOUxDRDNTU2plREgwcDRHd3FidEtXNFQ5SUFMZzk5RkxkUURRbGJHU2ZOcVZuMjA2YVB3N0lwaDdLazM1ZEJwOEwzZ3U5dlg2ek92eXlR?oc=5"
+        }
+      ]
+    },
+    "5db735a923dcff86b8b3": {
+      "id": "5db735a923dcff86b8b3",
+      "from": "sweden",
+      "to": "sadc parliamentary forum calls for gender equality investment",
+      "type": "equity_funding",
+      "first_seen": "2026-11-22",
+      "sources": [
+        {
+          "title": "Sweden backs SADC Parliamentary Forum, calls for gender equality investment",
+          "publisher": "The Namibian",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOakVZbV9rbmtIUlBpZmpPREpYTVhOWktrNEhkT3FBZVh3QnRQdk9TSVhuenZ0TGlsSjNBWDI3aUtvWEtGaFFVSG1ZR1BWY0lLSlRTbHRGTEdmYUlza0gwajhxOEp1N2EtQkozLTBXVmFHQm1HZlhZS1dMMV9IeU00T09tMUJKQUVFXzdRWGFfaGZSdHFZWk1WXzhXNVVtbUpBMkZzanBR?oc=5"
+        }
+      ]
+    },
+    "8cfa13eacaf52aeba9aa": {
+      "id": "8cfa13eacaf52aeba9aa",
+      "from": "mr price",
+      "to": "nkd",
+      "type": "acquisition",
+      "first_seen": "2026-11-22",
+      "sources": [
+        {
+          "title": "Mr Price's NKD acquisition lifts half-year profit by 30.7%",
+          "publisher": "thenational.co.za",
+          "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNRmZNSVlHSldUMFRzWW9YR0szQU90U1pzVUhhWEFxM0Mtem0yeHVoUS1rWm9kR2pNWTdDMWt6TFotcmhfVC1IeG5VZ29LcXQxOElVQ2FaWVdsVkhIMUJ5M01VQ3o4azhaMHZPUHlzSl9Tbml2QWpjdDZDSmVIYzV5OFlycmZHb0U4a29GODRfN3NZdUN5ZzdTTjJTbHJsUndmS1E?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-22T12:49:21.326011+00:00"
+  "updated_at": "2026-11-22T20:49:57.793779+00:00"
 }

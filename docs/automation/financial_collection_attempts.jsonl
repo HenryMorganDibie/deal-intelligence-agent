@@ -848,3 +848,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "ORE.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "OREG.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "ORGT.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ORHD.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ORN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "ORWE.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "OUL.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "PACH.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "PAINTCOM.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "PALC.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "PAN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "PBC.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "PBG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "PCT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "PEM.JO"}
