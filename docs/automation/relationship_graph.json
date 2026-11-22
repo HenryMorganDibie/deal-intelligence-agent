@@ -1835,6 +1835,22 @@
     "kenyan volleyball": {
       "name": "Kenyan Volleyball",
       "kind": "organization"
+    },
+    "business rescue asset": {
+      "name": "Business Rescue Asset",
+      "kind": "organization"
+    },
+    "south africa guide": {
+      "name": "South Africa Guide",
+      "kind": "organization"
+    },
+    "uganda woos aliko dangote": {
+      "name": "Uganda Woos Aliko Dangote",
+      "kind": "organization"
+    },
+    "agric": {
+      "name": "Agric",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -6590,7 +6606,35 @@
           "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPV3N5RFRsZVoySWRDT2J1UnRpTDZlakxHYnpzRzBKZG1MMXB4ZTRVY1ZSRUxfTHFZS0ZDV2t6VVFURUl4enc1VlFWd3JsNXV0bTdCVHVHSUExU21YZXQtSGhBUnFMZUNqX0NtMlhDejR0Y2pGME56YXVhSC1uX2pyVFNXMmRZbFNmdjhzYzU0YmFhZFZBQUNUYTNhbEM1dlJvSzlwUUozUERMdGNqV0Z0TGtPM2hidDB3YTF3?oc=5"
         }
       ]
+    },
+    "f25b0097afa831f89097": {
+      "id": "f25b0097afa831f89097",
+      "from": "business rescue asset",
+      "to": "south africa guide",
+      "type": "acquisition",
+      "first_seen": "2026-11-22",
+      "sources": [
+        {
+          "title": "Business Rescue Asset Purchase South Africa Guide",
+          "publisher": "Global Advisory Experts",
+          "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQZUlyRHpfcnlvVVRVR3FfZTBKMkljLXdVVXRhY1pzWXphNVEzUVc4NVBvUnNJYTVNVko4cnBGNUpOLUVlV3VHdDNwYWFlTHpBeU13aHRDVWVDMV9ZbWhVR19USWJZc0tHTl9qM1lWR3MwX3ZNZmctdkVwT1JoYzJISk9COU5ZeThOU0JiaFpwdnFxRnk1WFFQeGdLNA?oc=5"
+        }
+      ]
+    },
+    "86514313df9104b82d11": {
+      "id": "86514313df9104b82d11",
+      "from": "uganda woos aliko dangote",
+      "to": "agric",
+      "type": "equity_funding",
+      "first_seen": "2026-11-22",
+      "sources": [
+        {
+          "title": "Uganda Woos Aliko Dangote to Invest in Agric, Energy, Petroleum",
+          "publisher": "The Boss Newspaper",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOaVY4NjdNbDNqOE9CUXduU3N5alNtbzRnYXp4RW5PT1dJZ2Q0Ymd2RU83MFhSa29jRVlCWnY4cVZCbmwtRkg0ME9Zb1BOWmo3dzJUalhVa2ZleWlfV3BJVHVWd2c5aUd1MnJRbjUxMWRiM1dKR3E3NS15dkN2N3VWVEJpc2pienBnem5UZmZJRGt3Mkl2ZFVmbUlhRmM1ZHhZNU93?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-21T20:39:57.485900+00:00"
+  "updated_at": "2026-11-22T12:49:21.326011+00:00"
 }

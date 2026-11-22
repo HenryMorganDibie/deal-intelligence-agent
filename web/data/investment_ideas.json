@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-21T20:40:00.243086+00:00",
+  "updated_at": "2026-11-22T12:49:24.170726+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 48,
+      "new_review_items_today": 78,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 298,
-      "new_observations_today": 5,
-      "unreviewed_flagged_observations": 44,
+      "observations_collected": 302,
+      "new_observations_today": 4,
+      "unreviewed_flagged_observations": 45,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 297,
-      "entities": 459,
+      "relationships": 299,
+      "entities": 463,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,23 +177,24 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 298,
-    "new_rows": 5,
+    "collected_tickers": 302,
+    "new_rows": 4,
     "failures": [
-      "OBRI.CA",
-      "OCH.NR",
-      "OCIC.CA",
-      "OCPH.CA",
-      "ODHN.CA",
-      "ODID.CA",
-      "ODIN.CA"
+      "OLG.JO",
+      "OML.JO",
+      "ONTBF.BV",
+      "ORAC.BV",
+      "ORCH.NR",
+      "ORE.JO",
+      "OREG.CA",
+      "ORGT.BV"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 459,
-    "relationships": 297,
-    "source_links": 416,
+    "nodes": 463,
+    "relationships": 299,
+    "source_links": 418,
     "most_connected": [
       {
         "name": "Afreximbank",

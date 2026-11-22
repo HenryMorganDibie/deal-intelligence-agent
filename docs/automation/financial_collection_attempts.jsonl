@@ -836,3 +836,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "status": "no_annual_data_returned", "ticker": "ODIN.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OFH.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-21", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OIH.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-22", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46405_OKOMU_OIL_PALM_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_MARCH_2026.pdf", "status": "collected", "ticker": "OKOMUOIL.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OLFI.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "OLG.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-22", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/46528_OMATEK_VENTURES_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2025_FINANCIAL_STATEMENTS_APRIL_2026.pdf", "status": "collected", "ticker": "OMATEK.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "OML.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "OMN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "ONTBF.BV"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "ORAC.BV"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "ORCH.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "ORE.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "OREG.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "ORGT.BV"}
