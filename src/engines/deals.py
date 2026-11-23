@@ -2636,11 +2636,121 @@ def abbreviates(short: Optional[str], full: Optional[str]) -> bool:
     return fits(0, 0)
 
 
+# Instruments a company issues again and again for the same sum (commercial paper series, bond tranches): a repeat
+# months later is a new issue, not a late report of the first.
+_REPEAT_ISSUE = re.compile(r"(?i)\b(?:commercial\s+papers?|cps?|bonds?|notes|sukuk|eurobond|tranche|series\s+\d|"
+                           r"treasury|rights\s+issue|placing|placement|syndicated)\b")
+_REPORT_NOISE = {"million", "billion", "thousand", "raises", "raised", "raise", "secures", "secured", "funding",
+                 "round", "investment", "invests", "invest", "expand", "expands", "expansion", "scale", "grow",
+                 "to", "for", "in", "its", "the", "a", "an", "and", "of", "with", "as", "from", "across", "into",
+                 "africa", "african", "startup", "fintech", "company", "firm", "new", "us", "usd", "m", "mn", "bn"}
+LATE_REPORT_WINDOW_DAYS = 365
+REPUBLISHED_WINDOW_DAYS = 120
+
+
+def _investor_sets(d: dict) -> list[str]:
+    names = [n for n in (d.get("investors") or []) if not _junk_party(n)]
+    if not names and not _junk_party(d.get("buyer")) and d.get("deal_type") == "equity_funding":
+        names = [d["buyer"]]
+    return names
+
+
+def _headline_words(d: dict) -> set[str]:
+    words = set(normalise_name(d.get("headline")).split()) - _report_core(d.get("target")) - _REPORT_NOISE
+    return {w for w in words if len(w) >= 4 and not any(ch.isdigit() for ch in w)}
+
+
+def _markets_disagree(a: dict, b: dict) -> bool:
+    """Reports placed in different markets, by their stored countries or by the countries their headlines name
+    (Access Bank buying Standard Chartered in Tanzania, then in The Gambia)."""
+    sa, sb = set(a.get("countries") or [a.get("country")]) - {None}, set(b.get("countries") or [b.get("country")]) - {None}
+    if sa and sb and not sa & sb:
+        return True
+    ha = {c.iso2 for c in countries_in_text(a.get("headline") or "")}
+    hb = {c.iso2 for c in countries_in_text(b.get("headline") or "")}
+    return bool(ha and hb and not ha & hb)
+
+
+def _late_re_report(a: dict, b: dict, gap: int) -> bool:
+    """One round or deal reported again months later ("Swoop raises $7.3 million seed" in April, "Swoop Raises
+    $7.3M, Builds Super App" in October): the same target, the same figure, and something that ties the reports
+    together, a shared investor, the same round, or the same story in the headline. Reports naming different
+    investors (BII's $5m and IFC's $5m in ARC Ride) or a different round, and repeat issues such as commercial
+    paper series, stay separate."""
+    if gap <= 14 or gap > LATE_REPORT_WINDOW_DAYS or a.get("deal_type") != b.get("deal_type"):
+        return False
+    if a.get("deal_type") not in {"equity_funding", "acquisition", "merger", "exit"}:
+        return False
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    if not (ua and ub) or max(ua, ub) / min(ua, ub) > 1.02:
+        return False
+    ca, cb = _report_core(a.get("target")), _report_core(b.get("target"))
+    if not ca or ca != cb or not _distinctive(ca):
+        return False
+    if _REPEAT_ISSUE.search(a.get("headline") or "") or _REPEAT_ISSUE.search(b.get("headline") or ""):
+        return False
+    ra, rb = (str(a.get("round") or "").lower().strip(), str(b.get("round") or "").lower().strip())
+    if ra and rb and ra != rb:
+        return False
+    if _stakes_differ(a, b):
+        return False
+    for f in ("buyer", "seller"):
+        if a.get("deal_type") != "equity_funding" and not _junk_party(a.get(f)) and not _junk_party(b.get(f)) \
+                and not _party_match(a.get(f), b.get(f)):
+            return False
+    ia, ib = _investor_sets(a), _investor_sets(b)
+    shared_investor = any(_party_match(x, y) for x in ia for y in ib) or any(
+        _report_core(n) and _report_core(n) <= set(normalise_name(other.get("headline")).split())
+        for names, other in ((ia, b), (ib, a)) for n in names)
+    if ia and ib and not shared_investor and not (ra and ra == rb):
+        return False                                    # different named backers: different rounds
+    if shared_investor or (ra and ra == rb):
+        return True
+    if a.get("deal_type") != "equity_funding" and any(
+            not _junk_party(a.get(f)) and _party_match(a.get(f), b.get(f)) for f in ("buyer", "seller")):
+        return True
+    return len(_headline_words(a) & _headline_words(b)) >= 2
+
+
+def _republished(a: dict, b: dict, gap: int) -> bool:
+    """The same article indexed again under a later date: identical headline, same kind of deal, within months."""
+    if gap > REPUBLISHED_WINDOW_DAYS or a.get("deal_type") != b.get("deal_type"):
+        return False
+    ha, hb = normalise_name(a.get("headline")), normalise_name(b.get("headline"))
+    if not ha or ha != hb or len(ha.split()) < 5:
+        return False
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    return not (ua and ub and max(ua, ub) / min(ua, ub) > 1.02)
+
+
+def _buyer_names_target(a: dict, b: dict, gap: int) -> bool:
+    """One acquisition reported under the business bought and under its owner ("Uber Buys Out Glovo" and "Uber to
+    Acquire Delivery Hero's Food Delivery Business ... Including Glovo Kenya"): the same buyer within a week, and
+    one report's target named in the other's headline."""
+    ma = {"acquisition", "merger"}
+    if gap > 7 or a.get("deal_type") not in ma or b.get("deal_type") not in ma:
+        return False
+    if _junk_party(a.get("buyer")) or _junk_party(b.get("buyer")) or not _party_match(a.get("buyer"), b.get("buyer")):
+        return False
+    if _stakes_differ(a, b):
+        return False
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    if ua and ub and max(ua, ub) / min(ua, ub) > 1.2:
+        return False
+    for x, y in ((a, b), (b, a)):
+        core = _report_core(x.get("target")) - _GENERIC_ASSET_WORDS
+        if core and _distinctive(core) and core <= set(normalise_name(y.get("headline")).split()):
+            return True
+    return False
+
+
 def strong_same_report(a: dict, b: dict) -> bool:
     try:
         gap = abs((date.fromisoformat(a["announced"][:10]) - date.fromisoformat(b["announced"][:10])).days)
     except Exception:
         return False
+    if not _markets_disagree(a, b) and (_republished(a, b, gap) or _late_re_report(a, b, gap) or _buyer_names_target(a, b, gap)):
+        return True
     ma = {"acquisition", "merger", "exit"}
     ta, tb = a.get("deal_type"), b.get("deal_type")
     if ta == tb == "fund_raise" and (verdict := _same_fund_close(a, b, gap)) is not None:
