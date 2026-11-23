@@ -2581,14 +2581,18 @@ def _fund_house_name(kept: Optional[str], other: Optional[str]) -> dict:
 
 def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
     """Stored records that are two reports of one transaction (deals.strong_same_report): the fuller record
-    keeps both reports' sources and the other points at it. A reviewer's decision stands."""
+    keeps both reports' sources and the other points at it. A reviewer's decision stands: a reviewed record is
+    never folded into another, though an unreviewed duplicate is folded into it."""
     from collections import defaultdict as _dd
     buckets: dict[str, list[dict]] = _dd(list)
     for d in visible:
         current = out.get(d["id"], d)
-        if current.get("merged_into") or current.get("excluded") or current.get("reviewed_on"):
+        if current.get("merged_into") or current.get("excluded"):
             continue
         keys = set(deals_mod._name_tokens(current.get("target")))
+        if current.get("deal_type") in ("acquisition", "merger") and not deals_mod._junk_party(current.get("buyer")):
+            # One purchase reported under the business and under its owner shares no name word, only the buyer.
+            keys.add(f"buy:{deals_mod.normalise_name(current.get('buyer'))}")
         if current.get("deal_type") == "fund_raise":
             # A fund close is reported under the manager, its abbreviation or the fund's name ("CFM", "Climate
             # Fund Managers", "SA-H2 Fund"): fund raises are also grouped by abbreviation and headline words.
@@ -2615,14 +2619,28 @@ def _merge_stored_duplicates(visible: list[dict], out: dict[str, dict]) -> None:
             for b in group[i + 1:]:
                 if a["id"] == b["id"] or a["id"] in absorbed or b["id"] in absorbed:
                     continue
+                if a.get("reviewed_on") and b.get("reviewed_on"):
+                    continue
                 if not deals_mod.strong_same_report(a, b):
                     continue
                 keep, drop = (a, b) if fuller(a) >= fuller(b) else (b, a)
+                if drop.get("reviewed_on"):
+                    keep, drop = drop, keep
                 # One LP's commitment beside a fund's close: the close (the larger figure) is the deal.
                 if a.get("deal_type") == b.get("deal_type") == "fund_raise" and a.get("amount_usd") and b.get("amount_usd"):
                     keep, drop = (a, b) if a["amount_usd"] >= b["amount_usd"] else (b, a)
+                if drop.get("reviewed_on"):
+                    continue
                 merged = deals_mod.merge(out.get(keep["id"], keep), out.get(drop["id"], drop))
                 merged["id"] = keep["id"]
+                if keep.get("reviewed_on"):
+                    # The reviewer's record keeps every field they checked; it only gains the other report's sources.
+                    reviewed = out.get(keep["id"], keep)
+                    merged = {**reviewed, "sources": merged.get("sources") or reviewed.get("sources")}
+                    out[keep["id"]] = merged
+                    out[drop["id"]] = {**out.get(drop["id"], drop), "merged_into": keep["id"]}
+                    absorbed.add(drop["id"])
+                    continue
                 # A kept target that is only a description ("Kenyan Label") takes the other report's real name
                 # ("Kenyan Label AI Records"); a real name is never swapped for a longer description.
                 kt, dt = deals_mod._name_tokens(merged.get("target")), deals_mod._name_tokens(drop.get("target"))

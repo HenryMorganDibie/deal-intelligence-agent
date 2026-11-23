@@ -142,3 +142,31 @@ def test_a_fund_and_its_manager_report_one_close():
     assert dm.strong_same_report(fund, manager)
     assert not dm.strong_same_report(fund, {**manager, "headline": "Kuramo Capital lands NGN 48B final close"})
     assert dm._clean_name("Africa-focussed Kuramo Capital Management") == "Kuramo Capital Management"
+
+
+def test_an_unreviewed_report_folds_into_the_reviewed_record_which_keeps_its_fields():
+    from src import hosted_market as hm
+    reviewed = deal(id="r", deal_type="equity_funding", target="Moove", amount_usd=250_000_000, round="series c",
+                    investors=["Woven Capital", "Ion Pacific"], announced="2026-08-05", reviewed_on="2026-10-27",
+                    headline="Moove raises $250M in Series C round, valuation hits $2.1B")
+    late = deal(id="u", deal_type="equity_funding", target="Moove", amount_usd=250_000_000, round="series c",
+                investors=["Mubadala", "Ion Pacific"], announced="2026-05-08",
+                headline="Mobility Fintech Moove Secures $250m Series C Funding, Joins Unicorn Club",
+                sources=[{"url": "https://example.com/moove"}])
+    out = hm._reclassify_stored({"r": reviewed, "u": late}, {})
+    assert out["u"]["merged_into"] == "r" and not out["r"].get("merged_into")
+    assert out["r"]["investors"] == ["Woven Capital", "Ion Pacific"] and out["r"]["reviewed_on"] == "2026-10-27"
+    assert any(s.get("url") == "https://example.com/moove" for s in out["r"]["sources"])
+    # Two reviewed records are both a reviewer's call: neither is folded.
+    out2 = hm._reclassify_stored({"r": reviewed, "u": {**late, "reviewed_on": "2026-10-28"}}, {})
+    assert not out2.get("u", late).get("merged_into") and not out2.get("r", reviewed).get("merged_into")
+
+
+def test_stored_purchase_under_the_business_and_its_owner_is_folded():
+    from src import hosted_market as hm
+    glovo = deal(id="g", target="Glovo", buyer="Uber", country="KE", countries=["KE"], announced="2026-07-17", stage="announced",
+                 headline="Uber Buys Out Glovo, Its Biggest Rival in Kenya's Delivery Market")
+    dh = deal(id="d", target="Delivery Hero", buyer="Uber", country="KE", countries=["KE"], announced="2026-07-16", stage="announced",
+              headline="Uber to Acquire Delivery Hero's Food Delivery Business Across 50 Markets, Including Glovo Kenya")
+    out = hm._reclassify_stored({"g": glovo, "d": dh}, {})
+    assert {out["g"].get("merged_into"), out["d"].get("merged_into")} & {"g", "d"}
