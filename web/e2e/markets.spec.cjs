@@ -326,6 +326,12 @@ test("password reset page enforces the rules and the retyped password, and submi
 });
 
 test("sign-up enforces the password rules and the retyped password before it can submit", async ({ page }) => {
+  let submitted;
+  await page.route("**/api/portfolio/auth", async (route) => {
+    const body = route.request().postDataJSON();
+    if (body?.action === "sign-up") submitted = body;
+    await route.fulfill({ status: 401, json: { authenticated: false } });
+  });
   await page.goto("/account?mode=sign-up");
   await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
   await page.getByLabel("Email").fill("ada@example.com");
@@ -333,21 +339,30 @@ test("sign-up enforces the password rules and the retyped password before it can
   await page.getByLabel("Nickname").fill("Ada");
   const submit = page.getByRole("button", { name: "Create account", exact: true });
 
+  // The button is never greyed out without a reason: pressing it names what is missing, and nothing is sent.
   await page.getByLabel("Password", { exact: true }).fill("weakpass");
   await expect(page.getByText("At least 12 characters")).toBeVisible();
-  await expect(submit).toBeDisabled();
+  await expect(submit).toBeEnabled();
+  await submit.click();
+  await expect(page.getByText(/^Still needed:/)).toContainText("a password that meets every rule");
+
+  await page.getByLabel("Password", { exact: true }).fill("Kettle-Nairobi-91!");
+  await expect(page.getByText(/^Still needed:/)).toContainText("lagos, kenya");
 
   await page.getByLabel("Password", { exact: true }).fill("Kettle-Harbour-91!");
   await page.getByLabel("Retype password").fill("Kettle-Harbour-91?");
   await expect(page.getByText("Passwords do not match")).toBeVisible();
-  await expect(submit).toBeDisabled();
+  await expect(page.getByText(/^Still needed:/)).toContainText("the same password retyped");
 
   await page.getByLabel("Retype password").fill("Kettle-Harbour-91!");
   await expect(page.getByText("✓ Passwords match")).toBeVisible();
   await expect(page.getByText("Very weak")).toHaveCount(0);
-  await expect(submit).toBeDisabled();                     // not until the age and terms box is ticked
+  await expect(page.getByText(/^Still needed:/)).toContainText("18 or older");   // not until the age and terms box is ticked
+  expect(submitted).toBeUndefined();
   await page.getByLabel(/I am 18 or older/).check();
-  await expect(submit).toBeEnabled();
+  await expect(page.getByText(/^Still needed:/)).toHaveCount(0);
+  await submit.click();
+  await expect.poll(() => submitted?.username).toBe("ada_l");
 });
 
 test("Google sign-up waits for the age confirmation; legal pages are public and linked", async ({ page }) => {

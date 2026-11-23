@@ -29,6 +29,7 @@ export default function AccountPage() {
   const [confirm, setConfirm] = useState("");
   const [username, setUsername] = useState("");
   const [adult, setAdult] = useState(false);
+  const [showGaps, setShowGaps] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [usernameState, setUsernameState] = useState<{ checking: boolean; available: boolean | null; problem: string | null }>({ checking: false, available: null, problem: null });
   const [showRecovery, setShowRecovery] = useState(false);
@@ -78,14 +79,22 @@ export default function AccountPage() {
 
   const ctx = { email, username: normaliseUsername(username) };
   const passwordOk = passwordProblems(password, ctx).length === 0;
-  const canSignUp = adult && passwordOk && password === confirm && !usernameProblem(username) && usernameState.available !== false
-    && !displayNameProblem(displayName) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  // What still stops the account being created, in form order. The button stays clickable so pressing it says this,
+  // rather than a greyed-out button that gives no reason.
+  const signUpGaps = [
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && "a valid email address",
+    (usernameProblem(username) || usernameState.available === false) && "an available username",
+    displayNameProblem(displayName) && "a nickname",
+    !passwordOk && `a password that meets every rule (${passwordProblems(password, ctx).join("; ").toLowerCase() || "enter one"})`,
+    passwordOk && password !== confirm && "the same password retyped",
+    !adult && `confirmation that you are ${MINIMUM_AGE} or older and agree to the Terms`,
+  ].filter((g): g is string => Boolean(g));
+  const canSignUp = signUpGaps.length === 0;
 
   async function signUp(e: FormEvent) {
     e.preventDefault();
     setError(""); setMessage("");
-    if (!adult) { setError(`Confirm that you are ${MINIMUM_AGE} or older and agree to the Terms.`); return; }
-    if (!canSignUp) { setError("Complete every field: the password must meet each rule and both passwords must match."); return; }
+    if (!canSignUp) { setShowGaps(true); return; }
     setBusy(true);
     const { ok, data } = await authAction<{ needsEmailConfirmation?: boolean; message?: string }>({
       action: "sign-up", email, password, confirmPassword: confirm, username: normaliseUsername(username), displayName: displayName.trim(), ageConfirmed: adult, termsVersion: TERMS_VERSION,
@@ -196,7 +205,10 @@ export default function AccountPage() {
               <MatchHint password={password} confirm={confirm} />
             </div>
             <AgeConfirm checked={adult} onChange={setAdult} />
-            <button className="btn btn-primary w-full justify-center" type="submit" disabled={busy || !canSignUp}>{busy ? "Creating account…" : "Create account"}</button>
+            <button className="btn btn-primary w-full justify-center" type="submit" disabled={busy}>{busy ? "Creating account…" : "Create account"}</button>
+            {showGaps && !canSignUp && (
+              <p role="alert" className="text-sm text-risk">Still needed: {signUpGaps.join(", ")}.</p>
+            )}
             <p className="text-xs text-[color:var(--dim)]">
               Passwords are checked against known data breaches without sending the password anywhere. We email a link to confirm your address before the account works.
             </p>

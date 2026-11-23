@@ -31,7 +31,7 @@ export function passwordChecks(password: string, ctx: PasswordContext = {}): Pas
     { id: "symbol", label: "A symbol, such as ! ? # or %", ok: /[^A-Za-z0-9]/.test(password) },
     { id: "repeat", label: "No character repeated 4 times in a row", ok: !/(.)\1{3,}/.test(password) },
     { id: "personal", label: "Does not contain your username or email", ok: !personalParts(ctx).some((p) => lower.includes(p)) },
-    { id: "common", label: "Not a common password", ok: !COMMON.some((c) => squashed.includes(c)) },
+    { id: "common", label: "Not a common password or word (such as password, Lagos, Kenya, Africa)", ok: !COMMON.some((c) => squashed.includes(c)) },
   ];
 }
 
