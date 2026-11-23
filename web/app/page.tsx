@@ -47,7 +47,7 @@ const CAPABILITIES = [
   },
   {
     title: "Follow markets",
-    body: "Daily prices, returns in dollars and valuations for 1,500+ listed African companies, with a valuation workspace that checks every input against evidence.",
+    body: "Daily prices, returns in dollars and valuations for 1,300+ listed African companies, with a valuation workspace that checks every input against evidence.",
     href: "/markets",
     label: "Explore markets",
   },

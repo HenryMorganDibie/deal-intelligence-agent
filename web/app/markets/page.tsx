@@ -129,7 +129,7 @@ export default async function MarketsToday() {
         </Section>
 
         <p className="mt-12 text-sm text-[color:var(--muted)]">
-          Screen 1,600+ listed shares, see quotes and track a portfolio in the app.{" "}
+          Screen 1,300+ listed companies, see quotes and track a portfolio in the app.{" "}
           <Link href="/account?next=%2Fmarkets" className="text-verified hover:underline">Open the markets dashboard</Link>
         </p>
       </Container>

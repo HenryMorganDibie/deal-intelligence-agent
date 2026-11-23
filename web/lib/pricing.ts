@@ -28,7 +28,7 @@ export const FALLBACK_CATALOG: CatalogPlan[] = [
 export const PLAN_FEATURES: Record<CatalogPlan["id"], { blurb: string; features: string[] }> = {
   free: {
     blurb: "Explore African private markets, no time limit.",
-    features: ["Browse every deal, company, investor and fund", "Markets: 1,600+ listed shares, sectors, currencies, Treasury bills",
+    features: ["Browse every deal, company, investor and fund", "Markets: 1,300+ listed companies, sectors, currencies, Treasury bills",
       "Comparables, country risk and financial statements", "30 company briefs and research runs a month to try",
       "3 alerts by email, Slack or Teams", "Public deal pages to share", "30 API requests a month"],
   },
