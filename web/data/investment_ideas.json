@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-22T20:50:01.443042+00:00",
+  "updated_at": "2026-11-23T15:27:30.691283+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 58,
+      "new_review_items_today": 88,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 0,
+      "new_review_items_today": 3,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 306,
-      "new_observations_today": 4,
+      "observations_collected": 309,
+      "new_observations_today": 3,
       "unreviewed_flagged_observations": 45,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 302,
-      "entities": 468,
+      "relationships": 311,
+      "entities": 483,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,24 +177,25 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 306,
-    "new_rows": 4,
+    "collected_tickers": 309,
+    "new_rows": 3,
     "failures": [
-      "OUL.CS",
-      "PACH.CA",
-      "PAINTCOM.LG",
-      "PALC.BV",
-      "PBC.GH",
-      "PBG.JO",
-      "PCT.JO",
-      "PEM.JO"
+      "PET.JO",
+      "PFB.JO",
+      "PFG.JO",
+      "PGFP.JO",
+      "PGL.JO",
+      "PGR.JO",
+      "PHARMDEKO.LG",
+      "PHM.JO",
+      "PHTV.CA"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 468,
-    "relationships": 302,
-    "source_links": 421,
+    "nodes": 483,
+    "relationships": 311,
+    "source_links": 431,
     "most_connected": [
       {
         "name": "Afreximbank",

@@ -1871,6 +1871,66 @@
     "nkd": {
       "name": "NKD",
       "kind": "organization"
+    },
+    "shoprite": {
+      "name": "Shoprite",
+      "kind": "organization"
+    },
+    "dni": {
+      "name": "DNI",
+      "kind": "organization"
+    },
+    "apis": {
+      "name": "Apis",
+      "kind": "organization"
+    },
+    "korridor": {
+      "name": "Korridor",
+      "kind": "organization"
+    },
+    "sixth street": {
+      "name": "Sixth Street",
+      "kind": "organization"
+    },
+    "chomps": {
+      "name": "Chomps",
+      "kind": "organization"
+    },
+    "apis partners": {
+      "name": "Apis Partners",
+      "kind": "organization"
+    },
+    "africa development fund": {
+      "name": "Africa Development Fund",
+      "kind": "organization"
+    },
+    "sailun egypt": {
+      "name": "Sailun Egypt",
+      "kind": "organization"
+    },
+    "sysco gb": {
+      "name": "Sysco GB",
+      "kind": "organization"
+    },
+    "derby": {
+      "name": "Derby",
+      "kind": "organization"
+    },
+    "princes": {
+      "name": "Princes",
+      "kind": "organization"
+    },
+    "undisclosed bakery and cereal bar businesses": {
+      "name": "Undisclosed bakery and cereal-bar businesses",
+      "kind": "organization"
+    },
+    "share": {
+      "name": "Share",
+      "kind": "organization"
+    },
+    "agreement namibia": {
+      "name": "Agreement Namibia",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -6696,7 +6756,138 @@
           "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNRmZNSVlHSldUMFRzWW9YR0szQU90U1pzVUhhWEFxM0Mtem0yeHVoUS1rWm9kR2pNWTdDMWt6TFotcmhfVC1IeG5VZ29LcXQxOElVQ2FaWVdsVkhIMUJ5M01VQ3o4azhaMHZPUHlzSl9Tbml2QWpjdDZDSmVIYzV5OFlycmZHb0U4a29GODRfN3NZdUN5ZzdTTjJTbHJsUndmS1E?oc=5"
         }
       ]
+    },
+    "d3138c4b82f9e7a6723b": {
+      "id": "d3138c4b82f9e7a6723b",
+      "from": "shoprite",
+      "to": "dni",
+      "type": "equity_funding",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Shoprite commits R3.6bn for stake in DNI ahead of its banking venture",
+          "publisher": "BusinessDay SA",
+          "url": "https://www.businessday.co.za/companies/2026-11-23-shoprite-commits-r36bn-for-stake-in-dni-ahead-of-its-banking-venture/"
+        }
+      ]
+    },
+    "07ce714606216c956ab8": {
+      "id": "07ce714606216c956ab8",
+      "from": "shoprite",
+      "to": "dni",
+      "type": "acquisition",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Shoprite Acquires 40% Stake In DNI For USD 206 M, Partners With Investec",
+          "publisher": "WeeTracker",
+          "url": "https://weetracker.com/2026/11/23/shoprite-acquires-40-percent-stake-dni-investec/"
+        },
+        {
+          "title": "Shoprite Buys 40% Stake in DNI for R3.6bn",
+          "publisher": "Wisevoter",
+          "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNLUw1dXpfQWI3NUFTLTdtUDNlZGJxTkJVWHZCTnlLa19BVVBkY2U4dTJnYlNiRDRrUFA1MHBEa1BMN1dyUHNjUGJ3bk43RmJlbC1JNUphLXhWcDdBMXBuMnZIV0diRkg4Qkp0bWJkSjlhSURKV2xJR1l2MmV5YTBla1Rn?oc=5"
+        }
+      ]
+    },
+    "b773c5b09439946c6c6e": {
+      "id": "b773c5b09439946c6c6e",
+      "from": "apis",
+      "to": "korridor",
+      "type": "acquisition",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Apis takes majority stake in African freight payments firm Korridor",
+          "publisher": "TechTrendsKE",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORFhQM3lubGpIMWhsUzNmT3loR19qbGktXzNxVGpQRjJqMk5tUWk4TG5hVUIyMUtRRk1COWpZa1hlSWVkVDJXNDFKeXc4N2NZanlIdTFPZVBQMk1pTUVfcWNhUVRTTHZzaF9WcU14UHk3OUpCbkl4S2wteTVYYnJka3lUVW0weXNNc2dUZXlFOXBqbC1memNKWVRDbTdjaWl3U3pPWnVVdzFqZw?oc=5"
+        }
+      ]
+    },
+    "d909a1d350e427c18c00": {
+      "id": "d909a1d350e427c18c00",
+      "from": "sixth street",
+      "to": "chomps",
+      "type": "equity_funding",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Chomps secures US$350M investment from Sixth Street for expansion",
+          "publisher": "Food Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQd3BwSmxiTUQ0NWVsTkVrTFRrT2lpckMwemkzSUVNVzI3aGZjQ01nOW5xRlRuMnlsS3V1ZFpsMVBMeHZiZHA2N1h5cEpUSzJCTmJTdGFpdng1NUoxeUxyVHZlbE9XS1BZTnc4eUxvV3p6bVpZY0RqSEhyQUV2STg0cTJVb21EZWNFOE5FbGIxSm5jS1FfWjVmWUo4ZTNEZw?oc=5"
+        }
+      ]
+    },
+    "4be79f835bafe7b6cd8c": {
+      "id": "4be79f835bafe7b6cd8c",
+      "from": "apis partners",
+      "to": "korridor",
+      "type": "acquisition",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Apis Partners acquires majority stake in Korridor",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQc29mT3lZU01qNUR2NEtHU2ZUcEdZMXNkb3A3SmxFbmtRbnpoV0tHU1Q1SHRzcGV6X25DVzdKeVQxTXc2bm9TY3hBYU53Tk14NktjREI2VU1jNzNkWFJTTGw2ZG55UFkzd2dQRFFPOG5qRDBSRUFJU2FkamZXUW1MWVVwWE5LQQ?oc=5"
+        }
+      ]
+    },
+    "2b71f9e9477d637dcc79": {
+      "id": "2b71f9e9477d637dcc79",
+      "from": "africa development fund",
+      "to": "sailun egypt",
+      "type": "acquisition",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "China–Africa Development Fund takes 15% stake in Sailun Egypt subsidiary",
+          "publisher": "Tyrepress",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPaDUyVTZWWld3eUM3TTJWakFrVmhIRkdyTzU0Y0lNQVR3azZESktKdEs2aV9vQVZGNGNnRS1OazBESm1SRVJMU1owRXpuSzQwZEhDM0Izdjl2ai1sam4xckpZQ2w3UGxzeWRtLTN3dzVoanhqTmNWR0o1N19Zcm1jZXhHOWtKaHVfb3d0ZWVwa3d1UUVDX25pcWtCRGtxaUxKWjJkcFZMdzRhZw?oc=5"
+        }
+      ]
+    },
+    "6a35d351bbc48b0d0d9c": {
+      "id": "6a35d351bbc48b0d0d9c",
+      "from": "sysco gb",
+      "to": "derby",
+      "type": "debt_financing",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Sysco GB invests US$36.7M in Derby fresh produce facility",
+          "publisher": "Food Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNUHRpSWk2WDVONGhJdV93QXVVZGMyTHlTTTZjYUF5Wnc5SkxhUzdKYXA0UHo0UjZQYW1WZXdBT1d6clR0YXJCWkRRLUJxNWotejhYM19oOVZLRUI2QmM4ZVZSY0pKNWN6RXFwMFV4Mi10dl9IbHZnd1hvWXBBZ3ZJZHBObXV1VVQ2eUdkdEk1QXNjU0U?oc=5"
+        }
+      ]
+    },
+    "a50cc2688bc2c614015f": {
+      "id": "a50cc2688bc2c614015f",
+      "from": "princes",
+      "to": "undisclosed bakery and cereal bar businesses",
+      "type": "acquisition",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Princes to acquire Mondelēz’s French bakery and cereal-bar businesses",
+          "publisher": "Food Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPcFJyMG1lSllxSWJfM2ZtWVliX1U5MnE2Z1FHZG9yWndXS2pJREdUY1FFYVZnT2ExdjFOX1JfX0EwYncwdW5lam9mdkd1VXBPMlNhalBiNWVBRUUtMGZ2QVNOcm1lQUd4S3lQd19lWFVJZndPYkZmaWRPdDBQQ1lNTTlDNXczU2hMLXZyQzNKbktjU3lWOV83bEM2VHM2OGZiV2lF?oc=5"
+        }
+      ]
+    },
+    "008dc4175206e853f62f": {
+      "id": "008dc4175206e853f62f",
+      "from": "share",
+      "to": "agreement namibia",
+      "type": "acquisition",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Share Purchase Agreement Namibia: A 2026 Guide to Risk, Price and Closing",
+          "publisher": "Global Advisory Experts",
+          "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQN3ZsWGtBMjJZazFXX3RYbXB0XzNyZ3dHMm80WDFIc1Y2emw3dDJGZW9DNFNNbjJZZTRUbkVyMV9CTzdFMDRkNlozemRUdTc5X1RTSUFQeEpqMWVCOVhDNjE3eVJKWk0tNVR4amhJV1FuMGViRmV5THhzY1F4RThJaWhLUThjQ1doTVI4R2dBejZXTURpbVFhS01iWlZVV1p1clNQaA?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-22T20:49:57.793779+00:00"
+  "updated_at": "2026-11-23T15:27:27.164228+00:00"
 }

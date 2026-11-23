@@ -860,3 +860,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "PBG.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "PCT.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-22", "market": "africa", "status": "no_annual_data_returned", "ticker": "PEM.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PET.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PFB.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PFG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PGFP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PGL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PGR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "PHAR.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PHARMDEKO.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "PHDC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PHM.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PHTV.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "PIK.JO"}
