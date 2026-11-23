@@ -1,40 +1,74 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-22T23:37:54.093136+00:00",
+  "updated_at": "2026-11-23T19:26:04.562695+00:00",
   "current": {
-    "company": "Unauthorised Bank",
-    "company_url": "/companies?name=Unauthorised%20Bank",
-    "headline": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
-    "deal_type": "regulatory_action",
+    "company": "Silver Bank",
+    "company_url": "/companies?name=Silver%20Bank",
+    "headline": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+    "deal_type": "distressed_asset",
     "amount_usd": null,
-    "country": "ET",
+    "country": "MU",
     "sector": "banking",
-    "announced": "2026-11-20",
-    "score": 52.47,
+    "announced": "2026-11-22",
+    "score": 50.0,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
     "reasons": [
-      "Corporate signal: regulatory action",
-      "Event rule confidence: 0.93",
+      "Corporate signal: distressed asset",
+      "Event rule confidence: 0.80",
       "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "Birr Metrics",
-        "title": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
-        "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5CZzlqZEhLTGN3d3BrcjNRYlNyQmNHVnRPOE9RZEYwQTh6UVpfX3Z1NTNZRG0wSWdZUU5KNC1jRDBJamdaR093UjdDXzdlMUNRdmpVRWZzUE53SjZRSHo1Nm5HOFpKVldGRkRDZFlaMnM?oc=5",
-        "date": "2026-11-20",
+        "publisher": "Defimedia",
+        "title": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+        "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQdGlJUHZfREFqaHFKWk9wRFc2cHVrR2g3d1FtTWc2UFFKNFE4dVVjQnF2WXZlQlFsdmJrVG5haWJXaHlNSU4zdWVVYkFzcGE4Z3JIdTh5U25hRk04QzNOM3FTTG5qM2o4M210WmNMVUQ1N0I3ajNvU1Y0eFdsZTFOaFlHTVIwZUctMTNSby1iMjAwNldDaWhXQ2J4RTE2aGtfbmJ6eg?oc=5",
+        "date": "2026-11-22",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-11-15",
-    "period_end": "2026-11-21",
-    "selected_at": "2026-11-22T23:37:54.090905+00:00",
+    "period_start": "2026-11-16",
+    "period_end": "2026-11-22",
+    "selected_at": "2026-11-23T19:26:04.560892+00:00",
     "selection_version": 5,
     "companies": [
+      {
+        "company": "Silver Bank",
+        "company_url": "/companies?name=Silver%20Bank",
+        "headline": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+        "deal_type": "distressed_asset",
+        "amount_usd": null,
+        "country": "MU",
+        "sector": "banking",
+        "announced": "2026-11-22",
+        "score": 50.0,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: distressed asset",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Defimedia",
+            "title": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+            "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQdGlJUHZfREFqaHFKWk9wRFc2cHVrR2g3d1FtTWc2UFFKNFE4dVVjQnF2WXZlQlFsdmJrVG5haWJXaHlNSU4zdWVVYkFzcGE4Z3JIdTh5U25hRk04QzNOM3FTTG5qM2o4M210WmNMVUQ1N0I3ajNvU1Y0eFdsZTFOaFlHTVIwZUctMTNSby1iMjAwNldDaWhXQ2J4RTE2aGtfbmJ6eg?oc=5",
+            "date": "2026-11-22",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-16",
+        "period_end": "2026-11-22",
+        "selected_at": "2026-11-23T19:26:04.560892+00:00",
+        "selection_version": 5
+      },
       {
         "company": "Unauthorised Bank",
         "company_url": "/companies?name=Unauthorised%20Bank",
@@ -44,7 +78,7 @@
         "country": "ET",
         "sector": "banking",
         "announced": "2026-11-20",
-        "score": 52.47,
+        "score": 51.04,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +98,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-15",
-        "period_end": "2026-11-21",
-        "selected_at": "2026-11-22T23:37:54.090905+00:00",
+        "period_start": "2026-11-16",
+        "period_end": "2026-11-22",
+        "selected_at": "2026-11-23T19:26:04.560892+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +112,7 @@
         "country": "NG",
         "sector": "energy",
         "announced": "2026-11-19",
-        "score": 55.24,
+        "score": 53.81,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-15",
-        "period_end": "2026-11-21",
-        "selected_at": "2026-11-22T23:37:54.090905+00:00",
+        "period_start": "2026-11-16",
+        "period_end": "2026-11-22",
+        "selected_at": "2026-11-23T19:26:04.560892+00:00",
         "selection_version": 5
       },
       {
@@ -112,7 +146,7 @@
         "country": "NG",
         "sector": "banking",
         "announced": "2026-11-19",
-        "score": 55.09,
+        "score": 53.66,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,9 +166,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-15",
-        "period_end": "2026-11-21",
-        "selected_at": "2026-11-22T23:37:54.090905+00:00",
+        "period_start": "2026-11-16",
+        "period_end": "2026-11-22",
+        "selected_at": "2026-11-23T19:26:04.560892+00:00",
         "selection_version": 5
       },
       {
@@ -146,7 +180,7 @@
         "country": "KE",
         "sector": "banking",
         "announced": "2026-11-17",
-        "score": 44.89,
+        "score": 43.46,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -166,50 +200,25 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-15",
-        "period_end": "2026-11-21",
-        "selected_at": "2026-11-22T23:37:54.090905+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "Agusto & Co",
-        "company_url": "/companies?name=Agusto%20%26%20Co",
-        "headline": "Agusto & Co: Nigerian banks’ bad loans would have hit 11.5% without N2.9trn write-off in 2025",
-        "deal_type": "credit_risk",
-        "amount_usd": null,
-        "country": "NG",
-        "sector": null,
-        "announced": "2026-11-17",
-        "score": 44.89,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: credit risk",
-          "Event rule confidence: 0.82",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "TheCable",
-            "title": "Agusto & Co: Nigerian banks’ bad loans would have hit 11.5% without N2.9trn write-off in 2025",
-            "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQRXJUc1czQ0o4ZnpoYWZUbE9XcERfaG5jeWNFYUtCZmNQWmVvRXowX2F2ZEdjS2Nvc1RseVZnRVQ4RXYtQ3NVdWV0cTZPR1I5OU1KeTdzeER1NHlJeDIzVkNncC1iOThQLXVVTzVBcXYxMV9tWHJWNkc3OU53SkFiSC1RQzg3ZmVmMW5wQ3BGdU8xZmtiMXBTMEJlMExpSTZlYkJTN2NZU3J0NURNRWZ6UXM3OA?oc=5",
-            "date": "2026-11-17",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-15",
-        "period_end": "2026-11-21",
-        "selected_at": "2026-11-22T23:37:54.090905+00:00",
+        "period_start": "2026-11-16",
+        "period_end": "2026-11-22",
+        "selected_at": "2026-11-23T19:26:04.560892+00:00",
         "selection_version": 5
       }
     ],
     "runner_ups": [
       {
+        "company": "Agusto & Co",
+        "score": 43.46,
+        "reasons": [
+          "Corporate signal: credit risk",
+          "Event rule confidence: 0.82",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
         "company": "Rössing Uranium",
-        "score": 42.79,
+        "score": 41.36,
         "reasons": [
           "Corporate signal: leadership change",
           "Event rule confidence: 0.75",
@@ -218,19 +227,10 @@
       },
       {
         "company": "AV Group",
-        "score": 42.79,
+        "score": 41.36,
         "reasons": [
           "Corporate signal: insider activity",
           "Event rule confidence: 0.75",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Coca-Cola HBC",
-        "score": 46.76,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -6226,6 +6226,241 @@
           "reasons": [
             "Corporate signal: regulatory action",
             "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
+    },
+    {
+      "company": "Silver Bank",
+      "company_url": "/companies?name=Silver%20Bank",
+      "headline": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+      "deal_type": "distressed_asset",
+      "amount_usd": null,
+      "country": "MU",
+      "sector": "banking",
+      "announced": "2026-11-22",
+      "score": 50.0,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: distressed asset",
+        "Event rule confidence: 0.80",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Defimedia",
+          "title": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+          "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQdGlJUHZfREFqaHFKWk9wRFc2cHVrR2g3d1FtTWc2UFFKNFE4dVVjQnF2WXZlQlFsdmJrVG5haWJXaHlNSU4zdWVVYkFzcGE4Z3JIdTh5U25hRk04QzNOM3FTTG5qM2o4M210WmNMVUQ1N0I3ajNvU1Y0eFdsZTFOaFlHTVIwZUctMTNSby1iMjAwNldDaWhXQ2J4RTE2aGtfbmJ6eg?oc=5",
+          "date": "2026-11-22",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-16",
+      "period_end": "2026-11-22",
+      "selected_at": "2026-11-23T19:26:04.560892+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "Silver Bank",
+          "company_url": "/companies?name=Silver%20Bank",
+          "headline": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+          "deal_type": "distressed_asset",
+          "amount_usd": null,
+          "country": "MU",
+          "sector": "banking",
+          "announced": "2026-11-22",
+          "score": 50.0,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Defimedia",
+              "title": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+              "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQdGlJUHZfREFqaHFKWk9wRFc2cHVrR2g3d1FtTWc2UFFKNFE4dVVjQnF2WXZlQlFsdmJrVG5haWJXaHlNSU4zdWVVYkFzcGE4Z3JIdTh5U25hRk04QzNOM3FTTG5qM2o4M210WmNMVUQ1N0I3ajNvU1Y0eFdsZTFOaFlHTVIwZUctMTNSby1iMjAwNldDaWhXQ2J4RTE2aGtfbmJ6eg?oc=5",
+              "date": "2026-11-22",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-16",
+          "period_end": "2026-11-22",
+          "selected_at": "2026-11-23T19:26:04.560892+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Unauthorised Bank",
+          "company_url": "/companies?name=Unauthorised%20Bank",
+          "headline": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ET",
+          "sector": "banking",
+          "announced": "2026-11-20",
+          "score": 51.04,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Birr Metrics",
+              "title": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+              "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5CZzlqZEhLTGN3d3BrcjNRYlNyQmNHVnRPOE9RZEYwQTh6UVpfX3Z1NTNZRG0wSWdZUU5KNC1jRDBJamdaR093UjdDXzdlMUNRdmpVRWZzUE53SjZRSHo1Nm5HOFpKVldGRkRDZFlaMnM?oc=5",
+              "date": "2026-11-20",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-16",
+          "period_end": "2026-11-22",
+          "selected_at": "2026-11-23T19:26:04.560892+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Kogi Group",
+          "company_url": "/companies?name=Kogi%20Group",
+          "headline": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "energy",
+          "announced": "2026-11-19",
+          "score": 53.81,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "ThisDay Nigeria",
+              "title": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+              "url": "https://www.thisdaylive.com/2026/11/19/kogi-group-rejects-16-year-power-retention-agenda-demands-rotation-efcc-probe-of-ex-lg-chairmen/",
+              "date": "2026-11-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-16",
+          "period_end": "2026-11-22",
+          "selected_at": "2026-11-23T19:26:04.560892+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Fidelity Bank",
+          "company_url": "/companies?name=Fidelity%20Bank",
+          "headline": "BREAKING: Fidelity Bank appoints Stanley Amuchie CEO, as Nneka Onyeali-Ikpe retires December 31",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "banking",
+          "announced": "2026-11-19",
+          "score": 53.66,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "BREAKING: Fidelity Bank appoints Stanley Amuchie CEO, as Nneka Onyeali-Ikpe retires December 31",
+              "url": "https://nairametrics.com/2026/11/19/fidelity-bank-appoints-stanley-amuchie-ceo-as-nneka-onyeali-ikpe-retires-december-31/",
+              "date": "2026-11-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-16",
+          "period_end": "2026-11-22",
+          "selected_at": "2026-11-23T19:26:04.560892+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Family Bank",
+          "company_url": "/companies?name=Family%20Bank",
+          "headline": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+          "deal_type": "credit_risk",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": "banking",
+          "announced": "2026-11-17",
+          "score": 43.46,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: credit risk",
+            "Event rule confidence: 0.82",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "TechTrendsKE",
+              "title": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
+              "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNWjhrbldsSlMxdFBjME5wY2lzT0hhZm9sMzZhczNLcFpuYXFwaVJ6ZUxORjkyenM5MjRnazdqRHJNQlBUZUk4c2pJUVJpTDZuRlpBOTdKZFpKOGJ2aXl4ZEpDNGxwSkhMSnNLaEVYc0d5X0xjQnVZMjFuUVpjd1NzY2ltU2NUUQ?oc=5",
+              "date": "2026-11-17",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-16",
+          "period_end": "2026-11-22",
+          "selected_at": "2026-11-23T19:26:04.560892+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": [
+        {
+          "company": "Agusto & Co",
+          "score": 43.46,
+          "reasons": [
+            "Corporate signal: credit risk",
+            "Event rule confidence: 0.82",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Rössing Uranium",
+          "score": 41.36,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "AV Group",
+          "score": 41.36,
+          "reasons": [
+            "Corporate signal: insider activity",
+            "Event rule confidence: 0.75",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
         }
