@@ -19,3 +19,8 @@ test("without limits in the catalog the written list stands; no export drops the
   const team = planFeatures(plan({ id: "team", ai_monthly: 600, alerts_max: 700 })).features;
   assert.ok(team.includes("600 briefs and research runs a month") && team.includes("700 alerts"));
 });
+
+test("Team seats come from the catalog", () => {
+  const team = planFeatures(plan({ id: "team", seats: 8 })).features;
+  assert.ok(team.includes("Up to 8 people sharing the plan"));
+});

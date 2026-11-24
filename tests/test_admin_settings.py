@@ -107,3 +107,28 @@ def test_paused_ai_refuses_every_brief(monkeypatch):
     with pytest.raises(HTTPException) as e:
         asyncio.run(plans.use_ai(MagicMock()))
     assert e.value.status_code == 503 and e.value.detail == "Back at 3pm"
+
+
+def test_sources_are_switched_by_name(monkeypatch):
+    from src.engines import source_switches
+    monkeypatch.setattr(source_switches, "disabled", lambda: frozenset({"TechCabal"}))
+    client, calls = _client(monkeypatch)
+    r = _post(client, "/api/admin/sources")
+    rows = {x["name"]: x["on"] for x in r.json()}
+    assert r.status_code == 200 and rows["TechCabal"] is False and rows["BusinessDay Nigeria"] is True
+    r = _post(client, "/api/admin/sources/set", name="Nairametrics", on=False)
+    assert r.status_code == 200 and calls[-1] == ("admin_set_site_setting", {"p_key": "sources",
+                                                  "p_value": {"off": ["Nairametrics", "TechCabal"]}})
+    assert _post(client, "/api/admin/sources/set", name="Made Up Daily", on=False).status_code == 422
+
+
+def test_switched_off_feeds_are_not_read(monkeypatch):
+    from src.engines import feed_healing, source_switches
+    monkeypatch.setattr(source_switches, "disabled", lambda: frozenset({"B"}))
+    assert feed_healing.effective_feeds({"A": "https://a/feed", "B": "https://b/feed"}, {}) == {"A": "https://a/feed"}
+
+
+def test_seats_are_editable_with_the_plan(monkeypatch):
+    client, calls = _client(monkeypatch)
+    _post(client, "/api/admin/settings/plan", plan="team", fields={"seats": "8"})
+    assert calls[-1][1]["p_fields"] == {"seats": 8}

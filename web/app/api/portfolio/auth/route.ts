@@ -90,8 +90,8 @@ async function recordTrouble(action: string, reason: string, email?: string) {
 let siteSettingsMemo: { at: number; signups: { open?: boolean; message?: string | null } } | null = null;
 
 /** Whether the owner has paused new sign-ups (set in admin), read at most once a minute; open if unknown. */
-async function signupsSetting() {
-  if (siteSettingsMemo && Date.now() - siteSettingsMemo.at < 60_000) return siteSettingsMemo.signups;
+async function signupsSetting(fresh = false) {
+  if (!fresh && siteSettingsMemo && Date.now() - siteSettingsMemo.at < 60_000) return siteSettingsMemo.signups;
   try {
     const r = await supabase("/rest/v1/rpc/site_settings_public", { method: "POST", body: "{}", signal: AbortSignal.timeout(2000) });
     const data = r.ok ? ((await r.json()) as { signups?: { open?: boolean; message?: string | null } }) : {};
@@ -369,8 +369,13 @@ export async function POST(request: NextRequest) {
       if (!response.ok) {
         const text = JSON.stringify(payload);
         if (response.status === 429) return troubled("sign-up", email, "Too many sign-up attempts. Please wait a few minutes.", 429);
-        // The profile trigger rejected the username (taken a moment ago): the only database error a valid request can hit.
-        if (response.status >= 500 || /database error/i.test(text)) return troubled("sign-up", email, "That username was just taken. Choose another.", 409);
+        // The database refused the new account: sign-ups were paused a moment ago, or the profile trigger rejected the
+        // username (taken a moment ago). Those are the only database errors a valid request can hit.
+        if (response.status >= 500 || /database error/i.test(text)) {
+          const now = await signupsSetting(true);
+          if (now.open === false) return troubled("sign-up", email, now.message || "New sign-ups are paused for a short while. Please try again soon.", 403);
+          return troubled("sign-up", email, "That username was just taken. Choose another.", 409);
+        }
         if (/password/i.test(text)) return troubled("sign-up", email, "That password is not accepted. Choose a longer or more varied one.");
         return troubled("sign-up", email, "Account creation failed. Check the details and try again.");
       }

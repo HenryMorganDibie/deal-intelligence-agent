@@ -710,9 +710,11 @@ class AfricaTool:
         """
         cutoff_date = (utcnow() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
 
+        from src.engines.source_switches import disabled
+        off = disabled()
         tasks = [
             self._scrape_pe_source(name, url, company_name, cutoff_date)
-            for name, url, _, _ in PE_CAPITAL_SOURCES
+            for name, url, _, _ in PE_CAPITAL_SOURCES if name not in off
         ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 

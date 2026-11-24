@@ -2018,7 +2018,7 @@ async def admin_set_site(request: Request) -> dict:
 
 _PLAN_FIELDS = {"price_month_ngn": 100_000_000, "price_year_ngn": 1_000_000_000, "price_month_usd": 1_000_000,
                 "price_year_usd": 10_000_000, "monthly_requests": 10_000_000, "ai_monthly": 100_000,
-                "alerts_max": 10_000, "max_keys": 100}
+                "alerts_max": 10_000, "max_keys": 100, "seats": 1_000}
 
 
 @router.post("/api/admin/settings/plan")
@@ -2066,6 +2066,37 @@ async def admin_set_checkout_currencies(request: Request) -> dict:
     if not r.is_success:
         raise _settings_unavailable(r, "admin_set_currencies")
     return {"currencies": r.json()}
+
+
+@router.post("/api/admin/sources")
+async def admin_sources(request: Request) -> Response:
+    """Every news and private-capital source with whether it is read; needs DEAL_INTEL_ADMIN_KEY."""
+    await _admin_body(request)
+    from src.engines import source_switches
+    source_switches._cache.clear()
+    off = await run_in_threadpool(source_switches.disabled)
+    rows = [{**src, "on": src["name"] not in off} for src in source_switches.all_sources()]
+    return Response(json.dumps(rows), media_type="application/json", headers={"Cache-Control": "no-store, private"})
+
+
+@router.post("/api/admin/sources/set")
+async def admin_set_source(request: Request) -> dict:
+    """Switch one source on or off; the ingestion reads the change within five minutes."""
+    body = await _admin_body(request)
+    from src.engines import source_switches
+    name, on = str(body.get("name") or ""), body.get("on")
+    names = {s["name"] for s in source_switches.all_sources()}
+    if name not in names or not isinstance(on, bool):
+        raise HTTPException(status_code=422, detail="Choose a listed source and whether to read it.")
+    source_switches._cache.clear()
+    off = set(await run_in_threadpool(source_switches.disabled))
+    (off.discard if on else off.add)(name)
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_set_site_setting", {"p_key": "sources", "p_value": {"off": sorted(off & names)}})
+    if not r.is_success:
+        raise _settings_unavailable(r, "admin_set_site_setting")
+    source_switches._cache.clear()
+    return {"name": name, "on": on, "off": sorted(off & names)}
 
 
 _DEAL_STAGES = ("rumoured", "announced", "completed")

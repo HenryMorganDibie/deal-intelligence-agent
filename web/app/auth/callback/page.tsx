@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Container } from "../../../components/primitives";
+import { apiUrl } from "../../../lib/api-base";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -26,7 +27,16 @@ export default function AuthCallbackPage() {
       try {
         let response: Response;
         if (oauthError) {
-          if (active) setMessage(oauthError);
+          // A new Google account refused while the owner has paused sign-ups arrives as a database error.
+          let text = oauthError;
+          if (/database error|signups_paused/i.test(oauthError)) {
+            const settings = await fetch(apiUrl("/api/site-settings")).then((r) => (r.ok ? r.json() : null)).catch(() => null) as
+              { signups?: { open?: boolean; message?: string | null } } | null;
+            if (settings?.signups?.open === false) {
+              text = settings.signups.message || "New sign-ups are paused for a short while. If you already have an account, sign in as usual.";
+            }
+          }
+          if (active) setMessage(text);
           return;
         } else if (oauthCode) {
           response = await fetch("/api/portfolio/auth", {

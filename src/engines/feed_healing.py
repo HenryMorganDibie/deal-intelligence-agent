@@ -98,7 +98,9 @@ def effective_feeds(feeds: Optional[dict[str, str]] = None, overrides: Optional[
         from src.tools.africa_tool import AFRICAN_NEWS_FEEDS
         feeds = AFRICAN_NEWS_FEEDS
     overrides = load_overrides() if overrides is None else overrides
-    return {name: (overrides.get(name) or {}).get("url") or url for name, url in feeds.items()}
+    from src.engines.source_switches import disabled
+    off = disabled()
+    return {name: (overrides.get(name) or {}).get("url") or url for name, url in feeds.items() if name not in off}
 
 
 def _host_root(host: str) -> str:

@@ -6,7 +6,7 @@ import { apiUrl } from "../../lib/api-base";
 type Plan = {
   plan: string; label: string; price_month_ngn: number | null; price_year_ngn: number | null;
   price_month_usd: number | null; price_year_usd: number | null; monthly_requests: number; ai_monthly: number;
-  alerts_max: number; max_keys: number; exports: boolean;
+  alerts_max: number; max_keys: number; seats: number; exports: boolean;
 };
 type Site = {
   announcement: { on?: boolean; text?: string; link?: string | null; tone?: "info" | "warning" };
@@ -23,6 +23,7 @@ type Deal = {
 const PLAN_COLUMNS: [keyof Plan & string, string][] = [
   ["price_month_ngn", "₦ a month"], ["price_year_ngn", "₦ a year"], ["price_month_usd", "$ a month"], ["price_year_usd", "$ a year"],
   ["monthly_requests", "API requests"], ["ai_monthly", "Briefs"], ["alerts_max", "Alerts"], ["max_keys", "API keys"],
+  ["seats", "Seats"],
 ];
 const DEAL_TYPES = ["acquisition", "merger", "equity_funding", "debt_financing", "fund_raise", "ipo", "exit"];
 
@@ -59,6 +60,7 @@ export function SettingsPanel({ adminKey }: { adminKey: string }) {
       {note && <p role="status" className={`text-sm ${note.ok ? "text-verified" : "text-risk"}`}>{note.text}</p>}
       <SiteSwitches site={s.site} adminKey={adminKey} act={act} />
       <PlansEditor plans={s.plans} usd={s.currencies.includes("USD")} adminKey={adminKey} act={act} />
+      <SourceSwitches adminKey={adminKey} />
       <DealFixer adminKey={adminKey} />
     </div>
   );
@@ -143,7 +145,7 @@ function PlansEditor({ plans, usd, adminKey, act }: {
 
   return (
     <Section title="Plans and prices"
-      about="Prices are whole naira or dollars. People already subscribed keep the price they signed up at; new checkouts use the new price. Limits apply to everyone on the plan straight away, and the pricing page quotes the new numbers. Institutional is priced per firm: leave its prices empty and set each firm's limits under Accounts → Limits.">
+      about="Seats: people in an organisation created by an account on this plan share it, up to this number including the owner, with one shared allowance of briefs and API requests. Prices are whole naira or dollars. People already subscribed keep the price they signed up at; new checkouts use the new price. Limits apply to everyone on the plan straight away, and the pricing page quotes the new numbers. Institutional is priced per firm: leave its prices empty and set each firm's limits under Accounts → Limits.">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[980px] text-left text-sm">
           <thead className="text-[color:var(--muted)]">
@@ -297,5 +299,57 @@ function DealEditor({ deal, adminKey, onClose, onSaved }: {
         </div>
       </div>
     </div>
+  );
+}
+
+type Source = { name: string; kind: string; url: string; on: boolean };
+
+/** Every news and private-capital source, each with a switch; a source switched off stops being read within minutes. */
+function SourceSwitches({ adminKey }: { adminKey: string }) {
+  const [rows, setRows] = useState<Source[] | null>(null);
+  const [error, setError] = useState("");
+  const [filter, setFilter] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function load() {
+    try { setRows(await post<Source[]>("/api/admin/sources", { key: adminKey })); setError(""); }
+    catch (e) { setError((e as Error).message); }
+  }
+  useEffect(() => { void load(); }, [adminKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function toggle(src: Source) {
+    setBusy(src.name);
+    try {
+      await post("/api/admin/sources/set", { key: adminKey, name: src.name, on: !src.on });
+      setRows((r) => r?.map((x) => (x.name === src.name ? { ...x, on: !src.on } : x)) ?? null);
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(null); }
+  }
+
+  const shown = (rows ?? []).filter((r) => !filter || r.name.toLowerCase().includes(filter.toLowerCase()));
+  const off = (rows ?? []).filter((r) => !r.on).length;
+  return (
+    <Section title="Sources"
+      about="The outlets read for deals and events, and the private-capital pages read for company research. Switch off one that publishes noise or has broken; the next run skips it. Feeds that fail are still replaced automatically.">
+      {error && <p className="text-sm text-risk">{error}</p>}
+      {!rows ? <p className="text-sm text-[color:var(--muted)]">Loading sources…</p> : (
+        <>
+          <div className="flex flex-wrap items-center gap-3">
+            <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter sources" aria-label="Filter sources" className={`${input} max-w-xs`} />
+            <span className="text-sm text-[color:var(--muted)]">{rows.length - off} of {rows.length} on{off ? ` · ${off} off` : ""}</span>
+          </div>
+          <ul className="mt-3 grid max-h-96 gap-1 overflow-y-auto sm:grid-cols-2">
+            {shown.map((r) => (
+              <li key={r.name} className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 hover:bg-white/[0.03]">
+                <span className="min-w-0 truncate text-sm">{r.name} <span className="text-[0.75rem] text-[color:var(--dim)]">· {r.kind}</span></span>
+                <button type="button" disabled={busy === r.name} onClick={() => toggle(r)}
+                  className={`shrink-0 rounded-full px-2.5 py-0.5 text-[0.75rem] ${r.on ? "bg-verified/15 text-verified" : "bg-risk/10 text-risk"}`}
+                  aria-label={`${r.on ? "Switch off" : "Switch on"} ${r.name}`}>{r.on ? "On" : "Off"}</button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </Section>
   );
 }

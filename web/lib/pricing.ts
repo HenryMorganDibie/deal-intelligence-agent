@@ -96,6 +96,7 @@ export function planFeatures(p: CatalogPlan): { blurb: string; features: string[
     }
     if (alerts !== undefined && /^\d[\d,]* alerts/.test(line)) return line.replace(/^\d[\d,]*/, n(alerts));
     if (requests !== undefined && /API requests a month/.test(line)) return line.replace(/^\d[\d,]*/, n(requests));
+    if (/^Up to \d+ people/.test(line) && p.seats > 1) return `Up to ${n(p.seats)} people sharing the plan`;
     return line;
   };
   let features = base.features.map(swap);
