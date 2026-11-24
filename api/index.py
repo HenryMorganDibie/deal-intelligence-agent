@@ -1235,7 +1235,7 @@ async def cron_label(request: Request) -> dict:
                 "secret": API_SECRET, "p_brief_id": row["id"], "p_stage": stage,
                 "p_outcomes": outcomes, "p_events": truth,
             })
-            if r.status_code == 200:
+            if r.is_success:  # save_labels returns void, which PostgREST answers with 204 No Content
                 done += 1
                 outcomes_written += len(outcomes)
             else:

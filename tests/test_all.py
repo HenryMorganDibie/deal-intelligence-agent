@@ -3881,6 +3881,33 @@ class TestHostedApi:
         assert client.get("/api/cron/label").status_code == 401
         assert client.get("/api/cron/label", headers={"Authorization": "Bearer wrong"}).status_code == 401
 
+    def test_cron_label_counts_a_204_from_save_labels_as_saved(self, monkeypatch):
+        """save_labels returns void, which PostgREST answers with 204 No Content: that is a successful write."""
+        import httpx
+        client, api = self._client(monkeypatch, CRON_SECRET="s3cret")
+        monkeypatch.setattr(api, "_configured", lambda: True)
+        calls = []
+
+        async def fake_rpc(_client, fn, args):
+            calls.append(fn)
+            if fn == "get_prices":
+                return httpx.Response(200, json=[])
+            if fn == "briefs_to_label":
+                return httpx.Response(200, json=[{"id": "b1"}, {"id": "b2"}])
+            if fn == "save_labels":
+                return httpx.Response(204)
+            return httpx.Response(200, json=0)
+        monkeypatch.setattr(api, "_rpc", fake_rpc)
+        monkeypatch.setattr(api, "_label_brief", lambda row, today: (1, [{"signal_type": "x"}], []))
+        monkeypatch.setattr("src.tools.african_prices.snapshot_rows", lambda: [])
+
+        async def no_refresh(*a, **k):
+            return None
+        monkeypatch.setattr("src.hosted_market.refresh_live", no_refresh)
+        r = client.get("/api/cron/label", headers={"Authorization": "Bearer s3cret"})
+        assert r.status_code == 200, r.text
+        assert r.json()["labelled"] == 2 and calls.count("save_labels") == 2
+
     def test_cron_disabled_without_a_secret(self, monkeypatch):
         client, _ = self._client(monkeypatch, CRON_SECRET="")
         assert client.get("/api/cron/label", headers={"Authorization": "Bearer "}).status_code == 401
