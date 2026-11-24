@@ -1931,6 +1931,38 @@
     "agreement namibia": {
       "name": "Agreement Namibia",
       "kind": "organization"
+    },
+    "cloud9 money": {
+      "name": "Cloud9 Money",
+      "kind": "organization"
+    },
+    "monix pay": {
+      "name": "Monix Pay",
+      "kind": "organization"
+    },
+    "tarkwa mine": {
+      "name": "Tarkwa Mine",
+      "kind": "organization"
+    },
+    "vp capital": {
+      "name": "VP Capital",
+      "kind": "organization"
+    },
+    "biochar carbon removal": {
+      "name": "Biochar Carbon Removal",
+      "kind": "organization"
+    },
+    "power": {
+      "name": "Power",
+      "kind": "organization"
+    },
+    "agreement nigeria": {
+      "name": "Agreement Nigeria",
+      "kind": "organization"
+    },
+    "investec": {
+      "name": "Investec",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -6887,7 +6919,77 @@
           "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQN3ZsWGtBMjJZazFXX3RYbXB0XzNyZ3dHMm80WDFIc1Y2emw3dDJGZW9DNFNNbjJZZTRUbkVyMV9CTzdFMDRkNlozemRUdTc5X1RTSUFQeEpqMWVCOVhDNjE3eVJKWk0tNVR4amhJV1FuMGViRmV5THhzY1F4RThJaWhLUThjQ1doTVI4R2dBejZXTURpbVFhS01iWlZVV1p1clNQaA?oc=5"
         }
       ]
+    },
+    "1715a7a70ec1b296c0f1": {
+      "id": "1715a7a70ec1b296c0f1",
+      "from": "cloud9 money",
+      "to": "monix pay",
+      "type": "acquisition",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Kenya’s Cloud9 Money Buys Canadian Payments Firm Monix Pay in Push Beyond Africa",
+          "publisher": "TechMoran",
+          "url": "https://techmoran.com/2026/11/23/kenyas-cloud9-money-buys-canadian-payments-firm-monix-pay-in-push-beyond-africa/"
+        }
+      ]
+    },
+    "80b0d2aaa8864ec60a0a": {
+      "id": "80b0d2aaa8864ec60a0a",
+      "from": "gold fields",
+      "to": "tarkwa mine",
+      "type": "equity_funding",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Gold Fields has injected more than $5bn into Tarkwa Mine over 30 years – MD",
+          "publisher": "CitiNewsroom.com",
+          "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOMnpheGNqM05nanVIZkc0REFlV0NsNVpuTXZlWDc5Y1hnSjgtaW1BZEktWEVjYVFqWXQtaGZNQVZ0LUI5UzQ0dXZUTkZPQl9JeGVMZ085SkVyUWdNRDRKU2FOa19wWXh5OFd0c0dBSUNzYjQzb3Y2R0owMW8wMDEwa29PR09kbE9rbWFueUFVWDFROS01NzEtckdUMDllWW9PYW1aOExESjBIWUlITmZr?oc=5"
+        }
+      ]
+    },
+    "ed195a8b39f970eb50b7": {
+      "id": "ed195a8b39f970eb50b7",
+      "from": "vp capital",
+      "to": "biochar carbon removal",
+      "type": "equity_funding",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "VP Capital Invests In Nigeria-Based Biochar Carbon Removal By AirSmat",
+          "publisher": "Carbon Herald",
+          "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNMExQZTl0aXowNXJlODdjMV9uRmZfZ0JVTncwRU5LVEQtQXlHTUI1dFA4QTJfMWVBbl9SV0pzRTFFVGwyemV6VWQ2eXhSbm41YTk5RFMzdHdrVDhaYzNsdUJpb0tEVEs4WU9IYko1cFBBYXotWVM0bWFKNHlhZGtWZEdTMkFsT1E2UjUyckVmVzBuMUsxMGxIQlJEVQ?oc=5"
+        }
+      ]
+    },
+    "804171e4b786fcf8cf14": {
+      "id": "804171e4b786fcf8cf14",
+      "from": "power",
+      "to": "agreement nigeria",
+      "type": "acquisition",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Power Purchase Agreement Nigeria: 2026 Bankability Guide",
+          "publisher": "Global Advisory Experts",
+          "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQVUV5YWpHVjZFN0VlbmdhUy14emcwdllmVXlyNUR2OXZMbDBjODBTay0zM2IyOWp3Q3hodnhaMENKam1hb010NTJFWlV3NVRSamlUc1VRN0VNTXZZQ0lvdkpfcFFWQmtJSmRXQjVoR1JmZVlvYzYxTGE0aW5sR1ozcVRZR1A3VElZLWgzTmM3N2RPd2Q3SWM0c1lHMA?oc=5"
+        }
+      ]
+    },
+    "0450aa192843fd920c3d": {
+      "id": "0450aa192843fd920c3d",
+      "from": "investec",
+      "to": "shoprite",
+      "type": "acquisition",
+      "first_seen": "2026-11-23",
+      "sources": [
+        {
+          "title": "Investec to take stake in South Africa's Shoprite",
+          "publisher": "Sharecast.com",
+          "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPb25JVnNTc084ZUpCbUNXTmp4VVB3a2tfUTFyWVRZVnA5SE5OTkVZZWFydVNqZG1pcUtaMTI2LUhpTWRmRG9IYW9mTDhwR0JNZ2MwSWpIeC1tNDRsbDBrZ1FZUTBYX1dmb0RjUy1aNnZucmMzdGJMT3lYUVlDVGlPTFEyR0RWNnBYdXhqeXVTdUpNSm50QVljMzdUY01SZGFtMGhxbGFaNzVpdTEwY1AzNDBwUlNVTm9kdS13UFd2cHQ2SFItUHFmTm9OenRnM2o3?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-23T15:27:27.164228+00:00"
+  "updated_at": "2026-11-24T01:52:28.017330+00:00"
 }

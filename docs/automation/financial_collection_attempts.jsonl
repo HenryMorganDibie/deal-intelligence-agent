@@ -872,3 +872,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PHM.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "status": "no_annual_data_returned", "ticker": "PHTV.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-23", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "PIK.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "PKL.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "PMV.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "PNC.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "POP.GH"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "PORTPAINT.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "POUL.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "PPC.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "PPE.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "PPH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "PPR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "PRCL.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "PRDC.CA"}

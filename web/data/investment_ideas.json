@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-23T15:27:30.691283+00:00",
+  "updated_at": "2026-11-24T01:52:31.797521+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 88,
+      "new_review_items_today": 49,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 3,
+      "new_review_items_today": 2,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,17 +48,17 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 309,
-      "new_observations_today": 3,
-      "unreviewed_flagged_observations": 45,
+      "observations_collected": 315,
+      "new_observations_today": 6,
+      "unreviewed_flagged_observations": 46,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
     {
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 311,
-      "entities": 483,
+      "relationships": 316,
+      "entities": 491,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,25 +177,22 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 309,
-    "new_rows": 3,
+    "collected_tickers": 315,
+    "new_rows": 6,
     "failures": [
-      "PET.JO",
-      "PFB.JO",
-      "PFG.JO",
-      "PGFP.JO",
-      "PGL.JO",
-      "PGR.JO",
-      "PHARMDEKO.LG",
-      "PHM.JO",
-      "PHTV.CA"
+      "PKL.GH",
+      "PNC.JO",
+      "POP.GH",
+      "PORTPAINT.LG",
+      "PRCL.CA",
+      "PRDC.CA"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 483,
-    "relationships": 311,
-    "source_links": 431,
+    "nodes": 491,
+    "relationships": 316,
+    "source_links": 436,
     "most_connected": [
       {
         "name": "Afreximbank",
