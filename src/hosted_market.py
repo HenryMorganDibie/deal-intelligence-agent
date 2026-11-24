@@ -1936,6 +1936,225 @@ async def admin_moderation_log(request: Request) -> Response:
     return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
 
 
+# ── Owner settings: site switches, plans and prices, currencies, deal corrections ──
+
+_SITE_DEFAULTS = {"announcement": {"on": False}, "signups": {"open": True}, "ai": {"on": True}}
+_site_cache: dict = {}
+
+
+async def site_settings(fresh: bool = False) -> dict:
+    """The site switches (banner, sign-ups, AI briefs), cached for a minute; the defaults if the store is down."""
+    hit = _site_cache.get("v")
+    if hit and not fresh and time.monotonic() - hit[0] < 60:
+        return hit[1]
+    data = dict(_SITE_DEFAULTS)
+    if _configured():
+        try:
+            async with httpx.AsyncClient(timeout=5) as client:
+                r = await client.post(f"{SUPABASE_URL}/rest/v1/rpc/site_settings_public", headers=_headers(), json={})
+            if r.status_code == 200 and isinstance(r.json(), dict):
+                data = {**data, **r.json()}
+        except httpx.HTTPError:
+            pass
+    _site_cache["v"] = (time.monotonic(), data)
+    return data
+
+
+@router.get("/api/site-settings")
+async def public_site_settings() -> Response:
+    """The banner and switches every page reads; nothing private."""
+    data = await site_settings()
+    return Response(json.dumps(data), media_type="application/json", headers={"Cache-Control": "public, max-age=60"})
+
+
+def _settings_unavailable(r: httpx.Response, fn: str) -> HTTPException:
+    log.error("%s failed: %s %s", fn, r.status_code, r.text[:300])
+    if r.status_code == 404 or fn in r.text:
+        return HTTPException(status_code=503, detail="Settings are not set up yet: run the site_settings migration.")
+    return HTTPException(status_code=502, detail="Settings are unavailable.")
+
+
+@router.post("/api/admin/settings")
+async def admin_settings(request: Request) -> Response:
+    """Switches, plans with prices and limits, and checkout currencies; needs DEAL_INTEL_ADMIN_KEY."""
+    await _admin_body(request)
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_settings", {})
+    if not r.is_success:
+        raise _settings_unavailable(r, "admin_settings")
+    return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
+
+
+def _clean_text(value: object, limit: int) -> str:
+    return " ".join(str(value or "").split())[:limit]
+
+
+@router.post("/api/admin/settings/site")
+async def admin_set_site(request: Request) -> dict:
+    """Set one switch ("setting"): announcement {on, text, link, tone}, signups {open, message} or ai {on, message}."""
+    body = await _admin_body(request)
+    key, raw = body.get("setting"), body.get("value") if isinstance(body.get("value"), dict) else {}
+    if key == "announcement":
+        link = _clean_text(raw.get("link"), 300)
+        if link and not (link.startswith("/") or link.startswith("https://")):
+            raise HTTPException(status_code=422, detail="The link must start with / or https://.")
+        value = {"on": raw.get("on") is True, "text": _clean_text(raw.get("text"), 240), "link": link or None,
+                 "tone": raw.get("tone") if raw.get("tone") in ("info", "warning") else "info"}
+        if value["on"] and not value["text"]:
+            raise HTTPException(status_code=422, detail="Write the announcement before switching it on.")
+    elif key == "signups":
+        value = {"open": raw.get("open") is not False, "message": _clean_text(raw.get("message"), 240) or None}
+    elif key == "ai":
+        value = {"on": raw.get("on") is not False, "message": _clean_text(raw.get("message"), 240) or None}
+    else:
+        raise HTTPException(status_code=422, detail="Unknown setting.")
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_set_site_setting", {"p_key": key, "p_value": value})
+    if not r.is_success:
+        raise _settings_unavailable(r, "admin_set_site_setting")
+    _site_cache.clear()
+    return {"key": key, "value": value}
+
+
+_PLAN_FIELDS = {"price_month_ngn": 100_000_000, "price_year_ngn": 1_000_000_000, "price_month_usd": 1_000_000,
+                "price_year_usd": 10_000_000, "monthly_requests": 10_000_000, "ai_monthly": 100_000,
+                "alerts_max": 10_000, "max_keys": 100}
+
+
+@router.post("/api/admin/settings/plan")
+async def admin_set_plan_terms(request: Request) -> Response:
+    """Change one plan's prices (whole naira or dollars) or limits; people already subscribed keep their price."""
+    body = await _admin_body(request)
+    plan = str(body.get("plan") or "")
+    raw = body.get("fields") if isinstance(body.get("fields"), dict) else {}
+    if not re.fullmatch(r"[a-z_]{2,30}", plan):
+        raise HTTPException(status_code=422, detail="Choose a plan.")
+    fields: dict = {}
+    for name, cap in _PLAN_FIELDS.items():
+        value = raw.get(name)
+        if value in (None, ""):
+            continue
+        if isinstance(value, bool) or not str(value).isdigit() or int(value) > cap:
+            raise HTTPException(status_code=422, detail=f"{name.replace('_', ' ')} must be a whole number up to {cap:,}.")
+        fields[name] = int(value)
+    if raw.get("exports") in (True, False):
+        fields["exports"] = raw["exports"]
+    if not fields:
+        raise HTTPException(status_code=422, detail="Nothing to change.")
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_update_plan", {"p_plan": plan, "p_fields": fields})
+    if not r.is_success:
+        if "unknown_plan" in r.text:
+            raise HTTPException(status_code=404, detail="No such plan.")
+        raise _settings_unavailable(r, "admin_update_plan")
+    try:
+        from src import plans as _plans
+        _plans._cache.clear()
+    except Exception:                            # noqa: BLE001
+        pass
+    return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
+
+
+@router.post("/api/admin/settings/currencies")
+async def admin_set_checkout_currencies(request: Request) -> dict:
+    """Offer dollar checkout as well as naira, or naira only."""
+    body = await _admin_body(request)
+    if not isinstance(body.get("usd"), bool):
+        raise HTTPException(status_code=422, detail="Say whether to accept dollars.")
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_set_currencies", {"p_usd": body["usd"]})
+    if not r.is_success:
+        raise _settings_unavailable(r, "admin_set_currencies")
+    return {"currencies": r.json()}
+
+
+_DEAL_STAGES = ("rumoured", "announced", "completed")
+
+
+def _deal_summary(d: dict) -> dict:
+    return {k: d.get(k) for k in ("id", "announced", "deal_type", "stage", "target", "buyer", "seller", "amount_usd",
+                                  "country", "headline", "excluded", "reviewed_on")}
+
+
+@router.post("/api/admin/deals/find")
+async def admin_find_deals(request: Request) -> Response:
+    """Up to 25 visible deals matching words in the headline, target or buyer, or one deal by its id (a hidden one
+    too, so it can be shown again); needs DEAL_INTEL_ADMIN_KEY."""
+    body = await _admin_body(request)
+    q = _clean_text(body.get("q"), 120)
+    if len(q) < 2:
+        raise HTTPException(status_code=422, detail="Type at least two characters, or a deal id.")
+    rows: list[dict] = []
+    if re.fullmatch(r"[0-9a-f]{16}", q):
+        one = await run_in_threadpool(_one_deal, q)
+        rows = [one] if one else []
+    else:
+        words = q.lower().split()
+        for d in await run_in_threadpool(deals):
+            text = f"{d.get('target') or ''} {d.get('headline') or ''} {d.get('buyer') or ''}".lower()
+            if not d.get("merged_into") and all(w in text for w in words):
+                rows.append(d)
+        rows.sort(key=lambda d: d.get("announced") or "", reverse=True)
+    return Response(json.dumps([_deal_summary(d) for d in rows[:25]]), media_type="application/json",
+                    headers={"Cache-Control": "no-store, private"})
+
+
+@router.post("/api/admin/deals/update")
+async def admin_update_deal(request: Request) -> dict:
+    """Correct a deal (target, buyer, seller, amount in dollars, type, stage, country) or hide it with a reason, or
+    show it again. The record is marked reviewed, so the daily pipeline never undoes the owner's correction."""
+    body = await _admin_body(request)
+    deal_id = str(body.get("id") or "")
+    if not re.fullmatch(r"[0-9a-f]{16}", deal_id):
+        raise HTTPException(status_code=422, detail="Give the deal's id.")
+    current = await run_in_threadpool(_one_deal, deal_id)
+    if not current:
+        raise HTTPException(status_code=404, detail="No such deal.")
+    raw = body.get("set") if isinstance(body.get("set"), dict) else {}
+    out = dict(current)
+    for name in ("target", "buyer", "seller"):
+        if name in raw:
+            out[name] = _clean_text(raw[name], 160) or None
+    if "amount_usd" in raw:
+        value = raw["amount_usd"]
+        if value in (None, ""):
+            out["amount_usd"] = None
+        elif isinstance(value, bool) or not re.fullmatch(r"\d{1,13}(\.\d{1,2})?", str(value)):
+            raise HTTPException(status_code=422, detail="The amount must be a number of dollars.")
+        else:
+            out["amount_usd"] = float(value)
+    if "deal_type" in raw:
+        from src.engines.deals import DEAL_TYPES
+        if raw["deal_type"] not in DEAL_TYPES:
+            raise HTTPException(status_code=422, detail="Unknown deal type.")
+        out["deal_type"] = raw["deal_type"]
+    if "stage" in raw:
+        if raw["stage"] not in _DEAL_STAGES:
+            raise HTTPException(status_code=422, detail="The stage must be rumoured, announced or completed.")
+        out["stage"] = raw["stage"]
+    if "country" in raw:
+        code = str(raw["country"] or "").upper()
+        if not re.fullmatch(r"[A-Z]{2}", code):
+            raise HTTPException(status_code=422, detail="The country must be a two-letter code.")
+        out["country"] = code
+        out["countries"] = [code] + [c for c in (current.get("countries") or []) if c != code]
+    if body.get("hide"):
+        out["excluded"] = "owner: " + (_clean_text(body.get("hide"), 200) or "hidden")
+    elif body.get("unhide") is True:
+        out.pop("excluded", None)
+    if out == current:
+        raise HTTPException(status_code=422, detail="Nothing to change.")
+    out["reviewed_on"] = datetime.now(timezone.utc).date().isoformat()
+    out["reviewed_by"] = "owner"
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await _rpc(client, "upsert_deals", {"p_rows": [out]})
+    if r.status_code != 200:
+        log.error("owner deal update failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(status_code=502, detail="The deal could not be saved.")
+    _cache.clear()
+    return _deal_summary(out)
+
+
 _GRANT_LIMITS = {"monthly_requests": 10_000_000, "ai_monthly": 100_000, "alerts_max": 10_000,
                  "election_alerts_max": 1_000, "max_keys": 100}
 

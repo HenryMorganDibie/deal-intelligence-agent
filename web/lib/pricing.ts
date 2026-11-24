@@ -13,6 +13,10 @@ export type CatalogPlan = {
   price_year_usd?: number | null;
   /** Currencies offered at checkout (dollars only once the Paystack account accepts them). */
   currencies?: Currency[];
+  /** Limits, as the owner sets them in admin; the plan's feature list quotes these numbers. */
+  ai_monthly?: number;
+  alerts_max?: number;
+  exports?: boolean;
 };
 
 export type Currency = "NGN" | "USD";
@@ -77,4 +81,24 @@ export function defaultCurrency(offered: Currency[]): Currency {
 /** "about $5.56": a naira amount in dollars at the current market rate. */
 export function approxDollars(naira: number, ngnPerUsd: number): string {
   return `about $${(naira / ngnPerUsd).toFixed(2)}`;
+}
+
+const n = (v: number) => v.toLocaleString("en-US");
+
+/** A plan's description with its numbers taken from the catalog, so a limit changed in admin shows here at once. */
+export function planFeatures(p: CatalogPlan): { blurb: string; features: string[] } {
+  const base = PLAN_FEATURES[p.id];
+  if (!base) return { blurb: "", features: [] };
+  const ai = p.ai_monthly, alerts = p.alerts_max, requests = p.monthly_requests;
+  const swap = (line: string): string => {
+    if (ai !== undefined && /briefs and research runs a month/.test(line)) {
+      return line.replace(/^\d[\d,]*/, n(ai));
+    }
+    if (alerts !== undefined && /^\d[\d,]* alerts/.test(line)) return line.replace(/^\d[\d,]*/, n(alerts));
+    if (requests !== undefined && /API requests a month/.test(line)) return line.replace(/^\d[\d,]*/, n(requests));
+    return line;
+  };
+  let features = base.features.map(swap);
+  if (p.exports === false) features = features.filter((f) => !/CSV export/.test(f));
+  return { blurb: base.blurb, features };
 }

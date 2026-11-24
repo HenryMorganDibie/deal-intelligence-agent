@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { NairaRate } from "../../lib/catalog";
 import { renewalTerms } from "../../lib/legal";
-import { PLAN_FEATURES, approxDollars, defaultCurrency, money, priceOf, type CatalogPlan, type Currency } from "../../lib/pricing";
+import { planFeatures, approxDollars, defaultCurrency, money, priceOf, type CatalogPlan, type Currency } from "../../lib/pricing";
 
 type Props = {
   catalog: CatalogPlan[];
@@ -44,7 +44,7 @@ export function PricingTable({ catalog, current = null, onChoose, busy = null, r
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {catalog.map((p) => {
           const price = priceOf(p, currency, yearly);
-          const info = PLAN_FEATURES[p.id];
+          const info = planFeatures(p);
           const isCurrent = current === p.id;
           const highlight = p.id === "pro";
           return (

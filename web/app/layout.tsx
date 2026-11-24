@@ -3,6 +3,7 @@ import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { OwnerAnalytics } from "../components/OwnerAnalytics";
 import { THEME_BOOT } from "../lib/theme";
 import { Track } from "../components/Track";
+import { SiteBanner } from "../components/SiteBanner";
 import { SITE } from "../lib/site";
 import "./globals.css";
 
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="font-sans min-h-screen">
         {children}
+        <SiteBanner />
         <OwnerAnalytics />
         <Track />
       </body>

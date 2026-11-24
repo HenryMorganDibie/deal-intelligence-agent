@@ -87,6 +87,21 @@ async function recordTrouble(action: string, reason: string, email?: string) {
   }
 }
 
+let siteSettingsMemo: { at: number; signups: { open?: boolean; message?: string | null } } | null = null;
+
+/** Whether the owner has paused new sign-ups (set in admin), read at most once a minute; open if unknown. */
+async function signupsSetting() {
+  if (siteSettingsMemo && Date.now() - siteSettingsMemo.at < 60_000) return siteSettingsMemo.signups;
+  try {
+    const r = await supabase("/rest/v1/rpc/site_settings_public", { method: "POST", body: "{}", signal: AbortSignal.timeout(2000) });
+    const data = r.ok ? ((await r.json()) as { signups?: { open?: boolean; message?: string | null } }) : {};
+    siteSettingsMemo = { at: Date.now(), signups: data.signups ?? { open: true } };
+  } catch {
+    siteSettingsMemo = { at: Date.now(), signups: { open: true } };
+  }
+  return siteSettingsMemo.signups;
+}
+
 /** The answer for a failed attempt, recorded for the owner first. */
 async function troubled(action: string, email: string, error: string, status = 400) {
   await recordTrouble(action, error, email);
@@ -334,6 +349,10 @@ export async function POST(request: NextRequest) {
       const username = normaliseUsername(typeof body.username === "string" ? body.username : "");
       const displayName = (typeof body.displayName === "string" ? body.displayName : "").trim();
       if (!EMAIL_RE.test(email) || email.length > 254) return fail("Enter a valid email address.");
+      const signups = await signupsSetting();
+      if (signups.open === false) {
+        return troubled("sign-up", email, signups.message || "New sign-ups are paused for a short while. Please try again soon.", 403);
+      }
       if (body.ageConfirmed !== true) return troubled("sign-up", email, `You must be ${MINIMUM_AGE} or older to create an account.`);
       const termsVersion = typeof body.termsVersion === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.termsVersion) ? body.termsVersion : TERMS_VERSION;
       const fieldProblem = usernameProblem(username) || displayNameProblem(displayName);

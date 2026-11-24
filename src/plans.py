@@ -75,7 +75,12 @@ async def limits(user: str, fresh: bool = False) -> dict:
 
 
 async def use_ai(request: Request) -> None:
-    """Count one AI run for the account, or refuse with an upgrade message when this month's are used."""
+    """Count one AI run for the account, or refuse with an upgrade message when this month's are used. Refused for
+    everyone while the owner has paused AI briefs."""
+    ai = (await hm.site_settings()).get("ai") or {}
+    if ai.get("on") is False:
+        raise HTTPException(503, ai.get("message") or "Briefs and research runs are paused for a short while. "
+                                                      "Everything else works as usual; please try again later.")
     user = _who(request)
     if not user or not hm._configured():
         return

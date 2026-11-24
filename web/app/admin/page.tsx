@@ -6,6 +6,7 @@ import { browserVisitorId } from "../../lib/tracking";
 import { AccountsPanel } from "../../components/admin/AccountsPanel";
 import { ClaimsPanel } from "../../components/admin/ClaimsPanel";
 import { InvestorHomesPanel } from "../../components/admin/InvestorHomesPanel";
+import { SettingsPanel } from "../../components/admin/SettingsPanel";
 
 type Row = { views: number; visitors: number; users: number };
 type ActionRow = { action: string; completions: number; clients: number };
@@ -45,7 +46,7 @@ type PlanFunnel = {
   paying_accounts?: number; free_using_briefs?: number; events?: Record<string, FunnelCount>;
 };
 
-type Section = "overview" | "accounts" | "revenue" | "traffic" | "usage" | "moderation" | "review";
+type Section = "overview" | "accounts" | "revenue" | "traffic" | "usage" | "moderation" | "review" | "settings";
 const SECTIONS: { id: Section; label: string; icon: string }[] = [
   { id: "overview", label: "Overview", icon: "M3 13h8V3H3zm10 8h8V11h-8zM3 21h8v-6H3zm10-18v6h8V3z" },
   { id: "accounts", label: "Accounts", icon: "M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0zM4 21c1-4 4-6 8-6s7 2 8 6" },
@@ -54,6 +55,7 @@ const SECTIONS: { id: Section; label: string; icon: string }[] = [
   { id: "usage", label: "Product usage", icon: "M4 6h16M4 12h10M4 18h7" },
   { id: "moderation", label: "Moderation", icon: "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" },
   { id: "review", label: "Data review", icon: "M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9" },
+  { id: "settings", label: "Settings", icon: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" },
 ];
 const ACTION_LABELS: Record<string, string> = {
   brief_completed: "Company briefs completed", research_completed: "Research answers completed",
@@ -575,6 +577,12 @@ export default function Admin() {
           {section === "usage" && <Usage stats={stats} />}
           {section === "moderation" && <Moderation adminKey={loadedKey} feedback={feedback} onReviewed={markReviewed} />}
           {section === "review" && <Review adminKey={loadedKey} onError={setError} />}
+          {section === "settings" && (
+            <>
+              <Header title="Settings" about={<p>Switches, plans and prices, and deal corrections that used to need a code change. Changes apply straight away.</p>} />
+              <SettingsPanel adminKey={loadedKey} />
+            </>
+          )}
         </main>
       </div>
     </div>
