@@ -30,7 +30,7 @@ type AuthPayload = {
 type Body = {
   action?: string; email?: string; password?: string; confirmPassword?: string; currentPassword?: string;
   username?: string; displayName?: string; refreshToken?: unknown; tokenHash?: unknown; type?: unknown; code?: unknown;
-  factorId?: unknown; ageConfirmed?: unknown; termsVersion?: unknown;
+  factorId?: unknown; ageConfirmed?: unknown; termsVersion?: unknown; missing?: unknown;
 };
 
 const NO_STORE = { "Cache-Control": "no-store" };
@@ -71,6 +71,26 @@ async function supabase(path: string, init: RequestInit & { token?: string } = {
   if (init.token) headers.set("Authorization", "Bearer " + init.token);
   if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   return fetch(config.url + path, { ...init, headers, cache: "no-store" });
+}
+
+/** Note a failed attempt for the owner's "Sign-in trouble" list: the address and what went wrong, never a password.
+ * Best effort: a failure to record never changes the answer the person gets. */
+async function recordTrouble(action: string, reason: string, email?: string) {
+  try {
+    await supabase("/rest/v1/rpc/record_auth_trouble", {
+      method: "POST",
+      body: JSON.stringify({ p_action: action, p_reason: reason.slice(0, 300), p_email: email || null }),
+      signal: AbortSignal.timeout(2000),
+    });
+  } catch {
+    // Recording is a convenience for support; the person's request has already been answered on its merits.
+  }
+}
+
+/** The answer for a failed attempt, recorded for the owner first. */
+async function troubled(action: string, email: string, error: string, status = 400) {
+  await recordTrouble(action, error, email);
+  return fail(error, status);
 }
 
 async function profileOf(accessToken: string, userId: string) {
@@ -138,6 +158,15 @@ export async function POST(request: NextRequest) {
       return ok({ available, problem: available ? null : "That username is taken or reserved." });
     }
 
+    if (action === "report-blocked") {
+      // The sign-up form was submitted with something still missing; only the address and the missing items arrive.
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+      const missing: unknown[] = Array.isArray(body.missing) ? body.missing : [];
+      const reason = missing.filter((m): m is string => typeof m === "string").map((m) => m.slice(0, 120)).slice(0, 6).join("; ");
+      if (EMAIL_RE.test(email) && reason) await recordTrouble("sign-up", `Form not complete: ${reason}`, email);
+      return ok();
+    }
+
     if (action === "recover-password") {
       const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
       if (!EMAIL_RE.test(email) || email.length > 254) return fail("Enter a valid account email.");
@@ -147,8 +176,8 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({ email }),
         cache: "no-store",
       });
-      if (response.status === 429) return fail("Too many requests. Please wait before trying again.", 429);
-      if (!response.ok) return fail("Could not request a password reset. Please try again later.", 503);
+      if (response.status === 429) return troubled("recover-password", email, "Too many requests. Please wait before trying again.", 429);
+      if (!response.ok) return troubled("recover-password", email, "Could not request a password reset. Please try again later.", 503);
       // The same answer whether or not the address has an account.
       return ok();
     }
@@ -305,14 +334,14 @@ export async function POST(request: NextRequest) {
       const username = normaliseUsername(typeof body.username === "string" ? body.username : "");
       const displayName = (typeof body.displayName === "string" ? body.displayName : "").trim();
       if (!EMAIL_RE.test(email) || email.length > 254) return fail("Enter a valid email address.");
-      if (body.ageConfirmed !== true) return fail(`You must be ${MINIMUM_AGE} or older to create an account.`);
+      if (body.ageConfirmed !== true) return troubled("sign-up", email, `You must be ${MINIMUM_AGE} or older to create an account.`);
       const termsVersion = typeof body.termsVersion === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.termsVersion) ? body.termsVersion : TERMS_VERSION;
       const fieldProblem = usernameProblem(username) || displayNameProblem(displayName);
-      if (fieldProblem) return fail(fieldProblem);
+      if (fieldProblem) return troubled("sign-up", email, fieldProblem);
       const problem = await newPasswordProblem(password, typeof body.confirmPassword === "string" ? body.confirmPassword : "", { email, username });
-      if (problem) return fail(problem);
+      if (problem) return troubled("sign-up", email, problem);
       const available = await supabase("/rest/v1/rpc/username_available", { method: "POST", body: JSON.stringify({ p_username: username }) });
-      if (available.ok && (await available.json()) !== true) return fail("That username is taken or reserved. Choose another.", 409);
+      if (available.ok && (await available.json()) !== true) return troubled("sign-up", email, "That username is taken or reserved. Choose another.", 409);
       const response = await supabase("/auth/v1/signup", {
         method: "POST",
         body: JSON.stringify({ email, password, data: { username, display_name: displayName, age_confirmed_at: new Date().toISOString(), terms_version: termsVersion }, options: { emailRedirectTo: request.nextUrl.origin + "/auth/callback" } }),
@@ -320,11 +349,11 @@ export async function POST(request: NextRequest) {
       const payload = (await response.json().catch(() => ({}))) as AuthPayload;
       if (!response.ok) {
         const text = JSON.stringify(payload);
-        if (response.status === 429) return fail("Too many sign-up attempts. Please wait a few minutes.", 429);
+        if (response.status === 429) return troubled("sign-up", email, "Too many sign-up attempts. Please wait a few minutes.", 429);
         // The profile trigger rejected the username (taken a moment ago): the only database error a valid request can hit.
-        if (response.status >= 500 || /database error/i.test(text)) return fail("That username was just taken. Choose another.", 409);
-        if (/password/i.test(text)) return fail("That password is not accepted. Choose a longer or more varied one.");
-        return fail("Account creation failed. Check the details and try again.");
+        if (response.status >= 500 || /database error/i.test(text)) return troubled("sign-up", email, "That username was just taken. Choose another.", 409);
+        if (/password/i.test(text)) return troubled("sign-up", email, "That password is not accepted. Choose a longer or more varied one.");
+        return troubled("sign-up", email, "Account creation failed. Check the details and try again.");
       }
       if (payload.access_token && payload.refresh_token && payload.user?.id) {
         setPortfolioAuthCookies(payload);
@@ -342,9 +371,10 @@ export async function POST(request: NextRequest) {
       const response = await supabase("/auth/v1/token?grant_type=password", { method: "POST", body: JSON.stringify({ email, password }) });
       const payload = (await response.json().catch(() => ({}))) as AuthPayload;
       if (!response.ok || !payload.access_token || !payload.refresh_token || !payload.user?.id) {
-        if (response.status === 429) return fail("Too many sign-in attempts. Please wait a few minutes.", 429);
+        if (response.status === 429) return troubled("sign-in", email, "Too many sign-in attempts. Please wait a few minutes.", 429);
         const text = JSON.stringify(payload);
-        if (/email not confirmed/i.test(text)) return fail("Confirm your email first: use the link we sent you.", 403);
+        if (/email not confirmed/i.test(text)) return troubled("sign-in", email, "Confirm your email first: use the link we sent you.", 403);
+        await recordTrouble("sign-in", "Wrong email or password", email);
         return fail("Sign-in failed. Check your email and password.");
       }
       setPortfolioAuthCookies(payload);

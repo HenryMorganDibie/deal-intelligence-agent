@@ -1936,6 +1936,56 @@ async def admin_moderation_log(request: Request) -> Response:
     return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
 
 
+SITE_URL = (os.environ.get("NEXT_PUBLIC_SITE_URL") or os.environ.get("SITE_URL") or "https://deal-intelligence.app").strip().rstrip("/")
+
+
+@router.post("/api/admin/auth-trouble")
+async def admin_auth_trouble(request: Request) -> Response:
+    """Failed sign-ups, sign-ins and password resets of the last two weeks, grouped by address, so the owner can
+    see who is stuck; needs DEAL_INTEL_ADMIN_KEY. Addresses are never cached."""
+    body = await _admin_body(request)
+    try:
+        days = max(1, min(int(body.get("days", 14) or 14), 30))
+    except (TypeError, ValueError):
+        days = 14
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_auth_trouble", {"p_days": days})
+    if not r.is_success:
+        log.error("admin_auth_trouble failed: %s %s", r.status_code, r.text[:300])
+        missing = r.status_code == 404 or "admin_auth_trouble" in r.text
+        raise HTTPException(status_code=503 if missing else 502,
+                            detail="Sign-in trouble is not set up yet: run the auth_trouble migration." if missing
+                            else "Sign-in trouble is unavailable.")
+    return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
+
+
+@router.post("/api/admin/accounts/help")
+async def admin_account_help(request: Request) -> dict:
+    """Help someone who is stuck; needs DEAL_INTEL_ADMIN_KEY. "reset" sends them a password-reset link, "confirm"
+    sends the confirmation email again. Both go out through the site's own email sender, as if they had asked."""
+    body = await _admin_body(request)
+    email, kind = str(body.get("email") or "").strip().lower(), body.get("action")
+    if not _EMAIL_RE.fullmatch(email):
+        raise HTTPException(status_code=422, detail="Give the person's email address.")
+    if kind not in ("reset", "confirm"):
+        raise HTTPException(status_code=422, detail="Choose reset or confirm.")
+    headers = {"apikey": SUPABASE_KEY, "Content-Type": "application/json"}
+    async with httpx.AsyncClient(timeout=20) as client:
+        if kind == "reset":
+            r = await client.post(f"{SUPABASE_URL}/auth/v1/recover", headers=headers, json={"email": email},
+                                  params={"redirect_to": f"{SITE_URL}/auth/callback?next=password-reset"})
+        else:
+            r = await client.post(f"{SUPABASE_URL}/auth/v1/resend", headers=headers,
+                                  json={"type": "signup", "email": email,
+                                        "options": {"emailRedirectTo": f"{SITE_URL}/auth/callback"}})
+    if r.status_code == 429:
+        raise HTTPException(status_code=429, detail="Too many emails to this address just now. Try again in a few minutes.")
+    if not r.is_success:
+        log.error("admin account help (%s) failed: %s %s", kind, r.status_code, r.text[:300])
+        raise HTTPException(status_code=502, detail="The email could not be sent.")
+    return {"email": email, "sent": "password-reset link" if kind == "reset" else "confirmation email"}
+
+
 @router.post("/api/admin/accounts")
 async def admin_accounts(request: Request) -> Response:
     """Who has an account and who uses the app, for the owner's page; needs DEAL_INTEL_ADMIN_KEY."""

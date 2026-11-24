@@ -94,7 +94,12 @@ export default function AccountPage() {
   async function signUp(e: FormEvent) {
     e.preventDefault();
     setError(""); setMessage("");
-    if (!canSignUp) { setShowGaps(true); return; }
+    if (!canSignUp) {
+      setShowGaps(true);
+      // Tell the owner someone is stuck (the address and what is missing, never the password), once per press.
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) void authAction({ action: "report-blocked", email, missing: signUpGaps }).catch(() => undefined);
+      return;
+    }
     setBusy(true);
     const { ok, data } = await authAction<{ needsEmailConfirmation?: boolean; message?: string }>({
       action: "sign-up", email, password, confirmPassword: confirm, username: normaliseUsername(username), displayName: displayName.trim(), ageConfirmed: adult, termsVersion: TERMS_VERSION,

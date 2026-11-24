@@ -46,6 +46,11 @@ function when(value: string | null): string {
 }
 
 /** Who has an account and who is using the app. Activity is recorded at most once per 30 minutes per account. */
+type Trouble = {
+  email: string | null; attempts: number; first_at: string; last_at: string; actions: string[];
+  last_reason: string; reasons: string[]; has_account: boolean; confirmed: boolean; signed_in_since: boolean;
+};
+
 export function AccountsPanel({ adminKey, days }: { adminKey: string; days: number }) {
   const [data, setData] = useState<AccountStats | null>(null);
   const [error, setError] = useState("");
@@ -55,6 +60,42 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
   const [log, setLog] = useState<LogEntry[] | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [planNote, setPlanNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const [trouble, setTrouble] = useState<Trouble[] | null>(null);
+  const [troubleError, setTroubleError] = useState("");
+  const [helping, setHelping] = useState<string | null>(null);
+
+  /** Send a password-reset link or the confirmation email again, through the site's own sender. */
+  async function help(email: string, action: "reset" | "confirm") {
+    setHelping(email + action);
+    setPlanNote(null);
+    try {
+      const r = await fetch(apiUrl("/api/admin/accounts/help"), {
+        method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
+        body: JSON.stringify({ key: adminKey, email, action }),
+      });
+      const body = (await r.json().catch(() => ({}))) as { detail?: string; sent?: string };
+      if (!r.ok) throw new Error(body.detail || "The email could not be sent.");
+      setPlanNote({ ok: true, text: `Sent ${email} a ${body.sent}.` });
+    } catch (e) {
+      setPlanNote({ ok: false, text: (e as Error).message });
+    } finally {
+      setHelping(null);
+    }
+  }
+
+  useEffect(() => {
+    if (!adminKey) return;
+    fetch(apiUrl("/api/admin/auth-trouble"), {
+      method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
+      body: JSON.stringify({ key: adminKey, days: 14 }),
+    })
+      .then(async (r) => {
+        const body = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error((body as { detail?: string }).detail || "Sign-in trouble is unavailable.");
+        setTrouble(body as Trouble[]);
+      })
+      .catch((e: Error) => setTroubleError(e.message));
+  }, [adminKey]);
 
   async function changePlan(account: Account, plan: string) {
     const label = data?.plans?.find((p) => p.id === plan)?.label ?? plan;
@@ -249,6 +290,13 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
                   ].filter(Boolean).join(" · ")}
                 </td>
                 <td className="py-2 whitespace-nowrap text-right">
+                  {!a.confirmed && (
+                    <button type="button" disabled={helping !== null} onClick={() => help(a.email, "confirm")}
+                      className="mr-1.5 rounded-md border hairline px-2 py-1 text-[0.75rem] hover:bg-white/[0.06]">Resend confirmation</button>
+                  )}
+                  <button type="button" disabled={helping !== null} onClick={() => help(a.email, "reset")}
+                    title="Email this person a link to set a new password"
+                    className="mr-1.5 rounded-md border hairline px-2 py-1 text-[0.75rem] hover:bg-white/[0.06]">Send reset link</button>
                   <button type="button" onClick={() => setPending({ kind: a.suspended ? "reinstate" : "suspend", account: a })}
                     className="rounded-md border hairline px-2 py-1 text-[0.75rem] hover:bg-white/[0.06]">
                     {a.suspended ? "Reinstate" : "Suspend"}
@@ -270,6 +318,59 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
         Activity is recorded from this release onward, so earlier use shows as &ldquo;never&rdquo;. Email addresses are shown
         only here, to you, and are never cached.
       </p>
+
+      <h3 className="mt-8 font-semibold">Sign-in trouble</h3>
+      <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
+        Failed sign-ups, sign-ins and password resets in the last 14 days, by address, so you can reach out. Someone who
+        never managed to create an account appears only here. Passwords are never recorded; entries are kept for 30 days.
+      </p>
+      {troubleError ? <p className="mt-2 text-sm text-risk">{troubleError}</p> : !trouble ? (
+        <p className="mt-2 text-sm text-[color:var(--muted)]">Loading…</p>
+      ) : trouble.length === 0 ? (
+        <p className="mt-2 text-sm text-[color:var(--muted)]">No failed attempts in the last 14 days.</p>
+      ) : (
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full min-w-[760px] text-left text-sm">
+            <thead className="text-[color:var(--muted)]">
+              <tr>
+                <th className="py-2 pr-3 font-normal">Address</th>
+                <th className="py-2 pr-3 font-normal">Last attempt</th>
+                <th className="py-2 pr-3 font-normal">Attempts</th>
+                <th className="py-2 pr-3 font-normal">What went wrong last</th>
+                <th className="py-2 pr-3 font-normal">Now</th>
+                <th className="py-2 font-normal"><span className="sr-only">Help</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {trouble.map((t) => (
+                <tr key={(t.email ?? "unknown") + t.last_at} className="border-t hairline align-top">
+                  <td className="py-2 pr-3">{t.email ?? <span className="text-[color:var(--muted)]">no valid address</span>}
+                    <div className="text-[0.75rem] text-[color:var(--muted)]">{t.actions.join(", ")}</div></td>
+                  <td className="py-2 pr-3 whitespace-nowrap">{when(t.last_at)}</td>
+                  <td className="py-2 pr-3">{t.attempts}</td>
+                  <td className="py-2 pr-3 text-[0.8125rem]">{t.last_reason}</td>
+                  <td className="py-2 pr-3 text-[0.8125rem]">
+                    {t.signed_in_since ? <span className="text-verified">Signed in since</span>
+                      : t.has_account ? (t.confirmed ? "Has an account" : "Account, email not confirmed")
+                      : <span className="text-risk">No account</span>}
+                  </td>
+                  <td className="py-2 whitespace-nowrap text-right">
+                    {t.email && t.has_account && !t.signed_in_since && (
+                      <button type="button" disabled={helping !== null} onClick={() => help(t.email!, t.confirmed ? "reset" : "confirm")}
+                        className="mr-1.5 rounded-md border hairline px-2 py-1 text-[0.75rem] hover:bg-white/[0.06]">
+                        {t.confirmed ? "Send reset link" : "Resend confirmation"}</button>
+                    )}
+                    {t.email && !t.signed_in_since && (
+                      <a href={`mailto:${t.email}?subject=${encodeURIComponent("Signing up to Deal Intelligence")}`}
+                        className="rounded-md border hairline px-2 py-1 text-[0.75rem] hover:bg-white/[0.06]">Email them</a>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <h3 className="mt-8 font-semibold">Suspensions and deletions</h3>
       {log === null ? <p className="mt-2 text-sm text-[color:var(--muted)]">Loading…</p>
