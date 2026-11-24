@@ -84,6 +84,43 @@ def quota_headers(status: dict) -> dict:
     return out
 
 
+# The API's areas. Institutional contracts differ by firm, so the owner can limit an Institutional account to the
+# areas its contract covers; Pro and Team always include every area of their plan.
+API_SCOPES = {
+    "deals": "Deals", "events": "Events", "investors": "Investors", "countries": "Countries",
+    "markets": "Markets", "elections": "Election data", "election_results": "Election results and accreditation",
+    "election_alerts": "Election alerts",
+}
+
+
+def scope_of(path: str) -> Optional[str]:
+    """The area a request falls in, from its path ("/v1/markets/quote" -> "markets"); None for the index and usage."""
+    parts = [p for p in path.split("/") if p]
+    if parts and parts[0] == "v1":
+        parts = parts[1:]
+    if not parts or parts[0] == "usage":
+        return None
+    head = parts[0]
+    if head == "elections":
+        rest = parts[1] if len(parts) > 1 else ""
+        if rest in ("results", "accreditation"):
+            return "election_results"
+        if rest == "alerts":
+            return "election_alerts"
+        return "elections"
+    return head if head in API_SCOPES else None
+
+
+async def _consume(client: httpx.AsyncClient, key: str, count: bool, scope: Optional[str]) -> httpx.Response:
+    args = {"p_hash": key_hash(key), "p_count": count}
+    if scope:
+        r = await hm._rpc(client, "api_key_consume", {**args, "p_scope": scope})
+        # Until the database knows about areas, ask the way it understands; nothing is limited by area then.
+        if r.status_code != 404 and "PGRST202" not in r.text:
+            return r
+    return await hm._rpc(client, "api_key_consume", args)
+
+
 async def authorize(request: Request, response: Response, count: bool = True) -> dict:
     """Check the key and count the request. Raises PublicApiError (401, 429 or 503)."""
     key = presented_key(request)
@@ -96,7 +133,7 @@ async def authorize(request: Request, response: Response, count: bool = True) ->
         raise PublicApiError(503, "unavailable", "The API is not configured.")
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            r = await hm._rpc(client, "api_key_consume", {"p_hash": key_hash(key), "p_count": count})
+            r = await _consume(client, key, count, scope_of(request.url.path))
     except httpx.HTTPError as exc:
         log.warning("api_key_consume unreachable: %r", exc)
         raise PublicApiError(503, "unavailable", "Usage could not be checked. Try again shortly.", {"Retry-After": "30"})
@@ -113,6 +150,11 @@ async def authorize(request: Request, response: Response, count: bool = True) ->
             raise PublicApiError(429, "quota_exceeded",
                                  f"Your {status.get('plan', 'free')} plan's {status.get('limit')} requests this month "
                                  "are used up. Upgrade, or wait for the allowance to reset.", headers)
+        if status.get("reason") == "not_in_contract":
+            area = API_SCOPES.get(str(status.get("scope")), str(status.get("scope")))
+            raise PublicApiError(403, "not_in_contract",
+                                 f"{area} is not part of your organisation's contract. Contact info@deal-intelligence.app "
+                                 "to add it.")
         raise PublicApiError(401, "invalid_key", "That API key does not exist or has been revoked.",
                              {"WWW-Authenticate": "Bearer"})
     request.state.quota = status

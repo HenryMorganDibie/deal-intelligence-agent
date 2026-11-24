@@ -5,6 +5,9 @@
 -- limits without anyone remembering to undo it. Every limit in the product reads private.plan_of, so laying the
 -- grant over the plan there makes API requests and keys, briefs and research runs, alerts (email, Slack, Teams and
 -- webhooks) and CSV export all follow it. Election alerts read election_alerts_max from plan_limits.
+--
+-- Institutional contracts differ by firm, so an Institutional account can also be limited to the API areas its
+-- contract covers (api_scopes; empty means every area). Pro and Team always include every area of their plan.
 
 create table if not exists public.account_grants (
   user_id uuid primary key references auth.users (id) on delete cascade,
@@ -14,6 +17,8 @@ create table if not exists public.account_grants (
   election_alerts_max integer check (election_alerts_max between 0 and 1000),
   max_keys integer check (max_keys between 0 and 100),
   exports boolean,
+  api_scopes text[] check (api_scopes is null or api_scopes <@ array['deals', 'events', 'investors', 'countries',
+    'markets', 'elections', 'election_results', 'election_alerts']::text[]),
   expires_at timestamptz,
   note text check (note is null or length(note) <= 300),
   updated_at timestamptz not null default now()
@@ -90,7 +95,7 @@ begin
     select jsonb_agg(jsonb_build_object(
              'email', u.email, 'monthly_requests', g.monthly_requests, 'ai_monthly', g.ai_monthly,
              'alerts_max', g.alerts_max, 'election_alerts_max', g.election_alerts_max, 'max_keys', g.max_keys,
-             'exports', g.exports, 'expires_at', g.expires_at, 'note', g.note, 'updated_at', g.updated_at,
+             'exports', g.exports, 'api_scopes', to_jsonb(g.api_scopes), 'expires_at', g.expires_at, 'note', g.note, 'updated_at', g.updated_at,
              'active', g.expires_at is null or g.expires_at > now())
            order by g.updated_at desc)
       from public.account_grants g join auth.users u on u.id = g.user_id
@@ -116,15 +121,74 @@ begin
     return jsonb_build_object('email', lower(trim(p_email)), 'cleared', true);
   end if;
   insert into public.account_grants as g (user_id, monthly_requests, ai_monthly, alerts_max, election_alerts_max,
-                                          max_keys, exports, expires_at, note, updated_at)
+                                          max_keys, exports, api_scopes, expires_at, note, updated_at)
   values (v_user, (p_grant->>'monthly_requests')::integer, (p_grant->>'ai_monthly')::integer,
           (p_grant->>'alerts_max')::integer, (p_grant->>'election_alerts_max')::integer,
-          (p_grant->>'max_keys')::integer, (p_grant->>'exports')::boolean, p_expires_at,
+          (p_grant->>'max_keys')::integer, (p_grant->>'exports')::boolean,
+          case when jsonb_typeof(p_grant->'api_scopes') = 'array'
+               then array(select jsonb_array_elements_text(p_grant->'api_scopes')) end,
+          p_expires_at,
           nullif(left(trim(coalesce(p_note, '')), 300), ''), now())
   on conflict (user_id) do update
      set monthly_requests = excluded.monthly_requests, ai_monthly = excluded.ai_monthly,
          alerts_max = excluded.alerts_max, election_alerts_max = excluded.election_alerts_max,
-         max_keys = excluded.max_keys, exports = excluded.exports, expires_at = excluded.expires_at,
+         max_keys = excluded.max_keys, exports = excluded.exports, api_scopes = excluded.api_scopes,
+         expires_at = excluded.expires_at,
          note = excluded.note, updated_at = now();
   return jsonb_build_object('email', lower(trim(p_email)), 'cleared', false);
 end; $$;
+
+-- The API's metering, now also told which area a request is for (p_scope): an Institutional account whose contract
+-- does not cover that area is refused before the request is counted. Everything else is unchanged.
+drop function if exists public.api_key_consume(text, text, boolean);
+create or replace function public.api_key_consume(secret text, p_hash text, p_count boolean default true,
+                                                  p_scope text default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path to ''
+as $$
+declare
+  v_key public.api_keys;
+  v_plan public.api_plans;
+  v_scopes text[];
+  v_period date := private.current_period();
+  v_used integer;
+begin
+  perform private.check_secret(secret);
+  select * into v_key from public.api_keys k where k.key_hash = p_hash and k.revoked_at is null;
+  if not found or private.is_suspended(v_key.user_id) then return jsonb_build_object('ok', false, 'reason', 'invalid_key'); end if;
+  v_plan := private.plan_of(v_key.user_id);
+  if v_plan.plan = 'institutional' and p_scope is not null then
+    v_scopes := (private.active_grant(v_key.user_id)).api_scopes;
+    if v_scopes is not null and not (p_scope = any(v_scopes)) then
+      return jsonb_build_object('ok', false, 'reason', 'not_in_contract', 'plan', v_plan.plan, 'scope', p_scope,
+                                'scopes', to_jsonb(v_scopes));
+    end if;
+  end if;
+  if p_count and v_plan.monthly_requests = 0 then
+    return jsonb_build_object('ok', false, 'reason', 'quota_exceeded', 'plan', v_plan.plan, 'limit', 0, 'used', 0,
+                              'remaining', 0, 'resets_at', (v_period + interval '1 month'));
+  end if;
+  if p_count then
+    insert into public.api_usage as u (user_id, period, requests) values (v_key.user_id, v_period, 1)
+    on conflict (user_id, period) do update set requests = u.requests + 1
+     where u.requests < v_plan.monthly_requests
+    returning u.requests into v_used;
+    if v_used is null then
+      v_used := coalesce((select u.requests from public.api_usage u where u.user_id = v_key.user_id and u.period = v_period), 0);
+      return jsonb_build_object('ok', false, 'reason', 'quota_exceeded', 'plan', v_plan.plan,
+                                'limit', v_plan.monthly_requests, 'used', v_used, 'remaining', 0,
+                                'resets_at', (v_period + interval '1 month'));
+    end if;
+    update public.api_keys set last_used_at = now() where id = v_key.id;
+  else
+    v_used := coalesce((select u.requests from public.api_usage u where u.user_id = v_key.user_id and u.period = v_period), 0);
+  end if;
+  return jsonb_build_object('ok', true, 'plan', v_plan.plan, 'limit', v_plan.monthly_requests, 'used', v_used,
+                            'remaining', greatest(v_plan.monthly_requests - v_used, 0),
+                            'resets_at', (v_period + interval '1 month'), 'key_id', v_key.id);
+end; $$;
+revoke all on function public.api_key_consume(text, text, boolean, text) from public, authenticated;
+grant execute on function public.api_key_consume(text, text, boolean, text) to anon, service_role;
+

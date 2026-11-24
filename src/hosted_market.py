@@ -1976,6 +1976,13 @@ async def admin_set_grant(request: Request) -> dict:
             grant[field] = int(value)
         if raw.get("exports") in (True, False):
             grant["exports"] = raw["exports"]
+        scopes = raw.get("api_scopes")
+        if scopes is not None:
+            from src.public_api import API_SCOPES
+            if not isinstance(scopes, list) or not all(isinstance(x, str) and x in API_SCOPES for x in scopes) or not scopes:
+                raise HTTPException(status_code=422, detail="Tick at least one API area, from the listed ones.")
+            if set(scopes) != set(API_SCOPES):         # every area ticked is the same as no limit
+                grant["api_scopes"] = sorted(set(scopes))
         if not grant:
             raise HTTPException(status_code=422, detail="Set at least one limit, or clear the grant.")
     expires = str(body.get("expires_at") or "").strip()

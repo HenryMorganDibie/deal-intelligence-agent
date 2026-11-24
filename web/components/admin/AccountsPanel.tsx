@@ -48,7 +48,8 @@ function when(value: string | null): string {
 /** Who has an account and who is using the app. Activity is recorded at most once per 30 minutes per account. */
 type Grant = {
   email: string; monthly_requests: number | null; ai_monthly: number | null; alerts_max: number | null;
-  election_alerts_max: number | null; max_keys: number | null; exports: boolean | null; expires_at: string | null;
+  election_alerts_max: number | null; max_keys: number | null; exports: boolean | null; api_scopes: string[] | null;
+  expires_at: string | null;
   note: string | null; active: boolean;
 };
 
@@ -58,6 +59,13 @@ const GRANT_FIELDS: [keyof Grant & string, string, string][] = [
   ["alerts_max", "Deal and event alerts (email, Slack, Teams, webhook)", "Free 3 · Pro 100 · Team 500 · Institutional 2,000"],
   ["election_alerts_max", "Election alerts at once", "Free 0 · Pro 2 · Team 5 · Institutional 25"],
   ["max_keys", "API keys", "Free 2 · Pro 5 · Team 10 · Institutional 25"],
+];
+
+/** The API's areas; an Institutional contract can cover some of them (Pro and Team include every area). */
+const API_AREAS: [string, string][] = [
+  ["deals", "Deals"], ["events", "Events"], ["investors", "Investors"], ["countries", "Countries"],
+  ["markets", "Markets"], ["elections", "Election data"], ["election_results", "Election results and accreditation"],
+  ["election_alerts", "Election alerts"],
 ];
 
 type Trouble = {
@@ -540,6 +548,8 @@ function GrantDialog({ email, plan, current, onCancel, onSave }: {
   const [exportsChoice, setExportsChoice] = useState(current?.exports === true ? "on" : current?.exports === false ? "off" : "plan");
   const [expires, setExpires] = useState(current?.expires_at?.slice(0, 10) ?? "");
   const [note, setNote] = useState(current?.note ?? "");
+  const [areas, setAreas] = useState<string[]>(current?.api_scopes ?? API_AREAS.map(([k]) => k));
+  const institutional = plan === "institutional";
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -547,6 +557,16 @@ function GrantDialog({ email, plan, current, onCancel, onSave }: {
     setBusy(true); setError("");
     const grant: Record<string, unknown> = Object.fromEntries(Object.entries(values).filter(([, v]) => v.trim() !== "").map(([k, v]) => [k, v.trim()]));
     if (exportsChoice !== "plan") grant.exports = exportsChoice === "on";
+    if (institutional && !clear) {
+      if (areas.length === 0) { setBusy(false); setError("Tick at least one API area."); return; }
+      if (areas.length < API_AREAS.length) grant.api_scopes = areas;
+    }
+    if (!clear && Object.keys(grant).length === 0) {
+      // Nothing differs from the plan any more: that is the same as no grant.
+      setBusy(false);
+      if (current) { const problem = await onSave({ clear: true }); if (problem) setError(problem); } else onCancel();
+      return;
+    }
     const problem = await onSave(clear ? { clear: true } : { grant, expires_at: expires, note });
     setBusy(false);
     if (problem) setError(problem);
@@ -569,6 +589,25 @@ function GrantDialog({ email, plan, current, onCancel, onSave }: {
               <span className="text-[0.75rem] text-[color:var(--dim)]">{hint}</span>
             </label>
           ))}
+          <fieldset className="rounded-lg border hairline p-3 text-sm">
+            <legend className="px-1 font-medium">API access</legend>
+            {institutional ? (
+              <>
+                <p className="text-[0.75rem] text-[color:var(--dim)]">Tick what this firm&apos;s contract covers. Requests to an unticked area are refused and not counted.</p>
+                <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                  {API_AREAS.map(([key, label]) => (
+                    <label key={key} className="flex items-center gap-2">
+                      <input type="checkbox" checked={areas.includes(key)}
+                        onChange={(e) => setAreas((a) => e.target.checked ? [...a, key] : a.filter((x) => x !== key))} />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="text-[0.75rem] text-[color:var(--dim)]">The {plan} plan includes every API area. Ticking areas is for Institutional contracts.</p>
+            )}
+          </fieldset>
           <label className="block text-sm">
             <span className="font-medium">CSV export</span>
             <select value={exportsChoice} onChange={(e) => setExportsChoice(e.target.value)} aria-label="CSV export"

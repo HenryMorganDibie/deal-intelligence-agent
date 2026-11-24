@@ -69,7 +69,8 @@ def test_a_valid_key_is_counted_and_gets_quota_headers(metering, monkeypatch):
     assert r.headers["x-ratelimit-limit"] == "30" and r.headers["x-ratelimit-remaining"] == "26"
     assert r.headers["x-ratelimit-reset"] == "1796083200" and r.headers["cache-control"] == "no-store"
     fn, args = metering["calls"][0]
-    assert fn == "api_key_consume" and args == {"p_hash": hashlib.sha256(KEY.encode()).hexdigest(), "p_count": True}
+    assert fn == "api_key_consume" and args == {"p_hash": hashlib.sha256(KEY.encode()).hexdigest(), "p_count": True,
+                                                "p_scope": "deals"}
     # Every argument reaches the handler as a value, never as a FastAPI Query default object.
     assert seen["country"] == "NG" and seen["limit"] == 5
     assert not any(isinstance(v, QueryParam) for v in seen.values())
@@ -149,3 +150,35 @@ def test_app_country_filters_accept_names_and_codes():
     assert hm._country_or_404("Ivory Coast").iso2 == "CI"
     with pytest.raises(HTTPException):
         hm._country_or_404("Nig")
+
+
+def test_each_path_falls_in_one_api_area():
+    from src.public_api import scope_of
+    assert scope_of("/v1/deals") == scope_of("/v1/deals/abc") == "deals"
+    assert scope_of("/v1/markets/quote") == "markets"
+    assert scope_of("/v1/elections/live") == scope_of("/v1/elections/polling-units/24/11") == "elections"
+    assert scope_of("/v1/elections/results/queue") == scope_of("/v1/elections/accreditation") == "election_results"
+    assert scope_of("/v1/elections/alerts/a1/test") == "election_alerts"
+    assert scope_of("/v1") is None and scope_of("/v1/usage") is None
+
+
+def test_an_area_outside_the_contract_is_refused_with_403(metering):
+    metering["reply"] = FakeResponse(200, {"ok": False, "reason": "not_in_contract", "plan": "institutional",
+                                           "scope": "markets", "scopes": ["deals"]})
+    r = TestClient(api.app).get("/v1/markets/overview", headers={"X-API-Key": KEY})
+    assert r.status_code == 403 and r.json()["error"]["code"] == "not_in_contract"
+    assert "Markets is not part of your organisation's contract" in r.json()["error"]["message"]
+
+
+def test_metering_still_works_before_the_database_knows_about_areas(metering):
+    replies = [FakeResponse(404, {"code": "PGRST202"}), FakeResponse(200, OK)]
+
+    async def fake_rpc(client, fn, args):
+        metering["calls"].append((fn, args))
+        return replies.pop(0)
+    hm._rpc = fake_rpc
+    from src import public_api
+    import asyncio
+    status = asyncio.run(public_api._consume(None, KEY, True, "deals"))
+    assert status.status_code == 200
+    assert "p_scope" in metering["calls"][0][1] and "p_scope" not in metering["calls"][1][1]

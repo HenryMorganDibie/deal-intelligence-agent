@@ -78,3 +78,14 @@ def test_a_granted_election_alert_allowance_replaces_the_plans(monkeypatch):
     monkeypatch.setattr(election_alerts.hm, "_rpc_sync", rpc)
     election_alerts.create("u1", "x", None, None, plan="free", email=True, granted=3)
     assert seen["p_max"] == 3
+
+
+def test_institutional_api_areas_are_ticked_per_firm(monkeypatch):
+    client, calls = _client(monkeypatch)
+    r = _post(client, "/api/admin/grants/set", email="fund@acme.com", grant={"api_scopes": ["markets", "deals", "deals"]})
+    assert r.status_code == 200 and calls[-1][1]["p_grant"] == {"api_scopes": ["deals", "markets"]}
+    from src.public_api import API_SCOPES
+    r = _post(client, "/api/admin/grants/set", email="fund@acme.com", grant={"api_scopes": list(API_SCOPES), "ai_monthly": 9})
+    assert "api_scopes" not in calls[-1][1]["p_grant"]           # every area ticked: no limit by area
+    for bad in ([], ["everything"], "deals"):
+        assert _post(client, "/api/admin/grants/set", email="fund@acme.com", grant={"api_scopes": bad}).status_code == 422
