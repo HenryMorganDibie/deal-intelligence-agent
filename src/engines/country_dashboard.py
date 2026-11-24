@@ -18,8 +18,10 @@ import statistics
 import time
 from collections import Counter
 from datetime import date, timedelta
+from pathlib import Path
 from typing import Iterable, Optional
 
+import json
 import logging
 
 import httpx
@@ -186,18 +188,35 @@ def _imf_series(indicator: str, client: Optional[httpx.Client] = None) -> dict:
     return data
 
 
+_SAVED = Path(__file__).resolve().parents[1] / "data" / "imf_outlook.json"
+_saved_cache: dict[str, dict] = {}
+
+
+def _saved_outlook() -> dict:
+    """The figures saved in the repository by scripts/refresh_imf_outlook.py (the IMF refuses the host's servers)."""
+    if "v" not in _saved_cache:
+        try:
+            _saved_cache["v"] = json.loads(_SAVED.read_text())
+        except (OSError, ValueError):
+            _saved_cache["v"] = {}
+    return _saved_cache["v"]
+
+
 def imf_outlook(iso3: str, today: date, client: Optional[httpx.Client] = None) -> Optional[dict]:
-    """Last year, this year and next year for each IMF indicator; the years from this one on are IMF projections."""
+    """Last year, this year and next year for each IMF indicator; the years from this one on are IMF projections.
+    Read from the saved file; the live API only when the file has no series for the country."""
     years = [str(today.year - 1), str(today.year), str(today.year + 1)]
+    saved = _saved_outlook() if client is None else {}
     rows = []
     for indicator, label in IMF_INDICATORS.items():
-        series = _imf_series(indicator, client).get(iso3) or {}
+        series = ((saved.get("series") or {}).get(indicator) or {}).get(iso3) or _imf_series(indicator, client).get(iso3) or {}
         values = {y: series.get(y) for y in years}
         if any(v is not None for v in values.values()):
             rows.append({"indicator": indicator, "label": label, "values": values})
     if not rows:
         return None
     return {"years": years, "projected_from": str(today.year), "rows": rows, "source": "IMF World Economic Outlook",
+            "retrieved": saved.get("retrieved"),
             "source_url": f"https://www.imf.org/external/datamapper/profile/{iso3}"}
 
 

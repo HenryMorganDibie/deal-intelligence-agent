@@ -127,3 +127,11 @@ def test_dashboard_and_compare_endpoints(monkeypatch):
     assert [r["iso2"] for r in cmp] == ["NG", "KE"] and cmp[0]["policy_rate"] == 27.0 and cmp[0]["risk_tier"] == "elevated"
     assert cmp[1]["currency_depreciation_last_year_pct"] == 12.0
     assert client.get("/api/countries/compare?codes=NG").status_code == 400
+
+
+def test_imf_outlook_reads_the_saved_file_without_the_network():
+    cd._imf_cache.clear()
+    cd._saved_cache.clear()
+    out = cd.imf_outlook("KEN", TODAY)
+    assert out and out["retrieved"] and {r["indicator"] for r in out["rows"]} >= {"NGDP_RPCH", "PCPIPCH"}
+    assert all(set(r["values"]) == {"2025", "2026", "2027"} for r in out["rows"])

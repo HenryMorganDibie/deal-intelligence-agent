@@ -1,0 +1,47 @@
+name: IMF outlook for country pages
+
+# Monthly: saves the IMF World Economic Outlook figures (growth, inflation, government debt, current account) for
+# the 54 African countries to src/data/imf_outlook.json. The IMF refuses requests from the API host's servers and
+# updates only in April and October, so the country pages read this file. A failed run leaves the last file in place.
+on:
+  schedule:
+    - cron: "17 5 3 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: imf-outlook
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: pip install --disable-pip-version-check -r requirements-dev.txt
+      - name: Save the IMF outlook
+        run: python scripts/refresh_imf_outlook.py
+      - name: Commit it when it changed
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/imf_outlook.json
+          if git diff --cached --quiet; then
+            echo "No change."
+          else
+            git commit -m "Update IMF outlook for country pages"
+            bash scripts/push_with_retry.sh main
+          fi
