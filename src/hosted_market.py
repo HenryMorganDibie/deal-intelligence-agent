@@ -620,6 +620,30 @@ async def country_history(code: str, since: int = Query(1960, ge=1960, le=2100),
             "snapshot_note": "No archived snapshots have been captured yet. The annual series is a reconstruction from currently available historical source observations, not a stored history of what the product knew at each past date."}
 
 
+@router.get("/api/countries/compare")
+async def countries_compare(codes: str = Query(..., max_length=40)) -> dict:
+    """Two to four countries side by side: risk, deal flow, investor origin, market, rates, currency and outlook."""
+    from src.engines import country_dashboard as cd
+    wanted = [x for x in re.split(r"[,\s]+", codes) if x][:4]
+    countries = []
+    for code in wanted:
+        c = _country_or_404(code)
+        if c.iso2 not in [x.iso2 for x in countries]:
+            countries.append(c)
+    if len(countries) < 2:
+        raise HTTPException(400, "Compare at least two countries, for example codes=NG,KE.")
+    ds = deals()
+    parts = await _country_parts([c.iso2 for c in countries])
+    rows = []
+    for c in countries:
+        dash = await _country_dashboard(c, ds, parts)
+        risk = await run_in_threadpool(country_risk.assess, c)
+        currency = await run_in_threadpool(market_risk.currency_risk, c.currency)
+        rows.append(cd.compare_row(c, risk, dash["benchmarks"], dash["investor_origin"], dash["market"], dash["rates"],
+                                   dash["outlook"], currency))
+    return {"countries": rows, "as_of": datetime.now(timezone.utc).date().isoformat()}
+
+
 @router.get("/api/countries/{code}")
 async def country(code: str) -> dict:
     c = _country_or_404(code)
@@ -641,6 +665,110 @@ async def country(code: str) -> dict:
         "profile": country_profile.build(c.iso2, ds, es, today=datetime.now(timezone.utc).date()),
         "history_start": HISTORY_START.isoformat(),
     }
+
+
+async def _country_signals(codes: list[str]) -> dict[str, dict]:
+    """For country alerts: each followed country's risk tier and the one before it, its latest policy-rate decision
+    (recent if within a fortnight), its currency's move against the dollar over the last week, and its elections.
+    A part that cannot be read is left out, never guessed."""
+    from src.engines import country_dashboard as cd
+    from src.engines import country_risk as cr
+    from src.engines import instruments
+    today = datetime.now(timezone.utc).date()
+    out: dict[str, dict] = {}
+    try:
+        blocks = await run_in_threadpool(_instruments)
+    except Exception:                            # noqa: BLE001
+        blocks = {}
+    policy = {r["country"]: r for r in instruments.policy_rates(cr.load_current_signals_snapshot(), blocks.get("policy_rates"))}
+    fx_now, fx_then = {}, {}
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            for when, target in ((today, fx_now), (today - timedelta(days=7), fx_then)):
+                r = await _rpc(client, "list_market_snapshots", {"p_kind": "fx", "p_on_or_before": when.isoformat()})
+                rows = r.json() if r.status_code == 200 else []
+                row = rows[0] if isinstance(rows, list) and rows else (rows if isinstance(rows, dict) else {})
+                target.update(((row.get("payload") or {}).get("rates") or {}), _date=row.get("snapshot_date"))
+    except (httpx.HTTPError, ValueError):
+        pass
+    for code in codes:
+        c = ac.get(code)
+        if not c:
+            continue
+        sig: dict = {"name": c.name, "elections": cd.elections(code, today)}
+        sig["elections"] = [{"label": d["label"] if len(e["dates"]) > 1 else e["label"], "date": d["date"],
+                             "page": e.get("page")} for e in sig["elections"] for d in e["dates"] if not d["past"]]
+        p = policy.get(code)
+        if p and p.get("date") and p.get("date_kind") != "observation":
+            try:
+                recent = (today - date.fromisoformat(str(p["date"])[:10])).days <= 14
+            except ValueError:
+                recent = False
+            sig["policy"] = {"rate": p.get("rate"), "date": str(p["date"])[:10], "source": p.get("source"),
+                             "source_url": p.get("source_url"), "recent": recent}
+        now_rate, then_rate = fx_now.get(c.currency), fx_then.get(c.currency)
+        if isinstance(now_rate, (int, float)) and isinstance(then_rate, (int, float)) and then_rate > 0 \
+                and fx_now.get("_date") != fx_then.get("_date"):
+            sig["fx"] = {"currency": c.currency, "change": round(now_rate / then_rate - 1, 4), "per_usd": now_rate,
+                         "date": fx_now.get("_date")}
+        try:
+            r = await run_in_threadpool(_rpc_sync, "list_country_risk_snapshots", {"p_iso2": code, "p_limit": 2})
+            snaps = r.json() if r.status_code == 200 else []
+            if isinstance(snaps, list) and len(snaps) == 2:
+                sig["risk"] = {"tier": snaps[0].get("tier"), "previous_tier": snaps[1].get("tier"),
+                               "date": snaps[0].get("snapshot_date")}
+        except (httpx.HTTPError, ValueError):
+            pass
+        out[code] = sig
+    return out
+
+
+async def _country_parts(codes: list[str]) -> tuple[dict, list[dict], list[dict], list[dict], list[dict]]:
+    """Shared inputs for country dashboards: the markets overview, policy rates, Treasury bill blocks and stablecoin
+    rates. Each part falls back to empty, so one missing source never blanks a page."""
+    from src.engines import country_risk, instruments, markets
+    try:
+        snap = await run_in_threadpool(_market_snapshot)
+    except HTTPException:
+        snap = {}
+    overview = markets.overview(snap) if snap else {}
+    try:
+        blocks = await run_in_threadpool(_instruments)
+    except Exception:                            # noqa: BLE001
+        blocks = {}
+    policy = instruments.policy_rates(country_risk.load_current_signals_snapshot(), blocks.get("policy_rates"))
+    tbills = [b for k, b in blocks.items() if k.startswith("tbill_") and b.get("rows")]
+    try:
+        coins = (await markets_stablecoins()).get("rates") or []
+    except Exception:                            # noqa: BLE001
+        coins = []
+    return snap, [overview], policy, tbills, coins
+
+
+async def _country_dashboard(c: ac.Country, ds: list[dict], parts: tuple) -> dict:
+    from src.engines import country_dashboard as cd
+    from src.engines import investor_origin, markets
+    snap, (overview,), policy, tbills, coins = parts
+    today = datetime.now(timezone.utc).date()
+    investor_origin.use_homes(await investor_homes())
+    exchange = next((t["exchange"] for t in overview.get("exchanges") or [] if t.get("country") == c.iso2), None)
+    largest = (markets.screener(snap, exchange=exchange, sort="mcap", limit=10).get("rows") or []) if exchange and snap else []
+    outlook = await run_in_threadpool(cd.imf_outlook, c.iso3, today)
+    return {
+        "market": cd.market_block(c.iso2, overview, largest),
+        "rates": cd.rates_block(c.iso2, policy, tbills, coins),
+        "investor_origin": cd.investor_origin(c.iso2, ds, today),
+        "benchmarks": cd.benchmarks(c.iso2, ds, today),
+        "elections": cd.elections(c.iso2, today),
+        "outlook": outlook,
+    }
+
+
+@router.get("/api/countries/{code}/dashboard")
+async def country_dashboard_view(code: str) -> dict:
+    """The country page's live blocks: market, rates and currency, investor origin, benchmarks, elections, outlook."""
+    c = _country_or_404(code)
+    return await _country_dashboard(c, deals(), await _country_parts([c.iso2]))
 
 
 @router.get("/api/currencies")
@@ -3140,6 +3268,9 @@ async def cron_ingest(
     watchlists = hooks.json() if hooks.status_code == 200 and not month else []
     price_quotes, price_venues = (await run_in_threadpool(_daily_quotes)
                                   if any(w.get("price_move_pct") for w in watchlists) else ({}, {}))
+    followed = sorted({c.upper() for w in watchlists for c in (w.get("countries") or []) if isinstance(c, str)})
+    country_sig = await _country_signals(followed) if followed else {}
+    signal_day = datetime.now(timezone.utc).date().isoformat()
     # Historical backfills populate the database silently; never send stale alerts.
     for wl in watchlists:
         if not watch.delivery_due(wl.get("delivery_frequency", "daily"), last_delivered_at=wl.get("last_delivered_at")):
@@ -3159,7 +3290,7 @@ async def cron_ingest(
         candidates_alerts = watch.matches(
             wl, new_events, list(merged.values()),
             since=(date.today() - timedelta(days=90)).isoformat(),
-        ) + watch.price_moves(wl, price_quotes, price_venues)
+        ) + watch.price_moves(wl, price_quotes, price_venues) + watch.country_signals(wl, country_sig, signal_day)
         if not candidates_alerts:
             continue
         candidates = [

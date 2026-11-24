@@ -26,6 +26,8 @@ const ENDPOINTS: [string, string, string][] = [
   ["/investors/{name}", "An investor's profile, portfolio and fund lifecycle.", ""],
   ["/countries", "Deal and event activity and risk for all 54 African countries.", ""],
   ["/countries/{code}", "One country in detail (ISO code, e.g. NG, KE, ZA).", ""],
+  ["/countries/{code}/dashboard", "The country today: stock market and largest listings, policy rate, Treasury bills, official and stablecoin dollar rates, where its investors come from, its rank and deal sizes against Africa, elections and the IMF outlook.", ""],
+  ["/countries/compare", "Two to four countries side by side on all of the above.", "codes (e.g. NG,KE,ZA)"],
   ["/markets/overview", "Exchanges, movers, most traded and currency moves.", ""],
   ["/markets/screener", "Listed shares across African exchanges, filtered and sorted.", "exchange, sector, min_mcap_usd, q, sort, include_stale, limit (≤200), offset"],
   ["/markets/search", "Find a listing by company name or ticker.", "q (required), limit (≤25)"],

@@ -388,6 +388,53 @@ def price_moves(wl: dict, quotes: dict[str, list[dict]], exchanges: dict[str, di
     return sorted(out.values(), key=lambda a: abs(a["change_pct"]), reverse=True)
 
 
+# ── Country signals ─────────────────────────────────────────────────────────────
+
+FX_MOVE_ALERT = 0.05          # a currency 5% weaker or stronger against the dollar within a week
+ELECTION_NOTICE_DAYS = 7
+
+
+def country_signals(wl: dict, signals: dict[str, dict], today: str) -> list[dict]:
+    """Alerts for followed countries beyond deals and events: a change of risk tier, a new policy-rate decision, a
+    sharp weekly currency move, and an election within a week. `signals` maps ISO codes to:
+      risk: {"tier", "previous_tier", "date"}; policy: {"rate", "date", "source"};
+      fx: {"currency", "change", "per_usd", "date"}; elections: [{"label", "date"}].
+    Each alert's id names the fact (country, signal and its date or value), so each is sent once."""
+    out = []
+    for code in [c for c in wl.get("countries") or [] if isinstance(c, str)]:
+        sig = signals.get(code.upper()) or {}
+        name = sig.get("name") or code.upper()
+        risk = sig.get("risk") or {}
+        if risk.get("tier") and risk.get("previous_tier") and risk["tier"] != risk["previous_tier"]:
+            out.append({"kind": "country", "id": f"{code}:risk:{risk.get('date')}:{risk['tier']}", "day": risk.get("date"),
+                        "title": f"{name}: country risk moved from {risk['previous_tier']} to {risk['tier']}",
+                        "url": f"https://deal-intelligence.app/countries/{code.upper()}", "publisher": "Deal Intelligence",
+                        "why": [f"country: {code.upper()}", "risk tier changed"]})
+        policy = sig.get("policy") or {}
+        if policy.get("rate") is not None and policy.get("date") and policy.get("recent"):
+            out.append({"kind": "country", "id": f"{code}:policy:{policy['date']}:{policy['rate']}", "day": policy["date"],
+                        "title": f"{name}: policy rate {policy['rate']:g}% ({policy.get('source') or 'central bank'})",
+                        "url": policy.get("source_url"), "publisher": policy.get("source") or "Central bank",
+                        "why": [f"country: {code.upper()}", "policy-rate decision"]})
+        fx = sig.get("fx") or {}
+        if isinstance(fx.get("change"), (int, float)) and abs(fx["change"]) >= FX_MOVE_ALERT:
+            way = "weakened" if fx["change"] > 0 else "strengthened"
+            out.append({"kind": "country", "id": f"{code}:fx:{fx.get('date')}", "day": fx.get("date"),
+                        "title": f"{name}: the {fx.get('currency')} {way} {abs(fx['change']) * 100:.1f}% against the dollar this week",
+                        "url": f"https://deal-intelligence.app/countries/{code.upper()}", "publisher": "Deal Intelligence",
+                        "why": [f"country: {code.upper()}", f"currency moved {abs(fx['change']) * 100:.1f}% in a week"]})
+        for e in sig.get("elections") or []:
+            days = (datetime.fromisoformat(e["date"]) - datetime.fromisoformat(today)).days
+            if 0 <= days <= ELECTION_NOTICE_DAYS:
+                out.append({"kind": "country", "id": f"{code}:election:{e['date']}", "day": today,
+                            "title": f"{name}: {e['label']} in {days} day{'s' if days != 1 else ''} ({e['date']})",
+                            "url": e.get("page") and f"https://deal-intelligence.app{e['page']}", "publisher": "Deal Intelligence",
+                            "why": [f"country: {code.upper()}", "election this week"]})
+    for a in out:
+        a["facts_line"] = " · ".join(b for b in ("Country signal", a.get("day"), a.get("publisher")) if b)
+    return out
+
+
 def quality_metrics(alerts: list[dict]) -> dict:
     """Descriptive coverage metrics, not estimates of precision or factual accuracy."""
     count = len(alerts)
@@ -433,8 +480,8 @@ def rss(wl: dict, alerts: list[dict], link: str) -> str:
 
 def alert_fingerprint(alert: dict) -> str:
     """Fingerprint meaningful alert facts so material corrections can be re-alerted."""
-    if alert.get("kind") == "price":            # one alert per listing per trading day; a revised close is not news
-        return hashlib.sha256(f"price|{alert.get('id')}".encode("utf-8")).hexdigest()
+    if alert.get("kind") in ("price", "country"):   # the id already names the fact; sent once
+        return hashlib.sha256(f"{alert.get('kind')}|{alert.get('id')}".encode("utf-8")).hexdigest()
     source_count = alert.get("source_count")
     evidence_bucket = None
     if isinstance(source_count, int):

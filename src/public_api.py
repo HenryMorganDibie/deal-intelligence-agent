@@ -263,10 +263,25 @@ async def countries(request: Request, response: Response) -> dict:
     return await _call(hm.countries)
 
 
+@router.get("/countries/compare")
+async def countries_compare(request: Request, response: Response,
+                            codes: str = Query(..., max_length=40, description="Two to four ISO codes or names, comma separated")) -> dict:
+    """Two to four countries side by side: risk, deal flow, investor origin, market, rates, currency, IMF outlook."""
+    await authorize(request, response)
+    return await _call(lambda: hm.countries_compare(",".join(_country(c) or c for c in codes.split(","))))
+
+
 @router.get("/countries/{code}")
 async def country(code: str, request: Request, response: Response) -> dict:
     await authorize(request, response)
     return await _call(lambda: hm.country(_country(code)))
+
+
+@router.get("/countries/{code}/dashboard")
+async def country_dashboard(code: str, request: Request, response: Response) -> dict:
+    """The country's market, rates and currency, investor origin, benchmarks against Africa, elections and IMF outlook."""
+    await authorize(request, response)
+    return await _call(lambda: hm.country_dashboard_view(_country(code)))
 
 
 @router.get("/elections")

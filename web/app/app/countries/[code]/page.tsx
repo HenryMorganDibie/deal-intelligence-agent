@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Container } from "../../../../components/primitives";
 import { DealRows, ErrorNote, Loading, PageHeader, Pagination, Pill, Stat, Table, Td, num, words } from "../../../../components/app/ui";
 import { ResultFeedback } from "../../../../components/app/ResultFeedback";
+import { CountryDashboard } from "../../../../components/app/CountryDashboard";
 import { ApiError } from "../../../../lib/api";
 import { get, post, type CountryRisk, type CoverageRow, type CurrencyRisk, type Deal, type Event, type EvidenceItem, type InvestorRow } from "../../../../lib/market";
 
@@ -239,6 +240,12 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         <Link href={`/deals?country=${c.iso2}`} className="btn btn-ghost">
           Deals in {c.name}
         </Link>
+        <Link href={`/countries/compare?codes=${c.iso2}`} className="btn btn-ghost">
+          Compare with other countries
+        </Link>
+        <Link href={`/watchlists?country=${c.iso2}`} className="btn btn-ghost">
+          Alerts for {c.name}
+        </Link>
       </div>
       {error && <ErrorNote message={error} />}
       {report && (
@@ -251,6 +258,8 @@ export default function CountryPage({ params }: { params: { code: string } }) {
         </>
       )}
 
+
+      <CountryDashboard code={c.iso2} name={c.name} />
 
       <h2 className="eyebrow mt-12">Market activity{profile?.first_year ? ` since ${profile.first_year}` : ""}</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[color:var(--muted)]">

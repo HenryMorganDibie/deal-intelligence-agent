@@ -90,6 +90,16 @@ export default function WatchlistsPage() {
     if (/^#(elections|election-alerts-title)$/.test(window.location.hash)) setTab("elections");
     if (rows.length === 0 && !/^#elections/.test(window.location.hash)) setFormOpen(true);
     const params = new URLSearchParams(window.location.search);
+    const followCountry = (params.get("country") || "").toUpperCase();
+    if (/^[A-Z]{2}$/.test(followCountry)) {
+      // "Alerts for this country" from a country page: deals, events and country signals (risk tier, policy rate,
+      // a sharp currency move, an election within a week), as a local draft sent only if the form is submitted.
+      setFormOpen(true);
+      setName(`${followCountry}: deals, events and country signals`);
+      setCountries(followCountry);
+      setPrefillNotice(`${followCountry} was added to this draft. Alerts cover its deals and corporate events, plus a change of risk tier, a new policy-rate decision, a currency move of 5% or more in a week, and an election within a week.`);
+      return;
+    }
     const follow = params.get("follow");
     if (follow) {
       // "Follow this investor" from a profile: a local draft, sent only if the form is submitted.

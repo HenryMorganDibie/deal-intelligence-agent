@@ -93,6 +93,9 @@ export default function CountriesPage() {
       <PageHeader eyebrow="Market intelligence · 54 markets" title="Explore African markets with evidence, not guesswork.">
         Compare country risk, deal and event activity, currencies and data coverage. Risk is a transparent 0–100 analytical score built from available governance and macroeconomic indicators, not a prediction of returns. {asOf ? `Dataset retrieved ${asOf}.` : ""}
       </PageHeader>
+      <div className="mb-4">
+        <Link href="/countries/compare" className="btn btn-ghost">Compare countries side by side</Link>
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="panel p-4">

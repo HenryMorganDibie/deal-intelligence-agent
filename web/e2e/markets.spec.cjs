@@ -560,3 +560,21 @@ test("admin can set an investor's home country from the review list", async ({ p
   await page.getByRole("tab", { name: /Found in articles/ }).click();
   await expect(page.getByText("Futureview, a Lagos-based asset manager, led.", { exact: false })).toBeVisible();
 });
+
+test("countries can be compared side by side: choosing and removing countries", async ({ page }) => {
+  // The test server has no API, so this checks the page's own behaviour; the comparison data is covered server-side.
+  await page.goto("/countries/compare?codes=NG,KE");
+  await expect(page.getByRole("heading", { name: "Compare countries" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Remove NG" })).toBeVisible();
+  await page.getByLabel("Add a country").selectOption("ZA");
+  await expect(page.getByRole("button", { name: "Remove ZA" })).toBeVisible();
+  await expect(page).toHaveURL(/codes=NG,KE,ZA/);
+  await page.getByRole("button", { name: "Remove KE" }).click();
+  await page.getByRole("button", { name: "Remove ZA" }).click();
+  await expect(page.getByText("Choose at least two countries.")).toBeVisible();
+});
+
+test("a country's alerts link opens a ready watchlist draft", async ({ page }) => {
+  await page.goto("/watchlists?country=ke");
+  await expect(page.getByText(/KE was added to this draft/)).toBeVisible();
+});
