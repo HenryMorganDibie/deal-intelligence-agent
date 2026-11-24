@@ -53,6 +53,10 @@ export default async function LatestDeals() {
         <p className="mt-4 text-[1rem] leading-relaxed text-[color:var(--muted)]">
           Funding rounds, debt, acquisitions, exits and fund closes across all 54 countries, newest first. Each links to its sources.
         </p>
+        <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border hairline px-4 py-3 text-sm">
+          <span className="text-[color:var(--muted)]">This is the public list. Search, filters, briefs, alerts and the rest of the app open after you sign in.</span>
+          <Link href="/account?next=%2Fdeals" className="btn btn-primary h-9 px-3.5 text-sm">Open the app</Link>
+        </div>
         <ul className="mt-8 divide-y divide-white/[0.06] border-y hairline">
           {deals.map((d) => (
             <li key={d.id}>

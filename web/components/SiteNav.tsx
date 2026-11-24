@@ -17,9 +17,10 @@ const NAV = [
 ];
 
 export function SiteNav() {
-  // Open app takes users to Deals; the dedicated hero CTA opens Briefs.
-  // Keep public navigation independent of account and subscription lookups.
-  const appHref = "/deals";
+  // Open app goes through sign-in to the app's Deals page: a signed-in visitor is forwarded straight on, and a
+  // signed-out one signs in first instead of landing on the public deals list, which looks like the app but is not.
+  // Public navigation stays independent of account and subscription lookups.
+  const appHref = "/account?next=%2Fdeals";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
