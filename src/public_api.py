@@ -573,6 +573,16 @@ async def election_accreditation(request: Request, response: Response, election:
     return await _call(run)
 
 
+async def _granted_election_alerts(owner: str) -> Optional[int]:
+    """The election-alert allowance the owner granted this account, or None to follow its plan."""
+    try:
+        from src import plans
+        value = (await plans.limits(owner, fresh=True)).get("election_alerts_max")
+        return int(value) if value is not None else None
+    except Exception:                            # noqa: BLE001  the plan's allowance still applies
+        return None
+
+
 class ElectionAlertBody(BaseModel):
     name: str = Field("Election alert", max_length=80)
     webhook_url: Optional[str] = Field(None, max_length=500)
@@ -587,9 +597,11 @@ async def create_election_alert(body: ElectionAlertBody, request: Request, respo
     parties, topics; white_label (true) sends messages without the product's name or links."""
     from src import election_alerts
     owner, plan = await _account(request, response)
+    granted = await _granted_election_alerts(owner)
 
     async def run():
-        return await run_in_threadpool(election_alerts.create, owner, body.name, body.webhook_url, body.filters, plan, body.email)
+        return await run_in_threadpool(election_alerts.create, owner, body.name, body.webhook_url, body.filters, plan,
+                                       body.email, granted)
     return await _call(run)
 
 

@@ -46,6 +46,20 @@ function when(value: string | null): string {
 }
 
 /** Who has an account and who is using the app. Activity is recorded at most once per 30 minutes per account. */
+type Grant = {
+  email: string; monthly_requests: number | null; ai_monthly: number | null; alerts_max: number | null;
+  election_alerts_max: number | null; max_keys: number | null; exports: boolean | null; expires_at: string | null;
+  note: string | null; active: boolean;
+};
+
+const GRANT_FIELDS: [keyof Grant & string, string, string][] = [
+  ["monthly_requests", "API requests a month", "Free 30 · Pro 3,000 · Team 15,000 · Institutional 100,000"],
+  ["ai_monthly", "Briefs and research runs a month", "Free 30 · Pro 100 · Team 500 · Institutional 2,000"],
+  ["alerts_max", "Deal and event alerts (email, Slack, Teams, webhook)", "Free 3 · Pro 100 · Team 500 · Institutional 2,000"],
+  ["election_alerts_max", "Election alerts at once", "Free 0 · Pro 2 · Team 5 · Institutional 25"],
+  ["max_keys", "API keys", "Free 2 · Pro 5 · Team 10 · Institutional 25"],
+];
+
 type Trouble = {
   email: string | null; attempts: number; first_at: string; last_at: string; actions: string[];
   last_reason: string; reasons: string[]; has_account: boolean; confirmed: boolean; signed_in_since: boolean;
@@ -63,6 +77,37 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
   const [trouble, setTrouble] = useState<Trouble[] | null>(null);
   const [troubleError, setTroubleError] = useState("");
   const [helping, setHelping] = useState<string | null>(null);
+  const [grants, setGrants] = useState<Record<string, Grant>>({});
+  const [grantsError, setGrantsError] = useState("");
+  const [editing, setEditing] = useState<string | null>(null);
+
+  async function loadGrants() {
+    try {
+      const r = await fetch(apiUrl("/api/admin/grants"), {
+        method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ key: adminKey }),
+      });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error((body as { detail?: string }).detail || "Grants are unavailable.");
+      setGrants(Object.fromEntries((body as Grant[]).map((g) => [g.email.toLowerCase(), g])));
+      setGrantsError("");
+    } catch (e) {
+      setGrantsError((e as Error).message);
+    }
+  }
+  useEffect(() => { if (adminKey) void loadGrants(); }, [adminKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function saveGrant(email: string, payload: { grant?: Record<string, unknown>; expires_at?: string; note?: string; clear?: boolean }) {
+    const r = await fetch(apiUrl("/api/admin/grants/set"), {
+      method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
+      body: JSON.stringify({ key: adminKey, email, ...payload }),
+    });
+    const body = (await r.json().catch(() => ({}))) as { detail?: string };
+    if (!r.ok) return body.detail || "The limits could not be saved.";
+    setPlanNote({ ok: true, text: payload.clear ? `${email} is back on its plan's limits.` : `Custom limits saved for ${email}.` });
+    setEditing(null);
+    await loadGrants();
+    return null;
+  }
 
   /** Send a password-reset link or the confirmation email again, through the site's own sender. */
   async function help(email: string, action: "reset" | "confirm") {
@@ -277,6 +322,11 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
                       <option key={p.id} value={p.id}>{p.label}</option>
                     ))}
                   </select>
+                  {grants[a.email.toLowerCase()]?.active && (
+                    <div className="mt-1 text-[0.75rem] text-verified">
+                      Custom limits{grants[a.email.toLowerCase()].expires_at ? ` until ${grants[a.email.toLowerCase()].expires_at!.slice(0, 10)}` : ""}
+                    </div>
+                  )}
                   <div className="mt-1 whitespace-nowrap text-[0.75rem] text-[color:var(--muted)]">
                     {(a.api_used ?? 0).toLocaleString("en-US")} API calls this month{a.api_keys ? ` · ${a.api_keys} key${a.api_keys === 1 ? "" : "s"}` : ""}
                   </div>
@@ -294,6 +344,8 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
                     <button type="button" disabled={helping !== null} onClick={() => help(a.email, "confirm")}
                       className="mr-1.5 rounded-md border hairline px-2 py-1 text-[0.75rem] hover:bg-white/[0.06]">Resend confirmation</button>
                   )}
+                  <button type="button" onClick={() => setEditing(a.email)} title="Give this account its own limits over its plan"
+                    className="mr-1.5 rounded-md border hairline px-2 py-1 text-[0.75rem] hover:bg-white/[0.06]">Limits</button>
                   <button type="button" disabled={helping !== null} onClick={() => help(a.email, "reset")}
                     title="Email this person a link to set a new password"
                     className="mr-1.5 rounded-md border hairline px-2 py-1 text-[0.75rem] hover:bg-white/[0.06]">Send reset link</button>
@@ -318,6 +370,12 @@ export function AccountsPanel({ adminKey, days }: { adminKey: string; days: numb
         Activity is recorded from this release onward, so earlier use shows as &ldquo;never&rdquo;. Email addresses are shown
         only here, to you, and are never cached.
       </p>
+
+      {grantsError && <p className="mt-3 text-sm text-risk">{grantsError}</p>}
+      {editing && (
+        <GrantDialog email={editing} plan={data.accounts.find((x) => x.email === editing)?.plan ?? "free"}
+          current={grants[editing.toLowerCase()]} onCancel={() => setEditing(null)} onSave={(p) => saveGrant(editing, p)} />
+      )}
 
       <h3 className="mt-8 font-semibold">Sign-in trouble</h3>
       <p className="mt-1 text-[0.8125rem] text-[color:var(--muted)]">
@@ -462,6 +520,85 @@ function ModerationDialog({ pending, onCancel, onConfirm }: {
             className={`rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-50 ${kind === "reinstate" ? "bg-verified text-black" : "bg-risk text-white"}`}>
             {busy ? "Working…" : kind === "suspend" ? "Suspend account" : kind === "reinstate" ? "Reinstate account" : "Delete permanently"}
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+/** One account's own limits over its plan. An empty box follows the plan; an end date returns it to the plan. */
+function GrantDialog({ email, plan, current, onCancel, onSave }: {
+  email: string; plan: string; current?: Grant;
+  onCancel: () => void;
+  onSave: (p: { grant?: Record<string, unknown>; expires_at?: string; note?: string; clear?: boolean }) => Promise<string | null>;
+}) {
+  const [values, setValues] = useState<Record<string, string>>(() => Object.fromEntries(GRANT_FIELDS.map(([k]) => {
+    const v = current?.[k];
+    return [k, v === null || v === undefined ? "" : String(v)];
+  })));
+  const [exportsChoice, setExportsChoice] = useState(current?.exports === true ? "on" : current?.exports === false ? "off" : "plan");
+  const [expires, setExpires] = useState(current?.expires_at?.slice(0, 10) ?? "");
+  const [note, setNote] = useState(current?.note ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function save(clear = false) {
+    setBusy(true); setError("");
+    const grant: Record<string, unknown> = Object.fromEntries(Object.entries(values).filter(([, v]) => v.trim() !== "").map(([k, v]) => [k, v.trim()]));
+    if (exportsChoice !== "plan") grant.exports = exportsChoice === "on";
+    const problem = await onSave(clear ? { clear: true } : { grant, expires_at: expires, note });
+    setBusy(false);
+    if (problem) setError(problem);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="grant-title" className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border hairline bg-[color:var(--bg)] p-6 shadow-2xl">
+        <h3 id="grant-title" className="text-lg font-semibold">Limits for {email}</h3>
+        <p className="mt-1 text-sm text-[color:var(--muted)]">
+          On the {plan} plan. Fill only what should differ from the plan; an empty box follows the plan. Applies straight away.
+        </p>
+        <div className="mt-4 space-y-3">
+          {GRANT_FIELDS.map(([key, label, hint]) => (
+            <label key={key} className="block text-sm">
+              <span className="font-medium">{label}</span>
+              <input inputMode="numeric" value={values[key]} placeholder="Plan default"
+                onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value.replace(/[^0-9]/g, "") }))}
+                className="mt-1 w-full rounded-lg border hairline bg-transparent px-3 py-2" aria-label={label} />
+              <span className="text-[0.75rem] text-[color:var(--dim)]">{hint}</span>
+            </label>
+          ))}
+          <label className="block text-sm">
+            <span className="font-medium">CSV export</span>
+            <select value={exportsChoice} onChange={(e) => setExportsChoice(e.target.value)} aria-label="CSV export"
+              className="mt-1 w-full rounded-lg border hairline bg-transparent px-3 py-2">
+              <option value="plan">Plan default</option>
+              <option value="on">Allowed</option>
+              <option value="off">Not allowed</option>
+            </select>
+          </label>
+          <label className="block text-sm">
+            <span className="font-medium">Ends on (optional)</span>
+            <input type="date" value={expires} onChange={(e) => setExpires(e.target.value)} aria-label="Ends on"
+              className="mt-1 w-full rounded-lg border hairline bg-transparent px-3 py-2" />
+            <span className="text-[0.75rem] text-[color:var(--dim)]">From this date the account is back on its plan&apos;s limits.</span>
+          </label>
+          <label className="block text-sm">
+            <span className="font-medium">Note (only you see it)</span>
+            <input value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Boardlot pilot, two weeks"
+              aria-label="Note" className="mt-1 w-full rounded-lg border hairline bg-transparent px-3 py-2" />
+          </label>
+        </div>
+        {error && <p role="alert" className="mt-3 text-sm text-risk">{error}</p>}
+        <div className="mt-5 flex flex-wrap justify-end gap-2">
+          {current && (
+            <button type="button" disabled={busy} onClick={() => save(true)} className="mr-auto rounded-md px-3 py-2 text-sm text-[color:var(--muted)] hover:text-risk">
+              Back to plan limits
+            </button>
+          )}
+          <button type="button" onClick={onCancel} className="btn btn-ghost">Cancel</button>
+          <button type="button" disabled={busy} onClick={() => save(false)} className="btn btn-primary">{busy ? "Saving…" : "Save limits"}</button>
         </div>
       </div>
     </div>

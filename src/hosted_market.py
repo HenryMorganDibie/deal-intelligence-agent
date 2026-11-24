@@ -1936,6 +1936,69 @@ async def admin_moderation_log(request: Request) -> Response:
     return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
 
 
+_GRANT_LIMITS = {"monthly_requests": 10_000_000, "ai_monthly": 100_000, "alerts_max": 10_000,
+                 "election_alerts_max": 1_000, "max_keys": 100}
+
+
+@router.post("/api/admin/grants")
+async def admin_grants(request: Request) -> Response:
+    """Every account grant (extra or reduced limits over the plan), with its email; needs DEAL_INTEL_ADMIN_KEY."""
+    await _admin_body(request)
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_grants", {})
+    if not r.is_success:
+        log.error("admin_grants failed: %s %s", r.status_code, r.text[:300])
+        missing = r.status_code == 404 or "admin_grants" in r.text
+        raise HTTPException(status_code=503 if missing else 502,
+                            detail="Grants are not set up yet: run the account_grants migration." if missing
+                            else "Grants are unavailable.")
+    return Response(json.dumps(r.json()), media_type="application/json", headers={"Cache-Control": "no-store, private"})
+
+
+@router.post("/api/admin/grants/set")
+async def admin_set_grant(request: Request) -> dict:
+    """Give one account its own limits over its plan, or clear them; needs DEAL_INTEL_ADMIN_KEY. A limit left empty
+    follows the plan; expires_at (YYYY-MM-DD) ends the grant at the start of that day, UTC."""
+    body = await _admin_body(request)
+    email = str(body.get("email") or "").strip().lower()
+    if not _EMAIL_RE.fullmatch(email):
+        raise HTTPException(status_code=422, detail="Give the account's email address.")
+    clear = body.get("clear") is True
+    grant: dict = {}
+    if not clear:
+        raw = body.get("grant") if isinstance(body.get("grant"), dict) else {}
+        for field, cap in _GRANT_LIMITS.items():
+            value = raw.get(field)
+            if value in (None, ""):
+                continue
+            if isinstance(value, bool) or not isinstance(value, (int, str)) or not str(value).isdigit() or int(value) > cap:
+                raise HTTPException(status_code=422, detail=f"{field.replace('_', ' ')} must be a whole number up to {cap:,}.")
+            grant[field] = int(value)
+        if raw.get("exports") in (True, False):
+            grant["exports"] = raw["exports"]
+        if not grant:
+            raise HTTPException(status_code=422, detail="Set at least one limit, or clear the grant.")
+    expires = str(body.get("expires_at") or "").strip()
+    if expires and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", expires):
+        raise HTTPException(status_code=422, detail="The end date must be YYYY-MM-DD.")
+    note = str(body.get("note") or "").strip()[:300]
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await _rpc(client, "admin_set_grant", {"p_email": email, "p_grant": grant,
+                                                  "p_expires_at": f"{expires}T00:00:00Z" if expires else None,
+                                                  "p_note": note, "p_clear": clear})
+    if not r.is_success:
+        if "unknown_account" in r.text:
+            raise HTTPException(status_code=404, detail="No account with that email.")
+        log.error("admin_set_grant failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(status_code=502, detail="The grant could not be saved.")
+    try:
+        from src import plans as _plans
+        _plans._cache.clear()                    # the new limits apply on the next request, not after the cache ages
+    except Exception:                            # noqa: BLE001
+        pass
+    return {"email": email, "cleared": clear, "grant": grant, "expires_at": expires or None}
+
+
 SITE_URL = (os.environ.get("NEXT_PUBLIC_SITE_URL") or os.environ.get("SITE_URL") or "https://deal-intelligence.app").strip().rstrip("/")
 
 

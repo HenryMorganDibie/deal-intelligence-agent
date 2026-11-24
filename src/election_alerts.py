@@ -257,8 +257,9 @@ def deliver(stories: Iterable[dict]) -> dict:
 # ── Managing subscriptions (Institutional plan) ──
 
 def create(owner: str, name: str, webhook_url: Optional[str], filters: Optional[dict], plan: str = "institutional",
-           email: bool = False) -> dict:
-    limit = allowance(plan)
+           email: bool = False, granted: Optional[int] = None) -> dict:
+    # An owner's grant for this account replaces the plan's allowance.
+    limit = granted if granted is not None else allowance(plan)
     if limit == 0:
         raise HTTPException(403, "Election alerts start with the Pro plan.")
     url = (webhook_url or "").strip()
