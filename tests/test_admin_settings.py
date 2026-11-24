@@ -132,3 +132,17 @@ def test_seats_are_editable_with_the_plan(monkeypatch):
     client, calls = _client(monkeypatch)
     _post(client, "/api/admin/settings/plan", plan="team", fields={"seats": "8"})
     assert calls[-1][1]["p_fields"] == {"seats": 8}
+
+
+def test_country_alerts_preview(monkeypatch):
+    import src.hosted_market as hm
+
+    async def signals(codes):
+        return {"NG": {"name": "Nigeria", "policy": {"rate": 27.0, "date": "2026-11-20", "source": "CBN", "recent": True},
+                       "elections": [{"label": "Presidential", "date": "2027-01-16"}]}}
+    monkeypatch.setattr(hm, "_country_signals", signals)
+    client, _ = _client(monkeypatch)
+    r = _post(client, "/api/admin/country-alerts", codes=["ng"])
+    body = r.json()
+    assert r.status_code == 200 and body["alerts"][0]["title"].startswith("Nigeria: policy rate decision, 27%")
+    assert body["elections"] == [{"country": "NG", "label": "Presidential", "date": "2027-01-16"}]

@@ -681,9 +681,16 @@ async def _country_signals(codes: list[str]) -> dict[str, dict]:
     except Exception:                            # noqa: BLE001
         blocks = {}
     policy = {r["country"]: r for r in instruments.policy_rates(cr.load_current_signals_snapshot(), blocks.get("policy_rates"))}
-    fx_now, fx_then = {}, {}
+    fx_now, fx_then, rates_then = {}, {}, {}
     try:
         async with httpx.AsyncClient(timeout=15) as client:
+            # The policy rates stored a week ago: a decision is a change of rate, whatever date a bank's page shows.
+            r = await _rpc(client, "list_market_snapshots", {"p_kind": "instruments",
+                                                            "p_on_or_before": (today - timedelta(days=7)).isoformat()})
+            for row in (r.json() if r.status_code == 200 else []) or []:
+                if isinstance(row, dict) and row.get("scope") == "policy_rates":
+                    rates_then = {x.get("country"): x.get("rate") for x in (row.get("payload") or {}).get("rows") or []
+                                  if isinstance(x, dict)}
             for when, target in ((today, fx_now), (today - timedelta(days=7), fx_then)):
                 r = await _rpc(client, "list_market_snapshots", {"p_kind": "fx", "p_on_or_before": when.isoformat()})
                 rows = r.json() if r.status_code == 200 else []
@@ -699,13 +706,20 @@ async def _country_signals(codes: list[str]) -> dict[str, dict]:
         sig["elections"] = [{"label": d["label"] if len(e["dates"]) > 1 else e["label"], "date": d["date"],
                              "page": e.get("page")} for e in sig["elections"] for d in e["dates"] if not d["past"]]
         p = policy.get(code)
-        if p and p.get("date") and p.get("date_kind") != "observation":
-            try:
-                recent = (today - date.fromisoformat(str(p["date"])[:10])).days <= 14
-            except ValueError:
-                recent = False
-            sig["policy"] = {"rate": p.get("rate"), "date": str(p["date"])[:10], "source": p.get("source"),
-                             "source_url": p.get("source_url"), "recent": recent}
+        if p and p.get("rate") is not None and p.get("date_kind") != "observation":
+            # Only a dated decision counts as recent: "published" and "confirmed" dates are when the bank's page
+            # was dated or read, not when it decided.
+            recent = False
+            if p.get("date_kind") == "decision" and p.get("date"):
+                try:
+                    recent = (today - date.fromisoformat(str(p["date"])[:10])).days <= 14
+                except ValueError:
+                    recent = False
+            previous = rates_then.get(code)
+            sig["policy"] = {"rate": p.get("rate"), "date": str(p.get("date") or "")[:10] or None,
+                             "source": p.get("source"), "source_url": p.get("source_url"), "recent": recent,
+                             "previous": previous if isinstance(previous, (int, float)) else None,
+                             "month": today.isoformat()[:7], "today": today.isoformat()}
         now_rate, then_rate = fx_now.get(c.currency), fx_then.get(c.currency)
         if isinstance(now_rate, (int, float)) and isinstance(then_rate, (int, float)) and then_rate > 0 \
                 and fx_now.get("_date") != fx_then.get("_date"):
@@ -2225,6 +2239,25 @@ async def admin_set_source(request: Request) -> dict:
         raise _settings_unavailable(r, "admin_set_site_setting")
     source_switches._cache.clear()
     return {"name": name, "on": on, "off": sorted(off & names)}
+
+
+@router.post("/api/admin/country-alerts")
+async def admin_country_alerts(request: Request) -> Response:
+    """The country alerts that would go out today for every country (or the codes given), with the signals behind
+    them: what a watchlist following that country receives on the next daily run. Needs DEAL_INTEL_ADMIN_KEY."""
+    body = await _admin_body(request)
+    codes = [c.upper() for c in (body.get("codes") or []) if isinstance(c, str) and re.fullmatch(r"[A-Za-z]{2}", c)]
+    codes = codes or [c.iso2 for c in ac.COUNTRIES]
+    signals = await _country_signals(codes)
+    today = datetime.now(timezone.utc).date().isoformat()
+    alerts = watch.country_signals({"countries": codes}, signals, today)
+    upcoming = [{"country": code, "label": e["label"], "date": e["date"]}
+                for code, sig in signals.items() for e in sig.get("elections") or []]
+    out = {"date": today, "alerts": alerts, "countries_checked": len(signals),
+           "policy_decisions": {k: v["policy"] for k, v in signals.items() if v.get("policy")},
+           "fx_moves": {k: v["fx"] for k, v in signals.items() if v.get("fx")},
+           "elections": sorted(upcoming, key=lambda e: e["date"])}
+    return Response(json.dumps(out), media_type="application/json", headers={"Cache-Control": "no-store, private"})
 
 
 _DEAL_STAGES = ("rumoured", "announced", "completed")

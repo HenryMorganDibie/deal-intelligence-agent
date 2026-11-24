@@ -411,9 +411,19 @@ def country_signals(wl: dict, signals: dict[str, dict], today: str) -> list[dict
                         "url": f"https://deal-intelligence.app/countries/{code.upper()}", "publisher": "Deal Intelligence",
                         "why": [f"country: {code.upper()}", "risk tier changed"]})
         policy = sig.get("policy") or {}
-        if policy.get("rate") is not None and policy.get("date") and policy.get("recent"):
-            out.append({"kind": "country", "id": f"{code}:policy:{policy['date']}:{policy['rate']}", "day": policy["date"],
-                        "title": f"{name}: policy rate {policy['rate']:g}% ({policy.get('source') or 'central bank'})",
+        rate, previous = policy.get("rate"), policy.get("previous")
+        if rate is not None and previous is not None and abs(float(rate) - float(previous)) >= 0.01:
+            # The rate itself changed against a week ago: one alert per change.
+            way = "raised" if rate > previous else "cut"
+            out.append({"kind": "country", "id": f"{code}:policy:{previous:g}->{rate:g}:{policy.get('month')}",
+                        "day": policy.get("today") or policy.get("date"),
+                        "title": f"{name}: policy rate {way} from {previous:g}% to {rate:g}% ({policy.get('source') or 'central bank'})",
+                        "url": policy.get("source_url"), "publisher": policy.get("source") or "Central bank",
+                        "why": [f"country: {code.upper()}", "policy rate changed"]})
+        elif rate is not None and policy.get("date") and policy.get("recent"):
+            # A dated decision in the last fortnight, a hold included.
+            out.append({"kind": "country", "id": f"{code}:policy:{policy['date']}:{rate}", "day": policy["date"],
+                        "title": f"{name}: policy rate decision, {rate:g}% ({policy.get('source') or 'central bank'}, {policy['date']})",
                         "url": policy.get("source_url"), "publisher": policy.get("source") or "Central bank",
                         "why": [f"country: {code.upper()}", "policy-rate decision"]})
         fx = sig.get("fx") or {}

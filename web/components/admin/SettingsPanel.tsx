@@ -60,6 +60,7 @@ export function SettingsPanel({ adminKey }: { adminKey: string }) {
       {note && <p role="status" className={`text-sm ${note.ok ? "text-verified" : "text-risk"}`}>{note.text}</p>}
       <SiteSwitches site={s.site} adminKey={adminKey} act={act} />
       <PlansEditor plans={s.plans} usd={s.currencies.includes("USD")} adminKey={adminKey} act={act} />
+      <CountryAlertsPreview adminKey={adminKey} />
       <SourceSwitches adminKey={adminKey} />
       <DealFixer adminKey={adminKey} />
     </div>
@@ -349,6 +350,44 @@ function SourceSwitches({ adminKey }: { adminKey: string }) {
             ))}
           </ul>
         </>
+      )}
+    </Section>
+  );
+}
+
+type CountryAlert = { id: string; day: string | null; title: string; url: string | null };
+
+/** What country alerts go out on the next daily run, across all 54 countries, and the signals behind them. */
+function CountryAlertsPreview({ adminKey }: { adminKey: string }) {
+  const [data, setData] = useState<{ date: string; alerts: CountryAlert[]; countries_checked: number;
+    elections: { country: string; label: string; date: string }[] } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function check() {
+    setBusy(true); setError("");
+    try { setData(await post("/api/admin/country-alerts", { key: adminKey })); }
+    catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <Section title="Country alerts today"
+      about="Watchlists that follow a country receive these on the next daily run (with that country's deals and events): a change of risk tier, a policy-rate decision in the last fortnight, a currency move of 5% or more in a week, and an election within a week. Each is sent once.">
+      <button type="button" className={smallBtn} disabled={busy} onClick={check}>{busy ? "Checking 54 countries…" : "Check now"}</button>
+      {error && <p className="mt-2 text-sm text-risk">{error}</p>}
+      {data && (
+        <div className="mt-3 text-sm">
+          <p className="text-[color:var(--muted)]">{data.date} · {data.countries_checked} countries checked · {data.alerts.length} alert{data.alerts.length === 1 ? "" : "s"} due</p>
+          {data.alerts.length > 0 ? (
+            <ul className="mt-2 space-y-1">
+              {data.alerts.map((a) => <li key={a.id}>{a.url ? <a className="underline underline-offset-2" href={a.url} target="_blank" rel="noreferrer">{a.title}</a> : a.title}</li>)}
+            </ul>
+          ) : <p className="mt-2">Nothing due today.</p>}
+          {data.elections.length > 0 && (
+            <p className="mt-3 text-[0.8125rem] text-[color:var(--muted)]">Coming elections: {data.elections.slice(0, 6).map((e) => `${e.country} ${e.date}`).join(" · ")}. Each alerts followers in its final week.</p>
+          )}
+        </div>
       )}
     </Section>
   );

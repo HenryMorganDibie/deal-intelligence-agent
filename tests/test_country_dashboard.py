@@ -88,7 +88,7 @@ def test_country_alerts_fire_once_per_fact():
     alerts = watch.country_signals(wl, sig, "2026-11-24")
     titles = [a["title"] for a in alerts]
     assert "Kenya: country risk moved from elevated to high" in titles
-    assert any("policy rate 9%" in t for t in titles) and any("weakened 6.1%" in t for t in titles)
+    assert any("policy rate decision, 9%" in t for t in titles) and any("weakened 6.1%" in t for t in titles)
     assert any("General election in 5 days" in t for t in titles)
     assert all(a["kind"] == "country" and a["facts_line"].startswith("Country signal") for a in alerts)
     assert len({watch.alert_fingerprint(a) for a in alerts}) == len(alerts)
@@ -135,3 +135,17 @@ def test_imf_outlook_reads_the_saved_file_without_the_network():
     out = cd.imf_outlook("KEN", TODAY)
     assert out and out["retrieved"] and {r["indicator"] for r in out["rows"]} >= {"NGDP_RPCH", "PCPIPCH"}
     assert all(set(r["values"]) == {"2025", "2026", "2027"} for r in out["rows"])
+
+
+def test_a_policy_rate_alert_needs_a_real_change_or_a_dated_decision():
+    wl = {"countries": ["NG"]}
+    changed = {"NG": {"name": "Nigeria", "policy": {"rate": 22.5, "previous": 23.0, "date": "2026-11-24", "recent": False,
+                                                    "month": "2026-11", "today": "2026-11-24", "source": "CBN"}}}
+    alerts = watch.country_signals(wl, changed, "2026-11-24")
+    assert [a["title"] for a in alerts] == ["Nigeria: policy rate cut from 23% to 22.5% (CBN)"]
+    # The next day the page shows a new date, but the change is the same: the same alert, sent once.
+    later = {"NG": {**changed["NG"], "policy": {**changed["NG"]["policy"], "date": "2026-11-25", "today": "2026-11-25"}}}
+    assert watch.country_signals(wl, later, "2026-11-25")[0]["id"] == alerts[0]["id"]
+    # A page re-dated without a change of rate, and not a decision date, is not news.
+    same = {"NG": {"name": "Nigeria", "policy": {"rate": 23.0, "previous": 23.0, "date": "2026-11-24", "recent": False}}}
+    assert watch.country_signals(wl, same, "2026-11-24") == []
