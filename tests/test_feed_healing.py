@@ -155,3 +155,38 @@ def test_quiet_newsletter_blocked_on_its_host_falls_back_to_site_news(monkeypatc
     assert not unresolved
     url = overrides["The Big Deal"]["url"]
     assert "site%3Athebigdeal.substack.com" in url and "when%3A2d" in url
+
+
+def test_rate_limit_is_retried_once_and_then_read(monkeypatch):
+    """Google News answers 429 to a burst from a shared runner address; one retry after the wait usually succeeds."""
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return httpx.Response(429, text="slow down", headers={"retry-after": "0"})
+        return httpx.Response(200, text=rss(), headers={"content-type": "application/rss+xml"})
+    monkeypatch.setattr(fh.httpx, "AsyncClient", lambda **kw: _RealClient(transport=httpx.MockTransport(handler)))
+    overrides, _, unresolved, dormant = run(fh.heal_all({"Busy": "https://busy.example/feed/"}, {}))
+    assert overrides == {} and not unresolved and not dormant and calls["n"] == 2
+
+
+def test_outlet_still_rate_limited_after_the_retry_is_a_warning_not_a_dead_feed(monkeypatch):
+    monkeypatch.setattr(fh, "RETRY_WAIT_MAX", 0.0)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(429, text="slow down", headers={"content-type": "text/html"})
+    monkeypatch.setattr(fh.httpx, "AsyncClient", lambda **kw: _RealClient(transport=httpx.MockTransport(handler)))
+    _, _, unresolved, dormant = run(fh.heal_all({"Throttled": "https://throttled.example/feed/"}, {}))
+    assert not unresolved and dormant and "rate limited" in dormant[0]
+
+
+def test_ingestion_probe_does_not_wait_on_a_rate_limit():
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return httpx.Response(429, text="slow down")
+    client = _RealClient(transport=httpx.MockTransport(handler))
+    ok, _, reason = run(fh.probe(client, "https://x.example/feed/"))
+    assert not ok and reason.endswith("429") and calls["n"] == 1

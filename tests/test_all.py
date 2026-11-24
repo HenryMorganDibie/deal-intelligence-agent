@@ -4106,6 +4106,21 @@ class TestHostedApi:
             == [(True, -6.0, True)]
         assert [e["signal_type"] for e in truth] == ["leadership_change"]
 
+    def test_label_brief_sends_one_outcome_per_signal_type(self, monkeypatch):
+        """Two signals of one type in a brief made two rows for one (brief, signal type) key, and the upsert refused
+        the whole batch ('cannot affect row a second time'), so the brief failed every day. The stronger one is kept."""
+        import src.engines.outcome_labeller as ol
+        client, api = self._client(monkeypatch)
+        monkeypatch.setattr(ol, "fetch_events", lambda c, t, since, until: [{"date": "2026-09-01", "form": "8-K", "items": {"5.02"}}])
+        monkeypatch.setattr("src.engines.market_data._fetch_price_moves", lambda s, d: {"10d": -5.0} if s == "ACME" else {"10d": 1.0})
+        sig = lambda sev, score: {"signal_type": "leadership_change", "severity": sev,
+                                  "alpha_score": {"score": score, "expected_direction": "negative"}}
+        row = {"id": "b1", "company": "Acme", "ticker": "ACME", "created_at": "2026-08-01T09:00:00+00:00",
+               "brief": {"detected_signals": [sig("low", 20), sig("high", 60), sig("high", 40)]}}
+        _, outcomes, _ = api._label_brief(row, date(2026, 10, 14))
+        assert len(outcomes) == 1
+        assert (outcomes[0]["severity_at_detection"], outcomes[0]["alpha_score_at_detection"]) == ("high", 60)
+
 
 class TestInsiderGraph:
     XML = ("<ownershipDocument><reportingOwner><reportingOwnerId><rptOwnerCik>0001234</rptOwnerCik>"

@@ -38,7 +38,7 @@ def main() -> int:
         print(f"Saved {len(overrides)} replacement(s).")
     from src.tools.africa_tool import AFRICAN_NEWS_FEEDS
     print(f"{len(AFRICAN_NEWS_FEEDS) - len(unresolved)}/{len(AFRICAN_NEWS_FEEDS)} outlets have a working feed; "
-          f"{len(overrides)} on a replacement, {len(dormant)} dormant.")
+          f"{len(overrides)} on a replacement, {len(dormant)} dormant or rate limited.")
     return 1 if unresolved else 0
 
 

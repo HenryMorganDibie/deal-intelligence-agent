@@ -1170,7 +1170,25 @@ def _label_brief(row: dict, today: date) -> tuple[int, list[dict], list[dict]]:
         if o:
             outcomes.append(o)
     truth = ground_truth(row["company"], events, created, today) if events else []
-    return stage, outcomes, truth
+    return stage, _one_outcome_per_signal(outcomes), truth
+
+
+_SEVERITY_RANK = {"critical": 3, "high": 2, "medium": 1, "low": 0}
+
+
+def _one_outcome_per_signal(outcomes: list[dict]) -> list[dict]:
+    """A brief can carry the same signal type twice (two filings, two headlines), but outcomes are stored one per
+    (brief, signal type), and a batch with two rows for the same key fails the whole upsert. Keep the stronger:
+    higher severity, then higher alpha score, then the first seen."""
+    def strength(o: dict) -> tuple:
+        return (_SEVERITY_RANK.get(str(o.get("severity_at_detection") or "").lower(), -1),
+                o.get("alpha_score_at_detection") or 0)
+    best: dict[str, dict] = {}
+    for o in outcomes:
+        held = best.get(o.get("signal_type"))
+        if held is None or strength(o) > strength(held):
+            best[o.get("signal_type")] = o
+    return list(best.values())
 
 
 @app.get("/api/cron/label")

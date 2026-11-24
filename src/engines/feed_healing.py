@@ -126,11 +126,34 @@ def _newest(items: list[dict]) -> Optional[date]:
     return max(days) if days else None
 
 
-async def probe(client: httpx.AsyncClient, url: str, require_fresh: bool = True) -> tuple[bool, list[dict], str]:
-    """(usable, items, reason). Usable means the URL answers with feed items that are not all stale."""
+_RETRY_STATUS = {429, 502, 503, 504}
+RETRY_WAIT_MAX = 15.0
+
+
+def _retry_after(response: httpx.Response) -> float:
+    """Seconds to wait before the one retry: the server's Retry-After when it gives seconds, else 5, capped."""
+    try:
+        return min(max(float(response.headers.get("retry-after", "5")), 0.0), RETRY_WAIT_MAX)
+    except ValueError:
+        return 5.0
+
+
+def is_throttled(reason: str) -> bool:
+    """A refusal that says 'not now' rather than 'gone': rate limited or briefly unavailable."""
+    return reason.split(" ")[-1] in {str(c) for c in _RETRY_STATUS}
+
+
+async def probe(client: httpx.AsyncClient, url: str, require_fresh: bool = True,
+                retry: bool = False) -> tuple[bool, list[dict], str]:
+    """(usable, items, reason). Usable means the URL answers with feed items that are not all stale. With retry, a
+    rate-limited or briefly unavailable answer is tried once more (the daily health check; ingestion does not wait)."""
     from src.engines.market_feed import parse_feed
     try:
         response = await client.get(url)
+        if retry and response.status_code in _RETRY_STATUS:
+            # Rate limited or briefly unavailable: wait as asked (capped) and try once more before judging the feed.
+            await asyncio.sleep(_retry_after(response))
+            response = await client.get(url)
         response.raise_for_status()
     except Exception as exc:  # noqa: BLE001 - any failure makes the candidate unusable
         status = getattr(getattr(exc, "response", None), "status_code", "")
@@ -219,7 +242,7 @@ async def heal_all(feeds: Optional[dict[str, str]] = None, overrides: Optional[d
 
     async def one(client: httpx.AsyncClient, name: str, preferred: str) -> None:
         async with sem:
-            ok, items, reason = await probe(client, preferred, require_fresh=not is_site_news(preferred))
+            ok, items, reason = await probe(client, preferred, require_fresh=not is_site_news(preferred), retry=True)
             if is_site_news(preferred) and not ok and reason == "no items":
                 ok, _, _ = await probe(client, preferred.replace("when%3A2d", f"when%3A{CONFIRM_WINDOW_DAYS}d"),
                                       require_fresh=False)
@@ -229,7 +252,7 @@ async def heal_all(feeds: Optional[dict[str, str]] = None, overrides: Optional[d
                 return
             saved = current.get(name)
             if saved:
-                good, _, _ = await probe(client, saved["url"], require_fresh=not is_site_news(saved["url"]))
+                good, _, _ = await probe(client, saved["url"], require_fresh=not is_site_news(saved["url"]), retry=True)
                 if good or is_site_news(saved["url"]):
                     updated[name] = saved
                     return
@@ -239,6 +262,10 @@ async def heal_all(feeds: Optional[dict[str, str]] = None, overrides: Optional[d
                 changes.append(f"{name}: {reason}; now reading {url}")
             elif reason.startswith("stale since") or reason == "no items":
                 dormant.append(f"{name}: {reason}; the outlet has published nothing recent anywhere")
+            elif is_throttled(reason):
+                # The source is up but refused this run (Google News rate-limits shared runner addresses). A
+                # temporary refusal is a warning, not a dead outlet; a feed that is really gone fails differently.
+                dormant.append(f"{name}: {reason} after a retry; rate limited this run, not dead")
             else:
                 unresolved.append(f"{name}: {reason}; no working replacement found")
 
