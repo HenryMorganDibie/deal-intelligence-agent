@@ -41,6 +41,15 @@ export function passwordProblems(password: string, ctx: PasswordContext = {}): s
   return passwordChecks(password, ctx).filter((c) => !c.ok).map((c) => c.label);
 }
 
+/** What still stops a new password being saved, as phrases for "Still needed: ...": the rules it breaks, then a
+ * retyped copy that matches. Empty when it can be submitted. Forms keep their button clickable and show this. */
+export function newPasswordGaps(password: string, confirm: string, ctx: PasswordContext = {}): string[] {
+  const problems = passwordProblems(password, ctx);
+  if (!password) return ["a new password"];
+  if (problems.length) return [`a password that meets every rule (${problems.join("; ").toLowerCase()})`];
+  return password === confirm ? [] : ["the same password retyped"];
+}
+
 /** 0 (very weak) to 4 (very strong): the rules passed, then length beyond the minimum and character variety. */
 export function passwordStrength(password: string, ctx: PasswordContext = {}): { score: 0 | 1 | 2 | 3 | 4; label: string } {
   if (!password) return { score: 0, label: "" };

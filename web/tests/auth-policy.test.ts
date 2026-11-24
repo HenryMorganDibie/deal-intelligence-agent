@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import * as assert from "node:assert/strict";
-import { displayNameProblem, passwordProblems, passwordStrength, usernameProblem } from "../lib/password-policy";
+import { displayNameProblem, newPasswordGaps, passwordProblems, passwordStrength, usernameProblem } from "../lib/password-policy";
 import { safeNext } from "../lib/safe-next";
 
 test("a strong password passes every rule", () => {
@@ -42,4 +42,11 @@ test("return paths stay on this site", () => {
   for (const bad of ["https://evil.example", "//evil.example", "/\\evil.example", "/api/data/me", "javascript:alert(1)", "", null]) {
     assert.equal(safeNext(bad), "/", String(bad));
   }
+});
+
+test("new-password gaps name what is missing, in order", () => {
+  assert.deepEqual(newPasswordGaps("", ""), ["a new password"]);
+  assert.match(newPasswordGaps("Kettle-Nairobi-91!", "Kettle-Nairobi-91!")[0], /lagos, kenya/);
+  assert.deepEqual(newPasswordGaps("Kettle-Harbour-91!", "Kettle-Harbour-91?"), ["the same password retyped"]);
+  assert.deepEqual(newPasswordGaps("Kettle-Harbour-91!", "Kettle-Harbour-91!"), []);
 });

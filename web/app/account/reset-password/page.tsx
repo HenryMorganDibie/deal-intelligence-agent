@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Container } from "../../../components/primitives";
 import { AuthCard, MatchHint, Notice, PasswordInput, PasswordStrength, authAction } from "../../../components/auth/AuthUi";
-import { passwordProblems } from "../../../lib/password-policy";
+import { newPasswordGaps } from "../../../lib/password-policy";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -15,12 +15,14 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const valid = passwordProblems(password).length === 0 && password === confirmation;
+  const [showGaps, setShowGaps] = useState(false);
+  const gaps = newPasswordGaps(password, confirmation);
+  const valid = gaps.length === 0;
 
   async function updatePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(""); setMessage("");
-    if (!valid) { setError("The password must meet every rule, and both entries must match."); return; }
+    if (!valid) { setShowGaps(true); return; }
     setBusy(true);
     const { ok, data } = await authAction({ action: "update-password", password, confirmPassword: confirmation });
     setBusy(false);
@@ -43,7 +45,8 @@ export default function ResetPasswordPage() {
             <PasswordInput id="confirm-password" label="Retype new password" value={confirmation} onChange={setConfirmation} autoComplete="new-password" />
             <MatchHint password={password} confirm={confirmation} />
           </div>
-          <button className="btn btn-primary w-full justify-center" type="submit" disabled={busy || !valid}>{busy ? "Updating…" : "Update password"}</button>
+          <button className="btn btn-primary w-full justify-center" type="submit" disabled={busy}>{busy ? "Updating…" : "Update password"}</button>
+          {showGaps && !valid && <p role="alert" className="text-sm text-risk">Still needed: {gaps.join(", ")}.</p>}
         </form>
         <p className="mt-4 text-sm"><Link className="underline underline-offset-4" href="/account">Back to sign in</Link></p>
         <Notice error={error} message={message} />

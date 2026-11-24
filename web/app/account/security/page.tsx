@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Container } from "../../../components/primitives";
 import { AuthCard, MatchHint, Notice, PasswordInput, PasswordStrength, authAction } from "../../../components/auth/AuthUi";
-import { passwordProblems } from "../../../lib/password-policy";
+import { newPasswordGaps } from "../../../lib/password-policy";
 
 type State = { user?: { email?: string | null }; profile?: { username: string } | null; mfa?: { enrolled: boolean; factorId: string | null; aal: string | null } };
 type Enrolment = { factorId: string; qrCode?: string; secret?: string };
@@ -20,6 +20,7 @@ export default function SecurityPage() {
   const [current, setCurrent] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showChangeGaps, setShowChangeGaps] = useState(false);
   const [enrolment, setEnrolment] = useState<Enrolment | null>(null);
   const [code, setCode] = useState("");
 
@@ -32,10 +33,12 @@ export default function SecurityPage() {
   useEffect(() => { void load(); }, [load]);
 
   const ctx = { email: state?.user?.email ?? undefined, username: state?.profile?.username };
-  const canChange = current.length > 0 && passwordProblems(password, ctx).length === 0 && password === confirm;
+  const changeGaps = [...(current ? [] : ["your current password"]), ...newPasswordGaps(password, confirm, ctx)];
+  const canChange = changeGaps.length === 0;
 
   async function changePassword(e: FormEvent) {
     e.preventDefault();
+    if (!canChange) { setShowChangeGaps(true); return; }
     setError(""); setMessage(""); setBusy(true);
     const { ok, data } = await authAction({ action: "change-password", currentPassword: current, password, confirmPassword: confirm });
     setBusy(false);
@@ -98,7 +101,8 @@ export default function SecurityPage() {
                   <PasswordInput id="confirm-password" label="Retype new password" value={confirm} onChange={setConfirm} autoComplete="new-password" />
                   <MatchHint password={password} confirm={confirm} />
                 </div>
-                <button className="btn btn-primary" type="submit" disabled={busy || !canChange}>{busy ? "Saving…" : "Change password"}</button>
+                <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Saving…" : "Change password"}</button>
+                {showChangeGaps && !canChange && <p role="alert" className="text-sm text-risk">Still needed: {changeGaps.join(", ")}.</p>}
               </form>
             </section>
 

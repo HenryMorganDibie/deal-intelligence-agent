@@ -308,15 +308,18 @@ test("password reset page enforces the rules and the retyped password, and submi
   });
   await page.goto("/account/reset-password");
   const update = page.getByRole("button", { name: "Update password" });
-  // A password that breaks the rules cannot be submitted.
+  const gaps = page.getByText(/^Still needed:/);
+  // A password that breaks the rules is not sent; pressing the button says why.
   await page.getByLabel("New password", { exact: true }).fill("long-test-password-123");
   await page.getByLabel("Retype new password").fill("long-test-password-123");
-  await expect(update).toBeDisabled();
-  // Nor can two entries that differ.
+  await expect(update).toBeEnabled();
+  await update.click();
+  await expect(gaps).toContainText("a password that meets every rule");
+  // Nor two entries that differ.
   await page.getByLabel("New password", { exact: true }).fill("Kettle-Harbour-91!");
   await page.getByLabel("Retype new password").fill("Kettle-Harbour-91?");
   await expect(page.getByText("Passwords do not match")).toBeVisible();
-  await expect(update).toBeDisabled();
+  await expect(gaps).toContainText("the same password retyped");
   expect(submitted).toBeUndefined();
 
   await page.getByLabel("Retype new password").fill("Kettle-Harbour-91!");
