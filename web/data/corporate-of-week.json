@@ -1,40 +1,74 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-23T22:15:20.974660+00:00",
+  "updated_at": "2026-11-24T03:59:01.507725+00:00",
   "current": {
-    "company": "Silver Bank",
-    "company_url": "/companies?name=Silver%20Bank",
-    "headline": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+    "company": "CREDITORS OF NIGER INSURANCE PLC",
+    "company_url": "/companies?name=CREDITORS%20OF%20NIGER%20INSURANCE%20PLC",
+    "headline": "PUBLIC NOTICE: ALL STAKEHOLDERS, (POLICYHOLDERS; FORMER STAFF; SHAREHOLDERS AND CREDITORS OF NIGER INSURANCE PLC (UNDER RECEIVERSHIP)",
     "deal_type": "distressed_asset",
     "amount_usd": null,
-    "country": "MU",
-    "sector": "banking",
-    "announced": "2026-11-22",
-    "score": 50.0,
+    "country": "NE",
+    "sector": "insurance",
+    "announced": "2026-11-23",
+    "score": 58.7,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
     "reasons": [
       "Corporate signal: distressed asset",
-      "Event rule confidence: 0.80",
+      "Event rule confidence: 0.95",
       "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "Defimedia",
-        "title": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
-        "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQdGlJUHZfREFqaHFKWk9wRFc2cHVrR2g3d1FtTWc2UFFKNFE4dVVjQnF2WXZlQlFsdmJrVG5haWJXaHlNSU4zdWVVYkFzcGE4Z3JIdTh5U25hRk04QzNOM3FTTG5qM2o4M210WmNMVUQ1N0I3ajNvU1Y0eFdsZTFOaFlHTVIwZUctMTNSby1iMjAwNldDaWhXQ2J4RTE2aGtfbmJ6eg?oc=5",
-        "date": "2026-11-22",
+        "publisher": "Punch Nigeria",
+        "title": "PUBLIC NOTICE: ALL STAKEHOLDERS, (POLICYHOLDERS; FORMER STAFF; SHAREHOLDERS AND CREDITORS OF NIGER INSURANCE PLC (UNDER RECEIVERSHIP)",
+        "url": "https://punchng.com/public-notice-all-stakeholders-policyholders-former-staff-shareholders-and-creditors-of-niger-insurance-plc-under-receivership/?utm_source=rss.punchng.com&utm_medium=web",
+        "date": "2026-11-23",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-11-16",
-    "period_end": "2026-11-22",
-    "selected_at": "2026-11-23T22:15:20.972866+00:00",
+    "period_start": "2026-11-17",
+    "period_end": "2026-11-23",
+    "selected_at": "2026-11-24T03:59:01.505867+00:00",
     "selection_version": 5,
     "companies": [
+      {
+        "company": "CREDITORS OF NIGER INSURANCE PLC",
+        "company_url": "/companies?name=CREDITORS%20OF%20NIGER%20INSURANCE%20PLC",
+        "headline": "PUBLIC NOTICE: ALL STAKEHOLDERS, (POLICYHOLDERS; FORMER STAFF; SHAREHOLDERS AND CREDITORS OF NIGER INSURANCE PLC (UNDER RECEIVERSHIP)",
+        "deal_type": "distressed_asset",
+        "amount_usd": null,
+        "country": "NE",
+        "sector": "insurance",
+        "announced": "2026-11-23",
+        "score": 58.7,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: distressed asset",
+          "Event rule confidence: 0.95",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Punch Nigeria",
+            "title": "PUBLIC NOTICE: ALL STAKEHOLDERS, (POLICYHOLDERS; FORMER STAFF; SHAREHOLDERS AND CREDITORS OF NIGER INSURANCE PLC (UNDER RECEIVERSHIP)",
+            "url": "https://punchng.com/public-notice-all-stakeholders-policyholders-former-staff-shareholders-and-creditors-of-niger-insurance-plc-under-receivership/?utm_source=rss.punchng.com&utm_medium=web",
+            "date": "2026-11-23",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-17",
+        "period_end": "2026-11-23",
+        "selected_at": "2026-11-24T03:59:01.505867+00:00",
+        "selection_version": 5
+      },
       {
         "company": "Silver Bank",
         "company_url": "/companies?name=Silver%20Bank",
@@ -44,7 +78,7 @@
         "country": "MU",
         "sector": "banking",
         "announced": "2026-11-22",
-        "score": 50.0,
+        "score": 48.57,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +98,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-16",
-        "period_end": "2026-11-22",
-        "selected_at": "2026-11-23T22:15:20.972866+00:00",
+        "period_start": "2026-11-17",
+        "period_end": "2026-11-23",
+        "selected_at": "2026-11-24T03:59:01.505867+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +112,7 @@
         "country": "ET",
         "sector": "banking",
         "announced": "2026-11-20",
-        "score": 51.04,
+        "score": 49.61,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-16",
-        "period_end": "2026-11-22",
-        "selected_at": "2026-11-23T22:15:20.972866+00:00",
+        "period_start": "2026-11-17",
+        "period_end": "2026-11-23",
+        "selected_at": "2026-11-24T03:59:01.505867+00:00",
         "selection_version": 5
       },
       {
@@ -112,7 +146,7 @@
         "country": "NG",
         "sector": "energy",
         "announced": "2026-11-19",
-        "score": 53.81,
+        "score": 52.39,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,9 +166,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-16",
-        "period_end": "2026-11-22",
-        "selected_at": "2026-11-23T22:15:20.972866+00:00",
+        "period_start": "2026-11-17",
+        "period_end": "2026-11-23",
+        "selected_at": "2026-11-24T03:59:01.505867+00:00",
         "selection_version": 5
       },
       {
@@ -146,7 +180,7 @@
         "country": "NG",
         "sector": "banking",
         "announced": "2026-11-19",
-        "score": 53.66,
+        "score": 52.24,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -166,50 +200,25 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-16",
-        "period_end": "2026-11-22",
-        "selected_at": "2026-11-23T22:15:20.972866+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "Family Bank",
-        "company_url": "/companies?name=Family%20Bank",
-        "headline": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
-        "deal_type": "credit_risk",
-        "amount_usd": null,
-        "country": "KE",
-        "sector": "banking",
-        "announced": "2026-11-17",
-        "score": 43.46,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: credit risk",
-          "Event rule confidence: 0.82",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "TechTrendsKE",
-            "title": "Family Bank's growing appetite for government debt delivers strong returns as bad loans rise",
-            "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNWjhrbldsSlMxdFBjME5wY2lzT0hhZm9sMzZhczNLcFpuYXFwaVJ6ZUxORjkyenM5MjRnazdqRHJNQlBUZUk4c2pJUVJpTDZuRlpBOTdKZFpKOGJ2aXl4ZEpDNGxwSkhMSnNLaEVYc0d5X0xjQnVZMjFuUVpjd1NzY2ltU2NUUQ?oc=5",
-            "date": "2026-11-17",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-16",
-        "period_end": "2026-11-22",
-        "selected_at": "2026-11-23T22:15:20.972866+00:00",
+        "period_start": "2026-11-17",
+        "period_end": "2026-11-23",
+        "selected_at": "2026-11-24T03:59:01.505867+00:00",
         "selection_version": 5
       }
     ],
     "runner_ups": [
       {
+        "company": "Family Bank",
+        "score": 42.03,
+        "reasons": [
+          "Corporate signal: credit risk",
+          "Event rule confidence: 0.82",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
         "company": "Agusto & Co",
-        "score": 43.46,
+        "score": 42.03,
         "reasons": [
           "Corporate signal: credit risk",
           "Event rule confidence: 0.82",
@@ -218,18 +227,9 @@
       },
       {
         "company": "Rössing Uranium",
-        "score": 41.36,
+        "score": 39.93,
         "reasons": [
           "Corporate signal: leadership change",
-          "Event rule confidence: 0.75",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "AV Group",
-        "score": 41.36,
-        "reasons": [
-          "Corporate signal: insider activity",
           "Event rule confidence: 0.75",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
@@ -6460,6 +6460,241 @@
           "score": 41.36,
           "reasons": [
             "Corporate signal: insider activity",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
+    },
+    {
+      "company": "CREDITORS OF NIGER INSURANCE PLC",
+      "company_url": "/companies?name=CREDITORS%20OF%20NIGER%20INSURANCE%20PLC",
+      "headline": "PUBLIC NOTICE: ALL STAKEHOLDERS, (POLICYHOLDERS; FORMER STAFF; SHAREHOLDERS AND CREDITORS OF NIGER INSURANCE PLC (UNDER RECEIVERSHIP)",
+      "deal_type": "distressed_asset",
+      "amount_usd": null,
+      "country": "NE",
+      "sector": "insurance",
+      "announced": "2026-11-23",
+      "score": 58.7,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: distressed asset",
+        "Event rule confidence: 0.95",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Punch Nigeria",
+          "title": "PUBLIC NOTICE: ALL STAKEHOLDERS, (POLICYHOLDERS; FORMER STAFF; SHAREHOLDERS AND CREDITORS OF NIGER INSURANCE PLC (UNDER RECEIVERSHIP)",
+          "url": "https://punchng.com/public-notice-all-stakeholders-policyholders-former-staff-shareholders-and-creditors-of-niger-insurance-plc-under-receivership/?utm_source=rss.punchng.com&utm_medium=web",
+          "date": "2026-11-23",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-17",
+      "period_end": "2026-11-23",
+      "selected_at": "2026-11-24T03:59:01.505867+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "CREDITORS OF NIGER INSURANCE PLC",
+          "company_url": "/companies?name=CREDITORS%20OF%20NIGER%20INSURANCE%20PLC",
+          "headline": "PUBLIC NOTICE: ALL STAKEHOLDERS, (POLICYHOLDERS; FORMER STAFF; SHAREHOLDERS AND CREDITORS OF NIGER INSURANCE PLC (UNDER RECEIVERSHIP)",
+          "deal_type": "distressed_asset",
+          "amount_usd": null,
+          "country": "NE",
+          "sector": "insurance",
+          "announced": "2026-11-23",
+          "score": 58.7,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.95",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Punch Nigeria",
+              "title": "PUBLIC NOTICE: ALL STAKEHOLDERS, (POLICYHOLDERS; FORMER STAFF; SHAREHOLDERS AND CREDITORS OF NIGER INSURANCE PLC (UNDER RECEIVERSHIP)",
+              "url": "https://punchng.com/public-notice-all-stakeholders-policyholders-former-staff-shareholders-and-creditors-of-niger-insurance-plc-under-receivership/?utm_source=rss.punchng.com&utm_medium=web",
+              "date": "2026-11-23",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-17",
+          "period_end": "2026-11-23",
+          "selected_at": "2026-11-24T03:59:01.505867+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Silver Bank",
+          "company_url": "/companies?name=Silver%20Bank",
+          "headline": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+          "deal_type": "distressed_asset",
+          "amount_usd": null,
+          "country": "MU",
+          "sector": "banking",
+          "announced": "2026-11-22",
+          "score": 48.57,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Defimedia",
+              "title": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
+              "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQdGlJUHZfREFqaHFKWk9wRFc2cHVrR2g3d1FtTWc2UFFKNFE4dVVjQnF2WXZlQlFsdmJrVG5haWJXaHlNSU4zdWVVYkFzcGE4Z3JIdTh5U25hRk04QzNOM3FTTG5qM2o4M210WmNMVUQ1N0I3ajNvU1Y0eFdsZTFOaFlHTVIwZUctMTNSby1iMjAwNldDaWhXQ2J4RTE2aGtfbmJ6eg?oc=5",
+              "date": "2026-11-22",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-17",
+          "period_end": "2026-11-23",
+          "selected_at": "2026-11-24T03:59:01.505867+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Unauthorised Bank",
+          "company_url": "/companies?name=Unauthorised%20Bank",
+          "headline": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "ET",
+          "sector": "banking",
+          "announced": "2026-11-20",
+          "score": 49.61,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Birr Metrics",
+              "title": "NBE Proposes 10,000 Birr Fine Per Share for Unauthorised Bank Acquisitions",
+              "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5CZzlqZEhLTGN3d3BrcjNRYlNyQmNHVnRPOE9RZEYwQTh6UVpfX3Z1NTNZRG0wSWdZUU5KNC1jRDBJamdaR093UjdDXzdlMUNRdmpVRWZzUE53SjZRSHo1Nm5HOFpKVldGRkRDZFlaMnM?oc=5",
+              "date": "2026-11-20",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-17",
+          "period_end": "2026-11-23",
+          "selected_at": "2026-11-24T03:59:01.505867+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Kogi Group",
+          "company_url": "/companies?name=Kogi%20Group",
+          "headline": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "energy",
+          "announced": "2026-11-19",
+          "score": 52.39,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "ThisDay Nigeria",
+              "title": "Kogi Group Rejects 16-Year Power Retention Agenda, Demands Rotation, EFCC Probe of Ex-LG Chairmen",
+              "url": "https://www.thisdaylive.com/2026/11/19/kogi-group-rejects-16-year-power-retention-agenda-demands-rotation-efcc-probe-of-ex-lg-chairmen/",
+              "date": "2026-11-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-17",
+          "period_end": "2026-11-23",
+          "selected_at": "2026-11-24T03:59:01.505867+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Fidelity Bank",
+          "company_url": "/companies?name=Fidelity%20Bank",
+          "headline": "BREAKING: Fidelity Bank appoints Stanley Amuchie CEO, as Nneka Onyeali-Ikpe retires December 31",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "banking",
+          "announced": "2026-11-19",
+          "score": 52.24,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "BREAKING: Fidelity Bank appoints Stanley Amuchie CEO, as Nneka Onyeali-Ikpe retires December 31",
+              "url": "https://nairametrics.com/2026/11/19/fidelity-bank-appoints-stanley-amuchie-ceo-as-nneka-onyeali-ikpe-retires-december-31/",
+              "date": "2026-11-19",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-17",
+          "period_end": "2026-11-23",
+          "selected_at": "2026-11-24T03:59:01.505867+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": [
+        {
+          "company": "Family Bank",
+          "score": 42.03,
+          "reasons": [
+            "Corporate signal: credit risk",
+            "Event rule confidence: 0.82",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Agusto & Co",
+          "score": 42.03,
+          "reasons": [
+            "Corporate signal: credit risk",
+            "Event rule confidence: 0.82",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Rössing Uranium",
+          "score": 39.93,
+          "reasons": [
+            "Corporate signal: leadership change",
             "Event rule confidence: 0.75",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
