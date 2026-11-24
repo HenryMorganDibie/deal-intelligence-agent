@@ -2402,10 +2402,10 @@
     }
   },
   "countries_failed": 0,
-  "countries_kept_from_this_week": 0,
-  "countries_refreshed": 54,
+  "countries_kept_from_this_week": 54,
+  "countries_refreshed": 0,
   "countries_requested": 54,
-  "generated_at": "2026-11-23T15:24:27Z",
+  "generated_at": "2026-11-24T15:10:52Z",
   "source": "Africa API country signals endpoint",
   "source_url": "https://africa-api.com/docs/signals"
 }

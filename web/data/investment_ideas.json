@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-24T01:52:31.797521+00:00",
+  "updated_at": "2026-11-24T15:12:34.137062+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 49,
+      "new_review_items_today": 64,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -35,7 +35,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 2000,
-      "new_review_items_today": 2,
+      "new_review_items_today": 1,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 315,
-      "new_observations_today": 6,
+      "observations_collected": 318,
+      "new_observations_today": 3,
       "unreviewed_flagged_observations": 46,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 316,
-      "entities": 491,
+      "relationships": 321,
+      "entities": 499,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,22 +177,25 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 315,
-    "new_rows": 6,
+    "collected_tickers": 318,
+    "new_rows": 3,
     "failures": [
-      "PKL.GH",
-      "PNC.JO",
-      "POP.GH",
-      "PORTPAINT.LG",
-      "PRCL.CA",
-      "PRDC.CA"
+      "PREMBREW.LG",
+      "PRESTIGE.LG",
+      "PRMH.CA",
+      "PRO.CS",
+      "PRSC.BV",
+      "PSAD.CA",
+      "PSG.JO",
+      "PSV.JO",
+      "PTCC.CA"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 491,
-    "relationships": 316,
-    "source_links": 436,
+    "nodes": 499,
+    "relationships": 321,
+    "source_links": 446,
     "most_connected": [
       {
         "name": "Afreximbank",

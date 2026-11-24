@@ -1963,6 +1963,38 @@
     "investec": {
       "name": "Investec",
       "kind": "organization"
+    },
+    "payaza": {
+      "name": "Payaza",
+      "kind": "organization"
+    },
+    "seesail": {
+      "name": "Seesail",
+      "kind": "organization"
+    },
+    "shopaza": {
+      "name": "ShopAza",
+      "kind": "organization"
+    },
+    "ghanaian commerce startup seesail": {
+      "name": "Ghanaian Commerce Startup Seesail",
+      "kind": "organization"
+    },
+    "cornerstone": {
+      "name": "Cornerstone",
+      "kind": "organization"
+    },
+    "aiico insurance": {
+      "name": "AIICO Insurance",
+      "kind": "organization"
+    },
+    "silverback minerals": {
+      "name": "Silverback Minerals",
+      "kind": "organization"
+    },
+    "ruhizha tungsten project": {
+      "name": "Ruhizha Tungsten Project",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -6861,6 +6893,16 @@
           "title": "Apis Partners acquires majority stake in Korridor",
           "publisher": "Africa Private Equity News",
           "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQc29mT3lZU01qNUR2NEtHU2ZUcEdZMXNkb3A3SmxFbmtRbnpoV0tHU1Q1SHRzcGV6X25DVzdKeVQxTXc2bm9TY3hBYU53Tk14NktjREI2VU1jNzNkWFJTTGw2ZG55UFkzd2dQRFFPOG5qRDBSRUFJU2FkamZXUW1MWVVwWE5LQQ?oc=5"
+        },
+        {
+          "title": "Apis Partners Acquires Majority Stake in African Logistics Fintech Korridor",
+          "publisher": "TechMoran",
+          "url": "https://techmoran.com/2026/11/24/apis-partners-acquires-majority-stake-in-african-logistics-fintech-korridor/"
+        },
+        {
+          "title": "Apis Partners prend le contrôle de Korridor spécialisée dans le transport routier en Afrique",
+          "publisher": "AGENCE ECOFIN",
+          "url": "https://news.google.com/rss/articles/CBMi5wFBVV95cUxQeTR2Tml2SndpdEo5ZG9kekFxOW0wSE5jdGt5dkk0ZWlOb2hiVW5JMXJHaUJSbUd1cUtDdlRlRlJuMl8wbl9ZS0xqMUtab1lIT0Fjem43TW02Qi1GdWxNSFZ6NlFhQ1dEUnRBQ2VfMUNhYVJSTjl5c2pqekdqT3B1R3RJc1YyMFVmdzEtT0ZYMzNoTmVPNzRPbXRNZlJYTWNVbE1NUFcwVS14QWtJRUdieERHVXRlOGZjSkQtN0xyZVhTVUFFTE1hNW5hNDBnT3lQT0pjQVhTczEyMnM2V0o5bk44c3IzT28?oc=5"
         }
       ]
     },
@@ -6987,9 +7029,94 @@
           "title": "Investec to take stake in South Africa's Shoprite",
           "publisher": "Sharecast.com",
           "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPb25JVnNTc084ZUpCbUNXTmp4VVB3a2tfUTFyWVRZVnA5SE5OTkVZZWFydVNqZG1pcUtaMTI2LUhpTWRmRG9IYW9mTDhwR0JNZ2MwSWpIeC1tNDRsbDBrZ1FZUTBYX1dmb0RjUy1aNnZucmMzdGJMT3lYUVlDVGlPTFEyR0RWNnBYdXhqeXVTdUpNSm50QVljMzdUY01SZGFtMGhxbGFaNzVpdTEwY1AzNDBwUlNVTm9kdS13UFd2cHQ2SFItUHFmTm9OenRnM2o3?oc=5"
+        },
+        {
+          "title": "Investec takes stake in Shoprite financial services business as retailer targets growth",
+          "publisher": "thenational.co.za",
+          "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQVHpMVnZzRHpFc21JYVFOeThscEtKaGxJdjhPRnVoa0wwMGlJbThrN3p5bEltek1QbFZzQnU2T3I5WHB2NzVWS084cE9kVkgwcklzcEYycE9QSmZCSGJKM1ZMQWtxRGp4VERjTXBwbXRqT090WE53djFNUHA1Nl9Qd2dWXzRiM1I1R1ZsR0YtVW9oaGdpQlBialI1LXJ2aFU0XzM2ZlhyRE9KY0RtQ291REtWS2d4VjlIVWxuemYtWk1UU3V6TVZyY3dR?oc=5"
+        }
+      ]
+    },
+    "df32ae4969330f63cced": {
+      "id": "df32ae4969330f63cced",
+      "from": "payaza",
+      "to": "seesail",
+      "type": "acquisition",
+      "first_seen": "2026-11-24",
+      "sources": [
+        {
+          "title": "Payaza acquires Seesail to bring commerce tools and finance to Africa’s small businesses",
+          "publisher": "Nairametrics",
+          "url": "https://nairametrics.com/2026/11/24/payaza-acquires-seesail-to-bring-commerce-tools-and-finance-to-africas-small-businesses/"
+        },
+        {
+          "title": "Payaza acquires Seesail to expand across Africa",
+          "publisher": "Benjamindada",
+          "url": "https://thecondia.com/shopaza-acquires-seesail-to-expand-across-africa/"
+        },
+        {
+          "title": "Payaza acquires Ghanaian commerce platform Seesail, appoints founder Africa GM",
+          "publisher": "Nairametrics",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNYlEzdmctMWVfbnNDQS0zbksxM0QtdnJjdjNJRjhtX2d4bHJCVWxSdWpydVRfMUlycjJsRWxqckNCLUJkSU1DX1NPVHVZcUUwc0ZCX2dVNkxfMW4yZXE1ZFc3QjN3Q2tNM216eVFBaVg0MGp3M00xZFRyLW5fN3dacUpkdGU1TFdrSE00dVhaZ1NzWWN1cWJsbnhOYkxqTlRzTmFRMTNfRTUtQm5QbkxKbnlpRUc?oc=5"
+        }
+      ]
+    },
+    "c2a8480fc70e23e01ef7": {
+      "id": "c2a8480fc70e23e01ef7",
+      "from": "shopaza",
+      "to": "ghanaian commerce startup seesail",
+      "type": "acquisition",
+      "first_seen": "2026-11-24",
+      "sources": [
+        {
+          "title": "Payaza's ShopAza Acquires Ghanaian Commerce Startup Seesail",
+          "publisher": "Techeconomy",
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNUWpRTHVYX2p1OExlellSb0NjamR0NWlwVGNFQ1l2OGlVV1NyV2REVjFRa285LTd1bmNHSDJza1YwVzE4eTNZTW1rS2xybWFMLWNEd2N1TS1tMmZVUEhlSVNXVVpsNkQwYnlva00tSUZkMVNfZzRrU2FGaWFfLWwtRGNhRUNxNTdG?oc=5"
+        }
+      ]
+    },
+    "688505c8af697042a56a": {
+      "id": "688505c8af697042a56a",
+      "from": "shopaza",
+      "to": "seesail",
+      "type": "acquisition",
+      "first_seen": "2026-11-24",
+      "sources": [
+        {
+          "title": "Payaza’s ShopAza Acquires Ghanaian Platform Seesail",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNNEZ2WXZMLU1DemxUTEJyUldHVVNUaWtPMVJXcXlPX0ZyUFIzQ1YzSzc2VVU5dkV1eWZyS1RNRlpHZHh4bVB3RUpCXzY2bGVJYmNrSmtHODM5dGJudzJZdmxRQk1IT1JTVjRLNWJWX0ZUYkdyRjNLN1J5Z1E2bGFEY2RLOXY2MXBWVkE?oc=5"
+        }
+      ]
+    },
+    "e42fad23bc609f35c3b7": {
+      "id": "e42fad23bc609f35c3b7",
+      "from": "cornerstone",
+      "to": "aiico insurance",
+      "type": "acquisition",
+      "first_seen": "2026-11-24",
+      "sources": [
+        {
+          "title": "Cornerstone Agrees to Acquire 30.53% stake in AIICO Insurance",
+          "publisher": "Nigerian Bulletin",
+          "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxOQU1IUGlnai1LWUcwbkNyQ2hWdC1WOTAtcXFlN19RUWM5ZEZfTVB3RWJZV0Z1R0psQko0R01WdWhzNVFDQTR5YktxTHBuOUNEV29ORXhMWG9VQmdBZFBkWlIwaUhZX19wWmFma2hvNFFDdmpIWWZqU3lTVGI5S1pDNV9iN1NMMjNxUUtJYmJnak1sWWZUejdSWWlSVG5ZUlBXeHc?oc=5"
+        }
+      ]
+    },
+    "5c3a55dcddc098c4d660": {
+      "id": "5c3a55dcddc098c4d660",
+      "from": "silverback minerals",
+      "to": "ruhizha tungsten project",
+      "type": "acquisition",
+      "first_seen": "2026-11-24",
+      "sources": [
+        {
+          "title": "Silverback Minerals Acquires 90% of Ruhizha Tungsten Project in Uganda - News and Statistics",
+          "publisher": "IndexBox",
+          "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOU2JHSU84X1J3YWxtNXM3VWIwUDRNekpBc2g3eFZBQTZ3MERsOUlPYzQ1UFNTSU8wR3Z3b0FYVmNvSEVoRXpHNFZYVnNESGFTcWRfeVBDYjNEU3BuT1BuVTVSYnN6NTliZnhLaXVfaUlXekdUcDBiNUhRR2F4bjUxU3NOT05HM2pFQ3VIbm1nT09PT2YxS1JMWHczcnh4eUNKdVFqUEY1YXNDNlJleHVz?oc=5"
         }
       ]
     }
   },
-  "updated_at": "2026-11-24T01:52:28.017330+00:00"
+  "updated_at": "2026-11-24T15:12:29.351665+00:00"
 }
