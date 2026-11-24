@@ -896,3 +896,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "PSG.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "PSV.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "PTCC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "PWK.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-24", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47862_P_Z_CUSSONS_NIGERIA_PLC.-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2026_FINANCIAL_STATEMENTS_AUGUST_2026.pdf", "status": "collected", "ticker": "PZ.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "PZC.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "QFH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "QLT.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "QNBA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "RACC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "RACP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "RAKT.CA"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "RAKUNITY.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "RAR.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "RAV.JO"}

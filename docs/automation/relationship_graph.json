@@ -1995,6 +1995,26 @@
     "ruhizha tungsten project": {
       "name": "Ruhizha Tungsten Project",
       "kind": "organization"
+    },
+    "banque misr": {
+      "name": "Banque Misr",
+      "kind": "organization"
+    },
+    "downtown cairo hotel project": {
+      "name": "Downtown Cairo Hotel Project",
+      "kind": "organization"
+    },
+    "ghanaian seesail": {
+      "name": "Ghanaian Seesail",
+      "kind": "organization"
+    },
+    "cape town port": {
+      "name": "Cape Town Port",
+      "kind": "organization"
+    },
+    "new spreaders": {
+      "name": "New Spreaders",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -7058,6 +7078,11 @@
           "title": "Payaza acquires Ghanaian commerce platform Seesail, appoints founder Africa GM",
           "publisher": "Nairametrics",
           "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNYlEzdmctMWVfbnNDQS0zbksxM0QtdnJjdjNJRjhtX2d4bHJCVWxSdWpydVRfMUlycjJsRWxqckNCLUJkSU1DX1NPVHVZcUUwc0ZCX2dVNkxfMW4yZXE1ZFc3QjN3Q2tNM216eVFBaVg0MGp3M00xZFRyLW5fN3dacUpkdGU1TFdrSE00dVhaZ1NzWWN1cWJsbnhOYkxqTlRzTmFRMTNfRTUtQm5QbkxKbnlpRUc?oc=5"
+        },
+        {
+          "title": "Payaza Acquires Seesail To Bring Commerce Tools And Finance To Africa's Small Businesses",
+          "publisher": "Channels Television",
+          "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxOQ1lvSlR3WThCMUpjV0tOVm4xNmpNZVhrQmF3TnFtVGVYYWJsdHpQUDFua1NGQnhpVzdQNnRiOHVxTExaUk5KMHFSYm00MmZ2MmYzQ1QtUFRkaWZHa1dEeVd3RFdoNmxiRHZlaWlhZEVielVrZ2NWTU1Rc290RFNvRDNWRVpaTFB1LXplaDhTRWJlOHlRUEF3ZTN6VUdOT2NpejlBMWpxTVRqOVJid0xfRU9qWTdGS3o4ZDZTMW5kQlEyVW0w?oc=5"
         }
       ]
     },
@@ -7086,6 +7111,11 @@
           "title": "Payaza’s ShopAza Acquires Ghanaian Platform Seesail",
           "publisher": "Innovation Village",
           "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNNEZ2WXZMLU1DemxUTEJyUldHVVNUaWtPMVJXcXlPX0ZyUFIzQ1YzSzc2VVU5dkV1eWZyS1RNRlpHZHh4bVB3RUpCXzY2bGVJYmNrSmtHODM5dGJudzJZdmxRQk1IT1JTVjRLNWJWX0ZUYkdyRjNLN1J5Z1E2bGFEY2RLOXY2MXBWVkE?oc=5"
+        },
+        {
+          "title": "Payaza’s Shopaza acquires Ghana’s Seesail to expand SME commerce in Africa",
+          "publisher": "Business News Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE1OY2tBUUhBTDhRb250Z2FaNTdLS1VVSmRpWmtIeS1MbUFYZWRTWFZzUldZSXE1dHZqVDZWc0I2OHFxMG1vbGZvbg?oc=5"
         }
       ]
     },
@@ -7116,7 +7146,49 @@
           "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOU2JHSU84X1J3YWxtNXM3VWIwUDRNekpBc2g3eFZBQTZ3MERsOUlPYzQ1UFNTSU8wR3Z3b0FYVmNvSEVoRXpHNFZYVnNESGFTcWRfeVBDYjNEU3BuT1BuVTVSYnN6NTliZnhLaXVfaUlXekdUcDBiNUhRR2F4bjUxU3NOT05HM2pFQ3VIbm1nT09PT2YxS1JMWHczcnh4eUNKdVFqUEY1YXNDNlJleHVz?oc=5"
         }
       ]
+    },
+    "42f48a4e423bd742896f": {
+      "id": "42f48a4e423bd742896f",
+      "from": "banque misr",
+      "to": "downtown cairo hotel project",
+      "type": "debt_financing",
+      "first_seen": "2026-11-24",
+      "sources": [
+        {
+          "title": "Banque Misr Extends $22.1M Loan For Downtown Cairo Hotel Project",
+          "publisher": "Forbes Middle East",
+          "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxPU2JqZ0NwUGNKWGkwelNOMzdlQnVBakNyVU9ZbnlXU3AwZnhtWGJwSGp2X3hraHZHVkFNZGk2X2t2aWY3bV80QVpMNEVjUElVbW9Jb2FzMGl3RHlKRHpJSGlMT0RhUTV1VE9PTGJId1puWHZzRTNSMXQ3aG1pS0dYT3JFN0RrRlUweGZfWDFzdk5PbmJWOG9JQjlLa2M0TWZZSUFXTTlUMmdNYXIxdV9STkRrMWpMWEhiLWt6SlJkNkJGakg4ODhmVlotRFNQNHVrZF92enVhSkNBRDJpUnMwbw?oc=5"
+        }
+      ]
+    },
+    "803d3e6903feb30d1d53": {
+      "id": "803d3e6903feb30d1d53",
+      "from": "shopaza",
+      "to": "ghanaian seesail",
+      "type": "acquisition",
+      "first_seen": "2026-11-24",
+      "sources": [
+        {
+          "title": "Payaza’s ShopAza acquires Ghanaian Seesail; founder Victor Blavo to drive African expansion",
+          "publisher": "Technext24.com",
+          "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE05UVZYbTV2WHZVUl8tR0o5V2hQZ0pKVDhERHdWSmpaeVl1bXhKVjZ6NXA1cjlfZTVld0RfZ2IwT2NvYjBxaGRyVndkUDdKbm1xRnZCLXdUOHJueF9SM3BlX2FMdmt5S1diUjdtcEdR?oc=5"
+        }
+      ]
+    },
+    "acd2ffa4dd7c61dc975d": {
+      "id": "acd2ffa4dd7c61dc975d",
+      "from": "cape town port",
+      "to": "new spreaders",
+      "type": "equity_funding",
+      "first_seen": "2026-11-24",
+      "sources": [
+        {
+          "title": "Cape Town Port Invests R83m in New Spreaders for Fruit Export Season",
+          "publisher": "https://agrinews.co.za/",
+          "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTFB3MXBnY1BQd0RIZGY2R2JaM010dHB2MlFuM3pwSnJYeDlOUkJZcFZOZmx4RmRoNFN2UGpvbWIydGlzbE1tbEdITjJfd3BKaUlwbTlVUzh3Nkh6TnhuUUthN3hTODJwRVVsSWRVVmI3NTVYdlZNRnFR?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-24T15:12:29.351665+00:00"
+  "updated_at": "2026-11-24T23:37:40.511100+00:00"
 }
