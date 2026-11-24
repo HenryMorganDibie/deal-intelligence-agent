@@ -20,9 +20,13 @@ from collections import Counter
 from datetime import date, timedelta
 from typing import Iterable, Optional
 
+import logging
+
 import httpx
 
 from src.data import africa_countries
+
+log = logging.getLogger(__name__)
 
 # ── Markets ──────────────────────────────────────────────────────────────────
 
@@ -169,7 +173,10 @@ def _imf_series(indicator: str, client: Optional[httpx.Client] = None) -> dict:
     try:
         r = client.get(IMF_URL.format(indicator=indicator))
         data = (r.json().get("values") or {}).get(indicator) or {} if r.status_code == 200 else {}
-    except (httpx.HTTPError, ValueError):
+        if not data:
+            log.warning("IMF %s unavailable: status %s, %s bytes", indicator, r.status_code, len(r.content or b""))
+    except (httpx.HTTPError, ValueError) as exc:
+        log.warning("IMF %s unavailable: %r", indicator, exc)
         data = {}
     finally:
         if own:
