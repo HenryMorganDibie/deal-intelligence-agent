@@ -192,7 +192,7 @@ async def index() -> JSONResponse:
                              f"GET /v1/{p}" for p in (
                                  "usage", "deals", "deals/{id}", "events", "investors", "investors/{name}",
                                  "countries", "countries/{code}", "markets/overview", "markets/screener",
-                                 "markets/search", "markets/quote", "elections/news", "elections/summary",
+                                 "markets/search", "markets/quote", "markets/history", "elections/news", "elections/summary",
                                  "elections/incidents", "elections/areas", "elections/polling-units",
                                  "elections/polling-units/{code}", "elections/results", "elections/results/sheets",
                                  "elections/accreditation", "elections/alerts", "elections/live",
@@ -737,6 +737,15 @@ async def markets_search(request: Request, response: Response, q: str = Query(..
                          limit: int = Query(10, ge=1, le=25)) -> dict:
     await authorize(request, response)
     return await _call(lambda: hm.markets_search(q=q, limit=limit))
+
+
+@router.get("/markets/history")
+async def markets_history(request: Request, response: Response, exchange: str = Query(..., max_length=8),
+                          symbol: str = Query(..., max_length=60), since: Optional[str] = Query(None, max_length=10),
+                          until: Optional[str] = Query(None, max_length=10)) -> dict:
+    """Daily closes for one listing, in local currency and dollars, oldest first, with the change over the period."""
+    await authorize(request, response)
+    return await _call(lambda: hm.markets_history(exchange=exchange, symbol=symbol, since=since, until=until))
 
 
 @router.get("/markets/quote")

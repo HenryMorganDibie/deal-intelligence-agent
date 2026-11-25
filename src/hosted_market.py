@@ -3798,6 +3798,103 @@ async def companies_directory(
                                    offset=offset)
 
 
+# ── Price history ─────────────────────────────────────────────────────────────
+
+_history_cache: dict[tuple, tuple[float, dict]] = {}
+_HISTORY_TTL = 1800
+_SYMBOL_RE = re.compile(r"^[A-Za-z0-9 ._&/-]{1,60}$")
+HISTORY_NOTE = ("Daily closes from the daily snapshots kept for every exchange since 28 October 2026, plus an older "
+                "daily-close archive for NGX and NSE Kenya. One row per trading day on which the share has a price; "
+                "a day without a trade is not repeated. Dollar closes use that day's stored exchange rate and are "
+                "empty for days before the rates were kept.")
+
+
+def _rate_on(fx: list[tuple[str, float]], day: str) -> Optional[float]:
+    """The latest stored dollar rate on or before a day (local currency per dollar), or None."""
+    best = None
+    for d, rate in fx:
+        if d > day:
+            break
+        best = rate
+    return best
+
+
+def _pct(a: Optional[float], b: Optional[float]) -> Optional[float]:
+    return round(b / a - 1, 6) if a and b else None
+
+
+def market_history_data(exchange: str, symbol: str, since: Optional[str] = None, until: Optional[str] = None) -> dict:
+    """Daily closes for one listing, in local currency and in dollars, oldest first, with the change over the
+    period. Raises 404 for an unknown exchange or a listing with no stored prices."""
+    from src.engines import markets
+    ex = markets.EXCHANGES.get((exchange or "").lower())
+    if not ex:
+        raise HTTPException(404, f"Unknown exchange '{exchange}'. Use one of: {', '.join(sorted(markets.EXCHANGES))}.")
+    symbol = (symbol or "").strip()
+    if not _SYMBOL_RE.match(symbol):
+        raise HTTPException(422, "symbol must be a listing's ticker, as the screener or search returns it.")
+    for label, value in (("since", since), ("until", until)):
+        if value:
+            try:
+                date.fromisoformat(value)
+            except ValueError:
+                raise HTTPException(422, f"{label} must be a date as YYYY-MM-DD.")
+    if since and until and since > until:
+        raise HTTPException(422, "since must be on or before until.")
+    key = (ex.key, symbol.upper(), since or "", until or "")
+    hit = _history_cache.get(key)
+    if hit and time.monotonic() - hit[0] < _HISTORY_TTL:
+        return hit[1]
+    if not _configured():
+        raise HTTPException(503, "Price history is not available here.")
+    r = _rpc_sync("market_history", {"p_exchange": ex.key, "p_symbol": symbol, "p_currency": ex.currency,
+                                     "p_since": since})
+    if r.status_code == 404:
+        raise HTTPException(503, "Price history is being switched on. Try again shortly.")
+    if r.status_code != 200:
+        log.error("market_history failed: %s %s", r.status_code, r.text[:300])
+        raise HTTPException(503, "Price history is temporarily unavailable.")
+    body = r.json() or {}
+    fx = sorted((d, float(v)) for d, v in (body.get("fx") or {}).items() if v)
+    rows = []
+    for p in body.get("prices") or []:
+        day = str(p.get("date"))[:10]
+        if until and day > until:
+            continue
+        close = float(p["close"]) if p.get("close") is not None else None
+        rate = 1.0 if ex.currency == "USD" else _rate_on(fx, day)
+        rows.append({"date": day, "close": close,
+                     "close_usd": round(close / rate, 6) if close and rate else None,
+                     "chg_1d": p.get("chg_1d"), "volume": p.get("volume"), "value_traded": p.get("value_traded"),
+                     "mcap": p.get("mcap"), "source": p.get("source")})
+    if not rows:
+        raise HTTPException(404, "No stored prices for that listing in the period. Check the symbol with "
+                                 "/markets/search, or widen the dates.")
+    name = None
+    try:
+        latest = markets.quote(_market_snapshot(), ex.key, symbol)
+        name = latest and latest.get("name")
+    except HTTPException:
+        pass
+    first, last = rows[0], rows[-1]
+    out = {"exchange": ex.key, "exchange_name": ex.name, "symbol": symbol.upper(), "name": name,
+           "currency": ex.currency, "from": first["date"], "to": last["date"], "days": len(rows),
+           "change": _pct(first["close"], last["close"]),
+           "change_usd": _pct(next((x["close_usd"] for x in rows if x["close_usd"]), None), last["close_usd"]),
+           "prices": rows, "note": HISTORY_NOTE}
+    _history_cache[key] = (time.monotonic(), out)
+    if len(_history_cache) > 2000:
+        _history_cache.clear()
+    return out
+
+
+@router.get("/api/markets/history")
+async def markets_history(exchange: str = Query(..., max_length=8), symbol: str = Query(..., max_length=60),
+                          since: Optional[str] = Query(None, max_length=10),
+                          until: Optional[str] = Query(None, max_length=10)) -> dict:
+    return await run_in_threadpool(market_history_data, exchange, symbol, since, until)
+
+
 @router.get("/api/markets/quote")
 async def markets_quote(exchange: str = Query(..., max_length=8), symbol: str = Query(..., max_length=20)) -> dict:
     from src.engines import markets
