@@ -9,6 +9,7 @@ import { DealRows, ErrorNote, Field, Loading, Pill, Stat, Table, Td, num, usd, w
 import { ApiError } from "../../../lib/api";
 import { get, type Comparables, type Deal } from "../../../lib/market";
 import { CompanyGovernance, type Governance, type Identity, type Web } from "../../../components/app/CompanyGovernance";
+import { PriceHistoryChart } from "../../../components/app/PriceHistoryChart";
 
 type OfficialRecord = { kind: string; authority: string; title: string; date: string | null; url: string | null;
   amount_usd?: number | null; detail?: string | null; countries?: string[] };
@@ -298,6 +299,7 @@ export default function CompaniesPage() {
               </p>
             </section>
           )}
+          {p.listing && <PriceHistoryChart exchange={p.listing.exchange} symbol={p.listing.symbol} />}
 
           {fin ? (
             <section>

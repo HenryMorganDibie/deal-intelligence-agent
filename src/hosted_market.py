@@ -3803,10 +3803,12 @@ async def companies_directory(
 _history_cache: dict[tuple, tuple[float, dict]] = {}
 _HISTORY_TTL = 1800
 _SYMBOL_RE = re.compile(r"^[A-Za-z0-9 ._&/-]{1,60}$")
-HISTORY_NOTE = ("Daily closes from the daily snapshots kept for every exchange since 28 October 2026, plus an older "
-                "daily-close archive for NGX and NSE Kenya. One row per trading day on which the share has a price; "
-                "a day without a trade is not repeated. Dollar closes use that day's stored exchange rate and are "
-                "empty for days before the rates were kept.")
+HISTORY_NOTE = ("Daily closes, adjusted for splits as the source reports them. Since 28 October 2026 from the daily "
+                "snapshots kept for every exchange; before that from a backfill going back to 2010 where a source has "
+                "it (Johannesburg and Cairo from Yahoo Finance; BRVM and the other markets from sikafinance, mostly "
+                "from 2016 to 2024) and an older daily-close archive for NGX and NSE Kenya. One row per trading day on "
+                "which the share has a price; a day without a trade is not repeated. Dollar closes use that day's "
+                "stored exchange rate and are empty for days before the rates were kept (28 October 2026).")
 
 
 def _rate_on(fx: list[tuple[str, float]], day: str) -> Optional[float]:

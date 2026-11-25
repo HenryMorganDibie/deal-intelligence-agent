@@ -1,0 +1,59 @@
+name: Price history backfill
+
+# Fills daily price history back to 2010 for every listed share a source covers (scripts/backfill_price_history.py):
+# Johannesburg and Cairo from Yahoo Finance, the other markets from sikafinance. Resumable and paced (one request
+# every 0.7 seconds per site): each run reads only listings with no saved history, so after the first full pass a
+# nightly run just picks up newly listed shares in a few requests.
+on:
+  schedule:
+    - cron: "23 1 * * *"
+  workflow_dispatch:
+    inputs:
+      exchanges:
+        description: "Exchanges to fill (space separated); empty for all"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: price-history-backfill
+  cancel-in-progress: false
+
+env:
+  SUPABASE_URL: https://ygvpormskihofvgntldo.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_oEqYxYLm60MdGk5JA-QfgQ_6z7uSozn
+  DEAL_INTEL_API_SECRET: ${{ secrets.DEAL_INTEL_API_SECRET }}
+
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    strategy:
+      fail-fast: false
+      matrix:
+        # One job per source site, so each keeps its own pace.
+        group: [yahoo, sikafinance]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: pip install --disable-pip-version-check -r requirements.txt
+      - name: Fill history
+        env:
+          REQUESTED: ${{ inputs.exchanges }}
+          GROUP: ${{ matrix.group }}
+        run: |
+          if [ "$GROUP" = "yahoo" ]; then ALL="jse egx"; else ALL="brvm ngx gse bvc nse sem bvmt luse bse dse mse rse use sgbv"; fi
+          PICK=""
+          for ex in $ALL; do
+            if [ -z "$REQUESTED" ] || echo " $REQUESTED " | grep -q " $ex "; then PICK="$PICK $ex"; fi
+          done
+          if [ -z "$PICK" ]; then echo "Nothing to do for $GROUP."; exit 0; fi
+          python scripts/backfill_price_history.py --exchanges $PICK --minutes 330
