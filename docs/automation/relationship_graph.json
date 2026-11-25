@@ -2015,6 +2015,74 @@
     "new spreaders": {
       "name": "New Spreaders",
       "kind": "organization"
+    },
+    "aeon": {
+      "name": "Aeon",
+      "kind": "organization"
+    },
+    "cloud9": {
+      "name": "Cloud9",
+      "kind": "organization"
+    },
+    "octerra": {
+      "name": "Octerra",
+      "kind": "organization"
+    },
+    "undisclosed cyber defence startup": {
+      "name": "Undisclosed cyber defence startup",
+      "kind": "organization"
+    },
+    "undisclosed money services business": {
+      "name": "Undisclosed money services business",
+      "kind": "organization"
+    },
+    "shoprite financial services": {
+      "name": "Shoprite Financial Services",
+      "kind": "organization"
+    },
+    "gulftainer": {
+      "name": "Gulftainer",
+      "kind": "organization"
+    },
+    "suksawat terminal": {
+      "name": "Suksawat Terminal",
+      "kind": "organization"
+    },
+    "orascom construction": {
+      "name": "Orascom Construction",
+      "kind": "organization"
+    },
+    "oci": {
+      "name": "OCI",
+      "kind": "organization"
+    },
+    "seesail technologies": {
+      "name": "Seesail Technologies",
+      "kind": "organization"
+    },
+    "cell c": {
+      "name": "Cell C",
+      "kind": "organization"
+    },
+    "melon mobile": {
+      "name": "Melon Mobile",
+      "kind": "organization"
+    },
+    "sintana energy": {
+      "name": "Sintana Energy",
+      "kind": "organization"
+    },
+    "angola kon 16": {
+      "name": "Angola KON-16",
+      "kind": "organization"
+    },
+    "ubs group ag": {
+      "name": "UBS Group AG",
+      "kind": "organization"
+    },
+    "sibanye stillwater": {
+      "name": "Sibanye-Stillwater",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -3617,6 +3685,11 @@
           "title": "Afreximbank provides $81.9 million loan to Veenocks for Ogun tile factory expansion",
           "publisher": "Nairametrics",
           "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQNUFPQ18teTFRWG9GZlNjZkFaMnZWRVU2bTc5RjJKU0lXaXFpSlJKb2lMbTV2Rl9GY1dibUZNT3o4bDlWWG1OMmhkUGptOVMwdXFPa3Z3YWc2ZS1DYUQ3NGVJTXhuWTN0bGFGNFRobm45cWRiWXZza1ZhcnZQbG5ibllwcTVVdmVXZHNZSmtxWUZhSjFkUTRiaG56Y292OGs4WHh0Q1pPWTAyV1ZaREE0ZHZXYlVzREdtT1Fn?oc=5"
+        },
+        {
+          "title": "Ogun: Afreximbank Grants Veenocks $81.9m Loan To Boost Output",
+          "publisher": "https://thefact.ng/",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPcUpWb0tzQ0xndDFRU2NpMnk3N0I1dURtcDRHZzQweXIzRzlOc1k2Ni1ldzVpbnkyTWJWcWNVWDdGajI4Y0YzbThHcDFMVEFaNDFIS2hTU3NrYnRnbjBBRjFtOTF1ejk5OWtBYjFrdGw1NV9kRUtnS1lPN2hkTGZMSDNPQ3ZWZw?oc=5"
         }
       ]
     },
@@ -5688,6 +5761,11 @@
           "title": "MTN in talks to acquire Telkom",
           "publisher": "Moneyweb",
           "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQcC03VEJEUkNqNjdCb1F0QUVFMmM5VVlmNTA1LW44NmVZTTVOM1VFNWpXMzh3a05aVWVzamR4WE5nSGhWQy1wTWtUelc4ZHd1OEs1MFJVNUsxY2NDSHRhR2NrX1UzWEEyT3lpVHNidUpydDZSdUN4Y19LLUo2ODVraVhOcGtyVml6VE5J?oc=5"
+        },
+        {
+          "title": "MTN’s proposed Telkom takeover comes with a competition cost",
+          "publisher": "TechCabal",
+          "url": "https://techcabal.com/2026/11/25/mtn-telkom-deal-sa-telecoms-market/"
         }
       ]
     },
@@ -6885,6 +6963,11 @@
           "title": "Apis takes majority stake in African freight payments firm Korridor",
           "publisher": "TechTrendsKE",
           "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORFhQM3lubGpIMWhsUzNmT3loR19qbGktXzNxVGpQRjJqMk5tUWk4TG5hVUIyMUtRRk1COWpZa1hlSWVkVDJXNDFKeXc4N2NZanlIdTFPZVBQMk1pTUVfcWNhUVRTTHZzaF9WcU14UHk3OUpCbkl4S2wteTVYYnJka3lUVW0weXNNc2dUZXlFOXBqbC1memNKWVRDbTdjaWl3U3pPWnVVdzFqZw?oc=5"
+        },
+        {
+          "title": "Apis acquires stake in African logistics fintech Korridor",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQRTcwQ0VSWWRlRFp2cEZzRWRDcTh2eFRZSDVUdjlNa1FoUmdJM0hNeVVBSUdCTmZqZkJqZktNVk5CallCdE1xRU9ld3lJemFJY2lxeXR0QkF1SmhtMUJRaHR1LUtfSFNOeXMyYUxkd25KNVJYYkt1bko5TzZCa0dTRmdBM0hYUVVwazA4b0FDdU81M1VGcmJPUncxcmRtbnRNTy01eklydw?oc=5"
         }
       ]
     },
@@ -7083,6 +7166,21 @@
           "title": "Payaza Acquires Seesail To Bring Commerce Tools And Finance To Africa's Small Businesses",
           "publisher": "Channels Television",
           "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxOQ1lvSlR3WThCMUpjV0tOVm4xNmpNZVhrQmF3TnFtVGVYYWJsdHpQUDFua1NGQnhpVzdQNnRiOHVxTExaUk5KMHFSYm00MmZ2MmYzQ1QtUFRkaWZHa1dEeVd3RFdoNmxiRHZlaWlhZEVielVrZ2NWTU1Rc290RFNvRDNWRVpaTFB1LXplaDhTRWJlOHlRUEF3ZTN6VUdOT2NpejlBMWpxTVRqOVJid0xfRU9qWTdGS3o4ZDZTMW5kQlEyVW0w?oc=5"
+        },
+        {
+          "title": "Payaza Acquires Ghana’s Seesail to Expand SME Commerce and Financing Across Africa",
+          "publisher": "TechMoran",
+          "url": "https://techmoran.com/2026/11/25/payaza-acquires-ghanas-seesail-to-expand-sme-commerce-and-financing-across-africa/"
+        },
+        {
+          "title": "Payaza acquires Ghana’s Seesail after Ksh. 8.5 billion debt repayment",
+          "publisher": "HapaKenya -",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNXzdFcWZVMWtsNTVtR28xRkpGcldQNVZUOGgybEVFd091MGRHa0R3LVdTcllMam9ZeE9FQk0tdlQ3djdrUnFoRUFsZDBZdjI1UjhYVUZsUE0xbGdYNnNtODhfZXkwWHRmOVNaZDNScnhyR2hpU3o1SHg3c2hyenBEbDZLaXBicGtMNmcwMV9Wc1p1dkdEd0ZtZWRUcS1xMTgwRVZz?oc=5"
+        },
+        {
+          "title": "Payaza Acquires Ghanaian Firm Seesail to Expand SME Commerce Services Across Africa",
+          "publisher": "Brand Icon Image",
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOYXBpTDhyYmU4Z0FTSm1zakJtSnp3SE9UelladkkzaEcxWDkwUmgwa1pkc2tWaV9KY1dTR0o5UUlrT29sMWp4V2NpcTZoVEttLTk4M2xUcjBhZFotb05qc3N4cHNYSDJiVFRIZkNOZUp5ZnhWbWlzdkNEX1lPV2kxT3M0MmZxTms3?oc=5"
         }
       ]
     },
@@ -7116,6 +7214,16 @@
           "title": "Payaza’s Shopaza acquires Ghana’s Seesail to expand SME commerce in Africa",
           "publisher": "Business News Nigeria",
           "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE1OY2tBUUhBTDhRb250Z2FaNTdLS1VVSmRpWmtIeS1MbUFYZWRTWFZzUldZSXE1dHZqVDZWc0I2OHFxMG1vbGZvbg?oc=5"
+        },
+        {
+          "title": "Payaza’s Shopaza acquires Ghana’s Seesail to expand SME commerce in Africa",
+          "publisher": "Business News Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPWkM2czNrVFdsVy1vWTBxc2Q2cHVJMHBkclZtT1FGN0xCcXg5UzV5dVF4V1hGSjctQlhDUzNxVTMydGozcmJ1Ync1TVktNjRHd19idmFQT1VZMHl0bWtNNU5pUnc4SFBMYWpfU052WHNFUjIzWlBFZTRjZ1FyUDdjMi1oNEU3cWpnbXFLSC1UM0xOeUFmTmttY09kRFI3SktXSWlkRDNQdmVKVndsaHpCRWhMUmc?oc=5"
+        },
+        {
+          "title": "Payaza's e-commerce arm ShopAza buys Ghanaian startup Seesail to expand across Africa",
+          "publisher": "3News",
+          "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxNU195ZWl2b2pqUWdEMnVHOVgwN1p4cUxmYzVFaWZfRVlHVUE1RjhQWU5xNzBpOXZGMFJSNXdRQ3BmS1NBWlVzLTVFRnBpREwyTjRMZ1pJVGhhdnVTTnJ3U1p4SHluY2w3cUd0TWl3NEZUWjJoLWJDSzlyZjRtWHJTZEV4NkZnaFU?oc=5"
         }
       ]
     },
@@ -7188,7 +7296,166 @@
           "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTFB3MXBnY1BQd0RIZGY2R2JaM010dHB2MlFuM3pwSnJYeDlOUkJZcFZOZmx4RmRoNFN2UGpvbWIydGlzbE1tbEdITjJfd3BKaUlwbTlVUzh3Nkh6TnhuUUthN3hTODJwRVVsSWRVVmI3NTVYdlZNRnFR?oc=5"
         }
       ]
+    },
+    "4759d50b7547ca258b9d": {
+      "id": "4759d50b7547ca258b9d",
+      "from": "terra industries",
+      "to": "aeon",
+      "type": "equity_funding",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Aeon Raises $2 Million to Build Africa’s Cyber Defence Infrastructure",
+          "publisher": "TechMoran",
+          "url": "https://techmoran.com/2026/11/25/aeon-raises-2-million-to-build-africas-cyber-defence-infrastructure/"
+        }
+      ]
+    },
+    "33c18039864350846ce4": {
+      "id": "33c18039864350846ce4",
+      "from": "cloud9",
+      "to": "monix pay",
+      "type": "acquisition",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Kenyan Fintech Cloud9 Acquires Canada’s Monix Pay To Expand Into North America",
+          "publisher": "WeeTracker",
+          "url": "https://weetracker.com/2026/11/25/cloud9-acquires-monix-pay-canada/"
+        }
+      ]
+    },
+    "fa140804e175fc62f98f": {
+      "id": "fa140804e175fc62f98f",
+      "from": "octerra",
+      "to": "undisclosed cyber defence startup",
+      "type": "equity_funding",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Aeon doubles pre-seed funding to $2m as Launch Africa, Octerra back Nigerian cyber defence startup",
+          "publisher": "Technext24.com",
+          "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE9Ea0RUVHZ3YVRDNkFKVlZkempQQnFsNUdianFkMTd4OTJ1cHUxVnV5WWFoaTZSMUdWOEdZQ1BOUnloMU1FVHZiR3FVdGlBdUtHRmhCZXZHaDg2OU5YRVNZYTBPTWZKNWN5RVR3dGw1anplNFpEOUt2ZGZjbw?oc=5"
+        }
+      ]
+    },
+    "821e33866dd5e693162d": {
+      "id": "821e33866dd5e693162d",
+      "from": "cloud9",
+      "to": "undisclosed money services business",
+      "type": "acquisition",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Kenya’s Cloud9 acquires Canadian money services business Monix Pay",
+          "publisher": "- Disrupt Africa",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPNF83SjRvb21kVFZOeThvLUNsYWZnVFVKUzNBS2VPMFpmMnhCOW9WNl9rem5xSGgtSERiX3JKU3BPbE5oX28yOEtNWDhmU3dYY2dsVWlfVmJ3Nk0wQ3RBdEY3V09kVExwa0FxQVZOa0Vtc2d1ZUtwTC1LSHdJUzRkaDU5V1RvbXZnOFZEWFZfSTVJRmNWM0NXQWN6eTN0SjJoWmc3Z3R3?oc=5"
+        }
+      ]
+    },
+    "d47c5f6c1e320ac1d2c3": {
+      "id": "d47c5f6c1e320ac1d2c3",
+      "from": "investec",
+      "to": "shoprite financial services",
+      "type": "acquisition",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Investec Acquires 19.99% Stake In Shoprite Financial Services For R1.9bn",
+          "publisher": "DirectorsTalk Interviews",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNVjlOZWZkWF9JUDdpeVdyU2gySDVkTl92MEY1NE1KUFhBQng2cmlBWV9mdkxOYVdlR1BjM3FOMl82dVNYM3lRZXBwWVpoVFhkUHdybFVWZGx4LUhRQmc2NThQVzFCVE1KaEpHYkFlcWxwRVEyLXVQemlxV0ZkcDdmNzVWa211VW53LTlaNVJxOVRpNlhVRVZOQUo3U2RVam1tamtQNWp1djAwOVppYklBbXZlYUdpOUN3OU1pX2FCOA?oc=5"
+        },
+        {
+          "title": "Investec to acquire 19.9% stake in Shoprite Financial Services in R1.9 billion strategic deal",
+          "publisher": "innovation-village.com",
+          "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOVWd2QjQ0REFtZkhFYWlVQkU4VWpnUWN6SFl2NU90TktuZHVkTGJScEZwOHpORHU2U01Nc2FVQ2hmSkk4MW5FMmRTY3ljY0lLaTZBc0JKWTRZY1owclMzd0R2VkMycXFkMmZiUXBJczNkaFZVZS05dVZ4QzZ1ZWRMbkJOUVNTem5pOHdiR05iUkRNZE01YUhsVkZxUXlwTmVXMU9IZmNfRjd0OVA0eURRSVlGRmlCTVkyQnRyLWdDd0NaUQ?oc=5"
+        }
+      ]
+    },
+    "4fb2a1df4624ffafc76d": {
+      "id": "4fb2a1df4624ffafc76d",
+      "from": "gulftainer",
+      "to": "suksawat terminal",
+      "type": "acquisition",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Gulftainer completes Suksawat Terminal acquisition in Bangkok",
+          "publisher": "Food Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQZkV2WXBQeWZ1b3dWN3FTVkZXUE1adU9sUWFPMUg4ZEo5U0JHNXFJQ0FQV0FBT1NUSTZ5bjBkeTRhRmVNRDI3TV92eGM1dU5YNU15TlhoNzgwWmtueVNDOU5TUThWTGFUSUVoY1FQY0lSUTZLRnBoN0dRWC1GTzN6OV9YSW1oazhSc1NLQ1JROWp1UGtScllFWm5n?oc=5"
+        }
+      ]
+    },
+    "18607752049fd6ae5603": {
+      "id": "18607752049fd6ae5603",
+      "from": "orascom construction",
+      "to": "oci",
+      "type": "acquisition",
+      "first_seen": "2026-11-24",
+      "sources": [
+        {
+          "title": "Orascom Construction closes OCI acquisition while Enppi heads to Jordan",
+          "publisher": "EnterpriseAM",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPU0pjQ1hPeFJYcy1sQmlzbzRtVlhxQWhvUm53VVRnZEJKLW9kMWRYQ0p2YXJrNVdvaGthWmVNZ0xlN2VyZ1hTVWxKc0U4MjEtQWc0WDBqN2wtbExuNXB0bFZ2YzlhYVh2OU90SnN4bXFXWV9pMXNwa1QxUTNNSFFpckZ5cFVkRGJ6UXdKTkpUNzU3dktxd0J0X3BQWXdSTmRkZVZxQTltRGd0TkRmX0JZd0ktUkw?oc=5"
+        }
+      ]
+    },
+    "ac7249b6fa0b102603c6": {
+      "id": "ac7249b6fa0b102603c6",
+      "from": "shopaza",
+      "to": "seesail technologies",
+      "type": "acquisition",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Payaza’s ShopAza Acquires Ghana’s Seesail Technologies",
+          "publisher": "We are Tech",
+          "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPV2tRTXpKcEhDbnMyUmktY0NWYmRzTlJ3cU5mRTFHMDh0Y2tvbkRJZWEzTlVYMnBtZmNBSVJaeHhOc21FOGpLWnJzYTNoSTZwckZfU2I5a0xwVFlQLW8tM0s4cDg2cExLdkdGYTdkTmZBVWwydzNXVEgybXZEOXlLNmFsdXhFQ1FJb3E3WlB0NG56eVE5Um5XMktDems0XzRSOC1OQnRHRDVwbFFXU1ZuNG9MRQ?oc=5"
+        }
+      ]
+    },
+    "81814772375e70bdaf17": {
+      "id": "81814772375e70bdaf17",
+      "from": "cell c",
+      "to": "melon mobile",
+      "type": "acquisition",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Cell C buys Melon Mobile",
+          "publisher": "Connecting Africa",
+          "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBieF84SkxBS2lMOXhqOE1HS2RsbEozVDdNMjR6Z2dTa0VVZE04T2xyZ1RJOVJ4TkI5d0VNc1JadlU4SGtieXNBV3U3bXBqNnB3TjZKbDJGbGVJdUNKWVp1ZURYZU5xeURKMUdmQy02RGJRVnNvNWU4Q2VpTmc?oc=5"
+        }
+      ]
+    },
+    "bc48ff9b1f6885e42367": {
+      "id": "bc48ff9b1f6885e42367",
+      "from": "sintana energy",
+      "to": "angola kon 16",
+      "type": "acquisition",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Sintana Energy Completes Acquisition of Angola KON-16 Interest",
+          "publisher": "TipRanks",
+          "url": "https://news.google.com/rss/articles/CBMi8gFBVV95cUxNZVQwZmstSXloeTY5XzV3anlFWE11RHFkNFJyQ2ZOUEcyWnlUR2VzNWRyRk5VcFJjdlQtUksxV2RTTGlobk9qNTM5YnJTRFI1dm4wTk4zUXZYQ1ZmSE5iN25FQUNWMGV3MWR1c05FWUU2bURiZEZmcFQzcU1RVGU2azMwRFk3Z3Bkemc2c0VwLWo0Y2tuSmN1ZUV2TTJLTGJPMGhQREVfdkxWV2ZRajFqbzlYZDlORUdqSzMwamVHS09obk0td3pfOUdwUS1iSi1yYTBTblBDV2tnQjcyNU16RFN1OU1RWkFzSm5aRVpVVUlJUQ?oc=5"
+        }
+      ]
+    },
+    "668bfd756c021c02a1d5": {
+      "id": "668bfd756c021c02a1d5",
+      "from": "ubs group ag",
+      "to": "sibanye stillwater",
+      "type": "acquisition",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "UBS Group AG Acquires 5.17% Stake in Mining Giant Sibanye-Stillwater",
+          "publisher": "FF News",
+          "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQVkxvSlhMaFkySjJBQ0c5bVdfMkxrSS1DejFmSDQwRXFiRFRta3FzT3FPQkxOOFozOVRNQ3R6SWJQZXJfc0tGXzdVUTBPU1pSdnlnbmlsOTZuVkFEVUNsb01iTWZsVmYtRmFIZHVPS0JHaXZwM0FBTGtoeG1uU3JsSlpRaGZVX2R4Z3pJUmV2OVpTM1AzU1FkWjlfV1VGQ2I1?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-24T23:37:40.511100+00:00"
+  "updated_at": "2026-11-25T14:51:10.504153+00:00"
 }

@@ -908,3 +908,15 @@
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "RAKUNITY.LG"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "RAR.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-24", "market": "africa", "status": "no_annual_data_returned", "ticker": "RAV.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RAYA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RBGH.GH"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RBP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RBPCB.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RBX.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RCL.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RDF.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RDI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RDS.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "REA.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "REA.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "REAC.CA"}
