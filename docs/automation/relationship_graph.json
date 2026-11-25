@@ -2083,6 +2083,22 @@
     "sibanye stillwater": {
       "name": "Sibanye-Stillwater",
       "kind": "organization"
+    },
+    "insur investments": {
+      "name": "Insur Investments",
+      "kind": "organization"
+    },
+    "melon mobile group": {
+      "name": "Melon Mobile Group",
+      "kind": "organization"
+    },
+    "germany": {
+      "name": "Germany",
+      "kind": "organization"
+    },
+    "ruto steinmeier": {
+      "name": "Ruto-Steinmeier",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -7181,6 +7197,26 @@
           "title": "Payaza Acquires Ghanaian Firm Seesail to Expand SME Commerce Services Across Africa",
           "publisher": "Brand Icon Image",
           "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOYXBpTDhyYmU4Z0FTSm1zakJtSnp3SE9UelladkkzaEcxWDkwUmgwa1pkc2tWaV9KY1dTR0o5UUlrT29sMWp4V2NpcTZoVEttLTk4M2xUcjBhZFotb05qc3N4cHNYSDJiVFRIZkNOZUp5ZnhWbWlzdkNEX1lPV2kxT3M0MmZxTms3?oc=5"
+        },
+        {
+          "title": "Nigerian fintech Payaza acquires Ghanaian startup Seesail to expand SME services across Africa",
+          "publisher": "Billionaires.Africa",
+          "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxNRnJERUNzTV9uZ2xjR3FCT19JM1Q1WjBtRzVuZEVDMTVTYWlNSGlCZWRuR21pd2lTWXYyUV84OGs5MEVieEZYaUhaNXBTRTdaazdOa21SdnJQYzFBNFc0ZGJkV3ktZjU4OXdtTzN0X0p1MzFpbnl2djdkU3p0OGFuTktkNUpZWU54UHA3WllLeWE5Tk1XZWJwXzRieW16dGFPWlZqWUd6YldJYVJDTDFYSFcxZU81cmsya2Z6RFo2bnBQTHZFZUlUS2xneFV2QkwyNXhIeQ?oc=5"
+        },
+        {
+          "title": "Payaza acquires Ghana's Seesail, appoints co-founder to lead Africa operations",
+          "publisher": "The Star, Kenya",
+          "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxObXBPUjM0SE80VkhRei10d05KbU44RUZwVTFTSTFLTXFvakkwQ21HN3dzbkd5azZ4UzlJeFE0TU1VTTh3UzF1ZnZJZkFwcGlJR0kxang3MldZbWRCWXd0Vk1qaHlUU0tBc1pYTU9kbk41Tjd6RVBZejhZWHBzeEwydUU0T1FETXdVZ3pmaFJrN3ZXWjh3b0MzVDFpNmRiazFMR0YyLTV4amczX2pIQTNRek1MY01ORnV3Ukdr?oc=5"
+        },
+        {
+          "title": "Payaza acquires Seesail and names Blavo to lead Africa operations",
+          "publisher": "5050 Markets",
+          "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE1qbFhuN2kza1ozcW5Ud1N6bFBuOHU0M0pYbGh4Z01aQmpyWkp6MmFaakJuTFFlV3Q0aXpSLVR3OHhsamNCLW9EU0RpYzROOFdXTW5MWVExaGJNZDdfWHNRUWtEYnNkaXJvbXNDNmV2S01kMkZfOGpBWFNndzVGdw?oc=5"
+        },
+        {
+          "title": "Payaza Acquires Seesail, Appoints Co-Founder Victor Blavo Shopaza's Africa GM",
+          "publisher": "Mpasho",
+          "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOS3hFVE54S0FVcy1ZTTlrRTM4NHVNbTN1S1ZLdWdQZHRMdXNGZnN5SG11VWVIU3NqZnhQb18xNExPRnllbVVKd216eENJcVNwODFnVVNxWWhkeklvT2xtS2VVVm1HdG84T0RlNUctOUtxazh5cGlQVjZqUHkybGNqRDViRjg2YUJabW5zX3dFal9nMHllYTJfYXI5U1M2MmZ4QUU3NUx1bjg2UEczLTF2LVE0cUFKclZWd0dSLVZlRWdPVjA?oc=5"
         }
       ]
     },
@@ -7322,6 +7358,11 @@
           "title": "Kenyan Fintech Cloud9 Acquires Canada’s Monix Pay To Expand Into North America",
           "publisher": "WeeTracker",
           "url": "https://weetracker.com/2026/11/25/cloud9-acquires-monix-pay-canada/"
+        },
+        {
+          "title": "Cloud9 acquires Canada’s Monix Pay",
+          "publisher": "ITWeb Africa",
+          "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQanJ2Y2lZR2NyZTRHUk1kSDk0eVRtNERKVnFIaGI1N3hlTUJET3QzWFhDNk5QSW9zeG1LTG5mSzRvRjlDSVpyYnpzSlJwR2dzZDdQU2tSbmZfVzdyWDkyd2lvRG5kejFsbmZpRDBtbTR2YjU3NElFLTNZa0NjSjRwRmI0S3gzdw?oc=5"
         }
       ]
     },
@@ -7455,7 +7496,49 @@
           "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQVkxvSlhMaFkySjJBQ0c5bVdfMkxrSS1DejFmSDQwRXFiRFRta3FzT3FPQkxOOFozOVRNQ3R6SWJQZXJfc0tGXzdVUTBPU1pSdnlnbmlsOTZuVkFEVUNsb01iTWZsVmYtRmFIZHVPS0JHaXZwM0FBTGtoeG1uU3JsSlpRaGZVX2R4Z3pJUmV2OVpTM1AzU1FkWjlfV1VGQ2I1?oc=5"
         }
       ]
+    },
+    "440275979548af3c89d0": {
+      "id": "440275979548af3c89d0",
+      "from": "insur investments",
+      "to": "aiico insurance",
+      "type": "acquisition",
+      "first_seen": "2026-11-24",
+      "sources": [
+        {
+          "title": "Insur Investments agrees to acquire 30.53% stake in AIICO Insurance",
+          "publisher": "Business News Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPaFlCQXJ5SGtfQ0ZZQVlIcGNKY2pNbFYtcU55Wl9VY0h5X3pPVW5ISjZFek9SUWZlV1ZkWW9wM29nQlExT1V1YUtZQk5kbDJNWnNXNjBGaEFHM1lmUlkyUDRFbGhMLTd1ekxnOUtVNU5tMGlGSkNpdUNvR1l6dEc3aGExWUhUV1FkdVl6Ui1HSU04eVZva3ZlRnhOQ1ZYdnJfVFNocHViNFR0d3h4?oc=5"
+        }
+      ]
+    },
+    "7ef0950175b3baf1ee5a": {
+      "id": "7ef0950175b3baf1ee5a",
+      "from": "cell c",
+      "to": "melon mobile group",
+      "type": "acquisition",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Cell C Completes Acquisition of Melon Mobile Group in South Africa",
+          "publisher": "TechAfrica News",
+          "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQcUVhZ1FNa3o3Uzl1TE54V1F2NVJoVXFaZUZ1VWlfZUpTcU9wcG50NWdmWkhBbmpsTnZhTXVIaGJOUFZVNXBVQ1FWcl9wMHRyemQzc2hmc2JPSWNYWWZCS2g4MEUyRlYxM1hYbkR1bk41akVhOUhfUlVQWW12Z3J0R28yNGRjcm4wVHY4SzVTa1paRUZGM3cxdTVXOVRNZnpV?oc=5"
+        }
+      ]
+    },
+    "3e39be2bb2655ed74942": {
+      "id": "3e39be2bb2655ed74942",
+      "from": "germany",
+      "to": "ruto steinmeier",
+      "type": "equity_funding",
+      "first_seen": "2026-11-25",
+      "sources": [
+        {
+          "title": "Germany commits Ksh7.8B to Kenya for 2026-2028 in Ruto-Steinmeier talks",
+          "publisher": "People Daily",
+          "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNZ2RsNjBWVmdGSENsajBLQ0ZVZENCNmxsUnNqeGFnM2ZaTnR6TXo2aTZfeHJjY3NQckVLdHYwS2M0LXF3WVlNUGF6Z1FxX1BGVVZhYllFUDZiMngwbGxVX2hBUWxVXzlaZEtWNHl1NHFzSkRPVlBhak5xZzdpeXRyamc4WVpFU2Y5WjU2M3VRRkx2ZWR6UTdGakkzeGlMbmR0RjF1Qm1BMA?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-25T14:51:10.504153+00:00"
+  "updated_at": "2026-11-25T23:16:04.743176+00:00"
 }

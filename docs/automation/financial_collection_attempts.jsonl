@@ -920,3 +920,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "REA.JO"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "REA.NR"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "REAC.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "REB.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "REB.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-25", "market": "africa", "source": "NGX audited filing", "source_url": "https://doclib.ngxgroup.com/Financial_NewsDocs/47336_RED_STAR_EXPRESS_PLC-_QUARTER_5_-_FINANCIAL_STATEMENT_FOR_2026_FINANCIAL_STATEMENTS_JULY_2026.pdf", "status": "collected", "ticker": "REDSTAREX.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "REGALINS.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "REM.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "REN.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RES.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RESORTSAL.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RFG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RHB.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RIS.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RIVA.CA"}
