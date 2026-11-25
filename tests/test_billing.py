@@ -202,3 +202,54 @@ def test_works_against_the_database_before_the_currency_migration(env, monkeypat
                                                "customer": {"email": "a@example.com"}}})
     applies = [a for fn, a in calls if fn == "billing_apply"]
     assert applies[0] != applies[-1] and "p_currency" not in applies[-1]        # retried without the new parameter
+
+
+def _verify_env(env, monkeypatch, tx, subscriptions=()):
+    seen = []
+
+    async def paystack(client, method, path, body=None):
+        seen.append(path)
+        if path.startswith("/transaction/verify/"):
+            return tx
+        if path.startswith("/subscription?"):
+            return list(subscriptions)
+        raise AssertionError(path)
+    monkeypatch.setattr(billing, "_paystack", paystack)
+    return seen
+
+
+PAID = {"id": 501, "reference": "ref501", "status": "success", "paid_at": "2026-11-25T12:00:00.000Z", "currency": "NGN",
+        "metadata": {"user_id": USER, "plan": "team", "interval": "monthly", "currency": "NGN"},
+        "customer": {"id": 7, "email": "a@example.com", "customer_code": "CUS_1"},
+        "plan": "PLN_team", "plan_object": {"id": 3, "plan_code": "PLN_team"}}
+
+
+def test_returning_from_paystack_moves_the_account_to_its_plan_without_the_webhook(env, monkeypatch):
+    """The plan switches as soon as the customer is back, even if Paystack's webhook never arrives."""
+    seen = _verify_env(env, monkeypatch, PAID, [{"status": "active", "subscription_code": "SUB_9", "email_token": "tok",
+                                                 "next_payment_date": "2026-12-25T12:00:00.000Z", "createdAt": "x"}])
+    r = TestClient(api.app).post("/api/billing/verify", json={"user_id": USER, "reference": "ref501"}, headers=web())
+    assert r.status_code == 200 and r.json()["status"] == "success" and r.json()["plan"] == "team"
+    apply = next(a for fn, a in env["rpc"] if fn == "billing_apply")
+    assert (apply["p_user"], apply["p_plan"], apply["p_status"]) == (USER, "team", "active")
+    assert apply["p_subscription"] == "SUB_9" and apply["p_email_token"] == "tok"      # manageable from the site
+    assert "/subscription?customer=7&plan=3&perPage=5" in seen
+
+
+def test_the_webhook_after_a_return_check_changes_nothing(env, monkeypatch):
+    _verify_env(env, monkeypatch, PAID)
+    TestClient(api.app).post("/api/billing/verify", json={"user_id": USER, "reference": "ref501"}, headers=web())
+    _send({"event": "charge.success", "data": {k: v for k, v in PAID.items() if k not in ("plan", "plan_object")}})
+    assert len(env["applied"]) == 1                                              # same payment, same key, applied once
+
+
+def test_a_payment_not_yet_successful_or_from_another_account_grants_nothing(env, monkeypatch):
+    client = TestClient(api.app)
+    _verify_env(env, monkeypatch, {**PAID, "status": "abandoned"})
+    r = client.post("/api/billing/verify", json={"user_id": USER, "reference": "ref501"}, headers=web())
+    assert r.status_code == 200 and r.json() == {"status": "abandoned"}
+    _verify_env(env, monkeypatch, {**PAID, "metadata": {**PAID["metadata"], "user_id": "99999999-2222-3333-4444-555555555555"}})
+    assert client.post("/api/billing/verify", json={"user_id": USER, "reference": "ref501"}, headers=web()).status_code == 403
+    assert client.post("/api/billing/verify", json={"user_id": USER, "reference": "ref501"}).status_code == 403  # web app only
+    assert client.post("/api/billing/verify", json={"user_id": USER, "reference": "../x"}, headers=web()).status_code == 422
+    assert not any(fn == "billing_apply" for fn, _ in env["rpc"])

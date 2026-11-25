@@ -215,6 +215,66 @@ async def apply_event(payload: dict, client: httpx.AsyncClient) -> dict:
     return {"event": event, **(result or {})}
 
 
+# ── Confirmation on return ────────────────────────────────────────────────────
+
+class VerifyBody(BaseModel):
+    user_id: str = Field(..., min_length=36, max_length=36)
+    reference: str = Field(..., min_length=6, max_length=100, pattern=r"^[A-Za-z0-9_.=-]+$")
+
+
+def _as_dict(value: object) -> dict:
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str) and value.startswith("{"):
+        try:
+            parsed = json.loads(value)
+            return parsed if isinstance(parsed, dict) else {}
+        except ValueError:
+            return {}
+    return {}
+
+
+async def _subscription_for(client: httpx.AsyncClient, tx: dict, plan_obj: dict) -> dict:
+    """The subscription Paystack started with this payment (its code, email token and next date), so the customer can
+    manage it from the site; empty when it cannot be found yet (the webhook then fills it in)."""
+    customer_id, plan_id = (tx.get("customer") or {}).get("id"), plan_obj.get("id")
+    if not customer_id or not plan_id:
+        return {}
+    try:
+        rows = await _paystack(client, "GET", f"/subscription?customer={customer_id}&plan={plan_id}&perPage=5")
+    except HTTPException:
+        return {}
+    live = [s for s in rows if isinstance(s, dict) and s.get("status") in ("active", "non-renewing")] \
+        if isinstance(rows, list) else []
+    return max(live, key=lambda s: s.get("createdAt") or "", default={})
+
+
+@router.post("/api/billing/verify")
+async def verify(body: VerifyBody) -> dict:
+    """Confirm a payment when the customer returns from Paystack and move the account to its plan at once, instead of
+    waiting for the webhook (which may be late or, if the dashboard's webhook address is wrong, never arrive). Only a
+    successful payment that was started by this same account counts; the database applies it once, so the webhook
+    arriving afterwards changes nothing."""
+    if not secret_key() or not hm._configured():
+        raise HTTPException(503, "Payments are not configured yet.")
+    async with httpx.AsyncClient(timeout=20) as client:
+        tx = await _paystack(client, "GET", f"/transaction/verify/{body.reference}")
+        if tx.get("status") != "success":
+            return {"status": tx.get("status") or "pending"}
+        if _as_dict(tx.get("metadata")).get("user_id") != body.user_id:
+            raise HTTPException(403, "This payment belongs to another account.")
+        plan_obj = _as_dict(tx.get("plan_object")) or _as_dict(tx.get("plan"))
+        if not plan_obj.get("plan_code") and isinstance(tx.get("plan"), str) and tx["plan"]:
+            plan_obj = {**plan_obj, "plan_code": tx["plan"]}
+        data = {**tx, "metadata": _as_dict(tx.get("metadata")), "plan": plan_obj}
+        subscription = await _subscription_for(client, tx, plan_obj)
+        if subscription:
+            data["subscription"] = subscription
+        outcome = await apply_event({"event": "charge.success", "data": data}, client)
+    log.info("paystack verify on return: %s", outcome)
+    return {"status": "success", **outcome}
+
+
 @router.post("/api/billing/paystack")
 async def paystack_webhook(request: Request) -> JSONResponse:
     body = await request.body()

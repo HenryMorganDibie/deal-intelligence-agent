@@ -54,9 +54,16 @@ export default function BillingPage() {
     const q = new URLSearchParams(window.location.search);
     const back = q.get("checkout") === "done";
     setReturning(back);
+    const reference = q.get("reference") || q.get("trxref");
     load().then(async (first) => {
-      // Paystack confirms a payment to the server a few seconds after the customer returns; check a few times.
       if (!back || !first || first.plan !== "free") { setReturning(false); return; }
+      // Ask Paystack directly whether the payment went through and switch the plan now; the webhook is the backup.
+      if (reference) {
+        await post({ action: "verify", reference }).catch(() => null);
+        const b = await load();
+        if (b && b.plan !== "free") { setReturning(false); return; }
+      }
+      // Otherwise Paystack confirms a payment to the server a few seconds after the customer returns; check a few times.
       for (let i = 0; i < 6; i++) {
         await new Promise((ok) => setTimeout(ok, 2500));
         const b = await load();

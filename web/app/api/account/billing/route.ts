@@ -3,7 +3,7 @@ import { apiHeaders, apiUrl } from "../../../../lib/api-base";
 import { getPortfolioSession, isSameSiteJsonRequest, portfolioConfig } from "../../../../lib/portfolio-server";
 
 // Billing for the signed-in account. GET reads the account's plan and subscription (as the account, through its
-// own session). POST starts a Paystack checkout or opens Paystack's subscription page; the account's id comes from
+// own session). POST starts a Paystack checkout, confirms a payment on return from Paystack, or opens Paystack's subscription page; the account's id comes from
 // the verified session, never from the browser, and the API call carries the app's server secret.
 
 export const runtime = "nodejs";
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   if (!isSameSiteJsonRequest(request)) return fail("Invalid request.", 400);
   const s = await session();
   if (s instanceof NextResponse) return s;
-  const body = (await request.json().catch(() => ({}))) as { action?: string; plan?: string; interval?: string; currency?: string };
+  const body = (await request.json().catch(() => ({}))) as { action?: string; plan?: string; interval?: string; currency?: string; reference?: string };
   let path: string;
   let payload: Record<string, unknown>;
   if (body.action === "checkout") {
@@ -50,6 +50,11 @@ export async function POST(request: NextRequest) {
     path = "/api/billing/checkout";
     const currency = body.currency === "USD" ? "USD" : "NGN";
     payload = { user_id: s.user.id, plan: body.plan, interval, currency };
+  } else if (body.action === "verify") {
+    // Back from Paystack: confirm the payment and switch the plan now rather than wait for the webhook.
+    if (typeof body.reference !== "string" || !/^[A-Za-z0-9_.=-]{6,100}$/.test(body.reference)) return fail("Invalid payment reference.", 400);
+    path = "/api/billing/verify";
+    payload = { user_id: s.user.id, reference: body.reference };
   } else if (body.action === "manage") {
     path = "/api/billing/manage";
     payload = { user_id: s.user.id };
