@@ -1,7 +1,8 @@
 name: Price history backfill
 
 # Fills daily price history back to 2010 for every listed share a source covers (scripts/backfill_price_history.py):
-# Johannesburg and Cairo from Yahoo Finance, the other markets from sikafinance. Resumable and paced (one request
+# Johannesburg and Cairo from Yahoo Finance, NGX from the exchange's own daily price lists (mid-2014 on), the other
+# markets from sikafinance. Resumable and paced (one request
 # every 0.7 seconds per site): each run reads only listings with no saved history, so after the first full pass a
 # nightly run just picks up newly listed shares in a few requests.
 on:
@@ -34,7 +35,7 @@ jobs:
       fail-fast: false
       matrix:
         # One job per source site, so each keeps its own pace.
-        group: [yahoo, sikafinance]
+        group: [yahoo, sikafinance, ngx]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -50,7 +51,11 @@ jobs:
           REQUESTED: ${{ inputs.exchanges }}
           GROUP: ${{ matrix.group }}
         run: |
-          if [ "$GROUP" = "yahoo" ]; then ALL="jse egx"; else ALL="brvm ngx gse bvc nse sem bvmt luse bse dse mse rse use sgbv"; fi
+          if [ "$GROUP" = "ngx" ]; then
+            if [ -z "$REQUESTED" ] || echo " $REQUESTED " | grep -q " ngx "; then python scripts/backfill_ngx_archive.py; fi
+            exit 0
+          fi
+          if [ "$GROUP" = "yahoo" ]; then ALL="jse egx"; else ALL="brvm gse bvc nse sem bvmt luse bse dse mse rse use sgbv"; fi
           PICK=""
           for ex in $ALL; do
             if [ -z "$REQUESTED" ] || echo " $REQUESTED " | grep -q " $ex "; then PICK="$PICK $ex"; fi

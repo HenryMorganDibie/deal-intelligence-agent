@@ -32,7 +32,7 @@ const ENDPOINTS: [string, string, string][] = [
   ["/markets/screener", "Listed shares across African exchanges, filtered and sorted.", "exchange, sector, min_mcap_usd, q, sort, include_stale, limit (≤200), offset"],
   ["/markets/search", "Find a listing by company name or ticker.", "q (required), limit (≤25)"],
   ["/markets/quote", "Latest price for one listing.", "exchange, symbol (both required)"],
-  ["/markets/history", "Daily closes for one listing, in local currency and dollars, oldest first, with the change over the period. Back to 2010 where a source has it (Johannesburg, Cairo, BRVM); most other markets from 2016 to 2024. Dollar closes from 28 October 2026.", "exchange, symbol (both required), since, until"],
+  ["/markets/history", "Daily closes for one listing, in local currency and dollars, oldest first, with the change over the period. Back to 2010 where a source has it (Johannesburg, Cairo, BRVM); NGX from July 2014 (the exchange's own daily lists); most other markets from 2016 to 2024. Dollar closes from 28 October 2026.", "exchange, symbol (both required), since, until"],
 ];
 
 // Elections: Nigeria in depth, other countries' news and incidents. [method, path, what, params]

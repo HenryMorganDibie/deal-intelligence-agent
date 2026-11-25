@@ -120,3 +120,22 @@ revoke execute on function public.upsert_price_history(text, jsonb), public.pric
   public.market_history(text, text, text, text, date) from public;
 grant execute on function public.upsert_price_history(text, jsonb), public.price_history_years_saved(text, text),
   public.market_history(text, text, text, text, date) to anon;
+
+-- For each year of an exchange's saved history, how many listings came from each source: {year: {source: n}}.
+-- The NGX archive backfill uses it to skip years already filled from the exchange's own lists.
+create or replace function public.price_history_year_sources(secret text, p_exchange text)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  perform private.check_secret(secret);
+  return coalesce((select jsonb_object_agg(year::text, sources) from (
+    select year, jsonb_object_agg(source, n) as sources from (
+      select year, source, count(*) as n from public.price_history_years where exchange = lower(p_exchange)
+      group by year, source) a group by year) s), '{}'::jsonb);
+end; $$;
+revoke execute on function public.price_history_year_sources(text, text) from public;
+grant execute on function public.price_history_year_sources(text, text) to anon;

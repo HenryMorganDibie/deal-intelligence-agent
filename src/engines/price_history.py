@@ -5,8 +5,9 @@ listing per year (public.price_history_years); GET /v1/markets/history reads it 
 
 Sources, chosen by what they hold (checked November 2026):
   - Yahoo Finance chart data: Johannesburg (.JO, quoted in cents, converted to rand) and Cairo (.CA), from 2000.
-  - sikafinance.com history: the other markets it lists. BRVM from 2010; Casablanca from about 2016; NGX and Ghana
-    from 2020; most others from 2018 (indices) or 2024 (shares).
+  - sikafinance.com history: the other markets it lists. BRVM from 2010; Casablanca from about 2016; Ghana from
+    2020; most others from 2018 (indices) or 2024 (shares).
+  - NGX: the exchange's own daily price lists from mid-2014 (src/engines/ngx_archive.py).
 Both report closes adjusted for splits and agree with the daily snapshots on the days they overlap.
 """
 from __future__ import annotations
@@ -25,7 +26,8 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) deal-intelligence/1.0"
 
 YAHOO_SUFFIX = {"jse": ".JO", "egx": ".CA"}
 # The sikafinance market (placeCode) for each exchange it lists.
-SIKA_PLACE = {"ngx": "ng", "brvm": "br", "gse": "gh", "dse": "et", "mse": "mw", "rse": "rw", "bvc": "ma",
+# NGX is filled from the exchange's own daily price lists instead (src/engines/ngx_archive.py).
+SIKA_PLACE = {"brvm": "br", "gse": "gh", "dse": "et", "mse": "mw", "rse": "rw", "bvc": "ma",
               "sem": "mu", "bse": "bw", "luse": "zm", "bvmt": "tn", "nse": "ke", "use": "ug", "sgbv": "dz"}
 SOURCE_NAME = {"yahoo": "Yahoo Finance history", "sika": "sikafinance history"}
 
