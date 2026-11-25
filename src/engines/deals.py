@@ -2744,12 +2744,36 @@ def _buyer_names_target(a: dict, b: dict, gap: int) -> bool:
     return False
 
 
+def _buyer_through_its_owner(a: dict, b: dict, gap: int) -> bool:
+    """One acquisition credited to a company in one report and to its unit in another ("Payaza acquires Seesail" and
+    "Payaza's ShopAza Acquires ... Seesail"): the same target within a week, different buyers, and one report's buyer
+    named in the other's headline."""
+    ma = {"acquisition", "merger"}
+    if gap > 7 or a.get("deal_type") not in ma or b.get("deal_type") not in ma:
+        return False
+    if not _party_match(a.get("target"), b.get("target")) or _junk_party(a.get("target")):
+        return False
+    if _junk_party(a.get("buyer")) or _junk_party(b.get("buyer")) or _party_match(a.get("buyer"), b.get("buyer")):
+        return False
+    if _stakes_differ(a, b):
+        return False
+    ua, ub = a.get("amount_usd"), b.get("amount_usd")
+    if ua and ub and max(ua, ub) / min(ua, ub) > 1.2:
+        return False
+    for x, y in ((a, b), (b, a)):
+        core = _report_core(x.get("buyer"))
+        if core and _distinctive(core) and core <= set(normalise_name(y.get("headline")).split()):
+            return True
+    return False
+
+
 def strong_same_report(a: dict, b: dict) -> bool:
     try:
         gap = abs((date.fromisoformat(a["announced"][:10]) - date.fromisoformat(b["announced"][:10])).days)
     except Exception:
         return False
-    if not _markets_disagree(a, b) and (_republished(a, b, gap) or _late_re_report(a, b, gap) or _buyer_names_target(a, b, gap)):
+    if not _markets_disagree(a, b) and (_republished(a, b, gap) or _late_re_report(a, b, gap) or _buyer_names_target(a, b, gap)
+                                        or _buyer_through_its_owner(a, b, gap)):
         return True
     ma = {"acquisition", "merger", "exit"}
     ta, tb = a.get("deal_type"), b.get("deal_type")

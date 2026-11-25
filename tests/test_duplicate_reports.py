@@ -170,3 +170,23 @@ def test_stored_purchase_under_the_business_and_its_owner_is_folded():
               headline="Uber to Acquire Delivery Hero's Food Delivery Business Across 50 Markets, Including Glovo Kenya")
     out = hm._reclassify_stored({"g": glovo, "d": dh}, {})
     assert {out["g"].get("merged_into"), out["d"].get("merged_into")} & {"g", "d"}
+
+
+def test_an_acquisition_credited_to_a_company_and_to_its_unit_is_one():
+    """'Payaza acquires Seesail' and "Payaza's ShopAza Acquires ... Seesail": the buyer of one report is named in the
+    other's headline as the unit's owner."""
+    a = deal(target="Seesail", buyer="Payaza", country="GH", countries=["GH"], announced="2026-11-24",
+             headline="Payaza acquires Seesail to bring commerce tools and finance to Africa's small businesses")
+    b = deal(target="Seesail", buyer="ShopAza", country="GH", countries=["GH"], announced="2026-11-24",
+             headline="Payaza's ShopAza Acquires Ghanaian Commerce Startup Seesail")
+    assert dm.strong_same_report(a, b) and dm.strong_same_report(b, a)
+    # A different buyer not named in the other report is a different deal; so is a different target.
+    c = deal(target="Seesail", buyer="Flutterwave", country="GH", countries=["GH"], announced="2026-11-25",
+             headline="Flutterwave acquires Seesail")
+    assert not dm.strong_same_report(a, c)
+    d = deal(target="Kudi", buyer="ShopAza", country="GH", countries=["GH"], announced="2026-11-24",
+             headline="Payaza's ShopAza acquires Kudi")
+    assert not dm.strong_same_report(a, d)
+    # More than a week apart, it stays apart.
+    e = {**b, "announced": "2026-12-10"}
+    assert not dm.strong_same_report(a, e)
