@@ -79,7 +79,7 @@ begin
         from (
           select (r->>'date')::date as d, (r->>'price')::numeric as close, (r->>'chg_1d')::numeric as chg_1d,
                  (r->>'volume')::numeric as volume, (r->>'value')::numeric as value_traded,
-                 (r->>'mcap')::numeric as mcap, r->>'source' as source, 1 as pri, s.captured_at
+                 (r->>'mcap')::numeric as mcap, coalesce(r->>'source', 'daily snapshot') as source, 1 as pri, s.captured_at
           from public.market_snapshots s
           cross join lateral jsonb_array_elements(coalesce(s.payload->'rows', '[]'::jsonb)) r
           where s.kind = 'quotes' and s.scope = p_exchange
