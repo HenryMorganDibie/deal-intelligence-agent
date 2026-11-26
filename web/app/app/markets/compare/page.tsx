@@ -83,9 +83,12 @@ export default function MarketsComparePage({ publicPreview = false }: { publicPr
   useEffect(() => {
     if (restored.current) return;
     restored.current = true;
+    const sharedRefs = decodeEntries(new URLSearchParams(window.location.search).get("c"));
+    // Public links render only the companies explicitly carried by the shared URL.
+    // The fixed basket remains the fallback for a bare /markets/compare visit.
     const refs = publicPreview
-      ? PUBLIC_PREVIEW_REFS
-      : decodeEntries(new URLSearchParams(window.location.search).get("c"));
+      ? (sharedRefs.length ? sharedRefs : PUBLIC_PREVIEW_REFS)
+      : sharedRefs;
     if (!refs.length) return;
     setBusy(true);
     Promise.allSettled(refs.map((r) => load(r)))

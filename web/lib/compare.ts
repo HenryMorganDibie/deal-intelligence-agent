@@ -10,7 +10,7 @@ export type CompareProfile = {
   country_name: string | null;
   exchange: string | null;
   identity?: { sector?: string | null; industry?: string | null } | null;
-  market?: { price?: number | null; currency?: string | null; market_cap?: number | null; as_at?: string | null } | null;
+  market?: { price?: number | null; currency?: string | null; market_cap?: number | null; as_at?: string | null; change_pct?: number | null; high_52w?: number | null; low_52w?: number | null; source?: string | null; stale?: boolean; age_days?: number; delayed?: boolean; quote_time?: string | null; range_as_at?: string | null; range_source?: string | null } | null;
   multiples?: Record<string, number> | null;
   financials?: {
     source: string; source_url?: string; currency?: string; unit?: string; verified: boolean;
@@ -57,6 +57,38 @@ function usdShort(v: number): string {
 
 const ratio = (a: number | null, b: number | null) => (a != null && b != null && b !== 0 ? a / b : null);
 
+/** Format a traded share price in the currency supplied by its exchange. */
+function quotePrice(e: Entry, field: "price" | "high_52w" | "low_52w"): string | null {
+  const market = e.profile.market;
+  const value = market?.[field];
+  const currency = market?.currency;
+  if (typeof value !== "number" || !Number.isFinite(value) || !currency) return null;
+  try {
+    return new Intl.NumberFormat("en-NG", { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
+  } catch {
+    return `${currency} ${value.toLocaleString("en-NG", { maximumFractionDigits: 2 })}`;
+  }
+}
+
+/** The quote's provenance and freshness, kept separate from financial-statement dates. */
+function quoteNote(e: Entry): string | null {
+  const market = e.profile.market;
+  if (!market) return null;
+  const parts = [market.source || "Exchange market data", market.as_at ? `as of ${String(market.as_at).slice(0, 10)}` : null];
+  if (market.delayed) parts.push("delayed");
+  if (market.stale) parts.push(`stale${typeof market.age_days === "number" ? ` (${market.age_days} days old)` : ""}`);
+  return parts.filter(Boolean).join(" · ");
+}
+
+function rangeNote(e: Entry): string | null {
+  const market = e.profile.market;
+  if (!market) return null;
+  const parts = [market.range_source || "Exchange trading summary",
+    market.range_as_at ? `as of ${String(market.range_as_at).slice(0, 10)}` : null];
+  if (market.stale) parts.push("quote data stale");
+  return parts.filter(Boolean).join(" · ");
+}
+
 /** True when the statements cover a full year, so profit can be set against a market value. */
 export function fullYear(p: CompareProfile): boolean {
   const months = p.financials?.period?.months;
@@ -73,7 +105,7 @@ export type Metric = {
   key: string;
   label: string;
   group: string;
-  kind: "usd" | "pct" | "x" | "text" | "count";
+  kind: "usd" | "pct" | "x" | "text" | "count" | "price";
   better: Direction;                       // which way leads; null where neither is better
   value: (e: Entry) => number | string | null;
   local?: (e: Entry) => string | null;     // the amount as reported, shown under its dollar value
@@ -103,8 +135,16 @@ export const METRICS: Metric[] = [
       return l ? `${l.authority}${l.title ? ` (${l.title.replace(/^Licensed: /, "")})` : ""}` : null;
     } },
 
+  { key: "price", label: "Last traded price", group: "Market", kind: "price", better: null,
+    value: (e) => quotePrice(e, "price"), local: quoteNote },
+  { key: "high_52w", label: "52-week high", group: "Market", kind: "price", better: null,
+    value: (e) => quotePrice(e, "high_52w"), local: rangeNote },
+  { key: "low_52w", label: "52-week low", group: "Market", kind: "price", better: null,
+    value: (e) => quotePrice(e, "low_52w"), local: rangeNote },
   { key: "mcap", label: "Market capitalisation", group: "Market", kind: "usd", better: null, value: marketCapUsd },
-  { key: "chg_1d", label: "Today", group: "Market", kind: "pct", better: "higher", value: (e) => e.facts?.chg_1d ?? null },
+  { key: "chg_1d", label: "Daily change", group: "Market", kind: "pct", better: "higher",
+    value: (e) => e.facts?.chg_1d ?? (typeof e.profile.market?.change_pct === "number" ? e.profile.market.change_pct / 100 : null),
+    local: quoteNote },
   { key: "ytd", label: "Year to date, in US dollars", group: "Market", kind: "pct", better: "higher", value: (e) => e.facts?.ytd_usd ?? null },
   { key: "pe", label: "Price / earnings", group: "Market", kind: "x", better: "lower",
     note: "Market cap over the latest full-year profit after tax, both in US dollars; loss-makers are left out.",
