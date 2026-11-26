@@ -334,3 +334,45 @@ def test_seed_skips_companies_already_read_or_queued(monkeypatch):
             (("Big Plc", 9e9), ("Mid Plc", 5e8), ("Small Plc", 1e7))]
     assert cw.seed(rows, limit=1) == {"queued": ["Mid Plc"], "checked": 2}
     assert asked == ["Mid Plc"]
+
+
+# ── Re-reading sites that change ──────────────────────────────────────────────
+
+def test_fingerprint_follows_governance_and_report_links_not_news():
+    from src import company_web as cw
+    base = "https://www.acme.co/"
+    page = ('<a href="/about-us">About</a><a href="/board-of-directors/">Board</a>'
+            '<a href="https://acme.co/investors/annual-report-2025.pdf">AR</a>'
+            '<a href="/news/today">News</a><a href="https://other.com/board">x</a>')
+    fp = cw.site_fingerprint(page, base)
+    assert fp and fp == cw.site_fingerprint(page + '<a href="/news/tomorrow">More news</a>', base)   # news ignored
+    assert fp == cw.site_fingerprint(page.replace('/board-of-directors/', '/board-of-directors'), base)
+    new_report = page + '<a href="/investors/annual-report-2026.pdf">AR 2026</a>'
+    assert cw.site_fingerprint(new_report, base) != fp                                               # new report
+    assert cw.site_fingerprint('<a href="/news">News</a>', base) is None
+
+
+def test_refresh_queues_changed_sites_and_reports_unreadable_ones(monkeypatch):
+    from src import company_web as cw
+    from src import hosted_market as hm
+
+    class R:
+        def __init__(self, payload):
+            self.status_code, self._p, self.text = 200, payload, str(payload)
+
+        def json(self):
+            return self._p
+    calls = []
+
+    def rpc(fn, args, timeout=30):
+        calls.append((fn, args))
+        if fn == "company_web_due_checks":
+            return R([{"name_key": "acme", "name": "Acme", "website": "https://acme.co"},
+                      {"name_key": "beta", "name": "Beta", "website": "https://beta.co"}])
+        return R("queued" if args["p_name_key"] == "acme" else "unchanged")
+    monkeypatch.setattr(hm, "_configured", lambda: True)
+    monkeypatch.setattr(hm, "_rpc_sync", rpc)
+    monkeypatch.setattr(cw, "_home_fingerprint", lambda site: "fp1" if "acme" in site else None)
+    out = cw.refresh(10)
+    assert out == {"checked": 2, "queued_for_reread": ["Acme"], "unreadable": ["Beta"]}
+    assert ("company_web_checked", {"p_name_key": "beta", "p_fingerprint": None}) in calls

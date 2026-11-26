@@ -6,7 +6,8 @@ statements), the site is queued. The dedicated five-minute worker builds a crawl
 address says what they hold (about, leadership, board, governance, subsidiaries, contact, investors), at most 16 per
 site, robots.txt not consulted (the owner's decision) and one page every two seconds per site. The crawled pages are read by the cached language
 model into fields and kept only where they can be found on the page they cite (src/engines/governance.verify), then
-stored for the profile. A site is read again at most every 30 days.
+stored for the profile. A read site is checked about once a week (refresh): when its home page links to new
+governance, board or report pages, or a read is more than 30 days old, it is queued and read again.
 """
 from __future__ import annotations
 
@@ -16,7 +17,8 @@ import os
 import re
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Optional
-from urllib.parse import urlparse
+import hashlib
+from urllib.parse import urljoin, urlparse
 
 from src.engines import deals as deals_mod
 from src.engines import governance
@@ -594,7 +596,7 @@ def seed_candidates(directory: list[dict]) -> list[tuple[str, Optional[str], Opt
 
 def seed(directory: list[dict], limit: int = 10, max_checks: int = 300) -> dict:
     """Queue up to `limit` companies that have never been read, in seed_candidates order. A company already in the
-    table (read, queued or failed) is skipped; the 30-day re-read is the worker's job."""
+    table (read, queued or failed) is skipped; re-reading read sites is refresh's job."""
     from src import hosted_market as hm
     if not hm._configured():
         return {"skipped": "database not configured"}
@@ -613,3 +615,68 @@ def seed(directory: list[dict], limit: int = 10, max_checks: int = 300) -> dict:
         if request(name, website, country) is not None:
             queued.append(name)
     return {"queued": queued, "checked": checked}
+
+
+# ── Re-reading sites that change ──────────────────────────────────────────────
+
+_HREF = re.compile(r"""href\s*=\s*["']([^"'#]+)""", re.I)
+_REPORT_PDF = re.compile(r"(?i)(annual|integrated|report|financial|results|statements).*\.pdf$")
+REFRESH_PER_RUN = 40
+
+
+def site_fingerprint(html: str, base: str) -> Optional[str]:
+    """A fingerprint of what the home page links to that a profile is read from: governance, board, leadership,
+    subsidiary and report pages, and report PDFs. It changes when one is added or removed (a new annual report, a new
+    board page), not when news or prices on the page change. None when no such link is found."""
+    host = urlparse(base).netloc.lower().removeprefix("www.")
+    links = set()
+    for href in _HREF.findall(html or ""):
+        url = urljoin(base, href.strip())
+        parts = urlparse(url)
+        if parts.scheme not in ("http", "https") or parts.netloc.lower().removeprefix("www.") != host:
+            continue
+        path = parts.path.rstrip("/").lower() or "/"
+        if _REPORT_PDF.search(path) or (any(re.search(p, path) for p in INCLUDE)
+                                        and not any(re.search(p, path) for p in EXCLUDE)):
+            links.add(path)
+    if not links:
+        return None
+    return hashlib.sha256("\n".join(sorted(links)).encode()).hexdigest()
+
+
+def _home_fingerprint(site: str, timeout: float = 15) -> Optional[str]:
+    """The fingerprint of a site's home page now, or None when it cannot be read (an error, a bot challenge)."""
+    import httpx
+    try:
+        r = httpx.get(site, timeout=timeout, follow_redirects=True,
+                      headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) deal-intelligence/1.0"})
+    except httpx.HTTPError:
+        return None
+    if r.status_code != 200 or "html" not in r.headers.get("content-type", ""):
+        return None
+    return site_fingerprint(r.text, str(r.url))
+
+
+def refresh(limit: int = REFRESH_PER_RUN) -> dict:
+    """Check read sites not checked in a week: one home-page request each. A site whose fingerprint changed, or
+    whose read is over 30 days old, is queued for a full re-read by the worker."""
+    from src import hosted_market as hm
+    if not hm._configured():
+        return {"skipped": "database not configured"}
+    r = hm._rpc_sync("company_web_due_checks", {"p_limit": limit}, 30)
+    if r.status_code != 200:
+        log.warning("refresh: due checks failed: %s %s", r.status_code, r.text[:200])
+        return {"error": r.status_code}
+    due = r.json() or []
+
+    def one(row: dict) -> tuple[str, str]:
+        fp = _home_fingerprint(row["website"])
+        res = hm._rpc_sync("company_web_checked", {"p_name_key": row["name_key"], "p_fingerprint": fp}, 15)
+        verdict = res.json() if res.status_code == 200 else "error"
+        return row["name"], verdict if fp is not None or verdict == "queued" else f"{verdict} (home page unreadable)"
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        results = list(pool.map(one, due))
+    queued = [n for n, v in results if v == "queued"]
+    return {"checked": len(results), "queued_for_reread": queued,
+            "unreadable": [n for n, v in results if "unreadable" in v]}

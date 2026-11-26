@@ -1,6 +1,7 @@
 """Company websites read with web-harvester, for company profiles.
 
     python scripts/company_web.py seed 10                                          # queue unread companies, most important first
+    python scripts/company_web.py refresh 40                                       # re-queue read sites that changed or are over 30 days old
     python scripts/company_web.py prepare crawl.json pages.jsonl companies.json   # which sites to read
     <web-harvester>/crawl -config crawl.json -i-have-reviewed-tos                # fetch them (rate limits)
     python scripts/company_web.py apply pages.jsonl companies.json               # read and store the facts
@@ -32,6 +33,10 @@ def main(argv: list[str]) -> int:
         from src import hosted_market as hm
         limit = int(argv[1]) if len(argv) > 1 else 10
         print(json.dumps(company_web.seed(hm._directory(), limit=limit)))
+        return 0
+    if len(argv) >= 1 and argv[0] == "refresh":
+        limit = int(argv[1]) if len(argv) > 1 else company_web.REFRESH_PER_RUN
+        print(json.dumps(company_web.refresh(limit)))
         return 0
     if len(argv) >= 4 and argv[0] == "prepare":
         cfg, companies = company_web.crawl_config(argv[2])
