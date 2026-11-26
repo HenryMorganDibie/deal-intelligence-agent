@@ -105,7 +105,7 @@ export type Metric = {
   key: string;
   label: string;
   group: string;
-  kind: "usd" | "pct" | "x" | "text" | "count";
+  kind: "usd" | "pct" | "x" | "text" | "count" | "price";
   better: Direction;                       // which way leads; null where neither is better
   value: (e: Entry) => number | string | null;
   local?: (e: Entry) => string | null;     // the amount as reported, shown under its dollar value
