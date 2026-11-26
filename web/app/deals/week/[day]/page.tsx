@@ -8,7 +8,8 @@ import { weekTopic } from "../../../../lib/post-topics";
 /** The Monday week-in-review post's page: the week's count, disclosed total, busiest market and largest deals. */
 export const revalidate = 3600;
 
-export async function generateMetadata({ params }: { params: { day: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ day: string }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!dayLabel(params.day)) return { title: "Not found | Deal Intelligence", robots: { index: false } };
   const title = `The week in African deals, to ${dayLabel(params.day)}`;
   const description = "How many African deals were tracked this week, how much was disclosed, the busiest market and the largest deals.";
@@ -18,7 +19,8 @@ export async function generateMetadata({ params }: { params: { day: string } }):
     twitter: { card: "summary_large_image", title, description } };
 }
 
-export default async function WeekPage({ params }: { params: { day: string } }) {
+export default async function WeekPage(props: { params: Promise<{ day: string }> }) {
+  const params = await props.params;
   if (!dayLabel(params.day)) notFound();
   const { deals, total, start, end } = await weekWindow(params.day);
   const t = weekTopic(deals, total, start, end);

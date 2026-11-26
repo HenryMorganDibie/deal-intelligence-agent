@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { Container } from "../../../../components/primitives";
 import { DealRows, ErrorNote, Loading, PageHeader, Stat, usd, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
@@ -17,7 +17,8 @@ type DealResponse = {
   comparables: Comparables;
 };
 
-export default function DealPage({ params }: { params: { id: string } }) {
+export default function DealPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const [data, setData] = useState<DealResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 

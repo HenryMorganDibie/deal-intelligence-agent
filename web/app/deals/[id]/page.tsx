@@ -56,7 +56,8 @@ function sentence(d: Deal): string {
   }
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const data = await load(params.id);
   if (!data) return { title: "Deal not found | Deal Intelligence", robots: { index: false } };
   const d = data.deal;
@@ -72,7 +73,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function PublicDealPage({ params }: { params: { id: string } }) {
+export default async function PublicDealPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const data = await load(params.id);
   if (!data) notFound();
   const { deal: d, parties, verification: v } = data;

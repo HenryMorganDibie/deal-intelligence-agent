@@ -20,7 +20,8 @@ function fail(error: string, status: number) {
   return NextResponse.json({ error }, { status, headers: NO_STORE });
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (!isSameSiteJsonRequest(request)) return fail("Invalid request.", 403);
   if (!UUID_RE.test(params.id)) return fail("Watchlist not found.", 404);
   let session;

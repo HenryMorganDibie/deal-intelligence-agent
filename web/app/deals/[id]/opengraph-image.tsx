@@ -86,7 +86,8 @@ async function font(family: string, weight: number): Promise<ArrayBuffer | null>
   }
 }
 
-export default async function Image({ params }: { params: { id: string } }) {
+export default async function Image(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const [data, display, body] = await Promise.all([load(params.id), font("Inter+Tight", 600), font("Inter", 400)]);
   const d = data?.deal;
   const fonts = [

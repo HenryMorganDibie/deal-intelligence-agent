@@ -45,8 +45,8 @@ function fail(error: string, status = 400) {
 }
 
 /** The gate caches account facts (second factor, username); anything that changes them drops the cache. */
-function dropAuthState() {
-  cookies().set(AUTH_STATE_COOKIE, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 0 });
+async function dropAuthState() {
+  (await cookies()).set(AUTH_STATE_COOKIE, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 0 });
 }
 
 function verifiedFactor(user?: AuthUser): Factor | undefined {
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
       const success = exchange.ok && payload.access_token && payload.refresh_token && payload.user?.id;
       const response = success ? ok({ user: { id: payload.user!.id, email: payload.user!.email ?? null } })
         : fail("Google sign-in failed or the sign-in link expired. Please try again.");
-      if (success) { setPortfolioAuthCookies(payload); dropAuthState(); }
+      if (success) { await setPortfolioAuthCookies(payload); await dropAuthState(); }
       response.cookies.set("di_portfolio_oauth_verifier", "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 0 });
       return response;
     }
@@ -232,8 +232,8 @@ export async function POST(request: NextRequest) {
       const response = await supabase("/auth/v1/token?grant_type=refresh_token", { method: "POST", body: JSON.stringify({ refresh_token: refreshToken }) });
       const payload = (await response.json().catch(() => ({}))) as AuthPayload;
       if (!response.ok || !payload.access_token || !payload.refresh_token || !payload.user?.id) return fail("The confirmation link is invalid or expired.");
-      setPortfolioAuthCookies(payload);
-      dropAuthState();
+      await setPortfolioAuthCookies(payload);
+      await dropAuthState();
       return ok({ user: { id: payload.user.id, email: payload.user.email ?? null } });
     }
 
@@ -249,8 +249,8 @@ export async function POST(request: NextRequest) {
       // the change completes once the other address confirms as well.
       if (response.ok && type === "email_change" && !payload.access_token) return ok({ pending: true });
       if (!response.ok || !payload.access_token || !payload.refresh_token || !payload.user?.id) return fail("The confirmation link is invalid or expired.");
-      setPortfolioAuthCookies(payload);
-      dropAuthState();
+      await setPortfolioAuthCookies(payload);
+      await dropAuthState();
       return ok({ user: { id: payload.user.id, email: payload.user.email ?? null } });
     }
 
@@ -260,8 +260,8 @@ export async function POST(request: NextRequest) {
         // Supabase's logout defaults to every device; a plain sign-out ends only this session.
         await supabase(`/auth/v1/logout?scope=${action === "sign-out-everywhere" ? "global" : "local"}`, { method: "POST", token: session.accessToken }).catch(() => undefined);
       }
-      clearPortfolioAuthCookies();
-      dropAuthState();
+      await clearPortfolioAuthCookies();
+      await dropAuthState();
       return ok();
     }
 
@@ -280,7 +280,7 @@ export async function POST(request: NextRequest) {
           const text = await r.text();
           return fail(text.includes("username_taken") ? "That username is taken. Choose another." : "The profile could not be saved.", text.includes("username_taken") ? 409 : 400);
         }
-        dropAuthState();
+        await dropAuthState();
         return ok({ profile: { username, displayName } });
       }
 
@@ -327,8 +327,8 @@ export async function POST(request: NextRequest) {
         const verify = await supabase(`/auth/v1/factors/${factorId}/verify`, { method: "POST", token: session.accessToken, body: JSON.stringify({ challenge_id: c.id, code }) });
         const payload = (await verify.json().catch(() => ({}))) as AuthPayload;
         if (!verify.ok || !payload.access_token || !payload.refresh_token) return fail("That code is not right or has expired. Try the current one.", verify.status === 429 ? 429 : 400);
-        setPortfolioAuthCookies(payload);
-        dropAuthState();
+        await setPortfolioAuthCookies(payload);
+        await dropAuthState();
         return ok();
       }
 
@@ -338,7 +338,7 @@ export async function POST(request: NextRequest) {
         if (aalOf(session.accessToken) !== "aal2") return fail("Enter a code from your authenticator app first.", 403);
         const r = await supabase(`/auth/v1/factors/${factorId}`, { method: "DELETE", token: session.accessToken });
         if (!r.ok) return fail("The authenticator could not be removed.", r.status === 403 ? 403 : 400);
-        dropAuthState();
+        await dropAuthState();
         return ok();
       }
     }
@@ -380,8 +380,8 @@ export async function POST(request: NextRequest) {
         return troubled("sign-up", email, "Account creation failed. Check the details and try again.");
       }
       if (payload.access_token && payload.refresh_token && payload.user?.id) {
-        setPortfolioAuthCookies(payload);
-        dropAuthState();
+        await setPortfolioAuthCookies(payload);
+        await dropAuthState();
         return ok({ user: { id: payload.user.id, email: payload.user.email ?? null } });
       }
       // The same answer whether or not the address already had an account.
@@ -401,8 +401,8 @@ export async function POST(request: NextRequest) {
         await recordTrouble("sign-in", "Wrong email or password", email);
         return fail("Sign-in failed. Check your email and password.");
       }
-      setPortfolioAuthCookies(payload);
-      dropAuthState();
+      await setPortfolioAuthCookies(payload);
+      await dropAuthState();
       const factor = verifiedFactor(payload.user);
       return ok({ user: { id: payload.user.id, email: payload.user.email ?? null }, mfaRequired: Boolean(factor), factorId: factor?.id ?? null });
     }

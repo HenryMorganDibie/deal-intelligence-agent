@@ -8,7 +8,8 @@ import { roundupTopic } from "../../../../lib/post-topics";
 /** The daily roundup post's page: the largest deals of the window, one per company. */
 export const revalidate = 3600;
 
-export async function generateMetadata({ params }: { params: { day: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ day: string }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!dayLabel(params.day)) return { title: "Not found | Deal Intelligence", robots: { index: false } };
   const title = `African deals, ${dayLabel(params.day)}`;
   const description = "The largest African deals tracked in the last day, one per company, each with its sources.";
@@ -18,7 +19,8 @@ export async function generateMetadata({ params }: { params: { day: string } }):
     twitter: { card: "summary_large_image", title, description } };
 }
 
-export default async function RoundupPage({ params }: { params: { day: string } }) {
+export default async function RoundupPage(props: { params: Promise<{ day: string }> }) {
+  const params = await props.params;
   if (!dayLabel(params.day)) notFound();
   const { deals, label } = await roundupWindow(params.day);
   return <TopicPage topic={roundupTopic(deals, label)} day={dayLabel(params.day)} />;

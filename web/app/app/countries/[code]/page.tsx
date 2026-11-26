@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode, use } from "react";
 import { Container } from "../../../../components/primitives";
 import { DealRows, ErrorNote, Loading, PageHeader, Pagination, Pill, Stat, Table, Td, num, words } from "../../../../components/app/ui";
 import { ResultFeedback } from "../../../../components/app/ResultFeedback";
@@ -106,7 +106,8 @@ function ResearchReport({ markdown }: { markdown: string }) {
   return <article className="panel mt-6 space-y-3 p-5">{blocks}</article>;
 }
 
-export default function CountryPage({ params }: { params: { code: string } }) {
+export default function CountryPage(props: { params: Promise<{ code: string }> }) {
+  const params = use(props.params);
   const [d, setD] = useState<CountryResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<{ markdown: string; result_id: string; evidence: EvidenceItem[] } | null>(null);
@@ -257,7 +258,6 @@ export default function CountryPage({ params }: { params: { code: string } }) {
           <ResultFeedback resultType="country_report" resultId={report.result_id} />
         </>
       )}
-
 
       <CountryDashboard code={c.iso2} name={c.name} />
 

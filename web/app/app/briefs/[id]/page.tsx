@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { BriefView } from "../../../../components/app/BriefView";
 import { Container } from "../../../../components/primitives";
 import { ApiError, getBrief, type StoredBrief } from "../../../../lib/api";
@@ -14,7 +14,8 @@ function download(name: string, type: string, content: string) {
   URL.revokeObjectURL(url);
 }
 
-export default function BriefPage({ params }: { params: { id: string } }) {
+export default function BriefPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const [row, setRow] = useState<StoredBrief | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [inList, setInList] = useState(false);

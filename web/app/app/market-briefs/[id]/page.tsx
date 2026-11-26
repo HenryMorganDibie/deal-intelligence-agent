@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { Container } from "../../../../components/primitives";
 import { ApiError } from "../../../../lib/api";
@@ -72,7 +72,8 @@ function DistributionChart({ title, values }: { title: string; values: Array<[st
   );
 }
 
-export default function MarketBriefPage({ params }: { params: { id: string } }) {
+export default function MarketBriefPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const [row, setRow] = useState<Result | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);

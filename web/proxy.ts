@@ -81,7 +81,8 @@ async function proxyToApi(request: NextRequest): Promise<NextResponse> {
   headers.delete("cookie");
   headers.delete("authorization");
   if (WEB_SECRET) headers.set("x-deal-intel-client", WEB_SECRET);
-  const ip = request.ip || (request.headers.get("x-forwarded-for") || "").split(",")[0].trim();
+  // NextRequest.ip was removed in Next 15; Vercel sets x-real-ip and x-forwarded-for.
+  const ip = (request.headers.get("x-real-ip") || (request.headers.get("x-forwarded-for") || "").split(",")[0]).trim();
   if (ip) headers.set("x-deal-intel-client-ip", ip);
   else headers.delete("x-deal-intel-client-ip");
   return NextResponse.rewrite(target, { request: { headers } });
@@ -108,7 +109,7 @@ function appRewrite(request: NextRequest): NextResponse {
   return NextResponse.rewrite(url);
 }
 
-export async function middleware(request: NextRequest, event: NextFetchEvent) {
+export async function proxy(request: NextRequest, event: NextFetchEvent) {
   const path = request.nextUrl.pathname;
   if (path.startsWith("/api/data/")) return await proxyToApi(request);
   if (path === "/app" || path.startsWith("/app/")) {             // old links: the short address, permanently

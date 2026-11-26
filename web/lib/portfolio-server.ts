@@ -36,15 +36,15 @@ function cookieOptions(maxAge: number) {
   };
 }
 
-export function setPortfolioAuthCookies(session: AuthSessionPayload) {
+export async function setPortfolioAuthCookies(session: AuthSessionPayload) {
   if (!session.access_token || !session.refresh_token) return;
-  const jar = cookies();
+  const jar = await cookies();
   jar.set(ACCESS_COOKIE, session.access_token, cookieOptions(Math.max(60, session.expires_in || 3600)));
   jar.set(REFRESH_COOKIE, session.refresh_token, cookieOptions(60 * 60 * 24 * 60));
 }
 
-export function clearPortfolioAuthCookies() {
-  const jar = cookies();
+export async function clearPortfolioAuthCookies() {
+  const jar = await cookies();
   jar.set(ACCESS_COOKIE, "", cookieOptions(0));
   jar.set(REFRESH_COOKIE, "", cookieOptions(0));
 }
@@ -60,7 +60,7 @@ async function fetchAuthUser(accessToken: string) {
 
 export async function getPortfolioSession(): Promise<PortfolioSession | null> {
   const config = portfolioConfig();
-  const jar = cookies();
+  const jar = await cookies();
   const accessToken = jar.get(ACCESS_COOKIE)?.value || "";
   const refreshToken = jar.get(REFRESH_COOKIE)?.value || "";
 
@@ -75,7 +75,7 @@ export async function getPortfolioSession(): Promise<PortfolioSession | null> {
   }
 
   if (!refreshToken) {
-    clearPortfolioAuthCookies();
+    await clearPortfolioAuthCookies();
     return null;
   }
 
@@ -87,22 +87,22 @@ export async function getPortfolioSession(): Promise<PortfolioSession | null> {
   });
 
   if (!refreshed.ok) {
-    clearPortfolioAuthCookies();
+    await clearPortfolioAuthCookies();
     return null;
   }
 
   const session = (await refreshed.json()) as AuthSessionPayload;
   if (!session.access_token || !session.refresh_token) {
-    clearPortfolioAuthCookies();
+    await clearPortfolioAuthCookies();
     return null;
   }
-  setPortfolioAuthCookies(session);
+  await setPortfolioAuthCookies(session);
 
   let user = session.user;
   if (!user?.id) {
     const response = await fetchAuthUser(session.access_token);
     if (!response.ok) {
-      clearPortfolioAuthCookies();
+      await clearPortfolioAuthCookies();
       return null;
     }
     user = (await response.json()) as PortfolioUser;

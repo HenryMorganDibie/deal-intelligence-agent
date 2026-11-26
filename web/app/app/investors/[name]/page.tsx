@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { Container } from "../../../../components/primitives";
 import { ErrorNote, Loading, PageHeader, Stat, Table, Td, usd, words } from "../../../../components/app/ui";
 import { ApiError } from "../../../../lib/api";
@@ -30,7 +30,8 @@ type Profile = {
   related?: { name: string; relation: string }[];
 };
 
-export default function InvestorPage({ params }: { params: { name: string } }) {
+export default function InvestorPage(props: { params: Promise<{ name: string }> }) {
+  const params = use(props.params);
   const name = decodeURIComponent(params.name);
   const [p, setP] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);

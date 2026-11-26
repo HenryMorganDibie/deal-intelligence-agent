@@ -47,7 +47,8 @@ async function context(id: string) {
   }
 }
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const c = await context(params.id);
   if (c.error) return c.error;
   const r = await rpc("my_watchlist_email_alert", c.session.accessToken, { p_id: params.id });
@@ -59,7 +60,8 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   );
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (!isSameSiteJsonRequest(request)) return fail("Invalid request.", 403);
   const c = await context(params.id);
   if (c.error) return c.error;

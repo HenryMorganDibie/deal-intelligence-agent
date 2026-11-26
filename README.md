@@ -144,13 +144,13 @@ For the deeper component-level design, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ### Public pages and authenticated application
 
-The web application is not a single /app page. It has public product and information pages, account and billing pages, and authenticated product routes. Middleware in web/middleware.ts verifies and refreshes sessions, enforces required profile and MFA state, and rewrites authenticated short routes to their internal application pages.
+The web application is not a single /app page. It has public product and information pages, account and billing pages, and authenticated product routes. The proxy in web/proxy.ts (Next 16's renamed middleware) verifies and refreshes sessions, enforces required profile and MFA state, and rewrites authenticated short routes to their internal application pages.
 
 Public pages include the product overview, platform, pricing, methodology, coverage, limits, attribution and developer documentation. Public deal, market and research information is exposed only where the application explicitly supports it.
 
 Authenticated product areas include Deals, Investors, Companies and company governance, company briefs, Markets and multi-asset investment discovery, portfolios, valuation, monitoring, Research, Countries, Market briefs, Watchlists, election news, incidents, results, candidates, polling units, election alerts, API-key management and account security.
 
-Legacy /app/... URLs redirect to current short routes. Access is determined by middleware and endpoint-level authorization, not by the route name alone.
+Legacy /app/... URLs redirect to current short routes. Access is determined by the proxy and endpoint-level authorization, not by the route name alone.
 
 ### Accounts, security and plans
 
@@ -295,7 +295,7 @@ Some commands require external provider credentials or a configured database. Ru
     │   ├── app/                      # Public pages, accounts, API routes and product pages
     │   ├── components/               # Shared UI and product components
     │   ├── lib/                      # API clients, market models and application utilities
-    │   └── middleware.ts             # Session verification, access control and route rewrites
+    │   └── proxy.ts                  # Session verification, access control and route rewrites
     ├── supabase/
     │   ├── migrations/               # Database schema, RPCs, auth and access-control changes
     │   └── tests/                    # Database policy tests

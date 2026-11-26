@@ -2,7 +2,7 @@
 
 import { publicApiUrl } from "../../../../lib/api-base";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, use } from "react";
 import { WatchlistEmailAlerts } from "../../../../components/app/WatchlistEmailAlerts";
 import { WatchlistPriceMoves } from "../../../../components/app/WatchlistPriceMoves";
 import { Container } from "../../../../components/primitives";
@@ -17,7 +17,8 @@ type Watchlist = { id: string; name: string; companies: string[]; countries: str
 type ReviewState = "unreviewed" | "reviewed" | "dismissed";
 type ReviewMap = Record<string, ReviewState>;
 
-export default function WatchlistPage({ params }: { params: { id: string } }) {
+export default function WatchlistPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const [data, setData] = useState<{ watchlist: Watchlist; alerts: Alert[]; quality?: Quality } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);

@@ -10,7 +10,8 @@ export const metadata: Metadata = {
   description: "Request a demonstration, discuss a pilot, or ask about the methodology and evaluation data.",
 };
 
-export default function ContactPage({ searchParams }: { searchParams?: { topic?: string } }) {
+export default async function ContactPage(props: { searchParams?: Promise<{ topic?: string }> }) {
+  const searchParams = await props.searchParams;
   const topic = CONTACT_TOPICS.some(([k]) => k === searchParams?.topic) ? (searchParams?.topic as ContactTopic) : "demo";
   return (
     <>

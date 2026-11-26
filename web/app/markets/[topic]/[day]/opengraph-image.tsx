@@ -9,7 +9,8 @@ export const alt = "An African markets post on Deal Intelligence";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
-export default async function Image({ params }: { params: { topic: string; day: string } }) {
+export default async function Image(props: { params: Promise<{ topic: string; day: string }> }) {
+  const params = await props.params;
   const topic = ((MARKET_TOPICS as readonly string[]).includes(params.topic) ? params.topic : "sectors") as MarketTopic;
   const [{ overview, instruments }, fonts] = await Promise.all([loadMarkets(2500), ogFonts()]);
   const t = marketTopic(topic, overview, instruments, params.day);

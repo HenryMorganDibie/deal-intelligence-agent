@@ -1,7 +1,7 @@
 // Signed, short-lived cache of two per-account facts the app gate needs on every navigation: whether the account has
 // a verified second factor, and whether it has chosen a username. HMAC-signed with AUTH_STATE_SECRET so it cannot
 // be forged; if it is missing, stale or for another account, the gate asks Supabase again, so deleting it cannot
-// skip a check. Uses Web Crypto so it runs in middleware and in route handlers alike.
+// skip a check. Uses Web Crypto so it runs in the proxy (proxy.ts) and in route handlers alike.
 
 export const AUTH_STATE_COOKIE = "di_auth_state";
 export const AUTH_STATE_TTL_SECONDS = 60 * 30;

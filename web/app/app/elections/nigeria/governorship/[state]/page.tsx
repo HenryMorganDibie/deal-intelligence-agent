@@ -6,7 +6,8 @@ export function generateStaticParams() {
   return GOV_STATES.map((s) => ({ state: govSlug(s) }));
 }
 
-export default function GovernorshipStatePage({ params }: { params: { state: string } }) {
+export default async function GovernorshipStatePage(props: { params: Promise<{ state: string }> }) {
+  const params = await props.params;
   const state = GOV_STATES.find((s) => govSlug(s) === params.state);
   if (!state) notFound();
   return (

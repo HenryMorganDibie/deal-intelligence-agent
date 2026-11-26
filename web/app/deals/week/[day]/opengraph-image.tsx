@@ -9,7 +9,8 @@ export const alt = "The week in African deals on Deal Intelligence";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
-export default async function Image({ params }: { params: { day: string } }) {
+export default async function Image(props: { params: Promise<{ day: string }> }) {
+  const params = await props.params;
   const [{ deals, total, start, end }, fonts] = await Promise.all([weekWindow(params.day, 2500), ogFonts()]);
   const t = weekTopic(deals, total, start, end);
   return new ImageResponse(
