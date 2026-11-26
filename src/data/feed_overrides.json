@@ -4,11 +4,6 @@
     "since": "2026-11-23",
     "reason": "preferred feed: stale since 2026-10-08"
   },
-  "BusinessDay Nigeria": {
-    "url": "https://news.google.com/rss/search?q=site%3Abusinessday.ng%20when%3A2d&hl=en-NG&gl=NG&ceid=NG:en",
-    "since": "2026-11-25",
-    "reason": "preferred feed: ReadTimeout"
-  },
   "Launch Base Africa": {
     "url": "https://news.google.com/rss/search?q=site%3Alaunchbaseafrica.com%20when%3A2d&hl=en-GB&gl=GB&ceid=GB:en",
     "since": "2026-11-24",
@@ -18,6 +13,11 @@
     "url": "https://news.google.com/rss/search?q=site%3Athebigdeal.substack.com%20when%3A2d&hl=en-GB&gl=GB&ceid=GB:en",
     "since": "2026-11-14",
     "reason": "preferred feed: HTTPStatusError 403"
+  },
+  "The Reporter Ethiopia": {
+    "url": "https://news.google.com/rss/search?q=site%3Athereporterethiopia.com%20when%3A2d&hl=en-ET&gl=ET&ceid=ET:en",
+    "since": "2026-11-26",
+    "reason": "preferred feed: HTTPStatusError 304"
   },
   "Zambia Daily Mail": {
     "url": "https://news.google.com/rss/search?q=site%3Adaily-mail.co.zm%20when%3A2d&hl=en-ZM&gl=ZM&ceid=ZM:en",
