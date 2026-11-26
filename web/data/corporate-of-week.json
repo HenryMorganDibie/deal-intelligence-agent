@@ -1,40 +1,108 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-25T18:07:42.115414+00:00",
+  "updated_at": "2026-11-26T01:47:53.126523+00:00",
   "current": {
-    "company": "Dangote Refinery",
-    "company_url": "/companies?name=Dangote%20Refinery",
-    "headline": "Dangote Refinery Secures SEC Approval for IPO Share Allocation, Moves Closer to Stock Market Debut",
-    "deal_type": "regulatory_action",
+    "company": "SOGB",
+    "company_url": "/companies?name=SOGB",
+    "headline": "Côte d’Ivoire : Vincent Bocquillon nommé directeur général de la SOGB",
+    "deal_type": "leadership_change",
     "amount_usd": null,
-    "country": "NG",
-    "sector": "oil_gas",
-    "announced": "2026-11-24",
-    "score": 53.9,
+    "country": "CI",
+    "sector": null,
+    "announced": "2026-11-25",
+    "score": 53.3,
     "independent_stories": 1,
     "transaction_records": 0,
     "related_events": 1,
     "reasons": [
-      "Corporate signal: regulatory action",
-      "Event rule confidence: 0.93",
+      "Corporate signal: leadership change",
+      "Event rule confidence: 0.75",
       "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "Legit News",
-        "title": "Dangote Refinery Secures SEC Approval for IPO Share Allocation, Moves Closer to Stock Market Debut",
-        "url": "https://news.google.com/rss/articles/CBMi5wFBVV95cUxOQ1hGLTJOYUxNYUxsYWxNaWVRVUZBRTNJMG1JNVpFS1E0QmpfTmxYWWdVNGxhaUNWR1l4OWdlempCbGVoN1RIZmxEWWhoVWo1VWFWSEwwRk9raUpyWWtaR2JWal9hb3ZaUWt4STdkVXZiajY1UV81dlpPcFJkTWZkYjlxNE94YlREZEo1UDdpZFEtcWs4TVRGNWVhYnh5cENPazZmSWxrX0F3Wkl0X2dNNFpZVlZZRU5fZktBWDhrSlY0bkxDNDJVOWpyalplcC1iai1DQXVmcU5lUS1EbExxWnMzOXl3M28?oc=5",
-        "date": "2026-11-24",
+        "publisher": "Financial Afrik",
+        "title": "Côte d’Ivoire : Vincent Bocquillon nommé directeur général de la SOGB",
+        "url": "https://www.financialafrik.com/2026/11/25/cote-divoire-vincent-bocquillon-nomme-directeur-general-de-la-sogb/",
+        "date": "2026-11-25",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-11-18",
-    "period_end": "2026-11-24",
-    "selected_at": "2026-11-25T18:07:42.112766+00:00",
+    "period_start": "2026-11-19",
+    "period_end": "2026-11-25",
+    "selected_at": "2026-11-26T01:47:53.123979+00:00",
     "selection_version": 5,
     "companies": [
+      {
+        "company": "SOGB",
+        "company_url": "/companies?name=SOGB",
+        "headline": "Côte d’Ivoire : Vincent Bocquillon nommé directeur général de la SOGB",
+        "deal_type": "leadership_change",
+        "amount_usd": null,
+        "country": "CI",
+        "sector": null,
+        "announced": "2026-11-25",
+        "score": 53.3,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.75",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Financial Afrik",
+            "title": "Côte d’Ivoire : Vincent Bocquillon nommé directeur général de la SOGB",
+            "url": "https://www.financialafrik.com/2026/11/25/cote-divoire-vincent-bocquillon-nomme-directeur-general-de-la-sogb/",
+            "date": "2026-11-25",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-19",
+        "period_end": "2026-11-25",
+        "selected_at": "2026-11-26T01:47:53.123979+00:00",
+        "selection_version": 5
+      },
+      {
+        "company": "PBC",
+        "company_url": "/companies?name=PBC",
+        "headline": "Shareholders back PBC's GH¢300million debt restructuring plan",
+        "deal_type": "debt_restructuring",
+        "amount_usd": null,
+        "country": "GH",
+        "sector": null,
+        "announced": "2026-11-25",
+        "score": 52.4,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: debt restructuring",
+          "Event rule confidence: 0.88",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Modern Ghana",
+            "title": "Shareholders back PBC's GH¢300million debt restructuring plan",
+            "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQNnBpRjQtUjhocld2QXlJQW5RR01YeEgtaDQzRmJCMDNRWENVZjV3SERzYlYzUU5Scno3X1FfMGJZNFhDUnh6T2NGa25wb1FJUVVwa0pNYnJ0UFAycVpuNnpPX1lqN2dtak1KV0k4TlE4M09wTVF5OS1mU2l0UjN2U3IyNDJXMHZkM0pib2ZTazU0MkpOcFNpedIBmAFBVV95cUxQNnBpRjQtUjhocld2QXlJQW5RR01YeEgtaDQzRmJCMDNRWENVZjV3SERzYlYzUU5Scno3X1FfMGJZNFhDUnh6T2NGa25wb1FJUVVwa0pNYnJ0UFAycVpuNnpPX1lqN2dtak1KV0k4TlE4M09wTVF5OS1mU2l0UjN2U3IyNDJXMHZkM0pib2ZTazU0MkpOcFNpeQ?oc=5",
+            "date": "2026-11-25",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-19",
+        "period_end": "2026-11-25",
+        "selected_at": "2026-11-26T01:47:53.123979+00:00",
+        "selection_version": 5
+      },
       {
         "company": "Dangote Refinery",
         "company_url": "/companies?name=Dangote%20Refinery",
@@ -44,7 +112,7 @@
         "country": "NG",
         "sector": "oil_gas",
         "announced": "2026-11-24",
-        "score": 53.9,
+        "score": 52.47,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -64,9 +132,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-18",
-        "period_end": "2026-11-24",
-        "selected_at": "2026-11-25T18:07:42.112766+00:00",
+        "period_start": "2026-11-19",
+        "period_end": "2026-11-25",
+        "selected_at": "2026-11-26T01:47:53.123979+00:00",
         "selection_version": 5
       },
       {
@@ -78,7 +146,7 @@
         "country": "NG",
         "sector": "manufacturing",
         "announced": "2026-11-24",
-        "score": 53.45,
+        "score": 52.02,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -98,9 +166,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-18",
-        "period_end": "2026-11-24",
-        "selected_at": "2026-11-25T18:07:42.112766+00:00",
+        "period_start": "2026-11-19",
+        "period_end": "2026-11-25",
+        "selected_at": "2026-11-26T01:47:53.123979+00:00",
         "selection_version": 5
       },
       {
@@ -112,7 +180,7 @@
         "country": "NG",
         "sector": null,
         "announced": "2026-11-24",
-        "score": 47.6,
+        "score": 46.17,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -132,105 +200,37 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-18",
-        "period_end": "2026-11-24",
-        "selected_at": "2026-11-25T18:07:42.112766+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "CREDITORS OF NIGER INSURANCE PLC",
-        "company_url": "/companies?name=CREDITORS%20OF%20NIGER%20INSURANCE%20PLC",
-        "headline": "PUBLIC NOTICE: ALL STAKEHOLDERS, (POLICYHOLDERS; FORMER STAFF; SHAREHOLDERS AND CREDITORS OF NIGER INSURANCE PLC (UNDER RECEIVERSHIP)",
-        "deal_type": "distressed_asset",
-        "amount_usd": null,
-        "country": "NE",
-        "sector": "insurance",
-        "announced": "2026-11-23",
-        "score": 57.27,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: distressed asset",
-          "Event rule confidence: 0.95",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Punch Nigeria",
-            "title": "PUBLIC NOTICE: ALL STAKEHOLDERS, (POLICYHOLDERS; FORMER STAFF; SHAREHOLDERS AND CREDITORS OF NIGER INSURANCE PLC (UNDER RECEIVERSHIP)",
-            "url": "https://punchng.com/public-notice-all-stakeholders-policyholders-former-staff-shareholders-and-creditors-of-niger-insurance-plc-under-receivership/?utm_source=rss.punchng.com&utm_medium=web",
-            "date": "2026-11-23",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-18",
-        "period_end": "2026-11-24",
-        "selected_at": "2026-11-25T18:07:42.112766+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "Silver Bank",
-        "company_url": "/companies?name=Silver%20Bank",
-        "headline": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
-        "deal_type": "distressed_asset",
-        "amount_usd": null,
-        "country": "MU",
-        "sector": "banking",
-        "announced": "2026-11-22",
-        "score": 47.14,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: distressed asset",
-          "Event rule confidence: 0.80",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Defimedia",
-            "title": "En liquidation - Silver Bank : remboursement incertain de Rs 7,5 milliards de dépôts",
-            "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQdGlJUHZfREFqaHFKWk9wRFc2cHVrR2g3d1FtTWc2UFFKNFE4dVVjQnF2WXZlQlFsdmJrVG5haWJXaHlNSU4zdWVVYkFzcGE4Z3JIdTh5U25hRk04QzNOM3FTTG5qM2o4M210WmNMVUQ1N0I3ajNvU1Y0eFdsZTFOaFlHTVIwZUctMTNSby1iMjAwNldDaWhXQ2J4RTE2aGtfbmJ6eg?oc=5",
-            "date": "2026-11-22",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-18",
-        "period_end": "2026-11-24",
-        "selected_at": "2026-11-25T18:07:42.112766+00:00",
+        "period_start": "2026-11-19",
+        "period_end": "2026-11-25",
+        "selected_at": "2026-11-26T01:47:53.123979+00:00",
         "selection_version": 5
       }
     ],
     "runner_ups": [
       {
+        "company": "CREDITORS OF NIGER INSURANCE PLC",
+        "score": 55.84,
+        "reasons": [
+          "Corporate signal: distressed asset",
+          "Event rule confidence: 0.95",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
+        "company": "Silver Bank",
+        "score": 45.71,
+        "reasons": [
+          "Corporate signal: distressed asset",
+          "Event rule confidence: 0.80",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
         "company": "Unauthorised Bank",
-        "score": 48.19,
+        "score": 46.76,
         "reasons": [
           "Corporate signal: regulatory action",
           "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Kogi Group",
-        "score": 50.96,
-        "reasons": [
-          "Corporate signal: regulatory action",
-          "Event rule confidence: 0.93",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Fidelity Bank",
-        "score": 50.81,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.90",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -6931,6 +6931,241 @@
           "reasons": [
             "Corporate signal: leadership change",
             "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
+    },
+    {
+      "company": "SOGB",
+      "company_url": "/companies?name=SOGB",
+      "headline": "Côte d’Ivoire : Vincent Bocquillon nommé directeur général de la SOGB",
+      "deal_type": "leadership_change",
+      "amount_usd": null,
+      "country": "CI",
+      "sector": null,
+      "announced": "2026-11-25",
+      "score": 53.3,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: leadership change",
+        "Event rule confidence: 0.75",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Financial Afrik",
+          "title": "Côte d’Ivoire : Vincent Bocquillon nommé directeur général de la SOGB",
+          "url": "https://www.financialafrik.com/2026/11/25/cote-divoire-vincent-bocquillon-nomme-directeur-general-de-la-sogb/",
+          "date": "2026-11-25",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-19",
+      "period_end": "2026-11-25",
+      "selected_at": "2026-11-26T01:47:53.123979+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "SOGB",
+          "company_url": "/companies?name=SOGB",
+          "headline": "Côte d’Ivoire : Vincent Bocquillon nommé directeur général de la SOGB",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "CI",
+          "sector": null,
+          "announced": "2026-11-25",
+          "score": 53.3,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Financial Afrik",
+              "title": "Côte d’Ivoire : Vincent Bocquillon nommé directeur général de la SOGB",
+              "url": "https://www.financialafrik.com/2026/11/25/cote-divoire-vincent-bocquillon-nomme-directeur-general-de-la-sogb/",
+              "date": "2026-11-25",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-19",
+          "period_end": "2026-11-25",
+          "selected_at": "2026-11-26T01:47:53.123979+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "PBC",
+          "company_url": "/companies?name=PBC",
+          "headline": "Shareholders back PBC's GH¢300million debt restructuring plan",
+          "deal_type": "debt_restructuring",
+          "amount_usd": null,
+          "country": "GH",
+          "sector": null,
+          "announced": "2026-11-25",
+          "score": 52.4,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: debt restructuring",
+            "Event rule confidence: 0.88",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Modern Ghana",
+              "title": "Shareholders back PBC's GH¢300million debt restructuring plan",
+              "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQNnBpRjQtUjhocld2QXlJQW5RR01YeEgtaDQzRmJCMDNRWENVZjV3SERzYlYzUU5Scno3X1FfMGJZNFhDUnh6T2NGa25wb1FJUVVwa0pNYnJ0UFAycVpuNnpPX1lqN2dtak1KV0k4TlE4M09wTVF5OS1mU2l0UjN2U3IyNDJXMHZkM0pib2ZTazU0MkpOcFNpedIBmAFBVV95cUxQNnBpRjQtUjhocld2QXlJQW5RR01YeEgtaDQzRmJCMDNRWENVZjV3SERzYlYzUU5Scno3X1FfMGJZNFhDUnh6T2NGa25wb1FJUVVwa0pNYnJ0UFAycVpuNnpPX1lqN2dtak1KV0k4TlE4M09wTVF5OS1mU2l0UjN2U3IyNDJXMHZkM0pib2ZTazU0MkpOcFNpeQ?oc=5",
+              "date": "2026-11-25",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-19",
+          "period_end": "2026-11-25",
+          "selected_at": "2026-11-26T01:47:53.123979+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Dangote Refinery",
+          "company_url": "/companies?name=Dangote%20Refinery",
+          "headline": "Dangote Refinery Secures SEC Approval for IPO Share Allocation, Moves Closer to Stock Market Debut",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "oil_gas",
+          "announced": "2026-11-24",
+          "score": 52.47,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Legit News",
+              "title": "Dangote Refinery Secures SEC Approval for IPO Share Allocation, Moves Closer to Stock Market Debut",
+              "url": "https://news.google.com/rss/articles/CBMi5wFBVV95cUxOQ1hGLTJOYUxNYUxsYWxNaWVRVUZBRTNJMG1JNVpFS1E0QmpfTmxYWWdVNGxhaUNWR1l4OWdlempCbGVoN1RIZmxEWWhoVWo1VWFWSEwwRk9raUpyWWtaR2JWal9hb3ZaUWt4STdkVXZiajY1UV81dlpPcFJkTWZkYjlxNE94YlREZEo1UDdpZFEtcWs4TVRGNWVhYnh5cENPazZmSWxrX0F3Wkl0X2dNNFpZVlZZRU5fZktBWDhrSlY0bkxDNDJVOWpyalplcC1iai1DQXVmcU5lUS1EbExxWnMzOXl3M28?oc=5",
+              "date": "2026-11-24",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-19",
+          "period_end": "2026-11-25",
+          "selected_at": "2026-11-26T01:47:53.123979+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Presco",
+          "company_url": "/companies?name=Presco",
+          "headline": "Presco Plc appoints Gangadhar Shetty as new Managing Director to lead the next phase of growth",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "manufacturing",
+          "announced": "2026-11-24",
+          "score": 52.02,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "Presco Plc appoints Gangadhar Shetty as new Managing Director to lead the next phase of growth",
+              "url": "https://nairametrics.com/2026/11/24/presco-plc-appoints-gangadhar-shetty-as-new-managing-director-to-lead-the-next-phase-of-growth/",
+              "date": "2026-11-24",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-19",
+          "period_end": "2026-11-25",
+          "selected_at": "2026-11-26T01:47:53.123979+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "UBA",
+          "company_url": "/companies?name=UBA",
+          "headline": "UBA's nine-month profit fell 25% as bad-loan provisions jumped. What it means for customers",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": null,
+          "announced": "2026-11-24",
+          "score": 46.17,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.72",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "TheRadar",
+              "title": "UBA's nine-month profit fell 25% as bad-loan provisions jumped. What it means for customers",
+              "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPeWJDU1g4Vk9EdlU1SWg2ZXE2TG5NOXdkZlgxTnZuVVlBNXBUVW56cjFpd24yUm1Wd0NKWC1SMS1jRmd4X01kdTlfdFlRSURuSTNmbmhnUDdVY25BcUpiLW8ycmdvUWFsYVFRMUdUbEFrTEd1ZGtmZGlyNFlnNUc1TDZLTnRqbk9lWFlyWjdsWFhNbFBYZlJTWU1weTY4OEVKNU0yQVRndmY3cVNIYWg1SGREQUp6RHY2Yl9XS0huZTdYdw?oc=5",
+              "date": "2026-11-24",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-19",
+          "period_end": "2026-11-25",
+          "selected_at": "2026-11-26T01:47:53.123979+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": [
+        {
+          "company": "CREDITORS OF NIGER INSURANCE PLC",
+          "score": 55.84,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.95",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Silver Bank",
+          "score": 45.71,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.80",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "Unauthorised Bank",
+          "score": 46.76,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
         }
