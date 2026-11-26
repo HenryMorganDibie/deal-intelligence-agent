@@ -2099,6 +2099,10 @@
     "ruto steinmeier": {
       "name": "Ruto-Steinmeier",
       "kind": "organization"
+    },
+    "melon mobile parent": {
+      "name": "Melon Mobile Parent",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -7538,7 +7542,21 @@
           "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNZ2RsNjBWVmdGSENsajBLQ0ZVZENCNmxsUnNqeGFnM2ZaTnR6TXo2aTZfeHJjY3NQckVLdHYwS2M0LXF3WVlNUGF6Z1FxX1BGVVZhYllFUDZiMngwbGxVX2hBUWxVXzlaZEtWNHl1NHFzSkRPVlBhak5xZzdpeXRyamc4WVpFU2Y5WjU2M3VRRkx2ZWR6UTdGakkzeGlMbmR0RjF1Qm1BMA?oc=5"
         }
       ]
+    },
+    "5290f1642caa0f40d101": {
+      "id": "5290f1642caa0f40d101",
+      "from": "cell c",
+      "to": "melon mobile parent",
+      "type": "acquisition",
+      "first_seen": "2026-11-26",
+      "sources": [
+        {
+          "title": "Cell C Buys Melon Mobile Parent to Strengthen Digital Business",
+          "publisher": "TechMoran",
+          "url": "https://techmoran.com/2026/11/26/cell-c-buys-melon-mobile-parent-to-strengthen-digital-business/"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-25T23:16:04.743176+00:00"
+  "updated_at": "2026-11-26T14:20:05.740503+00:00"
 }

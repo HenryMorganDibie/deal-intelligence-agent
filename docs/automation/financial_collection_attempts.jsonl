@@ -932,3 +932,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RHB.JO"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RIS.CS"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-25", "market": "africa", "status": "no_annual_data_returned", "ticker": "RIVA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "RLF.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-26", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RLO.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-26", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RMDA.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-26", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RMH.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "RMI.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "RMTV.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-26", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RNG.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-26", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "RNI.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "ROADS.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "ROKANA.LG"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "RONCHESS.LG"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-26", "market": "africa", "status": "no_annual_data_returned", "ticker": "ROTO.CA"}
