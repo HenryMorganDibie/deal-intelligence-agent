@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-26T14:20:08.532404+00:00",
+  "updated_at": "2026-11-26T23:18:08.280282+00:00",
   "summary": {
     "total_phases": 5,
     "active_phases": 4,
@@ -12,7 +12,7 @@
       "status": "collecting_labels",
       "labels_collected": 0,
       "labels_target": 1500,
-      "new_review_items_today": 95,
+      "new_review_items_today": 88,
       "evaluation": {
         "status": "collecting_labels",
         "training_labels": 0,
@@ -48,8 +48,8 @@
       "id": "financial_anomalies",
       "name": "Financial anomalies",
       "status": "collecting_data",
-      "observations_collected": 334,
-      "new_observations_today": 5,
+      "observations_collected": 338,
+      "new_observations_today": 4,
       "unreviewed_flagged_observations": 49,
       "notes": "Annual filings are collected incrementally and threshold flags remain unreviewed until labelled."
     },
@@ -57,8 +57,8 @@
       "id": "graph_intelligence",
       "name": "Graph intelligence",
       "status": "collecting_relationships",
-      "relationships": 339,
-      "entities": 526,
+      "relationships": 343,
+      "entities": 530,
       "notes": "Deal-party edges accumulate only when the extractor finds both parties; every edge keeps source links."
     },
     {
@@ -177,23 +177,24 @@
   ],
   "financial_data_collection": {
     "universe_tickers": 2240,
-    "collected_tickers": 334,
-    "new_rows": 5,
+    "collected_tickers": 338,
+    "new_rows": 4,
     "failures": [
-      "RLF.JO",
-      "RMI.JO",
-      "RMTV.CA",
-      "ROADS.LG",
-      "ROKANA.LG",
-      "RONCHESS.LG",
-      "ROTO.CA"
+      "ROYALEX.LG",
+      "RPL.JO",
+      "RREI.CA",
+      "RSG.JO",
+      "RTOP.JO",
+      "RTVC.CA",
+      "RUBX.CA",
+      "S2M.CS"
     ],
     "retry_after_days": 2
   },
   "relationship_graph": {
-    "nodes": 526,
-    "relationships": 339,
-    "source_links": 480,
+    "nodes": 530,
+    "relationships": 343,
+    "source_links": 489,
     "most_connected": [
       {
         "name": "Afreximbank",
@@ -228,11 +229,11 @@
         "degree": 5
       },
       {
-        "name": "NGX Group",
+        "name": "Network Expansion",
         "degree": 4
       },
       {
-        "name": "Nairobi Securities Exchange",
+        "name": "NGX Group",
         "degree": 4
       }
     ]

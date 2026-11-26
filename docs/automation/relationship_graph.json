@@ -2103,6 +2103,22 @@
     "melon mobile parent": {
       "name": "Melon Mobile Parent",
       "kind": "organization"
+    },
+    "idc": {
+      "name": "IDC",
+      "kind": "organization"
+    },
+    "giyani": {
+      "name": "Giyani",
+      "kind": "organization"
+    },
+    "bn deal": {
+      "name": "Bn Deal",
+      "kind": "organization"
+    },
+    "lukoil": {
+      "name": "Lukoil",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -5742,6 +5758,11 @@
           "title": "NGX Group Acquires 10% Stake in Nairobi Securities Exchange",
           "publisher": "Dabafinance",
           "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxObUVTZFRQeVpUWC1ncmFBOGlnMGstanJFWm9ZeDZDYmc2WmZ1Zno4X0hrdXAwM3RYT2FmZFVxWFdWYnZuc2VzSGtBRGVwY2JFZkZYeW5odG1iVjY5MFY0cE9SdGNiV2Q0NmgyanR4aDAzWFEwdlhhLWoxdTdxZ3ZlbkRBSVR3bTNEdGpOelQ2YVB0ZGdLSW1kWXVXLUtEdw?oc=5"
+        },
+        {
+          "title": "NGX Group Acquires 10% Stake In Nairobi Securities Exchange",
+          "publisher": "LEADERSHIP Newspapers",
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOMW5oQnR4Ti1uWkpObXYwT2plQUg2ZFhEM2xBUWphVkJsbnQzOW1LdDdTRlY1aDd1ME14U3dXckRmRmdLeXpLczQ0SE00RVBqeDExcGt6eldET3dWTENOQjI0LVIwUEEwTkE0bklNSlZqODhXWTFKUlZjZEUwRjFrZVl1ZTZVTW1W?oc=5"
         }
       ]
     },
@@ -7026,6 +7047,11 @@
           "title": "Apis Partners prend le contrôle de Korridor spécialisée dans le transport routier en Afrique",
           "publisher": "AGENCE ECOFIN",
           "url": "https://news.google.com/rss/articles/CBMi5wFBVV95cUxQeTR2Tml2SndpdEo5ZG9kekFxOW0wSE5jdGt5dkk0ZWlOb2hiVW5JMXJHaUJSbUd1cUtDdlRlRlJuMl8wbl9ZS0xqMUtab1lIT0Fjem43TW02Qi1GdWxNSFZ6NlFhQ1dEUnRBQ2VfMUNhYVJSTjl5c2pqekdqT3B1R3RJc1YyMFVmdzEtT0ZYMzNoTmVPNzRPbXRNZlJYTWNVbE1NUFcwVS14QWtJRUdieERHVXRlOGZjSkQtN0xyZVhTVUFFTE1hNW5hNDBnT3lQT0pjQVhTczEyMnM2V0o5bk44c3IzT28?oc=5"
+        },
+        {
+          "title": "Apis Partners acquires majority stake in Korridor as ECP exits",
+          "publisher": "africabusinessplus.com",
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNaU9ucnVvVFV0amp0Z2FybHQxMWkyeW9Ub21TOEs5WjFaTVAtajVYUkdNRTIwaG9QaEZSYUs4NGZKcE1RUDZVcFdJUkdzLTdJZHhWTVN6TklEQm9OdGlTbE1rOHZLQkRqLURSbERUVDl0Qk1ycmNPWTUtWlBVQkY2T0ZtTWxhckxwWmYzUlVIZXU2eFgyX0k0N3JtTG5CNUxFeFNjb24ycExibWRi?oc=5"
         }
       ]
     },
@@ -7456,6 +7482,11 @@
           "title": "Payaza’s ShopAza Acquires Ghana’s Seesail Technologies",
           "publisher": "We are Tech",
           "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPV2tRTXpKcEhDbnMyUmktY0NWYmRzTlJ3cU5mRTFHMDh0Y2tvbkRJZWEzTlVYMnBtZmNBSVJaeHhOc21FOGpLWnJzYTNoSTZwckZfU2I5a0xwVFlQLW8tM0s4cDg2cExLdkdGYTdkTmZBVWwydzNXVEgybXZEOXlLNmFsdXhFQ1FJb3E3WlB0NG56eVE5Um5XMktDems0XzRSOC1OQnRHRDVwbFFXU1ZuNG9MRQ?oc=5"
+        },
+        {
+          "title": "Payaza's ShopAza acquires Ghana-founded Seesail Technologies to expand SME commerce tools across Africa",
+          "publisher": "Tech In Africa",
+          "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxQUkZ6T3JGZjk0eTJPSTlHVVlsd3Y0OFJXS1VQTjhpOVdncEhzT0hza3lBSncxQWJ0NFJMSnNSa1JvREJrQTBJQm9ta2UtR0RvVGZSdGZkQWlWXzdOck1Fd1FjUGhVR2NEdTlwUFU0Wlk1NjBIdTk1NURHa01CWWdhTmpEeEMxaUNqdlotSVp5SHRKemF2Y3JfT1JzcHdBTlRQSjMydW9FNHFhSEwyV08tX2dIY0Z3aTdsb2V6REFSazZqSmVDRU05N0Q5YUo?oc=5"
         }
       ]
     },
@@ -7470,6 +7501,11 @@
           "title": "Cell C buys Melon Mobile",
           "publisher": "Connecting Africa",
           "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBieF84SkxBS2lMOXhqOE1HS2RsbEozVDdNMjR6Z2dTa0VVZE04T2xyZ1RJOVJ4TkI5d0VNc1JadlU4SGtieXNBV3U3bXBqNnB3TjZKbDJGbGVJdUNKWVp1ZURYZU5xeURKMUdmQy02RGJRVnNvNWU4Q2VpTmc?oc=5"
+        },
+        {
+          "title": "Afrique du Sud : Cell C rachète Melon Mobile, un opérateur virtuel encore hébergé en partie par MTN",
+          "publisher": "techafrika",
+          "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxNaWRHWnkzM2hzNmRhT0NldS0zd0lyWFlteUJWbUs4bl91U0FZSlVCa3dxUkdidUJhQjVPTXJKQWJWOGlGSzNMRFJjSTFGTU5ldFhRT09WRVJlZDZfMHBDQlBNSkVFc0xZZjNJOElCSjQ0TXU1b0kzWXdyQ0xwaXdHd25nTWYzZnVfcDhpNlZkd3NBWkxkeUVNRXdKVWxKVG45V2kxc3lqWHM4bDZRS2FCYjFLeS1PQjFmRlRJeWJ5ZHJUZjlkNWlLSmZ0UjNVZU0?oc=5"
         }
       ]
     },
@@ -7526,6 +7562,11 @@
           "title": "Cell C Completes Acquisition of Melon Mobile Group in South Africa",
           "publisher": "TechAfrica News",
           "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQcUVhZ1FNa3o3Uzl1TE54V1F2NVJoVXFaZUZ1VWlfZUpTcU9wcG50NWdmWkhBbmpsTnZhTXVIaGJOUFZVNXBVQ1FWcl9wMHRyemQzc2hmc2JPSWNYWWZCS2g4MEUyRlYxM1hYbkR1bk41akVhOUhfUlVQWW12Z3J0R28yNGRjcm4wVHY4SzVTa1paRUZGM3cxdTVXOVRNZnpV?oc=5"
+        },
+        {
+          "title": "Cell C acquires Melon Mobile Group",
+          "publisher": "Africa Business Communities",
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQQzlBUmxyZmRUTnFoNUtRLUNFVk1fN2QxR1ZuUUxwMzRVc2R2NXdNM2hieHRqSDRzaTBsRkh0a2Z2czRaX3luT0FTbjVQYWtvYlRmZ2pUWmFSaVRoQ3VYTU5jWmxlWnhZUDVkajJUTkNLRmJKa3J1Rm90OXhPdUEwRGhabk9Md0xY?oc=5"
         }
       ]
     },
@@ -7556,7 +7597,63 @@
           "url": "https://techmoran.com/2026/11/26/cell-c-buys-melon-mobile-parent-to-strengthen-digital-business/"
         }
       ]
+    },
+    "ed11ec79d312cbc03292": {
+      "id": "ed11ec79d312cbc03292",
+      "from": "idc",
+      "to": "giyani",
+      "type": "equity_funding",
+      "first_seen": "2026-11-26",
+      "sources": [
+        {
+          "title": "Giyani secures a further $2.5m in funding from South Africa’s IDC",
+          "publisher": "Mining Weekly",
+          "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxQZm9hSXd0SzcwZ3g5NjNqbHVBcC1vVUp5SHU1VWo3UEpUNEs5TUxCMmdGSEQ1b0ItckRaczNEME9KSml4X3ZhODRGVHlDOV9vUWdfSXI1MWd1UEJ3UjhUbmNWMHlqbXowcEhLbmVPbURHaFV0Q2loSlJWVzY4RGZwS251aEVaVUs2aGVMTlV4ZDAyRy0yb1k5NkliZDZHMmh2X1J4bFVIVW9QSXdDR2w4?oc=5"
+        }
+      ]
+    },
+    "6e7833180e8197a3ee50": {
+      "id": "6e7833180e8197a3ee50",
+      "from": "bn deal",
+      "to": "lukoil",
+      "type": "acquisition",
+      "first_seen": "2026-11-26",
+      "sources": [
+        {
+          "title": "US-Backed Consortium Signs $10 Bn Deal to Acquire Lukoil’s Global Assets",
+          "publisher": "Egypt Oil & Gas",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQWHhBaVg4YWt0QWF1LXY1Wkc1djBSRHFxM2ZHaHhybHozeFhHa1VMRW5sZnRWckUzLWVMcGRwUndhcmNCTnZfRjFldVFUem1SY2xhODA5OUVmdTNOZEpfX2hfWjQzVkZqTURiSlY0QmpDQnJkTllyX1ZvVm1iUjh4dDJicGlsV1JTNVJyZ0pQUEpMR000aktJSWpKUjdybW1SR3RZ?oc=5"
+        }
+      ]
+    },
+    "4ebb1e36f9319b9c8ab5": {
+      "id": "4ebb1e36f9319b9c8ab5",
+      "from": "mtn nigeria",
+      "to": "network expansion",
+      "type": "equity_funding",
+      "first_seen": "2026-11-26",
+      "sources": [
+        {
+          "title": "MTN Nigeria Invests In Network Expansion To Meet Growing Demand",
+          "publisher": "Independent Newspaper Nigeria",
+          "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQUFppY0M4d3Q0aGJFdU1DSWIyMHRzaTB5MlpLQkpJNy1tUVZ0elZrdjJwQktDM2p6Ty1LZmtZekJFWTR3cGc3R2FKMExwLVQ1dDlIWlVGeC0tZXZObVFpM1hFYlJ0QWlqb0RMZ0g3QTFkcjc3a3ZQa2RTRFl4SGI1bVpMbnN1ZWk1RGcyVG1aZzY?oc=5"
+        }
+      ]
+    },
+    "5808c7018bafad646803": {
+      "id": "5808c7018bafad646803",
+      "from": "eib",
+      "to": "idc",
+      "type": "debt_financing",
+      "first_seen": "2026-11-26",
+      "sources": [
+        {
+          "title": "EIB backs South Africa's IDC with $330M critical minerals facility",
+          "publisher": "Dealroom",
+          "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQNU10c3NoRXVVVmFseWF6ejBHWE94OWhwcGRwRUplUUJmcFhhaWxUWUdQMFlTQWwyYVVpRDhObmJGQnh6RjM2b0tQVUt4OUtXYnBQbFJjeEVhdzhVU2hyM0w0a1dxdFU4eklIR01kTDEwUHdaNGh1N0VTbUpuTGhLRlNDbF9GOW5VclRVODE2cDlzNk9zLTdraEhVcU40c3k0?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-26T14:20:05.740503+00:00"
+  "updated_at": "2026-11-26T23:18:04.678244+00:00"
 }
