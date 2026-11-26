@@ -91,7 +91,7 @@ export default function MarketsComparePage({ publicPreview = false }: { publicPr
     Promise.allSettled(refs.map((r) => load(r)))
       .then((results) => setRows(results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []))))
       .finally(() => setBusy(false));
-  }, []);
+  }, [publicPreview]);
 
   // Keep the address in step, so the page can be bookmarked or shared.
   useEffect(() => {
