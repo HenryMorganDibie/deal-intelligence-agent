@@ -14,6 +14,12 @@ import {
 } from "../../../../lib/compare";
 
 const MAX = 4;
+// Anonymous visitors to the shared Nigerian-stocks preview can see only this fixed basket.
+const PUBLIC_PREVIEW_REFS: EntryRef[] = [
+  { name: "Guaranty Trust Holding Company Plc", exchange: "ngx", symbol: "GTCO" },
+  { name: "First HoldCo Plc", exchange: "ngx", symbol: "FIRSTHOLDCO" },
+  { name: "Zenith Bank Plc", exchange: "ngx", symbol: "ZENITHBANK" },
+];
 const MOVES = new Set(["chg_1d", "ytd", "growth"]);   // changes, shown with a sign; levels (margins, yields) without
 type Row = Entry & { ref: EntryRef };
 
@@ -63,7 +69,7 @@ async function load(ref: EntryRef, facts?: DirectoryFacts | null): Promise<Row> 
   return { ref, profile, facts: facts ?? (match ? factsOf(match) : null) };
 }
 
-export default function MarketsComparePage() {
+export default function MarketsComparePage({ publicPreview = false }: { publicPreview?: boolean }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<DirectoryRow[]>([]);
@@ -77,13 +83,15 @@ export default function MarketsComparePage() {
   useEffect(() => {
     if (restored.current) return;
     restored.current = true;
-    const refs = decodeEntries(new URLSearchParams(window.location.search).get("c"));
+    const refs = publicPreview
+      ? PUBLIC_PREVIEW_REFS
+      : decodeEntries(new URLSearchParams(window.location.search).get("c"));
     if (!refs.length) return;
     setBusy(true);
     Promise.allSettled(refs.map((r) => load(r)))
       .then((results) => setRows(results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []))))
       .finally(() => setBusy(false));
-  }, []);
+  }, [publicPreview]);
 
   // Keep the address in step, so the page can be bookmarked or shared.
   useEffect(() => {
@@ -154,7 +162,7 @@ export default function MarketsComparePage() {
         Up to four listed or private companies side by side, every amount in US dollars and every ratio worked out from the company&apos;s own statements.
       </MarketsTitle>
 
-      <section className="panel p-5 sm:p-6" aria-labelledby="compare-add">
+      {!publicPreview && <section className="panel p-5 sm:p-6" aria-labelledby="compare-add">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="compare-add" className="h3 text-lg">Add a company</h2>
           <p className="text-xs text-[color:var(--dim)]">{rows.length} of {MAX}</p>
@@ -189,7 +197,12 @@ export default function MarketsComparePage() {
           </button>
         </form>
         {error && <div className="mt-3"><ErrorNote message={error} /></div>}
-      </section>
+      </section>}
+
+      {publicPreview && <section className="panel mt-4 flex flex-wrap items-center justify-between gap-3 p-4">
+        <div><h2 className="font-semibold">Want to compare other companies?</h2><p className="mt-1 text-sm text-[color:var(--muted)]">Create a free account to search and build your own comparisons.</p></div>
+        <Link href="/account?next=%2Fmarkets%2Fcompare" className="btn btn-primary">Sign up free</Link>
+      </section>}
 
       {rows.length === 0 ? (
         <section className="mt-6 rounded-xl border border-dashed hairline p-8 text-center">
