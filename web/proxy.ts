@@ -5,9 +5,8 @@ import { AUTH_STATE_COOKIE, AUTH_STATE_TTL_SECONDS, readAuthState, signAuthState
 // The app lives at the site's own addresses (/deals, /markets, /companies...); its pages are files under app/app/ and
 // are served there by a rewrite here. Old /app/... links redirect permanently to the short address.
 //   - App-only pages (/companies, /countries, /investors...) need a signed-in account.
-//   - The home page (/) is the public site for everyone; the app's home is /briefs.
-//   - Shared pages (/deals, /deals/<id>, /markets, /coverage) also have a public version: a signed-in visitor
-//     gets the app, everyone else (and search engines) the public page.
+//   - Shared pages (/deals, /deals/<id>, /markets, /markets/compare, /coverage) have a public version too:
+//     signed-in visitors get the app; everyone else (and search engines) get the public page.
 // A signed-in account is checked here:
 //   1. the session token's signature is verified against Supabase's published signing key (ES256);
 //   2. an expired session is renewed with the refresh token;
@@ -88,11 +87,11 @@ async function proxyToApi(request: NextRequest): Promise<NextResponse> {
   return NextResponse.rewrite(target, { request: { headers } });
 }
 
-const SHARED = [/^\/deals$/, /^\/deals\/[^/]+$/, /^\/markets$/, /^\/coverage$/];
+const SHARED = [/^\/deals$/, /^\/deals\/[^/]+$/, /^\/markets$/, /^\/markets\/compare$/, /^\/coverage$/];
 const APP_ONLY = [
   /^\/api-keys$/, /^\/briefs$/, /^\/briefs\/[^/]+$/, /^\/companies$/, /^\/countries(\/[^/]+)?$/, /^\/elections(\/.*)?$/, /^\/evaluation$/,
   /^\/investors(\/[^/]+)?$/, /^\/market-briefs\/.+$/, /^\/research$/, /^\/watchlists(\/[^/]+)?$/,
-  /^\/markets\/(compare|investments|monitoring|portfolio|portfolio\/cloud|screener|valuation)$/,
+  /^\/markets\/(investments|monitoring|portfolio|portfolio\/cloud|screener|valuation)$/,
 ];
 
 /** Which kind of page a path is: one only the app has, one with a public version too, or neither. */
