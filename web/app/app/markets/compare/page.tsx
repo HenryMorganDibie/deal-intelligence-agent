@@ -197,7 +197,12 @@ export default function MarketsComparePage({ publicPreview = false }: { publicPr
           </button>
         </form>
         {error && <div className="mt-3"><ErrorNote message={error} /></div>}
-      </section>
+      </section>}
+
+      {publicPreview && <section className="panel mt-4 flex flex-wrap items-center justify-between gap-3 p-4">
+        <div><h2 className="font-semibold">Want to compare other companies?</h2><p className="mt-1 text-sm text-[color:var(--muted)]">Create a free account to search and build your own comparisons.</p></div>
+        <Link href="/account?next=%2Fmarkets%2Fcompare" className="btn btn-primary">Sign up free</Link>
+      </section>}
 
       {rows.length === 0 ? (
         <section className="mt-6 rounded-xl border border-dashed hairline p-8 text-center">
