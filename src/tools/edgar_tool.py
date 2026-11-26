@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import html
 import re
+import time
 from datetime import timedelta
 from typing import Any, Optional
 from urllib.parse import quote
@@ -169,6 +170,9 @@ def _describe_8k_items(items: str) -> str:
     return "; ".join(parts)
 
 
+_SEC_TICKERS: Optional[tuple[float, dict[str, dict]]] = None
+
+
 class EdgarTool:
     """
     Async tool for querying SEC EDGAR.
@@ -216,8 +220,12 @@ class EdgarTool:
         return await self._resolve_by_name(name)
 
     async def _resolve_by_ticker(self, ticker: str) -> Optional[dict[str, Any]]:
+        # SEC's own ticker list first: one cached file for every listed filer.
+        hit = await self._ticker_from_sec_list(ticker)
+        if hit:
+            return hit
         try:
-            url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=&CIK={ticker}&type=10-K&dateb=&owner=include&count=5&search_text=&output=atom"
+            url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=&CIK={ticker}&type=10-K&dateb=&owner=include&count=10&search_text=&output=atom"
             r = await self.client.get(url)
             r.raise_for_status()
             # Parse atom/XML for CIK
@@ -234,9 +242,27 @@ class EdgarTool:
             pass
         return None
 
+    async def _ticker_from_sec_list(self, ticker: str) -> Optional[dict[str, Any]]:
+        """The filer for a ticker from SEC's company_tickers.json, cached for a day. (EDGAR's browse page now refuses
+        the count it used to be asked for, so tickers stopped resolving there.)"""
+        global _SEC_TICKERS
+        now = time.monotonic()
+        if _SEC_TICKERS is None or now - _SEC_TICKERS[0] > 86_400:
+            try:
+                r = await self.client.get("https://www.sec.gov/files/company_tickers.json")
+                r.raise_for_status()
+                table = {str(row.get("ticker", "")).upper(): row for row in (r.json() or {}).values()}
+                _SEC_TICKERS = (now, table)
+            except Exception:
+                return None
+        row = _SEC_TICKERS[1].get(ticker.upper().strip())
+        if not row or not row.get("cik_str"):
+            return None
+        return {"cik": str(row["cik_str"]).zfill(10), "name": row.get("title") or ticker, "ticker": ticker.upper()}
+
     async def _resolve_by_name(self, name: str) -> dict[str, Any]:
         try:
-            url = f"https://www.sec.gov/cgi-bin/browse-edgar?company={quote(name)}&CIK=&type=10-K&dateb=&owner=include&count=5&search_text=&action=getcompany&output=atom"
+            url = f"https://www.sec.gov/cgi-bin/browse-edgar?company={quote(name)}&CIK=&type=10-K&dateb=&owner=include&count=10&search_text=&action=getcompany&output=atom"
             r = await self.client.get(url)
             r.raise_for_status()
             text = r.text
