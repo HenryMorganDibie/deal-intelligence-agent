@@ -12,7 +12,7 @@ The LLM never originates a signal. It never escalates severity. It never fires a
 
 ---
 
-## Pipeline Architecture (8 Nodes)
+## Pipeline Architecture (7 Steps)
 
 ```
 AnalysisRequest
@@ -88,7 +88,8 @@ Node 6 — BriefSynthesisAgent                          ← LLM (narrative only)
       │
       ▼
 Node 7 — PostProcessingNode                            ← ZERO LLM
-  Warehouse storage (SQLite, 8 tables).
+  Local CLI only: warehouse storage (SQLite, 9 tables). The hosted service does not
+  install it; there the API saves each finished run to Supabase (finish_run → briefs).
   Company memory EMA update.
   Entity graph update.
   All failures non-fatal.
@@ -115,7 +116,7 @@ AnalystBrief → Terminal | JSON | Markdown
 | Signal Interaction | `engines/signal_interaction.py` | Compound event detection, escalation |
 | Feedback Loop | `engines/feedback.py` | False positive logging, source EMA, precision/recall |
 | Audit Log | `engines/audit_log.py` | SHA-256 hash-chained immutable trail |
-| Historical Warehouse | `engines/warehouse.py` | SQLite, 8 tables, full artifact storage |
+| Historical Warehouse | `engines/warehouse.py` | SQLite, 9 tables, full artifact storage (local CLI; production stores runs in Supabase) |
 | Replay Engine | `engines/replay.py` | Deterministic as-of-date historical reproduction |
 | Backtesting Engine | `engines/backtest.py` | Precision/hit rate/10-day return/drawdown vs recorded outcomes |
 | Company Memory | `engines/company_memory.py` | Longitudinal EMA risk profiles, trend detection |
@@ -425,7 +426,7 @@ python main.py registry --show credit_risk
 | Market outcome modeling | Direction accuracy + magnitude error tracking | ✅ Done |
 | Signal registry | Modular, versioned signal specifications | ✅ Done |
 | Graph intelligence | NetworkX entity graph + contagion detection | ✅ Done |
-| Historical warehouse | SQLite, 8 tables, full artifact storage | ✅ Done |
+| Historical warehouse | SQLite, 9 tables (local CLI); production runs and data in Supabase Postgres | ✅ Done |
 | Replay engine | Deterministic as-of-date reproduction | ✅ Done |
 | Company memory | Longitudinal EMA risk profiles + trend detection | ✅ Done |
 | Real-time monitoring | Watchlist + Slack/webhook alerting | ✅ Done |

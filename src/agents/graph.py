@@ -1,5 +1,5 @@
 """
-Deal Intelligence Agent Graph — Full 8-Node Pipeline.
+Deal Intelligence Agent Graph — the 7-step pipeline.
 
 [START]
   → data_collection          (concurrent EDGAR + Africa + news)
@@ -8,7 +8,7 @@ Deal Intelligence Agent Graph — Full 8-Node Pipeline.
   → alpha_scoring            (investable ranking + compliance flags)
   → signal_interaction       (compound event detection)
   → brief_synthesis          (narrative synthesis)
-  → post_processing          (warehouse, company memory, graph intelligence)
+  → post_processing          (local SQLite warehouse, company memory, graph intelligence)
 [END]
 """
 from __future__ import annotations
