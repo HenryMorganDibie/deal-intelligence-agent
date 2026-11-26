@@ -44,6 +44,25 @@ test("amounts in different currencies are put in dollars at the snapshot rate", 
   assert.equal(toUsd({ ...safaricom.profile, fx: null }, 100), null);                  // no rate: not converted
 });
 
+test("listed-company comparisons show the local share price, daily move and dated 52-week range", () => {
+  const quote: Entry = {
+    ...safaricom,
+    profile: { ...safaricom.profile, market: {
+      price: 1656.8, currency: "NGN", as_at: "2026-11-26", change_pct: 1.25,
+      high_52w: 1800, low_52w: 900, range_as_at: "2026-11-25", range_source: "NGX trading summary",
+      source: "NGX daily price list", stale: true, age_days: 8, delayed: true,
+    } },
+    facts: null,
+  };
+  assert.match(String(m("price").value(quote)), /1,656\.80/);
+  assert.equal(m("chg_1d").value(quote), 0.0125);
+  assert.match(String(m("high_52w").value(quote)), /1,800/);
+  assert.match(String(m("low_52w").value(quote)), /900/);
+  assert.match(m("price").local!(quote)!, /NGX daily price list/);
+  assert.match(m("price").local!(quote)!, /stale/);
+  assert.match(m("high_52w").local!(quote)!, /NGX trading summary/);
+});
+
 test("ratios come from the company's own statements", () => {
   assert.equal(m("net_margin").value(safaricom), 80 / 380);
   assert.equal(m("roe").value(safaricom), 0.4);
