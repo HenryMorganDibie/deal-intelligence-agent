@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default function PublicMarketsComparePage() {
   return (
     <PublicPage>
-      <CompareCompanies />
+      <CompareCompanies publicPreview />
     </PublicPage>
   );
 }
