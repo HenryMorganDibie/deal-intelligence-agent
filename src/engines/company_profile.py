@@ -94,6 +94,7 @@ def _ngx_section(ticker: str, fetch=None) -> dict:
         "market": {
             "price": summ.get("StockPriceCur"), "change_pct": summ.get("StockPricePercChange"),
             "volume": summ.get("Volume"), "high_52w": summ.get("HIGH52WK_PRICE"), "low_52w": summ.get("LOW52WK_PRICE"),
+            "range_as_at": _ngx_session_date(summ.get("as_at")), "range_source": "NGX trading summary",
             "currency": "NGN", "as_at": _ngx_session_date(summ.get("as_at")), "served_at": summ.get("as_at"),
             "as_at_basis": "Latest NGX session on or before the time the summary was served; NGX does not state the "
                            "trade date, and exchange holidays are not accounted for",
@@ -226,6 +227,7 @@ def _yahoo_section(ticker: str) -> Optional[dict]:
                    # Yahoo states market value and enterprise value in the major unit already.
                    "market_cap": info.get("marketCap"), "enterprise_value": info.get("enterpriseValue"),
                    "high_52w": major(info.get("fiftyTwoWeekHigh")), "low_52w": major(info.get("fiftyTwoWeekLow")),
+                   "range_as_at": as_at, "range_source": "Yahoo Finance",
                    "exchange": info.get("exchange"), "as_at": as_at,
                    "as_at_basis": "Date of the latest regular-session price Yahoo Finance reports (UTC)" if as_at else None,
                    "source": "Yahoo Finance"},
