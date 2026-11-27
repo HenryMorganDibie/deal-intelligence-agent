@@ -968,3 +968,15 @@
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "SAUD.CA"}
 {"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "SBAG.CA"}
 {"exchange_fallback_attempted": true, "last_attempt": "2026-11-27", "market": "africa", "source": "NSE Kenya audited filing", "source_url": "https://www.nse.co.ke/wp-content/uploads/Stanbic-Holdings-Plc-Audited-Results-of-the-Group-for-the-Year-ended-31-Dec-2025.pdf", "status": "collected", "ticker": "SBIC.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "SBK.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "SBKP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "SBM.CS"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "SBP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "SBPP.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "SBV.JO"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "SCAN.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "SCB.GH"}
+{"exchange_fallback_attempted": true, "last_attempt": "2026-11-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "SCBK.NR"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "SCD.JO"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "source": "Yahoo Finance", "source_url": null, "status": "collected", "ticker": "SCEM.CA"}
+{"exchange_fallback_attempted": false, "last_attempt": "2026-11-27", "market": "africa", "status": "no_annual_data_returned", "ticker": "SCFM.CA"}

@@ -2167,6 +2167,30 @@
     "troubled nairobi city stars": {
       "name": "Troubled Nairobi City Stars",
       "kind": "organization"
+    },
+    "lithium africa": {
+      "name": "Lithium Africa",
+      "kind": "organization"
+    },
+    "manono west": {
+      "name": "Manono West",
+      "kind": "organization"
+    },
+    "conditional agreement": {
+      "name": "Conditional Agreement",
+      "kind": "organization"
+    },
+    "manono west lithium project": {
+      "name": "Manono West Lithium Project",
+      "kind": "organization"
+    },
+    "toke makinwa": {
+      "name": "Toke Makinwa",
+      "kind": "organization"
+    },
+    "new range rover": {
+      "name": "New Range Rover",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -7760,6 +7784,11 @@
           "title": "Coca-Cola HBC completes acquisition of 75% stake in Coca-Cola Beverages Africa (KO:NYSE)",
           "publisher": "Seeking Alpha",
           "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQaUM1NkxXUFNmcDB1X2lyWVVhM21oSUJXTEFKekRSM2ZBZzNQankyVTFrOVJHQVNuenl0V0Y3VTdyZlEyOHE5T1pINVVZODBVa3ZQZ0h0SjBiZG5sUjNVajJMOFNkWVNjeFB2NmNZQWl4NG5oQ0psZ2xMRDUwMjB1VS1qSEdPMHJrS2FHWmV4MXVsM1FTVWYzZk5iQUk2SmdheXFVRDE4ZU1Xb21pYUl3S3dyRnZVUQ?oc=5"
+        },
+        {
+          "title": "Coca-Cola HBC Acquires 75% Of Coca-Cola Beverages Africa And Expands To 43 Markets",
+          "publisher": "Pulse 2.0",
+          "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOLVpfRV91Y0EyTlI4SmxMaXlpczdqTjRzekswNUItOG9vc21NMnZ6NE0wZHE3d2MzTjYwTWFUbmhoSE9MaHJkZVBVOW1pMnV1aktTcDlybC1ocG5Kb0Z3aEJ6UWx5WlplYmh5a2dqa1k5QXRmaG00ckJwbmtVek1Xay1TS1FOcS1JMldhYlpzVXprOHNiaFR0czdmaDRlVjdOWHJF?oc=5"
         }
       ]
     },
@@ -7818,7 +7847,54 @@
           "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPdDVjWml1MTh0c3hNREdSTTc5VW9kRlc3aXRLcmg0QkJuVVJWeVE5dnExS19GdEVKYldXQmhQUmxmNVdnNUtvbTl5WVgzakhFV0RUMHdjRzVWUUQ5VVprX0MtNlNCOTVwY1pqNU1hUm5QQ2xJVlMwc2duZVhFLUZRNFktUGl4cTRTdTY5MlI0RUxGd1dlbzhPZjEzMzM?oc=5"
         }
       ]
+    },
+    "017a6cb3e03554a64ea3": {
+      "id": "017a6cb3e03554a64ea3",
+      "from": "lithium africa",
+      "to": "manono west",
+      "type": "acquisition",
+      "first_seen": "2026-11-27",
+      "sources": [
+        {
+          "title": "Lithium Africa to acquire stake in DRC's Manono West project",
+          "publisher": "StreetInsider",
+          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxOMFJoQzVwWnRPMW5GUVI4cUZKbEc5cVhCeDEzczlqY0RRX3NEb29iT2dCUGhwbmM1aHE1cWQtZ3lXem9aclBGTU1PV2JwaWpybFdLc2RJaGMwa2RqU0NwTzZTcHBrUFBYZDZzelh3d2ZpeEVkdHZiZTE4RHZCNGtmRmpnU0VCNzZIT2J0UWREa3hDV05TYzVYcC00ajVsU3ZpMkhGMmdhaGRxZ2lXa1BOQmVlblRsemtiRnlnZw?oc=5"
+        },
+        {
+          "title": "Lithium Africa agrees to buy controlling interest in Congo's Manono West for US$8.15M",
+          "publisher": "Mugglehead Investment Magazine",
+          "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE5WalFjZS1RVXBaMml5UWdhSWdvb0o0aXVJNGg2VmhWeEQ0UFd0Mzl4MW5fSC16ZnBacGxnb3lKTkxFclR6dUxsRUtIN3RNSEZ3SFZMVjJhMHBXS04xdlk5Z2dyeXV1djVkZ00wNnhWQkh4bHdNNjBnNGpSNnE?oc=5"
+        }
+      ]
+    },
+    "480ed7be5b2e443d8d21": {
+      "id": "480ed7be5b2e443d8d21",
+      "from": "conditional agreement",
+      "to": "manono west lithium project",
+      "type": "acquisition",
+      "first_seen": "2026-11-27",
+      "sources": [
+        {
+          "title": "Lithium Africa Corp. Secures Conditional Agreement to Acquire Majority Stake in DRC's Manono West Lithium Project with Up to $15 Million Financing",
+          "publisher": "Kalkine Media",
+          "url": "https://news.google.com/rss/articles/CBMimgJBVV95cUxOQW5lT3FxbXlGaHNwY2lQaHdrM1AwUk5kajFGQzl5OURiQUV5SGxEdERGZEFHMXp1alNvY3VUVU10blpiUG03SUdmMjdrUmlHSGMySUVOY1RpT1NEVFNPUms0eFFTWElucVVmZWhDQTBnYlYycHkxT3psVGVPNkpSZ3dTWU5RVC1BWG1BQXoxN0U4Zi1OMGZ2V0h0UjY0Q1NNQ2Z0SWV4eWVvVi1yVzB3QUJNc0lDZ1F6a3pzaTU1NThfaFVWOGVfUUNlUWJIdmc4VUJmd1Z6WlpheHlDdzNYMDFxZFV2WXZxd3NPMXRhT08yVllvMlVoMTdtU19sMWYzTTlIaDhzVWF6TWNUemU5eDlqdUNHV1Uwc2c?oc=5"
+        }
+      ]
+    },
+    "114550f765775e4d6050": {
+      "id": "114550f765775e4d6050",
+      "from": "toke makinwa",
+      "to": "new range rover",
+      "type": "acquisition",
+      "first_seen": "2026-11-27",
+      "sources": [
+        {
+          "title": "'My Push Present Is Finally Here' — Toke Makinwa Acquires New Range Rover",
+          "publisher": "Modern Ghana",
+          "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQQlpkUDZQVm1BX2lmX2ZGQmZvNVYwQ1B5azV2WEpPcGtybmdMY1ZLRjBJMC12M0F5a2dyVGE2OGFpUUc4WHF6cmRPUmlfT1pMeFRVYXNOSGYxSlJoSlBnZDRyS1BTMjVwREJNNk1DWTJIdW15UXo1RXducHo5VkJJMzFPTTBjN1BSWk4zUHJBb1F2bl84X21oVNIBlwFBVV95cUxNYmZSbkQ3OFBlNTNBZjlfTzk3VDkwanRpa3Y0MVIzaWNQUWNGblVTV3lPVTFmUTBNWmI3R0Y4RmIwN282bXVZRk0zYmhWY2Q1ZEpEYng5ZG9CcjljLURnSEptQ2RSbFJmaHFNSE9uQjFoYk9vSXhNdm5KVF93UFdWSDFmMGxET2ZCUWxtQXpwNWgxd3NLRl9Z?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-27T14:13:08.649149+00:00"
+  "updated_at": "2026-11-27T22:54:18.325771+00:00"
 }
