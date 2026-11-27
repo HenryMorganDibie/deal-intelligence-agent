@@ -119,11 +119,15 @@ def _public_market_cache_ttl(path: str) -> int | None:
         return 1800
     if path in ("/api/showcase", "/api/evaluation", "/api/return-forecast", "/api/coverage", "/api/currencies"):
         return 3600
+    # Deal records can be corrected or merged by an analyst at any time. Keep their shared
+    # edge cache short so a merge or correction becomes visible promptly.
+    if path == "/api/deals" or path.startswith("/api/deals/"):
+        return 60
     if path in _PUBLIC_MARKET_CACHE_EXACT:
         return 1800
     if path.startswith("/api/evaluation/files/"):
         return 3600
-    if path.startswith(("/api/deals/", "/api/investors/", "/api/sectors/")):
+    if path.startswith(("/api/investors/", "/api/sectors/")):
         return 1800
     if path.startswith("/api/countries/"):
         return 3600 if path.endswith("/history") else 1800
