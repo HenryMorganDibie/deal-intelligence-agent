@@ -14,13 +14,13 @@ import { distinctSources, type Deal, type Verification } from "../../../lib/mark
  * investor histories and alerts stay in the app behind sign-in.
  */
 // A published deal rarely changes: one refresh a day keeps crawlers from costing database egress.
-export const revalidate = 86400;
+export const revalidate = 300;
 
 type DealResponse = { deal: Deal; parties: { name: string; role: string }[]; verification?: Verification };
 
 async function load(id: string): Promise<DealResponse | null> {
   try {
-    const r = await fetch(apiUrl(`/api/deals/${encodeURIComponent(id)}?comparables=false`), { headers: apiHeaders(), next: { revalidate: 86400 } });
+    const r = await fetch(apiUrl(`/api/deals/${encodeURIComponent(id)}?comparables=false`), { headers: apiHeaders(), next: { revalidate: 300 } });
     return r.ok ? ((await r.json()) as DealResponse) : null;
   } catch {
     return null;
