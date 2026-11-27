@@ -2119,6 +2119,54 @@
     "lukoil": {
       "name": "Lukoil",
       "kind": "organization"
+    },
+    "ghanaian commerce startup seesail technologies": {
+      "name": "Ghanaian Commerce Startup Seesail Technologies",
+      "kind": "organization"
+    },
+    "british international investment": {
+      "name": "British International Investment",
+      "kind": "organization"
+    },
+    "one acre fund": {
+      "name": "One Acre Fund",
+      "kind": "organization"
+    },
+    "coca cola hbc": {
+      "name": "Coca-Cola HBC",
+      "kind": "organization"
+    },
+    "coca cola beverages africa": {
+      "name": "Coca-Cola Beverages Africa",
+      "kind": "organization"
+    },
+    "tongaat hulett": {
+      "name": "Tongaat Hulett",
+      "kind": "organization"
+    },
+    "berd": {
+      "name": "BERD",
+      "kind": "organization"
+    },
+    "figeac a ro": {
+      "name": "Figeac Aéro",
+      "kind": "organization"
+    },
+    "victor wanyama": {
+      "name": "Victor Wanyama",
+      "kind": "organization"
+    },
+    "nairobi city stars": {
+      "name": "Nairobi City Stars",
+      "kind": "organization"
+    },
+    "victor wanyama reportedly": {
+      "name": "Victor Wanyama Reportedly",
+      "kind": "organization"
+    },
+    "troubled nairobi city stars": {
+      "name": "Troubled Nairobi City Stars",
+      "kind": "organization"
     }
   },
   "edges": {
@@ -7247,6 +7295,11 @@
           "title": "Payaza Acquires Seesail, Appoints Co-Founder Victor Blavo Shopaza's Africa GM",
           "publisher": "Mpasho",
           "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOS3hFVE54S0FVcy1ZTTlrRTM4NHVNbTN1S1ZLdWdQZHRMdXNGZnN5SG11VWVIU3NqZnhQb18xNExPRnllbVVKd216eENJcVNwODFnVVNxWWhkeklvT2xtS2VVVm1HdG84T0RlNUctOUtxazh5cGlQVjZqUHkybGNqRDViRjg2YUJabW5zX3dFal9nMHllYTJfYXI5U1M2MmZ4QUU3NUx1bjg2UEczLTF2LVE0cUFKclZWd0dSLVZlRWdPVjA?oc=5"
+        },
+        {
+          "title": "Nigeria’s Payaza acquires Ghana’s Seesail to bring commerce tools, finance to Africa's small businesses",
+          "publisher": "- Disrupt Africa",
+          "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxOZlFCRXk4ZkpHTjZEcThvMF9JQUdiTEt3eTNTdGxWMUg2cDQtN3Q4S0hkOGhWbk5CSWJpMkZTZ1hXdnhqa0hvWEl2M0trRS1JQk1vbXpFc3JnaVdiNldQdnNtaVRLQS1od3NKX0E2MlBCTGlDU3ZmTlR1ZVZ5UEdENV94U2huSkdnQ3JkMTEya3FrdGIzakNJODV3Q21wLWNweXViMV8zbDlUcUJqWXZHYnhpbzFsY1EzNVFBMHJNRFNZTkFwME14TlhsQVVfV1hkV1cw?oc=5"
         }
       ]
     },
@@ -7653,7 +7706,119 @@
           "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQNU10c3NoRXVVVmFseWF6ejBHWE94OWhwcGRwRUplUUJmcFhhaWxUWUdQMFlTQWwyYVVpRDhObmJGQnh6RjM2b0tQVUt4OUtXYnBQbFJjeEVhdzhVU2hyM0w0a1dxdFU4eklIR01kTDEwUHdaNGh1N0VTbUpuTGhLRlNDbF9GOW5VclRVODE2cDlzNk9zLTdraEhVcU40c3k0?oc=5"
         }
       ]
+    },
+    "ed0dee99a5c8d4adbd7e": {
+      "id": "ed0dee99a5c8d4adbd7e",
+      "from": "payaza",
+      "to": "ghanaian commerce startup seesail technologies",
+      "type": "acquisition",
+      "first_seen": "2026-11-27",
+      "sources": [
+        {
+          "title": "Nigerian Fintech Payaza Acquires Ghanaian Commerce Startup Seesail Technologies",
+          "publisher": "WeeTracker",
+          "url": "https://weetracker.com/2026/11/27/payaza-acquires-seesail-technologies/"
+        }
+      ]
+    },
+    "49a0837a1894274a91d1": {
+      "id": "49a0837a1894274a91d1",
+      "from": "british international investment",
+      "to": "one acre fund",
+      "type": "debt_financing",
+      "first_seen": "2026-11-27",
+      "sources": [
+        {
+          "title": "British International Investment provides debt facility to One Acre Fund",
+          "publisher": "Africa Private Equity News",
+          "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxOUk5WU1JLcjVrRm5xVnRySDdKbFplNHNyNTFjaHNlQzByaExDeC1pakQ0TFQwWkQyZ3Y5NllnY0hSVWthY0oyLU1NbFRjamtDZkxRSG9uejNKWDJUekRwOGVhenhLa2thbGpsZDlTNWxkTjZGTzJxTWVIU3M1U1hCN1VsUS0?oc=5"
+        }
+      ]
+    },
+    "3a6e45d7287015c10d21": {
+      "id": "3a6e45d7287015c10d21",
+      "from": "bii",
+      "to": "one acre fund",
+      "type": "debt_financing",
+      "first_seen": "2026-11-27",
+      "sources": [
+        {
+          "title": "BII extends $10 million loan to One Acre Fund to support 225,000 African farmers",
+          "publisher": "Innovation Village",
+          "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOVzJ3bDFPLU91REdXZTNhVmNlR1p5ZWdWM1Qzc1hwZ0Jzb2NMVkN0M2tiTTNXckY3NHBuUnowVUhqMzVQMG9zOWJmUVBnSzdYYWZ2czROeW5VSE9UNmxhUE52Q2RNU0pGUXVIRFJ3aVdLQnREajRtWV9qU0J6bkNaR2VyRlktVmVmVXBJMndBYlNOR2FWWDhzbzlZUzdhN1ozMkdXM2pYRTFEN1VjbFNv?oc=5"
+        }
+      ]
+    },
+    "7c7f4e5946b14dbc3f94": {
+      "id": "7c7f4e5946b14dbc3f94",
+      "from": "coca cola hbc",
+      "to": "coca cola beverages africa",
+      "type": "acquisition",
+      "first_seen": "2026-11-27",
+      "sources": [
+        {
+          "title": "Coca-Cola HBC completes acquisition of 75% stake in Coca-Cola Beverages Africa (KO:NYSE)",
+          "publisher": "Seeking Alpha",
+          "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQaUM1NkxXUFNmcDB1X2lyWVVhM21oSUJXTEFKekRSM2ZBZzNQankyVTFrOVJHQVNuenl0V0Y3VTdyZlEyOHE5T1pINVVZODBVa3ZQZ0h0SjBiZG5sUjNVajJMOFNkWVNjeFB2NmNZQWl4NG5oQ0psZ2xMRDUwMjB1VS1qSEdPMHJrS2FHWmV4MXVsM1FTVWYzZk5iQUk2SmdheXFVRDE4ZU1Xb21pYUl3S3dyRnZVUQ?oc=5"
+        }
+      ]
+    },
+    "62ae6bc412420903afd8": {
+      "id": "62ae6bc412420903afd8",
+      "from": "idc",
+      "to": "tongaat hulett",
+      "type": "equity_funding",
+      "first_seen": "2026-11-27",
+      "sources": [
+        {
+          "title": "IDC considers US$259.5M investment in Tongaat Hulett rescue deal",
+          "publisher": "Food Business Middle East & Africa",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOUHVlazRPOGtvaUsyTmRLSWVQVG8xc1UzMmcxVkhUZlpLX3RvajZTdHNXQ2EwS3ZuRkdXTUdjS3VWSXdYaTl0U0poQl9DWVU2aU1fazB4dTQzMnFfUGZ5ZmlkYkRFM2dUZkdjc2Y5ZE9BX1V0Q29PVWNzUmg4WEpobVpDdVVjM3ZSQWxsUUpXNUZUcmNSbXpzZlBaTmE?oc=5"
+        }
+      ]
+    },
+    "8eb6b76ac0eebbb2e5b4": {
+      "id": "8eb6b76ac0eebbb2e5b4",
+      "from": "berd",
+      "to": "figeac a ro",
+      "type": "equity_funding",
+      "first_seen": "2026-11-27",
+      "sources": [
+        {
+          "title": "Aéronautique : la BERD investit dans Figeac Aéro au Maroc",
+          "publisher": "Lebrief",
+          "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNVFJiU1BuNkludTFjOWlRRTBwaW5sN0dSRkhTRG4tV0lkZEZLNENFNGZ2ZEhuN1g0WTk1WjBCVDczNmROOVVZWlFtRi1ZQmhpOXlNNXFDTzBuRE1LTFNZbFJfQzZMZk56UTBwcjc4Zm5aZFdlMWpJVDdrX0ZQOTRLQTllZ2pKM0NuaFBHSWdTLXpSRkE?oc=5"
+        }
+      ]
+    },
+    "e923023354429fa3e9dd": {
+      "id": "e923023354429fa3e9dd",
+      "from": "victor wanyama",
+      "to": "nairobi city stars",
+      "type": "acquisition",
+      "first_seen": "2026-11-26",
+      "sources": [
+        {
+          "title": "Victor Wanyama Acquires Nairobi City Stars, Vows to Revive the Struggling Kenyan Second-Tier Club",
+          "publisher": "Uzalendo News",
+          "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxPakEtbTBZRkRzbjdsdU10UnZfdzZ3SnpoWHlXLW5qQ3l1aWo1X1NNNGZZdlNudUxWZEhud1BkeERJMENvQnpnRlpPZmFOTGF3cW5fOGlXQ3p2NXd2NENmSlJ6ZkdmZXoxc2h2c2NITW1IQnBvbUc4ZzNyMXVrMkk4Ykp1OThfbVdORHlUOFNIOUNfa2NMU0Fmc29URHdIdXZTMXpNckFCelU4N1YxY1hHb09tX0dndnM2TnV1TDVqRXc?oc=5"
+        }
+      ]
+    },
+    "31245c98c69aa73ccc61": {
+      "id": "31245c98c69aa73ccc61",
+      "from": "victor wanyama reportedly",
+      "to": "troubled nairobi city stars",
+      "type": "acquisition",
+      "first_seen": "2026-11-27",
+      "sources": [
+        {
+          "title": "Victor Wanyama Reportedly Acquires Troubled Nairobi City Stars",
+          "publisher": "https://streamlinefeed.co.ke/",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPdDVjWml1MTh0c3hNREdSTTc5VW9kRlc3aXRLcmg0QkJuVVJWeVE5dnExS19GdEVKYldXQmhQUmxmNVdnNUtvbTl5WVgzakhFV0RUMHdjRzVWUUQ5VVprX0MtNlNCOTVwY1pqNU1hUm5QQ2xJVlMwc2duZVhFLUZRNFktUGl4cTRTdTY5MlI0RUxGd1dlbzhPZjEzMzM?oc=5"
+        }
+      ]
     }
   },
-  "updated_at": "2026-11-26T23:18:04.678244+00:00"
+  "updated_at": "2026-11-27T14:13:08.649149+00:00"
 }
