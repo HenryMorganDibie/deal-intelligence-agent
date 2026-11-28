@@ -1,47 +1,74 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-27T20:19:16.291464+00:00",
+  "updated_at": "2026-11-28T01:28:54.812740+00:00",
   "current": {
-    "company": "Dangote Refinery",
-    "company_url": "/companies?name=Dangote%20Refinery",
-    "headline": "Nigerian stocks lost N7 Trillion as investors liquidate ahead of Dangote Refinery debut",
-    "deal_type": "distressed_asset",
+    "company": "Kenya Airways",
+    "company_url": "/companies?name=Kenya%20Airways",
+    "headline": "Kenya Airways Issues Profit Warning, Projects 25% Drop in 2026 Earnings",
+    "deal_type": "earnings_surprise",
     "amount_usd": null,
-    "country": "NG",
-    "sector": "oil_gas",
-    "announced": "2026-11-26",
-    "score": 59.95,
-    "independent_stories": 2,
+    "country": "KE",
+    "sector": null,
+    "announced": "2026-11-27",
+    "score": 52.4,
+    "independent_stories": 1,
     "transaction_records": 0,
-    "related_events": 2,
+    "related_events": 1,
     "reasons": [
-      "Corporate signal: distressed asset",
-      "Event rule confidence: 0.80",
-      "2 distinct source-linked corporate event(s) found in the period",
+      "Corporate signal: earnings surprise",
+      "Event rule confidence: 0.88",
+      "1 distinct source-linked corporate event(s) found in the period",
       "Selected from corporate-event monitoring, not the transaction headline feed"
     ],
     "sources": [
       {
-        "publisher": "Nairametrics",
-        "title": "Nigerian stocks lost N7 Trillion as investors liquidate ahead of Dangote Refinery debut",
-        "url": "https://nairametrics.com/2026/11/26/nigerian-stocks-lost-n7-trillion-as-investors-liquidate-ahead-of-dangote-refinery-debut/",
-        "date": "2026-11-26",
-        "kind": "corporate_event"
-      },
-      {
-        "publisher": "Legit News",
-        "title": "Dangote Refinery Secures SEC Approval for IPO Share Allocation, Moves Closer to Stock Market Debut",
-        "url": "https://news.google.com/rss/articles/CBMi5wFBVV95cUxOQ1hGLTJOYUxNYUxsYWxNaWVRVUZBRTNJMG1JNVpFS1E0QmpfTmxYWWdVNGxhaUNWR1l4OWdlempCbGVoN1RIZmxEWWhoVWo1VWFWSEwwRk9raUpyWWtaR2JWal9hb3ZaUWt4STdkVXZiajY1UV81dlpPcFJkTWZkYjlxNE94YlREZEo1UDdpZFEtcWs4TVRGNWVhYnh5cENPazZmSWxrX0F3Wkl0X2dNNFpZVlZZRU5fZktBWDhrSlY0bkxDNDJVOWpyalplcC1iai1DQXVmcU5lUS1EbExxWnMzOXl3M28?oc=5",
-        "date": "2026-11-24",
+        "publisher": "Uzalendo News",
+        "title": "Kenya Airways Issues Profit Warning, Projects 25% Drop in 2026 Earnings",
+        "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNRzNXdnNQcVZRclgxT3RMSkFGMEIwODVQX1dZeC1ReXJXQ2RKRUpYeFVJaW51MUVPNnZ5RFNneHBBR2lyQWdvTWVheTg1cnVEYXJ0M0xNY3dydFJrWGt3QlBnaGtSNUVnOHNfR2NHMUdLT2JEWU4zQTVHWS1aemdPT0g5ODZ1X29IbERTYUJPcjd6M29WclJ3Vm1vRXE?oc=5",
+        "date": "2026-11-27",
         "kind": "corporate_event"
       }
     ],
     "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-    "period_start": "2026-11-20",
-    "period_end": "2026-11-26",
-    "selected_at": "2026-11-27T20:19:16.289158+00:00",
+    "period_start": "2026-11-21",
+    "period_end": "2026-11-27",
+    "selected_at": "2026-11-28T01:28:54.810075+00:00",
     "selection_version": 5,
     "companies": [
+      {
+        "company": "Kenya Airways",
+        "company_url": "/companies?name=Kenya%20Airways",
+        "headline": "Kenya Airways Issues Profit Warning, Projects 25% Drop in 2026 Earnings",
+        "deal_type": "earnings_surprise",
+        "amount_usd": null,
+        "country": "KE",
+        "sector": null,
+        "announced": "2026-11-27",
+        "score": 52.4,
+        "independent_stories": 1,
+        "transaction_records": 0,
+        "related_events": 1,
+        "reasons": [
+          "Corporate signal: earnings surprise",
+          "Event rule confidence: 0.88",
+          "1 distinct source-linked corporate event(s) found in the period",
+          "Selected from corporate-event monitoring, not the transaction headline feed"
+        ],
+        "sources": [
+          {
+            "publisher": "Uzalendo News",
+            "title": "Kenya Airways Issues Profit Warning, Projects 25% Drop in 2026 Earnings",
+            "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNRzNXdnNQcVZRclgxT3RMSkFGMEIwODVQX1dZeC1ReXJXQ2RKRUpYeFVJaW51MUVPNnZ5RFNneHBBR2lyQWdvTWVheTg1cnVEYXJ0M0xNY3dydFJrWGt3QlBnaGtSNUVnOHNfR2NHMUdLT2JEWU4zQTVHWS1aemdPT0g5ODZ1X29IbERTYUJPcjd6M29WclJ3Vm1vRXE?oc=5",
+            "date": "2026-11-27",
+            "kind": "corporate_event"
+          }
+        ],
+        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+        "period_start": "2026-11-21",
+        "period_end": "2026-11-27",
+        "selected_at": "2026-11-28T01:28:54.810075+00:00",
+        "selection_version": 5
+      },
       {
         "company": "Dangote Refinery",
         "company_url": "/companies?name=Dangote%20Refinery",
@@ -51,7 +78,7 @@
         "country": "NG",
         "sector": "oil_gas",
         "announced": "2026-11-26",
-        "score": 59.95,
+        "score": 58.52,
         "independent_stories": 2,
         "transaction_records": 0,
         "related_events": 2,
@@ -78,9 +105,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-20",
-        "period_end": "2026-11-26",
-        "selected_at": "2026-11-27T20:19:16.289158+00:00",
+        "period_start": "2026-11-21",
+        "period_end": "2026-11-27",
+        "selected_at": "2026-11-28T01:28:54.810075+00:00",
         "selection_version": 5
       },
       {
@@ -92,7 +119,7 @@
         "country": "NG",
         "sector": "insurance",
         "announced": "2026-11-26",
-        "score": 58.1,
+        "score": 56.67,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -112,9 +139,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-20",
-        "period_end": "2026-11-26",
-        "selected_at": "2026-11-27T20:19:16.289158+00:00",
+        "period_start": "2026-11-21",
+        "period_end": "2026-11-27",
+        "selected_at": "2026-11-28T01:28:54.810075+00:00",
         "selection_version": 5
       },
       {
@@ -126,7 +153,7 @@
         "country": "NG",
         "sector": "banking",
         "announced": "2026-11-26",
-        "score": 53.45,
+        "score": 52.02,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -146,9 +173,9 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-20",
-        "period_end": "2026-11-26",
-        "selected_at": "2026-11-27T20:19:16.289158+00:00",
+        "period_start": "2026-11-21",
+        "period_end": "2026-11-27",
+        "selected_at": "2026-11-28T01:28:54.810075+00:00",
         "selection_version": 5
       },
       {
@@ -160,7 +187,7 @@
         "country": "TZ",
         "sector": "mining",
         "announced": "2026-11-26",
-        "score": 53.0,
+        "score": 51.57,
         "independent_stories": 1,
         "transaction_records": 0,
         "related_events": 1,
@@ -180,50 +207,25 @@
           }
         ],
         "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-20",
-        "period_end": "2026-11-26",
-        "selected_at": "2026-11-27T20:19:16.289158+00:00",
-        "selection_version": 5
-      },
-      {
-        "company": "Saham Bank",
-        "company_url": "/companies?name=Saham%20Bank",
-        "headline": "Saham Bank : Moulay Mhamed Elalamy nommé président du directoire",
-        "deal_type": "leadership_change",
-        "amount_usd": null,
-        "country": "MA",
-        "sector": "banking",
-        "announced": "2026-11-26",
-        "score": 48.5,
-        "independent_stories": 1,
-        "transaction_records": 0,
-        "related_events": 1,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.75",
-          "1 distinct source-linked corporate event(s) found in the period",
-          "Selected from corporate-event monitoring, not the transaction headline feed"
-        ],
-        "sources": [
-          {
-            "publisher": "Le Nouvelliste Maroc",
-            "title": "Saham Bank : Moulay Mhamed Elalamy nommé président du directoire",
-            "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxOeU9FMk5US093WExJM192Q0FJdFlmUFQxaThYbXY5ZUpoWVdhX1ZLckI0LVhqc3Fuc0I1dHhlRjBuN212cnNQbER4LVJPa2hWblpQLUo5UzZvbGN6MzdIdEZoQnBCTUNjeE1oYmVwcjFLTTNZWHIwbW5BOFB1RHVuZ1FWcUtfLVZ3WllN?oc=5",
-            "date": "2026-11-26",
-            "kind": "corporate_event"
-          }
-        ],
-        "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
-        "period_start": "2026-11-20",
-        "period_end": "2026-11-26",
-        "selected_at": "2026-11-27T20:19:16.289158+00:00",
+        "period_start": "2026-11-21",
+        "period_end": "2026-11-27",
+        "selected_at": "2026-11-28T01:28:54.810075+00:00",
         "selection_version": 5
       }
     ],
     "runner_ups": [
       {
+        "company": "Saham Bank",
+        "score": 47.07,
+        "reasons": [
+          "Corporate signal: leadership change",
+          "Event rule confidence: 0.75",
+          "1 distinct source-linked corporate event(s) found in the period"
+        ]
+      },
+      {
         "company": "SOGB",
-        "score": 51.87,
+        "score": 50.44,
         "reasons": [
           "Corporate signal: leadership change",
           "Event rule confidence: 0.75",
@@ -232,19 +234,10 @@
       },
       {
         "company": "PBC",
-        "score": 50.97,
+        "score": 49.54,
         "reasons": [
           "Corporate signal: debt restructuring",
           "Event rule confidence: 0.88",
-          "1 distinct source-linked corporate event(s) found in the period"
-        ]
-      },
-      {
-        "company": "Presco",
-        "score": 50.59,
-        "reasons": [
-          "Corporate signal: leadership change",
-          "Event rule confidence: 0.75",
           "1 distinct source-linked corporate event(s) found in the period"
         ]
       }
@@ -7429,6 +7422,248 @@
           "reasons": [
             "Corporate signal: leadership change",
             "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        }
+      ]
+    },
+    {
+      "company": "Kenya Airways",
+      "company_url": "/companies?name=Kenya%20Airways",
+      "headline": "Kenya Airways Issues Profit Warning, Projects 25% Drop in 2026 Earnings",
+      "deal_type": "earnings_surprise",
+      "amount_usd": null,
+      "country": "KE",
+      "sector": null,
+      "announced": "2026-11-27",
+      "score": 52.4,
+      "independent_stories": 1,
+      "transaction_records": 0,
+      "related_events": 1,
+      "reasons": [
+        "Corporate signal: earnings surprise",
+        "Event rule confidence: 0.88",
+        "1 distinct source-linked corporate event(s) found in the period",
+        "Selected from corporate-event monitoring, not the transaction headline feed"
+      ],
+      "sources": [
+        {
+          "publisher": "Uzalendo News",
+          "title": "Kenya Airways Issues Profit Warning, Projects 25% Drop in 2026 Earnings",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNRzNXdnNQcVZRclgxT3RMSkFGMEIwODVQX1dZeC1ReXJXQ2RKRUpYeFVJaW51MUVPNnZ5RFNneHBBR2lyQWdvTWVheTg1cnVEYXJ0M0xNY3dydFJrWGt3QlBnaGtSNUVnOHNfR2NHMUdLT2JEWU4zQTVHWS1aemdPT0g5ODZ1X29IbERTYUJPcjd6M29WclJ3Vm1vRXE?oc=5",
+          "date": "2026-11-27",
+          "kind": "corporate_event"
+        }
+      ],
+      "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+      "period_start": "2026-11-21",
+      "period_end": "2026-11-27",
+      "selected_at": "2026-11-28T01:28:54.810075+00:00",
+      "selection_version": 5,
+      "companies": [
+        {
+          "company": "Kenya Airways",
+          "company_url": "/companies?name=Kenya%20Airways",
+          "headline": "Kenya Airways Issues Profit Warning, Projects 25% Drop in 2026 Earnings",
+          "deal_type": "earnings_surprise",
+          "amount_usd": null,
+          "country": "KE",
+          "sector": null,
+          "announced": "2026-11-27",
+          "score": 52.4,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: earnings surprise",
+            "Event rule confidence: 0.88",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Uzalendo News",
+              "title": "Kenya Airways Issues Profit Warning, Projects 25% Drop in 2026 Earnings",
+              "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNRzNXdnNQcVZRclgxT3RMSkFGMEIwODVQX1dZeC1ReXJXQ2RKRUpYeFVJaW51MUVPNnZ5RFNneHBBR2lyQWdvTWVheTg1cnVEYXJ0M0xNY3dydFJrWGt3QlBnaGtSNUVnOHNfR2NHMUdLT2JEWU4zQTVHWS1aemdPT0g5ODZ1X29IbERTYUJPcjd6M29WclJ3Vm1vRXE?oc=5",
+              "date": "2026-11-27",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-21",
+          "period_end": "2026-11-27",
+          "selected_at": "2026-11-28T01:28:54.810075+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Dangote Refinery",
+          "company_url": "/companies?name=Dangote%20Refinery",
+          "headline": "Nigerian stocks lost N7 Trillion as investors liquidate ahead of Dangote Refinery debut",
+          "deal_type": "distressed_asset",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "oil_gas",
+          "announced": "2026-11-26",
+          "score": 58.52,
+          "independent_stories": 2,
+          "transaction_records": 0,
+          "related_events": 2,
+          "reasons": [
+            "Corporate signal: distressed asset",
+            "Event rule confidence: 0.80",
+            "2 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "Nigerian stocks lost N7 Trillion as investors liquidate ahead of Dangote Refinery debut",
+              "url": "https://nairametrics.com/2026/11/26/nigerian-stocks-lost-n7-trillion-as-investors-liquidate-ahead-of-dangote-refinery-debut/",
+              "date": "2026-11-26",
+              "kind": "corporate_event"
+            },
+            {
+              "publisher": "Legit News",
+              "title": "Dangote Refinery Secures SEC Approval for IPO Share Allocation, Moves Closer to Stock Market Debut",
+              "url": "https://news.google.com/rss/articles/CBMi5wFBVV95cUxOQ1hGLTJOYUxNYUxsYWxNaWVRVUZBRTNJMG1JNVpFS1E0QmpfTmxYWWdVNGxhaUNWR1l4OWdlempCbGVoN1RIZmxEWWhoVWo1VWFWSEwwRk9raUpyWWtaR2JWal9hb3ZaUWt4STdkVXZiajY1UV81dlpPcFJkTWZkYjlxNE94YlREZEo1UDdpZFEtcWs4TVRGNWVhYnh5cENPazZmSWxrX0F3Wkl0X2dNNFpZVlZZRU5fZktBWDhrSlY0bkxDNDJVOWpyalplcC1iai1DQXVmcU5lUS1EbExxWnMzOXl3M28?oc=5",
+              "date": "2026-11-24",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-21",
+          "period_end": "2026-11-27",
+          "selected_at": "2026-11-28T01:28:54.810075+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Coronation Insurance",
+          "company_url": "/companies?name=Coronation%20Insurance",
+          "headline": "Coronation Insurance Advances Court-sanctioned Scheme at N2.88 Per Share",
+          "deal_type": "regulatory_action",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "insurance",
+          "announced": "2026-11-26",
+          "score": 56.67,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: regulatory action",
+            "Event rule confidence: 0.93",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "ThisDay Nigeria",
+              "title": "Coronation Insurance Advances Court-sanctioned Scheme at N2.88 Per Share",
+              "url": "https://www.thisdaylive.com/2026/11/26/coronation-insurance-advances-court-sanctioned-scheme-at-n2-88-per-share/",
+              "date": "2026-11-26",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-21",
+          "period_end": "2026-11-27",
+          "selected_at": "2026-11-28T01:28:54.810075+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Keystone Bank",
+          "company_url": "/companies?name=Keystone%20Bank",
+          "headline": "BREAKING: CBN appoints Murtala Mohammed as acting CEO of Keystone Bank",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "NG",
+          "sector": "banking",
+          "announced": "2026-11-26",
+          "score": 52.02,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "Nairametrics",
+              "title": "BREAKING: CBN appoints Murtala Mohammed as acting CEO of Keystone Bank",
+              "url": "https://nairametrics.com/2026/11/26/cbn-appoints-murtala-mohammed-as-acting-ceo-of-keystone-bank/",
+              "date": "2026-11-26",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-21",
+          "period_end": "2026-11-27",
+          "selected_at": "2026-11-28T01:28:54.810075+00:00",
+          "selection_version": 5
+        },
+        {
+          "company": "Perseus Mining",
+          "company_url": "/companies?name=Perseus%20Mining",
+          "headline": "Perseus Mining CFO resigns after 6 years",
+          "deal_type": "leadership_change",
+          "amount_usd": null,
+          "country": "TZ",
+          "sector": "mining",
+          "announced": "2026-11-26",
+          "score": 51.57,
+          "independent_stories": 1,
+          "transaction_records": 0,
+          "related_events": 1,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.90",
+            "1 distinct source-linked corporate event(s) found in the period",
+            "Selected from corporate-event monitoring, not the transaction headline feed"
+          ],
+          "sources": [
+            {
+              "publisher": "grafa.com",
+              "title": "Perseus Mining CFO resigns after 6 years",
+              "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNdjFnU2VhbnRKNVZUYWowLUJRcTRrVndZY3d0YVdnSXhFblIycURCWFg5TXVIMDJnV1REczBwWmN1Q2RzSmh3ZzY4R0tzcUlpQWNjYUZ2NGtxeWV5dUtUNTJCazZqV0xGYnlwaFBkZXNFOWN4Vm4wMk5DMDBpY0tYZVF3?oc=5",
+              "date": "2026-11-26",
+              "kind": "corporate_event"
+            }
+          ],
+          "method": "Deterministic ranking of dated, source-linked non-transaction corporate events. M&A signals and headlines substantially duplicating the deal feed are excluded. The score is an editorial ranking aid, not a probability or investment recommendation.",
+          "period_start": "2026-11-21",
+          "period_end": "2026-11-27",
+          "selected_at": "2026-11-28T01:28:54.810075+00:00",
+          "selection_version": 5
+        }
+      ],
+      "runner_ups": [
+        {
+          "company": "Saham Bank",
+          "score": 47.07,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "SOGB",
+          "score": 50.44,
+          "reasons": [
+            "Corporate signal: leadership change",
+            "Event rule confidence: 0.75",
+            "1 distinct source-linked corporate event(s) found in the period"
+          ]
+        },
+        {
+          "company": "PBC",
+          "score": 49.54,
+          "reasons": [
+            "Corporate signal: debt restructuring",
+            "Event rule confidence: 0.88",
             "1 distinct source-linked corporate event(s) found in the period"
           ]
         }
